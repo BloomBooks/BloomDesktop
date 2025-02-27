@@ -52,7 +52,7 @@ interface IState {
 }
 
 // This class implements the Bloom Enterprise tab of the Settings dialog.
-export class EnterpriseSettings extends React.Component<{}, IState> {
+export class EnterpriseSettings extends React.Component<unknown, IState> {
     public readonly state: IState = {
         enterpriseStatus: "None",
         subscriptionCode: "",

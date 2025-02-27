@@ -13,7 +13,7 @@ import {
     HelpGroup,
     SettingsPanel
 } from "../commonPublish/PublishScreenBaseComponents";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import {
     darkTheme,

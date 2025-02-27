@@ -1,7 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 
-import React = require("react");
+import * as React from "react";
 import { get } from "../utils/bloomApi";
 import { useEffect, useState } from "react";
 import { BloomTooltip } from "./BloomToolTip";

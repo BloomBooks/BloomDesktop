@@ -16,7 +16,7 @@ import {
 import { get, postJson } from "../utils/bloomApi";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 
-export const CollectionSettingsDialog: React.FunctionComponent<{}> = () => {
+export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const {
         //openingEvent,
         closeDialog,

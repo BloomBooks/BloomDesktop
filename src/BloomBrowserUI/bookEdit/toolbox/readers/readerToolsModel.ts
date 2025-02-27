@@ -10,9 +10,9 @@
 import { DirectoryWatcher } from "./directoryWatcher";
 import { resizeWordList } from "./readerTools";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
-import "./libSynphony/jquery.text-markup.ts";
+import "./libSynphony/jquery.text-markup";
 import { removeAllHtmlMarkupFromString } from "./libSynphony/jquery.text-markup";
-import "./jquery.div-columns.ts";
+import "./jquery.div-columns";
 import { ReaderStage, ReaderLevel } from "./ReaderSettings";
 import * as _ from "underscore";
 import {
@@ -1983,9 +1983,8 @@ export class ReaderToolsModel {
         this.allowedWordFilesRemaining--;
 
         if (fileContents && this.synphony) {
-            this.synphony
-                .getStages()
-                [stageIndex].setAllowedWordsString(fileContents);
+            const stages = this.synphony.getStages();
+            stages[stageIndex].setAllowedWordsString(fileContents);
         }
 
         // if all loaded...

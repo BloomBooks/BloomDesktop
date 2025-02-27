@@ -20,7 +20,7 @@ import {
     BloomDialog,
     DialogBottomButtons
 } from "../react_components/BloomDialog/BloomDialog";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import { AppBar } from "@mui/material";
 import { kBloomLightGray } from "../utils/colorUtils";
 import {

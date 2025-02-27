@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import tinycolor = require("tinycolor2");
+import * as tinycolor from "tinycolor2";
 import { IColorInfo } from "./colorSwatch";
 
 interface IHexColorInputProps {

@@ -1,14 +1,17 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
+import * as CollectionTabIcon from "./CollectionsTab.svg";
+import * as EditTabIcon from "./EditTab.svg";
+import * as PublishTabIcon from "./PublishTab.svg";
 
 const tabs = [
-    { name: "Collections", svg: require("./CollectionsTab.svg"), height: 32 },
-    { name: "Edit", svg: require("./EditTab.svg"), height: 32 },
-    { name: "Publish", svg: require("./PublishTab.svg"), height: 27 }
+    { name: "Collections", svg: CollectionTabIcon, height: 32 },
+    { name: "Edit", svg: EditTabIcon, height: 32 },
+    { name: "Publish", svg: PublishTabIcon, height: 27 }
 ];
 
-export const TopBar: React.FunctionComponent<{}> = () => {
+export const TopBar: React.FunctionComponent = () => {
     return (
         <div
             css={css`
@@ -75,7 +78,7 @@ const Tab: React.FunctionComponent<{
         </li>
     );
 };
-export const BloomTabs: React.FunctionComponent<{}> = () => {
+export const BloomTabs: React.FunctionComponent = () => {
     const [selectedTab, setSelectedTab] = React.useState("Collection");
     return (
         <ul

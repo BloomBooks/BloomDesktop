@@ -21,7 +21,10 @@ interface IState {
 // tsx files in bookEdit/toolbox.
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which  passes an instance of ImpairmentVisualizerAdaptor to ToolBox.registerTool();
-export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
+export class ImpairmentVisualizerControls extends React.Component<
+    unknown,
+    IState
+> {
     public readonly state: IState = {
         kindOfColorBlindness: "redGreen"
     };

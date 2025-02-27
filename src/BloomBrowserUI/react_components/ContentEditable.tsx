@@ -14,7 +14,7 @@ interface IContentEditableProps {
 // The content property is the current text of the div.
 export default class ContentEditable extends React.Component<
     IContentEditableProps,
-    {}
+    unknown
 > {
     private lastContent: string;
     private ipPosition: number;

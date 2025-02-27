@@ -24,7 +24,7 @@ import { Div } from "../../react_components/l10nComponents";
 import { useEventLaunchedBloomDialog } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { WarningBox } from "../../react_components/boxes";
 
-export const SpreadsheetExportDialogLauncher: React.FunctionComponent<{}> = () => {
+export const SpreadsheetExportDialogLauncher: React.FunctionComponent = () => {
     const {
         openingEvent,
         closeDialog,

@@ -463,6 +463,7 @@ const OverlayContextControls: React.FunctionComponent<{
                                 return (
                                     <LocalizableNestedMenuItem
                                         {...option}
+                                        key={index}
                                         truncateMainLabel={true}
                                     >
                                         {option.subMenu.map(

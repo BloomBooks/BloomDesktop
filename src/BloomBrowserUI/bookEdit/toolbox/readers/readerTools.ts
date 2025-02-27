@@ -18,8 +18,8 @@ import "../../../lib/jquery.onSafe";
 import axios from "axios";
 import { get } from "../../../utils/bloomApi";
 import * as _ from "underscore";
-import ReactDOM = require("react-dom");
-import React = require("react");
+import * as ReactDOM from "react-dom";
+import * as React from "react";
 import { ReaderToolSwitch } from "./ReaderToolSwitch";
 
 interface textMarkup extends JQueryStatic {
@@ -390,7 +390,7 @@ export function beginSaveChangedSettings(
  */
 export function addWordListChangedListener(
     listenerNameAndContext: string,
-    callback: () => {}
+    callback: () => void
 ) {
     getTheOneReaderToolsModel().wordListChangedListeners[
         listenerNameAndContext

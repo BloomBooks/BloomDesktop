@@ -11,7 +11,7 @@ import { BloomDialogContext } from "./BloomDialog";
 export const kErrorBoxColor = "#eb3941";
 
 // just puts a rounded rectangle around the children
-export const DialogControlGroup: React.FunctionComponent<{}> = props => (
+export const DialogControlGroup: React.FunctionComponent = props => (
     <div
         css={css`
             border: solid 1px grey;

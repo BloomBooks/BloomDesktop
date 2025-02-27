@@ -1,7 +1,7 @@
 import axios, { AxiosResponse, AxiosRequestConfig, AxiosError } from "axios";
 import * as StackTrace from "stacktrace-js";
 import { reportError, reportPreliminaryError } from "../lib/errorHandler";
-import React = require("react");
+import * as React from "react";
 import { useEffect, useState } from "react";
 import { useSubscribeToWebSocketForEvent } from "./WebSocketManager";
 

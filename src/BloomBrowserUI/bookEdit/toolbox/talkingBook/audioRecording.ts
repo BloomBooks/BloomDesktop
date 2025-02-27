@@ -43,8 +43,8 @@ import {
 import * as toastr from "toastr";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import { ToolBox } from "../toolbox";
-import React = require("react");
-import ReactDOM = require("react-dom");
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import {
     IConfirmDialogProps,
     DialogResult
@@ -3725,7 +3725,7 @@ export default class AudioRecording implements IAudioRecorder {
         else this.setStatus(verb, Status.Enabled);
     }
 
-    private isEnabledOrExpected(verb: string): Boolean {
+    private isEnabledOrExpected(verb: string): boolean {
         return (
             $("#audio-" + verb).hasClass("enabled") ||
             $("#audio-" + verb).hasClass("expected")

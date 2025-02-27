@@ -98,7 +98,7 @@ export default class ReadersSynphonyWrapper {
      * Add a list of words to the lang_data object
      * @param {Object} words The keys are the words, and the values are the counts
      */
-    public static addWords(words: Object) {
+    public static addWords(words: object) {
         if (!words) return;
 
         const wordNames = Object.keys(words);

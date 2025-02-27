@@ -12,7 +12,7 @@ import {
     ConfigrBoolean,
     ConfigrSelect
 } from "@sillsdev/config-r";
-import React = require("react");
+import * as React from "react";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
     BloomDialog,
@@ -907,7 +907,9 @@ const ColorPickerForConfigr: React.FunctionComponent<{
 };
 
 // TODO: move this to config-r
-const ConfigrCustomRow: React.FunctionComponent<React.PropsWithChildren<{}>> = props => {
+const ConfigrCustomRow: React.FunctionComponent<React.PropsWithChildren<
+    object
+>> = props => {
     return (
         <ListItem
             css={css`

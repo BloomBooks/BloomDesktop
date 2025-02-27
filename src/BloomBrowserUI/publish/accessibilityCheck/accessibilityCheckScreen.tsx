@@ -16,7 +16,7 @@ import { hookupLinkHandler } from "../../utils/linkHandler";
 interface IState {
     bookName: string;
 }
-export class AccessibilityCheckScreen extends React.Component<{}, IState> {
+export class AccessibilityCheckScreen extends React.Component<unknown, IState> {
     public readonly state: IState = {
         bookName: "?"
     };

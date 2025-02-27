@@ -4,6 +4,7 @@ import * as jQuery from "jquery";
 import theOneLocalizationManager from "./localizationManager/localizationManager";
 
 interface JQuery {
+    // eslint-disable-next-line  @typescript-eslint/no-unsafe-function-type
     localize(callbackDone?: Function): void;
 }
 /**

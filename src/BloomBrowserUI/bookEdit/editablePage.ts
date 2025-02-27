@@ -5,7 +5,7 @@
 import * as $ from "jquery";
 import { bootstrap } from "./js/bloomEditing";
 import { EditableDivUtils } from "./js/editableDivUtils";
-import "../lib/jquery.i18n.custom.ts"; //localize()
+import "../lib/jquery.i18n.custom"; //localize()
 import "errorHandler";
 import { theOneBubbleManager, BubbleManager } from "./js/bubbleManager";
 import { renderDragActivityTabControl } from "./toolbox/dragActivity/DragActivityTabControl";

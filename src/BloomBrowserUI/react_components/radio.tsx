@@ -1,5 +1,9 @@
 import * as React from "react";
-import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
+import {
+    ILocalizationProps,
+    ILocalizationState,
+    LocalizableElement
+} from "./l10nComponents";
 
 export interface IRadioProps extends ILocalizationProps {
     value: string; // identifies this radio in set
@@ -14,7 +18,7 @@ export interface IRadioProps extends ILocalizationProps {
 // A radio button that is localizable.
 // Note that this is a vanilla html radio input.
 // Likely, any new control should be MuiRadio which is a material UI radio.
-export class Radio extends LocalizableElement<IRadioProps, {}> {
+export class Radio extends LocalizableElement<IRadioProps, ILocalizationState> {
     constructor(props) {
         super(props);
     }
@@ -87,7 +91,7 @@ export interface IRadioGroupProps {
 //
 // Note that this was designed to work with the `Radio` control above.
 // But it is likely that any new controls should rather be MuiRadio.
-export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
+export class RadioGroup extends React.Component<IRadioGroupProps> {
     constructor(props) {
         super(props);
     }

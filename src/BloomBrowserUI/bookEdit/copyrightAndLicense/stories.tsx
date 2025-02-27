@@ -66,7 +66,7 @@ _CopyrightAndLicenseDialog.args = {
     data: sampleCopyrightAndLicenseData
 };
 
-const PanelFrame: React.FunctionComponent<{}> = props => (
+const PanelFrame: React.FunctionComponent = props => (
     <div
         style={{
             height: 400,
@@ -102,7 +102,9 @@ _CopyrightPanel.args = {
     isForBook: true
 };
 
-export const _LicensePanel = () => {
+// Was _LicensePanel. Not sure if there's some storybook reason for that naming,
+// but it makes eslint think this is not a React component, and complain about useState.
+export const FramedLicensePanel = () => {
     const [valid, setValid] = React.useState(false);
     return (
         <PanelFrame>

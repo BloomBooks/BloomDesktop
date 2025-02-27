@@ -25,7 +25,7 @@ import { get, wrapAxios } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import * as ReactDOM from "react-dom";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
-import React = require("react");
+import * as React from "react";
 import {
     ISimpleColorPickerDialogProps,
     showSimpleColorPickerDialog

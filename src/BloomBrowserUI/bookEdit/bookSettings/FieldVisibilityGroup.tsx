@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import { ConfigrBoolean } from "@sillsdev/config-r";
-import React = require("react");
+import * as React from "react";
 import { useApiObject } from "../../utils/bloomApi";
 import { useL10n } from "../../react_components/l10nHooks";
 import { useMemo } from "react";
