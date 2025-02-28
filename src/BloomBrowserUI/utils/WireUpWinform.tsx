@@ -1,4 +1,4 @@
-import React = require("react");
+import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { lightTheme } from "../bloomMaterialUITheme";
@@ -17,7 +17,7 @@ export function WireUpForWinforms(
     // The c# ReactControl creates an html page that will call this function.
     (window as any).wireUpRootComponentFromWinforms = (
         root: HTMLElement,
-        props?: Object
+        props?: object
     ) => {
         props = AddDialogPropsWhenWrappedByWinforms(props);
         const c = React.createElement(component, props, null);
@@ -26,7 +26,7 @@ export function WireUpForWinforms(
     };
 }
 
-const ThemedRoot: React.FunctionComponent<{}> = props => {
+const ThemedRoot: React.FunctionComponent = props => {
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={lightTheme}>{props.children}</ThemeProvider>
@@ -35,7 +35,7 @@ const ThemedRoot: React.FunctionComponent<{}> = props => {
 };
 
 // These props will not be wanted when we call the dialog component from within browser-land.
-function AddDialogPropsWhenWrappedByWinforms(props?: Object) {
+function AddDialogPropsWhenWrappedByWinforms(props?: object) {
     const dialogParamsWhenWrappedByWinforms: IBloomDialogEnvironmentParams = {
         dialogFrameProvidedExternally: true,
         initiallyOpen: true

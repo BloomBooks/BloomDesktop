@@ -1,4 +1,4 @@
-import React = require("react");
+import * as React from "react";
 import { SelectedBookContext } from "../app/SelectedBookContext";
 import { BloomTooltip, IBloomToolTipProps } from "./BloomToolTip";
 

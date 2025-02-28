@@ -1,6 +1,6 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
-import React = require("react");
+import * as React from "react";
 import { get, post, postString } from "../utils/bloomApi";
 import { BooksOfCollection, IBookInfo } from "./BooksOfCollection";
 import { Transition } from "react-transition-group";
@@ -49,7 +49,7 @@ type CollectionInfo = {
     filter?: (book: IBookInfo) => boolean;
 };
 
-export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
+export const CollectionsTabPane: React.FunctionComponent = () => {
     // This sort of duplicates useApiJson, but allows us to use the underlying state variable.
     // Which we really need.
     const [collections, setCollections] = useState<

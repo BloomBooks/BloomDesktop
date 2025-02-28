@@ -1,3 +1,4 @@
+import * as XRegExp from "xregexp";
 import AudioRecording, { RecordingMode } from "./audioRecording";
 import axios, { AxiosResponse } from "axios";
 
@@ -230,7 +231,9 @@ export default class Recordable {
             );
         }
         // regex based on what the extension method LibSynphony.stringToSentences() uses.
-        const intersentenceSpace = /^[\s\p{PEP}\u00A0]+/;
+        // We have to use XRegExp here because the \p{PEP} is not supported in the default regex engine.
+        // It's one we added in the process of configuring XRegExp (Paragraph-Ending Punctuation).
+        const intersentenceSpace = XRegExp(String.raw`^[\s\p{PEP}\u00A0]+`);
         return (
             textMissingMarkup &&
             textMissingMarkup.replace(intersentenceSpace, "").length > 0

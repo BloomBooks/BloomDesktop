@@ -8,7 +8,7 @@ interface SliderProps {
     onAfterChange: (start: number) => void;
 }
 
-export class VideoTrimSlider extends React.Component<SliderProps, {}> {
+export class VideoTrimSlider extends React.Component<SliderProps> {
     public render() {
         return (
             <Range

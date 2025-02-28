@@ -1,7 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { kGameToolId } from "../toolIds";
 //import Tabs from "@mui/material/Tabs";

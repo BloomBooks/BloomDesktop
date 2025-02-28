@@ -7,7 +7,7 @@ import {
     kUiFontStack,
     toolboxTheme
 } from "../../../bloomMaterialUITheme";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import { getToolboxBundleExports } from "../../js/bloomFrames";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { default as PencilIcon } from "@mui/icons-material/Edit";

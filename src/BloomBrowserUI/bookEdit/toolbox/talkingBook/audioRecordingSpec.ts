@@ -850,7 +850,7 @@ describe("audio recording tests", () => {
                 true,
                 "textbox's class"
             );
-            expect($(divs[0]).attr("id")).not.toBe(undefined), "textbox's id";
+            expect($(divs[0]).attr("id")).not.toBe(undefined, "textbox's id");
             expect(divs[0].id.length).toBeGreaterThan(
                 31,
                 "textbox's id length"
@@ -944,12 +944,20 @@ describe("audio recording tests", () => {
                 true,
                 "textbox's class"
             );
-            expect($(divs[0]).attr("id").length).toBeGreaterThan(31),
-                "textbox's id"; // GUID without hyphens is 32 chars longs
-            expect($(divs[0]).attr("id").length).toBeLessThan(38),
-                "textbox's id"; // GUID with hyphens adds 4 chars. And we sometimes insert a 1-char prefix, adding up to 37.
-            expect($(divs[1]).attr("id")).toBe("formatButton"),
-                "formatButton's id";
+            // GUID without hyphens is 32 chars longs
+            expect($(divs[0]).attr("id").length).toBeGreaterThan(
+                31,
+                "textbox's id"
+            );
+            // GUID with hyphens adds 4 chars. And we sometimes insert a 1-char prefix, adding up to 37.
+            expect($(divs[0]).attr("id").length).toBeLessThan(
+                38,
+                "textbox's id"
+            );
+            expect($(divs[1]).attr("id")).toBe(
+                "formatButton",
+                "formatButton's id"
+            );
 
             const paragraphs = parent.find("p");
             expect(paragraphs.length).toBe(2, "number of paragraphs");

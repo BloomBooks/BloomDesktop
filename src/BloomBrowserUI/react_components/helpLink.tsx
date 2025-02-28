@@ -2,7 +2,11 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
+import {
+    ILocalizationProps,
+    ILocalizationState,
+    LocalizableElement
+} from "./l10nComponents";
 import Link from "@mui/material/Link";
 import BloomButton from "./bloomButton";
 
@@ -12,7 +16,10 @@ interface IHelpLinkProps extends ILocalizationProps {
 }
 
 // just an html anchor that knows how to localize and how turn a Bloom help id into a url
-export class HelpLink extends LocalizableElement<IHelpLinkProps, {}> {
+export class HelpLink extends LocalizableElement<
+    IHelpLinkProps,
+    ILocalizationState
+> {
     public render() {
         return (
             <Link

@@ -2,7 +2,6 @@
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
 
 import BloomSourceBubbles from "./BloomSourceBubbles";
-"use strict";
 
 describe("SourceBubbles", () => {
     // reset fixture
