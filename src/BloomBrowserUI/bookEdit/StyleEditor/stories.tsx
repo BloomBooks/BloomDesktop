@@ -1,7 +1,6 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import { storiesOf } from "@storybook/react";
 import FontSelectComponent from "./fontSelectComponent";
 import FontInformationPane from "../../react_components/fontInformationPane";
 import { IFontMetaData } from "./fontSelectComponent";
@@ -58,48 +57,70 @@ const fontTestData = [
     moreCompleteUnknownFont
 ];
 
-storiesOf("Format dialog", module)
-    .add("Font Select-current ok", () => {
-        return React.createElement(() => (
-            <Frame>
-                <FontSelectComponent
-                    fontMetadata={fontTestData}
-                    currentFontName={suitableFont.name}
-                    languageNumber={0}
-                />
-            </Frame>
-        ));
-    })
-    .add("Font Select-current unknown", () => {
-        return React.createElement(() => (
-            <Frame>
-                <FontSelectComponent
-                    fontMetadata={fontTestData}
-                    currentFontName={unknownFont.name}
-                    languageNumber={1}
-                />
-            </Frame>
-        ));
-    })
-    .add("Font Select-current unsuitable", () => {
-        return React.createElement(() => (
-            <Frame>
-                <FontSelectComponent
-                    fontMetadata={fontTestData}
-                    currentFontName={unsuitableFont.name}
-                    languageNumber={2}
-                />
-            </Frame>
-        ));
-    })
-    .add("FontInformationPane unsuitable", () => {
-        return React.createElement(() => (
-            <Frame>
-                <FontInformationPane metadata={fontTestData[2]} />
-                <Typography variant="h6">
-                    For some reason, this test needs refreshing to size itself
-                    correctly.
-                </Typography>
-            </Frame>
-        ));
-    });
+export default {
+    title: "Format dialog"
+};
+
+export const FontSelectCurrentOk = () => {
+    return React.createElement(() => (
+        <Frame>
+            <FontSelectComponent
+                fontMetadata={fontTestData}
+                currentFontName={suitableFont.name}
+                languageNumber={0}
+            />
+        </Frame>
+    ));
+};
+
+FontSelectCurrentOk.story = {
+    name: "Font Select-current ok"
+};
+
+export const FontSelectCurrentUnknown = () => {
+    return React.createElement(() => (
+        <Frame>
+            <FontSelectComponent
+                fontMetadata={fontTestData}
+                currentFontName={unknownFont.name}
+                languageNumber={1}
+            />
+        </Frame>
+    ));
+};
+
+FontSelectCurrentUnknown.story = {
+    name: "Font Select-current unknown"
+};
+
+export const FontSelectCurrentUnsuitable = () => {
+    return React.createElement(() => (
+        <Frame>
+            <FontSelectComponent
+                fontMetadata={fontTestData}
+                currentFontName={unsuitableFont.name}
+                languageNumber={2}
+            />
+        </Frame>
+    ));
+};
+
+FontSelectCurrentUnsuitable.story = {
+    name: "Font Select-current unsuitable"
+};
+
+export const FontInformationPaneUnsuitable = () => {
+    return React.createElement(() => (
+        <Frame>
+            <FontInformationPane metadata={fontTestData[2]} />
+            <Typography variant="h6">
+                For some reason, this test needs refreshing to size itself
+                correctly.
+            </Typography>
+        </Frame>
+    ));
+};
+
+FontInformationPaneUnsuitable.story = {
+    name: "FontInformationPane unsuitable"
+};

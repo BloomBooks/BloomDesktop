@@ -4,7 +4,6 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { storiesOf } from "@storybook/react";
 import { Radio, RadioGroup as MuiRadioGroup, Typography } from "@mui/material";
 import { Expandable } from "./expandable";
 import { Checkbox } from "./checkbox";
@@ -60,106 +59,123 @@ import { ForumInvitationDialogLauncher } from "./forumInvitationDialog";
 const kLongText =
     "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs.";
 
-storiesOf("Localizable Widgets", module)
-    .add("Expandable", () => (
-        <Expandable
+export default {
+    title: "Localizable Widgets"
+};
+
+export const _Expandable = () => (
+    <Expandable
+        l10nKey="bogus"
+        expandedHeight="30px"
+        headingText="I am so advanced"
+    >
+        Look at this!
+    </Expandable>
+);
+
+export const _BloomButton = () => (
+    <div>
+        <BloomButton
             l10nKey="bogus"
-            expandedHeight="30px"
-            headingText="I am so advanced"
+            l10nComment="hello"
+            enabled={true}
+            hasText={true}
         >
             Look at this!
-        </Expandable>
-    ))
-    .add("BloomButton", () => (
-        <div>
-            <BloomButton
-                l10nKey="bogus"
-                l10nComment="hello"
-                enabled={true}
-                hasText={true}
-            >
-                Look at this!
-            </BloomButton>
-            <br /> <br />
-            <BloomButton
-                l10nKey="bogus"
-                l10nComment="hello"
-                enabled={true}
-                hasText={true}
-                variant="text"
-            >
-                Variant = text
-            </BloomButton>
-            <br /> <br />
-            <BloomButton
-                l10nKey="bogus"
-                l10nComment="hello"
-                enabled={true}
-                hasText={true}
-                variant="outlined"
-            >
-                Variant = outlined
-            </BloomButton>
-            <br /> <br />
-            <BloomButton
-                iconBeforeText={<DeleteIcon />}
-                l10nKey="bogus"
-                l10nComment="hello"
-                enabled={true}
-                hasText={true}
-            >
-                Material icon
-            </BloomButton>
-            <br /> <br />
-            <BloomButton
-                iconBeforeText={<ImportIcon />}
-                l10nKey="bogus"
-                l10nComment="hello"
-                enabled={true}
-                hasText={true}
-                variant="outlined"
-            >
-                Custom icon
-            </BloomButton>
-            <br /> <br />
-            <BloomButton
-                iconBeforeText={<ImportIcon />}
-                l10nKey="bogus"
-                l10nComment="hello"
-                enabled={true}
-                hasText={true}
-                size="small"
-                variant="outlined"
-            >
-                Small
-            </BloomButton>
-        </div>
-    ))
-    .add("BloomSplitButton", () => (
-        <div>
-            <BloomSplitButton
-                options={[
-                    {
-                        english: "Option 1",
-                        l10nId: "already-localized",
-                        requiresAnyEnterprise: true,
-                        onClick: () => {
-                            alert("Option 1 clicked");
-                        }
-                    },
-                    {
-                        english: "Option 2",
-                        l10nId: "already-localized",
-                        onClick: () => {
-                            alert("Option 2 clicked");
-                        }
-                    }
-                ]}
-            ></BloomSplitButton>
-        </div>
-    ));
+        </BloomButton>
+        <br /> <br />
+        <BloomButton
+            l10nKey="bogus"
+            l10nComment="hello"
+            enabled={true}
+            hasText={true}
+            variant="text"
+        >
+            Variant = text
+        </BloomButton>
+        <br /> <br />
+        <BloomButton
+            l10nKey="bogus"
+            l10nComment="hello"
+            enabled={true}
+            hasText={true}
+            variant="outlined"
+        >
+            Variant = outlined
+        </BloomButton>
+        <br /> <br />
+        <BloomButton
+            iconBeforeText={<DeleteIcon />}
+            l10nKey="bogus"
+            l10nComment="hello"
+            enabled={true}
+            hasText={true}
+        >
+            Material icon
+        </BloomButton>
+        <br /> <br />
+        <BloomButton
+            iconBeforeText={<ImportIcon />}
+            l10nKey="bogus"
+            l10nComment="hello"
+            enabled={true}
+            hasText={true}
+            variant="outlined"
+        >
+            Custom icon
+        </BloomButton>
+        <br /> <br />
+        <BloomButton
+            iconBeforeText={<ImportIcon />}
+            l10nKey="bogus"
+            l10nComment="hello"
+            enabled={true}
+            hasText={true}
+            size="small"
+            variant="outlined"
+        >
+            Small
+        </BloomButton>
+    </div>
+);
 
-storiesOf("Localizable Widgets/MuiRadio", module).add("MuiRadio", () =>
+_BloomButton.story = {
+    name: "BloomButton"
+};
+
+export const _BloomSplitButton = () => (
+    <div>
+        <BloomSplitButton
+            options={[
+                {
+                    english: "Option 1",
+                    l10nId: "already-localized",
+                    requiresAnyEnterprise: true,
+                    onClick: () => {
+                        alert("Option 1 clicked");
+                    }
+                },
+                {
+                    english: "Option 2",
+                    l10nId: "already-localized",
+                    onClick: () => {
+                        alert("Option 2 clicked");
+                    }
+                }
+            ]}
+        ></BloomSplitButton>
+    </div>
+);
+
+_BloomSplitButton.story = {
+    name: "BloomSplitButton"
+};
+
+export default {
+    title: "Localizable Widgets/MuiRadio"
+};
+
+export const _MuiRadio = () =>
     React.createElement(() => (
         <MuiRadioGroup>
             our mui radio tweaked for proper alignment when the label wraps:
@@ -190,8 +206,11 @@ storiesOf("Localizable Widgets/MuiRadio", module).add("MuiRadio", () =>
                 <FormControlLabel control={<Radio />} label={"short"} />
             </div>
         </MuiRadioGroup>
-    ))
-);
+    ));
+
+_MuiRadio.story = {
+    name: "MuiRadio"
+};
 
 const useMenuBox = (menuItems: JSX.Element[]) => {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | undefined>(
@@ -303,13 +322,25 @@ const testMenu = [
     nestedMenu
 ];
 
-storiesOf("Localizable Widgets/Localizable Menu", module).add("test menu", () =>
-    useMenuBox(testMenu)
-);
+export default {
+    title: "Localizable Widgets/Localizable Menu"
+};
 
-storiesOf("Localizable Widgets/Link", module).add("enabled", () => (
-    <Link l10nKey="bogus">link text</Link>
-));
+export const TestMenu = () => useMenuBox(testMenu);
+
+TestMenu.story = {
+    name: "test menu"
+};
+
+export default {
+    title: "Localizable Widgets/Link"
+};
+
+export const Enabled = () => <Link l10nKey="bogus">link text</Link>;
+
+Enabled.story = {
+    name: "enabled"
+};
 
 // Setting the disabled prop actually only adds a disabled class which has no effect on its own.
 // So I'm not including the story for now. Else it is just confusing.
@@ -362,142 +393,168 @@ const pickerStyles: React.CSSProperties = {
     position: "absolute"
 };
 
-storiesOf("Misc/Dialogs", module)
-    .add("ConfirmDialog", () =>
-        React.createElement(() => (
-            <div>
-                <div id="modal-container" />
-                <BloomButton
-                    onClick={() => showConfirmDialog()}
-                    enabled={true}
-                    hasText={true}
-                    l10nKey={"dummyKey"}
-                >
-                    Open Confirm Dialog
-                </BloomButton>
-                <ConfirmDialog {...confirmDialogProps} />
-            </div>
-        ))
-    )
-    .add("ConfirmDialog as launched from outside React", () =>
-        React.createElement(() => (
-            <div>
-                <div id="modal-container" />
-                <BloomButton
-                    onClick={() =>
-                        showConfirmDialogFromOutsideReact(
-                            confirmDialogProps,
-                            document.getElementById("modal-container")
-                        )
-                    }
-                    enabled={true}
-                    hasText={true}
-                    l10nKey={"dummyKey"}
-                >
-                    Open Confirm Dialog
-                </BloomButton>
-            </div>
-        ))
-    )
-    .add("AutoUpdateSoftwareDialog", () =>
-        React.createElement(() => (
-            <AutoUpdateSoftwareDialog
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-            />
-        ))
-    )
-    .add("ForumInvitationDialog", () => (
-        <StorybookDialogWrapper id="ForumInvitationDialog" params={{}}>
-            <ForumInvitationDialogLauncher />
-        </StorybookDialogWrapper>
+export default {
+    title: "Misc/Dialogs"
+};
+
+export const _ConfirmDialog = () =>
+    React.createElement(() => (
+        <div>
+            <div id="modal-container" />
+            <BloomButton
+                onClick={() => showConfirmDialog()}
+                enabled={true}
+                hasText={true}
+                l10nKey={"dummyKey"}
+            >
+                Open Confirm Dialog
+            </BloomButton>
+            <ConfirmDialog {...confirmDialogProps} />
+        </div>
     ));
 
-storiesOf("Misc", module)
-    .add("Small Number Picker", () =>
-        React.createElement(() => {
-            const numberOfPagesTooltip = "Number of pages to add";
-            const onHandleChange = (newNumber: number) => {
-                console.log("We handled change!");
-                console.log(`  result was ${newNumber}`);
-            };
-            const min = 1;
-            const max = 15;
+_ConfirmDialog.story = {
+    name: "ConfirmDialog"
+};
 
-            return (
-                <div style={containerDivStyles}>
-                    <div style={moveToBottomStyles}>
-                        <div style={previewControlsStyles}>
-                            <BloomButton
-                                l10nKey="dummyKey"
-                                hasText={true}
-                                enabled={false}
-                                onClick={() => {
-                                    console.log("Does nothing");
-                                }}
-                            >
-                                My Button
-                            </BloomButton>
-                            <div style={pickerStyles}>
-                                <SmallNumberPicker
-                                    minLimit={min}
-                                    maxLimit={max}
-                                    handleChange={onHandleChange}
-                                    tooltip={numberOfPagesTooltip}
-                                />
-                            </div>
+export const ConfirmDialogAsLaunchedFromOutsideReact = () =>
+    React.createElement(() => (
+        <div>
+            <div id="modal-container" />
+            <BloomButton
+                onClick={() =>
+                    showConfirmDialogFromOutsideReact(
+                        confirmDialogProps,
+                        document.getElementById("modal-container")
+                    )
+                }
+                enabled={true}
+                hasText={true}
+                l10nKey={"dummyKey"}
+            >
+                Open Confirm Dialog
+            </BloomButton>
+        </div>
+    ));
+
+ConfirmDialogAsLaunchedFromOutsideReact.story = {
+    name: "ConfirmDialog as launched from outside React"
+};
+
+export const _AutoUpdateSoftwareDialog = () =>
+    React.createElement(() => (
+        <AutoUpdateSoftwareDialog
+            dialogEnvironment={normalDialogEnvironmentForStorybook}
+        />
+    ));
+
+_AutoUpdateSoftwareDialog.story = {
+    name: "AutoUpdateSoftwareDialog"
+};
+
+export const ForumInvitationDialog = () => (
+    <StorybookDialogWrapper id="ForumInvitationDialog" params={{}}>
+        <ForumInvitationDialogLauncher />
+    </StorybookDialogWrapper>
+);
+
+ForumInvitationDialog.story = {
+    name: "ForumInvitationDialog"
+};
+
+export default {
+    title: "Misc"
+};
+
+export const _SmallNumberPicker = () =>
+    React.createElement(() => {
+        const numberOfPagesTooltip = "Number of pages to add";
+        const onHandleChange = (newNumber: number) => {
+            console.log("We handled change!");
+            console.log(`  result was ${newNumber}`);
+        };
+        const min = 1;
+        const max = 15;
+
+        return (
+            <div style={containerDivStyles}>
+                <div style={moveToBottomStyles}>
+                    <div style={previewControlsStyles}>
+                        <BloomButton
+                            l10nKey="dummyKey"
+                            hasText={true}
+                            enabled={false}
+                            onClick={() => {
+                                console.log("Does nothing");
+                            }}
+                        >
+                            My Button
+                        </BloomButton>
+                        <div style={pickerStyles}>
+                            <SmallNumberPicker
+                                minLimit={min}
+                                maxLimit={max}
+                                handleChange={onHandleChange}
+                                tooltip={numberOfPagesTooltip}
+                            />
                         </div>
                     </div>
                 </div>
-            );
-        })
-    )
-    .add("BloomAvatars", () =>
-        React.createElement(() => {
-            return (
-                <React.Fragment>
-                    <BloomAvatar
-                        email="test@example.com"
-                        name={"A B C D E F G"}
-                    />
-                    <BloomAvatar
-                        email="test@example.com"
-                        name={"A B C D E F G"}
-                        borderColor="green"
-                    />
-                    <BloomAvatar
-                        email="test@example.com"
-                        name={"A B C D E F G"}
-                        borderColor="#1d94a4"
-                    />
-                    <BloomAvatar email="test@example.com" name={"D E F G"} />
-                    <BloomAvatar
-                        email={"andrew" + "_polk" + "@sil.org"}
-                        name={"A B C D E F G"}
-                    />
-                    <BloomAvatar
-                        email={"andrew" + "_polk" + "@sil.org"}
-                        name={"A B C"}
-                        borderColor="#1d94a4"
-                    />
-                </React.Fragment>
-            );
-        })
-    )
-    .add("RadioGroup", () =>
-        React.createElement(() => {
-            return (
-                <RadioGroup
-                    choices={{
-                        short: "Short label",
-                        long:
-                            "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
-                    }}
-                    value={""}
-                    onChange={() => {}}
+            </div>
+        );
+    });
+
+export const BloomAvatars = () =>
+    React.createElement(() => {
+        return (
+            <React.Fragment>
+                <BloomAvatar email="test@example.com" name={"A B C D E F G"} />
+                <BloomAvatar
+                    email="test@example.com"
+                    name={"A B C D E F G"}
+                    borderColor="green"
                 />
-            );
-        })
-    );
+                <BloomAvatar
+                    email="test@example.com"
+                    name={"A B C D E F G"}
+                    borderColor="#1d94a4"
+                />
+                <BloomAvatar email="test@example.com" name={"D E F G"} />
+                <BloomAvatar
+                    email={"andrew" + "_polk" + "@sil.org"}
+                    name={"A B C D E F G"}
+                />
+                <BloomAvatar
+                    email={"andrew" + "_polk" + "@sil.org"}
+                    name={"A B C"}
+                    borderColor="#1d94a4"
+                />
+            </React.Fragment>
+        );
+    });
+
+BloomAvatars.story = {
+    name: "BloomAvatars"
+};
+
+export const _RadioGroup = () =>
+    React.createElement(() => {
+        return (
+            <RadioGroup
+                choices={{
+                    short: "Short label",
+                    long:
+                        "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                }}
+                value={""}
+                onChange={() => {}}
+            />
+        );
+    });
+
+_RadioGroup.story = {
+    name: "RadioGroup"
+};
 
 const selectItem1 = {
     name: "1st menu item",
@@ -545,33 +602,43 @@ const frameDivStyle: React.CSSProperties = {
     backgroundColor: "#F0F0F0" // winforms control background
 };
 
-storiesOf("Misc/Collection Settings", module)
-    .add("WinForms imitating Select", () =>
-        React.createElement(() => (
+export default {
+    title: "Misc/Collection Settings"
+};
+
+export const WinFormsImitatingSelect = () =>
+    React.createElement(() => (
+        <div style={frameDivStyle}>
+            <WinFormsStyleSelect
+                idKey="test1"
+                currentValue="Two"
+                onChangeHandler={() => {}}
+            >
+                {selectTestChildren}
+            </WinFormsStyleSelect>
+        </div>
+    ));
+
+WinFormsImitatingSelect.story = {
+    name: "WinForms imitating Select"
+};
+
+export const BookMakingTabPane = () =>
+    React.createElement(() => (
+        <div>
             <div style={frameDivStyle}>
-                <WinFormsStyleSelect
-                    idKey="test1"
-                    currentValue="Two"
-                    onChangeHandler={() => {}}
-                >
-                    {selectTestChildren}
-                </WinFormsStyleSelect>
+                <BookMakingSettingsControl />
             </div>
-        ))
-    )
-    .add("Book Making tab pane", () =>
-        React.createElement(() => (
-            <div>
-                <div style={frameDivStyle}>
-                    <BookMakingSettingsControl />
-                </div>
-                <Typography>
-                    Have Bloom running while testing this and the api calls will
-                    work.
-                </Typography>
-            </div>
-        ))
-    );
+            <Typography>
+                Have Bloom running while testing this and the api calls will
+                work.
+            </Typography>
+        </div>
+    ));
+
+BookMakingTabPane.story = {
+    name: "Book Making tab pane"
+};
 
 const playbackControlsDivStyles: React.CSSProperties = {
     width: "150px",
@@ -593,7 +660,11 @@ const bumpDown = (whichPositionToBump: number): void => {
     );
 };
 
-storiesOf("PlaybackOrderControls", module).add("PlaybackOrder buttons", () =>
+export default {
+    title: "PlaybackOrderControls"
+};
+
+export const PlaybackOrderButtons = () =>
     React.createElement(() => (
         <React.Fragment>
             <div style={playbackControlsDivStyles}>
@@ -621,8 +692,11 @@ storiesOf("PlaybackOrderControls", module).add("PlaybackOrder buttons", () =>
                 />
             </div>
         </React.Fragment>
-    ))
-);
+    ));
+
+PlaybackOrderButtons.story = {
+    name: "PlaybackOrder buttons"
+};
 
 const languages1: string[] = ["Kanuri", "Swahili"];
 const languages2: string[] = ["French", "Swahili"];
@@ -634,45 +708,67 @@ const languages3: string[] = [
 ];
 const uploadDate = "7/28/2020";
 const updateDate = "10/26/2020";
-storiesOf("BookInformationCards", module)
-    .add("Previously Uploaded", () =>
-        React.createElement(() => (
-            <BookInfoCard
-                title="02. Bigǝ Dinaro Gaana"
-                languages={languages1}
-                originalUpload={uploadDate}
-                lastUpdated={updateDate}
-            />
-        ))
-    )
-    .add("New Upload", () =>
-        React.createElement(() => (
-            <BookInfoCard title="02. Foo Bar" languages={languages2} />
-        ))
-    )
-    .add("Several languages", () =>
-        React.createElement(() => (
-            <BookInfoCard title="Foo Bar Extended" languages={languages3} />
-        ))
-    );
 
-// These components perform api calls. You'll need Bloom running
-// with a collection which doesn't have enterprise enabled if you
-// want things to show up as expected.
-storiesOf("RequiresBloomEnterprise", module)
-    .add("RequiresBloomEnterpriseNoticeDialog", () =>
-        React.createElement(() => <RequiresBloomEnterpriseNoticeDialog />)
-    )
-    .add("RequiresBloomEnterpriseDialog", () =>
-        React.createElement(() => (
-            <RequiresBloomEnterpriseDialog
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-            />
-        ))
-    )
-    .add("RequiresBloomEnterpriseNotice", () =>
-        React.createElement(() => <RequiresBloomEnterpriseNotice />)
-    )
-    .add("RequiresBloomEnterpriseOverlayWrapper", () =>
-        React.createElement(() => <RequiresBloomEnterpriseOverlayWrapper />)
-    );
+export default {
+    title: "BookInformationCards"
+};
+
+export const PreviouslyUploaded = () =>
+    React.createElement(() => (
+        <BookInfoCard
+            title="02. Bigǝ Dinaro Gaana"
+            languages={languages1}
+            originalUpload={uploadDate}
+            lastUpdated={updateDate}
+        />
+    ));
+
+export const NewUpload = () =>
+    React.createElement(() => (
+        <BookInfoCard title="02. Foo Bar" languages={languages2} />
+    ));
+
+export const SeveralLanguages = () =>
+    React.createElement(() => (
+        <BookInfoCard title="Foo Bar Extended" languages={languages3} />
+    ));
+
+SeveralLanguages.story = {
+    name: "Several languages"
+};
+
+export default {
+    title: "RequiresBloomEnterprise"
+};
+
+export const _RequiresBloomEnterpriseNoticeDialog = () =>
+    React.createElement(() => <RequiresBloomEnterpriseNoticeDialog />);
+
+_RequiresBloomEnterpriseNoticeDialog.story = {
+    name: "RequiresBloomEnterpriseNoticeDialog"
+};
+
+export const _RequiresBloomEnterpriseDialog = () =>
+    React.createElement(() => (
+        <RequiresBloomEnterpriseDialog
+            dialogEnvironment={normalDialogEnvironmentForStorybook}
+        />
+    ));
+
+_RequiresBloomEnterpriseDialog.story = {
+    name: "RequiresBloomEnterpriseDialog"
+};
+
+export const _RequiresBloomEnterpriseNotice = () =>
+    React.createElement(() => <RequiresBloomEnterpriseNotice />);
+
+_RequiresBloomEnterpriseNotice.story = {
+    name: "RequiresBloomEnterpriseNotice"
+};
+
+export const _RequiresBloomEnterpriseOverlayWrapper = () =>
+    React.createElement(() => <RequiresBloomEnterpriseOverlayWrapper />);
+
+_RequiresBloomEnterpriseOverlayWrapper.story = {
+    name: "RequiresBloomEnterpriseOverlayWrapper"
+};

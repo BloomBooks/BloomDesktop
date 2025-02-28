@@ -2,7 +2,7 @@
 import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { addDecorator, storiesOf } from "@storybook/react";
+import { addDecorator } from "@storybook/react";
 import { ReaderPublishScreen } from "./ReaderPublish/ReaderPublishScreen";
 import { DeviceAndControls } from "./commonPublish/DeviceAndControls";
 import { StorybookContext } from "../.storybook/StoryBookContext";
@@ -47,74 +47,101 @@ const testText =
         units: "paragraphs"
     }) + "<a target='_blank' href='https://google.com'>google.com</a>";
 
-storiesOf("Publish/ProgressDialog", module)
-    .add("Working", () => (
-        <div>
-            <ProgressDialogInner
-                progressState={ProgressState.Working}
-                messages={testText}
-                heading={"Working hard..."}
-                instruction={"Just sit there and watch it spin."}
-                onUserClosed={() => {}}
-                onUserStopped={() => {}}
-            />
-        </div>
-    ))
-    .add("Done", () => (
-        <div>
-            <ProgressDialogInner
-                progressState={ProgressState.Done}
-                messages={testText}
-                onUserClosed={() => {}}
-                onUserStopped={() => {}}
-            />
-        </div>
-    ))
-    .add("Error", () => (
-        <div>
-            <ProgressDialogInner
-                progressState={ProgressState.Done}
-                errorEncountered={true}
-                messages={testText}
-                heading={"Sky is falling"}
-                onUserClosed={() => {}}
-                onUserStopped={() => {}}
-            />
-        </div>
-    ));
+export default {
+    title: "Publish/ProgressDialog"
+};
 
-storiesOf("Publish/DeviceFrame", module)
-    .add("DeviceFrame Default Portrait, rotate-able", () => (
-        <DeviceAndControls defaultLandscape={false} canRotate={true} url="">
-            Portrait
-        </DeviceAndControls>
-    ))
-    .add("DeviceFrame Landscape only with Refresh button", () => (
-        <DeviceAndControls
-            defaultLandscape={true}
-            canRotate={false}
-            url=""
-            showPreviewButton={true}
-        >
-            Landscape
-        </DeviceAndControls>
-    ))
-    .add("DeviceFrame Landscape only with highlighted Refresh button", () => (
-        <DeviceAndControls
-            defaultLandscape={true}
-            canRotate={false}
-            url=""
-            showPreviewButton={true}
-            highlightPreviewButton={true}
-        >
-            Landscape
-        </DeviceAndControls>
-    ))
-    .add("DeviceFrame Landscape , rotate-able", () => (
-        <DeviceAndControls defaultLandscape={true} canRotate={true} url="">
-            Landscape
-        </DeviceAndControls>
-    ));
+export const _Working = () => (
+    <div>
+        <ProgressDialogInner
+            progressState={ProgressState.Working}
+            messages={testText}
+            heading={"Working hard..."}
+            instruction={"Just sit there and watch it spin."}
+            onUserClosed={() => {}}
+            onUserStopped={() => {}}
+        />
+    </div>
+);
+
+export const _Done = () => (
+    <div>
+        <ProgressDialogInner
+            progressState={ProgressState.Done}
+            messages={testText}
+            onUserClosed={() => {}}
+            onUserStopped={() => {}}
+        />
+    </div>
+);
+
+export const Error = () => (
+    <div>
+        <ProgressDialogInner
+            progressState={ProgressState.Done}
+            errorEncountered={true}
+            messages={testText}
+            heading={"Sky is falling"}
+            onUserClosed={() => {}}
+            onUserStopped={() => {}}
+        />
+    </div>
+);
+
+export default {
+    title: "Publish/DeviceFrame"
+};
+
+export const DeviceFrameDefaultPortraitRotateAble = () => (
+    <DeviceAndControls defaultLandscape={false} canRotate={true} url="">
+        Portrait
+    </DeviceAndControls>
+);
+
+DeviceFrameDefaultPortraitRotateAble.story = {
+    name: "DeviceFrame Default Portrait, rotate-able"
+};
+
+export const DeviceFrameLandscapeOnlyWithRefreshButton = () => (
+    <DeviceAndControls
+        defaultLandscape={true}
+        canRotate={false}
+        url=""
+        showPreviewButton={true}
+    >
+        Landscape
+    </DeviceAndControls>
+);
+
+DeviceFrameLandscapeOnlyWithRefreshButton.story = {
+    name: "DeviceFrame Landscape only with Refresh button"
+};
+
+export const DeviceFrameLandscapeOnlyWithHighlightedRefreshButton = () => (
+    <DeviceAndControls
+        defaultLandscape={true}
+        canRotate={false}
+        url=""
+        showPreviewButton={true}
+        highlightPreviewButton={true}
+    >
+        Landscape
+    </DeviceAndControls>
+);
+
+DeviceFrameLandscapeOnlyWithHighlightedRefreshButton.story = {
+    name: "DeviceFrame Landscape only with highlighted Refresh button"
+};
+
+export const DeviceFrameLandscapeRotateAble = () => (
+    <DeviceAndControls defaultLandscape={true} canRotate={true} url="">
+        Landscape
+    </DeviceAndControls>
+);
+
+DeviceFrameLandscapeRotateAble.story = {
+    name: "DeviceFrame Landscape , rotate-able"
+};
 
 const someButton = (
     <div>
@@ -144,45 +171,82 @@ const testMainPanelContents = (
     </div>
 );
 
-storiesOf("Publish/BaseTemplate", module)
-    .add("PublishScreenTemplate", () => (
-        <PublishScreenTemplate
-            bannerTitleEnglish="Publish as Audio or Video"
-            bannerTitleL10nId="PublishTab.RecordVideo.BannerTitle"
-            bannerDescriptionL10nId="PublishTab.RecordVideo.BannerDescription"
-            bannerDescriptionMarkdown="Create video files that you can upload to sites like Facebook and [YouTube](https://www.youtube.com). You can also make videos to share with people who use inexpensive “feature phones” and even audio-only files for listening."
-            bannerRightSideControls={someButton}
-            optionsPanelContents={optionHeader}
-        >
-            {testMainPanelContents}
-        </PublishScreenTemplate>
-    ))
-    .add("PublishScreenBanner/ePUB", () => (
-        <PublishScreenBanner
-            titleEnglish="Publish as ePUB"
-            titleL10nId="PublishTab.Epub.BannerTitle"
-        >
-            {someButton}
-        </PublishScreenBanner>
-    ));
+export default {
+    title: "Publish/BaseTemplate"
+};
 
-storiesOf("Publish/Bloom Reader", module).add("ReaderPublishScreen", () => (
-    <ReaderPublishScreen />
-));
+export const _PublishScreenTemplate = () => (
+    <PublishScreenTemplate
+        bannerTitleEnglish="Publish as Audio or Video"
+        bannerTitleL10nId="PublishTab.RecordVideo.BannerTitle"
+        bannerDescriptionL10nId="PublishTab.RecordVideo.BannerDescription"
+        bannerDescriptionMarkdown="Create video files that you can upload to sites like Facebook and [YouTube](https://www.youtube.com). You can also make videos to share with people who use inexpensive “feature phones” and even audio-only files for listening."
+        bannerRightSideControls={someButton}
+        optionsPanelContents={optionHeader}
+    >
+        {testMainPanelContents}
+    </PublishScreenTemplate>
+);
 
-storiesOf("Publish/Video", module).add("PublishAudioVideo", () => (
-    <PublishAudioVideo />
-));
+_PublishScreenTemplate.story = {
+    name: "PublishScreenTemplate"
+};
 
-storiesOf("Publish/ePUB", module)
-    .add("EPUBPublishScreen", () => <EPUBPublishScreen />)
-    .add("Book Metadata Dialog", () => (
-        <BookMetadataDialog
-            startOpen={true}
-            onClose={() => alert("BookMetadataDialog closed with OK")}
-        />
-    ))
-    .add("AccessibilityCheckScreen", () => <AccessibilityCheckScreen />);
+export const PublishScreenBannerEPub = () => (
+    <PublishScreenBanner
+        titleEnglish="Publish as ePUB"
+        titleL10nId="PublishTab.Epub.BannerTitle"
+    >
+        {someButton}
+    </PublishScreenBanner>
+);
+
+PublishScreenBannerEPub.story = {
+    name: "PublishScreenBanner/ePUB"
+};
+
+export default {
+    title: "Publish/Bloom Reader"
+};
+
+export const _ReaderPublishScreen = () => <ReaderPublishScreen />;
+
+_ReaderPublishScreen.story = {
+    name: "ReaderPublishScreen"
+};
+
+export default {
+    title: "Publish/Video"
+};
+
+export const _PublishAudioVideo = () => <PublishAudioVideo />;
+
+_PublishAudioVideo.story = {
+    name: "PublishAudioVideo"
+};
+
+export default {
+    title: "Publish/ePUB"
+};
+
+export const EpubPublishScreen = () => <EPUBPublishScreen />;
+
+EpubPublishScreen.story = {
+    name: "EPUBPublishScreen"
+};
+
+export const _BookMetadataDialog = () => (
+    <BookMetadataDialog
+        startOpen={true}
+        onClose={() => alert("BookMetadataDialog closed with OK")}
+    />
+);
+
+export const _AccessibilityCheckScreen = () => <AccessibilityCheckScreen />;
+
+_AccessibilityCheckScreen.story = {
+    name: "AccessibilityCheckScreen"
+};
 
 const propsObject: IUploadCollisionDlgData = {
     userEmail: "testEmail@sil.org",
@@ -199,26 +263,36 @@ const propsObject: IUploadCollisionDlgData = {
 
 const lotsOfLanguages = ["Sokoro", "English", "Swahili", "Hausa"];
 
-storiesOf("Publish/Web", module)
-    .add("LibraryPublishScreen", () =>
-        React.createElement(() => <LibraryPublishScreen />)
-    )
-    .add("Upload Collision Dialog", () =>
-        React.createElement(() => (
-            <UploadCollisionDlg
-                {...propsObject}
-                conflictIndex={0}
-                setConflictIndex={() => {}}
-            />
-        ))
-    )
-    .add("Upload Collision Dialog -- lots of languages", () =>
-        React.createElement(() => (
-            <UploadCollisionDlg
-                {...propsObject}
-                newLanguages={lotsOfLanguages}
-                conflictIndex={0}
-                setConflictIndex={() => {}}
-            />
-        ))
-    );
+export default {
+    title: "Publish/Web"
+};
+
+export const _LibraryPublishScreen = () =>
+    React.createElement(() => <LibraryPublishScreen />);
+
+_LibraryPublishScreen.story = {
+    name: "LibraryPublishScreen"
+};
+
+export const UploadCollisionDialog = () =>
+    React.createElement(() => (
+        <UploadCollisionDlg
+            {...propsObject}
+            conflictIndex={0}
+            setConflictIndex={() => {}}
+        />
+    ));
+
+export const UploadCollisionDialogLotsOfLanguages = () =>
+    React.createElement(() => (
+        <UploadCollisionDlg
+            {...propsObject}
+            newLanguages={lotsOfLanguages}
+            conflictIndex={0}
+            setConflictIndex={() => {}}
+        />
+    ));
+
+UploadCollisionDialogLotsOfLanguages.story = {
+    name: "Upload Collision Dialog -- lots of languages"
+};
