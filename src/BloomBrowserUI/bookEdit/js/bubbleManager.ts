@@ -4341,7 +4341,7 @@ export class BubbleManager {
             defaultNewTextLanguage +
             "'><p></p></div>";
 
-        const transGroupDivClasses = `bloom-translationGroup bloom-leadingElement ${userDefinedStyle}-style`;
+        const transGroupDivClasses = `bloom-translationGroup bloom-leadingElement`;
         const transGroupHtml =
             "<div class='" +
             transGroupDivClasses +
