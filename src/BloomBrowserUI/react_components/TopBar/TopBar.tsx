@@ -1,9 +1,9 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import * as CollectionTabIcon from "./CollectionsTab.svg";
-import * as EditTabIcon from "./EditTab.svg";
-import * as PublishTabIcon from "./PublishTab.svg";
+import CollectionTabIcon from "./CollectionsTab.svg";
+import EditTabIcon from "./EditTab.svg";
+import PublishTabIcon from "./PublishTab.svg";
 
 const tabs = [
     { name: "Collections", svg: CollectionTabIcon, height: 32 },
@@ -25,7 +25,7 @@ export const TopBar: React.FunctionComponent = () => {
 };
 
 const Tab: React.FunctionComponent<{
-    tab: { name: string; svg: string; height: number };
+    tab: { name: string; svg: React.ReactNode; height: number };
     selected: boolean;
     select: () => void;
 }> = props => {
@@ -67,12 +67,7 @@ const Tab: React.FunctionComponent<{
                 // when clicked, add "selected" class to this tab
                 onClick={props.select}
             >
-                <img
-                    src={props.tab.svg}
-                    css={css`
-                        height: ${props.tab.height}px;
-                    `}
-                />
+                {props.tab.svg}
                 {props.tab.name}
             </a>
         </li>
