@@ -5,7 +5,7 @@ import { jsx, css } from "@emotion/react";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import * as React from "react";
-import { storiesOf, addDecorator } from "@storybook/react";
+import { addDecorator } from "@storybook/react";
 import { StorybookContext } from "../.storybook/StoryBookContext";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import { getBloomButton } from "./TeamCollectionBookStatusPanel";
@@ -90,237 +90,322 @@ const avatar = (lockedByMe: boolean) => (
 // an undefined input.
 let emptyAvatarForProblemState: JSX.Element = (undefined as any) as JSX.Element;
 
-storiesOf("Team Collection components/StatusPanelCommon", module)
-    .add("Available", () =>
-        testPage(
-            <StatusPanelCommon
-                title="This book is available for editing"
-                subTitle="When you check it out, no one on the team will be able to modify it or see your changes until you check it back in."
-                icon={<img src={"Team Collection.svg"} alt="available" />}
-                button={getBloomButton(
-                    "Check out book",
-                    "TeamCollection.Checkout",
-                    "someOtherClass",
-                    "Check Out.svg"
-                )}
-            />
-        )
-    )
-    .add("Checked out by me", () => {
-        const messageLogStub = ( // copied from TCBookStatusPanel.tsx
-            <div
-                css={css`
-                    width: 320px;
-                `}
-            >
-                <div
-                    css={css`
-                        font-size: 11px;
-                    `}
-                >
-                    {"What changes did you make?"}
-                </div>
-                <input
-                    css={css`
-                        background-color: transparent;
-                        color: ${kBloomYellow};
-                        width: 100%;
-                        border: 1px solid #ffffffcc;
-                        border-radius: 4px;
-                        height: 36px;
-                    `}
-                    type="text"
-                    value={
-                        "test checkin message that's actually quite longish."
-                    }
-                    autoFocus={true}
-                    key="message"
-                />
-            </div>
-        );
+export default {
+    title: "Team Collection components/StatusPanelCommon"
+};
 
-        return testPage(
-            <StatusPanelCommon
-                title="This book is checked out to you"
-                subTitle="Are you done for now? Click this button to send your changes to your team."
-                icon={avatar(true)}
-                button={checkinButton}
-                useWarningColorForButton={true}
-                menu={<div style={menuStyles}>Menu</div>}
-            >
-                {messageLogStub}
-            </StatusPanelCommon>
-        );
-    })
-    .add("Checked out by (Fred)", () =>
-        testPage(
-            <StatusPanelCommon
-                title="This book is checked out to Fred"
-                subTitle="You cannot edit the book until Fred checks it in."
-                icon={avatar(false)}
-            >
-                {getLockedInfoChild(
-                    "Fred checked out this book on 10 February 2021."
-                )}
-            </StatusPanelCommon>
-        )
-    )
-    .add("Conflicting Change state", () =>
-        testPage(
-            <StatusPanelCommon
-                title="The Team Collection folder received a changed version of the book you were editing."
-                subTitle="The Checkin/Checkout system should normally prevent this, but it has happened. Bloom cannot automatically join the work that came in with the work you were doing; you will need Bloom team support for that. Bloom will move your version of the book to the Team Collection Lost & Found when you Reload."
-                icon={emptyAvatarForProblemState}
-                button={reloadButton}
-            >
-                {getLockedInfoChild("")}
-            </StatusPanelCommon>
-        )
-    )
-    .add("Checked out by me on MyTablet", () =>
-        testPage(
-            <StatusPanelCommon
-                title="This book is checked out to you, but on a different computer"
-                subTitle="You cannot edit the book on this computer, until you check it in on MyTablet."
-                icon={avatar(false)}
-            >
-                {getLockedInfoChild(
-                    "You checked out this book on 14 February 2021."
-                )}
-            </StatusPanelCommon>
-        )
+export const Available = () =>
+    testPage(
+        <StatusPanelCommon
+            title="This book is available for editing"
+            subTitle="When you check it out, no one on the team will be able to modify it or see your changes until you check it back in."
+            icon={<img src={"Team Collection.svg"} alt="available" />}
+            button={getBloomButton(
+                "Check out book",
+                "TeamCollection.Checkout",
+                "someOtherClass",
+                "Check Out.svg"
+            )}
+        />
     );
 
-storiesOf("Team Collection components/JoinTeamCollection", module)
-    .add("new collection", () => (
-        <div id="reactRoot" className="JoinTeamCollection">
-            <JoinTeamCollectionDialog
-                collectionName="foobar"
-                existingCollection={false}
-                isAlreadyTcCollection={false}
-                isCurrentCollection={false}
-                isSameCollection={false}
-                existingCollectionFolder=""
-                conflictingCollection=""
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-            />
-        </div>
-    ))
-    .add("existing collection", () => (
-        <div id="reactRoot" className="JoinTeamCollection">
-            <JoinTeamCollectionDialog
-                collectionName="foobar"
-                existingCollection={true}
-                isAlreadyTcCollection={false}
-                isCurrentCollection={false}
-                isSameCollection={false}
-                existingCollectionFolder="somewhere"
-                conflictingCollection=""
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-            />
-        </div>
-    ))
-    .add("existing TC collection, same location and guid", () => (
-        <div id="reactRoot" className="JoinTeamCollection">
-            <JoinTeamCollectionDialog
-                collectionName="foobar"
-                existingCollection={true}
-                isAlreadyTcCollection={true}
-                isCurrentCollection={true}
-                isSameCollection={true}
-                existingCollectionFolder="some good place"
-                conflictingCollection=""
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-            />
-        </div>
-    ))
-    .add("existing TC collection, different location same guid", () => (
-        <div id="reactRoot" className="JoinTeamCollection">
-            <JoinTeamCollectionDialog
-                collectionName="foobar"
-                existingCollection={true}
-                isAlreadyTcCollection={true}
-                isCurrentCollection={false}
-                isSameCollection={true}
-                existingCollectionFolder="some good place"
-                conflictingCollection="some bad place"
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-            />
-        </div>
-    ))
-    .add("existing TC collection, different location and guid", () => (
-        <div id="reactRoot" className="JoinTeamCollection">
-            <JoinTeamCollectionDialog
-                collectionName="foobar"
-                existingCollection={true}
-                isAlreadyTcCollection={true}
-                isCurrentCollection={false}
-                isSameCollection={false}
-                existingCollectionFolder="some good place"
-                conflictingCollection="some bad place"
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-            />
-        </div>
-    ))
-    .add("existing collection, bare frame", () => (
-        <div id="reactRoot" className="JoinTeamCollection">
-            <JoinTeamCollectionDialog
-                collectionName="foobar"
-                existingCollection={true}
-                isAlreadyTcCollection={false}
-                isCurrentCollection={false}
-                isSameCollection={false}
-                existingCollectionFolder="somewhere"
-                conflictingCollection=""
-                dialogEnvironment={{
-                    dialogFrameProvidedExternally: true,
-                    initiallyOpen: true
-                }}
-            />
-        </div>
-    ));
-
-storiesOf("Team Collection components/TeamCollectionDialog", module)
-    .add("With reload button", () => (
-        <StorybookDialogWrapper
-            id="TeamCollectionDialog"
-            params={{ showReloadButton: true }}
+export const CheckedOutByMe = () => {
+    const messageLogStub = ( // copied from TCBookStatusPanel.tsx
+        <div
+            css={css`
+                width: 320px;
+            `}
         >
-            <TeamCollectionDialogLauncher />
-        </StorybookDialogWrapper>
-    ))
-    .add("Without reload button", () => (
-        <StorybookDialogWrapper
-            id="TeamCollectionDialog"
-            params={{ showReloadButton: false }}
+            <div
+                css={css`
+                    font-size: 11px;
+                `}
+            >
+                {"What changes did you make?"}
+            </div>
+            <input
+                css={css`
+                    background-color: transparent;
+                    color: ${kBloomYellow};
+                    width: 100%;
+                    border: 1px solid #ffffffcc;
+                    border-radius: 4px;
+                    height: 36px;
+                `}
+                type="text"
+                value={"test checkin message that's actually quite longish."}
+                autoFocus={true}
+                key="message"
+            />
+        </div>
+    );
+
+    return testPage(
+        <StatusPanelCommon
+            title="This book is checked out to you"
+            subTitle="Are you done for now? Click this button to send your changes to your team."
+            icon={avatar(true)}
+            button={checkinButton}
+            useWarningColorForButton={true}
+            menu={<div style={menuStyles}>Menu</div>}
         >
-            <TeamCollectionDialogLauncher />
-        </StorybookDialogWrapper>
-    ));
+            {messageLogStub}
+        </StatusPanelCommon>
+    );
+};
 
-storiesOf(
-    "Team Collection components",
-    module
-).add("TeamCollectionSettingsPanel", () => <TeamCollectionSettingsPanel />);
+CheckedOutByMe.story = {
+    name: "Checked out by me"
+};
 
-storiesOf("Team Collection components/CreateTeamCollection", module)
-    .add("CreateTeamCollection Dialog", () => (
-        <CreateTeamCollectionDialog
+export const CheckedOutByFred = () =>
+    testPage(
+        <StatusPanelCommon
+            title="This book is checked out to Fred"
+            subTitle="You cannot edit the book until Fred checks it in."
+            icon={avatar(false)}
+        >
+            {getLockedInfoChild(
+                "Fred checked out this book on 10 February 2021."
+            )}
+        </StatusPanelCommon>
+    );
+
+CheckedOutByFred.story = {
+    name: "Checked out by (Fred)"
+};
+
+export const ConflictingChangeState = () =>
+    testPage(
+        <StatusPanelCommon
+            title="The Team Collection folder received a changed version of the book you were editing."
+            subTitle="The Checkin/Checkout system should normally prevent this, but it has happened. Bloom cannot automatically join the work that came in with the work you were doing; you will need Bloom team support for that. Bloom will move your version of the book to the Team Collection Lost & Found when you Reload."
+            icon={emptyAvatarForProblemState}
+            button={reloadButton}
+        >
+            {getLockedInfoChild("")}
+        </StatusPanelCommon>
+    );
+
+ConflictingChangeState.story = {
+    name: "Conflicting Change state"
+};
+
+export const CheckedOutByMeOnMyTablet = () =>
+    testPage(
+        <StatusPanelCommon
+            title="This book is checked out to you, but on a different computer"
+            subTitle="You cannot edit the book on this computer, until you check it in on MyTablet."
+            icon={avatar(false)}
+        >
+            {getLockedInfoChild(
+                "You checked out this book on 14 February 2021."
+            )}
+        </StatusPanelCommon>
+    );
+
+CheckedOutByMeOnMyTablet.story = {
+    name: "Checked out by me on MyTablet"
+};
+
+export default {
+    title: "Team Collection components/JoinTeamCollection"
+};
+
+export const NewCollection = () => (
+    <div id="reactRoot" className="JoinTeamCollection">
+        <JoinTeamCollectionDialog
+            collectionName="foobar"
+            existingCollection={false}
+            isAlreadyTcCollection={false}
+            isCurrentCollection={false}
+            isSameCollection={false}
+            existingCollectionFolder=""
+            conflictingCollection=""
             dialogEnvironment={normalDialogEnvironmentForStorybook}
         />
-    ))
-    .add("CreateTeamCollection Dialog showing path", () => (
-        <CreateTeamCollectionDialog
+    </div>
+);
+
+NewCollection.story = {
+    name: "new collection"
+};
+
+export const ExistingCollection = () => (
+    <div id="reactRoot" className="JoinTeamCollection">
+        <JoinTeamCollectionDialog
+            collectionName="foobar"
+            existingCollection={true}
+            isAlreadyTcCollection={false}
+            isCurrentCollection={false}
+            isSameCollection={false}
+            existingCollectionFolder="somewhere"
+            conflictingCollection=""
             dialogEnvironment={normalDialogEnvironmentForStorybook}
-            defaultRepoFolder="z:\Enim aute dolore ex voluptate commodo\"
         />
-    ))
-    .add("CreateTeamCollection Dialog showing error", () => (
-        <CreateTeamCollectionDialog
+    </div>
+);
+
+ExistingCollection.story = {
+    name: "existing collection"
+};
+
+export const ExistingTcCollectionSameLocationAndGuid = () => (
+    <div id="reactRoot" className="JoinTeamCollection">
+        <JoinTeamCollectionDialog
+            collectionName="foobar"
+            existingCollection={true}
+            isAlreadyTcCollection={true}
+            isCurrentCollection={true}
+            isSameCollection={true}
+            existingCollectionFolder="some good place"
+            conflictingCollection=""
             dialogEnvironment={normalDialogEnvironmentForStorybook}
-            errorForTesting="Commodo veniam laboris ut ut ea laboris Lorem Lorem laborum enim minim velit."
         />
-    ));
+    </div>
+);
+
+ExistingTcCollectionSameLocationAndGuid.story = {
+    name: "existing TC collection, same location and guid"
+};
+
+export const ExistingTcCollectionDifferentLocationSameGuid = () => (
+    <div id="reactRoot" className="JoinTeamCollection">
+        <JoinTeamCollectionDialog
+            collectionName="foobar"
+            existingCollection={true}
+            isAlreadyTcCollection={true}
+            isCurrentCollection={false}
+            isSameCollection={true}
+            existingCollectionFolder="some good place"
+            conflictingCollection="some bad place"
+            dialogEnvironment={normalDialogEnvironmentForStorybook}
+        />
+    </div>
+);
+
+ExistingTcCollectionDifferentLocationSameGuid.story = {
+    name: "existing TC collection, different location same guid"
+};
+
+export const ExistingTcCollectionDifferentLocationAndGuid = () => (
+    <div id="reactRoot" className="JoinTeamCollection">
+        <JoinTeamCollectionDialog
+            collectionName="foobar"
+            existingCollection={true}
+            isAlreadyTcCollection={true}
+            isCurrentCollection={false}
+            isSameCollection={false}
+            existingCollectionFolder="some good place"
+            conflictingCollection="some bad place"
+            dialogEnvironment={normalDialogEnvironmentForStorybook}
+        />
+    </div>
+);
+
+ExistingTcCollectionDifferentLocationAndGuid.story = {
+    name: "existing TC collection, different location and guid"
+};
+
+export const ExistingCollectionBareFrame = () => (
+    <div id="reactRoot" className="JoinTeamCollection">
+        <JoinTeamCollectionDialog
+            collectionName="foobar"
+            existingCollection={true}
+            isAlreadyTcCollection={false}
+            isCurrentCollection={false}
+            isSameCollection={false}
+            existingCollectionFolder="somewhere"
+            conflictingCollection=""
+            dialogEnvironment={{
+                dialogFrameProvidedExternally: true,
+                initiallyOpen: true
+            }}
+        />
+    </div>
+);
+
+ExistingCollectionBareFrame.story = {
+    name: "existing collection, bare frame"
+};
+
+export default {
+    title: "Team Collection components/TeamCollectionDialog"
+};
+
+export const WithReloadButton = () => (
+    <StorybookDialogWrapper
+        id="TeamCollectionDialog"
+        params={{ showReloadButton: true }}
+    >
+        <TeamCollectionDialogLauncher />
+    </StorybookDialogWrapper>
+);
+
+WithReloadButton.story = {
+    name: "With reload button"
+};
+
+export const WithoutReloadButton = () => (
+    <StorybookDialogWrapper
+        id="TeamCollectionDialog"
+        params={{ showReloadButton: false }}
+    >
+        <TeamCollectionDialogLauncher />
+    </StorybookDialogWrapper>
+);
+
+WithoutReloadButton.story = {
+    name: "Without reload button"
+};
+
+export default {
+    title: "Team Collection components"
+};
+
+export const _TeamCollectionSettingsPanel = () => (
+    <TeamCollectionSettingsPanel />
+);
+
+_TeamCollectionSettingsPanel.story = {
+    name: "TeamCollectionSettingsPanel"
+};
+
+export default {
+    title: "Team Collection components/CreateTeamCollection"
+};
+
+export const _CreateTeamCollectionDialog = () => (
+    <CreateTeamCollectionDialog
+        dialogEnvironment={normalDialogEnvironmentForStorybook}
+    />
+);
+
+_CreateTeamCollectionDialog.story = {
+    name: "CreateTeamCollection Dialog"
+};
+
+export const CreateTeamCollectionDialogShowingPath = () => (
+    <CreateTeamCollectionDialog
+        dialogEnvironment={normalDialogEnvironmentForStorybook}
+        defaultRepoFolder="z:\Enim aute dolore ex voluptate commodo\"
+    />
+);
+
+CreateTeamCollectionDialogShowingPath.story = {
+    name: "CreateTeamCollection Dialog showing path"
+};
+
+export const CreateTeamCollectionDialogShowingError = () => (
+    <CreateTeamCollectionDialog
+        dialogEnvironment={normalDialogEnvironmentForStorybook}
+        errorForTesting="Commodo veniam laboris ut ut ea laboris Lorem Lorem laborum enim minim velit."
+    />
+);
+
+CreateTeamCollectionDialogShowingError.story = {
+    name: "CreateTeamCollection Dialog showing error"
+};
 
 const menuItems: (SimpleMenuItem | "-")[] = [
     {
@@ -338,21 +423,30 @@ const menuBoxStyles: React.CSSProperties = {
     width: 150
 };
 
-storiesOf("Team Collection components/Menu component", module).add(
-    "SimpleMenu test",
-    () => (
-        <div style={menuBoxStyles}>
-            <SimpleMenu
-                text="..."
-                l10nKey="Common.Ellipsis"
-                temporarilyDisableI18nWarning={true}
-                items={menuItems}
-            ></SimpleMenu>
-        </div>
-    )
+export default {
+    title: "Team Collection components/Menu component"
+};
+
+export const SimpleMenuTest = () => (
+    <div style={menuBoxStyles}>
+        <SimpleMenu
+            text="..."
+            l10nKey="Common.Ellipsis"
+            temporarilyDisableI18nWarning={true}
+            items={menuItems}
+        ></SimpleMenu>
+    </div>
 );
 
-storiesOf("BloomDialog", module).add("Test drag & resize", () => (
+SimpleMenuTest.story = {
+    name: "SimpleMenu test"
+};
+
+export default {
+    title: "BloomDialog"
+};
+
+export const TestDragResize = () => (
     <BloomDialog onClose={() => undefined} open={true}>
         <DialogTitle title="Drag Me" />
         <DialogMiddle>
@@ -371,4 +465,8 @@ storiesOf("BloomDialog", module).add("Test drag & resize", () => (
             <DialogCancelButton onClick_DEPRECATED={() => undefined} />
         </DialogBottomButtons>
     </BloomDialog>
-));
+);
+
+TestDragResize.story = {
+    name: "Test drag & resize"
+};

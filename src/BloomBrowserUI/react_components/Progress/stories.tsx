@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { addDecorator, storiesOf } from "@storybook/react";
+import { addDecorator } from "@storybook/react";
 import { ProgressDialog } from "./ProgressDialog";
 import WebSocketManager, {
     IBloomWebSocketProgressEvent
@@ -40,32 +40,36 @@ const noFrameProps = {
     }
 };
 
-storiesOf("Progress/Progress Box", module).add(
-    "Raw ProgressBox with preloaded log",
-    () => {
-        return React.createElement(() => {
-            return (
-                <ProgressBox
-                    preloadedProgressEvents={[
-                        {
-                            id: "message",
-                            clientContext: "unused",
-                            message: "This is a preloaded log message",
-                            progressKind: "Progress"
-                        },
-                        {
-                            id: "message",
-                            clientContext: "unused",
-                            message:
-                                "This is a message about an error in the past",
-                            progressKind: "Error"
-                        }
-                    ]}
-                />
-            );
-        });
-    }
-);
+export default {
+    title: "Progress/Progress Box"
+};
+
+export const RawProgressBoxWithPreloadedLog = () => {
+    return React.createElement(() => {
+        return (
+            <ProgressBox
+                preloadedProgressEvents={[
+                    {
+                        id: "message",
+                        clientContext: "unused",
+                        message: "This is a preloaded log message",
+                        progressKind: "Progress"
+                    },
+                    {
+                        id: "message",
+                        clientContext: "unused",
+                        message: "This is a message about an error in the past",
+                        progressKind: "Error"
+                    }
+                ]}
+            />
+        );
+    });
+};
+
+RawProgressBoxWithPreloadedLog.story = {
+    name: "Raw ProgressBox with preloaded log"
+};
 
 function sendEvents(events: Array<IStoryMessage>) {
     sendNextEvent([...events]);
@@ -179,136 +183,154 @@ const kLongListOfAllTypes: Array<IStoryMessage> = [
     }
 ];
 
-storiesOf("Progress/Progress Dialog", module)
-    .add("Short, with report button if there is an error", () => {
-        const [isOpen, setIsOpen] = React.useState(true);
-        return React.createElement(() => {
-            return (
-                <ProgressDialog
-                    title="Short, with report button eventually"
-                    titleColor="white"
-                    titleBackgroundColor={kBloomBlue}
-                    titleIcon="Team Collection.svg"
-                    showReportButton={"if-error"}
-                    onReadyToReceive={() =>
-                        sendEvents([
-                            {
-                                k: "Progress",
-                                m: "Doing something.",
-                                progress: "indefinite"
-                            },
-                            {
-                                k: "Progress",
-                                m:
-                                    "This one should take 3 seconds to complete, and the progress spinner should be showing during this time.",
-                                delay: 3000,
-                                progress: "indefinite"
-                            },
-                            {
-                                k: "Error",
-                                m:
-                                    "This error should cause the title bar to go red and the report button to become available when the dialog is finished."
-                            },
-                            {
-                                id: "show-buttons"
-                            },
-                            {
-                                id: "finished"
-                            }
-                        ])
-                    }
-                    open={isOpen}
-                    onClose={() => {
-                        setIsOpen(false);
-                    }}
-                    dialogEnvironment={normalDialogEnvironmentForStorybook}
-                />
-            );
-        });
-    })
-    .add("Long", () => {
-        const [isOpen, setIsOpen] = React.useState(true);
-        return React.createElement(() => {
-            return (
-                <ProgressDialog
-                    key="long"
-                    title="A Long Progress Dialog"
-                    titleColor="black"
-                    titleBackgroundColor="transparent"
-                    showReportButton={"never"}
-                    onReadyToReceive={() => sendEvents(kLongListOfAllTypes)}
-                    open={isOpen}
-                    onClose={() => {
-                        setIsOpen(false);
-                    }}
-                    dialogEnvironment={normalDialogEnvironmentForStorybook}
-                />
-            );
-        });
-    })
-    .add("Not wrapped in a dialog", () => {
-        const [isOpen, setIsOpen] = React.useState(true);
-        return React.createElement(() => {
-            return (
-                <ProgressDialog
-                    title="Not wrapped in a material dialog (i.e. as when wrapped by winform dialog)"
-                    titleColor="white"
-                    titleBackgroundColor="green"
-                    showReportButton={"never"}
-                    open={isOpen}
-                    onClose={() => {
-                        setIsOpen(false);
-                    }}
-                    onReadyToReceive={() =>
-                        sendEvents([
-                            {
-                                k: "Progress",
-                                m:
-                                    "This one is not wrapped in a material dialog, in order to test expanding out to whatever width is available, like we need when wrapping in a winforms dialog. 1 of 3 messages.",
-                                progress: "indefinite"
-                            },
-                            {
-                                k: "Progress",
-                                m: "2 of 3",
-                                progress: "indefinite"
-                            },
-                            {
-                                k: "Progress",
-                                m: "3 of 3",
-                                progress: "indefinite"
-                            },
-                            {
-                                id: "show-buttons"
-                            },
-                            {
-                                id: "finished"
-                            }
-                        ])
-                    }
-                    {...noFrameProps}
-                />
-            );
-        });
-    })
-    .add("Not wrapped in a dialog, long vertically", () => {
-        const [isOpen, setIsOpen] = React.useState(true);
-        return React.createElement(() => {
-            return (
-                <ProgressDialog
-                    title="Not wrapped in a material dialog (i.e. as when wrapped by winform dialog)"
-                    titleColor="white"
-                    titleBackgroundColor="green"
-                    showReportButton={"never"}
-                    open={isOpen}
-                    onClose={() => {
-                        setIsOpen(false);
-                    }}
-                    onReadyToReceive={() => sendEvents(kLongListOfAllTypes)}
-                    {...noFrameProps}
-                />
-            );
-        });
+export default {
+    title: "Progress/Progress Dialog"
+};
+
+export const ShortWithReportButtonIfThereIsAnError = () => {
+    const [isOpen, setIsOpen] = React.useState(true);
+    return React.createElement(() => {
+        return (
+            <ProgressDialog
+                title="Short, with report button eventually"
+                titleColor="white"
+                titleBackgroundColor={kBloomBlue}
+                titleIcon="Team Collection.svg"
+                showReportButton={"if-error"}
+                onReadyToReceive={() =>
+                    sendEvents([
+                        {
+                            k: "Progress",
+                            m: "Doing something.",
+                            progress: "indefinite"
+                        },
+                        {
+                            k: "Progress",
+                            m:
+                                "This one should take 3 seconds to complete, and the progress spinner should be showing during this time.",
+                            delay: 3000,
+                            progress: "indefinite"
+                        },
+                        {
+                            k: "Error",
+                            m:
+                                "This error should cause the title bar to go red and the report button to become available when the dialog is finished."
+                        },
+                        {
+                            id: "show-buttons"
+                        },
+                        {
+                            id: "finished"
+                        }
+                    ])
+                }
+                open={isOpen}
+                onClose={() => {
+                    setIsOpen(false);
+                }}
+                dialogEnvironment={normalDialogEnvironmentForStorybook}
+            />
+        );
     });
+};
+
+ShortWithReportButtonIfThereIsAnError.story = {
+    name: "Short, with report button if there is an error"
+};
+
+export const Long = () => {
+    const [isOpen, setIsOpen] = React.useState(true);
+    return React.createElement(() => {
+        return (
+            <ProgressDialog
+                key="long"
+                title="A Long Progress Dialog"
+                titleColor="black"
+                titleBackgroundColor="transparent"
+                showReportButton={"never"}
+                onReadyToReceive={() => sendEvents(kLongListOfAllTypes)}
+                open={isOpen}
+                onClose={() => {
+                    setIsOpen(false);
+                }}
+                dialogEnvironment={normalDialogEnvironmentForStorybook}
+            />
+        );
+    });
+};
+
+export const NotWrappedInADialog = () => {
+    const [isOpen, setIsOpen] = React.useState(true);
+    return React.createElement(() => {
+        return (
+            <ProgressDialog
+                title="Not wrapped in a material dialog (i.e. as when wrapped by winform dialog)"
+                titleColor="white"
+                titleBackgroundColor="green"
+                showReportButton={"never"}
+                open={isOpen}
+                onClose={() => {
+                    setIsOpen(false);
+                }}
+                onReadyToReceive={() =>
+                    sendEvents([
+                        {
+                            k: "Progress",
+                            m:
+                                "This one is not wrapped in a material dialog, in order to test expanding out to whatever width is available, like we need when wrapping in a winforms dialog. 1 of 3 messages.",
+                            progress: "indefinite"
+                        },
+                        {
+                            k: "Progress",
+                            m: "2 of 3",
+                            progress: "indefinite"
+                        },
+                        {
+                            k: "Progress",
+                            m: "3 of 3",
+                            progress: "indefinite"
+                        },
+                        {
+                            id: "show-buttons"
+                        },
+                        {
+                            id: "finished"
+                        }
+                    ])
+                }
+                {...noFrameProps}
+            />
+        );
+    });
+};
+
+NotWrappedInADialog.story = {
+    name: "Not wrapped in a dialog"
+};
+
+export const NotWrappedInADialogLongVertically = () => {
+    const [isOpen, setIsOpen] = React.useState(true);
+    return React.createElement(() => {
+        return (
+            <ProgressDialog
+                title="Not wrapped in a material dialog (i.e. as when wrapped by winform dialog)"
+                titleColor="white"
+                titleBackgroundColor="green"
+                showReportButton={"never"}
+                open={isOpen}
+                onClose={() => {
+                    setIsOpen(false);
+                }}
+                onReadyToReceive={() => sendEvents(kLongListOfAllTypes)}
+                {...noFrameProps}
+            />
+        );
+    });
+};
+
+NotWrappedInADialogLongVertically.story = {
+    name: "Not wrapped in a dialog, long vertically"
+};
 
 const barFrame = (progressBar: JSX.Element) => (
     <div
@@ -325,7 +347,24 @@ const barFrame = (progressBar: JSX.Element) => (
     </div>
 );
 
-storiesOf("Progress/Progress Bar", module)
-    .add("20%", () => barFrame(<ProgressBar percentage={20} />))
-    .add("100%", () => barFrame(<ProgressBar percentage={100} />))
-    .add("0%", () => barFrame(<ProgressBar percentage={0} />));
+export default {
+    title: "Progress/Progress Bar"
+};
+
+export const _20 = () => barFrame(<ProgressBar percentage={20} />);
+
+_20.story = {
+    name: "20%"
+};
+
+export const _100 = () => barFrame(<ProgressBar percentage={100} />);
+
+_100.story = {
+    name: "100%"
+};
+
+export const _0 = () => barFrame(<ProgressBar percentage={0} />);
+
+_0.story = {
+    name: "0%"
+};

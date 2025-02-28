@@ -1,14 +1,18 @@
 import * as React from "react";
 
-import { storiesOf } from "@storybook/react";
 import { BulkBloomPubDialog } from "./BulkBloomPubDialog";
 import { normalDialogEnvironmentForStorybook } from "../../../react_components/BloomDialog/BloomDialogPlumbing";
 
-storiesOf("Bulk Bloompub Dialog", module).add(
-    "NotifyUser, Report & Retry",
-    () => (
-        <BulkBloomPubDialog
-            dialogEnvironment={normalDialogEnvironmentForStorybook}
-        />
-    )
+export default {
+    title: "Bulk Bloompub Dialog"
+};
+
+export const NotifyUserReportRetry = () => (
+    <BulkBloomPubDialog
+        dialogEnvironment={normalDialogEnvironmentForStorybook}
+    />
 );
+
+NotifyUserReportRetry.story = {
+    name: "NotifyUser, Report & Retry"
+};

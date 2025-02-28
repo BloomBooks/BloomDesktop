@@ -1,5 +1,4 @@
 import * as React from "react";
-import { storiesOf } from "@storybook/react";
 import { PerformanceLogPage } from "./PerformanceLogPage";
 
 /* this is causing lots of errors when Bloom isn't running, possibly interfering with other stories.

@@ -2,7 +2,6 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { storiesOf } from "@storybook/react";
 import { BooksOnBlorgProgressBar } from "./BooksOnBlorgProgressBar";
 
 const barFrame = (progressBar: JSX.Element) => (
@@ -18,6 +17,8 @@ const barFrame = (progressBar: JSX.Element) => (
     </div>
 );
 
-storiesOf("Books on Blorg/Progress", module).add("Default", () =>
-    barFrame(<BooksOnBlorgProgressBar />)
-);
+export default {
+    title: "Books on Blorg/Progress"
+};
+
+export const Default = () => barFrame(<BooksOnBlorgProgressBar />);

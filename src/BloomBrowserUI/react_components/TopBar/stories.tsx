@@ -1,7 +1,14 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import { storiesOf } from "@storybook/react";
 import { TopBar } from "./TopBar";
 
-storiesOf("TopBar", module).add("TopBar", () => <TopBar />);
+export default {
+    title: "TopBar"
+};
+
+export const _TopBar = () => <TopBar />;
+
+_TopBar.story = {
+    name: "TopBar"
+};
