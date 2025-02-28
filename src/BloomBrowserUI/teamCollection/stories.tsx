@@ -3,10 +3,7 @@ import { jsx, css } from "@emotion/react";
 
 // Storybook stories for Team Collection components
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
-import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import * as React from "react";
-import { addDecorator } from "@storybook/react";
-import { StorybookContext } from "../.storybook/StoryBookContext";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import { getBloomButton } from "./TeamCollectionBookStatusPanel";
 import "./TeamCollectionBookStatusPanel.less";
@@ -27,16 +24,6 @@ import {
     normalDialogEnvironmentForStorybook,
     StorybookDialogWrapper
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
-
-addDecorator(storyFn => (
-    <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={lightTheme}>
-            <StorybookContext.Provider value={true}>
-                <div id="reactRoot">{storyFn()}</div>
-            </StorybookContext.Provider>
-        </ThemeProvider>
-    </StyledEngineProvider>
-));
 
 // Try to simulate the environment of the page preview
 const wrapperStyles: React.CSSProperties = {

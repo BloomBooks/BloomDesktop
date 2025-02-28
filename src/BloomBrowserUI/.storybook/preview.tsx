@@ -10,7 +10,7 @@ export default {
             <StyledEngineProvider injectFirst>
                 <ThemeProvider theme={lightTheme}>
                     <StorybookContext.Provider value={true}>
-                        {storyFn()}
+                        <div id="reactRoot"> {storyFn()}</div>
                     </StorybookContext.Provider>
                 </ThemeProvider>
             </StyledEngineProvider>
