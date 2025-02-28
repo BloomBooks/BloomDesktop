@@ -1,20 +1,8 @@
 import * as React from "react";
-import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { addDecorator, ComponentStory } from "@storybook/react";
-import { StorybookContext } from "../../.storybook/StoryBookContext";
-import { lightTheme } from "../../bloomMaterialUITheme";
+
+import { ComponentStory } from "@storybook/react";
 import { TopicChooserDialog } from "./TopicChooserDialog";
 import { normalDialogEnvironmentForStorybook } from "../../react_components/BloomDialog/BloomDialogPlumbing";
-
-addDecorator(storyFn => (
-    <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={lightTheme}>
-            <StorybookContext.Provider value={true}>
-                {storyFn()}
-            </StorybookContext.Provider>
-        </ThemeProvider>
-    </StyledEngineProvider>
-));
 
 export default {
     title: "Choose Topic"

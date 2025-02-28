@@ -6,8 +6,6 @@ import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { BloomCheckbox } from "./BloomCheckBox";
 import { useState } from "react";
-import { ApiCheckbox } from "./ApiCheckbox";
-
 import {
     FormControlLabel,
     Checkbox as OriginalMuiCheckbox
@@ -150,21 +148,4 @@ export const Tristate = () =>
 
 Tristate.story = {
     name: "tristate"
-};
-
-export default {
-    title: "BloomCheckbox/ApiCheckbox"
-};
-
-export const _ApiCheckbox = () =>
-    React.createElement(() => (
-        <ApiCheckbox
-            label="Motion Book"
-            l10nKey="PublishTab.Android.MotionBookMode"
-            apiEndpoint="publish/bloompub/motionBookMode"
-        />
-    ));
-
-_ApiCheckbox.story = {
-    name: "ApiCheckbox"
 };

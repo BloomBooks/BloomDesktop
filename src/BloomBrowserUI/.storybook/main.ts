@@ -33,19 +33,7 @@ const config: StorybookConfig = {
         ".",
         "../react_components",
         "../teamCollection"
-    ],
-
-    webpackFinal: async (config) => {
-        // Ensure we're using the project's version of React
-        if (config.resolve) {
-            config.resolve.alias = {
-                ...config.resolve.alias,
-                'react': require.resolve('react'),
-                'react-dom': require.resolve('react-dom')
-            };
-        }
-        return config;
-    }
+    ]
 };
 
 export default config;
