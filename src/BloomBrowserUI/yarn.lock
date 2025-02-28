@@ -2669,7 +2669,7 @@
     "@babel/core" "^7.26.0"
     babel-loader "^9.2.1"
 
-"@storybook/addon-webpack5-compiler-swc@2.1.0":
+"@storybook/addon-webpack5-compiler-swc@^2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@storybook/addon-webpack5-compiler-swc/-/addon-webpack5-compiler-swc-2.1.0.tgz#3f0b479f1f2342eb8818bcdf8d7d5eddd0fcefa4"
   integrity sha512-mCzNtuqY8LJqj/2vW12o3S/UujRSBFstxRqhOUErrbbOBRyM6RgcPuvytDdRv1npFi8OaKOIz3SoJBT/EtAN3A==
@@ -11601,6 +11601,18 @@ react-confetti@^6.1.0:
   integrity sha512-Jt6Fy3jE7FrpKxeDQ3oh36Bz6LoYt4o+vU578ghuF//NxADlcauDYvWr24S8hHKnQ90Uv01XXOngnKVBdZ73zQ==
   dependencies:
     tween-functions "^1.2.0"
+
+react-docgen-typescript-plugin@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/react-docgen-typescript-plugin/-/react-docgen-typescript-plugin-1.0.8.tgz#58f039b3063c34c7cd394fe53b75e6d79feafee6"
+  integrity sha512-r+dUkpm/dmiVvvrfOTYbbg0g7bmaeXTodQFIru8ZzCx/HNUAUNSmh1C0seXzDSLqDSXm5EiOAiJZVs4gqAZqzA==
+  dependencies:
+    debug "^4.1.1"
+    find-cache-dir "^3.3.1"
+    flat-cache "^3.0.4"
+    micromatch "^4.0.2"
+    react-docgen-typescript "^2.2.2"
+    tslib "^2.6.2"
 
 react-docgen-typescript@^2.2.2:
   version "2.2.2"

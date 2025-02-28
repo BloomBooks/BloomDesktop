@@ -1,32 +1,33 @@
 import type { StorybookConfig } from "@storybook/react-webpack5";
 
 const config: StorybookConfig = {
-    //stories: ["../**/stories.tsx", "../**/*.stories.tsx"],
-    stories: ["../problemDialog/*.stories.tsx"],
+    stories: ["../react_components/color-picking/*.stories.tsx"],
 
     addons: [
-        //"@storybook/addon-docs",
         "@storybook/addon-controls",
         "@storybook/addon-a11y",
-        "@storybook/addon-webpack5-compiler-babel",
+        "@storybook/addon-webpack5-compiler-swc",
         "@chromatic-com/storybook"
     ],
-
-    // features: {
-    //     emotionAlias: false
-    // },
 
     framework: {
         name: "@storybook/react-webpack5",
         options: {
             fastRefresh: true,
-            docgen: false
+            builder: {
+                useSWC: true
+            }
         }
+    },
+
+    typescript: {
+        reactDocgen: false
     },
 
     docs: {
         autodocs: false
     },
+
     staticDirs: [
         "../../../output/browser",
         ".",
