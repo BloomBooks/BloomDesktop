@@ -1,17 +1,12 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
-import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { addDecorator } from "@storybook/react";
 import { ReaderPublishScreen } from "./ReaderPublish/ReaderPublishScreen";
 import { DeviceAndControls } from "./commonPublish/DeviceAndControls";
-import { StorybookContext } from "../.storybook/StoryBookContext";
 import {
     ProgressDialogInner,
     ProgressState
 } from "./commonPublish/PublishProgressDialogInner";
 import { loremIpsum } from "lorem-ipsum";
-import { withA11y } from "@storybook/addon-a11y";
 import { EPUBPublishScreen } from "./ePUBPublish/ePUBPublishScreen";
 import BookMetadataDialog from "./metadata/BookMetadataDialog";
 import "./storiesApiMocks";
@@ -19,7 +14,6 @@ import { AccessibilityCheckScreen } from "./accessibilityCheck/accessibilityChec
 import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     IUploadCollisionDlgData,
-    IUploadCollisionDlgProps,
     UploadCollisionDlg
 } from "./LibraryPublish/uploadCollisionDlg";
 import { PublishAudioVideo } from "./video/PublishAudioVideo";
@@ -27,18 +21,6 @@ import PublishScreenTemplate from "./commonPublish/PublishScreenTemplate";
 import PublishScreenBanner from "./commonPublish/PublishScreenBanner";
 import { Button, Typography } from "@mui/material";
 import { LibraryPublishScreen } from "./LibraryPublish/LibraryPublishScreen";
-
-addDecorator(withA11y as any);
-
-addDecorator(storyFn => (
-    <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={lightTheme}>
-            <StorybookContext.Provider value={true}>
-                {storyFn()}
-            </StorybookContext.Provider>
-        </ThemeProvider>
-    </StyledEngineProvider>
-));
 
 const testText =
     loremIpsum({

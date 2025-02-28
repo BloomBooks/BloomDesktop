@@ -1,29 +1,12 @@
 /** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
-
+import { jsx } from "@emotion/react";
 import * as React from "react";
-import { lightTheme } from "../../bloomMaterialUITheme";
-import { addDecorator } from "@storybook/react";
 import { ProgressDialog } from "./ProgressDialog";
 import WebSocketManager, {
     IBloomWebSocketProgressEvent
 } from "../../utils/WebSocketManager";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
-import { ProgressBox } from "./progressBox";
 import { normalDialogEnvironmentForStorybook } from "../BloomDialog/BloomDialogPlumbing";
-import { ProgressBar } from "./ProgressBar";
-import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
-import { StorybookContext } from "../../.storybook/StoryBookContext";
-
-addDecorator(storyFn => (
-    <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={lightTheme}>
-            <StorybookContext.Provider value={true}>
-                {storyFn()}
-            </StorybookContext.Provider>
-        </ThemeProvider>
-    </StyledEngineProvider>
-));
 
 interface IStoryMessage {
     id?: string;
@@ -40,41 +23,10 @@ const noFrameProps = {
     }
 };
 
-export default {
-    title: "Progress/Progress Box"
-};
-
-export const RawProgressBoxWithPreloadedLog = () => {
-    return React.createElement(() => {
-        return (
-            <ProgressBox
-                preloadedProgressEvents={[
-                    {
-                        id: "message",
-                        clientContext: "unused",
-                        message: "This is a preloaded log message",
-                        progressKind: "Progress"
-                    },
-                    {
-                        id: "message",
-                        clientContext: "unused",
-                        message: "This is a message about an error in the past",
-                        progressKind: "Error"
-                    }
-                ]}
-            />
-        );
-    });
-};
-
-RawProgressBoxWithPreloadedLog.story = {
-    name: "Raw ProgressBox with preloaded log"
-};
-
 function sendEvents(events: Array<IStoryMessage>) {
     sendNextEvent([...events]);
 }
-// I don't know why we run into trouble occasion
+
 function sendNextEvent(events: Array<IStoryMessage>) {
     // I don't know why we run into trouble occasionally without this
     if (!events || events.length === 0) {
@@ -143,7 +95,6 @@ const kLongListOfAllTypes: Array<IStoryMessage> = [
         m:
             "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
     },
-
     {
         k: "Note",
         m: "This is a note."
@@ -330,41 +281,4 @@ export const NotWrappedInADialogLongVertically = () => {
 
 NotWrappedInADialogLongVertically.story = {
     name: "Not wrapped in a dialog, long vertically"
-};
-
-const barFrame = (progressBar: JSX.Element) => (
-    <div
-        css={css`
-            width: 280px;
-            height: 75px;
-            padding-top: 5px;
-            padding-right: 10px;
-            padding-left: 20px;
-            background-color: rgb(45, 45, 45);
-        `}
-    >
-        {progressBar}
-    </div>
-);
-
-export default {
-    title: "Progress/Progress Bar"
-};
-
-export const _20 = () => barFrame(<ProgressBar percentage={20} />);
-
-_20.story = {
-    name: "20%"
-};
-
-export const _100 = () => barFrame(<ProgressBar percentage={100} />);
-
-_100.story = {
-    name: "100%"
-};
-
-export const _0 = () => barFrame(<ProgressBar percentage={0} />);
-
-_0.story = {
-    name: "0%"
 };
