@@ -506,7 +506,7 @@ export class EditableDivUtils {
             // Really not wanting this scenario to happen, because we may get inaccurate results, but...
             // We ought to be able to continue on without anything terrible happening
             console.assert(
-                parentEditable,
+                !!parentEditable,
                 "isVisible(): Unexpected span that is not inside a bloom-editable. span = " +
                     elem
             );

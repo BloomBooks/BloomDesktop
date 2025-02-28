@@ -1676,7 +1676,7 @@ export default class AudioRecording implements IAudioRecorder {
                     // But now we need to switch the highlight back to show the Recording segment.
                     const currentTextBox = this.getCurrentTextBox();
                     console.assert(
-                        currentTextBox,
+                        !!currentTextBox,
                         "CurrentTextBox not expected to be null"
                     );
                     if (currentTextBox) {
@@ -2382,7 +2382,7 @@ export default class AudioRecording implements IAudioRecorder {
         }
 
         const currentTextBox = audioCurrentElements[0];
-        console.assert(currentTextBox, "CurrentTextBox should not be null");
+        console.assert(!!currentTextBox, "CurrentTextBox should not be null");
         return <HTMLElement | null>(
             this.getTextBoxOfElement(audioCurrentElements[0])
         );
@@ -2431,7 +2431,7 @@ export default class AudioRecording implements IAudioRecorder {
         const currentTextBox = this.getTextBoxOfElement(
             audioCurrentElements.item(0)
         );
-        console.assert(currentTextBox, "CurrentTextBox should not be null");
+        console.assert(!!currentTextBox, "CurrentTextBox should not be null");
         return <HTMLElement>currentTextBox;
     }
 

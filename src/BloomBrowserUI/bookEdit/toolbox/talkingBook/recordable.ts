@@ -84,7 +84,7 @@ export default class Recordable {
     public getAudioSentenceIds(): string[] {
         return this.getAudioSentences().map((element: Element) => {
             console.assert(
-                element.id,
+                !!element.id,
                 "Element unexpectedly had falsy ID: " + element.innerHTML
             );
 
