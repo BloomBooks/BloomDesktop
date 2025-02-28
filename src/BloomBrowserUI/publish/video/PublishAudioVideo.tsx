@@ -519,7 +519,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                         )}
                         <BloomButton
                             enabled={
-                                !recording && isLicenseOK && !isScalingActive
+                                !recording &&
+                                isLicenseOK &&
+                                !isScalingActive &&
+                                havePreviewForOrientation
                             }
                             l10nKey="PublishTab.RecordVideo.Record"
                             l10nComment="'Record' as in 'Record a video recording'"
