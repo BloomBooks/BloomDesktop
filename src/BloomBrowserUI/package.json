@@ -132,6 +132,7 @@
         "@storybook/addon-a11y": "^8.6.2",
         "@storybook/addon-controls": "^8.6.2",
         "@storybook/addon-docs": "^8.6.2",
+        "@storybook/addon-webpack5-compiler-babel": "^3.0.5",
         "@storybook/addon-webpack5-compiler-swc": "2.1.0",
         "@storybook/react": "^8.6.2",
         "@storybook/react-webpack5": "8.6.2",

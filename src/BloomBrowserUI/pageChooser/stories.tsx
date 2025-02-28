@@ -4,7 +4,6 @@ import { jsx, css } from "@emotion/react";
 import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { addDecorator } from "@storybook/react";
 import { StorybookContext } from "../.storybook/StoryBookContext";
 import { SelectedTemplatePageControls } from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
@@ -18,17 +17,6 @@ import {
 import { TemplateBookErrorReplacement } from "./TemplateBookErrorReplacement";
 import { getBloomApiPrefix } from "../utils/bloomApi";
 import axios from "axios";
-
-// ENHANCE: Could we make this have the exact same dimensions the browser dialog would have?
-addDecorator(storyFn => (
-    <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={lightTheme}>
-            <StorybookContext.Provider value={true}>
-                {storyFn()}
-            </StorybookContext.Provider>
-        </ThemeProvider>
-    </StyledEngineProvider>
-));
 interface ITemplateBookPagesWrapperProps extends ITemplateBookPagesProps {
     templateBook: ITemplateBookInfo;
 }
