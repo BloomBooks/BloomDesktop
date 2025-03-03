@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ComponentStory } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import {
     CopyrightAndLicenseDialog,
     ICopyrightAndLicenseData
@@ -9,24 +9,24 @@ import { CopyrightPanel } from "./CopyrightPanel";
 import { LicensePanel, LicenseType } from "./LicensePanel";
 import { LicenseBadge } from "./LicenseBadge";
 
-export default {
+const meta: Meta = {
     title: "Copyright and License Dialog"
 };
 
-const CopyrightAndLicenseDialogTemplate: ComponentStory<typeof CopyrightAndLicenseDialog> = args => (
-    <CopyrightAndLicenseDialog
-        {...args}
-        dialogEnvironment={normalDialogEnvironmentForStorybook}
-    />
-);
-export const _CopyrightAndLicenseDialog = CopyrightAndLicenseDialogTemplate.bind(
-    {}
-);
+export default meta;
+
+// Define types for each component story
+type CopyrightAndLicenseDialogStory = StoryObj<typeof CopyrightAndLicenseDialog>;
+type CopyrightPanelStory = StoryObj<typeof CopyrightPanel>;
+type LicenseBadgeStory = StoryObj<typeof LicenseBadge>;
+
+// Sample data
 const sampleCreativeCommonsInfo = {
     allowCommercial: "yes",
     allowDerivatives: "yes",
     intergovernmentalVersion: false
 };
+
 const sampleCopyrightAndLicenseData: ICopyrightAndLicenseData = {
     copyrightInfo: {
         imageCreator: "my image guy",
@@ -48,75 +48,95 @@ const sampleCopyrightAndLicenseData: ICopyrightAndLicenseData = {
         }
     }
 };
-_CopyrightAndLicenseDialog.args = {
-    isForBook: true,
-    data: sampleCopyrightAndLicenseData
+
+// CopyrightAndLicenseDialog Story
+export const CopyrightAndLicenseDialogStory: CopyrightAndLicenseDialogStory = {
+    name: "Copyright And License Dialog",
+    render: (args) => (
+        <CopyrightAndLicenseDialog
+            {...args}
+            dialogEnvironment={normalDialogEnvironmentForStorybook}
+        />
+    ),
+    args: {
+        isForBook: true,
+        data: sampleCopyrightAndLicenseData
+    }
 };
 
-const PanelFrame: React.FunctionComponent = props => (
+// PanelFrame component for framing panels
+const PanelFrame: React.FunctionComponent<{ children: React.ReactNode }> = ({ children }) => (
     <div
         style={{
             height: 400,
             width: 400
         }}
     >
-        {props.children}
+        {children}
     </div>
 );
 
-const CopyrightPanelTemplate: ComponentStory<typeof CopyrightPanel> = args => {
-    const [valid, setValid] = React.useState(false);
-    return (
-        <PanelFrame>
-            <CopyrightPanel
-                {...args}
-                copyrightInfo={{
-                    copyrightYear: "2000",
-                    copyrightHolder: "Bob"
-                }}
-                onChange={(
-                    copyrightInfo,
-                    useOriginalCopyrightAndLicense,
-                    isValid
-                ) => setValid(isValid)}
-            />
-            Valid: {valid.toString()}
-        </PanelFrame>
-    );
-};
-export const _CopyrightPanel = CopyrightPanelTemplate.bind({});
-_CopyrightPanel.args = {
-    isForBook: true
-};
-
-// Was _LicensePanel. Not sure if there's some storybook reason for that naming,
-// but it makes eslint think this is not a React component, and complain about useState.
-export const FramedLicensePanel = () => {
-    const [valid, setValid] = React.useState(false);
-    return (
-        <PanelFrame>
-            <LicensePanel
-                isForBook={true}
-                licenseInfo={{
-                    licenseType: "creativeCommons",
-                    creativeCommonsInfo: sampleCreativeCommonsInfo,
-                    rightsStatement: ""
-                }}
-                onChange={(licenseInfo, isValid) => setValid(isValid)}
-            />
-            Valid: {valid.toString()}
-        </PanelFrame>
-    );
-};
-
-const LicenseBadgeTemplate: ComponentStory<typeof LicenseBadge> = args => {
-    return <LicenseBadge {...args}></LicenseBadge>;
-};
-export const _LicenseBadge = LicenseBadgeTemplate.bind({});
-_LicenseBadge.args = {
-    licenseInfo: {
-        licenseType: LicenseType.Custom,
-        creativeCommonsInfo: sampleCreativeCommonsInfo
+// CopyrightPanel Story
+export const CopyrightPanelStory: CopyrightPanelStory = {
+    name: "Copyright Panel",
+    render: (args) => {
+        const [valid, setValid] = React.useState(false);
+        return (
+            <PanelFrame>
+                <CopyrightPanel
+                    {...args}
+                    copyrightInfo={{
+                        copyrightYear: "2000",
+                        copyrightHolder: "Bob"
+                    }}
+                    onChange={(
+                        copyrightInfo,
+                        useOriginalCopyrightAndLicense,
+                        isValid
+                    ) => setValid(isValid)}
+                />
+                Valid: {valid.toString()}
+            </PanelFrame>
+        );
     },
-    disabled: false
+    args: {
+        isForBook: true
+    }
+};
+
+// LicensePanel Story
+export const LicensePanelStory: StoryObj = {
+    name: "License Panel",
+    render: () => {
+        const [valid, setValid] = React.useState(false);
+        return (
+            <PanelFrame>
+                <LicensePanel
+                    isForBook={true}
+                    licenseInfo={{
+                        licenseType: "creativeCommons",
+                        creativeCommonsInfo: sampleCreativeCommonsInfo,
+                        rightsStatement: ""
+                    }}
+                    onChange={(licenseInfo, isValid) => setValid(isValid)}
+                />
+                Valid: {valid.toString()}
+            </PanelFrame>
+        );
+    }
+};
+
+// LicenseBadge Story
+export const LicenseBadgeStory: LicenseBadgeStory = {
+    name: "License Badge",
+    render: (args) => <LicenseBadge {...args} />,
+    args: {
+        licenseInfo: {
+            licenseType: LicenseType.Custom,
+            creativeCommonsInfo: sampleCreativeCommonsInfo,
+            rightsStatement: "This is a rights statement",
+        },
+
+        disabled: false
+    }
 };
