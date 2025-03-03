@@ -1,4 +1,7 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/react";
 import * as React from "react";
+import { kBloomBlue } from "../bloomMaterialUITheme";
 import {
     ILocalizationProps,
     ILocalizationState,
@@ -15,6 +18,11 @@ export class Markdown extends LocalizableElement<
     public render() {
         return (
             <div
+                css={css`
+                    a {
+                        color: ${kBloomBlue};
+                    }
+                `}
                 className={this.getClassName()}
                 onClick={() => {
                     if (this.props.onClick) {
