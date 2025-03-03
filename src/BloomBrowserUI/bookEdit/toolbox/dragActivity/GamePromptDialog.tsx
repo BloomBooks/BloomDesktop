@@ -229,8 +229,9 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
     const firstEditable = first.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0];
-    if (firstEditable && !firstEditable.getAttribute("data-bubble-alternate")) {
-        // We are showing this language for the first time. We want to move the first letter to the
+    if (!promptEditable.textContent?.trim()) {
+        // We are probably showing this language for the first time, and only one letter is going
+        // to be visible initially. We want to move that first letter to the
         // left-most position, since it will soon be the only one visible, and we dont' want to mess
         // up the starting place for new letters.
         const minx = Math.min(
