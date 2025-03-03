@@ -48,7 +48,7 @@ module.exports = merge(core, {
         accessibilityCheckBundle: globule.find([
             "./publish/accessibilityCheck/**/*.tsx"
         ]),
-        enterpriseSettingsBundle: "./collection/enterpriseSettings.tsx",
+        subscriptionSettingsBundle: "./collection/subscriptionSettingsTab.tsx",
 
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
         appBundle: "./app/App.tsx",
