@@ -844,13 +844,11 @@ namespace Bloom.Publish.BloomPub
             IFontFinder fontFileFinder
         )
         {
-            const string defaultFont = "Andika";
-
             // "Andika" already in BR in the standard four faces, don't need to embed or make rule.
-            fontsWanted.RemoveWhere(x => x.fontName == defaultFont);
+            fontsWanted.RemoveWhere(x => x.fontFamily == PublishHelper.DefaultFont);
             // We don't need to embed Andika New Basic, because Andika will handle it.
             fontsWanted.RemoveWhere( // The default Andika font will handle Andika New Basic
-                x => x.fontName == "Andika New Basic"
+                x => x.fontFamily == "Andika New Basic"
             );
 
             PublishHelper.CheckFontsForEmbedding(
@@ -870,9 +868,9 @@ namespace Bloom.Publish.BloomPub
             var sb = new StringBuilder();
             foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
-                if (badFonts.Contains(font.fontName))
+                if (badFonts.Contains(font.fontFamily))
                     continue;
-                var group = fontFileFinder.GetGroupForFont(font.fontName);
+                var group = fontFileFinder.GetGroupForFont(font.fontFamily);
                 if (group != null)
                 {
                     EpubMaker.AddFontFace(sb, font, group);
@@ -889,10 +887,14 @@ namespace Bloom.Publish.BloomPub
             // Repair defaultLangStyles.css and other places in the output book if needed.
             if (badFonts.Any())
             {
-                PublishHelper.FixCssReferencesForBadFonts(book.FolderPath, defaultFont, badFonts);
+                PublishHelper.FixCssReferencesForBadFonts(
+                    book.FolderPath,
+                    PublishHelper.DefaultFont,
+                    badFonts
+                );
                 PublishHelper.FixXmlDomReferencesForBadFonts(
                     book.OurHtmlDom.RawDom,
-                    defaultFont,
+                    PublishHelper.DefaultFont,
                     badFonts
                 );
             }
