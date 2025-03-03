@@ -4,8 +4,6 @@ import { jsx, css } from "@emotion/react";
 import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { storiesOf } from "@storybook/react";
-import { addDecorator } from "@storybook/react";
 import { StorybookContext } from "../.storybook/StoryBookContext";
 import { SelectedTemplatePageControls } from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
@@ -19,17 +17,6 @@ import {
 import { TemplateBookErrorReplacement } from "./TemplateBookErrorReplacement";
 import { getBloomApiPrefix } from "../utils/bloomApi";
 import axios from "axios";
-
-// ENHANCE: Could we make this have the exact same dimensions the browser dialog would have?
-addDecorator(storyFn => (
-    <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={lightTheme}>
-            <StorybookContext.Provider value={true}>
-                {storyFn()}
-            </StorybookContext.Provider>
-        </ThemeProvider>
-    </StyledEngineProvider>
-));
 interface ITemplateBookPagesWrapperProps extends ITemplateBookPagesProps {
     templateBook: ITemplateBookInfo;
 }
@@ -117,189 +104,232 @@ const PreviewFrame: React.FC = props => (
     </div>
 );
 
-storiesOf("Page Chooser", module)
-    .add("normal preview", () => {
-        const templateFolderUrl =
-            "c:\\github\\bloomdesktop\\output\\browser\\templates\\template books\\basic book";
-        const pageLabel = "Picture on Left";
-        const orientation = "portrait";
-        return (
-            <PreviewFrame>
-                <SelectedTemplatePageControls
-                    caption={pageLabel}
-                    pageDescription="A text box on top of an image"
-                    imageSource={getTemplatePageImageSource(
-                        templateFolderUrl,
-                        pageLabel,
-                        orientation
-                    )}
-                    enterpriseAvailable={true}
-                    pageIsDigitalOnly={false}
-                    pageId="1235"
-                    templateBookPath="somePath"
-                    isLandscape={false}
-                    dataToolId=""
-                ></SelectedTemplatePageControls>
-            </PreviewFrame>
-        );
-    })
-    .add("preview requiresEnterprise", () => {
-        const templateFolderUrl =
-            "c:\\github\\bloomdesktop\\output\\browser\\templates\\template books\\activity";
-        const pageLabel = "Choose Picture from Word";
-        const orientation = "landscape";
-        return (
-            <PreviewFrame>
-                <SelectedTemplatePageControls
-                    caption={pageLabel}
-                    pageDescription="Some page description for a page that needs Enterprise"
-                    imageSource={getTemplatePageImageSource(
-                        templateFolderUrl,
-                        pageLabel,
-                        orientation
-                    )}
-                    pageIsEnterpriseOnly={true}
-                    enterpriseAvailable={false}
-                    pageIsDigitalOnly={true}
-                    pageId="1235"
-                    templateBookPath="somePath"
-                    learnMoreLink="some-strange-link"
-                    isLandscape={true}
-                    dataToolId=""
-                ></SelectedTemplatePageControls>
-            </PreviewFrame>
-        );
-    })
-    .add("preview changeLayoutWillLoseData", () => {
-        const templateFolderUrl =
-            "c:\\github\\bloomdesktop\\output\\browser\\templates\\template books\\basic book";
-        const pageLabel = "Just Text";
-        const orientation = "landscape";
+export default {
+    title: "Page Chooser"
+};
 
-        return (
-            <PreviewFrame>
-                <SelectedTemplatePageControls
-                    imageSource={getTemplatePageImageSource(
-                        templateFolderUrl,
-                        pageLabel,
-                        orientation
-                    )}
-                    caption="Just Text"
-                    pageDescription="This page has space for only text. But I want to put a bigger description in here to make sure."
-                    enterpriseAvailable={true}
-                    pageIsDigitalOnly={false}
-                    pageId="1235"
-                    templateBookPath="somePath"
-                    forChangeLayout={true}
-                    willLoseData={true}
-                    isLandscape={true}
-                    dataToolId=""
-                ></SelectedTemplatePageControls>
-            </PreviewFrame>
-        );
-    })
-
-    // Note: this group of tests has hard-coded paths to Bloom's compiler output (from c:!).
-    // One of them has a hard-coded path from Gordon's machine! It will only be useful if
-    // you substitute a path from your own machine.
-    .add("TemplateBookPages", () => {
-        const book: ITemplateBookInfo = {
-            templateBookFolderUrl:
-                "c:/bloomdesktop/output/browser/templates/template books/basic book",
-            templateBookPath:
-                "c:/bloomdesktop/output/browser/templates/template books/basic book/basic book.html"
-        };
-        return (
-            <PreviewFrame>
-                <TemplateBookPagesWrapper
-                    firstGroup={false}
-                    templateBook={book}
-                    titleGroup={dummyTitleGroup}
-                    orientation="portrait"
-                    forChooseLayout={false}
-                    onTemplatePageSelect={() => {}}
-                    onTemplatePageDoubleClick={() => {}}
-                />
-            </PreviewFrame>
-        );
-    })
-    .add("TemplateBookPages-activity-portrait", () => {
-        const book: ITemplateBookInfo = {
-            templateBookFolderUrl:
-                "c:/bloomdesktop/output/browser/templates/template books/activity",
-            templateBookPath:
-                "c:/bloomdesktop/output/browser/templates/template books/activity/activity.html"
-        };
-        return (
-            <PreviewFrame>
-                <TemplateBookPagesWrapper
-                    firstGroup={false}
-                    templateBook={book}
-                    titleGroup={dummyTitleGroup}
-                    orientation="portrait"
-                    forChooseLayout={false}
-                    onTemplatePageSelect={() => {}}
-                    onTemplatePageDoubleClick={() => {}}
-                />
-            </PreviewFrame>
-        );
-    })
-    .add("TemplateBookPages-activity-landscape", () => {
-        const book: ITemplateBookInfo = {
-            templateBookFolderUrl:
-                "c:/bloomdesktop/output/browser/templates/template books/activity",
-            templateBookPath:
-                "c:/bloomdesktop/output/browser/templates/template books/activity/activity.html"
-        };
-        return (
-            <PreviewFrame>
-                <TemplateBookPagesWrapper
-                    firstGroup={false}
-                    templateBook={book}
-                    titleGroup={dummyTitleGroup}
-                    orientation="landscape"
-                    forChooseLayout={true}
-                    onTemplatePageSelect={() => {}}
-                    onTemplatePageDoubleClick={() => {}}
-                />
-            </PreviewFrame>
-        );
-    })
-    .add("TemplateBookPages-custom", () => {
-        const book: ITemplateBookInfo = {
-            templateBookFolderUrl:
-                "c:/users/gordon/documents/bloom/sokoro books test/gaadi template",
-            templateBookPath:
-                "c:/users/gordon/documents/bloom/sokoro books test/gaadi template/gaadi template.htm"
-        };
-        return (
-            <PreviewFrame>
-                <TemplateBookPagesWrapper
-                    firstGroup={false}
-                    templateBook={book}
-                    titleGroup={dummyTitleGroup}
-                    orientation="portrait"
-                    forChooseLayout={false}
-                    onTemplatePageSelect={() => {}}
-                    onTemplatePageDoubleClick={() => {}}
-                />
-            </PreviewFrame>
-        );
-    })
-    .add("TemplateBookErrorReplacement", () => (
+export const NormalPreview = () => {
+    const templateFolderUrl =
+        "c:\\github\\bloomdesktop\\output\\browser\\templates\\template books\\basic book";
+    const pageLabel = "Picture on Left";
+    const orientation = "portrait";
+    return (
         <PreviewFrame>
-            <TemplateBookErrorReplacement templateBookPath="Some bizarre location/My messed up Template/My messed up Template.htm" />
-        </PreviewFrame>
-    ))
-    .add("PageThumbnail", () => (
-        <PreviewFrame>
-            <PageThumbnail
+            <SelectedTemplatePageControls
+                caption={pageLabel}
+                pageDescription="A text box on top of an image"
                 imageSource={getTemplatePageImageSource(
-                    "c:/bloomdesktop/output/browser/templates/template books/basic book",
-                    "Basic Text & Picture",
-                    "landscape"
+                    templateFolderUrl,
+                    pageLabel,
+                    orientation
                 )}
+                enterpriseAvailable={true}
+                pageIsDigitalOnly={false}
+                pageId="1235"
+                templateBookPath="somePath"
+                isLandscape={false}
+                dataToolId=""
+            ></SelectedTemplatePageControls>
+        </PreviewFrame>
+    );
+};
+
+NormalPreview.story = {
+    name: "normal preview"
+};
+
+export const PreviewRequiresEnterprise = () => {
+    const templateFolderUrl =
+        "c:\\github\\bloomdesktop\\output\\browser\\templates\\template books\\activity";
+    const pageLabel = "Choose Picture from Word";
+    const orientation = "landscape";
+    return (
+        <PreviewFrame>
+            <SelectedTemplatePageControls
+                caption={pageLabel}
+                pageDescription="Some page description for a page that needs Enterprise"
+                imageSource={getTemplatePageImageSource(
+                    templateFolderUrl,
+                    pageLabel,
+                    orientation
+                )}
+                pageIsEnterpriseOnly={true}
+                enterpriseAvailable={false}
+                pageIsDigitalOnly={true}
+                pageId="1235"
+                templateBookPath="somePath"
+                learnMoreLink="some-strange-link"
                 isLandscape={true}
+                dataToolId=""
+            ></SelectedTemplatePageControls>
+        </PreviewFrame>
+    );
+};
+
+PreviewRequiresEnterprise.story = {
+    name: "preview requiresEnterprise"
+};
+
+export const PreviewChangeLayoutWillLoseData = () => {
+    const templateFolderUrl =
+        "c:\\github\\bloomdesktop\\output\\browser\\templates\\template books\\basic book";
+    const pageLabel = "Just Text";
+    const orientation = "landscape";
+
+    return (
+        <PreviewFrame>
+            <SelectedTemplatePageControls
+                imageSource={getTemplatePageImageSource(
+                    templateFolderUrl,
+                    pageLabel,
+                    orientation
+                )}
+                caption="Just Text"
+                pageDescription="This page has space for only text. But I want to put a bigger description in here to make sure."
+                enterpriseAvailable={true}
+                pageIsDigitalOnly={false}
+                pageId="1235"
+                templateBookPath="somePath"
+                forChangeLayout={true}
+                willLoseData={true}
+                isLandscape={true}
+                dataToolId=""
+            ></SelectedTemplatePageControls>
+        </PreviewFrame>
+    );
+};
+
+PreviewChangeLayoutWillLoseData.story = {
+    name: "preview changeLayoutWillLoseData"
+};
+
+export const _TemplateBookPages = () => {
+    const book: ITemplateBookInfo = {
+        templateBookFolderUrl:
+            "c:/bloomdesktop/output/browser/templates/template books/basic book",
+        templateBookPath:
+            "c:/bloomdesktop/output/browser/templates/template books/basic book/basic book.html"
+    };
+    return (
+        <PreviewFrame>
+            <TemplateBookPagesWrapper
+                firstGroup={false}
+                templateBook={book}
+                titleGroup={dummyTitleGroup}
+                orientation="portrait"
+                forChooseLayout={false}
+                onTemplatePageSelect={() => {}}
+                onTemplatePageDoubleClick={() => {}}
             />
         </PreviewFrame>
-    ));
+    );
+};
+
+_TemplateBookPages.story = {
+    name: "TemplateBookPages"
+};
+
+export const TemplateBookPagesActivityPortrait = () => {
+    const book: ITemplateBookInfo = {
+        templateBookFolderUrl:
+            "c:/bloomdesktop/output/browser/templates/template books/activity",
+        templateBookPath:
+            "c:/bloomdesktop/output/browser/templates/template books/activity/activity.html"
+    };
+    return (
+        <PreviewFrame>
+            <TemplateBookPagesWrapper
+                firstGroup={false}
+                templateBook={book}
+                titleGroup={dummyTitleGroup}
+                orientation="portrait"
+                forChooseLayout={false}
+                onTemplatePageSelect={() => {}}
+                onTemplatePageDoubleClick={() => {}}
+            />
+        </PreviewFrame>
+    );
+};
+
+TemplateBookPagesActivityPortrait.story = {
+    name: "TemplateBookPages-activity-portrait"
+};
+
+export const TemplateBookPagesActivityLandscape = () => {
+    const book: ITemplateBookInfo = {
+        templateBookFolderUrl:
+            "c:/bloomdesktop/output/browser/templates/template books/activity",
+        templateBookPath:
+            "c:/bloomdesktop/output/browser/templates/template books/activity/activity.html"
+    };
+    return (
+        <PreviewFrame>
+            <TemplateBookPagesWrapper
+                firstGroup={false}
+                templateBook={book}
+                titleGroup={dummyTitleGroup}
+                orientation="landscape"
+                forChooseLayout={true}
+                onTemplatePageSelect={() => {}}
+                onTemplatePageDoubleClick={() => {}}
+            />
+        </PreviewFrame>
+    );
+};
+
+TemplateBookPagesActivityLandscape.story = {
+    name: "TemplateBookPages-activity-landscape"
+};
+
+export const TemplateBookPagesCustom = () => {
+    const book: ITemplateBookInfo = {
+        templateBookFolderUrl:
+            "c:/users/gordon/documents/bloom/sokoro books test/gaadi template",
+        templateBookPath:
+            "c:/users/gordon/documents/bloom/sokoro books test/gaadi template/gaadi template.htm"
+    };
+    return (
+        <PreviewFrame>
+            <TemplateBookPagesWrapper
+                firstGroup={false}
+                templateBook={book}
+                titleGroup={dummyTitleGroup}
+                orientation="portrait"
+                forChooseLayout={false}
+                onTemplatePageSelect={() => {}}
+                onTemplatePageDoubleClick={() => {}}
+            />
+        </PreviewFrame>
+    );
+};
+
+TemplateBookPagesCustom.story = {
+    name: "TemplateBookPages-custom"
+};
+
+export const _TemplateBookErrorReplacement = () => (
+    <PreviewFrame>
+        <TemplateBookErrorReplacement templateBookPath="Some bizarre location/My messed up Template/My messed up Template.htm" />
+    </PreviewFrame>
+);
+
+_TemplateBookErrorReplacement.story = {
+    name: "TemplateBookErrorReplacement"
+};
+
+export const _PageThumbnail = () => (
+    <PreviewFrame>
+        <PageThumbnail
+            imageSource={getTemplatePageImageSource(
+                "c:/bloomdesktop/output/browser/templates/template books/basic book",
+                "Basic Text & Picture",
+                "landscape"
+            )}
+            isLandscape={true}
+        />
+    </PreviewFrame>
+);
+
+_PageThumbnail.story = {
+    name: "PageThumbnail"
+};
