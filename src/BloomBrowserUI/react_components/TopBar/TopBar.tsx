@@ -1,14 +1,14 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import CollectionTabIcon from "./CollectionsTab.svg";
-import EditTabIcon from "./EditTab.svg";
-import PublishTabIcon from "./PublishTab.svg";
+import { CollectionsTabIcon } from "./CollectionsTabIcon";
+import { EditTabIcon } from "./EditTabIcon";
+import { PublishTabIcon } from "./PublishTabIcon";
 
 const tabs = [
-    { name: "Collections", svg: CollectionTabIcon, height: 32 },
-    { name: "Edit", svg: EditTabIcon, height: 32 },
-    { name: "Publish", svg: PublishTabIcon, height: 27 }
+    { name: "Collections", svg: <CollectionsTabIcon />, height: 32 },
+    { name: "Edit", svg: <EditTabIcon />, height: 32 },
+    { name: "Publish", svg: <PublishTabIcon />, height: 27 }
 ];
 
 export const TopBar: React.FunctionComponent = () => {
@@ -60,6 +60,7 @@ const Tab: React.FunctionComponent<{
                     justify-content: space-between;
                     gap: 9px;
                     justify-content: center;
+                    align-items: center;
                     font-size: 12px;
                     font-family: "segoe ui";
                     padding: 10px 21px;
