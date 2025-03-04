@@ -607,11 +607,13 @@ namespace Bloom.Book
             return _dom.HasMetaElement(name);
         }
 
+        public static string kCanvasElementClass = "bloom-canvas-element";
+
         public static bool HasBackgroundImage(SafeXmlElement imageContainer)
         {
             var overlay =
                 imageContainer.ChildNodes.FirstOrDefault(
-                    child => child is SafeXmlElement e && e.HasClass("bloom-textOverPicture")
+                    child => child is SafeXmlElement e && e.HasClass(kCanvasElementClass)
                 ) as SafeXmlElement;
             return overlay != null && (overlay.HasClass("bloom-backgroundImage"));
         }
@@ -957,12 +959,12 @@ namespace Bloom.Book
         }
 
         // We want to count all the translationGroups that do not occur inside of a bloom-imageContainer div.
-        // The reason for this is that images can have textOverPicture divs and imageDescription divs inside of them
+        // The reason for this is that images can have canvas element divs and imageDescription divs inside of them
         // and these are completely independent of the template page. We need to count regular translationGroups and
         // also ensure that translationGroups inside of images get migrated correctly. If this algorithm changes, be
         // sure to also change 'countTranslationGroupsForChangeLayout()' in PageChooserDialog.tsx.
-        // We could just do this with an xpath if bloom-textOverPicture divs and bloom-imageDescription divs had
-        // the same structure internally, but text over picture CONTAINS a translationGroup,
+        // We could just do this with an xpath if canvas element divs and bloom-imageDescription divs had
+        // the same structure internally, but a text canvas element CONTAINS a translationGroup,
         // whereas image description IS a translationGroup.
         private static void GetEltsWithClassNotInImageContainerInternal(
             SafeXmlElement currentElement,
@@ -1109,7 +1111,7 @@ namespace Bloom.Book
         )
         {
             return SafeXmlElement
-                .GetAllDivsWithClass(bookBodyElement, "bloom-textOverPicture")
+                .GetAllDivsWithClass(bookBodyElement, kCanvasElementClass)
                 .Cast<SafeXmlElement>();
         }
 
@@ -2826,7 +2828,7 @@ namespace Bloom.Book
         /// </summary>
         public bool HasOverlays()
         {
-            return _dom.SelectSingleNode("//div[contains(@class, 'bloom-textOverPicture')]")
+            return _dom.SelectSingleNode("//div[contains(@class, '" + kCanvasElementClass + "')]")
                 != null;
         }
 

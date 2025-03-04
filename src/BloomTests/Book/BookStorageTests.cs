@@ -1685,7 +1685,7 @@ namespace BloomTests.Book
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
 				<div class='bloom-imageContainer'>
-					<div class='bloom-textOverPicture' data-bubble='"
+					<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 				</div>
@@ -1705,11 +1705,11 @@ namespace BloomTests.Book
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 				<body><div class='bloom-page'>
 					<div class='bloom-imageContainer'>
-						<div class='bloom-textOverPicture' data-bubble='"
+						<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 						<svg class='comical-generated' />
-						<div class='bloom-textOverPicture' data-bubble='"
+						<div class='bloom-canvas-element' data-bubble='"
                     + captionBubbleWithNoTail
                     + @"'/>
 					</div>
@@ -1732,16 +1732,16 @@ namespace BloomTests.Book
                 "{`version`:`1.0`,`level`:1,`style`:`ellipse`,`tails`:[{`tipX`:578,`tipY`:11,`midpointX`:566,`midpointY`:32,`autoCurve`:true}]}";
             const string captionBubbleWithTail =
                 "{`version`:`1.0`,`level`:1,`style`:`caption`,`tails`:[{`tipX`:332,`tipY`:287,`midpointX`:293,`midpointY`:124,`autoCurve`:true}]}";
-            // Added .ui-resizable because of an initial xpath error that only worked if the class had only .bloom-textOverPicture
+            // Added .ui-resizable because of an initial xpath error that only worked if the class had only .bloom-canvas-element
             var storage = GetInitialStorageWithCustomHtml(
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
 				<div class='bloom-imageContainer'>
-					<div class='bloom-textOverPicture ui-resizable' data-bubble='"
+					<div class='bloom-canvas-element ui-resizable' data-bubble='"
                     + ellipseBubble
                     + @"'/>
 					<svg class='comical-generated' />
-					<div class='bloom-textOverPicture ui-resizable' data-bubble='"
+					<div class='bloom-canvas-element ui-resizable' data-bubble='"
                     + captionBubbleWithTail
                     + @"'/>
 				</div>
@@ -1777,7 +1777,7 @@ namespace BloomTests.Book
 <body>
 	<div class='bloom-page'>
 		<div class='bloom-imageContainer'>
-			<div class='bloom-textOverPicture' data-bubble='"
+			<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 			<svg class='comical-generated' />
@@ -1816,8 +1816,8 @@ namespace BloomTests.Book
 <body>
 	<div class='bloom-page'>
 		<div class='bloom-imageContainer'>
-			<div class='bloom-textOverPicture'/>
-			<div class='bloom-textOverPicture'/>
+			<div class='bloom-canvas-element'/>
+			<div class='bloom-canvas-element'/>
 			<img src='rubbish' id='moveMe' />
 		</div>
 	</div>
@@ -1851,11 +1851,11 @@ namespace BloomTests.Book
 <body>
 	<div class='bloom-page'>
 		<div class='bloom-imageContainer'>
-			<div class='bloom-textOverPicture' data-bubble='"
+			<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 			<svg class='comical-generated'/>
-			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
+			<div class='bloom-canvas-element' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
 		</div>
 	</div>
 </body></html>"
@@ -1887,18 +1887,18 @@ namespace BloomTests.Book
 <body>
 	<div class='bloom-page'>
 		<div class='bloom-imageContainer'>
-			<div class='bloom-textOverPicture' data-bubble='"
+			<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 			<svg class='comical-generated'/>
-			<div class='bloom-textOverPicture' data-bubble='"
+			<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 		</div>
 		<div class='bloom-imageContainer'>
 			<svg class='comical-generated'/>
-			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
-			<div class='bloom-textOverPicture' data-bubble='"
+			<div class='bloom-canvas-element' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
+			<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 		</div>
@@ -1932,7 +1932,7 @@ namespace BloomTests.Book
 <body>
 	<div class='bloom-page'>
 		<div class='bloom-imageContainer'>
-			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`level`:1,`style`:`none`,`backgroundColors`:[`#e09494`],`tails`:[]}'/>
+			<div class='bloom-canvas-element' data-bubble='{`version`:`1.0`,`level`:1,`style`:`none`,`backgroundColors`:[`#e09494`],`tails`:[]}'/>
 			<svg class='comical-generated' />
 		</div>
 	</div>

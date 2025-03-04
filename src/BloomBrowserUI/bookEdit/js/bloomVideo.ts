@@ -16,7 +16,7 @@ import { selectVideoContainer } from "./videoUtils";
 import { getPlayIcon } from "../img/playIcon";
 import { getPauseIcon } from "../img/pauseIcon";
 import { getReplayIcon } from "../img/replayIcon";
-import { kTextOverPictureSelector } from "./bubbleManager";
+import { kCanvasElementSelector } from "../toolbox/overlay/overlayUtils";
 
 export function SetupVideoEditing(container) {
     get("settings/enterpriseEnabled", result => {
@@ -266,7 +266,7 @@ export function doVideoCommand(
 export function findNextVideoContainer(
     videoContainer: Element
 ): Element | undefined {
-    const overlay = videoContainer.closest(".bloom-textOverPicture"); // unfortunate name for picture and video overlay containers
+    const overlay = videoContainer.closest(kCanvasElementSelector); // unfortunate name for picture and video overlay containers
     if (overlay) {
         let next = overlay.nextElementSibling;
         while (next) {
@@ -285,7 +285,7 @@ export function findNextVideoContainer(
 export function findPreviousVideoContainer(
     videoContainer: Element
 ): Element | undefined {
-    const overlay = videoContainer.closest(".bloom-textOverPicture"); // unfortunate classname for picture and video overlay containers
+    const overlay = videoContainer.closest(kCanvasElementSelector); // unfortunate classname for picture and video overlay containers
     if (overlay) {
         let previous = overlay.previousElementSibling;
         while (previous) {
@@ -306,10 +306,8 @@ function SwapVideoPositionsInDom(
     firstVideoContainer: Element,
     secondVideoContainer: Element
 ) {
-    const firstOverlay = firstVideoContainer.closest(".bloom-textOverPicture");
-    const secondOverlay = secondVideoContainer.closest(
-        ".bloom-textOverPicture"
-    );
+    const firstOverlay = firstVideoContainer.closest(kCanvasElementSelector);
+    const secondOverlay = secondVideoContainer.closest(kCanvasElementSelector);
     if (!firstOverlay || !secondOverlay) {
         return;
     }
@@ -383,7 +381,7 @@ export function handlePlayClick(ev: MouseEvent, forcePlay?: boolean) {
     // where dragging is not applicable, or being called FROM the bubbleManager.
     if (
         !forcePlay &&
-        video.closest(kTextOverPictureSelector) &&
+        video.closest(kCanvasElementSelector) &&
         !video.closest(".drag-activity-play")
     ) {
         return;

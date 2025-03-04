@@ -4,8 +4,8 @@
 import { getEditablePageBundleExports } from "../../editViewFrame";
 import { BubbleManager } from "../../js/bubbleManager";
 
-export const kTextOverPictureClass = "bloom-textOverPicture";
-export const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
+export const kCanvasElementClass = "bloom-canvas-element";
+export const kCanvasElementSelector = `.${kCanvasElementClass}`;
 
 // Enhance: we could reduce cross-bundle dependencies by separately defining the BubbleManager interface
 // and just importing that here.

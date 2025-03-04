@@ -24,10 +24,12 @@ import {
     bubbleDescription,
     BubbleManager,
     initializeBubbleManager,
-    kTextOverPictureClass,
-    kTextOverPictureSelector,
     theOneBubbleManager
 } from "./bubbleManager";
+import {
+    kCanvasElementClass,
+    kCanvasElementSelector
+} from "../toolbox/overlay/overlayUtils";
 import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
@@ -304,10 +306,7 @@ function AddLanguageTags(container) {
             // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
             // August 2024: for overlays, the language is now displayed in the context controls box, and isn't
             // a problem for small text boxes.
-            if (
-                $this.width() < 100 &&
-                !this.closest(kTextOverPictureSelector)
-            ) {
+            if ($this.width() < 100 && !this.closest(kCanvasElementSelector)) {
                 return;
             }
 
@@ -753,7 +752,7 @@ export function SetupElements(
                     ?.getAttribute("id");
                 if (currentPageId === (window.top as any).lastPageId) {
                     elementToFocus = Array.from(
-                        document.getElementsByClassName(kTextOverPictureClass)
+                        document.getElementsByClassName(kCanvasElementClass)
                     ).find(e =>
                         e.hasAttribute("data-bloom-active")
                     ) as HTMLElement;
@@ -835,7 +834,7 @@ export function SetupElements(
                     );
                     if (emptyEditables.length) {
                         const emptyTextBlockOverlay = emptyEditables.find(e => {
-                            const div = e.closest(".bloom-textOverPicture");
+                            const div = e.closest(kCanvasElementSelector);
                             if (div === null) return false;
                             return div
                                 .getAttribute("data-bubble")
@@ -853,7 +852,7 @@ export function SetupElements(
                     }
                     // don't want overlays selected here
                     const editable = visibleEditables.find(
-                        e => e.closest(".bloom-textOverPicture") === null
+                        e => e.closest(kCanvasElementSelector) === null
                     );
                     if (editable) {
                         // focus on the first available origami text box

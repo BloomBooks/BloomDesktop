@@ -9,11 +9,8 @@ import {
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
-import {
-    kbackgroundImageClass,
-    kTextOverPictureSelector,
-    updateOverlayClass
-} from "./bubbleManager";
+import { kbackgroundImageClass, updateOverlayClass } from "./bubbleManager";
+import { kCanvasElementSelector } from "../toolbox/overlay/overlayUtils";
 
 import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
@@ -95,7 +92,7 @@ export function SetupImage(image) {
         // marked to fix BL-9460 (as of August 2024, the latter is just one cover image in Kyrg2020).
         if (
             !$(image.parent).hasClass("bloom-scale-with-code") &&
-            !image.closest(kTextOverPictureSelector)
+            !image.closest(kCanvasElementSelector)
         ) {
             image.style.width = "";
             image.style.height = "";
@@ -181,7 +178,7 @@ export function doImageCommand(
         // removeImageId method if it doesn't call the changeImage method.  See BL-13619.
     }
 
-    const topDiv = img.closest(".bloom-textOverPicture");
+    const topDiv = img.closest(kCanvasElementSelector);
     // Currently Gifs can only be added using the Games tool.
     // A gif is always an img in an overlay (textOverPicture, even though it is
     // not actually text) div, and we put a special class on the TOP element
@@ -408,7 +405,7 @@ export function getImageFromOverlay(
 
 // This is an odd concept, since "background overlay" is an oxymoron: it doesn't overlay
 // anything, but is the background on which we overlay other things. In its HTML structure,
-// however, it is an image overlay: an element with the (obsolete) bloom-textOverPicture
+// however, it is an image overlay: an element with the bloom-canvas-element
 // class (with a determined size and position in its style top, left, width, and height),
 // an image container (with 100% size) and an img (which may have top, left, and width
 // attributes to crop it, as well as the src that determines the actual image).

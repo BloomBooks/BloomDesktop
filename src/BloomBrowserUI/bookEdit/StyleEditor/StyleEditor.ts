@@ -35,6 +35,7 @@ import { kBloomYellow } from "../../bloomMaterialUITheme";
 import { RenderRoot } from "./AudioHilitePage";
 import { RenderOverlayRoot } from "./OverlayFormatPage";
 import { BubbleManager } from "../js/bubbleManager";
+import { kCanvasElementSelector } from "../toolbox/overlay/overlayUtils";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -1019,7 +1020,7 @@ export default class StyleEditor {
             fmtButton.style.top = bottom / scale - this.fmtButtonHeight + "px";
             fmtButton.style.left = "unset";
             fmtButton.style.right = "0";
-        } else if (element.closest(".bloom-textOverPicture")) {
+        } else if (element.closest(kCanvasElementSelector)) {
             // This element is inside a text-over-picture element.
             fmtButton.style.top = bottom / scale + "px";
             fmtButton.style.left = -5 - this.fmtButtonWidth + "px";
@@ -2255,9 +2256,7 @@ export default class StyleEditor {
                         }
                         // Show the overlay tab only if the box being edited is in an overlay
                         if (
-                            !this.boxBeingEdited.closest(
-                                ".bloom-textOverPicture"
-                            )
+                            !this.boxBeingEdited.closest(kCanvasElementSelector)
                         ) {
                             document.getElementById("overlay-page")?.remove();
                         }

@@ -61,6 +61,7 @@ import {
     showImageDescriptions
 } from "../imageDescription/imageDescriptionUtils";
 import { IAudioRecorder } from "./IAudioRecorder";
+import { kCanvasElementClass } from "../overlay/overlayUtils";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -668,7 +669,7 @@ export default class AudioRecording implements IAudioRecorder {
                 // overlays are hidden, don't include them
                 if (
                     transgroup.parentElement?.classList?.contains(
-                        "bloom-textOverPicture"
+                        kCanvasElementClass
                     )
                 ) {
                     return false;

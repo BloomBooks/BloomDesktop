@@ -3,7 +3,7 @@
 
 import { getPageIframeBody } from "../../utils/shared";
 import {
-    kTextOverPictureSelector,
+    kCanvasElementSelector,
     getBubbleManager
 } from "../toolbox/overlay/overlayUtils";
 
@@ -25,7 +25,7 @@ export function selectVideoContainer(
     }
     videoContainer?.classList.add("bloom-selected");
     const overlay = videoContainer?.closest(
-        kTextOverPictureSelector
+        kCanvasElementSelector
     ) as HTMLElement;
     // If it's in an overlay, make that overlay active. If not, make sure no overlay is active.
     // We don't need the confusion of two different ideas of what's active.
@@ -44,7 +44,7 @@ export function deselectVideoContainers() {
         document.getElementsByClassName(kVideoContainerClass) as any
     );
     videoContainers
-        .filter(x => !x.closest(kTextOverPictureSelector))
+        .filter(x => !x.closest(kCanvasElementSelector))
         .forEach(container => {
             container.classList.remove("bloom-selected");
         });
