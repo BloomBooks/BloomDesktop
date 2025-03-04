@@ -985,15 +985,15 @@ namespace Bloom.Publish
         {
             var imgContainer = img.ParentNode as SafeXmlElement;
             var overlay = imgContainer?.ParentNode as SafeXmlElement;
-            // Cropping is implemented using the interaction between an overlay (obsolete: bloom-textOverPicture)
+            // Cropping is implemented using the interaction between a canvas element
             // which specifies the visible area of the image by its height and width, and the img two levels
-            // down which may have adjusted width, left, and top to position part of itself in the overlay.
+            // down which may have adjusted width, left, and top to position part of itself in the canvas element.
             // An image can only be cropped, and we can only know what part of it to remove, if it occurs in
             // this structure. Other images (e.g., branding) are left alone. (At the stage where this code is run,
-            // background images, including all normal page content images, are still represented as overlays.)
+            // background images, including all normal page content images, are still represented as canvas elements.)
             if (
                 overlay == null
-                || !overlay.HasClass("bloom-textOverPicture")
+                || !overlay.HasClass(HtmlDom.kCanvasElementClass)
                 || !imgContainer.HasClass("bloom-imageContainer")
             )
                 return;

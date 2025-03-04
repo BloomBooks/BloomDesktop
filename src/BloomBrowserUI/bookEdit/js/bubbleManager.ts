@@ -35,10 +35,12 @@ import { adjustTarget } from "../toolbox/dragActivity/dragActivityTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { renderOverlayContextControls } from "./OverlayContextControls";
-import { data, get } from "jquery";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
+import {
+    kCanvasElementClass,
+    kCanvasElementSelector
+} from "../toolbox/overlay/overlayUtils";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
-import { MeasureText } from "../../utils/measureText";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
@@ -53,8 +55,6 @@ const kComicalGeneratedClass: string = "comical-generated";
 // For now we're keeping this name for backwards-compatibility, even though now the element could be
 // a video or even another picture.
 // In the process of moving these two definitions to overlayUtils.ts, but duplicating here for now.
-export const kTextOverPictureClass = "bloom-textOverPicture";
-export const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 export const kbackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
 
@@ -110,7 +110,7 @@ export class BubbleManager {
         overflowY: number,
         doNotShrink?: boolean
     ): boolean {
-        const wrapperBox = box.closest(kTextOverPictureSelector) as HTMLElement;
+        const wrapperBox = box.closest(kCanvasElementSelector) as HTMLElement;
         if (
             !wrapperBox ||
             wrapperBox.classList.contains("bloom-noAutoHeight")
@@ -205,7 +205,7 @@ export class BubbleManager {
     // When the format dialog changes the amount of padding for overlays, adjust their sizes
     // and positions (keeping the text in the same place).
     // This function assumes that the postion and size of overlays are determined by the
-    // top, left, width, and height properties of the .bloom-textOverPicture elements,
+    // top, left, width, and height properties of the canvas elements,
     // and that they are measured in pixels.
     public static adjustOverlaysForPaddingChange(
         container: HTMLElement,
@@ -214,7 +214,7 @@ export class BubbleManager {
         newPaddingStr: string // number+px
     ) {
         const wrapperBoxes = Array.from(
-            container.getElementsByClassName(kTextOverPictureClass)
+            container.getElementsByClassName(kCanvasElementClass)
         ) as HTMLElement[];
         const oldPadding = BubbleManager.pxToNumber(oldPaddingStr);
         const newPadding = BubbleManager.pxToNumber(newPaddingStr);
@@ -310,7 +310,7 @@ export class BubbleManager {
         }
         if (focusableDivs.length === 0) {
             // This could be a bit tricky, since the whole canvas is in a 'bloom-imageContainer'.
-            // But 'overPictureContainerElement' here is a div.bloom-textOverPicture element,
+            // But 'overPictureContainerElement' here is a canvas element,
             // so if we find any imageContainers inside of that, they are picture over picture elements.
             focusableDivs = Array.from(
                 overPictureContainerElement.getElementsByClassName(
@@ -386,7 +386,7 @@ export class BubbleManager {
         // todo: make sure comical is turned on for the right parent, in case there's more than one
         // image on the page?
         const overPictureElements = Array.from(
-            document.getElementsByClassName(kTextOverPictureClass)
+            document.getElementsByClassName(kCanvasElementClass)
         ).filter(
             x => !EditableDivUtils.isInHiddenLanguageBlock(x)
         ) as HTMLElement[];
@@ -547,7 +547,7 @@ export class BubbleManager {
     adjustOverlaysForCurrentLanguage(container: HTMLElement) {
         const overlayLang = GetSettings().languageForNewTextBoxes;
         Array.from(
-            container.getElementsByClassName("bloom-textOverPicture")
+            container.getElementsByClassName(kCanvasElementClass)
         ).forEach(top => {
             const editable = Array.from(
                 top.getElementsByClassName("bloom-editable")
@@ -641,7 +641,7 @@ export class BubbleManager {
     saveCurrentOverlayStateAsCurrentLangAlternate(container: HTMLElement) {
         const overlayLang = GetSettings().languageForNewTextBoxes;
         Array.from(
-            container.getElementsByClassName("bloom-textOverPicture")
+            container.getElementsByClassName(kCanvasElementClass)
         ).forEach((top: HTMLElement) =>
             BubbleManager.saveStateOfOverlayAsCurrentLangAlternate(
                 top,
@@ -655,7 +655,7 @@ export class BubbleManager {
         currentSvg?.setAttribute("data-lang", overlayLang);
     }
 
-    // "container" refers to a .bloom-textOverPicture div, which holds one (and only one) of the
+    // "container" refers to a .bloom-canvas-element div, which holds one (and only one) of the
     // 3 main types of "bubble": text, video or image.
     // This method will attach the focusin event to each of these.
     private addEventsToFocusableElements(
@@ -679,7 +679,7 @@ export class BubbleManager {
             }
         });
         Array.from(
-            document.getElementsByClassName(kTextOverPictureClass)
+            document.getElementsByClassName(kCanvasElementClass)
         ).forEach((element: HTMLElement) => {
             element.addEventListener("focusout", this.bubbleLosingFocus);
         });
@@ -836,7 +836,7 @@ export class BubbleManager {
         // hurt to make sure.
         initializeBubbleManager();
 
-        const bubbleElement = focusedElement.closest(kTextOverPictureSelector);
+        const bubbleElement = focusedElement.closest(kCanvasElementSelector);
         if (bubbleElement) {
             theOneBubbleManager.setActiveElement(bubbleElement as HTMLElement);
             // When a bubble is first clicked, we try hard not to let it get focus.
@@ -2428,7 +2428,7 @@ export class BubbleManager {
     // we remove cropping, adjust the aspect ratio, and move the control frame.
     updateBubbleForChangedImage(imgOrImageContainer: HTMLElement) {
         const overlay = imgOrImageContainer.closest(
-            kTextOverPictureSelector
+            kCanvasElementSelector
         ) as HTMLElement;
         if (!overlay) return;
         const img =
@@ -2638,7 +2638,7 @@ export class BubbleManager {
         // bloom-editables. So we clear any color on the textOverPicture div and set it on all of the
         // inner bloom-editables.
         const topBox = element.closest(
-            kTextOverPictureSelector
+            kCanvasElementSelector
         ) as HTMLDivElement;
         topBox.style.color = "";
         const editables = topBox.getElementsByClassName("bloom-editable");
@@ -2654,7 +2654,7 @@ export class BubbleManager {
         let isDefaultStyleColor = false;
         if (activeEl) {
             const topBox = activeEl.closest(
-                kTextOverPictureSelector
+                kCanvasElementSelector
             ) as HTMLDivElement;
             // const allUserStyles = StyleEditor.GetFormattingStyleRules(
             //     topBox.ownerDocument
@@ -2842,7 +2842,7 @@ export class BubbleManager {
             // and shrinks to one line, messing up the whole layout.
             if (!event.target || !(event.target as Element).closest) return;
             const topBox = (event.target as Element).closest(
-                kTextOverPictureSelector
+                kCanvasElementSelector
             ) as HTMLElement;
             if (!topBox) return;
             topBox.classList.remove("bloom-allowAutoShrink");
@@ -2853,7 +2853,7 @@ export class BubbleManager {
     // (by as much as we require when dragging them).
     public ensureBubblesIntersectParent(parentContainer: HTMLElement) {
         const overlays = Array.from(
-            parentContainer.getElementsByClassName(kTextOverPictureClass)
+            parentContainer.getElementsByClassName(kCanvasElementClass)
         );
         let changed = false;
         overlays.forEach(overlay => {
@@ -3168,7 +3168,7 @@ export class BubbleManager {
             const clickOnBubbleWeAreEditing =
                 this.theBubbleWeAreTextEditing ===
                     (event.target as HTMLElement)?.closest(
-                        kTextOverPictureSelector
+                        kCanvasElementSelector
                     ) && this.theBubbleWeAreTextEditing;
             if (event.altKey || event.ctrlKey || !clickOnBubbleWeAreEditing) {
                 event.preventDefault();
@@ -3437,7 +3437,7 @@ export class BubbleManager {
         );
         if (
             editable &&
-            editable.closest(kTextOverPictureSelector) ===
+            editable.closest(kCanvasElementSelector) ===
                 this.theBubbleWeAreTextEditing
         ) {
             // We're text editing in this overlay, let the mouse do its normal things.
@@ -3458,7 +3458,7 @@ export class BubbleManager {
         ) {
             // Going into edit mode on this bubble.
             this.theBubbleWeAreTextEditing = (event.target as HTMLElement)?.closest(
-                kTextOverPictureSelector
+                kCanvasElementSelector
             ) as HTMLElement;
             this.theBubbleWeAreTextEditing?.classList.add("bloom-focusedTOP");
             // We want to position the IP as if the user clicked where they did.
@@ -3877,7 +3877,7 @@ export class BubbleManager {
 
         // Clean up event listeners that we no longer need
         Array.from(
-            document.getElementsByClassName(kTextOverPictureClass)
+            document.getElementsByClassName(kCanvasElementClass)
         ).forEach(container => {
             const editables = this.getAllVisibileEditableDivs(
                 container as HTMLElement
@@ -3979,7 +3979,7 @@ export class BubbleManager {
         const parents = this.getAllPrimaryImageContainersOnPage();
         parents.forEach(imageContainer => {
             const bubbles = Array.from(
-                imageContainer.getElementsByClassName("bloom-textOverPicture")
+                imageContainer.getElementsByClassName(kCanvasElementClass)
             );
             let maxLevel = Math.max(
                 ...bubbles.map(
@@ -4426,7 +4426,7 @@ export class BubbleManager {
         const lastContainerChild = imageContainerJQuery.children().last();
         const wrapperHtml =
             "<div class='" +
-            kTextOverPictureClass +
+            kCanvasElementClass +
             "'>" +
             internalHtml +
             "</div>";
@@ -4478,7 +4478,7 @@ export class BubbleManager {
 
     // This 'wrapperBox' param has just been added to the DOM by JQuery before arriving here.
     // All of the text-based bubbles' default heights are based on the min-height of 30px set
-    // in bubble.less for a .bloom-textOverPicture element. For video or picture over pictures,
+    // in bubble.less for a .bloom-canvas-element element. For video or picture over pictures,
     // we want something a bit taller.
     private setDefaultWrapperBoxHeight(wrapperBox: JQuery) {
         const width = parseInt(wrapperBox.css("width"), 10);
@@ -5012,7 +5012,7 @@ export class BubbleManager {
 
         if (forWhat === "forGamePlayMode") {
             const allOverPictureElements = Array.from(
-                document.getElementsByClassName(kTextOverPictureClass)
+                document.getElementsByClassName(kCanvasElementClass)
             );
             // We don't want the user to be able to edit the text in the bubbles while playing a game.
             // This doesn't need to be in the game prepareActivity because we remove contenteditable
@@ -5057,7 +5057,7 @@ export class BubbleManager {
         }
         if (this.comicEditingSuspendedState === "forGamePlayMode") {
             const allOverPictureElements = Array.from(
-                document.getElementsByClassName(kTextOverPictureClass)
+                document.getElementsByClassName(kCanvasElementClass)
             );
             allOverPictureElements.forEach(element => {
                 const editables = Array.from(
@@ -5196,7 +5196,7 @@ export class BubbleManager {
     }
 
     public cleanupOverPictureElements() {
-        const allOverPictureElements = $("body").find(kTextOverPictureSelector);
+        const allOverPictureElements = $("body").find(kCanvasElementSelector);
         allOverPictureElements.each((index, element) => {
             const thisOverPictureElement = $(element);
 
@@ -5218,7 +5218,7 @@ export class BubbleManager {
     private removeJQueryResizableWidget() {
         try {
             const allOverPictureElements = $("body").find(
-                kTextOverPictureSelector
+                kCanvasElementSelector
             );
             // Removes the resizable functionality completely. This will return the element back to its pre-init state.
             allOverPictureElements.resizable("destroy");
@@ -5544,7 +5544,7 @@ export class BubbleManager {
             // various legacy behavior, such as hiding the old-style background placeholder.
             imageContainer.classList.add(kOverlayClass);
             bgOverlay = document.createElement("div");
-            bgOverlay.classList.add(kTextOverPictureClass);
+            bgOverlay.classList.add(kCanvasElementClass);
             bgOverlay.classList.add(kbackgroundImageClass);
 
             // Make a new image container to hold just the background image, inside the new overlay.
@@ -5560,7 +5560,7 @@ export class BubbleManager {
 
             // Set level so Comical will consider the new overlay to be under the existing ones.
             const overlayElements = Array.from(
-                imageContainer.getElementsByClassName("bloom-textOverPicture")
+                imageContainer.getElementsByClassName(kCanvasElementClass)
             );
             let minLevel = Math.min(
                 ...overlayElements.map(
@@ -5806,8 +5806,7 @@ export class BubbleManager {
             // Can't make a useful adjustment now, with no previous size to work from.
             // But if this is an image with overlays, we'll want to remember the size for next time.
             if (
-                container.getElementsByClassName(kTextOverPictureClass).length >
-                0
+                container.getElementsByClassName(kCanvasElementClass).length > 0
             ) {
                 this.updateImgSizeData(container);
             }
@@ -5977,7 +5976,7 @@ export class BubbleManager {
                     img.style.width = imgWidth * scale + "px";
                 }
             } else if (
-                child.classList.contains(kTextOverPictureClass) ||
+                child.classList.contains(kCanvasElementClass) ||
                 child.hasAttribute("data-target-of")
             ) {
                 // text overlay (or target): we want to leave the size alone and preserve the position of the center.
@@ -5997,7 +5996,7 @@ export class BubbleManager {
                 child.style.width = newChildWidth + "px";
                 child.style.height = newChildHeight + "px";
             }
-            if (child.classList.contains(kTextOverPictureClass)) {
+            if (child.classList.contains(kCanvasElementClass)) {
                 const tails: TailSpec[] = Bubble.getBubbleSpec(child).tails;
                 tails.forEach(tail => {
                     tail.tipX = newLeft + (tail.tipX - left) * scale;
@@ -6165,9 +6164,7 @@ export class BubbleManager {
 
 // For use by bloomImages.ts, so that newly opened books get this class updated for their images.
 export function updateOverlayClass(imageContainer: HTMLElement) {
-    if (
-        imageContainer.getElementsByClassName(kTextOverPictureClass).length > 0
-    ) {
+    if (imageContainer.getElementsByClassName(kCanvasElementClass).length > 0) {
         imageContainer.classList.add(kOverlayClass);
     } else {
         imageContainer.classList.remove(kOverlayClass);

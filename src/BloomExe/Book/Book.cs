@@ -4793,7 +4793,7 @@ namespace Bloom.Book
                     // NOT remove explicit sizes from images in overlays. And in 6.1 (late 2024)
                     // we started using explicit sizes in overlays for cropping, so removing them
                     // is harmful.
-                    || img.ParentWithClass("bloom-textOverPicture") != null
+                    || img.ParentWithClass(HtmlDom.kCanvasElementClass) != null
                 )
                     continue;
                 var style = img.GetOptionalStringAttribute("style", "");
@@ -5593,7 +5593,7 @@ namespace Bloom.Book
             foreach (var pageNode in pageNodes)
             {
                 var resultNode = pageNode.SelectSingleNode(
-                    ".//div[contains(@class,'bloom-textOverPicture')]"
+                    ".//div[contains(@class,'" + HtmlDom.kCanvasElementClass + "')]"
                 );
                 if (resultNode == null)
                     continue;

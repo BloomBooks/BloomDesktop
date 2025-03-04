@@ -1042,7 +1042,9 @@ namespace Bloom.Book
                 // in an older version of Bloom which nevertheless has comical, it will give it a normal bubble tail.
                 // This xpath finds a bubble with a "caption" style and a non-empty tail spec.
                 XPath =
-                    "//div[contains(@class,'bloom-textOverPicture') and contains(@data-bubble, '`caption`') and contains(@data-bubble, '`tails`:[{`')]"
+                    "//div[contains(@class,'"
+                    + HtmlDom.kCanvasElementClass
+                    + "') and contains(@data-bubble, '`caption`') and contains(@data-bubble, '`tails`:[{`')]"
             },
             new Feature()
             {
@@ -1059,7 +1061,9 @@ namespace Bloom.Book
                 BloomDesktopMinVersion = "6.1",
                 BloomReaderMinVersion = "1.0",
                 XPath =
-                    "//div[contains(@class,'bloom-textOverPicture')]/div[contains(@class, 'bloom-imageContainer')]/img[contains(@style, 'width') and contains(@style, 'left') ]"
+                    "//div[contains(@class,'"
+                    + HtmlDom.kCanvasElementClass
+                    + "')]/div[contains(@class, 'bloom-imageContainer')]/img[contains(@style, 'width') and contains(@style, 'left') ]"
             },
             new Feature()
             {
@@ -3608,7 +3612,7 @@ namespace Bloom.Book
             {
                 var container = svgElement.ParentNode; // bloom-imageContainer div (not gonna be null)
                 var textOverPictureDivs = container.SafeSelectNodes(
-                    "div[contains(@class, 'bloom-textOverPicture')]"
+                    "div[contains(@class, '" + HtmlDom.kCanvasElementClass + "')]"
                 );
                 if (textOverPictureDivs == null) // unlikely, but maybe possible
                     continue;

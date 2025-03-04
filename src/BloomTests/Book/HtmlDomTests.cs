@@ -1753,9 +1753,13 @@ p {
         {
             const string htmlContent =
                 @"<html>
-<head>" + kHtmlHeadContent + @"
+<head>"
+                + kHtmlHeadContent
+                + @"
 </head>
-<body>"+ kBodyContentWithoutClasses + @"
+<body>"
+                + kBodyContentWithoutClasses
+                + @"
 <div class=""Title-On-Cover-style"" lang=""en"">Test 5</div>
 <div class=""small-style"" lang=""en"">Test 6</div>
 <div class=""Inside-Back-Cover-style"" lang=""jmx"">Test 7</div>
@@ -1798,16 +1802,24 @@ p {
         {
             const string htmlContent =
                 @"<html>
-<head>" + kHtmlHeadContent + @"
+<head>"
+                + kHtmlHeadContent
+                + @"
 </head>
-<body>" + kBodyContentWithoutClasses + @"
+<body>"
+                + kBodyContentWithoutClasses
+                + @"
 <div class=""Title-On-Cover-style"" lang=""en"">Test 5</div>
 </body>
 </html>";
 
             var fonts = new HashSet<string>();
             HtmlDom.FindFontsUsedInCss(htmlContent, fonts, true);
-            Assert.AreEqual(4, fonts.Count, "Four fonts are actually used in the test html/css data");
+            Assert.AreEqual(
+                4,
+                fonts.Count,
+                "Four fonts are actually used in the test html/css data"
+            );
             Assert.IsTrue(
                 fonts.Contains("NikoshBAN"),
                 "The text/css data refers to NikoshBAN as a font."
@@ -1836,7 +1848,7 @@ p {
 					<div class='bloom-page' id='pageGuid'>
 						<div class='split-pane-component-inner'>
 							<div class='bloom-imageContainer'>
-								<div class='bloom-textOverPicture'>
+								<div class='bloom-canvas-element'>
 									<div class='bloom-translationGroup'>
 										<div class='bloom-editable'>
 											<p>Text over picture text</p>
@@ -2474,7 +2486,7 @@ p {
 							<div class='bloom-editable'>First text contents</div>
 						</div>
 						<div class='bloom-imageContainer'>
-							<div class='bloom-textOverPicture' style='left: 8.50603%; "
+							<div class='bloom-canvas-element' style='left: 8.50603%; "
                     + textColorLoc1
                     + @"'
 								data-bubble='{`version`:`1.0`"
@@ -2488,7 +2500,7 @@ p {
 							</div>
 						</div>
 						<div class='bloom-imageContainer'>
-							<div class='bloom-textOverPicture' style='left: 8.50603%; "
+							<div class='bloom-canvas-element' style='left: 8.50603%; "
                     + textColorLoc2
                     + @"'
 								data-bubble='{`version`:`1.0`"
@@ -2506,7 +2518,7 @@ p {
 				<div class='bloom-page' id='pageGuid2'>
 					<div class='split-pane-component-inner'>
 						<div class='bloom-imageContainer'>
-							<div class='bloom-textOverPicture' style='left: 8.50603%; "
+							<div class='bloom-canvas-element' style='left: 8.50603%; "
                     + textColorLoc3
                     + @"'
 								data-bubble='{`version`:`1.0`"

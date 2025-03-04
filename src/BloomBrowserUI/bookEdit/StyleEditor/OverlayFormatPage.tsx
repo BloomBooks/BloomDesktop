@@ -16,7 +16,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 
 // The "Overlay" page of the Format dialog launched from the cog control
-// in a text box that is embedded in overlay (bloom-textOverPicture).
+// in a text box that is embedded in a canvas element.
 export const OverlayFormatPage: React.FunctionComponent<{
     padding: string;
     onPropsChanged: (padding: string) => void;

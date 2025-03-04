@@ -75,7 +75,7 @@ textarea,
 // sure we don't mess up the old overlays but do get this rule for cropped images
 // where we need it is to look for the width in the style attribute, which is always
 // present for cropped images (and not otherwise, at least in overlays).
-.bloom-textOverPicture .bloom-imageContainer img[style*="width"] {
+.bloom-canvas-element .bloom-imageContainer img[style*="width"] {
     object-fit: unset;
     height: unset;
     // width will initially be 100%, but typically overridden by object style

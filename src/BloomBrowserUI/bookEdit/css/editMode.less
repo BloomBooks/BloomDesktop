@@ -164,8 +164,8 @@ body:has(#overlay-context-controls:hover) .bloom-page,
         // box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
         //     0 0 8px rgba(82, 168, 236, 0.6);
     }
-    .bloom-textOverPicture div.bloom-editable:focus, // not sure need this as well as the following, but it was here first
-    .bloom-textOverPicture[data-bloom-active="true"] div.bloom-editable {
+    .bloom-canvas-element div.bloom-editable:focus, // not sure need this as well as the following, but it was here first
+    .bloom-canvas-element[data-bloom-active="true"] div.bloom-editable {
         // editable in an overlay has the control frame, so any outline just produces a double border
         outline: none !important;
     }
@@ -177,7 +177,7 @@ body:has(#overlay-context-controls:hover) .bloom-page,
     // won't be visible. But then the  bluish one can be seen.)  See BL-14193.
     // A rule in base-page.less suppresses these (along with other borders) for bubbles
     // that are have natural borders to make them visible (i.e., comic style is not 'none')
-    .bloom-textOverPicture:not([data-bloom-active="true"])
+    .bloom-canvas-element:not([data-bloom-active="true"])
         div.bloom-editable:before {
         content: " ";
         position: absolute;
@@ -595,7 +595,7 @@ body.bloom-fullBleed {
 // We don't need the yellow border indicating the active video when the selected thing is an overlay.
 // We have a distinct mechanism for showing the selected overlay.
 // (We don't have overlay widgets and probably won't ever, but I included them just in case.)
-.bloom-textOverPicture {
+.bloom-canvas-element {
     .bloom-videoContainer,
     .bloom-widgetContainer {
         &.bloom-selected {
@@ -611,7 +611,7 @@ body.bloom-fullBleed {
 // until the origami drag is finished.
 .origami-drag {
     .bloom-imageContainer:has(.bloom-backgroundImage) {
-        .bloom-textOverPicture:not(.bloom-backgroundImage),
+        .bloom-canvas-element:not(.bloom-backgroundImage),
         .comical-generated {
             display: none !important;
         }
@@ -634,7 +634,7 @@ body.bloom-fullBleed {
 // or if there are no other overlays. Also, show the metadata button if there's a
 // problem.
 .bloom-imageContainer:not(.bloom-imageContainer .bloom-imageContainer):hover {
-    &:not(:has(.bloom-textOverPicture:not(.bloom-backgroundImage))),
+    &:not(:has(.bloom-canvas-element:not(.bloom-backgroundImage))),
     .bloom-backgroundImage[data-bloom-active="true"] {
         .editMetadataButton,
         .changeImageButton {
@@ -648,7 +648,7 @@ body.bloom-fullBleed {
 
 // In an image container that has overlays other than the background image, we want to
 // hide the placeholder except when the background image is active.
-.bloom-imageContainer:has(.bloom-textOverPicture:not(.bloom-backgroundImage)) {
+.bloom-imageContainer:has(.bloom-canvas-element:not(.bloom-backgroundImage)) {
     .bloom-backgroundImage:not([data-bloom-active="true"]) {
         img[src^="placeHolder.png"] {
             display: none;
@@ -731,7 +731,7 @@ img.hoverUp {
 // and shadow on a focused bloom-editable in an overlay. If we put that back for some
 // reason, we'll need a box-shadow:none (maybe !important) here because it looks wrong
 // with the wider control frame.
-.bloom-textOverPicture .bloom-editable:focus {
+.bloom-canvas-element .bloom-editable:focus {
     outline: none !important;
 }
 
@@ -1086,7 +1086,7 @@ div.cke_float {
     }
 }
 
-.bloom-textOverPicture .bloom-editable {
+.bloom-canvas-element .bloom-editable {
     padding-top: 1px; // for some reason this is needed to keep edit/non-edit text spacing the same
 }
 
@@ -1210,7 +1210,7 @@ body {
 
 // Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image
 // (This and several following rules were moved from content/bookLayout/bubble.less)
-.bloom-imageContainer:not(.hoverUp) .bloom-textOverPicture {
+.bloom-imageContainer:not(.hoverUp) .bloom-canvas-element {
     .bloom-editable {
         border: none;
 
@@ -1247,7 +1247,7 @@ body {
     hue-rotate(257deg) brightness(90%) contrast(84%);
 
 .bloom-imageContainer {
-    .bloom-textOverPicture {
+    .bloom-canvas-element {
         .bloom-translationGroup {
             #formatButton {
                 &:hover {
@@ -1277,7 +1277,7 @@ body {
     }
 }
 
-.bloom-textOverPicture {
+.bloom-canvas-element {
     #formatButton {
         display: none; // Enhance: maybe don't create at all?
     }
@@ -1357,10 +1357,10 @@ canvas.moving {
     cursor: move;
 }
 
-.bloom-textOverPicture:not(.bloom-focusedTOP) * {
+.bloom-canvas-element:not(.bloom-focusedTOP) * {
     cursor: default;
 }
-.bloom-textOverPicture.moving:not(.bloom-focusedTOP) * {
+.bloom-canvas-element.moving:not(.bloom-focusedTOP) * {
     cursor: move;
 }
 

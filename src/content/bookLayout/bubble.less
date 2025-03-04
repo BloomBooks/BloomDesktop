@@ -5,7 +5,7 @@
 @DefaultTextBoxHeight: @MinTextBoxHeight;
 @DragHandleBackgroundColor: transparent;
 
-.bloom-imageContainer.ui-ctrlDown .bloom-textOverPicture .ui-resizable-handle {
+.bloom-imageContainer.ui-ctrlDown .bloom-canvas-element .ui-resizable-handle {
     display: none !important;
 }
 
@@ -23,7 +23,7 @@
 .bloom-imageContainer {
     &.grabbable:not(.ui-jquery-resizing-in-progress) {
         &,
-        .bloom-textOverPicture
+        .bloom-canvas-element
             .bloom-translationGroup
             .bloom-editable.cke_editable {
             cursor: grab;
@@ -32,14 +32,14 @@
 
     &.grabbing:not(.ui-jquery-resizing-in-progress) {
         &,
-        .bloom-textOverPicture
+        .bloom-canvas-element
             .bloom-translationGroup
             .bloom-editable.cke_editable {
             cursor: grabbing;
         }
     }
 
-    .bloom-textOverPicture:not(.ui-resizable-resizing) {
+    .bloom-canvas-element:not(.ui-resizable-resizing) {
         .bloom-dragHandle {
             cursor: grab;
 
@@ -51,7 +51,7 @@
 
     &.ne-resizable {
         &,
-        .bloom-textOverPicture
+        .bloom-canvas-element
             .bloom-translationGroup
             .bloom-editable.cke_editable {
             cursor: ne-resize;
@@ -60,7 +60,7 @@
 
     &.nw-resizable {
         &,
-        .bloom-textOverPicture
+        .bloom-canvas-element
             .bloom-translationGroup
             .bloom-editable.cke_editable {
             cursor: nw-resize;
@@ -69,7 +69,7 @@
 
     &.sw-resizable {
         &,
-        .bloom-textOverPicture
+        .bloom-canvas-element
             .bloom-translationGroup
             .bloom-editable.cke_editable {
             cursor: sw-resize;
@@ -78,14 +78,14 @@
 
     &.se-resizable {
         &,
-        .bloom-textOverPicture
+        .bloom-canvas-element
             .bloom-translationGroup
             .bloom-editable.cke_editable {
             cursor: se-resize;
         }
     }
 
-    .bloom-textOverPicture {
+    .bloom-canvas-element {
         position: absolute;
         width: @DefaultTextBoxWidth;
         min-width: @MinTextBoxWidth;
@@ -154,7 +154,7 @@
     //
     // a TOP element that contains a data-bubble attribute and does NOT contain the substring
     // "`style`:`none`" in the value of the data-bubble attribute
-    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) {
+    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]) {
         .bloom-translationGroup {
             .bloom-editable {
                 // Use outline instead of border to avoid changing the size of the box
@@ -186,9 +186,9 @@
     // The inverse of the above... text boxes which do not have bubbles
     //
     // The case where it doesn't contain a data-bubble attribute at all
-    // .bloom-textOverPicture:not([data-bubble]),
+    // .bloom-canvas-element:not([data-bubble]),
     // // The case where it does contain a data-bubble attribute, but the style is none.
-    // .bloom-textOverPicture[data-bubble*="`style`:`none`"] {
+    // .bloom-canvas-element[data-bubble*="`style`:`none`"] {
     //     .bloom-translationGroup {
     //         .bloom-editable {
     //             &:focus {
@@ -218,7 +218,7 @@
 // seems acceptable, since layout will need to be checked anyway.
 .bloom-fullBleed
     .bloom-imageContainer
-    .bloom-textOverPicture[data-bubble*="`style`:`none`"] {
+    .bloom-canvas-element[data-bubble*="`style`:`none`"] {
     display: flex;
     flex-direction: column;
 }
@@ -229,7 +229,7 @@
     // We exclude "Just Text" bubbles with no background color because
     // 1) Visually there's not a lot of profit to it
     // 2) So for existing books there won't be a subtle movement in the text position
-    // We want to do this to almost all bloom-textOverPicture elements. The ones we don't want to do it
+    // We want to do this to almost all bloom-canvas-element elements. The ones we don't want to do it
     // to have data-bubble="...`style`:`none`...`backgroundColors`:[`transparent`]
     // or else data-bubble="...`style`:`none`..." and don't specify a background color at all.
     // So, the first rule says we do it to anything without style:none
@@ -240,8 +240,8 @@
     // 3) But if the text overflows the box, we don't want to center it, because that would make the top
     // and bottom of the text to disappear. So we exclude any box that has text overflow marked.  (Scrolling
     // doesn't work when the contents are forcibly centered.)  See BL-13606 (and BL-12750).
-    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow)),
-    .bloom-textOverPicture[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow)) {
+    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow)),
+    .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow)) {
         // Center the translationGroup within the textOverPic box,
         // instead of having the 2 px difference all at the bottom.
         display: flex;
@@ -297,7 +297,7 @@
 // We have some special rules that give image containers margin in various places
 // (e.g., traditional xmatter cover). But we don't want it inherited by overlay
 // image containers, because we expect them to exactly match the overlays.
-.bloom-imageContainer .bloom-textOverPicture .bloom-imageContainer {
+.bloom-imageContainer .bloom-canvas-element .bloom-imageContainer {
     margin: 0;
 }
 
@@ -305,7 +305,7 @@
 // fill their origami split (.customPage) but an IC in an overlay in a motion book
 // animation is not inside the page. At this point overlay ICs should always fill
 // the overlay (this is how we clip cropped images).
-.bloom-textOverPicture .bloom-imageContainer {
+.bloom-canvas-element .bloom-imageContainer {
     box-sizing: border-box;
     height: 100%;
     width: 100%;
