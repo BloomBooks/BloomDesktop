@@ -191,9 +191,19 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
             true
         );
     }
+
+    let startTryingToFocus = Date.now();
     // The prompt looks strange and the user can't type until we actually get focus onto the
     // editable. For some reason, simply calling focus doesn't always work.
     const tryToFocus = () => {
+        if (
+            !document.contains(editable) &&
+            Date.now() - startTryingToFocus > 2000
+        ) {
+            // If the document doesn't contain the editable and it's been more than 2s,
+            // Possibly the dialog has been closed, so we should stop trying to focus.
+            return;
+        }
         if (
             !editable.contains(document.activeElement) &&
             // I don't know how this can be false, but in my testing it often was and this loop
@@ -205,6 +215,38 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
             editable.focus();
             // keep trying to focus it until it is. Usually only takes a couple of tries at most.
             setTimeout(tryToFocus, 100);
+        } else {
+            // Finally got focus. But occasionally, especially with slower computers, we lose it
+            // again almost at once. One time it switched, for no reason I know of, to the
+            // Start button in game setup mode. Tab had not been pressed, and I'm pretty sure none
+            // of our code tries to put focus there, so I'm guessing it was some kind of browser
+            // built-in behavior (maybe it tries to focus something if the page doesn't do it
+            // soon enough??). In such cases we want to make yet another attempt to focus the
+            // thing we want. However, it's also possible that the user is trying to tab to the
+            // OK button or something like that, so we don't try again if there's a relatedTarget
+            // that's in the dialog.)
+            editable?.addEventListener(
+                "focusout",
+                e => {
+                    if (Date.now() - startTryingToFocus < 500) {
+                        // If we lose focus too quickly, it's likely the browser is somehow stealing
+                        // focus.
+                        const dlg = tg.closest(".MuiPaper-root") as HTMLElement;
+                        if (
+                            e.relatedTarget &&
+                            dlg &&
+                            dlg.contains(e.relatedTarget as Node)
+                        ) {
+                            // tabbed to something in the dialog, let it stand
+                            return;
+                        }
+                        // We can take this out evenually, but for now I want to ask our testers to look for it.
+                        console.log("Restoring stolen focus!");
+                        tryToFocus();
+                    }
+                },
+                { once: true }
+            );
         }
     };
     tryToFocus();
