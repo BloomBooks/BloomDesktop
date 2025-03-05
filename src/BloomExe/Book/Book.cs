@@ -1724,7 +1724,6 @@ namespace Bloom.Book
             }
             RemoveObsoleteSoundAttributes(OurHtmlDom);
             Storage.RepairEmptyPages();
-            RemoveObsoleteImageAttributes(OurHtmlDom);
             BringBookInfoUpToDate(oldMetaData);
             FixErrorsEncounteredByUsers(OurHtmlDom);
             AddReaderBodyAttributes(OurHtmlDom);
@@ -1787,6 +1786,10 @@ namespace Bloom.Book
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
+            Storage.MigrateToLevel5CanvasElement();
+
+            // Must be after MigrateToLevel5, because it is looking for the renamed canvas element class.
+            RemoveObsoleteImageAttributes(OurHtmlDom);
 
             // Make sure the appearance settings have checked the current state of the css files.
             // This should be done before UpdateSupportFiles, because this can affect what files
