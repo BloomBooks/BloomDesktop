@@ -199,12 +199,12 @@ body:has(#overlay-context-controls:hover) .bloom-page,
         .borderOnTopOfElement(var(--page-structure-color));
         // todo: remove?                 --bloom-editMode-custom-image-border-color,
 
-        // This shows the focus border on the root (hasOverlay) image container
+        // This shows the focus border on the root (bloom-has-canvas-element) image container
         // when it has been clicked on to show its editing buttons (:not(.bloom-hideImageButtons)).
         // Currently, something else typically actually has focus and may also show
         // this border. But at least it gives some extra feedback that something happened
         // by clicking the background image.
-        &.hasOverlay:not(.bloom-hideImageButtons) {
+        &.bloom-has-canvas-element:not(.bloom-hideImageButtons) {
             .borderOnTopOfElement(@focusBorderColor);
         }
     }

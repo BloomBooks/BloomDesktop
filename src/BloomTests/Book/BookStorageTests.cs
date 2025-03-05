@@ -11,6 +11,7 @@ using Bloom;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Edit;
 using Bloom.SafeXml;
 using Moq;
 using NUnit.Framework;
@@ -2112,6 +2113,70 @@ namespace BloomTests.Book
             assertThatDom.HasNoMatchForXpath("//link[contains(@href, 'Rubbish')]");
             // And this empty book has no reason to link to CustomBookStyles.css
             assertThatDom.HasNoMatchForXpath("//link[contains(@href, 'CustomBookStyles')]");
+        }
+
+        [Test]
+        public void PerformNecessaryMaintenanceOnBook_MigratesTextOverPictureEtcToCanvasElement()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='4'></meta>
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-imageContainer hasOverlay'>
+			<div class='bloom-textOverPicture bloom-backgroundImage' data-bubble='"
+                    + MinimalDataBubbleValue
+                    + @"'/>
+            </div>
+            <div class='bloom-textOverPicture' data-bubble='"
+                    + MinimalDataBubbleValue
+                    + @"'/>
+</div>
+	</div>
+</body></html>"
+            );
+            // When we change metadata ID
+            //var metaData = new BookMetaData();
+            //metaData.CurrentTool = "overlayTool"; // obsolete
+            //var state = ToolboxToolState.CreateFromToolId("overlay");
+            //metaData.ToolStates = new List<ToolboxToolState>(new[] { state });
+            //metaData.WriteToFolder(storage.FolderPath);
+
+            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            ;
+            Assert.That(maintLevel, Is.EqualTo("4"));
+
+            //SUT
+            storage.MigrateToLevel5CanvasElement();
+
+            //Verification
+            maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("5"));
+            var assertThatDom = AssertThatXmlIn.Dom(storage.Dom.RawDom);
+            assertThatDom.HasNoMatchForXpath("//div[@class='bloom-textOverPicture']");
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[@class='bloom-canvas-element']",
+                1
+            );
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[@class='bloom-canvas-element bloom-backgroundImage']",
+                1
+            );
+
+            assertThatDom.HasNoMatchForXpath("//div[@class='bloom-imageContainer hasOverlay']");
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[@class='bloom-imageContainer bloom-has-canvas-element']",
+                1
+            );
+
+            // When we change metadata ID
+            //var metaData2 = BookMetaData.FromFolder(storage.FolderPath);
+            //Assert.That(metaData2.CurrentTool, Is.EqualTo("canvasElementTool"));
+            //Assert.That(metaData2.ToolStates.Count, Is.EqualTo(1));
+            //Assert.That(metaData2.ToolStates[0].ToolId, Is.EqualTo("canvasElement"));
         }
     }
 }

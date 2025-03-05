@@ -38,7 +38,8 @@ import { renderOverlayContextControls } from "./OverlayContextControls";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
     kCanvasElementClass,
-    kCanvasElementSelector
+    kCanvasElementSelector,
+    kHasCanvasElementClass
 } from "../toolbox/overlay/overlayUtils";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
@@ -57,8 +58,6 @@ const kComicalGeneratedClass: string = "comical-generated";
 // In the process of moving these two definitions to overlayUtils.ts, but duplicating here for now.
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 export const kbackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
-
-export const kOverlayClass = "hasOverlay";
 
 type ResizeDirection = "ne" | "nw" | "sw" | "se";
 
@@ -742,14 +741,14 @@ export class BubbleManager {
             );
 
             // Since we may have just added an element, check if the container has at least one
-            // overlay element and add the 'hasOverlay' class.
+            // overlay element and add the 'bloom-has-canvas-element' class.
             updateOverlayClass(imageContainer);
         } else {
             // deleted a bubble. Don't try to focus anything.
             this.removeControlFrame(); // but don't leave this behind.
 
             // Also, since we just deleted an element, check if the original container no longer
-            // has any overlay elements and remove the 'hasOverlay' class.
+            // has any overlay elements and remove the 'bloom-has-canvas-element' class.
             updateOverlayClass(imageContainer);
         }
     }
@@ -5528,7 +5527,7 @@ export class BubbleManager {
         if (bgOverlay) {
             // I think this is redundant, but it got added by mistake at one point,
             // and will hide the placeholder if it's there, so make sure it's not.
-            bgOverlay.classList.remove(kOverlayClass);
+            bgOverlay.classList.remove(kHasCanvasElementClass);
             return; // already have one.
         }
         this.switchBackgroundToOverlay(imageContainer);
@@ -5542,7 +5541,7 @@ export class BubbleManager {
         )[0] as HTMLElement;
         if (!bgOverlay) {
             // various legacy behavior, such as hiding the old-style background placeholder.
-            imageContainer.classList.add(kOverlayClass);
+            imageContainer.classList.add(kHasCanvasElementClass);
             bgOverlay = document.createElement("div");
             bgOverlay.classList.add(kCanvasElementClass);
             bgOverlay.classList.add(kbackgroundImageClass);
@@ -5552,7 +5551,7 @@ export class BubbleManager {
             const newImgContainer = imageContainer.cloneNode(
                 false
             ) as HTMLElement;
-            newImgContainer.classList.remove(kOverlayClass);
+            newImgContainer.classList.remove(kHasCanvasElementClass);
             bgOverlay.appendChild(newImgContainer);
             const newImg = img.cloneNode(false) as HTMLImageElement;
             newImg.classList.remove("bloom-imageLoadError");
@@ -5646,7 +5645,7 @@ export class BubbleManager {
     private adjustBackgroundImageSizeToFit(
         containerWidth: number,
         containerHeight: number,
-        // The "overlay" div that contains the background image.
+        // The canvas element div that contains the background image.
         // (Since this is the background that we overlay things on, it is itself an
         // overlay only in the sense that it has the same HTML structure in order to
         // allow many commands and functions to work on it as if it were an ordinary overlay.)
@@ -6165,9 +6164,9 @@ export class BubbleManager {
 // For use by bloomImages.ts, so that newly opened books get this class updated for their images.
 export function updateOverlayClass(imageContainer: HTMLElement) {
     if (imageContainer.getElementsByClassName(kCanvasElementClass).length > 0) {
-        imageContainer.classList.add(kOverlayClass);
+        imageContainer.classList.add(kHasCanvasElementClass);
     } else {
-        imageContainer.classList.remove(kOverlayClass);
+        imageContainer.classList.remove(kHasCanvasElementClass);
     }
 }
 

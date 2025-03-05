@@ -105,6 +105,7 @@ namespace Bloom.Book
         void MigrateToLevel3PutImgFirst();
 
         void MigrateToLevel4UseAppearanceSystem();
+        void MigrateToLevel5CanvasElement();
 
         CollectionSettings CollectionSettings { get; }
 
@@ -160,12 +161,13 @@ namespace Bloom.Book
         ///   the DOM and can safely be done in memory. (Later in 6.0 we stopped doing incomplete
         ///   book updates in memory, so this distinction may no longer be helpful.))
         ///   Bloom 6.0  4 = Switched to using a theme (or explicitly using legacy)
+        ///   Bloom 6.2  5 = bloom-textOverPicture became bloom-canvas-element
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 4;
+        public const int kMaintenanceLevel = 5;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -1073,6 +1075,16 @@ namespace Bloom.Book
                 BloomReaderMinVersion = "3.3",
                 XPath =
                     "//div[@data-activity='drag-letter-to-target' or @data-activity='drag-image-to-target' or @data-activity='drag-sort-sentence' ]"
+            },
+            new Feature()
+            {
+                FeatureId = "canvasElement",
+                FeaturePhrase = "6.2 representation of canvas elements",
+                // Plan is to make a special exception to this for late releases of 6.1 and 6.0,
+                // which will know how to reverse the migration.
+                BloomDesktopMinVersion = "6.2",
+                BloomReaderMinVersion = "3.3",
+                XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
             }
         };
 
@@ -3851,6 +3863,37 @@ namespace Bloom.Book
             BookInfo.AppearanceSettings.WriteToFolder(FolderPath);
 
             Dom.UpdateMetaElement("maintenanceLevel", "4");
+        }
+
+        private void MigrateClassName(string oldClassName, string newClassName)
+        {
+            var elements = Dom.SafeSelectNodes($"//*[contains(@class, '{oldClassName}')]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            foreach (var element in elements)
+            {
+                element.SetAttribute(
+                    "class",
+                    element.GetAttribute("class").Replace(oldClassName, newClassName)
+                );
+            }
+        }
+
+        public void MigrateToLevel5CanvasElement()
+        {
+            if (GetMaintenanceLevel() >= 5)
+                return;
+            MigrateClassName("bloom-textOverPicture", HtmlDom.kCanvasElementClass);
+            MigrateClassName("hasOverlay", "bloom-has-canvas-element");
+            // When we change the ID used for the canvas element tool in the metadata
+            //var metaData = BookMetaData.FromFolder(FolderPath);
+            //var ceTool = metaData.ToolStates.FirstOrDefault(x => x.ToolId == "overlay");
+            //if (ceTool != null)
+            //    ceTool.ToolId = "canvasElement";
+            //if (metaData.CurrentTool == "overlayTool")
+            //    metaData.CurrentTool = "canvasElementTool";
+            //metaData.WriteToFolder(FolderPath);
+            Dom.UpdateMetaElement("maintenanceLevel", "5");
         }
 
         /// <summary>

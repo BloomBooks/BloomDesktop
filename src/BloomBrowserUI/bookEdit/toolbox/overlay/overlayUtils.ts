@@ -6,6 +6,7 @@ import { BubbleManager } from "../../js/bubbleManager";
 
 export const kCanvasElementClass = "bloom-canvas-element";
 export const kCanvasElementSelector = `.${kCanvasElementClass}`;
+export const kHasCanvasElementClass = "bloom-has-canvas-element";
 
 // Enhance: we could reduce cross-bundle dependencies by separately defining the BubbleManager interface
 // and just importing that here.
