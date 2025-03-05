@@ -7,7 +7,7 @@ import {
 } from "../requiresBloomEnterprise";
 import { normalDialogEnvironmentForStorybook } from "../BloomDialog/BloomDialogPlumbing";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta = {
     title: "RequiresBloomEnterprise"

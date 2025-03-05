@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 import { EPUBPublishScreen } from "../ePUBPublish/ePUBPublishScreen";
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import "../storiesApiMocks";

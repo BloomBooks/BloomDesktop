@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "../link";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta = {
     title: "Localizable Widgets/Link"

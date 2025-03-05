@@ -1,10 +1,14 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import { Radio, RadioGroup as MuiRadioGroup, FormControlLabel } from "@mui/material";
+import {
+    Radio,
+    RadioGroup as MuiRadioGroup,
+    FormControlLabel
+} from "@mui/material";
 import { MuiRadio } from "../muiRadio";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta = {
     title: "Localizable Widgets/MuiRadio"

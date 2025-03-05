@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 
 const meta: Meta<typeof DeviceAndControls> = {

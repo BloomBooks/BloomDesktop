@@ -12,7 +12,7 @@ import WinFormsStyleSelect from "../winFormsStyleSelect";
 import BookMakingSettingsControl from "../../collection/bookMakingSettingsControl";
 import BloomButton from "../bloomButton";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta = {
     title: "Misc"

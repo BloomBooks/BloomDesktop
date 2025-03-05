@@ -10,7 +10,7 @@ import {
     LocalizableNestedMenuItem
 } from "../localizableMenuItem";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta = {
     title: "Localizable Widgets/Localizable Menu"

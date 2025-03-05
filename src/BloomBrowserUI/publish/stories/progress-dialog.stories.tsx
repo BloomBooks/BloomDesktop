@@ -1,6 +1,9 @@
 import * as React from "react";
-import type { Meta, StoryObj } from "@storybook/react";
-import { ProgressDialogInner, ProgressState } from "../commonPublish/PublishProgressDialogInner";
+import { Meta, StoryObj } from "@storybook/react";
+import {
+    ProgressDialogInner,
+    ProgressState
+} from "../commonPublish/PublishProgressDialogInner";
 import { loremIpsum } from "lorem-ipsum";
 
 const testText =

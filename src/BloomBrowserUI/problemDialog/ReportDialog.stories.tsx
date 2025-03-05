@@ -1,53 +1,24 @@
-import { ProblemDialog, ProblemKind } from "./ProblemDialog";
-
-const message =
-    "Fake error with a line break<br> and <b>bold</b> and <a href='https://google.com'>link</a>...";
+import { ProblemKind } from "./ProblemDialog";
+import { ReportDialog } from "./ReportDialog";
 
 export default {
-    title: "ReportDialog"
+    title: "Problem Report/ReportDialog"
 };
 
-export const ProblemDialogProblemKindFatal = () => (
-    <ProblemDialog level={ProblemKind.Fatal} message={message} />
-);
+export const FatalError = () => <ReportDialog kind={ProblemKind.Fatal} />;
 
-ProblemDialogProblemKindFatal.story = {
-    name: "ProblemDialog ProblemKind.Fatal"
+FatalError.story = {
+    name: "FatalError"
 };
 
-export const ProblemDialogNotifyWithReport = () => (
-    <ProblemDialog
-        level={ProblemKind.Notify}
-        message={message}
-        reportLabel="Report"
-    />
-);
+export const NonFatalError = () => <ReportDialog kind={ProblemKind.NonFatal} />;
 
-ProblemDialogNotifyWithReport.story = {
-    name: "ProblemDialog notify with Report"
+NonFatalError.story = {
+    name: "NonFatalError"
 };
 
-export const ProblemDialogNotifyWithSecondaryButton = () => (
-    <ProblemDialog
-        level={ProblemKind.Notify}
-        message={message}
-        secondaryLabel="Secondary"
-    />
-);
+export const UserProblem = () => <ReportDialog kind={ProblemKind.User} />;
 
-ProblemDialogNotifyWithSecondaryButton.story = {
-    name: "ProblemDialog notify with secondary button"
-};
-
-export const ProblemDialogNotifyWithBoth = () => (
-    <ProblemDialog
-        level={ProblemKind.Notify}
-        message={message}
-        reportLabel="Report"
-        secondaryLabel="Secondary"
-    />
-);
-
-ProblemDialogNotifyWithBoth.story = {
-    name: "ProblemDialog notify with both"
+UserProblem.story = {
+    name: "UserProblem"
 };

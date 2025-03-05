@@ -1,7 +1,10 @@
 import * as React from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 import { LibraryPublishScreen } from "../LibraryPublish/LibraryPublishScreen";
-import { IUploadCollisionDlgData, UploadCollisionDlg } from "../LibraryPublish/uploadCollisionDlg";
+import {
+    IUploadCollisionDlgData,
+    UploadCollisionDlg
+} from "../LibraryPublish/uploadCollisionDlg";
 import { normalDialogEnvironmentForStorybook } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import "../storiesApiMocks";
 

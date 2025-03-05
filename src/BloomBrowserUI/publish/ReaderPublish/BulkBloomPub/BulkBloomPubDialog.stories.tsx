@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { BulkBloomPubDialog } from "./BulkBloomPubDialog";
 import { normalDialogEnvironmentForStorybook } from "../../../react_components/BloomDialog/BloomDialogPlumbing";
 
