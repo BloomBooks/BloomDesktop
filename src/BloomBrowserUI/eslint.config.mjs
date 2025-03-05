@@ -16,7 +16,7 @@ export default [
     ...tseslint.configs.recommended, // recommended for typescript
     // this might be alpha or beta? doc recommends for well-typed code, but comes up undefined.
     //tseslint.configs.recommendedTypeChecked,
-    eslintPluginPrettierRecommended,
+    // eslintPluginPrettierRecommended,
     // this object exists, but it seems to be in eslintrc mode, and eslint 9 chokes.
     // Instead, I list it as a plugin and import the rules directly into the rules section.
     //hooksPlugin.configs.recommended,
@@ -122,6 +122,15 @@ export default [
             //"@typescript-eslint/no-explicit-any": "off",
             //"@typescript-eslint/no-unused-vars": "off",
             //eqeqeq: "off"
+        }
+    },
+    // Add a specific override for Storybook files
+    {
+        files: ["**/*.stories.tsx"],
+        rules: {
+            // Disable React hooks rules for Storybook files
+            "react-hooks/rules-of-hooks": "off",
+            "react-hooks/exhaustive-deps": "off"
         }
     }
 ];

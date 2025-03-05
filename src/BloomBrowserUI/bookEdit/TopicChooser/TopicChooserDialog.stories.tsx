@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import type { Meta, StoryObj } from "@storybook/react";
 import { TopicChooserDialog } from "./TopicChooserDialog";
 import { normalDialogEnvironmentForStorybook } from "../../react_components/BloomDialog/BloomDialogPlumbing";
