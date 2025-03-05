@@ -80,6 +80,18 @@ namespace Bloom.Collection
             _settingsProtectionNormallyHidden = SettingsProtectionSingleton.Settings.NormallyHidden;
             InitializeComponent();
 
+            // We want to make the settingsProtectionLauncherButton1 look the same as other Bloom buttons, but
+            // it does not expose a way to do that in SIL.Windows.Forms v15.0.0. But it is late in 6.1, so risky
+            // to take on all the changes since that version. Therefore I have created
+            // a proxy for it this control which, when clicked, will invoke the OnClick event its internal label.
+            // Meanwhile we will submit a patch to libpalaso so that we can get rid of this hack.
+            settingsProtectionLauncherButton1.Visible = false;
+
+            // Update _settingsProtectionButtonProxy position to where settingsProtectionLauncherButton1 was
+            _settingsProtectionButtonProxy.Location = settingsProtectionLauncherButton1.Location;
+            _settingsProtectionButtonProxy.Size = settingsProtectionLauncherButton1.Size;
+            _settingsProtectionButtonProxy.Anchor = settingsProtectionLauncherButton1.Anchor;
+
             _language1Name.UseMnemonic = false; // Allow & to be part of the language display names.
             _language2Name.UseMnemonic = false; // This may be unlikely, but can't be ruled out.
             _language3Name.UseMnemonic = false; // See https://issues.bloomlibrary.org/youtrack/issue/BL-9919.
@@ -788,6 +800,36 @@ namespace Bloom.Collection
                 ExperimentalFeatures.kSpreadsheetImportExport,
                 _allowSpreadsheetImportExport.Checked
             );
+        }
+
+        /// <summary>
+        /// See note above about _settingsProtectionButtonProxy and its temporary purpose in life
+        /// </summary>
+        private void _settingsProtectionButtonProxy_LinkClicked(
+            object sender,
+            LinkLabelLinkClickedEventArgs e
+        )
+        {
+            // this.settingsProtectionLauncherButton1 has a private TextBox named betterLinkLabel1, which is the one we want to click
+            // use reflection to get at the control and raise the OnClick() event
+            var betterLinkLabel1 =
+                this.settingsProtectionLauncherButton1
+                    .GetType()
+                    .GetField(
+                        "betterLinkLabel1",
+                        System.Reflection.BindingFlags.NonPublic
+                            | System.Reflection.BindingFlags.Instance
+                    )
+                    .GetValue(this.settingsProtectionLauncherButton1) as TextBox;
+            // use reflection to raise the OnClick() event
+            betterLinkLabel1
+                .GetType()
+                .GetMethod(
+                    "OnClick",
+                    System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Instance
+                )
+                .Invoke(betterLinkLabel1, new object[] { EventArgs.Empty });
         }
     }
 }
