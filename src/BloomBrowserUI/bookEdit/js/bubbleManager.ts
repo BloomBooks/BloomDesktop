@@ -875,6 +875,13 @@ export class BubbleManager {
     // This will set the active textOverPicture element.
     public static onFocusSetActiveElement(event: FocusEvent) {
         if (BubbleManager.ignoreFocusChanges) return;
+        // The following is the only fix I've found after a lot of experimentation
+        // to prevent the active bubble changing when we choose a menu command that
+        // brings up a dialog, at least a C# dialog.
+        if (BubbleManager.skipNextFocusChange) {
+            BubbleManager.skipNextFocusChange = false;
+            return;
+        }
         if (BubbleManager.inPlayMode(event.currentTarget as Element)) {
             return;
         }
@@ -1031,6 +1038,9 @@ export class BubbleManager {
     // Some controls, such as MUI menus, temporarily steal focus. We don't want the usual
     // loss-of-focus behavior, so this allows suppressing it.
     public static ignoreFocusChanges: boolean;
+    // If the menu command brings up a dialog, we still don't want the active bubble to
+    // change. This flag allows us to ignore the next focus change.  See BL-14123.
+    public static skipNextFocusChange: boolean;
 
     public setActiveElement(element: HTMLElement | undefined) {
         if (this.activeElement !== element && this.activeElement) {
