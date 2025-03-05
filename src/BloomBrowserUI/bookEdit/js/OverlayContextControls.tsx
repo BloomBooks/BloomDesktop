@@ -97,13 +97,25 @@ const OverlayContextControls: React.FunctionComponent<{
         hasImage && img.getAttribute("src")?.startsWith("placeHolder.png");
     const missingMetadata =
         hasImage && !isPlaceHolder && !img.getAttribute("data-copyright");
-    const setMenuOpen = (open: boolean) => {
+    const setMenuOpen = (open: boolean, launchingDialog?: boolean) => {
         // Even though we've done our best to tell the MUI menu NOT to steal focus, it seems it still does...
         // or some other code somewhere is doing it when we choose a menu item. So we tell the bubble manager
         // to ignore focus changes while the menu is open.
-        BubbleManager.ignoreFocusChanges = open;
-
+        if (open) {
+            BubbleManager.ignoreFocusChanges = true;
+        }
         props.setMenuOpen(open);
+        // Setting ignoreFocusChanges to false immediately after closing the menu doesn't work,
+        // because the the focus change is still happening after the menu closes.  This timeout
+        // ensures that the focus change is ignored immediately after the menu closes.
+        // The skipNextFocusChange flag is used to prevent the focus change that happens when
+        // a dialog opened by the menu command closes.  See BL-14123.
+        if (!open) {
+            setTimeout(() => {
+                if (launchingDialog) BubbleManager.skipNextFocusChange = true;
+                BubbleManager.ignoreFocusChanges = false;
+            }, 0);
+        }
     };
 
     const menuEl = useRef<HTMLElement | null>();
@@ -183,10 +195,10 @@ const OverlayContextControls: React.FunctionComponent<{
         );
     }
     if (hasImage) {
-        addImageMenuOptions(menuOptions, props.overlay, img);
+        addImageMenuOptions(menuOptions, props.overlay, img, setMenuOpen);
     }
     if (hasVideo) {
-        addVideoMenuItems(menuOptions, videoContainer);
+        addVideoMenuItems(menuOptions, videoContainer, setMenuOpen);
     }
     if (isBackgroundImage) {
         const fillItem = {
@@ -646,13 +658,17 @@ function addTextMenuItems(
 
 function addVideoMenuItems(
     menuOptions: IMenuItemWithSubmenu[],
-    videoContainer: Element
+    videoContainer: Element,
+    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
 ) {
     menuOptions.unshift(
         {
             l10nId: "EditTab.Toolbox.ComicTool.Options.ChooseVideo",
             english: "Choose Video from your Computer...",
-            onClick: () => doVideoCommand(videoContainer, "choose"),
+            onClick: () => {
+                doVideoCommand(videoContainer, "choose");
+                setMenuOpen(false, true);
+            },
             icon: <SearchIcon css={getMenuIconCss()} />
         },
         {
@@ -687,7 +703,8 @@ function addVideoMenuItems(
 function addImageMenuOptions(
     menuOptions: IMenuItemWithSubmenu[],
     overlay: HTMLElement,
-    img: HTMLElement
+    img: HTMLElement,
+    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
 ) {
     const imgContainer = overlay.getElementsByClassName(
         "bloom-imageContainer"
@@ -707,7 +724,10 @@ function addImageMenuOptions(
         {
             l10nId: "EditTab.Image.ChooseImage",
             english: "Choose image from your computer...",
-            onClick: () => doImageCommand(img, "change"),
+            onClick: () => {
+                doImageCommand(img, "change");
+                setMenuOpen(false, true);
+            },
             icon: <SearchIcon css={getMenuIconCss()} />
         },
         {
@@ -829,7 +849,7 @@ function addAudioMenuItems(
     imageSound: string,
     noneLabel: string,
     setImageSound: (sound: string) => void,
-    setMenuOpen: (open: boolean) => void
+    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
 ) {
     // This is uncomfortably similar to the method by the same name in dragActivityTool.
     // And indeed that method has a case for handling an image sound, which is no longer
@@ -863,7 +883,7 @@ function addAudioMenuItems(
             l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
             english: "Choose...",
             onClick: () => {
-                setMenuOpen(false);
+                setMenuOpen(false, true);
                 updateSoundShowingDialog();
             }
         }
