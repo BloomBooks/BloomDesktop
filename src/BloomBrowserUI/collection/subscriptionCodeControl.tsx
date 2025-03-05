@@ -9,6 +9,7 @@ import {
     postJson,
     useApiBoolean,
     useApiState,
+    useApiString,
     useApiStringState
 } from "../utils/bloomApi";
 import { FontAwesomeIcon } from "../bloomIcons";
@@ -17,6 +18,7 @@ import { Stack } from "@mui/material";
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import ContentPaste from "@mui/icons-material/ContentPaste";
 import { Markdown } from "../react_components/markdown";
+import { useCallback, useState } from "react";
 
 type Status =
     | "None"
@@ -57,45 +59,38 @@ const dispatchSubscriptionChangedEvent = () => {
 
 // Component for managing subscription code input and display
 export const SubscriptionControls: React.FC = () => {
+    const {
+        subscriptionCodeStatus,
+        expiryDateStringAsYYYYMMDD,
+        brandingProjectKey,
+        subscriptionSummary
+    } = useSubscriptionInfo();
+
     const [status, setStatus] = React.useState<Status>("None");
     const [subscriptionCode, setSubscriptionCode] = useApiStringState(
         "settings/subscriptionCode",
         ""
     );
+
     const [editingBlorgBook] = useApiBoolean(
         "settings/lockedToOneDownloadedBook",
         false
     );
 
-    const [
-        expiryDateStringAsYYYYMMDD,
-        setExpiryDateStringAsYYYYMMDD
-    ] = useApiState("settings/subscriptionExpiration", "pending");
-
-    const [subscriptionSummary, setSubscriptionSummary] = React.useState<
-        string
-    >("");
     const [selectionPosition, setSelectionPosition] = React.useState<
         number | null
     >(0);
 
     // Whenever subscription code changes, trigger a refresh of the expiry date and summary
     React.useEffect(() => {
-        get("settings/subscriptionExpiration", result => {
-            setExpiryDateStringAsYYYYMMDD(result.data);
-            // Dispatch event to notify parent components
-            dispatchSubscriptionChangedEvent();
-        });
-        get("settings/subscriptionSummary", result => {
-            setSubscriptionSummary(result.data);
-        });
         dispatchSubscriptionChangedEvent();
-    }, [subscriptionCode, setExpiryDateStringAsYYYYMMDD]);
+    }, [subscriptionCode]);
 
     React.useEffect(() => {
         setStatus(
             getStatus(
                 subscriptionCode,
+                subscriptionCodeStatus,
                 expiryDateStringAsYYYYMMDD,
                 editingBlorgBook
             )
@@ -249,20 +244,25 @@ export const SubscriptionControls: React.FC = () => {
                     </Stack>
                 </Button>
             </div>
+
             <StatusText
                 status={status}
                 expiryDateStringAsYYYYMMDD={expiryDateStringAsYYYYMMDD}
             />
 
-            <div
-                className="summary"
-                css={css`
-                    height: ${subscriptionSummary ? "106px" : "0px"};
-                `}
-                dangerouslySetInnerHTML={{
-                    __html: subscriptionSummary
-                }}
-            />
+            {subscriptionSummary && (
+                <div
+                    className="summary"
+                    css={css`
+                        background-color: white;
+                        padding: 5px;
+                        height: 106px;
+                    `}
+                    dangerouslySetInnerHTML={{
+                        __html: subscriptionSummary
+                    }}
+                />
+            )}
         </div>
     );
 };
@@ -332,6 +332,7 @@ export function getSafeLocalizedDate(dateAsYYYYMMDD: string | undefined) {
 
 function getStatus(
     subscriptionCode: string,
+    subscriptionCodeStatus: string,
     expiryDateStringAsYYYYMMDD: string,
     editingBlorgBook: boolean
 ): Status {
@@ -339,28 +340,95 @@ function getStatus(
         `getStatus(${subscriptionCode}, ${expiryDateStringAsYYYYMMDD})`
     );
     const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
-    if (subscriptionCode === "") {
+    if (subscriptionCode === "" || subscriptionCodeStatus === "none") {
         return "None";
     }
-    if (!expiryDateStringAsYYYYMMDD || expiryDateStringAsYYYYMMDD === "invalid")
-        return "SubscriptionIncorrect";
-    if (expiryDateStringAsYYYYMMDD < todayAsYYYYMMDD) {
-        return "SubscriptionExpired";
-    }
+    if (subscriptionCodeStatus === "invalid") return "SubscriptionIncorrect";
     // this is the case where we have a valid-looking code, but the server
     // does not have special files for it
-    if (expiryDateStringAsYYYYMMDD === "unknown") {
+    if (subscriptionCodeStatus === "unknown") {
         return "SubscriptionUnknown";
     }
-    // i think this happens if it looks like they haven't finished typing
-    if (expiryDateStringAsYYYYMMDD === "incomplete") {
+    // if it looks like they haven't finished typing
+    if (subscriptionCodeStatus === "incomplete") {
         return "SubscriptionIncomplete";
     }
-    if (expiryDateStringAsYYYYMMDD <= todayAsYYYYMMDD) {
-        return "SubscriptionExpired";
-    }
+
     if (editingBlorgBook) {
         return "EditingBlorgBook";
     }
+    if (expiryDateStringAsYYYYMMDD < todayAsYYYYMMDD) {
+        return "SubscriptionExpired";
+    }
     return "SubscriptionGood";
 }
+
+// Note, this hook automatically refreshes when it anything raises the subscriptionCodeChanged event
+// It's mostly needed because our API for some reason hands out one morsel of data at a time. But when
+// that is fixed to just give a json with all the info about subscriptions, a simplified version of
+// this will still be helpful in that it auomatically refreshes all the components that us it when
+// the user types in the subscription code field.
+export const useSubscriptionInfo = () => {
+    const [subscriptionCodeStatus, setSubscriptionCodeStatus] = useState<
+        "ok" | "none" | "incomplete" | "invalid"
+    >("none");
+    const [
+        expiryDateStringAsYYYYMMDD,
+        setExpiryDateStringAsYYYYMMDD
+    ] = useState("");
+    const [subscriptionSummary, setSubscriptionSummary] = useState("");
+    const [brandingProjectKey, setBrandingProjectKey] = useState("");
+
+    // This is called once initially, then each time the user types in the subscription code field or does a paste
+    const querySubscriptionInfo = useCallback(() => {
+        get("settings/subscriptionExpiration", result => {
+            setExpiryDateStringAsYYYYMMDD(result.data);
+        });
+        get("settings/subscriptionCodeStatus", result => {
+            setSubscriptionCodeStatus(result.data);
+        });
+
+        get("settings/brandingProjectKey", result => {
+            setBrandingProjectKey(result.data);
+        });
+        get("settings/subscriptionSummary", result => {
+            setSubscriptionSummary(result.data);
+        });
+    }, [
+        setExpiryDateStringAsYYYYMMDD,
+        setSubscriptionCodeStatus,
+        setBrandingProjectKey,
+        setSubscriptionSummary
+    ]);
+
+    // refresh when the subscription code changes
+    React.useEffect(() => {
+        document.addEventListener(
+            "subscriptionCodeChanged",
+            querySubscriptionInfo
+        );
+
+        return () => {
+            document.removeEventListener(
+                "subscriptionCodeChanged",
+                querySubscriptionInfo
+            );
+        };
+    }, [
+        querySubscriptionInfo,
+        setExpiryDateStringAsYYYYMMDD,
+        setSubscriptionCodeStatus
+    ]);
+
+    // get intial info once at startup
+    React.useEffect(() => {
+        querySubscriptionInfo();
+    }, [querySubscriptionInfo]);
+
+    return {
+        subscriptionCodeStatus,
+        expiryDateStringAsYYYYMMDD,
+        brandingProjectKey,
+        subscriptionSummary
+    };
+};

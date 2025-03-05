@@ -1,9 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
-
-import { useApiString, get, useApiState } from "../utils/bloomApi";
+import { useApiString } from "../utils/bloomApi";
 import * as React from "react";
-import { useState, useEffect } from "react";
 import WarningIcon from "@mui/icons-material/Warning";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { kBloomWarning } from "../utils/colorUtils";
@@ -11,7 +9,11 @@ import { BoxWithIconAndText } from "../react_components/boxes";
 import { useL10n } from "../react_components/l10nHooks";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { Markdown } from "../react_components/markdown";
-import { getSafeLocalizedDate } from "../collection/subscriptionCodeControl";
+import {
+    getSafeLocalizedDate,
+    useSubscriptionInfo
+} from "../collection/subscriptionCodeControl";
+
 export const SubscriptionStatus: React.FunctionComponent<{
     minimalUI?: boolean;
 }> = props => {
@@ -19,45 +21,20 @@ export const SubscriptionStatus: React.FunctionComponent<{
         "settings/deprecatedBrandingsExpiryDate",
         "dbed-pending"
     );
-
-    const [
+    const {
+        subscriptionCodeStatus,
         expiryDateStringAsYYYYMMDD,
-        setExpiryDateStringAsYYYYMMDD
-    ] = useApiState("settings/subscriptionExpiration", "pending");
+        brandingProjectKey
+    } = useSubscriptionInfo();
 
     // If component has a prop override, use that instead of API value
     // if (props.overrideSubscriptionExpirationYYYYMMDD !== undefined) {
     //     expiryDateString = props.overrideSubscriptionExpirationYYYYMMDD;
     // }
 
-    let brandingProjectKey = useApiString(
-        "settings/brandingProjectKey",
-        "notyet"
-    );
-    if (props.minimalUI) brandingProjectKey = ""; // in the Settings Dialog context, the backend doesn't yet know what the user is clicking on, so it will give the wrong branding
+    let keyToShow = brandingProjectKey;
 
-    // Listen for subscription code changes and update expiry date
-    useEffect(() => {
-        const handleSubscriptionCodeChanged = () => {
-            get("settings/subscriptionExpiration", result => {
-                setExpiryDateStringAsYYYYMMDD(result.data);
-            });
-        };
-
-        // Add event listener
-        document.addEventListener(
-            "subscriptionCodeChanged",
-            handleSubscriptionCodeChanged
-        );
-
-        // Cleanup listener on unmount
-        return () => {
-            document.removeEventListener(
-                "subscriptionCodeChanged",
-                handleSubscriptionCodeChanged
-            );
-        };
-    }, [setExpiryDateStringAsYYYYMMDD]);
+    if (props.minimalUI) keyToShow = ""; // in the Settings Dialog context, the backend doesn't yet know what the user is clicking on, so it will give the wrong branding
 
     // a "deprecated" subscription is one that used to be eternal but is now being phased out
     const haveDeprecatedSubscription = expiryDateStringAsYYYYMMDD.startsWith(
@@ -72,23 +49,25 @@ export const SubscriptionStatus: React.FunctionComponent<{
         "Your {0} subscription expires on {1}.",
         "SubscriptionStatus.ExpiringSoonMessage",
         "",
-        brandingProjectKey,
+        keyToShow,
         localizedExpiryDate
     ).replace("  ", " "); // remove extra space
     const expiredMessage = useL10n(
         "Your {0} subscription expired on {1}.",
         "SubscriptionStatus.ExpiredMessage",
         "",
-        brandingProjectKey,
+        keyToShow,
         localizedExpiryDate
     );
     const defaultStatusMessage = useL10n(
         "Using subscription: {0}. Expires {1}",
         "SubscriptionStatus.DefaultMessage",
         "",
-        brandingProjectKey,
+        keyToShow,
         localizedExpiryDate
     );
+
+    if (subscriptionCodeStatus !== "ok") return null;
 
     // don't show anything until we have this info
     if (expiryDateStringAsYYYYMMDD === "") return null;
@@ -97,15 +76,10 @@ export const SubscriptionStatus: React.FunctionComponent<{
     // we only want to show it if the expiration is within 2 months (approximately 60 days).
     const kDaysBeforeWarningForNormalExpiration = 60;
 
-    if (
-        expiryDateStringAsYYYYMMDD === "incomplete" ||
-        expiryDateStringAsYYYYMMDD === "invalid"
-    )
-        return null;
     // no subscription
     if (expiryDateStringAsYYYYMMDD === "incomplete") return null;
     // else if it's already expired
-    else if (expiryDateStringAsYYYYMMDD < todayAsYYYYMMDD) {
+    if (expiryDateStringAsYYYYMMDD < todayAsYYYYMMDD) {
         return (
             <ExpiringSubscriptionStatus
                 expired
