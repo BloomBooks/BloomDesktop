@@ -123,5 +123,14 @@ export default [
             //"@typescript-eslint/no-unused-vars": "off",
             //eqeqeq: "off"
         }
+    },
+    // Add a specific override for Storybook files
+    {
+        files: ["**/*.stories.tsx", "**/stories.tsx"],
+        rules: {
+            // Disable React hooks rules for Storybook files
+            "react-hooks/rules-of-hooks": "off",
+            "react-hooks/exhaustive-deps": "off"
+        }
     }
 ];
