@@ -1,18 +1,18 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 
-import { useApiString } from "../utils/bloomApi";
+import { useApiString, get, useApiState } from "../utils/bloomApi";
 import * as React from "react";
+import { useState, useEffect } from "react";
 import WarningIcon from "@mui/icons-material/Warning";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { kBloomWarning } from "../utils/colorUtils";
-import { Link } from "@mui/material";
 import { BoxWithIconAndText } from "../react_components/boxes";
 import { useL10n } from "../react_components/l10nHooks";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { Markdown } from "../react_components/markdown";
+import { getSafeLocalizedDate } from "../collection/subscriptionCodeControl";
 export const SubscriptionStatus: React.FunctionComponent<{
-    overrideSubscriptionExpiration?: string;
     minimalUI?: boolean;
 }> = props => {
     const deprecatedBrandingsExpiryDate = useApiString(
@@ -20,61 +20,91 @@ export const SubscriptionStatus: React.FunctionComponent<{
         "dbed-pending"
     );
 
-    let expiryDateString = useApiString(
-        "settings/subscriptionExpiration",
-        "pending"
-    );
-    if (props.overrideSubscriptionExpiration !== undefined) {
-        expiryDateString = props.overrideSubscriptionExpiration;
-    }
+    const [
+        expiryDateStringAsYYYYMMDD,
+        setExpiryDateStringAsYYYYMMDD
+    ] = useApiState("settings/subscriptionExpiration", "pending");
+
+    // If component has a prop override, use that instead of API value
+    // if (props.overrideSubscriptionExpirationYYYYMMDD !== undefined) {
+    //     expiryDateString = props.overrideSubscriptionExpirationYYYYMMDD;
+    // }
+
     let brandingProjectKey = useApiString(
         "settings/brandingProjectKey",
         "notyet"
     );
     if (props.minimalUI) brandingProjectKey = ""; // in the Settings Dialog context, the backend doesn't yet know what the user is clicking on, so it will give the wrong branding
 
-    const expiryDate = new Date(expiryDateString);
+    // Listen for subscription code changes and update expiry date
+    useEffect(() => {
+        const handleSubscriptionCodeChanged = () => {
+            get("settings/subscriptionExpiration", result => {
+                setExpiryDateStringAsYYYYMMDD(result.data);
+            });
+        };
 
-    const formattedDate = expiryDate
-        ? expiryDate.toLocaleDateString(undefined, { timeZone: "UTC" }) // UTC here prevents us showing this date as a day earlier depending on the user's timezone
-        : "";
+        // Add event listener
+        document.addEventListener(
+            "subscriptionCodeChanged",
+            handleSubscriptionCodeChanged
+        );
+
+        // Cleanup listener on unmount
+        return () => {
+            document.removeEventListener(
+                "subscriptionCodeChanged",
+                handleSubscriptionCodeChanged
+            );
+        };
+    }, [setExpiryDateStringAsYYYYMMDD]);
 
     // a "deprecated" subscription is one that used to be eternal but is now being phased out
-    const haveDeprecatedSubscription = expiryDateString.startsWith(
+    const haveDeprecatedSubscription = expiryDateStringAsYYYYMMDD.startsWith(
         deprecatedBrandingsExpiryDate
     ); // just the year-month-day, ignore the time the time that follows it
+
+    const localizedExpiryDate = expiryDateStringAsYYYYMMDD
+        ? getSafeLocalizedDate(expiryDateStringAsYYYYMMDD)
+        : "";
 
     const expiringSoonMessage = useL10n(
         "Your {0} subscription expires on {1}.",
         "SubscriptionStatus.ExpiringSoonMessage",
         "",
         brandingProjectKey,
-        formattedDate
+        localizedExpiryDate
     ).replace("  ", " "); // remove extra space
     const expiredMessage = useL10n(
         "Your {0} subscription expired on {1}.",
         "SubscriptionStatus.ExpiredMessage",
         "",
         brandingProjectKey,
-        formattedDate
+        localizedExpiryDate
     );
     const defaultStatusMessage = useL10n(
         "Using subscription: {0}. Expires {1}",
         "SubscriptionStatus.DefaultMessage",
         "",
         brandingProjectKey,
-        formattedDate
+        localizedExpiryDate
     );
 
     // don't show anything until we have this info
-    if (expiryDateString === "") return null;
+    if (expiryDateStringAsYYYYMMDD === "") return null;
+    const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
+    // if the license is deprecated, we want to show the warning right away. Otherwise,
+    // we only want to show it if the expiration is within 2 months (approximately 60 days).
+    const kDaysBeforeWarningForNormalExpiration = 60;
 
-    const kMonthsBeforeWarning = 2; // changed from 3 to 2 months
-
-    if (expiryDateString === "incomplete") return null;
+    if (
+        expiryDateStringAsYYYYMMDD === "incomplete" ||
+        expiryDateStringAsYYYYMMDD === "invalid"
+    )
+        return null;
     // no subscription
     // else if it's already expired
-    else if (expiryDate.getTime() < Date.now()) {
+    else if (expiryDateStringAsYYYYMMDD < todayAsYYYYMMDD) {
         return (
             <ExpiringSubscriptionStatus
                 expired
@@ -82,9 +112,12 @@ export const SubscriptionStatus: React.FunctionComponent<{
             ></ExpiringSubscriptionStatus>
         );
     } else if (
-        haveDeprecatedSubscription || // we want to show these right away so that people notice
-        // use getMonthDifference
-        getMonthDifference(new Date(), expiryDate) <= kMonthsBeforeWarning
+        // it's a special deprecated case, so  want to show it right away so that people notice
+        haveDeprecatedSubscription ||
+        // or if it's expiring soon
+        (expiryDateStringAsYYYYMMDD &&
+            getDaysDifference(todayAsYYYYMMDD, expiryDateStringAsYYYYMMDD) <=
+                kDaysBeforeWarningForNormalExpiration)
     ) {
         return (
             <ExpiringSubscriptionStatus
@@ -139,12 +172,30 @@ const ExpiringSubscriptionStatus: React.FunctionComponent<{
         </BoxWithIconAndText>
     );
 };
-function getMonthDifference(startDate, endDate) {
-    const yearsDifference = endDate.getFullYear() - startDate.getFullYear();
-    const monthsDifference = endDate.getMonth() - startDate.getMonth();
+function getDaysDifference(startAsYYYYMMDD: string, endAsYYYYMMDD: string) {
+    // Explicitly parse the YYYY-MM-DD format to avoid browser/locale inconsistencies
+    const startParts = startAsYYYYMMDD.split("-");
+    const endParts = endAsYYYYMMDD.split("-");
 
-    // Calculate the total difference in months
-    const totalMonthsDifference = yearsDifference * 12 + monthsDifference;
+    if (startParts.length !== 3 || endParts.length !== 3) {
+        console.error("Date format error: expected YYYY-MM-DD format");
+        return 0;
+    }
 
-    return totalMonthsDifference;
+    const startYear = parseInt(startParts[0], 10);
+    const startMonth = parseInt(startParts[1], 10) - 1; // Months are 0-indexed in JavaScript Date
+    const startDay = parseInt(startParts[2], 10);
+
+    const endYear = parseInt(endParts[0], 10);
+    const endMonth = parseInt(endParts[1], 10) - 1; // Months are 0-indexed in JavaScript Date
+    const endDay = parseInt(endParts[2], 10);
+
+    const startDate = new Date(startYear, startMonth, startDay);
+    const endDate = new Date(endYear, endMonth, endDay);
+
+    // Calculate difference in milliseconds and convert to days
+    const diffInMs = endDate.getTime() - startDate.getTime();
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    return diffInDays;
 }

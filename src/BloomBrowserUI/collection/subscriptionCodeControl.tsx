@@ -1,20 +1,34 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import { Label } from "../react_components/l10nComponents";
+import { Div, Label } from "../react_components/l10nComponents";
 import { Link } from "../react_components/link";
-import { get, post, postJson } from "../utils/bloomApi";
+import {
+    get,
+    post,
+    postJson,
+    useApiBoolean,
+    useApiState,
+    useApiStringState
+} from "../utils/bloomApi";
 import { FontAwesomeIcon } from "../bloomIcons";
+import Button from "@mui/material/Button";
+import { Stack } from "@mui/material";
+import ContentCopy from "@mui/icons-material/ContentCopy";
+import ContentPaste from "@mui/icons-material/ContentPaste";
+import { Markdown } from "../react_components/markdown";
 
-interface SubscriptionControlsProps {
-    enterpriseStatus: string;
-    controlState: string;
-    subscriptionCode: string;
-    subscriptionExpiry: Date | null;
-    onSubscriptionCodeChanged: (code: string) => void;
-}
+type Status =
+    | "None"
+    | "SubscriptionGood"
+    | "SubscriptionUnknown"
+    | "SubscriptionExpired"
+    | "SubscriptionIncomplete"
+    | "SubscriptionIncorrect"
+    | "SubscriptionLegacy"
+    | "EditingBlorgBook";
 
-// values of controlState:
+// values of Status:
 // None: the None button is selected.
 // The remaining states all involve the EnterpriseSubscription button being selected
 // SubscriptionGood: a valid, current, known code has been entered (or remembered)
@@ -31,67 +45,82 @@ interface SubscriptionControlsProps {
 // SubscriptionLegacy: a special case where the subscription code is typically empty,
 // or just possibly otherwise incomplete, and this has been detected at startup
 //      We show a special message in an orange box and a red ! icon
-// SubscriptionDownload: a special case where a subscription code is incomplete
-//      beccause we are using a branding permitted in a special collection made by
+// EditingBlorgBook: a special case where a subscription code is incomplete
+//      because we are using a branding permitted in a special collection made by
 //      downloading a book for editing from BloomLibrary. We show a special message.
 
+// Custom event for subscription code changes
+const dispatchSubscriptionChangedEvent = () => {
+    const event = new Event("subscriptionCodeChanged");
+    document.dispatchEvent(event);
+};
+
 // Component for managing subscription code input and display
-export const SubscriptionControls: React.FC<SubscriptionControlsProps> = props => {
-    // State that was previously managed by the parent component
-    const [subscriptionSummary, setSubscriptionSummary] = React.useState("");
-    const [hasSubscriptionFiles, setHasSubscriptionFiles] = React.useState(
+export const SubscriptionControls: React.FC = () => {
+    const [status, setStatus] = React.useState<Status>("None");
+    const [subscriptionCode, setSubscriptionCode] = useApiStringState(
+        "settings/subscriptionCode",
+        ""
+    );
+    const [editingBlorgBook] = useApiBoolean(
+        "settings/lockedToOneDownloadedBook",
         false
     );
+
+    const [
+        expiryDateStringAsYYYYMMDD,
+        setExpiryDateStringAsYYYYMMDD
+    ] = useApiState("settings/subscriptionExpiration", "pending");
+
+    const [subscriptionSummary, setSubscriptionSummary] = React.useState<
+        string
+    >("");
     const [selectionPosition, setSelectionPosition] = React.useState<
         number | null
     >(0);
 
-    // Fetch subscription summary and files status when controlState changes
+    // Whenever subscription code changes, trigger a refresh of the expiry date and summary
     React.useEffect(() => {
-        if (
-            props.controlState === "SubscriptionGood" ||
-            props.controlState === "SubscriptionExpired"
-        ) {
-            get("settings/enterpriseSummary", result => {
-                setSubscriptionSummary(result.data);
-            });
-            get("settings/hasSubscriptionFiles", result => {
-                setHasSubscriptionFiles(result.data === "true");
-            });
-        } else if (
-            props.controlState === "None" ||
-            props.controlState === "SubscriptionIncorrect" ||
-            props.controlState === "SubscriptionIncomplete" ||
-            props.controlState === "SubscriptionUnknown"
-        ) {
-            setSubscriptionSummary("");
-            setHasSubscriptionFiles(false);
-        }
-    }, [props.controlState]);
+        get("settings/subscriptionExpiration", result => {
+            setExpiryDateStringAsYYYYMMDD(result.data);
+            // Dispatch event to notify parent components
+            dispatchSubscriptionChangedEvent();
+        });
+        get("settings/subscriptionSummary", result => {
+            setSubscriptionSummary(result.data);
+        });
+        dispatchSubscriptionChangedEvent();
+    }, [subscriptionCode, setExpiryDateStringAsYYYYMMDD]);
+
+    React.useEffect(() => {
+        setStatus(
+            getStatus(
+                subscriptionCode,
+                expiryDateStringAsYYYYMMDD,
+                editingBlorgBook
+            )
+        );
+    }, [subscriptionCode, expiryDateStringAsYYYYMMDD, editingBlorgBook]);
 
     // Handle copy/paste operations
     const handleCopy = () => {
         postJson("common/clipboardText", {
-            text: props.subscriptionCode
+            text: subscriptionCode
         });
     };
 
     const handlePaste = () => {
-        get("common/clipboardText", result =>
-            props.onSubscriptionCodeChanged(result.data)
-        );
-    };
-
-    const checkForUpdates = () => {
-        post("common/checkForUpdates");
+        get("common/clipboardText", result => {
+            setSubscriptionCode(result.data);
+        });
     };
 
     const shouldShowRedExclamation = () => {
         return (
-            props.controlState === "SubscriptionIncorrect" ||
-            props.controlState === "SubscriptionUnknown" ||
-            props.controlState === "SubscriptionExpired" ||
-            props.controlState === "SubscriptionLegacy"
+            status === "SubscriptionIncorrect" ||
+            status === "SubscriptionUnknown" ||
+            status === "SubscriptionExpired" ||
+            status === "SubscriptionLegacy"
         );
     };
 
@@ -105,7 +134,7 @@ export const SubscriptionControls: React.FC<SubscriptionControlsProps> = props =
             ) as HTMLInputElement)?.selectionStart
         );
 
-        props.onSubscriptionCodeChanged(event.target.value);
+        setSubscriptionCode(event.target.value);
     };
 
     // Restore cursor position after update
@@ -122,128 +151,114 @@ export const SubscriptionControls: React.FC<SubscriptionControlsProps> = props =
         }
     });
 
-    // Don't render anything if Enterprise is not selected
-    if (props.enterpriseStatus === "None" && props.controlState === "None") {
-        return null;
-    }
-
     return (
-        <div>
-            <Label
-                className="subscriptionCodeLabel"
-                l10nKey="Settings.Enterprise.SubscriptionCode"
-            >
-                Subscription Code:
-            </Label>
-
-            <input
-                id="subscriptionCodeInput"
-                className="subscriptionCodeInput"
-                type="text"
-                value={props.subscriptionCode}
-                onChange={handleSubscriptionCodeChanged}
-            />
-            {props.controlState === "SubscriptionGood" && (
-                <span className={"evaluationCode"}>
-                    <FontAwesomeIcon icon="check" />
-                </span>
-            )}
-            {props.controlState === "SubscriptionIncomplete" && (
-                <span className={"evaluationCode"}>
-                    <FontAwesomeIcon icon="question" />
-                </span>
-            )}
-            {shouldShowRedExclamation() && (
-                <span className={"evaluationCode"}>
-                    <FontAwesomeIcon icon="exclamation-circle" />
-                </span>
-            )}
-            <div className="editButton" onClick={handleCopy}>
-                <div className="editButtonAlign">
-                    <FontAwesomeIcon className="editIcon" icon="copy" />
-                    <Label
-                        className="editButtonLabel"
-                        l10nKey="EditTab.CopyButton"
-                    >
-                        Copy
-                    </Label>
-                </div>
-            </div>
-            <div className="editButton pasteButton" onClick={handlePaste}>
-                <div className="editButtonAlign">
-                    <FontAwesomeIcon className="editIcon" icon="paste" />
-                    <Label
-                        className="editButtonLabel"
-                        l10nKey="EditTab.PasteButton"
-                    >
-                        Paste
-                    </Label>
-                </div>
-            </div>
-            {props.controlState === "SubscriptionIncorrect" && (
-                <Label
-                    l10nKey="Settings.Enterprise.NotValid"
-                    className={"error"}
+        <div
+            css={css`
+                //gap: 10px;
+                display: flex;
+                flex-direction: column;
+            `}
+        >
+            {editingBlorgBook && (
+                <Div
+                    l10nKey="Settings.Enterprise.DownloadForEdit"
+                    className={"legacyBrandingName"}
                 >
-                    That code appears to be incorrect.
-                </Label>
-            )}
-            {props.controlState === "SubscriptionIncomplete" && (
-                <Label
-                    l10nKey="Settings.Enterprise.Incomplete"
-                    className={"incomplete"}
-                >
-                    The code should look like SOMENAME-123456-7890
-                </Label>
-            )}
-            {props.controlState === "SubscriptionUnknown" && (
-                <div>
-                    <Label
-                        l10nKey="Settings.Enterprise.UnknownCode"
-                        className="error"
-                    >
-                        This version of Bloom does not have the artwork that
-                        goes with that subscription.
-                    </Label>
-                    <Link
-                        className="error"
-                        l10nKey="Settings.Enterprise.CheckUpdates"
-                        onClick={checkForUpdates}
-                    >
-                        Check for updates
-                    </Link>
-                </div>
-            )}
-            {props.controlState === "SubscriptionExpired" && (
-                <Label
-                    l10nKey="Settings.Enterprise.Expired"
-                    className={"error"}
-                >
-                    That code has expired.
-                </Label>
-            )}
-
-            {props.controlState === "SubscriptionGood" && (
-                <div className={"expiration"}>
-                    <Label l10nKey="Settings.Enterprise.Expiration">
-                        Expires:
-                    </Label>
-                    <span>
-                        {props.subscriptionExpiry &&
-                            props.subscriptionExpiry.toLocaleDateString(
-                                undefined,
-                                {
-                                    year: "numeric",
-                                    day: "numeric",
-                                    month: "long"
-                                }
-                            )}
-                    </span>
-                </div>
+                    This collection is in "Download for Edit" mode. The book has
+                    the same Bloom Enterprise branding as when it was last
+                    uploaded.
+                </Div>
             )}
 
             <div
-                className={"summary" + (subscriptionSummary ? "" : " closed")}
+                css={css`
+                    display: flex;
+                    flex-direction: row;
+                    align-items: baseline;
+                `}
+            >
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: row;
+                        align-items: baseline;
+                        flex-grow: 1;
+                    `}
+                >
+                    <Label
+                        className="subscriptionCodeLabel"
+                        l10nKey="Settings.Enterprise.SubscriptionCode"
+                    >
+                        Subscription Code:
+                    </Label>
+
+                    <input
+                        id="subscriptionCodeInput"
+                        //className="subscriptionCodeInput"
+                        type="text"
+                        value={subscriptionCode}
+                        onChange={handleSubscriptionCodeChanged}
+                        css={css`
+                            width: 260px;
+                            margin-left: 5px;
+                            padding-right: 20px; // clear of icon
+                            flex-grow: 1;
+                            font-family: "Consolas"; // show zeros distinctly
+                            padding: 5px;
+                        `}
+                    />
+                    {status === "SubscriptionGood" && (
+                        <span className={"evaluationCode"}>
+                            <FontAwesomeIcon icon="check" />
+                        </span>
+                    )}
+                    {status === "SubscriptionIncomplete" && (
+                        <span className={"evaluationCode"}>
+                            <FontAwesomeIcon icon="question" />
+                        </span>
+                    )}
+                    {shouldShowRedExclamation() && (
+                        <span className={"evaluationCode"}>
+                            <FontAwesomeIcon
+                                icon="exclamation-circle"
+                                css={{ color: "red" }}
+                            />
+                        </span>
+                    )}
+                </div>
+                <Button variant="text" onClick={handleCopy} size="small">
+                    <Stack direction="column" alignItems="center">
+                        <ContentCopy />
+                        <Label
+                            className="editButtonLabel"
+                            l10nKey="EditTab.CopyButton"
+                        >
+                            Copy
+                        </Label>
+                    </Stack>
+                </Button>
+                <Button variant="text" onClick={handlePaste} size="small">
+                    <Stack direction="column" alignItems="center">
+                        <ContentPaste />
+                        <Label
+                            className="editButtonLabel"
+                            l10nKey="EditTab.PasteButton"
+                        >
+                            Paste
+                        </Label>
+                    </Stack>
+                </Button>
+            </div>
+            <StatusText
+                status={status}
+                expiryDateStringAsYYYYMMDD={expiryDateStringAsYYYYMMDD}
+            />
+
+            <div
+                className="summary"
+                css={css`
+                    height: ${subscriptionSummary ? "106px" : "0px"};
+                `}
                 dangerouslySetInnerHTML={{
                     __html: subscriptionSummary
                 }}
@@ -251,3 +266,101 @@ export const SubscriptionControls: React.FC<SubscriptionControlsProps> = props =
         </div>
     );
 };
+const StatusText: React.FC<{
+    status: Status;
+    expiryDateStringAsYYYYMMDD: string;
+}> = props => (
+    <div>
+        {props.status === "SubscriptionIncorrect" && (
+            <Label l10nKey="Settings.Enterprise.NotValid" className={"error"}>
+                That code appears to be incorrect.
+            </Label>
+        )}
+
+        {props.status === "SubscriptionIncomplete" && (
+            <Label
+                l10nKey="Settings.Enterprise.Incomplete"
+                className={"incomplete"}
+            >
+                The code should look like SOMENAME-123456-7890
+            </Label>
+        )}
+        {props.status === "SubscriptionUnknown" && (
+            <div>
+                <Label
+                    l10nKey="Settings.Enterprise.UnknownCode"
+                    className="error"
+                >
+                    This version of Bloom does not have the artwork that goes
+                    with that subscription.
+                </Label>
+                <Link
+                    className="error"
+                    l10nKey="Settings.Enterprise.CheckUpdates"
+                    onClick={() => post("common/checkForUpdates")}
+                >
+                    Check for updates
+                </Link>
+            </div>
+        )}
+        {props.status === "SubscriptionExpired" && (
+            <Label l10nKey="Settings.Enterprise.Expired" className={"error"}>
+                That code has expired.
+            </Label>
+        )}
+
+        {props.status === "SubscriptionGood" && (
+            <div className={"expiration"}>
+                <Label l10nKey="Settings.Enterprise.Expiration">Expires:</Label>
+                <span>
+                    {getSafeLocalizedDate(props.expiryDateStringAsYYYYMMDD)}
+                </span>
+            </div>
+        )}
+    </div>
+);
+export function getSafeLocalizedDate(dateAsYYYYMMDD: string | undefined) {
+    const dateParts = dateAsYYYYMMDD?.split("-");
+    return dateParts
+        ? new Date(
+              Number(dateParts[0]),
+              Number(dateParts[1]) - 1,
+              Number(dateParts[2])
+          ).toLocaleDateString()
+        : "";
+}
+
+function getStatus(
+    subscriptionCode: string,
+    expiryDateStringAsYYYYMMDD: string,
+    editingBlorgBook: boolean
+): Status {
+    console.log(
+        `getStatus(${subscriptionCode}, ${expiryDateStringAsYYYYMMDD})`
+    );
+    const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
+    if (subscriptionCode === "") {
+        return "None";
+    }
+    if (!expiryDateStringAsYYYYMMDD || expiryDateStringAsYYYYMMDD === "invalid")
+        return "SubscriptionIncorrect";
+    if (expiryDateStringAsYYYYMMDD < todayAsYYYYMMDD) {
+        return "SubscriptionExpired";
+    }
+    // this is the case where we have a valid-looking code, but the server
+    // does not have special files for it
+    if (expiryDateStringAsYYYYMMDD === "unknown") {
+        return "SubscriptionUnknown";
+    }
+    // i think this happens if it looks like they haven't finished typing
+    if (expiryDateStringAsYYYYMMDD === "incomplete") {
+        return "SubscriptionIncomplete";
+    }
+    if (expiryDateStringAsYYYYMMDD <= todayAsYYYYMMDD) {
+        return "SubscriptionExpired";
+    }
+    if (editingBlorgBook) {
+        return "EditingBlorgBook";
+    }
+    return "SubscriptionGood";
+}

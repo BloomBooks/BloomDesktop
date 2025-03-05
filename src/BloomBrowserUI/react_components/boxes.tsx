@@ -18,7 +18,7 @@ import { Box, SvgIconPropsSizeOverrides } from "@mui/material";
 import { OverridableStringUnion } from "@mui/types";
 
 export const kErrorBoxColor = "#eb3941";
-const kLightBlueBackground = "#F0FDFE";
+const kLightBlueBackground = "#faffff";
 
 export const BoxWithIconAndText: React.FunctionComponent<{
     hasBorder?: boolean;
