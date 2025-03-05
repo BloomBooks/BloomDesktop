@@ -195,10 +195,10 @@ const OverlayContextControls: React.FunctionComponent<{
         );
     }
     if (hasImage) {
-        addImageMenuOptions(menuOptions, props.overlay, img);
+        addImageMenuOptions(menuOptions, props.overlay, img, setMenuOpen);
     }
     if (hasVideo) {
-        addVideoMenuItems(menuOptions, videoContainer);
+        addVideoMenuItems(menuOptions, videoContainer, setMenuOpen);
     }
     if (isBackgroundImage) {
         const fillItem = {
@@ -658,7 +658,8 @@ function addTextMenuItems(
 
 function addVideoMenuItems(
     menuOptions: IMenuItemWithSubmenu[],
-    videoContainer: Element
+    videoContainer: Element,
+    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
 ) {
     menuOptions.unshift(
         {
@@ -702,7 +703,8 @@ function addVideoMenuItems(
 function addImageMenuOptions(
     menuOptions: IMenuItemWithSubmenu[],
     overlay: HTMLElement,
-    img: HTMLElement
+    img: HTMLElement,
+    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
 ) {
     const imgContainer = overlay.getElementsByClassName(
         "bloom-imageContainer"
@@ -847,7 +849,7 @@ function addAudioMenuItems(
     imageSound: string,
     noneLabel: string,
     setImageSound: (sound: string) => void,
-    setMenuOpen: (open: boolean) => void
+    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
 ) {
     // This is uncomfortably similar to the method by the same name in dragActivityTool.
     // And indeed that method has a case for handling an image sound, which is no longer
