@@ -2,29 +2,36 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { useMemo } from "react";
 import { Markdown } from "../react_components/markdown";
 import "./enterpriseSettings.less";
 import { tabMargins } from "./commonTabSettings";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { SubscriptionStatus } from "../collectionsTab/SubscriptionStatus";
 import { NoteBox } from "../react_components/boxes";
-import { SubscriptionControls } from "./subscriptionCodeControl";
+import {
+    SubscriptionControls,
+    useSubscriptionInfo
+} from "./subscriptionCodeControl";
 
-// This component implements the Bloom Enterprise tab of the Settings dialog.
-export const EnterpriseSettings: React.FunctionComponent = () => {
+// This component implements the Bloom Subscription tab of the Settings dialog.
+export const SubscriptionSettings: React.FunctionComponent = () => {
     // TODO Put this back in the display <---------------------------------------------------!!!!!!!!!!!
     const sileCodesUrl =
         "https://gateway.sil.org/display/LSDEV/Bloom+enterprise+subscription+codes";
 
+    const { subscriptionCodeStatus } = useSubscriptionInfo();
+
     return (
         <div
-            className="enterpriseSettings"
+            className="subscriptionSettings"
             css={css`
-                margin-top: ${tabMargins.top};
-                margin-left: ${tabMargins.side};
-                margin-right: ${tabMargins.side};
-                margin-bottom: ${tabMargins.bottom};
+                display: flex;
+                flex-direction: column;
+                height: calc(100% - ${tabMargins.top});
+                padding-top: ${tabMargins.top};
+                padding-left: ${tabMargins.side};
+                padding-right: ${tabMargins.side};
+                padding-bottom: ${tabMargins.bottom};
             `}
         >
             <Markdown l10nKey="Settings.Subscription.IntroText">
@@ -43,36 +50,41 @@ export const EnterpriseSettings: React.FunctionComponent = () => {
             <SubscriptionControls />
             <br />
             <SubscriptionStatus minimalUI />
-            <NoteBox
-                css={css`
-                    p {
-                        margin: 0; // markdown wraps everything in a p tag which adds a big margin we don't need
-                    }
-                `}
-            >
-                {/* wrap in a div with display inline */}
-                <div
+            {subscriptionCodeStatus === "none" && (
+                <NoteBox
                     css={css`
-                        display: inline;
+                        margin-top: auto; // push to bottom
+                        p {
+                            margin: 0; // markdown wraps everything in a p tag which adds a big margin we don't need
+                        }
                     `}
                 >
-                    <Markdown l10nKey="Settings.Enterprise.Community.Invitation">
-                        If your project is fully funded and managed by your
-                        local language community, you may qualify for a free
-                        [Bloom Community Subscription](https://example.com).
-                    </Markdown>
-                    <br />
-                    <Markdown
-                        l10nKey="Settings.Subscription.RequestSubscription"
-                        l10nParam0={"subscriptions@bloomlibrary.org"}
-                        l10nParam1={"mailto://subscriptions@bloomlibrary.org"}
+                    {/* wrap in a div with display inline */}
+                    <div
+                        css={css`
+                            display: inline;
+                        `}
                     >
-                        Please contact [%1](%2) to request your license.
-                    </Markdown>
-                </div>
-            </NoteBox>
+                        <Markdown l10nKey="Settings.Enterprise.Community.Invitation">
+                            If your project is fully funded and managed by your
+                            local language community, you may qualify for a free
+                            [Bloom Community Subscription](https://example.com).
+                        </Markdown>
+                        <br />
+                        <Markdown
+                            l10nKey="Settings.Subscription.RequestSubscription"
+                            l10nParam0={"subscriptions@bloomlibrary.org"}
+                            l10nParam1={
+                                "mailto://subscriptions@bloomlibrary.org"
+                            }
+                        >
+                            Please contact [%1](%2) to request your license.
+                        </Markdown>
+                    </div>
+                </NoteBox>
+            )}
         </div>
     );
 };
 
-WireUpForWinforms(() => <EnterpriseSettings />);
+WireUpForWinforms(() => <SubscriptionSettings />);

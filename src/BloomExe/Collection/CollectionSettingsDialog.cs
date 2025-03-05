@@ -87,6 +87,9 @@ namespace Bloom.Collection
             // Meanwhile we will submit a patch to libpalaso so that we can get rid of this hack.
             settingsProtectionLauncherButton1.Visible = false;
 
+            // when the new libpalaso lands here, we can throw out all this proxy stuff and just have this:
+            // settingsProtectionLauncherButton1.Link.ForeColor = Palette.BloomBlue;
+
             // Update _settingsProtectionButtonProxy position to where settingsProtectionLauncherButton1 was
             _settingsProtectionButtonProxy.Location = settingsProtectionLauncherButton1.Location;
             _settingsProtectionButtonProxy.Size = settingsProtectionLauncherButton1.Size;
@@ -433,7 +436,7 @@ namespace Bloom.Collection
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
 
             var oldBrand = _collectionSettings.BrandingProjectKey;
-            if (oldBrand != _brand || _collectionSettings.IgnoreExpiration)
+            // I don't understand this. For sure it means you cannot upgrade to a newer expiry date: if (oldBrand != _brand || _collectionSettings.IgnoreExpiration)
             {
                 _collectionSettings.BrandingProjectKey = _brand;
                 _collectionSettings.SubscriptionCode = _subscriptionCode;

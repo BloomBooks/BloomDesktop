@@ -243,13 +243,6 @@ namespace Bloom.web.controllers
                         request.ReplyWithText(kExpiryDateForDeprecatedBrandings);
                         return;
                     }
-                    if (_subscriptionExpiry == DateTime.MinValue)
-                    {
-                        if (SubscriptionCodeLooksIncomplete(SubscriptionCode))
-                            request.ReplyWithText("incomplete");
-                        else
-                            request.ReplyWithText("invalid");
-                    }
                     else if (_knownBrandingInSubscriptionCode)
                     {
                         // O is ISO 8601, the only format I can find that C# ToString() can produce and JS is guaranteed to parse.
@@ -260,7 +253,50 @@ namespace Bloom.web.controllers
                     }
                     else
                     {
+                        request.ReplyWithText("");
+                    }
+                },
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "subscriptionCodeStatus",
+                request =>
+                {
+                    if (_enterpriseStatus == EnterpriseStatus.Community)
+                    {
+                        request.ReplyWithText("ok");
+                        return;
+                    }
+
+                    if (String.IsNullOrWhiteSpace(SubscriptionCode))
+                    {
+                        request.ReplyWithText("none");
+                        return;
+                    }
+                    if (_subscriptionExpiry == DateTime.MinValue)
+                    {
+                        if (SubscriptionCodeLooksIncomplete(SubscriptionCode))
+                        {
+                            request.ReplyWithText("incomplete");
+                            return;
+                        }
+                        else
+                        {
+                            request.ReplyWithText("invalid");
+                            return;
+                        }
+                    }
+                    else if (_knownBrandingInSubscriptionCode)
+                    {
+                        // O is ISO 8601, the only format I can find that C# ToString() can produce and JS is guaranteed to parse.
+                        // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse
+                        request.ReplyWithText("ok");
+                        return;
+                    }
+                    else
+                    {
                         request.ReplyWithText("unknown");
+                        return;
                     }
                 },
                 false
