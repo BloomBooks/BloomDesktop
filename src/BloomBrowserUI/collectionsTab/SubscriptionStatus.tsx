@@ -1,8 +1,9 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 
-import { useApiString } from "../utils/bloomApi";
+import { useApiString, get, useApiState } from "../utils/bloomApi";
 import * as React from "react";
+import { useState, useEffect } from "react";
 import WarningIcon from "@mui/icons-material/Warning";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { kBloomWarning } from "../utils/colorUtils";
@@ -10,8 +11,8 @@ import { BoxWithIconAndText } from "../react_components/boxes";
 import { useL10n } from "../react_components/l10nHooks";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { Markdown } from "../react_components/markdown";
+import { getSafeLocalizedDate } from "../collection/subscriptionCodeControl";
 export const SubscriptionStatus: React.FunctionComponent<{
-    overrideSubscriptionExpiration?: string;
     minimalUI?: boolean;
 }> = props => {
     const deprecatedBrandingsExpiryDateAsYYYYMMDD = useApiString(
@@ -19,68 +20,92 @@ export const SubscriptionStatus: React.FunctionComponent<{
         "dbed-pending"
     );
 
-    let expiryDateStringAsYYYYMMDD = useApiString(
-        "settings/subscriptionExpiration",
-        "pending"
-    );
-    if (props.overrideSubscriptionExpiration !== undefined) {
-        expiryDateStringAsYYYYMMDD = props.overrideSubscriptionExpiration;
-    }
+    const [
+        expiryDateStringAsYYYYMMDD,
+        setExpiryDateStringAsYYYYMMDD
+    ] = useApiState("settings/subscriptionExpiration", "pending");
+
+    // If component has a prop override, use that instead of API value
+    // if (props.overrideSubscriptionExpirationYYYYMMDD !== undefined) {
+    //     expiryDateString = props.overrideSubscriptionExpirationYYYYMMDD;
+    // }
+
     let brandingProjectKey = useApiString(
         "settings/brandingProjectKey",
         "notyet"
     );
     if (props.minimalUI) brandingProjectKey = ""; // in the Settings Dialog context, the backend doesn't yet know what the user is clicking on, so it will give the wrong branding
 
+    // Listen for subscription code changes and update expiry date
+    useEffect(() => {
+        const handleSubscriptionCodeChanged = () => {
+            get("settings/subscriptionExpiration", result => {
+                setExpiryDateStringAsYYYYMMDD(result.data);
+            });
+        };
+
+        // Add event listener
+        document.addEventListener(
+            "subscriptionCodeChanged",
+            handleSubscriptionCodeChanged
+        );
+
+        // Cleanup listener on unmount
+        return () => {
+            document.removeEventListener(
+                "subscriptionCodeChanged",
+                handleSubscriptionCodeChanged
+            );
+        };
+    }, [setExpiryDateStringAsYYYYMMDD]);
+
     // a "deprecated" subscription is one that used to be eternal but is now being phased out
     const haveDeprecatedSubscription = expiryDateStringAsYYYYMMDD.startsWith(
-        deprecatedBrandingsExpiryDateAsYYYYMMDD
-    );
+        deprecatedBrandingsExpiryDate
+    ); // just the year-month-day, ignore the time the time that follows it
 
-    // We have to fight javascript if we don't want timezones to
-    // interfere.
-    const dateParts = expiryDateStringAsYYYYMMDD.split("-");
-    const localizedDateString = new Date(
-        Number(dateParts[0]),
-        Number(dateParts[1]) - 1,
-        Number(dateParts[2])
-    ).toLocaleDateString();
+    const localizedExpiryDate = expiryDateStringAsYYYYMMDD
+        ? getSafeLocalizedDate(expiryDateStringAsYYYYMMDD)
+        : "";
 
     const expiringSoonMessage = useL10n(
         "Your {0} subscription expires on {1}.",
         "SubscriptionStatus.ExpiringSoonMessage",
         "",
         brandingProjectKey,
-        localizedDateString
+        localizedExpiryDate
     ).replace("  ", " "); // remove extra space
     const expiredMessage = useL10n(
         "Your {0} subscription expired on {1}.",
         "SubscriptionStatus.ExpiredMessage",
         "",
         brandingProjectKey,
-        localizedDateString
+        localizedExpiryDate
     );
     const defaultStatusMessage = useL10n(
         "Using subscription: {0}. Expires {1}",
         "SubscriptionStatus.DefaultMessage",
         "",
         brandingProjectKey,
-        localizedDateString
+        localizedExpiryDate
     );
 
     // don't show anything until we have this info
     if (expiryDateStringAsYYYYMMDD === "") return null;
-
+    const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
     // if the license is deprecated, we want to show the warning right away. Otherwise,
     // we only want to show it if the expiration is within 2 months (approximately 60 days).
     const kDaysBeforeWarningForNormalExpiration = 60;
 
-    const nowAsYYYYMMDD = new Date().toISOString().slice(0, 10);
-
+    if (
+        expiryDateStringAsYYYYMMDD === "incomplete" ||
+        expiryDateStringAsYYYYMMDD === "invalid"
+    )
+        return null;
     // no subscription
     if (expiryDateStringAsYYYYMMDD === "incomplete") return null;
     // else if it's already expired
-    else if (nowAsYYYYMMDD >= expiryDateStringAsYYYYMMDD) {
+    else if (expiryDateStringAsYYYYMMDD < todayAsYYYYMMDD) {
         return (
             <ExpiringSubscriptionStatus
                 expired
@@ -92,7 +117,7 @@ export const SubscriptionStatus: React.FunctionComponent<{
         haveDeprecatedSubscription ||
         // or if it's expiring soon
         (expiryDateStringAsYYYYMMDD &&
-            getDaysDifference(nowAsYYYYMMDD, expiryDateStringAsYYYYMMDD) <=
+            getDaysDifference(todayAsYYYYMMDD, expiryDateStringAsYYYYMMDD) <=
                 kDaysBeforeWarningForNormalExpiration)
     ) {
         return (

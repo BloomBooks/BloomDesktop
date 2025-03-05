@@ -132,27 +132,26 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEnumEndpointHandler(
                 kApiUrlPart + "enterpriseStatus",
                 request => _enterpriseStatus,
-                (request, status) =>
-                {
-                    _enterpriseStatus = status;
-                    if (_enterpriseStatus == EnterpriseStatus.None)
-                    {
-                        _knownBrandingInSubscriptionCode = true;
-                        ResetBookshelf();
-                        BrandingChangeHandler("Default", null);
-                    }
-                    else if (_enterpriseStatus == EnterpriseStatus.Community)
-                    {
-                        ResetBookshelf();
-                        BrandingChangeHandler("Local-Community", null);
-                    }
-                    else
-                    {
-                        BrandingChangeHandler(
-                            GetBrandingFromCode(SubscriptionCode),
-                            SubscriptionCode
-                        );
-                    }
+                (request, status) => {
+                    //_enterpriseStatus = status;
+                    //if (_enterpriseStatus == EnterpriseStatus.None)
+                    //{
+                    //    _knownBrandingInSubscriptionCode = true;
+                    //    ResetBookshelf();
+                    //    BrandingChangeHandler("Default", null);
+                    //}
+                    //else if (_enterpriseStatus == EnterpriseStatus.Community)
+                    //{
+                    //    ResetBookshelf();
+                    //    BrandingChangeHandler("Local-Community", null);
+                    //}
+                    //else
+                    //{
+                    //    BrandingChangeHandler(
+                    //        GetBrandingFromCode(SubscriptionCode),
+                    //        SubscriptionCode
+                    //    );
+                    //}
                 },
                 false
             );
@@ -175,13 +174,20 @@ namespace Bloom.web.controllers
                     }
                     else // post
                     {
-                        var requestData = DynamicJson.Parse(request.RequiredPostJson());
-                        SubscriptionCode = requestData.subscriptionCode;
+                        SubscriptionCode = request.RequiredPostString();
                         _subscriptionExpiry = GetExpirationDate(SubscriptionCode);
                         var newBranding = GetBrandingFromCode(SubscriptionCode);
                         var oldBranding = !string.IsNullOrEmpty(_collectionSettings.InvalidBranding)
                             ? _collectionSettings.InvalidBranding
-                            : _collectionSettings.BrandingProjectKey;   // (update before expired)
+                            : "";
+
+                        if (newBranding == "Default")
+                            _enterpriseStatus = CollectionSettingsApi.EnterpriseStatus.None;
+                        else if (newBranding == "Local-Community")
+                            _enterpriseStatus = CollectionSettingsApi.EnterpriseStatus.Community;
+                        else
+                            _enterpriseStatus = CollectionSettingsApi.EnterpriseStatus.Subscription;
+
                         // If the user has entered a different subscription code then what was previously saved, we
                         // generally want to clear out the Bookshelf. But if the BrandingKey is the same as the old one,
                         // we'll leave it alone, since they probably renewed for another year or so and want to use the
@@ -212,7 +218,7 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "enterpriseSummary",
+                kApiUrlPart + "subscriptionSummary",
                 request =>
                 {
                     string branding = "";
@@ -242,14 +248,13 @@ namespace Bloom.web.controllers
                         if (SubscriptionCodeLooksIncomplete(SubscriptionCode))
                             request.ReplyWithText("incomplete");
                         else
-                            request.ReplyWithText("null");
+                            request.ReplyWithText("invalid");
                     }
                     else if (_knownBrandingInSubscriptionCode)
                     {
                         // O is ISO 8601, the only format I can find that C# ToString() can produce and JS is guaranteed to parse.
                         // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse
                         request.ReplyWithText(
-                            // Format as YYYY-MM-DD, with no time and no timezone
                             _subscriptionExpiry.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
                         );
                     }
