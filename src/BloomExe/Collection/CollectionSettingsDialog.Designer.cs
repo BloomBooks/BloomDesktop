@@ -79,6 +79,7 @@ namespace Bloom.Collection
 			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this._settingsProtectionButtonProxy = new System.Windows.Forms.LinkLabel();
             this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this._bookMakingTab.SuspendLayout();
@@ -139,6 +140,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._removeSignLanguageLink, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._removeSignLanguageLink, null);
 			this._L10NSharpExtender.SetLocalizingId(this._removeSignLanguageLink, "CollectionSettingsDialog.LanguageTab.RemoveLanguageLink");
+			this._removeSignLanguageLink.LinkColor = Palette.BloomBlue;
 			this._removeSignLanguageLink.Location = new System.Drawing.Point(159, 329);
 			this._removeSignLanguageLink.Name = "_removeSignLanguageLink";
 			this._removeSignLanguageLink.Size = new System.Drawing.Size(58, 19);
@@ -153,6 +155,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._changeSignLanguageLink, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._changeSignLanguageLink, null);
 			this._L10NSharpExtender.SetLocalizingId(this._changeSignLanguageLink, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
+			this._changeSignLanguageLink.LinkColor = Palette.BloomBlue;
 			this._changeSignLanguageLink.Location = new System.Drawing.Point(27, 329);
 			this._changeSignLanguageLink.Name = "_changeSignLanguageLink";
 			this._changeSignLanguageLink.Size = new System.Drawing.Size(65, 19);
@@ -194,6 +197,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._removeLanguage3Link, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._removeLanguage3Link, null);
 			this._L10NSharpExtender.SetLocalizingId(this._removeLanguage3Link, "CollectionSettingsDialog.LanguageTab.RemoveLanguageLink");
+			this._removeLanguage3Link.LinkColor = Palette.BloomBlue;
 			this._removeLanguage3Link.Location = new System.Drawing.Point(159, 243);
 			this._removeLanguage3Link.Name = "_removeLanguage3Link";
 			this._removeLanguage3Link.Size = new System.Drawing.Size(58, 19);
@@ -208,6 +212,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._changeLanguage3Link, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._changeLanguage3Link, null);
 			this._L10NSharpExtender.SetLocalizingId(this._changeLanguage3Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
+			this._changeLanguage3Link.LinkColor = Palette.BloomBlue;
 			this._changeLanguage3Link.Location = new System.Drawing.Point(27, 243);
 			this._changeLanguage3Link.Name = "_changeLanguage3Link";
 			this._changeLanguage3Link.Size = new System.Drawing.Size(65, 19);
@@ -222,6 +227,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._changeLanguage2Link, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._changeLanguage2Link, null);
 			this._L10NSharpExtender.SetLocalizingId(this._changeLanguage2Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
+			this._changeLanguage2Link.LinkColor = Palette.BloomBlue;
 			this._changeLanguage2Link.Location = new System.Drawing.Point(27, 158);
 			this._changeLanguage2Link.Name = "_changeLanguage2Link";
 			this._changeLanguage2Link.Size = new System.Drawing.Size(65, 19);
@@ -236,6 +242,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._changeLanguage1Link, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._changeLanguage1Link, null);
 			this._L10NSharpExtender.SetLocalizingId(this._changeLanguage1Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
+			this._changeLanguage1Link.LinkColor = Palette.BloomBlue;
 			this._changeLanguage1Link.Location = new System.Drawing.Point(27, 69);
 			this._changeLanguage1Link.Name = "_changeLanguage1Link";
 			this._changeLanguage1Link.Size = new System.Drawing.Size(65, 19);
@@ -733,6 +740,21 @@ namespace Bloom.Collection
             this._helpButton.UseVisualStyleBackColor = false;
             this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
             //
+            // _settingsProtectionButtonProxy
+            //
+            this._settingsProtectionButtonProxy.AutoSize = true;
+            this._L10NSharpExtender.SetLocalizableToolTip(this._settingsProtectionButtonProxy, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._settingsProtectionButtonProxy, null);
+            this._L10NSharpExtender.SetLocalizingId(this._settingsProtectionButtonProxy, "SettingsProtection.LauncherButtonLabel");
+            this._settingsProtectionButtonProxy.LinkColor = Palette.BloomBlue;
+            this._settingsProtectionButtonProxy.Location = new System.Drawing.Point(13, 500);
+            this._settingsProtectionButtonProxy.Name = "_settingsProtectionButtonProxy";
+            this._settingsProtectionButtonProxy.Size = new System.Drawing.Size(75, 19);
+            this._settingsProtectionButtonProxy.TabIndex = 23;
+            this._settingsProtectionButtonProxy.TabStop = true;
+            this._settingsProtectionButtonProxy.Text = "Settings Protection...";
+            this._settingsProtectionButtonProxy.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._settingsProtectionButtonProxy_LinkClicked);
+            //
             // CollectionSettingsDialog
             //
             this.AcceptButton = this._okButton;
@@ -741,6 +763,7 @@ namespace Bloom.Collection
 			this.CancelButton = this._cancelButton;
 			this.ClientSize = new System.Drawing.Size(652, 572);
 			this.ControlBox = false;
+            this.Controls.Add(this._settingsProtectionButtonProxy);
 			this.Controls.Add(this._helpButton);
 			this.Controls.Add(this._cancelButton);
 			this.Controls.Add(this.settingsProtectionLauncherButton1);
@@ -819,5 +842,6 @@ namespace Bloom.Collection
 		protected Label _signLanguageName;
 		protected Label _signLanguageLabel;
 		private Label _noRenameTeamCollectionLabel;
+		private LinkLabel _settingsProtectionButtonProxy;
 	}
 }
