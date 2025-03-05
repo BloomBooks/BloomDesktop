@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Meta, StoryObj } from "@storybook/react";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import PublishScreenBanner from "../commonPublish/PublishScreenBanner";

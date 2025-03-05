@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Meta, StoryObj } from "@storybook/react";
 import { EPUBPublishScreen } from "../ePUBPublish/ePUBPublishScreen";
 import BookMetadataDialog from "../metadata/BookMetadataDialog";

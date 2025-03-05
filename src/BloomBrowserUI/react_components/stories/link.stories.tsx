@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Link } from "../link";
 
 import { Meta, StoryObj } from "@storybook/react";

@@ -36,9 +36,8 @@ export default [
             "**/typings/**",
             // I don't think we have any js we want to lint, at least not using a typescript
             // parser. Most of our js files are other people's code, already excluded above.
-            // But something that happens if we don't exclude them like this breaks eslint
-            // altogether (it complains that prettier.resolveConfig is not a function and doesn't
-            // run at all).
+            // Also, as of Mar 2025, we are running prettier v1 which cannot handle some of these files
+            // and causes eslint to fail completely if we have eslintPluginPrettierRecommended enabled as above.
             // If we had much JS, it would probably benefit from linting even more than TS.
             // But as long as we don't, I think this can stand.
             "**/*.js"

@@ -1,7 +1,3 @@
-/** @jsx jsx **/
-import { jsx } from "@emotion/react";
-import * as React from "react";
-
 import { Expandable as Expandable1 } from "../expandable";
 import BloomButton from "../bloomButton";
 import { BloomSplitButton } from "../bloomSplitButton";

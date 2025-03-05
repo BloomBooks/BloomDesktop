@@ -1,4 +1,3 @@
-import * as React from "react";
 import { JoinTeamCollectionDialog } from "./JoinTeamCollectionDialog";
 import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialogPlumbing";
 

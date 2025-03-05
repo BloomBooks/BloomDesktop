@@ -1,4 +1,3 @@
-import * as React from "react";
 import { BookInfoCard } from "../bookInfoCard";
 
 import { Meta, StoryObj } from "@storybook/react";

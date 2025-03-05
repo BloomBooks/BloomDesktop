@@ -1,6 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
-import * as React from "react";
+import { css } from "@emotion/react";
 import { useState } from "react";
 import { Button, Divider, Menu } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
