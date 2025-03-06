@@ -2127,7 +2127,7 @@ namespace BloomTests.Book
 <body>
 	<div class='bloom-page'>
 		<div class='bloom-imageContainer hasOverlay'>
-			<div class='bloom-textOverPicture bloom-backgroundImage' data-bubble='"
+			<div class='bloom-textOverPicture bloom-backgroundImage' data-bubble-id='q9p48jh7' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
             </div>
@@ -2169,6 +2169,12 @@ namespace BloomTests.Book
             assertThatDom.HasNoMatchForXpath("//div[@class='bloom-imageContainer hasOverlay']");
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
                 "//div[@class='bloom-imageContainer bloom-has-canvas-element']",
+                1
+            );
+
+            assertThatDom.HasNoMatchForXpath("//div[@data-bubble-id]");
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[@data-draggable-id='q9p48jh7']",
                 1
             );
 

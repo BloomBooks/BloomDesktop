@@ -26,7 +26,7 @@ import { kBloomUnselectedTabBackground } from "../../utils/colorUtils";
 
 export const EnterpriseNeededScreen: React.FunctionComponent<{
     titleForDisplay: string;
-    firstOverlayPage: number;
+    firstCanvasElementPage: number;
 }> = props => {
     const needsEnterpriseText1 = useL10n(
         "The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.",
@@ -44,7 +44,7 @@ export const EnterpriseNeededScreen: React.FunctionComponent<{
         "Page {0} is the first page that uses Overlay elements.",
         "PublishTab.PublishRequiresEnterprise.FirstOverlayPage",
         "",
-        "" + props.firstOverlayPage
+        "" + props.firstCanvasElementPage
     );
 
     return (
@@ -135,7 +135,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
         checkoutNeeded: false,
         canUpload: false,
         bookTitle: "",
-        firstOverlayPage: 0
+        firstCanvasElementPage: 0
     });
     const [tabIndex, setTabIndex] = React.useState(
         kWaitForUserToChooseTabIndex
@@ -152,7 +152,8 @@ export const PublishTabPane: React.FunctionComponent = () => {
                 checkoutNeeded: result.data.cannotPublishWithoutCheckout,
                 canUpload: result.data.canUpload,
                 bookTitle: result.data.titleForDisplay,
-                firstOverlayPage: result.data.numberOfFirstPageWithOverlay
+                firstCanvasElementPage:
+                    result.data.numberOfFirstPageWithCanvasElement
             });
             setPublishTabReady(true);
         });
@@ -178,7 +179,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
         altContent = (
             <EnterpriseNeededScreen
                 titleForDisplay={publishTabInfo.bookTitle}
-                firstOverlayPage={publishTabInfo.firstOverlayPage}
+                firstCanvasElementPage={publishTabInfo.firstCanvasElementPage}
             />
         );
     } else if (publishTabInfo.checkoutNeeded) {

@@ -1,17 +1,17 @@
 @import (reference) "../../../../BloomBrowserUI/bloomUI.less";
 // Important classes and attributes that bloom game template pages contain or that
 // bloom maniupulates to run games (maybe the classes should all be bloom-X?):
-// drag-item-correct, drag-item-wrong: put on overlay items that should only show
+// drag-item-correct, drag-item-wrong: put on canvas element items that should only show
 //    in the correct or wrong tab, or the Play tab when the user has given an answer.
 // drag-activity-{start/correct/wrong/play/solution}: put on the div above the bloom-page
 //    to indicate state. One of the first four should always be present to indicate which
 //    tab we are in. When in the Play tab, one of drag-activity-{correct/wrong/solution} may
 //    also be present, indicating that we have checked an answer and found it correct (or wrong),
 //    or that we are showing the correct answer.
-// data-bubble-id attribute identifies an overlay that can be dragged in play mode. Except for distractors,
+// data-draggable-id attribute identifies an canvas element that can be dragged in play mode. Except for distractors,
 //    each has an associated 'target' that has the same id in its data-target-of attribute,
 //    indicating the correct place it should be dragged to.
-// drag-item-order-sentence is put on an overlay that, in Play mode, is replaced with a sequence
+// drag-item-order-sentence is put on a canvas element that, in Play mode, is replaced with a sequence
 //    of its words in random order.
 // drag-item-random-sentence is put on the div containing the randomized words in Play mode.
 // drag-item-order-word is put on the words that are part of such a sequence.
@@ -56,7 +56,7 @@
         display: none;
     }
 }
-[data-bubble-id] {
+[data-draggable-id] {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -204,7 +204,7 @@
 
 [data-target-of] {
     position: absolute;
-    // above overlay canvas so we can drag it when the canvas is active
+    // above canvas element canvas so we can drag it when the canvas is active
     z-index: @bubbleCanvasZIndex + 1;
     box-sizing: border-box;
     > * {
@@ -212,7 +212,7 @@
         // the contents are identical, this makes them a shadow.
         opacity: 50%;
     }
-    // in targets, as in image overlays, we want the height to be derived from the width.
+    // in targets, as in image canvas elements, we want the height to be derived from the width.
     .bloom-imageContainer img {
         height: unset;
     }
@@ -243,7 +243,7 @@
 // when testing we need to be able to drag the bubble over the target.
 // (But we don't want pictures that are just part of the background to be in front of targets.)
 .drag-activity-play {
-    .bloom-canvas-element[data-bubble-id] {
+    .bloom-canvas-element[data-draggable-id] {
         z-index: @bubbleCanvasZIndex + 2;
         &.bloom-ui-dragging {
             z-index: @bubbleCanvasZIndex + 3;
@@ -464,7 +464,7 @@
     padding: 3px 2px 2px 10px;
     box-sizing: border-box;
     // This puts it in front of other things so it can actually be clicked.
-    z-index: @textOverPictureZIndex;
+    z-index: @canvasElementZIndex;
     // In bloom-player, cursor seems to be auto, which here gives us a text editing cursor.
     // Not sure why that doesn't happen in play mode in Bloom desktop.
     // But anyway, we don't want it.

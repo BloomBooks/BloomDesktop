@@ -92,7 +92,7 @@ const plainColors: IColorInfo[] = [
     { name: "partialTransparent", colors: [kBloomGray], opacity: 0.5 }
 ];
 
-// These colors are what the overlay tool has been using for the background color chooser.
+// These colors are what the canvas element tool has been using for the background color chooser.
 export const TextBackgroundColors: IColorInfo[] = plainColors.concat(
     specialColors
 );

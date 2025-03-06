@@ -8,7 +8,7 @@ import { kBloomBlue, kBloomGray } from "../../../utils/colorUtils";
 import {
     adjustTarget,
     enableDraggingTargets,
-    makeTargetForBubble
+    makeTargetForDraggable
 } from "../dragActivity/dragActivityTool";
 import {
     ImagePlaceholderIcon,
@@ -17,38 +17,39 @@ import {
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { SignLanguageIcon } from "../../../react_components/icons/SignLanguageIcon";
 import { GifIcon } from "../../../react_components/icons/GifIcon";
-import { theOneBubbleManager } from "../../js/bubbleManager";
+import { theOneCanvasElementManager } from "../../js/bubbleManager";
 import { Bubble, Comical } from "comicaljs";
 import { Point } from "../../js/point";
+import { getCanvasElementManager } from "./overlayUtils";
 
 const ondragstart = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
     style: string
 ) => {
-    // Here "text/x-bloombubble" is a unique, private data type recognised
+    // Here "text/x-bloomCanvasElement" is a unique, private data type recognised
     // by ondragover and ondragdrop methods that BubbleManager
     // attaches to bloom image containers. It doesn't make sense to
     // drag these objects anywhere else, so they don't need any of
     // the common data types. Using a private type means that other drop handlers
     // will not accept them. It is often recommended to include a text/plain value,
     // but it really doesn't make sense to drop the text associated with these
-    // bubbles anywhere outside Bloom. I believe the text/x- prefix makes these
+    // canvas elements anywhere outside Bloom. I believe the text/x- prefix makes these
     // valid (unregistered) mime types, which technically this argument is supposed
     // to be.
-    ev.dataTransfer.setData("text/x-bloombubble", style);
+    ev.dataTransfer.setData("text/x-bloomCanvasElement", style);
     ev.dataTransfer.setData("text/x-bloomdraggable", "true");
     const target = ev.currentTarget as HTMLElement;
     const rect = target.getBoundingClientRect();
-    // add this (typically negative) amount to drop.clientY to get where the top of the new bubble should be
+    // add this (typically negative) amount to drop.clientY to get where the top of the new canvas element should be
     const top = (rect.top - ev.clientY) / Point.getScalingFactor();
-    // add this (typically positive) amount to drop.clientX to get where the right of the new bubble should be
+    // add this (typically positive) amount to drop.clientX to get where the right of the new canvas element should be
     const right = (rect.right - ev.clientX) / Point.getScalingFactor();
     // This bizarre trick is necessary because the drag-and-drop security model won't let ondragend
     // access the content of a data transfer item, but it can see all their names.
     ev.dataTransfer.setData(`text/x-right-top-offset:${right},${top}`, "");
 };
 
-// When a template bubble is dropped on the image, we create a new bubble
+// When a template canvas element is dropped on the image, we create a new canvas element
 const ondragend = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
     style: string,
@@ -57,14 +58,14 @@ const ondragend = (
     addClasses?: string,
     contentL10nKey?: string, // used to pre-populate relevant alternatives
     hintL10nKey?: string,
-    // Anything extra the client wants to do to the bubble
+    // Anything extra the client wants to do to the canvas element
     extraAction?: (top: HTMLElement) => void,
-    userDefinedStyleName?: string // bubble should get this plus "-style" (or Bubble-style) in class list
+    userDefinedStyleName?: string // canvas element should get this plus "-style" (or Bubble-style) in class list
 ) => {
-    const bubbleManager = OverlayTool.bubbleManager();
-    if (!bubbleManager) {
+    const canvasElementManager = getCanvasElementManager();
+    if (!canvasElementManager) {
         // This check is mainly to keep lint happy. We should never get here.
-        console.error("No bubble manager at end of drag.");
+        console.error("No CanvasElementManager at end of drag.");
         return;
     }
     let rightTopOffset = "";
@@ -79,21 +80,21 @@ const ondragend = (
         }
     }
 
-    const bubble = bubbleManager.addOverPictureElementWithScreenCoords(
+    const canvasElement = canvasElementManager.addCanvasElementWithScreenCoords(
         ev.screenX,
         ev.screenY,
         style,
         userDefinedStyleName,
         rightTopOffset
     );
-    if (!bubble) return;
+    if (!canvasElement) return;
     if (extraAction) {
-        extraAction(bubble);
+        extraAction(canvasElement);
     }
     if (addClasses) {
         // trim because an exception is thrown if we try to add a class that is empty,
         // which we will otherwise do if there is a leading or trailing space.
-        bubble.classList.add(...addClasses.trim().split(" "));
+        canvasElement.classList.add(...addClasses.trim().split(" "));
     }
     //Slider: if (makeMatchingTextBox) {
     //     // Currently only true for drag-word-chooser-slider. The new element is a picture box.
@@ -132,7 +133,7 @@ const ondragend = (
     // }
     let langsToWaitFor = 0;
     if (contentL10nKey) {
-        const settings = bubbleManager.getSettings();
+        const settings = canvasElementManager.getSettings();
         const langs = [settings.languageForNewTextBoxes];
         if (
             settings.currentCollectionLanguage2 &&
@@ -155,7 +156,7 @@ const ondragend = (
                 .asyncGetTextInLang(contentL10nKey!, "", lang, "")
                 .then(text => {
                     const editables = Array.from(
-                        bubble.getElementsByClassName("bloom-editable")
+                        canvasElement.getElementsByClassName("bloom-editable")
                     );
                     const prototype = editables[0];
                     let editableInLang = editables.find(
@@ -166,7 +167,7 @@ const ondragend = (
                             true
                         ) as HTMLElement;
                         editableInLang.setAttribute("lang", lang);
-                        // only the primary language should be visible  in the bubble, and it should
+                        // only the primary language should be visible  in the canvas element, and it should
                         // be present already, so we won't be adding it. But it will be the prototype,
                         // so we need to get rid of these classes. We'll get a more exactly correct
                         // set of visibility classes when the page next loads, but we'd prefer not
@@ -185,7 +186,9 @@ const ondragend = (
         });
     }
     if (hintL10nKey) {
-        const tg = bubble.getElementsByClassName("bloom-translationGroup")[0];
+        const tg = canvasElement.getElementsByClassName(
+            "bloom-translationGroup"
+        )[0];
         tg.setAttribute("data-hint", hintL10nKey);
     }
     if (contentL10nKey || hintL10nKey) {
@@ -200,42 +203,44 @@ const ondragend = (
                 setTimeout(addBubbles, 100);
                 return;
             }
-            const tg = bubble.getElementsByClassName(
+            const tg = canvasElement.getElementsByClassName(
                 "bloom-translationGroup"
             )[0] as HTMLElement;
-            bubbleManager.addSourceAndHintBubbles(tg);
+            canvasElementManager.addSourceAndHintBubbles(tg);
         };
         addBubbles(); // Do now if we can, if not, sometime when we've gotten all the localizations.
     }
     if (makeTarget) {
-        setGeneratedBubbleId(bubble);
-        bubble.style.width = ev.currentTarget.clientWidth + "px";
-        makeTargetForBubble(bubble);
+        setGeneratedDraggableId(canvasElement);
+        canvasElement.style.width = ev.currentTarget.clientWidth + "px";
+        makeTargetForDraggable(canvasElement);
     }
-    // This must be done AFTER we give the bubble its id if we're going to, because that's how we know
+    // This must be done AFTER we give the canvas element its id if we're going to, because that's how we know
     // it's one of the ones that should be ordered to the end.
-    bubbleManager.adjustBubbleOrdering();
+    canvasElementManager.adjustBubbleOrdering();
 };
 
-// Make a unique id for the bubble, and set it on the bubble.
+// Make a unique id for the canvas element, and set it on the canvas element.
 // It's good enough to be unique within the current page, and will very probably
 // be unique throughout the document, without being quite as long and ugly as a guid.
-export const setGeneratedBubbleId = (bubble: HTMLElement): string => {
+export const setGeneratedDraggableId = (draggable: HTMLElement): string => {
     let id = Math.random()
         .toString(36)
         .substring(2, 9);
-    while (bubble.ownerDocument.querySelector(`[data-bubble-id="${id}"]`)) {
+    while (
+        draggable.ownerDocument.querySelector(`[data-draggable-id="${id}"]`)
+    ) {
         id = Math.random()
             .toString(36)
             .substring(2, 9);
     }
-    bubble.setAttribute("data-bubble-id", id);
+    draggable.setAttribute("data-draggable-id", id);
     return id;
 };
 
 // A wrapper for something that is an overlay source icon, typically an SVG.
 // Supports dragging it onto the canvas.
-export const OverlaySvgItem: React.FunctionComponent<{
+export const CanvasElementSvgItem: React.FunctionComponent<{
     style: string;
     makeTarget?: boolean;
     makeMatchingTextBox?: boolean;
@@ -269,7 +274,7 @@ export const OverlaySvgItem: React.FunctionComponent<{
     );
 };
 
-export const OverlayImageItem: React.FunctionComponent<{
+export const CanvasElementImageItem: React.FunctionComponent<{
     style: string;
     makeTarget?: boolean;
     makeMatchingTextBox?: boolean;
@@ -278,7 +283,7 @@ export const OverlayImageItem: React.FunctionComponent<{
     strokeColor?: string;
 }> = props => {
     return (
-        <OverlaySvgItem
+        <CanvasElementSvgItem
             style={props.style}
             makeTarget={props.makeTarget}
             makeMatchingTextBox={props.makeMatchingTextBox}
@@ -293,11 +298,11 @@ export const OverlayImageItem: React.FunctionComponent<{
                 color={props.color}
                 strokeColor={props.strokeColor}
             />
-        </OverlaySvgItem>
+        </CanvasElementSvgItem>
     );
 };
 
-export const OverlayWrongImageItem: React.FunctionComponent<{
+export const CanvasElementWrongImageItem: React.FunctionComponent<{
     style: string;
     makeTarget?: boolean;
     makeMatchingTextBox?: boolean;
@@ -307,7 +312,7 @@ export const OverlayWrongImageItem: React.FunctionComponent<{
     extraAction?: (top: HTMLElement) => void;
 }> = props => {
     return (
-        <OverlaySvgItem
+        <CanvasElementSvgItem
             style={props.style}
             makeTarget={props.makeTarget}
             makeMatchingTextBox={props.makeMatchingTextBox}
@@ -323,18 +328,18 @@ export const OverlayWrongImageItem: React.FunctionComponent<{
                 color={props.color}
                 strokeColor={props.strokeColor}
             />
-        </OverlaySvgItem>
+        </CanvasElementSvgItem>
     );
 };
 
-export const OverlayGifItem: React.FunctionComponent<{
+export const CanvasElementGifItem: React.FunctionComponent<{
     style: string;
     addClasses?: string;
     color?: string;
     strokeColor?: string;
 }> = props => {
     return (
-        <OverlaySvgItem
+        <CanvasElementSvgItem
             style={props.style}
             makeTarget={false}
             addClasses={"bloom-gif " + (props.addClasses ?? "")}
@@ -348,11 +353,11 @@ export const OverlayGifItem: React.FunctionComponent<{
                 color={props.color}
                 strokeColor={props.strokeColor}
             />
-        </OverlaySvgItem>
+        </CanvasElementSvgItem>
     );
 };
 
-export const OverlayVideoItem: React.FunctionComponent<{
+export const CanvasElementVideoItem: React.FunctionComponent<{
     style: string;
     makeTarget?: boolean;
     // We could easily add makeTarget?: boolean; but we don't want to allow video dragging in the finished book
@@ -360,7 +365,7 @@ export const OverlayVideoItem: React.FunctionComponent<{
     color?: string;
 }> = props => {
     return (
-        <OverlaySvgItem
+        <CanvasElementSvgItem
             style={props.style}
             addClasses={props.addClasses}
             makeTarget={props.makeTarget}
@@ -374,11 +379,11 @@ export const OverlayVideoItem: React.FunctionComponent<{
                 color={props.color ?? "white"}
                 //strokeColor={props.strokeColor}
             />
-        </OverlaySvgItem>
+        </CanvasElementSvgItem>
     );
 };
 
-export const OverlayItem: React.FunctionComponent<{
+export const CanvasElementItem: React.FunctionComponent<{
     src: string;
     style: string;
     makeTarget?: boolean;
@@ -412,7 +417,7 @@ export const OverlayItem: React.FunctionComponent<{
     );
 };
 
-export const OverlayTextItem: React.FunctionComponent<{
+export const CanvasElementTextItem: React.FunctionComponent<{
     l10nKey: string;
     style: string;
     className?: string;
@@ -459,7 +464,7 @@ const buttonItemProps = css`
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.2);
 `;
 
-export const OverlayButtonItem: React.FunctionComponent<{
+export const CanvasElementButtonItem: React.FunctionComponent<{
     l10nKey: string;
     addClasses: string;
     contentL10nKey?: string;
@@ -467,7 +472,7 @@ export const OverlayButtonItem: React.FunctionComponent<{
     userDefinedStyleName?: string;
 }> = props => {
     return (
-        <OverlayTextItem
+        <CanvasElementTextItem
             css={buttonItemProps}
             l10nKey={props.l10nKey}
             addClasses={props.addClasses}
@@ -476,11 +481,11 @@ export const OverlayButtonItem: React.FunctionComponent<{
             contentL10nKey={props.contentL10nKey}
             hintL10nKey={props.hintL10nKey}
             userDefinedStyleName={props.userDefinedStyleName}
-        ></OverlayTextItem>
+        ></CanvasElementTextItem>
     );
 };
 
-export const OverlayItemRow: React.FunctionComponent<{
+export const CanvasElementItemRow: React.FunctionComponent<{
     children: React.ReactNode;
     secondRow?: boolean;
 }> = props => {
@@ -508,7 +513,7 @@ export const OverlayItemRow: React.FunctionComponent<{
     );
 };
 
-export const OverlayItemRegion: React.FunctionComponent<{
+export const CanvasElementItemRegion: React.FunctionComponent<{
     children: React.ReactNode;
     className?: string;
     l10nKey?: string;

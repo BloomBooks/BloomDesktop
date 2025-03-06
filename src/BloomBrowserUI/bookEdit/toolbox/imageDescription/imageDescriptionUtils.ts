@@ -1,11 +1,12 @@
 import { OverlayTool } from "../overlay/overlayTool";
+import { getCanvasElementManager } from "../overlay/overlayUtils";
 
 // This file is intended to expose some image description functions that other parts of the
 // code (in both iframes) need to use, while pulling in a minimum of dependencies.
 
 export function showImageDescriptions(bodyOfPageIframe: HTMLElement) {
-    const bubbleManager = OverlayTool.bubbleManager();
-    bubbleManager?.suspendComicEditing("forTool");
+    const canvasElementManager = getCanvasElementManager();
+    canvasElementManager?.suspendComicEditing("forTool");
     // turn on special layout to make image descriptions visible (might already be on, so check first)
     if (!bodyOfPageIframe.classList.contains("bloom-showImageDescriptions")) {
         bodyOfPageIframe.classList.add("bloom-showImageDescriptions");
@@ -31,7 +32,7 @@ export function showImageDescriptions(bodyOfPageIframe: HTMLElement) {
     }
 }
 export function hideImageDescriptions(bodyOfPageIframe: HTMLElement) {
-    const bubbleManager = OverlayTool.bubbleManager();
+    const canvasElementManager = getCanvasElementManager();
     // removing the class and wrapper should be done first; resume may not work
     // right while the extra wrapper is present.
     bodyOfPageIframe.classList.remove("bloom-showImageDescriptions");
@@ -44,5 +45,5 @@ export function hideImageDescriptions(bodyOfPageIframe: HTMLElement) {
         }
         describedImage.remove();
     }
-    bubbleManager?.resumeComicEditing();
+    canvasElementManager?.resumeComicEditing();
 }

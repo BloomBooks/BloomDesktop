@@ -89,7 +89,7 @@
     > .bloom-imageContainer {
     --image-border-radius: var(--marginBox-border-radius); /* all corners */
 }
-/* Nested/overlay picture */
+/* Nested/canvas element picture */
 .bloom-imageContainer > .bloom-canvas-element > .bloom-imageContainer {
     --image-border-radius: 0px; /* No rounding for nested images.  See BL-13960. */
 }

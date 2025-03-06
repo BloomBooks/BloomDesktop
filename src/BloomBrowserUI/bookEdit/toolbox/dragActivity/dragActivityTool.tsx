@@ -14,13 +14,13 @@ import {
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 import { Div, Span } from "../../../react_components/l10nComponents";
 import {
-    OverlayGifItem,
-    OverlayImageItem,
-    OverlayItemRegion,
-    OverlayItemRow,
-    OverlayTextItem,
-    OverlayVideoItem,
-    setGeneratedBubbleId
+    CanvasElementGifItem,
+    CanvasElementImageItem,
+    CanvasElementItemRegion,
+    CanvasElementItemRow,
+    CanvasElementTextItem,
+    CanvasElementVideoItem,
+    setGeneratedDraggableId
 } from "../overlay/overlayItem";
 import { ToolBox } from "../toolbox";
 import {
@@ -49,7 +49,11 @@ import { BubbleSpec } from "comicaljs";
 import { setPlayerUrlPrefixFromWindowLocationHref } from "../../shared/narration";
 import { renderGamePromptDialog } from "./GamePromptDialog";
 import { OverlayTool } from "../overlay/overlayTool";
-import { BubbleManager, theOneBubbleManager } from "../../js/bubbleManager";
+import {
+    CanvasElementManager,
+    theOneCanvasElementManager
+} from "../../js/bubbleManager";
+import { getCanvasElementManager } from "../overlay/overlayUtils";
 
 // This is the main code that manages the Bloom Games or Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -107,9 +111,9 @@ export const showGamePromptDialog = (onlyIfEmpty: boolean) => {
         dialogRoot.classList.add("bloom-ui", "bloom-ui-dialog");
         page.appendChild(dialogRoot);
     }
-    // Things are simpler if no bubble is active. We don't have to worry if we delete the
+    // Things are simpler if no canvas element is active. We don't have to worry if we delete the
     // active one, for example.
-    OverlayTool.bubbleManager()?.setActiveElement(undefined);
+    getCanvasElementManager()?.setActiveElement(undefined);
     renderGamePromptDialog(dialogRoot, prompt, true);
 };
 
@@ -170,7 +174,7 @@ export const adjustTarget = (
     }
     // This may get called when we click something that isn't a draggable at all.
     // That gets rid of any arrow. It shouldn't do anything else.
-    if (!draggable?.getAttribute("data-bubble-id")) {
+    if (!draggable?.getAttribute("data-draggable-id")) {
         return;
     }
     const allSameSize =
@@ -179,10 +183,10 @@ export const adjustTarget = (
     // get height and width of things this way, because sometimes some are not visible
     // (e.g., when creating letters in the drag-letter-to-target game)
     const getHeight = (elt: HTMLElement) => {
-        return BubbleManager.pxToNumber(elt.style.height);
+        return CanvasElementManager.pxToNumber(elt.style.height);
     };
     const getWidth = (elt: HTMLElement) => {
-        return BubbleManager.pxToNumber(elt.style.width);
+        return CanvasElementManager.pxToNumber(elt.style.width);
     };
     // if the target is not the same size, presumably the draggable size changed, in which case
     // we need to adjust the target, and possibly all other targets and draggables on the page.
@@ -217,7 +221,7 @@ export const adjustTarget = (
         const otherDraggables: HTMLElement[] = [];
         const draggableImages: HTMLElement[] = [];
         const draggables: HTMLElement[] = Array.from(
-            page.querySelectorAll("[data-bubble-id]")
+            page.querySelectorAll("[data-draggable-id]")
         );
         draggables.forEach(x => {
             if (x.getElementsByClassName("bloom-imageContainer").length !== 0) {
@@ -462,7 +466,7 @@ const startDraggingTarget = (e: MouseEvent) => {
     page.addEventListener("mouseup", stopDraggingTarget);
     page.addEventListener("mousemove", dragTarget);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    OverlayTool.bubbleManager()!.setActiveElement(bubbleOfTarget(target));
+    getCanvasElementManager()!.setActiveElement(draggableOfTarget(target));
     dragTarget(e); // some side effects like drawing the arrow we want even if no movement happens.
 };
 
@@ -539,13 +543,13 @@ const dragTarget = (e: MouseEvent) => {
     targetBeingDragged.style.top = y + "px";
     targetBeingDragged.style.left = x + "px";
 
-    const bubble = bubbleOfTarget(targetBeingDragged);
-    if (bubble) {
-        adjustTarget(bubble, targetBeingDragged);
+    const draggable = draggableOfTarget(targetBeingDragged);
+    if (draggable) {
+        adjustTarget(draggable, targetBeingDragged);
     }
 };
 
-const bubbleOfTarget = (
+const draggableOfTarget = (
     target: HTMLElement | undefined
 ): HTMLElement | undefined => {
     if (!target) {
@@ -556,7 +560,7 @@ const bubbleOfTarget = (
         return undefined;
     }
     return target.ownerDocument.querySelector(
-        `[data-bubble-id="${targetId}"]`
+        `[data-draggable-id="${targetId}"]`
     ) as HTMLElement;
 };
 
@@ -804,8 +808,10 @@ const DragActivityControls: React.FunctionComponent<{
     const [showTargetsDuringPlay, setShowTargetsDuringPlay] = useState(true);
     const [showAnswersInTargets, setShowAnswersInTargets] = useState(false);
 
-    // Observer to copy changes to the current bubble to its target when showAnswersInTargets is true.
-    const bubbleToTargetObserver = React.useRef<MutationObserver | null>(null);
+    // Observer to copy changes to the current canvas element to its target when showAnswersInTargets is true.
+    const draggableToTargetObserver = React.useRef<MutationObserver | null>(
+        null
+    );
 
     // Menu item names for 'none' and "Choose...", options in both the correct and wrong sound menus.
     const noneLabel = useL10n("None", "EditTab.Toolbox.DragActivity.None", "");
@@ -816,42 +822,43 @@ const DragActivityControls: React.FunctionComponent<{
     );
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const bubbleManager = OverlayTool.bubbleManager()!;
-    const currentBubbleElement = bubbleManager.getActiveElement();
-    const currentBubbleTargetId = currentBubbleElement?.getAttribute(
-        "data-bubble-id"
+    const canvasElementManager = getCanvasElementManager()!;
+    const currentCanvasElement = canvasElementManager.getActiveElement();
+    const currentCanvasElementTargetId = currentCanvasElement?.getAttribute(
+        "data-draggable-id"
     );
     const [currentBubbleTarget, setCurrentBubbleTarget] = useState<
         HTMLElement | undefined
     >();
     const [_, setBubble] = useState<BubbleSpec | undefined>(undefined);
     useEffect(() => {
-        // The only use of this is to force a re-render when the bubble changes.
+        // The only use of this is to force a re-render when the canvas element changes.
         // We will get a different result from getActiveElement, and various things may need
         // to update as a result.
         // For better or worse, I'm currently not bothering to detach from these
         // requests. I'm not entirely sure we we don't need the notifications, even if the tool is
         // hidden, at least to make sure things are right if it is shown again.
-        // At worst, bubbleManager is a singleton, and we only allow one
+        // At worst, CanvasElementManager is a singleton, and we only allow one
         // requester with the key dragActivityTool, so it won't be a large leak.
-        bubbleManager?.requestBubbleChangeNotification("dragActivityTool", b =>
-            setBubble(b)
+        canvasElementManager?.requestCanvasElementChangeNotification(
+            "dragActivityTool",
+            b => setBubble(b)
         );
-    }, [props.pageGeneration, bubbleManager]);
+    }, [props.pageGeneration, canvasElementManager]);
     useEffect(() => {
-        if (!currentBubbleTargetId) {
+        if (!currentCanvasElementTargetId) {
             setCurrentBubbleTarget(undefined);
             return;
         }
         const page = getPage();
         setCurrentBubbleTarget(
             page?.querySelector(
-                `[data-target-of="${currentBubbleTargetId}"]`
+                `[data-target-of="${currentCanvasElementTargetId}"]`
             ) as HTMLElement
         );
         // We need to re-evaluate when changing pages, it's possible the initially selected item
         // on a new page has the same currentBubbleTargetId.
-    }, [props.pageGeneration, currentBubbleTargetId]);
+    }, [props.pageGeneration, currentCanvasElementTargetId]);
     // The main point of this is to make the visibility of the arrow consistent with whether
     // a draggable is actually selected when changing pages. As far as I know, we don't need to do it when the
     // draggable or target change otherwise...other code handles target adjustment for those changes...
@@ -860,17 +867,17 @@ const DragActivityControls: React.FunctionComponent<{
     useEffect(() => {
         // careful here. After a change to currentBubbleElement, there will unfortunately be a render
         // before the useEffect above runs and sets currentBubbleTarget. We don't want to
-        // adjust the old target to conform to the new bubble.
+        // adjust the old target to conform to the new canvas element.
         // (It's harmless to adjust it passing undefined as the target and then again with
         // the correct target, and preventing it would require searching the whole page for
         // a matching target, so we don't try to prevent that.)
-        if (currentBubbleElement) {
+        if (currentCanvasElement) {
             if (
                 !currentBubbleTarget ||
                 currentBubbleTarget.getAttribute("data-target-of") ===
-                    currentBubbleElement.getAttribute("data-bubble-id")
+                    currentCanvasElement.getAttribute("data-draggable-id")
             ) {
-                adjustTarget(currentBubbleElement, currentBubbleTarget);
+                adjustTarget(currentCanvasElement, currentBubbleTarget);
             }
         } else {
             const page = getPage();
@@ -879,41 +886,41 @@ const DragActivityControls: React.FunctionComponent<{
                 arrow.remove();
             }
         }
-    }, [currentBubbleElement, currentBubbleTarget, props.pageGeneration]);
-    // If applicable, set up an observer to copy changes to the current bubble to its target,
+    }, [currentCanvasElement, currentBubbleTarget, props.pageGeneration]);
+    // If applicable, set up an observer to copy changes to the current canvas element to its target,
     // whenever the target (or other relevant factors) changes. I don't think there's any
-    // way an unselected bubble can change in a way that requires the target to do so.
+    // way an unselected canvas element can change in a way that requires the target to do so.
     // (For example, a style change might affect it, but would have the same effect on the target.)
     // We don't need this when the active tab is the play tab, because the content of the
     // draggable can't change, and also, we don't want to copy the content to the target
     // if in that mode unless showAnswersInTargets is true.
     useEffect(() => {
-        if (bubbleToTargetObserver.current) {
-            bubbleToTargetObserver.current.disconnect();
-            bubbleToTargetObserver.current = null;
+        if (draggableToTargetObserver.current) {
+            draggableToTargetObserver.current.disconnect();
+            draggableToTargetObserver.current = null;
         }
         if (
             props.activeTab !== playTabIndex &&
-            currentBubbleElement &&
+            currentCanvasElement &&
             currentBubbleTarget
         ) {
-            bubbleToTargetObserver.current = new MutationObserver(_ => {
+            draggableToTargetObserver.current = new MutationObserver(_ => {
                 // if it's no longer current, we just haven't removed the observer yet,
                 // don't do it.
                 if (
-                    currentBubbleElement ===
-                    OverlayTool.bubbleManager()?.getActiveElement()
+                    currentCanvasElement ===
+                    getCanvasElementManager()?.getActiveElement()
                 ) {
-                    copyContentToTarget(currentBubbleElement);
+                    copyContentToTarget(currentCanvasElement);
                 }
             });
-            bubbleToTargetObserver.current.observe(currentBubbleElement, {
+            draggableToTargetObserver.current.observe(currentCanvasElement, {
                 childList: true,
                 subtree: true,
                 attributes: true // e.g., cropping of image
             });
         }
-    }, [currentBubbleElement, currentBubbleTarget, props.activeTab]);
+    }, [currentCanvasElement, currentBubbleTarget, props.activeTab]);
     // Get various state values from the current page, initially and whenever it changes.
     useEffect(() => {
         const getStateFromPage = () => {
@@ -1078,14 +1085,14 @@ const DragActivityControls: React.FunctionComponent<{
         page.setAttribute("data-same-size", newAllSameSize ? "true" : "false");
         if (newAllSameSize) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            let someDraggable = OverlayTool.bubbleManager()!.getActiveElement(); // prefer the selected one
+            let someDraggable = getCanvasElementManager()!.getActiveElement(); // prefer the selected one
             if (
                 !someDraggable ||
-                !someDraggable.getAttribute("data-bubble-id")
+                !someDraggable.getAttribute("data-draggable-id")
             ) {
                 // find something
                 someDraggable = page.querySelector(
-                    "[data-bubble-id]"
+                    "[data-draggable-id]"
                 ) as HTMLElement;
             }
             if (!someDraggable) {
@@ -1094,7 +1101,7 @@ const DragActivityControls: React.FunctionComponent<{
             adjustTarget(someDraggable, getTarget(someDraggable), true);
         } else {
             // No longer all same size, so each target should match the size of its own draggable.
-            // When images are involved, because of matching overlay aspect ratio to image, it
+            // When images are involved, because of matching canvas element aspect ratio to image, it
             // isn't workable to make all the draggables the same size, so turning this off can
             // actually make a difference to image targets that previously matched the largest
             // draggable in each dimension.
@@ -1148,13 +1155,13 @@ const DragActivityControls: React.FunctionComponent<{
             {props.activeTab === startTabIndex && (
                 <div>
                     {anyDraggables && (
-                        <OverlayItemRegion
+                        <CanvasElementItemRegion
                             l10nKey="EditTab.Toolbox.DragActivity.Draggable"
                             theme="blueOnTan"
                         >
-                            <OverlayItemRow>
+                            <CanvasElementItemRow>
                                 {showLetterDraggable && (
-                                    <OverlayTextItem
+                                    <CanvasElementTextItem
                                         css={textItemCss}
                                         l10nKey="EditTab.Toolbox.DragActivity.Letter"
                                         style="none"
@@ -1164,7 +1171,7 @@ const DragActivityControls: React.FunctionComponent<{
                                     />
                                 )}
                                 {showWordDraggable && (
-                                    <OverlayTextItem
+                                    <CanvasElementTextItem
                                         css={textItemCss}
                                         l10nKey="EditTab.Toolbox.DragActivity.Word"
                                         style="none"
@@ -1183,7 +1190,7 @@ const DragActivityControls: React.FunctionComponent<{
                                 )}{" "}
                                 {showImageDraggable && (
                                     <Fragment>
-                                        <OverlayImageItem
+                                        <CanvasElementImageItem
                                             style="image"
                                             makeTarget={
                                                 activityType !==
@@ -1196,7 +1203,7 @@ const DragActivityControls: React.FunctionComponent<{
                                             color={kBloomBlue}
                                             strokeColor={kBloomBlue}
                                         />
-                                        <OverlayVideoItem
+                                        <CanvasElementVideoItem
                                             style="video"
                                             makeTarget={
                                                 activityType !==
@@ -1210,7 +1217,7 @@ const DragActivityControls: React.FunctionComponent<{
                                 {/* Slider: rather than reinstating this item, make the "selected item is part of answer" control work.
                                 // Keeping this just as a reminder of what it might take to make that work.
                                  {activityType === "drag-word-chooser-slider" && (
-                                    <OverlayWrongImageItem
+                                    <CanvasElementWrongImageItem
                                         style="image"
                                         makeTarget={false}
                                         makeMatchingTextBox={false}
@@ -1226,58 +1233,58 @@ const DragActivityControls: React.FunctionComponent<{
                                         }
                                     />
                                 )} */}
-                            </OverlayItemRow>
+                            </CanvasElementItemRow>
                             {/* If we want this at all, it would only be in the drag-sort-sentence activity
-                            <OverlayTextItem
+                            <CanvasElementTextItem
                                 css={textItemProps}
                                 l10nKey="EditTab.Toolbox.DragActivity.OrderSentence"
                                 style="none"
                                 draggable={false}
                                 addClasses="drag-item-order-sentence"
                             />
-                        </OverlayItemRow> */}
-                        </OverlayItemRegion>
+                        </CanvasElementItemRow> */}
+                        </CanvasElementItemRegion>
                     )}
-                    <OverlayItemRegion
+                    <CanvasElementItemRegion
                         // Items in this region are draggable in Start mode, but not in Play mode.
                         l10nKey="EditTab.Toolbox.DragActivity.FixedInPlace"
                         theme="blueOnTan"
                     >
-                        <OverlayItemRow>
-                            <OverlayTextItem
+                        <CanvasElementItemRow>
+                            <CanvasElementTextItem
                                 css={textItemCss}
                                 l10nKey="EditTab.Toolbox.DragActivity.InstructionsOrLabels"
                                 style="none"
                                 makeTarget={false}
                             />
-                        </OverlayItemRow>
-                        <OverlayItemRow>
-                            <OverlayImageItem
+                        </CanvasElementItemRow>
+                        <CanvasElementItemRow>
+                            <CanvasElementImageItem
                                 style="image"
                                 makeTarget={false}
                                 color={kBloomBlue}
                                 strokeColor={kBloomBlue}
                             />
                             {/* built in to current activities
-                            <OverlayButtonItem
+                            <CanvasElementButtonItem
                                 l10nKey="EditTab.Toolbox.DragActivity.CheckAnswer"
                                 addClasses="check-button"
                                 contentL10nKey="EditTab.Toolbox.DragActivity.Check"
                                 hintL10nKey="EditTab.Toolbox.DragActivity.CheckHint"
                                 userDefinedStyleName="GameButton"
                             /> */}
-                        </OverlayItemRow>
-                        <OverlayItemRow>
-                            <OverlayVideoItem
+                        </CanvasElementItemRow>
+                        <CanvasElementItemRow>
+                            <CanvasElementVideoItem
                                 style="video"
                                 color={kBloomBlue}
                             />
-                            <OverlayGifItem
+                            <CanvasElementGifItem
                                 style="image"
                                 strokeColor={kBloomBlue}
                             />
-                        </OverlayItemRow>
-                    </OverlayItemRegion>
+                        </CanvasElementItemRow>
+                    </CanvasElementItemRegion>
                 </div>
             )}
             {props.activeTab === startTabIndex && (
@@ -1409,7 +1416,7 @@ const DragActivityControls: React.FunctionComponent<{
                     />
                 </div>
             )}
-            {props.activeTab !== playTabIndex && currentBubbleElement && (
+            {props.activeTab !== playTabIndex && currentCanvasElement && (
                 <div>
                     <div
                         css={css`
@@ -1427,10 +1434,10 @@ const DragActivityControls: React.FunctionComponent<{
                             `}
                             l10nKey="EditTab.Toolbox.DragActivity.Item"
                         />
-                        {currentBubbleTargetId && (
+                        {currentCanvasElementTargetId && (
                             <Span l10nKey="EditTab.Toolbox.DragActivity.DraggableShape" />
                         )}
-                        {!currentBubbleTargetId && (
+                        {!currentCanvasElementTargetId && (
                             <Span l10nKey="EditTab.Toolbox.DragActivity.FixedShape" />
                         )}
                     </div>
@@ -1452,7 +1459,7 @@ const DragActivityControls: React.FunctionComponent<{
                             tip={{ l10nKey: "Common.Delete" }}
                             css={css`
                                 margin: 10px;
-                                ${disabledCss(currentBubbleElement)};
+                                ${disabledCss(currentCanvasElement)};
                             `}
                         >
                             <TrashIcon
@@ -1462,7 +1469,9 @@ const DragActivityControls: React.FunctionComponent<{
                                 id="trashIcon"
                                 color="primary"
                                 fontSize="large"
-                                onClick={() => bubbleManager?.deleteBubble()}
+                                onClick={() =>
+                                    canvasElementManager?.deleteBubble()
+                                }
                             />
                         </BloomTooltip>
                         <BloomTooltip
@@ -1474,12 +1483,12 @@ const DragActivityControls: React.FunctionComponent<{
                             }}
                             css={css`
                                 margin: 10px;
-                                ${disabledCss(currentBubbleElement)};
+                                ${disabledCss(currentCanvasElement)};
                             `}
                         >
                             <img
                                 height="30px"
-                                className="duplicate-bubble-icon"
+                                className="duplicate-canvasElement-icon"
                                 src="/bloom/bookEdit/toolbox/overlay/duplicate-bubble.svg"
                                 onClick={() => makeDuplicateOfDragBubble()}
                             />
@@ -1517,36 +1526,36 @@ const CorrectWrongControls: React.FunctionComponent<{
 }> = props => {
     return (
         <div>
-            <OverlayItemRegion theme="blueOnTan" l10nKey="">
-                <OverlayItemRow>
-                    <OverlayImageItem
+            <CanvasElementItemRegion theme="blueOnTan" l10nKey="">
+                <CanvasElementItemRow>
+                    <CanvasElementImageItem
                         style="image"
                         makeTarget={false}
                         addClasses={props.classToAddToItems}
                         color={kBloomBlue}
                         strokeColor={kBloomBlue}
                     />
-                    <OverlayVideoItem
+                    <CanvasElementVideoItem
                         style="video"
                         color={kBloomBlue}
                         addClasses={props.classToAddToItems}
                     />
-                    <OverlayGifItem
+                    <CanvasElementGifItem
                         style="image"
                         strokeColor={kBloomBlue}
                         addClasses={props.classToAddToItems}
                     />
-                </OverlayItemRow>
-                <OverlayItemRow>
-                    <OverlayTextItem
+                </CanvasElementItemRow>
+                <CanvasElementItemRow>
+                    <CanvasElementTextItem
                         css={textItemCss}
                         l10nKey="EditTab.Toolbox.DragActivity.TextToPutOnThePage"
                         style="none"
                         makeTarget={false}
                         addClasses={props.classToAddToItems}
                     />
-                </OverlayItemRow>
-            </OverlayItemRegion>
+                </CanvasElementItemRow>
+            </CanvasElementItemRegion>
             <Instructions l10nKey={props.instructionsSubKey} />
             <div css={playAudioCss}>
                 <Div
@@ -1574,15 +1583,15 @@ const CorrectWrongControls: React.FunctionComponent<{
 };
 
 export const makeDuplicateOfDragBubble = () => {
-    const bubbleManager = OverlayTool.bubbleManager();
-    const old = bubbleManager?.getActiveElement();
-    const duplicate = bubbleManager?.duplicateBubble();
+    const canvasElementManager = getCanvasElementManager();
+    const old = canvasElementManager?.getActiveElement();
+    const duplicate = canvasElementManager?.duplicateBubble();
     if (!duplicate || !old) {
         // can't be duplicate without an old, but make TS happy
         return;
     }
     const oldTarget = getTarget(old);
-    if (old.getAttribute("data-bubble-id")) {
+    if (old.getAttribute("data-draggable-id")) {
         const oldAttributes = old.attributes;
         for (let i = 0; i < oldAttributes.length; i++) {
             const attr = oldAttributes[i];
@@ -1590,8 +1599,8 @@ export const makeDuplicateOfDragBubble = () => {
                 duplicate.setAttribute(attr.name, attr.value);
             }
         }
-        setGeneratedBubbleId(duplicate);
-        // I don't think we need this trick for a newly-made bubble, and it won't work right without attaching
+        setGeneratedDraggableId(duplicate);
+        // I don't think we need this trick for a newly-made canvas element, and it won't work right without attaching
         // the mutation observer.
         Array.from(
             duplicate.getElementsByClassName("bloom-show-en-when-blank")
@@ -1609,7 +1618,7 @@ export const makeDuplicateOfDragBubble = () => {
             // We could try to detect that targets are in a row...but they may not be, and where in
             // the row does the new one belong? I think just leaving it in a position we've already
             // tried to make at least safe is the best we can do.
-            makeTargetForBubble(duplicate);
+            makeTargetForDraggable(duplicate);
         }
     }
 };
@@ -1786,7 +1795,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
     public newPageReady() {
         const page = DragActivityTool.getBloomPage();
         const pageFrameExports = getEditablePageBundleExports();
-        if (!OverlayTool.bubbleManager() || !page || !pageFrameExports) {
+        if (!getCanvasElementManager() || !page || !pageFrameExports) {
             // probably the toolbox just finished loading before the page.
             // No clean way to fix this
             window.setTimeout(() => this.newPageReady(), 100);
@@ -1808,9 +1817,9 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
             this.lastPageId = pageId;
             // useful during development, MAY not need in production.
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const bubbleManager = OverlayTool.bubbleManager()!;
-            bubbleManager.removeDetachedTargets();
-            bubbleManager.adjustBubbleOrdering();
+            const canvasElementManager = getCanvasElementManager()!;
+            canvasElementManager.removeDetachedTargets();
+            canvasElementManager.adjustBubbleOrdering();
 
             // Force things to Start tab as we change page.
             // If we decide not to do this, we should probably at least find a way to do it
@@ -2003,10 +2012,10 @@ export function setActiveDragActivityTab(tab: number) {
     //     "bloom-activity-slider"
     // )[0] as HTMLElement;
 
-    const bubbleManager = OverlayTool.bubbleManager();
+    const canvasElementManager = getCanvasElementManager();
     if (tab === playTabIndex) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        bubbleManager!.suspendComicEditing("forGamePlayMode");
+        canvasElementManager!.suspendComicEditing("forGamePlayMode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
         prepareActivity(page, _next => {});
@@ -2014,14 +2023,14 @@ export function setActiveDragActivityTab(tab: number) {
         //Slider: wrapper?.removeEventListener("click", designTimeClickOnSlider);
     } else {
         undoPrepareActivity(page);
-        bubbleManager?.resumeComicEditing();
-        bubbleManager?.checkActiveElementIsVisible();
+        canvasElementManager?.resumeComicEditing();
+        canvasElementManager?.checkActiveElementIsVisible();
         //Slider: wrapper?.addEventListener("click", designTimeClickOnSlider);
     }
     if (tab === correctTabIndex || tab === wrongTabIndex) {
-        // We can't currently do this for hidden bubbles, and selecting one of these tabs
-        // may cause some previously hidden bubbles to become visible.
-        bubbleManager?.ensureBubblesIntersectParent(page);
+        // We can't currently do this for hidden canvas elements, and selecting one of these tabs
+        // may cause some previously hidden canvas elements to become visible.
+        canvasElementManager?.ensureCanvasElementsIntersectParent(page);
     }
     if (tab === startTabIndex) {
         enableDraggingTargets(page);
@@ -2073,7 +2082,7 @@ export function setupDragActivityTabControl() {
     setActiveDragActivityTab(getActiveDragActivityTab());
 }
 
-// dimension is assumed to end with "px" (as we use for positioning and dimensioning bubbles).
+// dimension is assumed to end with "px" (as we use for positioning and dimensioning canvas elements).
 // Technically it would get a result for other two-character units, but the result might not be
 // what we want, since we use the resulting number assuming it means px.
 function pxToNumber(dimension: string): number {
@@ -2081,30 +2090,32 @@ function pxToNumber(dimension: string): number {
     return parseFloat(num);
 }
 
-export const makeTargetForBubble = (bubble: HTMLElement): HTMLElement => {
-    const id = bubble.getAttribute("data-bubble-id");
+export const makeTargetForDraggable = (
+    canvasElement: HTMLElement
+): HTMLElement => {
+    const id = canvasElement.getAttribute("data-draggable-id");
     if (!id) {
-        throw new Error("Bubble does not have a data-bubble-id attribute");
+        throw new Error("Bubble does not have a data-draggable-id attribute");
     }
     // don't simplify to 'document.createElement'; may be in a different iframe
-    const target = bubble.ownerDocument.createElement("div");
+    const target = canvasElement.ownerDocument.createElement("div");
     target.setAttribute("data-target-of", id);
-    const left = pxToNumber(bubble.style.left);
-    const top = pxToNumber(bubble.style.top);
-    const width = pxToNumber(bubble.style.width);
-    const height = pxToNumber(bubble.style.height);
+    const left = pxToNumber(canvasElement.style.left);
+    const top = pxToNumber(canvasElement.style.top);
+    const width = pxToNumber(canvasElement.style.width);
+    const height = pxToNumber(canvasElement.style.height);
     let newLeft = left + 20;
     let newTop = top + height + 30;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    if (newTop + height > bubble.parentElement!.clientHeight) {
+    if (newTop + height > canvasElement.parentElement!.clientHeight) {
         newTop = Math.max(0, top - height - 30);
     }
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    if (newLeft + width > bubble.parentElement!.clientWidth) {
+    if (newLeft + width > canvasElement.parentElement!.clientWidth) {
         newLeft = Math.max(0, left - width - 30);
     }
-    // Review: can we do any more to make sure it's visible and not overlapping bubble?
-    // Should we try to avoid overlapping other bubbles and/or targets?
+    // Review: can we do any more to make sure it's visible and not overlapping canvas element?
+    // Should we try to avoid overlapping other canvas elements and/or targets?
     target.style.left = `${newLeft}px`;
     target.style.top = `${newTop}px`;
     target.style.width = `${width}px`;
@@ -2113,8 +2124,8 @@ export const makeTargetForBubble = (bubble: HTMLElement): HTMLElement => {
     // clicked. But is that really right? We can't actually type there.
     target.setAttribute("tabindex", "0");
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    bubble.parentElement!.appendChild(target);
+    canvasElement.parentElement!.appendChild(target);
     enableDraggingTargets(target);
-    adjustTarget(bubble, target);
+    adjustTarget(canvasElement, target);
     return target;
 };

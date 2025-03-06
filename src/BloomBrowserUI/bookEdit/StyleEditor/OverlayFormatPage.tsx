@@ -15,9 +15,9 @@ import { NoteBox, WarningBox } from "../../react_components/boxes";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 
-// The "Overlay" page of the Format dialog launched from the cog control
+// The "Canvas element" page of the Format dialog launched from the cog control
 // in a text box that is embedded in a canvas element.
-export const OverlayFormatPage: React.FunctionComponent<{
+export const CanvasElementFormatPage: React.FunctionComponent<{
     padding: string;
     onPropsChanged: (padding: string) => void;
 }> = props => {
@@ -61,15 +61,15 @@ export const OverlayFormatPage: React.FunctionComponent<{
     );
 };
 
-export function RenderOverlayRoot(
+export function RenderCanvasElementRoot(
     padding: string,
     changeProps: (padding: string) => void
 ) {
     const root = document.getElementById("overlayFormatPage");
-    // This tab is deleted when we are not in an overlay, so we need to check for its existence.
+    // This tab is deleted when we are not in a canvas element, so we need to check for its existence.
     if (root) {
         ReactDOM.render(
-            <OverlayFormatPage
+            <CanvasElementFormatPage
                 padding={padding ?? ""}
                 onPropsChanged={padding => changeProps(padding)}
             />,

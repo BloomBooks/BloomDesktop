@@ -12,9 +12,9 @@
 // This SHOULD be redundant; I've removed all rules setting a z-index for image containers.
 // I'm leaving it here in hopes that if someone tries to reinstate such a thing, it will be
 // prevented by this, and they will find this rule and comment.
-// We MUST NOT have a z-index on image overlays, otherwise the overlay image container becomes
+// We MUST NOT have a z-index on image canvas elements, otherwise the canvas element image container becomes
 // a stacking context, and then its child buttons cannot be 'above' the comicaljs canvas,
-// and then those buttons can't be clicked! Instead, we make sure overlay images come after
+// and then those buttons can't be clicked! Instead, we make sure canvas element images come after
 // the main img and so are on top of it for that reason.
 .bloom-imageContainer .bloom-imageContainer {
     z-index: auto !important;
@@ -111,7 +111,7 @@
         .bloom-translationGroup {
             background: transparent; // don't want to worry about what background the image has
             border: none;
-            z-index: @textOverPictureZIndex;
+            z-index: @canvasElementZIndex;
             .bloom-editable {
                 min-width: @MinTextBoxWidth - 3;
                 min-height: @MinTextBoxHeight - 3 !important;
@@ -152,7 +152,7 @@
 .bloom-imageContainer {
     // Over picture elements with speech bubbles
     //
-    // a TOP element that contains a data-bubble attribute and does NOT contain the substring
+    // a canvas element that contains a data-bubble attribute and does NOT contain the substring
     // "`style`:`none`" in the value of the data-bubble attribute
     .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]) {
         .bloom-translationGroup {
@@ -211,9 +211,9 @@
 // shows up in the HTML but not in the PDF generated from it.
 // Making such boxes be display:flex/column changes the appearance very little
 // but works around the bug.
-// The rule is rather specific because TOP boxes with data-bubble not containing
+// The rule is rather specific because canvas element boxes with data-bubble not containing
 // style:none are already made display:flex by the rule below. We want to avoid
-// doing so usually for plain TOP boxes, because it may cause some subtle change
+// doing so usually for plain canvas element boxes, because it may cause some subtle change
 // in the appearance of an existing book. Doing it when switching to full bleed
 // seems acceptable, since layout will need to be checked anyway.
 .bloom-fullBleed
@@ -295,16 +295,16 @@
 }
 
 // We have some special rules that give image containers margin in various places
-// (e.g., traditional xmatter cover). But we don't want it inherited by overlay
-// image containers, because we expect them to exactly match the overlays.
+// (e.g., traditional xmatter cover). But we don't want it inherited by canvas element
+// image containers, because we expect them to exactly match the canvas elements.
 .bloom-imageContainer .bloom-canvas-element .bloom-imageContainer {
     margin: 0;
 }
 
 // This is usually covered by a rule in basePage that makes image containers
-// fill their origami split (.customPage) but an IC in an overlay in a motion book
-// animation is not inside the page. At this point overlay ICs should always fill
-// the overlay (this is how we clip cropped images).
+// fill their origami split (.customPage) but an IC in an canvas element in a motion book
+// animation is not inside the page. At this point canvas element ICs should always fill
+// the canvas element (this is how we clip cropped images).
 .bloom-canvas-element .bloom-imageContainer {
     box-sizing: border-box;
     height: 100%;

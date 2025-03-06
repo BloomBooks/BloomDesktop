@@ -1005,16 +1005,16 @@ namespace Bloom.Book
         /// <summary>
         /// Gets a list of colors used in the current book.
         /// </summary>
-        public List<string> GetColorsUsedInBookBubbleElements()
+        public List<string> GetColorsUsedInBookCanvasElements()
         {
             var colorElementList = new List<string>();
-            var textOverPictureElements = GetTextOverPictureElements(Body);
-            foreach (var node in textOverPictureElements)
+            var canvasElements = GetCanvasElements(Body);
+            foreach (var node in canvasElements)
             {
                 var styleAttr = node.GetOptionalStringAttribute("style", "");
                 if (!String.IsNullOrEmpty(styleAttr))
                 {
-                    // Possible bubble text color
+                    // Possible canvs element text color
                     var textColorValue = GetColorValueFromStyle(styleAttr);
                     if (!String.IsNullOrEmpty(textColorValue))
                     {
@@ -1106,9 +1106,7 @@ namespace Bloom.Book
             }
         }
 
-        private static IEnumerable<SafeXmlElement> GetTextOverPictureElements(
-            SafeXmlElement bookBodyElement
-        )
+        private static IEnumerable<SafeXmlElement> GetCanvasElements(SafeXmlElement bookBodyElement)
         {
             return SafeXmlElement
                 .GetAllDivsWithClass(bookBodyElement, kCanvasElementClass)
@@ -2812,7 +2810,7 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// This is true if it has overlays of the type that require ComicalJs support.
+        /// This is true if it has canvas elements of the type that require ComicalJs support.
         /// </summary>
         public bool HasComicalOverlays()
         {
@@ -2823,10 +2821,10 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// True if it has any overlays at all. (Text-only ones don't require a ComicalJs SVG, but they
+        /// True if it has any canvas elements at all. (Text-only ones don't require a ComicalJs SVG, but they
         /// could still get misplaced by a migration to Default appearance.)
         /// </summary>
-        public bool HasOverlays()
+        public bool HasCanvasElements()
         {
             return _dom.SelectSingleNode("//div[contains(@class, '" + kCanvasElementClass + "')]")
                 != null;
