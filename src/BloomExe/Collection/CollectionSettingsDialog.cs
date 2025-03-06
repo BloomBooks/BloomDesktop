@@ -425,7 +425,12 @@ namespace Bloom.Collection
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
 
             var oldBrand = _collectionSettings.BrandingProjectKey;
-            if (oldBrand != _brand || _collectionSettings.IgnoreExpiration)
+            var oldDate = CollectionSettingsApi.GetExpirationDate(_collectionSettings.SubscriptionCode);
+            var newDate = CollectionSettingsApi.GetExpirationDate(_subscriptionCode);
+            if (oldBrand != _brand ||
+                // allow changing to a newer version of the same branding (BL-14381)
+                newDate > oldDate ||
+                _collectionSettings.IgnoreExpiration)
             {
                 _collectionSettings.BrandingProjectKey = _brand;
                 _collectionSettings.SubscriptionCode = _subscriptionCode;
