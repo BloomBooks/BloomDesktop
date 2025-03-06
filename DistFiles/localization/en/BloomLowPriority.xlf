@@ -92,16 +92,7 @@
             <source xml:lang="en">Subscription Code:</source>
             <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
           </trans-unit>
-          <trans-unit id="SubscriptionStatus.DefaultMessage">
-            <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
-            <note>ID: SubscriptionStatus.DefaultMessage</note>
-            <note>%0 will be replaced with the subscription name, %1 with the expiration date</note>
-          </trans-unit>
-          <trans-unit id="SubscriptionStatus.RenewalMessage">
-            <source xml:lang="en">Please [contact us](%0) to renew.</source>
-            <note>ID: SubscriptionStatus.RenewalMessage</note>
-            <note>%0 will be replaced with a contact email link</note>
-          </trans-unit>
+
             <trans-unit id="Settings.Subscription.CheckUpdates">
                 <source xml:lang="en">Check for updates</source>
                 <note>ID: Settings.Subscription.CheckUpdates</note>

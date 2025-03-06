@@ -180,7 +180,7 @@ namespace Bloom.Collection
 
             if (FixingEnterpriseSubscriptionCode)
             {
-                _tab.SelectedTab = _enterpriseTab;
+                _tab.SelectedTab = _subscriptionTab;
             }
 
             if (tcManager.CurrentCollectionEvenIfDisconnected == null)
@@ -204,7 +204,7 @@ namespace Bloom.Collection
         public void SetDesiredTab(string tab)
         {
             if (tab == "enterprise")
-                _tab.SelectedTab = _enterpriseTab;
+                _tab.SelectedTab = _subscriptionTab;
         }
 
         private void UpdateDisplay()
@@ -684,7 +684,7 @@ namespace Bloom.Collection
                 );
             else if (_tab.SelectedTab == tabPage3)
                 HelpLauncher.Show(this, "Tasks/Basic_tasks/Enter_project_information.htm");
-            else if (_tab.SelectedTab == _enterpriseTab)
+            else if (_tab.SelectedTab == _subscriptionTab)
                 HelpLauncher.Show(this, "Tasks/Basic_tasks/Select_Bloom_Enterprise_Status.htm");
             else
                 HelpLauncher.Show(this, "User_Interface/Dialog_boxes/Settings_dialog_box.htm");
