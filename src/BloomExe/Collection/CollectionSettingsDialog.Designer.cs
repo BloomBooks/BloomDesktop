@@ -60,8 +60,8 @@ namespace Bloom.Collection
 			this._countryLabel = new System.Windows.Forms.Label();
 			this._districtLabel = new System.Windows.Forms.Label();
 			this._provinceLabel = new System.Windows.Forms.Label();
-			this._enterpriseTab = new System.Windows.Forms.TabPage();
-			this._enterpriseSettingsControl = new web.ReactControl();
+			this._subscriptionTab = new System.Windows.Forms.TabPage();
+			this._subscriptionSettingsControl = new web.ReactControl();
 			this._teamCollectionTab = new System.Windows.Forms.TabPage();
 			this.teamCollectionSettingsReactControl = new Bloom.web.ReactControl();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
@@ -97,7 +97,7 @@ namespace Bloom.Collection
 			this._tab.Controls.Add(this.tabPage1);
 			this._tab.Controls.Add(this._bookMakingTab);
 			this._tab.Controls.Add(this.tabPage3);
-			this._tab.Controls.Add(this._enterpriseTab);
+			this._tab.Controls.Add(this._subscriptionTab);
 			this._tab.Controls.Add(this._teamCollectionTab);
 			this._tab.Controls.Add(this.tabPage4);
 			this._tab.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -492,34 +492,34 @@ namespace Bloom.Collection
 			this._provinceLabel.TabIndex = 0;
 			this._provinceLabel.Text = "Province";
 			//
-			// _enterpriseTab
+			// _subscriptionTab
 			//
-			this._enterpriseTab.Controls.Add(this._enterpriseSettingsControl);
-			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseTab, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._enterpriseTab, null);
-			this._L10NSharpExtender.SetLocalizingId(this._enterpriseTab, "Common.BloomSubscription");
-			this._enterpriseTab.Location = new System.Drawing.Point(4, 26);
-			this._enterpriseTab.Name = "_enterpriseTab";
-			this._enterpriseTab.Padding = new System.Windows.Forms.Padding(3);
-			this._enterpriseTab.Size = new System.Drawing.Size(642, 452);
-			this._enterpriseTab.TabIndex = 3;
-			this._enterpriseTab.Text = "Bloom Subscription";
-			this._enterpriseTab.UseVisualStyleBackColor = false;
-			this._enterpriseTab.BackColor = SystemColors.Control;
+			this._subscriptionTab.Controls.Add(this._subscriptionSettingsControl);
+			this._L10NSharpExtender.SetLocalizableToolTip(this._subscriptionTab, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._subscriptionTab, null);
+			this._L10NSharpExtender.SetLocalizingId(this._subscriptionTab, "Common.BloomSubscription");
+			this._subscriptionTab.Location = new System.Drawing.Point(4, 26);
+			this._subscriptionTab.Name = "_subscriptionTab";
+			this._subscriptionTab.Padding = new System.Windows.Forms.Padding(3);
+			this._subscriptionTab.Size = new System.Drawing.Size(642, 452);
+			this._subscriptionTab.TabIndex = 3;
+			this._subscriptionTab.Text = "Bloom Subscription";
+			this._subscriptionTab.UseVisualStyleBackColor = false;
+			this._subscriptionTab.BackColor = SystemColors.Control;
 			//
-			// _enterpriseSettingsControl
+			// _subscriptionSettingsControl
 			//
-			this._enterpriseSettingsControl.BackColor = SystemColors.Control;
-			this._enterpriseSettingsControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._enterpriseSettingsControl.JavascriptBundleName = "subscriptionSettingsBundle";
-			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseSettingsControl, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._enterpriseSettingsControl, null);
-			this._L10NSharpExtender.SetLocalizingId(this._enterpriseSettingsControl, "ReactControl");
-			this._enterpriseSettingsControl.Location = new System.Drawing.Point(3, 3);
-			this._enterpriseSettingsControl.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this._enterpriseSettingsControl.Name = "enterpriseSettingsControl";
-			this._enterpriseSettingsControl.Size = new System.Drawing.Size(636, 446);
-			this._enterpriseSettingsControl.TabIndex = 0;
+			this._subscriptionSettingsControl.BackColor = SystemColors.Control;
+			this._subscriptionSettingsControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._subscriptionSettingsControl.JavascriptBundleName = "subscriptionSettingsBundle";
+			this._L10NSharpExtender.SetLocalizableToolTip(this._subscriptionSettingsControl, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._subscriptionSettingsControl, null);
+			this._L10NSharpExtender.SetLocalizingId(this._subscriptionSettingsControl, "ReactControl");
+			this._subscriptionSettingsControl.Location = new System.Drawing.Point(3, 3);
+			this._subscriptionSettingsControl.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+			this._subscriptionSettingsControl.Name = "SubscriptionSettingsControl";
+			this._subscriptionSettingsControl.Size = new System.Drawing.Size(636, 446);
+			this._subscriptionSettingsControl.TabIndex = 0;
 			//
 			// _teamCollectionTab
 			//
@@ -833,8 +833,8 @@ namespace Bloom.Collection
 		private Label _enterpriseRequiredForSpreadsheetImportExport;
 		private CheckBox _allowSpreadsheetImportExport;
 		private Button _helpButton;
-		private TabPage _enterpriseTab;
-		private web.ReactControl _enterpriseSettingsControl;
+		private TabPage _subscriptionTab;
+		private web.ReactControl _subscriptionSettingsControl;
 		private TabPage _teamCollectionTab;
 		private web.ReactControl teamCollectionSettingsReactControl;
 		private LinkLabel _removeSignLanguageLink;
