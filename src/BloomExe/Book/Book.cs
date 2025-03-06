@@ -4792,9 +4792,9 @@ namespace Bloom.Book
                         .GetOptionalStringAttribute("class", "")
                         .Contains("bloom-scale-with-code")
                     // Compare JS function SetupImage in bloomImages.ts. We stopped using explicit image
-                    // sizes in 2018 and added image overlays in 2022, so it should be very safe to
-                    // NOT remove explicit sizes from images in overlays. And in 6.1 (late 2024)
-                    // we started using explicit sizes in overlays for cropping, so removing them
+                    // sizes in 2018 and added image canvas elements in 2022, so it should be very safe to
+                    // NOT remove explicit sizes from images in canvas elements. And in 6.1 (late 2024)
+                    // we started using explicit sizes in canvas elements for cropping, so removing them
                     // is harmful.
                     || img.ParentWithClass(HtmlDom.kCanvasElementClass) != null
                 )
@@ -5585,10 +5585,10 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Used by the publish tab to tell the user they can't publish a book with Overlay elements w/o Enterprise.
+        /// Used by the publish tab to tell the user they can't publish a book with canvas elements w/o Enterprise.
         /// </summary>
         /// <returns></returns>
-        public string GetNumberOfFirstPageWithOverlay()
+        public string GetNumberOfFirstPageWithCanvasElement()
         {
             var pageNodes = RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
             if (pageNodes.Length == 0) // Unexpected!
@@ -5605,7 +5605,7 @@ namespace Bloom.Book
                 {
                     return pageNumberAttribute;
                 }
-                // If at some point we allow overlay elements on xmatter,
+                // If at some point we allow canvas element elements on xmatter,
                 // we will need to find and return the 'data-xmatter-page' attribute.
             }
             return ""; // Also unexpected!

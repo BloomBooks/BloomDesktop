@@ -665,19 +665,19 @@ export class SignLanguageToolControls extends React.Component<
             case "countdown3":
             case "countdown2":
             case "countdown1":
-                SignLanguageTool.showOverlayToHideVideo();
+                SignLanguageTool.showCanvasElementToHideVideo();
                 break;
             case "recording":
-                SignLanguageTool.showOverlayToHideVideo();
-                SignLanguageTool.addLabelToOverlay("Recording");
+                SignLanguageTool.showCanvasElementToHideVideo();
+                SignLanguageTool.addLabelToCanvasElement("Recording");
                 break;
             case "processing":
-                SignLanguageTool.showOverlayToHideVideo();
-                SignLanguageTool.addLabelToOverlay("Processing");
+                SignLanguageTool.showCanvasElementToHideVideo();
+                SignLanguageTool.addLabelToCanvasElement("Processing");
                 break;
             default:
                 // back to 'idle'
-                SignLanguageTool.removeVideoOverlay();
+                SignLanguageTool.removeVideoCanvasElement();
                 if (this.state.haveRecording) {
                     this.getVideoStatsFromFile();
                 }
@@ -1011,10 +1011,10 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         );
     }
 
-    private static overlayClass: string = "bloom-videoOverlay";
+    private static videoCanvasElementClass: string = "bloom-videoOverlay";
 
-    // Make an overlay and slap it over the selected edit pane video still while we're recording
-    public static showOverlayToHideVideo(): void {
+    // Make a canvas element and slap it over the selected edit pane video still while we're recording
+    public static showCanvasElementToHideVideo(): void {
         const videoContainers = SignLanguageTool.getVideoContainers(true);
         if (!videoContainers) return;
         const container = videoContainers[0]; // 'true' gets only the selected video
@@ -1024,18 +1024,18 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             container.ownerDocument &&
             (!container.previousElementSibling ||
                 !container.previousElementSibling.classList.contains(
-                    SignLanguageTool.overlayClass
+                    SignLanguageTool.videoCanvasElementClass
                 ))
         ) {
             // bloom-ui class makes sure this div is removed before saving
-            const overlayDiv =
+            const canvasElementDiv =
                 "<div class='" +
-                SignLanguageTool.overlayClass +
+                SignLanguageTool.videoCanvasElementClass +
                 " bloom-ui'><label></label></div";
             container.parentElement.insertBefore(
                 SignLanguageTool.createNode(
                     container.ownerDocument,
-                    overlayDiv
+                    canvasElementDiv
                 ) as Node,
                 container
             );
@@ -1043,7 +1043,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     // Grab the "Recording" label in React-land and stick it in the edit pane overlay
-    public static addLabelToOverlay(key: string): void {
+    public static addLabelToCanvasElement(key: string): void {
         const videoContainers = SignLanguageTool.getVideoContainers(true);
         if (!videoContainers) return;
         const container = videoContainers[0];
@@ -1060,13 +1060,17 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     // Remove the overlay hiding the video, now that we're done recording
-    public static removeVideoOverlay(): void {
+    public static removeVideoCanvasElement(): void {
         const videoContainers = SignLanguageTool.getVideoContainers(true);
         if (!videoContainers) return;
         const container = videoContainers[0];
         if (!container || !container.previousElementSibling) return;
         const overlayElement = container.previousElementSibling;
-        if (overlayElement.classList.contains(SignLanguageTool.overlayClass)) {
+        if (
+            overlayElement.classList.contains(
+                SignLanguageTool.videoCanvasElementClass
+            )
+        ) {
             container.previousElementSibling.remove();
         }
     }

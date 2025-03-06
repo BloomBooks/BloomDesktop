@@ -2,7 +2,7 @@
 // to make them available to import with a minimum of dependencies.
 
 import { getEditablePageBundleExports } from "../../editViewFrame";
-import { BubbleManager } from "../../js/bubbleManager";
+import { CanvasElementManager } from "../../js/bubbleManager";
 
 export const kCanvasElementClass = "bloom-canvas-element";
 export const kCanvasElementSelector = `.${kCanvasElementClass}`;
@@ -10,7 +10,7 @@ export const kHasCanvasElementClass = "bloom-has-canvas-element";
 
 // Enhance: we could reduce cross-bundle dependencies by separately defining the BubbleManager interface
 // and just importing that here.
-export function getBubbleManager(): BubbleManager | undefined {
+export function getCanvasElementManager(): CanvasElementManager | undefined {
     const exports = getEditablePageBundleExports();
-    return exports ? exports.getTheOneBubbleManager() : undefined;
+    return exports ? exports.getTheOneCanvasElementManager() : undefined;
 }

@@ -166,7 +166,7 @@ namespace Bloom.Publish.Epub
                 false
             );
             apiHandler.RegisterBooleanEndpointHandler(
-                kApiUrlPart + "overlays",
+                kApiUrlPart + "canvasElements",
                 request => request.CurrentBook.OurHtmlDom.HasComicalOverlays(),
                 null,
                 false

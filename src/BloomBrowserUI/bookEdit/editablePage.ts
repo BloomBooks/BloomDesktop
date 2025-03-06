@@ -7,7 +7,10 @@ import { bootstrap } from "./js/bloomEditing";
 import { EditableDivUtils } from "./js/editableDivUtils";
 import "../lib/jquery.i18n.custom"; //localize()
 import "errorHandler";
-import { theOneBubbleManager, BubbleManager } from "./js/bubbleManager";
+import {
+    theOneCanvasElementManager,
+    CanvasElementManager
+} from "./js/bubbleManager";
 import { renderDragActivityTabControl } from "./toolbox/dragActivity/DragActivityTabControl";
 
 function getPageId(): string {
@@ -35,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // bundle, which will cause errors when it is loaded into a page that does not have a .bloom-page
 // and other things that are expected to be here. Rather, use code like this:
 //      const exports = getEditablePageBundleExports();
-//      return exports ? exports.getTheOneBubbleManager() : undefined;
+//      return exports ? exports.getTheOneCanvasElementManager() : undefined;
 // It is theoreically OK to import these functions to code that is only included in the page bundle,
 // but I think it is unwise. It is so easy for an extra file to get imported into another bundle,
 // and then it will bring this along, with disastrous results.
@@ -57,7 +60,7 @@ export interface IPageFrameExports {
     origamiCanUndo(): boolean;
     origamiUndo(): void;
 
-    getTheOneBubbleManager(): BubbleManager;
+    getTheOneCanvasElementManager(): CanvasElementManager;
 
     ckeditorCanUndo(): boolean;
     ckeditorUndo(): void;
@@ -98,7 +101,7 @@ export {
     removeImageId,
     changeImage,
     renderDragActivityTabControl,
-    getTheOneBubbleManager,
+    getTheOneCanvasElementManager,
     showGamePromptDialog
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
@@ -123,8 +126,8 @@ const styleSheets = [
     "bookEdit/css/legacyQuizEditing.css"
 ];
 
-function getTheOneBubbleManager(): BubbleManager {
-    return theOneBubbleManager;
+function getTheOneCanvasElementManager(): CanvasElementManager {
+    return theOneCanvasElementManager;
 }
 
 // This is using an implementation secret of a particular version of ckeditor; but it seems to

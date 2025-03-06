@@ -9,7 +9,10 @@ import {
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
-import { kbackgroundImageClass, updateOverlayClass } from "./bubbleManager";
+import {
+    kbackgroundImageClass,
+    updateCanvasElementClass
+} from "./bubbleManager";
 import { kCanvasElementSelector } from "../toolbox/overlay/overlayUtils";
 
 import { farthest } from "../../utils/elementUtils";
@@ -17,7 +20,7 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
-import { getBubbleManager } from "../toolbox/overlay/overlayUtils";
+import { getCanvasElementManager } from "../toolbox/overlay/overlayUtils";
 
 // This appears to be constant even on higher dpi screens.
 // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
@@ -86,8 +89,8 @@ export function SetupImage(image) {
     // Note: any changes to this should probably also be made to (C#) Book.RemoveObsoleteImageAttributes(), if it still exists.
     if (image.style) {
         // Note, in BL-9460 we had to return to having width and height in some cases.
-        // As of 6.1, overlay images make use of explicit width, left, and top in styles for cropping.
-        // Since overlay images were added (2022) long after we switched to object-fit:contain (2018),
+        // As of 6.1, canvas element images make use of explicit width, left, and top in styles for cropping.
+        // Since canvas element images were added (2022) long after we switched to object-fit:contain (2018),
         // we can safely suppress removing width and height for those as well as for ones explicitly
         // marked to fix BL-9460 (as of August 2024, the latter is just one cover image in Kyrg2020).
         if (
@@ -180,8 +183,8 @@ export function doImageCommand(
 
     const topDiv = img.closest(kCanvasElementSelector);
     // Currently Gifs can only be added using the Games tool.
-    // A gif is always an img in an overlay (textOverPicture, even though it is
-    // not actually text) div, and we put a special class on the TOP element
+    // A gif is always an img in a canvas element div, and we put a special class
+    // on the canvas element
     // and use it in various ways where GIFs need to behave differently from
     // other imgs. (For example, currently, they can only be cut/copied as file
     // paths, we don't support metadata, they can't be cropped,...)
@@ -329,7 +332,7 @@ function SetupImageContainer(containerDiv: HTMLElement) {
     // the hoverup class should be present whenever the mouse is over the containerDiv.
     // This is usually achieved by mouseenter/mouseleave event handlers,
     // but mouseenter won't trigger if the mouse starts off over the image container when the page is loaded
-    // That case is extremely commonplace when adding comic bubbles, because that needs to reload the page.
+    // That case is extremely commonplace when adding canvas elements, because that needs to reload the page.
     // (It is also possible to trigger even when opening up a new page, but probably less likely to happen accidentally)
     if (isOutermostImageContainer && containerDiv.matches(":hover")) {
         containerDiv.classList.add("hoverUp");
@@ -338,8 +341,8 @@ function SetupImageContainer(containerDiv: HTMLElement) {
     }
 
     // Now that we can overlay things on top of images, we don't want to show the flower placeholder
-    // if the image container contains an overlay.
-    updateOverlayClass(containerDiv);
+    // if the image container contains a canvas element.
+    updateCanvasElementClass(containerDiv);
 
     // This will fix cover image on Kyrgyzstan books that we created before we switched to this
     // new border system. Going forward, say 5.1, we could remove this and just
@@ -379,22 +382,22 @@ export function getImageFromContainer(
     imageContainer: HTMLElement
 ): HTMLImageElement | null {
     // If there is ever a case where the img we want is not a direct child of the container,
-    // be careful not to fix this in a way that might accidentally return an overlay image
+    // be careful not to fix this in a way that might accidentally return a canvas element image
     // when we want the parent image (or accidentally return all of them, especially if
     // you use jquery).
-    // The bloom-ui filter prevents returning controls we add to overlays.
+    // The bloom-ui filter prevents returning controls we add to canvas elements.
     // Note: x instanceof HTMLImageElement did not work reliably.
     return Array.from(imageContainer.children).find(
         x => x.nodeName === "IMG"
     ) as HTMLImageElement;
 }
 
-// Given an overlay which may or may not be an image overlay, if it IS an image overlay,
+// Given a canvas element which may or may not be an image canvas element, if it IS an image canvas element,
 // find its image. Otherwise, return null.
-export function getImageFromOverlay(
-    overlay: HTMLElement
+export function getImageFromCanvasElement(
+    canvasElement: HTMLElement
 ): HTMLImageElement | null {
-    const imageContainer = overlay.getElementsByClassName(
+    const imageContainer = canvasElement.getElementsByClassName(
         kImageContainerClass
     )[0];
     if (!imageContainer) {
@@ -403,16 +406,18 @@ export function getImageFromOverlay(
     return getImageFromContainer(imageContainer as HTMLElement);
 }
 
-// This is an odd concept, since "background overlay" is an oxymoron: it doesn't overlay
-// anything, but is the background on which we overlay other things. In its HTML structure,
-// however, it is an image overlay: an element with the bloom-canvas-element
+// The background image in an image container doesn't behave quite like other canvas elements,
+// since code keeps it centered and filling the container in at least one dimension. (Currently
+// we mainly mimic object-fit:contain, but some pages really want object-fit:cover). The internal
+// representation, however, is the same as for other canvas elements, so we can use many of the
+// same functions. That is, the background image is an element with the bloom-canvas-element
 // class (with a determined size and position in its style top, left, width, and height),
 // an image container (with 100% size) and an img (which may have top, left, and width
 // attributes to crop it, as well as the src that determines the actual image).
+// (It also has bloom-backgroundImage).
 // There are enough common behaviors to make it useful to use the same structure, and I
-// (JohnT) at least find it useful to think of it as a background overlay. Background
-// Canvas Element will work better.
-export function getBackgroundOverlayFromContainer(
+// (JohnT) at least find it useful to think of it as a background canvas element.
+export function getBackgroundCanvasElementFromContainer(
     imageContainer: HTMLElement
 ): HTMLElement | null {
     return imageContainer.getElementsByClassName(
@@ -420,28 +425,30 @@ export function getBackgroundOverlayFromContainer(
     )[0] as HTMLElement;
 }
 
-// Shortcut to get the img element from the background overlay (if any) of an image container.
+// Shortcut to get the img element from the background canvas element (if any) of an image container.
 // This, rather than the obsolete img that is a direct child and is always placeHolder.png,
 // is the background image that is actually displayed.
 export function getBackgroundImageFromContainer(
     imageContainer: HTMLElement
 ): HTMLElement | null {
-    const bgOverlay = getBackgroundOverlayFromContainer(imageContainer);
-    if (!bgOverlay) {
+    const bgCanvasElement = getBackgroundCanvasElementFromContainer(
+        imageContainer
+    );
+    if (!bgCanvasElement) {
         return null;
     }
-    return getImageFromOverlay(bgOverlay as HTMLElement);
+    return getImageFromCanvasElement(bgCanvasElement as HTMLElement);
 }
 
 /**
  * Disables the current image tooltip
  */
 function DisableImageTooltip(container: HTMLElement | undefined | null) {
-    const bubbleManager = getBubbleManager();
-    if (bubbleManager) {
+    const canvasElementManager = getCanvasElementManager();
+    if (canvasElementManager) {
         // If this is set up, since we only want this tooltip for one container that has an active
         // background image, the most complete thing is to remove them all.
-        bubbleManager
+        canvasElementManager
             .getAllPrimaryImageContainersOnPage()
             .forEach(container => {
                 container.title = "";
@@ -452,7 +459,7 @@ function DisableImageTooltip(container: HTMLElement | undefined | null) {
         return;
     }
 
-    // If the bubble manager hasn't been set up at all we can at least clear the current one.
+    // If the canvas element manager hasn't been set up at all we can at least clear the current one.
     const outermostImageContainer = farthest<HTMLElement>(
         container,
         ".bloom-imageContainer"
@@ -469,7 +476,7 @@ function DisableImageTooltip(container: HTMLElement | undefined | null) {
 export function UpdateImageTooltipVisibility(
     container: HTMLElement | undefined | null
 ) {
-    const theOneBubbleManager = getBubbleManager();
+    const theOneBubbleManager = getCanvasElementManager();
     if (
         !container ||
         container.classList.contains("bloom-hideImageButtons") ||
@@ -489,9 +496,9 @@ export function UpdateImageTooltipVisibility(
             // Set title on the main image container
             // The intuitive thing to do would be to set each container's title individually.
             // However, that relies on each container being able to receive mouse events.
-            // Overlay images have problems receiving mouse events on the majority of their surface area
+            // Canvas element images have problems receiving mouse events on the majority of their surface area
             // because the canvas is above them.
-            // One could mess around with an invisible layer for each overlay image above the canvas, and it seems to work
+            // One could mess around with an invisible layer for each canvas element image above the canvas, and it seems to work
             // but that's a lot more complicated z-index wise and introduces other undesired side effects which need to be coded against.
             // It's less complicated to just set the title of the main container (its events trigger because the canvas is its descendant,
             // and the canvas is receiving events)
@@ -518,7 +525,7 @@ async function SetImageTooltip(container: HTMLElement) {
 
     // We use data-title to store what the tooltip should be, regardless of whether the tooltip should actually be currently visible
     // Use the real title attribute to show the tooltip only when desired
-    // (e.g. show when no bubble selected but hide when a bubble is selected)
+    // (e.g. show when no canvas element selected but hide when a canvas element is selected)
     container.setAttribute("data-title", title);
 
     UpdateImageTooltipVisibility(container);
@@ -746,26 +753,26 @@ export function SetImageElementUrl(imgOrDivWithBackgroundImage, url) {
 // so that we can easily & quickly get to it here.
 // Currently this button is only shown on top of background images, which are usually large enough for it.
 // This function takes a container which may or may not have background images, removes any old editMetadataButton,
-// and adds a new one if appropriate, to each backgroundImage. Container might also BE an overlay that is specified to hold the background image.
+// and adds a new one if appropriate, to each backgroundImage. Container might also BE a canvas element that is specified to hold the background image.
 export function SetupMetadataButton(parent: HTMLElement) {
-    // I _think_ this is only called when parent is either an overlay or the parent of an image container,
+    // I _think_ this is only called when parent is either a canvas element or the parent of an image container,
     // and thus can only have one background image. But for safety I've coded it to work even if passed the
     // whole page.
-    let bgImageOverlays: HTMLElement[] = [];
+    let bgImageCanvasElements: HTMLElement[] = [];
     if (parent.classList.contains(kbackgroundImageClass)) {
-        bgImageOverlays.push(parent);
+        bgImageCanvasElements.push(parent);
     } else {
-        bgImageOverlays = Array.from(
+        bgImageCanvasElements = Array.from(
             parent.getElementsByClassName(kbackgroundImageClass)
         ) as HTMLElement[];
     }
-    for (const bgImageOverlay of bgImageOverlays) {
+    for (const bgImageCanvasElement of bgImageCanvasElements) {
         for (const oldButton of Array.from(
-            bgImageOverlay.getElementsByClassName("editMetadataButton")
+            bgImageCanvasElement.getElementsByClassName("editMetadataButton")
         )) {
             oldButton.remove();
         }
-        const container = bgImageOverlay.getElementsByClassName(
+        const container = bgImageCanvasElement.getElementsByClassName(
             kImageContainerClass
         )[0] as HTMLElement;
         if (!container) {

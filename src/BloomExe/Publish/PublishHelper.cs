@@ -883,46 +883,46 @@ namespace Bloom.Publish
         }
 
         /// <summary>
-        /// Once we have really cropped any images that need it, we no longer need the "overlay-like"
+        /// Once we have really cropped any images that need it, we no longer need the "canvas element-like"
         /// HTML structure that supports cropping background images. So we get rid of the extra structure
         /// and leave the export with just an img that properly fills the image container (using CSS
         /// content-fit). The great advantage of this is that we need code to adjust the size of the
-        /// overlay, but the img size is automatic with content-fit. While editing, we adjust the
-        /// size and position of things in an image container, including the background overlay, any time
+        /// canvas element, but the img size is automatic with content-fit. While editing, we adjust the
+        /// size and position of things in an image container, including the background canvas element, any time
         /// we open a page and notice that the image container's size has changed (or when it changes while
         /// the page is open). But various things can change the image container size for all images
         /// in a document, and the user shouldn't have to cycle through all the pages to get the
-        /// images adjusted. (We decided to accept that they must do so for ordinary overlays). If we didn't do
-        /// this trick, we'd have to somehow adjust any background image overlay (basically any image
+        /// images adjusted. (We decided to accept that they must do so for ordinary canvas elements). If we didn't do
+        /// this trick, we'd have to somehow adjust any background image canvas element (basically any image
         /// that has migrated to the new system) to the correct size for the current size of its
         /// container, and enhance Bloom Player to do the same when it changes the page size, and not
-        /// to give books with only background overlays the special treatment that it gives books with
-        /// ordinary overlays, and to handle motion differently. And it would be difficult to make the
+        /// to give books with only background canvas elements the special treatment that it gives books with
+        /// ordinary canvas elements, and to handle motion differently. And it would be difficult to make the
         /// correct adjustment in C#; the resize code is all in JS and makes use of the browser's
         /// rendering of the page. One day, we'd like to do all the publishing transformations in JS
         /// (https://www.notion.so/hattonjohn/Infrastructure-publishing-transformations-1514bb19df128007a15ffd4cafff28de?pvs=4)
         /// but for now this saves a lot of work. It essentially converts the background image
-        /// represented as an overlay to our pre-6.2 approach where it was a direct child of the image
-        /// container. The overlay div is removed, and the hidden placeHolder.png image in the parent
+        /// represented as an canvas element to our pre-6.2 approach where it was a direct child of the image
+        /// container. The canvas element div is removed, and the hidden placeHolder.png image in the parent
         /// is changed to point to the actual background image.
         /// </summary>
         /// <param name="book"></param>
         public static void SimplifyBackgroundImages(Book.Book book)
         {
-            var backgroundImageOverlays = book.RawDom
+            var backgroundImageCanvasElements = book.RawDom
                 .SafeSelectNodes("//div[contains(@class, 'bloom-backgroundImage')]")
                 .Cast<SafeXmlElement>()
                 .ToArray();
-            foreach (var overlay in backgroundImageOverlays)
+            foreach (var canvasElement in backgroundImageCanvasElements)
             {
                 // All these early returns are paranoia. If we find a div with class bloom-backgroundImage,
                 // it WILL contain an image container that contains an img, and WILL be a child of
                 // another image container that contains an img. So the xpath above targets exactly
                 // the elements that need this transformation. The backgroundImage elements ("background
-                // overlays") are removed, and the hidden placeHolder.png image in the parent image container
-                // is changed to point to the image that was in the overlay.
+                // canvas elements") are removed, and the hidden placeHolder.png image in the parent image container
+                // is changed to point to the image that was in the canvas element.
                 var imgContainer =
-                    overlay.ChildNodes.FirstOrDefault(
+                    canvasElement.ChildNodes.FirstOrDefault(
                         c => c is SafeXmlElement ce && ce.LocalName == "div"
                     ) as SafeXmlElement;
                 if (imgContainer == null || !imgContainer.HasClass("bloom-imageContainer"))
@@ -936,7 +936,7 @@ namespace Bloom.Publish
                 var src = img.GetAttribute("src");
                 if (string.IsNullOrEmpty(src))
                     return;
-                var parentContainer = overlay.ParentNode as SafeXmlElement;
+                var parentContainer = canvasElement.ParentNode as SafeXmlElement;
                 if (parentContainer == null || !parentContainer.HasClass("bloom-imageContainer"))
                     return;
                 var oldImg =
@@ -952,7 +952,7 @@ namespace Bloom.Publish
                         "data-href",
                         imgContainer.GetAttribute("data-href")
                     );
-                overlay.ParentNode.RemoveChild(overlay);
+                canvasElement.ParentNode.RemoveChild(canvasElement);
             }
         }
 
@@ -984,7 +984,7 @@ namespace Bloom.Publish
         )
         {
             var imgContainer = img.ParentNode as SafeXmlElement;
-            var overlay = imgContainer?.ParentNode as SafeXmlElement;
+            var canvasElement = imgContainer?.ParentNode as SafeXmlElement;
             // Cropping is implemented using the interaction between a canvas element
             // which specifies the visible area of the image by its height and width, and the img two levels
             // down which may have adjusted width, left, and top to position part of itself in the canvas element.
@@ -992,8 +992,8 @@ namespace Bloom.Publish
             // this structure. Other images (e.g., branding) are left alone. (At the stage where this code is run,
             // background images, including all normal page content images, are still represented as canvas elements.)
             if (
-                overlay == null
-                || !overlay.HasClass(HtmlDom.kCanvasElementClass)
+                canvasElement == null
+                || !canvasElement.HasClass(HtmlDom.kCanvasElementClass)
                 || !imgContainer.HasClass("bloom-imageContainer")
             )
                 return;
@@ -1007,18 +1007,18 @@ namespace Bloom.Publish
             var imgWidth = GetNumberFromPx("width", imgStyle);
             var imgLeft = GetNumberFromPx("left", imgStyle);
             var imgTop = GetNumberFromPx("top", imgStyle);
-            var overlayStyle = overlay.GetAttribute("style");
-            var overlayWidth = GetNumberFromPx("width", overlayStyle);
-            var overlayHeight = GetNumberFromPx("height", overlayStyle);
-            if (imgWidth == 0 || overlayWidth == 0)
+            var canvasElementStyle = canvasElement.GetAttribute("style");
+            var canvasElementWidth = GetNumberFromPx("width", canvasElementStyle);
+            var canvasElementHeight = GetNumberFromPx("height", canvasElementStyle);
+            if (imgWidth == 0 || canvasElementWidth == 0)
                 return;
             if (!ImageUtils.TryGetImageSize(srcPath, out Size size))
             {
                 return; // can't crop the image if we can't get its size.
             }
             var scale = imgWidth / size.Width;
-            var selWidth = overlayWidth / scale;
-            var selHeight = overlayHeight / scale;
+            var selWidth = canvasElementWidth / scale;
+            var selHeight = canvasElementHeight / scale;
             var selLeft = -imgLeft / scale;
             var selTop = -imgTop / scale;
             var ext = Path.GetExtension(srcPath).ToLowerInvariant();

@@ -33,8 +33,8 @@ import {
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import { kBloomYellow } from "../../bloomMaterialUITheme";
 import { RenderRoot } from "./AudioHilitePage";
-import { RenderOverlayRoot } from "./OverlayFormatPage";
-import { BubbleManager } from "../js/bubbleManager";
+import { RenderCanvasElementRoot } from "./OverlayFormatPage";
+import { CanvasElementManager } from "../js/bubbleManager";
 import { kCanvasElementSelector } from "../toolbox/overlay/overlayUtils";
 
 // Controls the CSS text-align value
@@ -1142,7 +1142,7 @@ export default class StyleEditor {
         // Instead, we have to actually compute the position, and observe changes in the size of
         // targetBox that might require adjusting it.
         // As far as I know, nothing ELSE can change (while this box has focus and the button exists)
-        // that would require moving it. (Moving a bubble moves the TG, so the button goes along.)
+        // that would require moving it. (Moving a canvas element moves the TG, so the button goes along.)
         $(targetBox).after(
             '<div id="formatButton" contenteditable="false" class="bloom-ui"><img contenteditable="false" src="' +
                 this._supportFilesRoot +
@@ -1186,7 +1186,7 @@ export default class StyleEditor {
         }
         const oldPaddingStr = window.getComputedStyle(this.boxBeingEdited)
             .paddingLeft;
-        BubbleManager.adjustOverlaysForPaddingChange(
+        CanvasElementManager.adjustCanvasElementsForPaddingChange(
             this.boxBeingEdited.ownerDocument.body,
             StyleEditor.GetStyleNameForElement(this.boxBeingEdited) ?? "",
             oldPaddingStr,
@@ -1196,7 +1196,7 @@ export default class StyleEditor {
         if (rule !== null) {
             rule.style.setProperty("padding", padding, "important");
             this.cleanupAfterStyleChange(true); // do not shrink box that we may have grown
-            RenderOverlayRoot(padding, (newPadding: string) => {
+            RenderCanvasElementRoot(padding, (newPadding: string) => {
                 this.changePadding(newPadding);
             });
         }
@@ -1778,22 +1778,22 @@ export default class StyleEditor {
         }
     }
 
-    changeOverlayProps(padding: string) {
+    changeCanvasElementProps(padding: string) {
         if (this.ignoreControlChanges) {
             return;
         }
         // const styleName = StyleEditor.GetStyleNameForElement(
         //     this.boxBeingEdited
         // );
-        RenderOverlayRoot(padding, (newPadding: string) => {
+        RenderCanvasElementRoot(padding, (newPadding: string) => {
             this.changePadding(newPadding);
         });
         // if (styleName) {
-        //     this.putOverlayRulesInDom(styleName, padding);
+        //     this.putCanvasElementRulesInDom(styleName, padding);
         // }
     }
 
-    // putOverlayRulesInDom(styleName: string, padding: string) {
+    // putCanvasElementRulesInDom(styleName: string, padding: string) {
     //     // TODO
     // }
 
@@ -2097,7 +2097,7 @@ export default class StyleEditor {
         this.selectButtons(current);
         this.setColorButtonColor("colorSelectButton", current.color);
         this.changeHiliteProps(current.color, current.hiliteBgColor);
-        this.changeOverlayProps(current.padding);
+        this.changeCanvasElementProps(current.padding);
         this.ignoreControlChanges = false;
         this.cleanupAfterStyleChange();
     }
@@ -2254,7 +2254,7 @@ export default class StyleEditor {
                         if (this.xmatterMode) {
                             $("#style-page").remove();
                         }
-                        // Show the overlay tab only if the box being edited is in an overlay
+                        // Show the canvas element tab only if the box being edited is in a canvas element
                         if (
                             !this.boxBeingEdited.closest(kCanvasElementSelector)
                         ) {
@@ -2302,9 +2302,12 @@ export default class StyleEditor {
                             this.changeHiliteProps(textColor, bgColor)
                     );
 
-                    RenderOverlayRoot(current.padding, (newPadding: string) => {
-                        this.changePadding(newPadding);
-                    });
+                    RenderCanvasElementRoot(
+                        current.padding,
+                        (newPadding: string) => {
+                            this.changePadding(newPadding);
+                        }
+                    );
 
                     if (!noFormatChange) {
                         this.updateFontControl(fontMetadata, current.fontName);
@@ -2413,9 +2416,9 @@ export default class StyleEditor {
                     }
                     // #formatButton doesn't always exist in text-on-picture
                     // divs, so we need a fallback that will exist in those cases.
-                    // But we also want repeatable positions for overlays, so we
+                    // But we also want repeatable positions for canvas elements, so we
                     // check for their popup div first.  See BL-13829.
-                    let orientOnButton = $("#overlay-context-controls");
+                    let orientOnButton = $("#canvas-element-context-controls");
                     if (orientOnButton.length === 0) {
                         orientOnButton = $("#formatButton");
                     }

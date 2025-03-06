@@ -138,7 +138,7 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
         document.addEventListener(moveEvent, moveFunction, { capture: true });
         // MUST be on the document, both for the usual reason that the mouse can move out of the element
         // where the mouse down happened, and also because there is another capturing document-level mouseup
-        // handler in bubblemanager that uses stopPropagation to prevent the event from reaching
+        // handler in CanvasElementManager that uses stopPropagation to prevent the event from reaching
         // any descendants.
         document.addEventListener(endEvent, mouseUpHandler, {
             capture: true,
@@ -793,13 +793,14 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
             return -1;
         }
         let aspectRatio = img.naturalWidth / img.naturalHeight;
-        // but if there is a bloom-backgroundImage, common in images used for overlays, use that instead
-        const backgroundOverlay = imageContainer.getElementsByClassName(
+        // but if there is a bloom-backgroundImage, common in images used for canvas elements, use that instead
+        const backgroundCanvasElement = imageContainer.getElementsByClassName(
             "bloom-backgroundImage"
         )[0];
-        if (backgroundOverlay) {
+        if (backgroundCanvasElement) {
             aspectRatio =
-                backgroundOverlay.clientWidth / backgroundOverlay.clientHeight;
+                backgroundCanvasElement.clientWidth /
+                backgroundCanvasElement.clientHeight;
         }
         const horizontal = isPaneHorizontal(splitPane);
         const splitPaneComponent = img.closest(".split-pane-component"); // the element that has the percent

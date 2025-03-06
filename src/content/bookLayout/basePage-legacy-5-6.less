@@ -561,7 +561,7 @@ textarea,
     // We need this if appearance rules may set border or padding and yet we want to
     // use width: 100% (above). Otherwise, the border or padding will make the box
     // overflow its parent. This is definitely needed if we use the new control
-    // for padding in overlays. It was not in 5.6, but it seems unlikely to break
+    // for padding in canvas elements. It was not in 5.6, but it seems unlikely to break
     // legacy books, so I think it is worth the risk of adding it here so the new
     // feature is not broken in legacy.
     box-sizing: border-box;

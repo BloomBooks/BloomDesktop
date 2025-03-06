@@ -11,7 +11,7 @@ import {
     SignLanguageToolControls,
     SignLanguageTool
 } from "../toolbox/signLanguage/signLanguageTool";
-import { kGameToolId, kCanvasElementToolId } from "../toolbox/toolIds";
+import { kGameToolId, kOverlayToolId } from "../toolbox/toolIds";
 import { selectVideoContainer } from "./videoUtils";
 import { getPlayIcon } from "../img/playIcon";
 import { getPauseIcon } from "../img/pauseIcon";
@@ -202,18 +202,18 @@ function SetupClickToShowSignLanguageTool(containerDiv: Element) {
             return;
         }
 
-        // In comic mode (overlay tool), suppress the click handler of video-over-picture elements so it won't take us to the sign
+        // In comic mode (canvas element tool), suppress the click handler of video-over-picture elements so it won't take us to the sign
         // language tool, but everywhere else we want a click on a video element to take us to the SL tool
         const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
         const currentToolId = toolbox?.getCurrentTool()?.id();
 
         if (
             toolbox?.toolboxIsShowing() &&
-            (currentToolId === kCanvasElementToolId ||
+            (currentToolId === kOverlayToolId ||
                 currentToolId === kGameToolId) &&
             isOverPicture(containerDiv)
         ) {
-            // Looks like a video-over-picture, and we're showing the overlay or game tool. Don't switch to SL tool.
+            // Looks like a video-over-picture, and we're showing the canvas element or game tool. Don't switch to SL tool.
             return;
         }
 
@@ -266,9 +266,9 @@ export function doVideoCommand(
 export function findNextVideoContainer(
     videoContainer: Element
 ): Element | undefined {
-    const overlay = videoContainer.closest(kCanvasElementSelector); // unfortunate name for picture and video overlay containers
-    if (overlay) {
-        let next = overlay.nextElementSibling;
+    const canvasElement = videoContainer.closest(kCanvasElementSelector);
+    if (canvasElement) {
+        let next = canvasElement.nextElementSibling;
         while (next) {
             if (
                 next.firstElementChild?.classList.contains(
@@ -285,9 +285,9 @@ export function findNextVideoContainer(
 export function findPreviousVideoContainer(
     videoContainer: Element
 ): Element | undefined {
-    const overlay = videoContainer.closest(kCanvasElementSelector); // unfortunate classname for picture and video overlay containers
-    if (overlay) {
-        let previous = overlay.previousElementSibling;
+    const canvasElement = videoContainer.closest(kCanvasElementSelector);
+    if (canvasElement) {
+        let previous = canvasElement.previousElementSibling;
         while (previous) {
             if (
                 previous.firstElementChild?.classList.contains(
@@ -301,24 +301,28 @@ export function findPreviousVideoContainer(
     }
     return undefined;
 }
-// Swap the positions of two video containers (actually their parent overlays) in the DOM.
+// Swap the positions of two video containers (actually their parent canvas elements) in the DOM.
 function SwapVideoPositionsInDom(
     firstVideoContainer: Element,
     secondVideoContainer: Element
 ) {
-    const firstOverlay = firstVideoContainer.closest(kCanvasElementSelector);
-    const secondOverlay = secondVideoContainer.closest(kCanvasElementSelector);
-    if (!firstOverlay || !secondOverlay) {
+    const firstCanvasElement = firstVideoContainer.closest(
+        kCanvasElementSelector
+    );
+    const secondCanvasElement = secondVideoContainer.closest(
+        kCanvasElementSelector
+    );
+    if (!firstCanvasElement || !secondCanvasElement) {
         return;
     }
-    const overlayContainer = firstOverlay.parentElement;
-    if (!overlayContainer || overlayContainer !== secondOverlay.parentElement) {
+    const container = firstCanvasElement.parentElement;
+    if (!container || container !== secondCanvasElement.parentElement) {
         return;
     }
-    const thirdOverlay = secondOverlay.nextElementSibling; // may be null, but that's okay
-    overlayContainer.insertBefore(secondOverlay, firstOverlay);
-    if (firstOverlay.nextElementSibling !== thirdOverlay) {
-        overlayContainer.insertBefore(firstOverlay, thirdOverlay);
+    const thirdCanvasElement = secondCanvasElement.nextElementSibling; // may be null, but that's okay
+    container.insertBefore(secondCanvasElement, firstCanvasElement);
+    if (firstCanvasElement.nextElementSibling !== thirdCanvasElement) {
+        container.insertBefore(firstCanvasElement, thirdCanvasElement);
     }
 }
 
@@ -363,10 +367,10 @@ function wrapVideoIcon(
 // we don't start from the beginning.
 let currentVideoElement: HTMLVideoElement | null = null;
 
-// Handles a click on the play button. This is ignored here if the video is in an overlay
-// and we're not in Play mode, so the bubbleManager can decide if it's a drag or a click.
-// (This is also called by code in bubbleManager, when it determines that mouse activity
-// on the button SHOULD be considered a click, not a drag of the overlay. The event is
+// Handles a click on the play button. This is ignored here if the video is in a canvas element
+// and we're not in Play mode, so the CanvasElementManager can decide if it's a drag or a click.
+// (This is also called by code in CanvasElementManager, when it determines that mouse activity
+// on the button SHOULD be considered a click, not a drag of the canvas element. The event is
 // then actually from the mouseup, and forcePlay is true.)
 export function handlePlayClick(ev: MouseEvent, forcePlay?: boolean) {
     const video = (ev.target as HTMLElement)
@@ -375,10 +379,10 @@ export function handlePlayClick(ev: MouseEvent, forcePlay?: boolean) {
     if (!video) {
         return; // should not happen
     }
-    // If we're in an overlay, we don't want this handler to play the video,
-    // becuse the click might be a drag on the overlay. We'll let bubbleManager
+    // If we're in a canvas element, we don't want this handler to play the video,
+    // becuse the click might be a drag on the canvas element. We'll let CanvasElementManager
     // decide and call playVideo if appropriate. That is, if we're not in Play mode,
-    // where dragging is not applicable, or being called FROM the bubbleManager.
+    // where dragging is not applicable, or being called FROM the CanvasElementManager.
     if (
         !forcePlay &&
         video.closest(kCanvasElementSelector) &&
@@ -437,7 +441,7 @@ const handleVideoClick = (ev: MouseEvent) => {
     const video = ev.currentTarget as HTMLVideoElement;
 
     // If we're not in Play mode, we don't need these behaviors.
-    // At least I don't think so. Outside Play mode, clicking on overlays is mainly about moving
+    // At least I don't think so. Outside Play mode, clicking on canvas elements is mainly about moving
     // them, but we have a visible Play button in case you want to play one. In BP (and Play mode), you
     // can't move them (unless one day we make them something you can drag to a target), so it
     // makes sense that a click anywhere on the video would play it; there's nothing else useful

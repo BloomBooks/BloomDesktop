@@ -260,7 +260,7 @@ namespace Bloom.Publish
             {
                 // At this point (5.1), we have an enterprise-related publishing problem if :
                 // - User is not in Enterprise mode AND
-                // - Book contains overlay elements AND
+                // - Book contains canvas element elements AND
                 // - Book is not a translated shell
 
                 // As of Bloom 6.2, all pictures in a book have the basic canvas element class (bloom-canvas-element).

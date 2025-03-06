@@ -130,7 +130,7 @@
 
     .MuiFormLabel-root,
     .MuiSelect-icon,
-    .bubbleOptionDropdown,
+    .canvasElementOptionDropdown,
     .MuiFormControlLabel-root,
     .MuiCheckbox-root {
         color: @bloom-toolboxWhite;
@@ -184,7 +184,7 @@
         flex-direction: row;
         justify-content: space-between;
 
-        .duplicate-bubble-icon {
+        .duplicate-canvasElement-icon {
             margin-top: 18px; // to match material-ui icon on same row
         }
     }
@@ -216,7 +216,7 @@
 // This is built into Material UI, but we need to access it to set the width of dropdown menus.
 @dropdownLeftMargin: 16px;
 
-.bubble-options-dropdown-menu {
+.canvasElement-options-dropdown-menu {
     // Getting overwritten by the inline styles... :(
     // TODO: Experiment with whether you can pass in a style through Material UI instead of using !important to bypass the inline style.
     z-index: @NecessaryZIndex !important; // Note: 18,000 was experimentally determined to be the minimum required z-index, but seems safer to go up a bit from the minimum

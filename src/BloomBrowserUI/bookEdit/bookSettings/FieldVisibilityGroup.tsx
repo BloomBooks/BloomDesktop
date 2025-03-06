@@ -82,7 +82,7 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
     // If we had more than three, we'd want to go to keeping a count of how many are on.
     // But with just three the 'disable' boolean for each checkbox is manageable.
     // We can drop this if we decide to allow all three to be turned off (e.g. to allow the
-    // user to embed the title in the image or make it an overlay).
+    // user to embed the title in the image or make it a canvas element).
     const [showL1, showL2, showL3, numberShowing] = useMemo(() => {
         let appearance = props.settings?.["appearance"];
         if (props.settingsToReturnLater) {

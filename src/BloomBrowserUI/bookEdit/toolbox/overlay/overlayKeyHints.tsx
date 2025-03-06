@@ -4,8 +4,8 @@ import * as React from "react";
 import { Typography } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
 
-export const OverlayKeyHints: React.FC = () => {
-    // We no longer use alt and ctrl keys for resizing and moving overlays.
+export const CanvasElementKeyHints: React.FC = () => {
+    // We no longer use alt and ctrl keys for resizing and moving canvas elements.
     // Keeping the code around for now in case we want some similar help.
     // const dragHint = useL10n(
     //     "drag",
