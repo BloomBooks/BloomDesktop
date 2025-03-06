@@ -143,7 +143,7 @@ const ExpiringSubscriptionStatus: React.FunctionComponent<{
                         }
                     `}
                 >
-                    Please [contact us](%1) to renew.
+                    Please [contact us](%0) to renew.
                 </Markdown>
             </div>
         </BoxWithIconAndText>

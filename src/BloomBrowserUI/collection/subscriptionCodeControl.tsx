@@ -156,7 +156,7 @@ export const SubscriptionControls: React.FC = () => {
         >
             {editingBlorgBook && (
                 <Div
-                    l10nKey="Settings.Enterprise.DownloadForEdit"
+                    l10nKey="Settings.Subscription.DownloadForEdit"
                     className={"legacyBrandingName"}
                 >
                     This collection is in "Download for Edit" mode. The book has
@@ -182,7 +182,7 @@ export const SubscriptionControls: React.FC = () => {
                 >
                     <Label
                         className="subscriptionCodeLabel"
-                        l10nKey="Settings.Enterprise.SubscriptionCode"
+                        l10nKey="Settings.Subscription.SubscriptionCodeLabel"
                     >
                         Subscription Code:
                     </Label>
@@ -272,14 +272,14 @@ const StatusText: React.FC<{
 }> = props => (
     <div>
         {props.status === "SubscriptionIncorrect" && (
-            <Label l10nKey="Settings.Enterprise.NotValid" className={"error"}>
+            <Label l10nKey="Settings.Subscription.NotValid" className={"error"}>
                 That code appears to be incorrect.
             </Label>
         )}
 
         {props.status === "SubscriptionIncomplete" && (
             <Label
-                l10nKey="Settings.Enterprise.Incomplete"
+                l10nKey="Settings.Subscription.Incomplete"
                 className={"incomplete"}
             >
                 The code should look like SOMENAME-123456-7890
@@ -288,7 +288,7 @@ const StatusText: React.FC<{
         {props.status === "SubscriptionUnknown" && (
             <div>
                 <Label
-                    l10nKey="Settings.Enterprise.UnknownCode"
+                    l10nKey="Settings.Subscription.UnknownCode"
                     className="error"
                 >
                     This version of Bloom does not have the artwork that goes
@@ -296,7 +296,7 @@ const StatusText: React.FC<{
                 </Label>
                 <Link
                     className="error"
-                    l10nKey="Settings.Enterprise.CheckUpdates"
+                    l10nKey="Settings.Subscription.CheckUpdates"
                     onClick={() => post("common/checkForUpdates")}
                 >
                     Check for updates
@@ -304,14 +304,16 @@ const StatusText: React.FC<{
             </div>
         )}
         {props.status === "SubscriptionExpired" && (
-            <Label l10nKey="Settings.Enterprise.Expired" className={"error"}>
+            <Label l10nKey="Settings.Subscription.Expired" className={"error"}>
                 That code has expired.
             </Label>
         )}
 
         {props.status === "SubscriptionGood" && (
             <div className={"expiration"}>
-                <Label l10nKey="Settings.Enterprise.Expiration">Expires:</Label>
+                <Label l10nKey="Settings.Subscription.Expiration">
+                    Expires:
+                </Label>
                 <span>
                     {getSafeLocalizedDate(props.expiryDateStringAsYYYYMMDD)}
                 </span>

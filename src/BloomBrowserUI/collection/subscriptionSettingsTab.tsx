@@ -15,10 +15,6 @@ import {
 
 // This component implements the Bloom Subscription tab of the Settings dialog.
 export const SubscriptionSettings: React.FunctionComponent = () => {
-    // TODO Put this back in the display <---------------------------------------------------!!!!!!!!!!!
-    const sileCodesUrl =
-        "https://gateway.sil.org/display/LSDEV/Bloom+enterprise+subscription+codes";
-
     const { subscriptionCodeStatus } = useSubscriptionInfo();
 
     return (
@@ -34,9 +30,15 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
                 padding-bottom: ${tabMargins.bottom};
             `}
         >
-            <Markdown l10nKey="Settings.Subscription.IntroText">
+            <Markdown
+                l10nKey="Settings.Subscription.IntroText"
+                l10nParam0={
+                    // TODO: make a more permanent url?
+                    "https://bloomlibrary.org/page/resources/page/feature-matrix"
+                }
+            >
                 To help cover a portion of the costs associated with providing
-                Bloom, we offer [advanced features](%1) and customizations as a
+                Bloom, we offer [advanced features](%0) and customizations as a
                 subscription service.
             </Markdown>
             <Markdown
@@ -44,7 +46,7 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
                 l10nParam0={"subscriptions@bloomlibrary.org"}
                 l10nParam1={"mailto://subscriptions@bloomlibrary.org"}
             >
-                Please contact [%1](%2) to request your subscription code.
+                Please contact [%0](%1) to purchase your subscription code.
             </Markdown>
 
             <SubscriptionControls />
@@ -65,7 +67,7 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
                             display: inline;
                         `}
                     >
-                        <Markdown l10nKey="Settings.Enterprise.Community.Invitation">
+                        <Markdown l10nKey="Settings.Subscription.Community.Invitation">
                             If your project is fully funded and managed by your
                             local language community, you may qualify for a free
                             [Bloom Community Subscription](https://example.com).
