@@ -62,71 +62,88 @@
                 <note>ID: PublishTab.Upload.CheckEmailFailed</note>
             </trans-unit>
             <trans-unit id="PublishTab.Upload.BookshelfError">
-                <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</source>
+                <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Settings.Subscription subscription.</source>
                 <note>ID: PublishTab.Upload.BookshelfError</note>
             </trans-unit>
-            <trans-unit id="Settings.Enterprise.Community">
-                <source xml:lang="en">Funded by the local community only</source>
-                <note>ID: Settings.Enterprise.Community</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.CheckUpdates">
+                  <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true">
+        <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same Bloom Enterprise branding as when it was last uploaded.</source>
+        <note>ID: Settings.Subscription.DownloadForEdit</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.NeedsCode" sil:dynamic="true">
+        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
+        <note>ID: Settings.Subscription.NeedsCode</note>
+        <note>**%0** should be kept. It will become the branding name. Keep something like [here](%1), but replace the word "here" as appropriate. This will become a hyperlink that launches a web page in a browser.</note>
+      </trans-unit>
+                      <trans-unit id="Settings.Subscription.IntroText">
+            <source xml:lang="en">To help cover a portion of the costs associated with providing Bloom, we offer [advanced features](%0) and customizations as a subscription service.</source>
+            <note>ID: Settings.Subscription.IntroText</note>
+            <note>%0 will be replaced with a URL for more information about advanced features</note>
+          </trans-unit>
+          <trans-unit id="Settings.Subscription.RequestSubscription">
+            <source xml:lang="en">Please contact [%0](%1) to purchase your subscription code.</source>
+            <note>ID: Settings.Subscription.RequestSubscription</note>
+            <note>%0 will be replaced with an email address, %1 with a mailto link to that address</note>
+          </trans-unit>
+          <trans-unit id="Settings.Subscription.Community.Invitation">
+            <source xml:lang="en">If your project is fully funded and managed by your local language community, you may qualify for a free [Bloom Community Subscription](https://example.com).</source>
+            <note>ID: Settings.Subscription.Community.Invitation</note>
+          </trans-unit>
+          <trans-unit id="Settings.Subscription.SubscriptionCodeLabel">
+            <source xml:lang="en">Subscription Code:</source>
+            <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
+          </trans-unit>
+          <trans-unit id="SubscriptionStatus.DefaultMessage">
+            <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
+            <note>ID: SubscriptionStatus.DefaultMessage</note>
+            <note>%0 will be replaced with the subscription name, %1 with the expiration date</note>
+          </trans-unit>
+          <trans-unit id="SubscriptionStatus.RenewalMessage">
+            <source xml:lang="en">Please [contact us](%0) to renew.</source>
+            <note>ID: SubscriptionStatus.RenewalMessage</note>
+            <note>%0 will be replaced with a contact email link</note>
+          </trans-unit>
+            <trans-unit id="Settings.Subscription.CheckUpdates">
                 <source xml:lang="en">Check for updates</source>
-                <note>ID: Settings.Enterprise.CheckUpdates</note>
+                <note>ID: Settings.Subscription.CheckUpdates</note>
             </trans-unit>
-            <trans-unit id="Settings.Enterprise.Expiration">
+            <trans-unit id="Settings.Subscription.Expiration">
                 <source xml:lang="en">Expires:</source>
-                <note>ID: Settings.Enterprise.Expiration</note>
+                <note>ID: Settings.Subscription.Expiration</note>
             </trans-unit>
-            <trans-unit id="Settings.Enterprise.Expired">
+            <trans-unit id="Settings.Subscription.Expired">
                 <source xml:lang="en">That code has expired.</source>
-                <note>ID: Settings.Enterprise.Expired</note>
+                <note>ID: Settings.Subscription.Expired</note>
             </trans-unit>
-            <trans-unit id="Settings.Enterprise.Incomplete">
+            <trans-unit id="Settings.Subscription.Incomplete">
                 <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
-                <note>ID: Settings.Enterprise.Incomplete</note>
+                <note>ID: Settings.Subscription.Incomplete</note>
             </trans-unit>
-            <trans-unit id="Settings.Enterprise.LearnMore">
-                <source xml:lang="en">Learn More</source>
-                <note>ID: Settings.Enterprise.LearnMore</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.Overview">
+            <trans-unit id="Settings.Subscription.Overview">
                 <source xml:lang="en">
-            Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
+            Bloom Settings.Subscription adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
         </source>
-                <note>ID: Settings.Enterprise.Overview</note>
+                <note>ID: Settings.Subscription.Overview</note>
             </trans-unit>
-            <trans-unit id="Settings.Enterprise.None">
-                <source xml:lang="en">None. Enterprise features will be unavailable.</source>
-                <note>ID: Settings.Enterprise.None</note>
+            <trans-unit id="Settings.Subscription.None">
+                <source xml:lang="en">None. Settings.Subscription features will be unavailable.</source>
+                <note>ID: Settings.Subscription.None</note>
             </trans-unit>
-            <trans-unit id="Settings.Enterprise.NeedsCode">
+            <trans-unit id="Settings.Subscription.NeedsCode">
                 <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code.</source>
-                <note>ID: Settings.Enterprise.NeedsCode</note>
+                <note>ID: Settings.Subscription.NeedsCode</note>
                 <note>%0 will be replaced with the name of the branding. Keep surrounding **...**. [here](%1) will become a hot link; %1 will not be seen, but will be the URL for the destination page. Translate "here" and keep the [](%1) around it.</note>
             </trans-unit>
-            <trans-unit id="Settings.Enterprise.NotValid">
+            <trans-unit id="Settings.Subscription.NotValid">
                 <source xml:lang="en">That code appears to be incorrect.</source>
-                <note>ID: Settings.Enterprise.NotValid</note>
+                <note>ID: Settings.Subscription.NotValid</note>
             </trans-unit>
-            <trans-unit id="Settings.Enterprise.Status">
-                <source xml:lang="en">Bloom Enterprise Status</source>
-                <note>ID: Settings.Enterprise.Status</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.Subscription">
-                <source xml:lang="en">Enterprise Subscription</source>
-                <note>ID: Settings.Enterprise.Subscription</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.SubscriptionCode">
-                <source xml:lang="en">Subscription Code:</source>
-                <note>ID: Settings.Enterprise.SubscriptionCode</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.UnknownCode">
+            <trans-unit id="Settings.Subscription.UnknownCode">
                 <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
-                <note>ID: Settings.Enterprise.UnknownCode</note>
+                <note>ID: Settings.Subscription.UnknownCode</note>
             </trans-unit>
-            <trans-unit id="Settings.Enterprise.WhatsThis">
+            <trans-unit id="Settings.Subscription.WhatsThis">
                 <source xml:lang="en">What's This?</source>
-                <note>ID: Settings.Enterprise.WhatsThis</note>
+                <note>ID: Settings.Subscription.WhatsThis</note>
                 <note>A link offering more information about the Funded Local Community Only option</note>
             </trans-unit>
             <trans-unit id="Spreadsheet.DataDivConflictWarning">
@@ -222,6 +239,7 @@
             <source xml:lang="en">Finished</source>
             <note>Common.Finished</note>
           </trans-unit>
+
         </body>
     </file>
 </xliff>
