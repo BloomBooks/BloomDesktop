@@ -522,6 +522,22 @@ namespace Bloom.Collection
 
                 BrandingProjectKey = ReadString(xml, "BrandingProjectName", "Default");
                 SubscriptionCode = ReadString(xml, "SubscriptionCode", null);
+                if (BrandingProjectKey == "Local-Community")
+                {
+                    // migrating towards Community having an actual code
+                    SubscriptionCode = "Legacy-LC-005809-2533";
+                }
+                // I'm not sure if we could get this far without knowing that the branding is community, but just in case...
+                // "-LC" at the end means that this is a Local Community Subscription
+                if (SubscriptionCode != null && SubscriptionCode.Contains("-LC-"))
+                {
+                    BrandingProjectKey = "Local-Community";
+                    // everything before the -LC- is the personalization code, e.g. "Foobar-Village". Replace dashes with spaces.
+                    BrandingPersonalization = SubscriptionCode
+                        .Substring(0, SubscriptionCode.IndexOf("-LC-"))
+                        .Replace("-", " ");
+                }
+
                 if (BrandingProjectKey != "Default" && !Program.RunningHarvesterMode)
                 {
                     // Validate branding, so things can't be circumvented by just typing something random into settings
@@ -887,6 +903,9 @@ namespace Bloom.Collection
                 _brandingProjectKeyOverrideForDownloadForEditing = null;
             }
         }
+
+        // used to personalize the branding when it's not actually custom. E.g. Local Community & Bloom Pro scenarios.
+        public string BrandingPersonalization;
 
         private string _brandingProjectKeyOverrideForDownloadForEditing;
 
@@ -1309,26 +1328,26 @@ namespace Bloom.Collection
         /// This allows new, not yet implemented, subscriptions/brandings to be recognized as valid, and expired
         /// subscriptions to be flagged as such but not treated as totally invalid.
         /// </summary>
-        public bool IsSubscriptionCodeKnown()
+        public bool HaveBrandingForCode()
         {
             return BrandingProject.HaveFilesForBranding(BrandingProjectKey)
                 || CollectionSettingsApi.GetExpirationDate(SubscriptionCode) != DateTime.MinValue;
         }
 
-        public CollectionSettingsApi.EnterpriseStatus GetEnterpriseStatus(
+        public CollectionSettingsApi.SubscriptionTier GetEnterpriseStatus(
             bool forFixSubscriptionCode
         )
         {
             if (forFixSubscriptionCode)
             {
                 // We're displaying the dialog to fix a branding code...select that option
-                return CollectionSettingsApi.EnterpriseStatus.Subscription;
+                return CollectionSettingsApi.SubscriptionTier.Enterprise;
             }
             if (BrandingProjectKey == "Default")
-                return CollectionSettingsApi.EnterpriseStatus.None;
+                return CollectionSettingsApi.SubscriptionTier.None;
             else if (BrandingProjectKey == "Local-Community")
-                return CollectionSettingsApi.EnterpriseStatus.Community;
-            return CollectionSettingsApi.EnterpriseStatus.Subscription;
+                return CollectionSettingsApi.SubscriptionTier.Community;
+            return CollectionSettingsApi.SubscriptionTier.Enterprise;
         }
 
         public static string[] ParseAdministratorString(string newAdminString)

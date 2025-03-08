@@ -24,12 +24,12 @@ namespace Bloom.web.controllers
         public const string kApiUrlPart = "settings/";
         private const string kExpiryDateForDeprecatedBrandings = "2025-07-01"; // per Cate. Careful! Make sure to use leading zeros in month and day.
 
-        // These options must match the strings used in accessibileImage.tsx
-        public enum EnterpriseStatus
+        // These options must match the strings used in requiresBloomEnterprise.tsx
+        public enum SubscriptionTier
         {
             None,
             Community,
-            Subscription
+            Enterprise
         }
 
         // These are static so they can easily be set by the collection settings dialog using SetSubscriptionCode()
@@ -38,7 +38,7 @@ namespace Bloom.web.controllers
 
         // True if the part of the subscription code that identifies the branding is one this version of Bloom knows about
         private static bool _knownBrandingInSubscriptionCode = false;
-        private static EnterpriseStatus _enterpriseStatus;
+        private static SubscriptionTier _subscriptionTier;
 
         // While displaying the CollectionSettingsDialog, which is what this API mainly exists to serve
         // we keep a reference to it here so pending settings can be updated there.
@@ -65,7 +65,7 @@ namespace Bloom.web.controllers
             this._bookSelection = bookSelection;
             SetSubscriptionCode(
                 _collectionSettings.SubscriptionCode,
-                _collectionSettings.IsSubscriptionCodeKnown(),
+                _collectionSettings.HaveBrandingForCode(),
                 _collectionSettings.GetEnterpriseStatus(false)
             );
         }
@@ -130,8 +130,8 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEnumEndpointHandler(
-                kApiUrlPart + "enterpriseStatus",
-                request => _enterpriseStatus,
+                kApiUrlPart + "subscriptionTier",
+                request => _subscriptionTier,
                 (request, status) => {
                     //_enterpriseStatus = status;
                     //if (_enterpriseStatus == EnterpriseStatus.None)
@@ -182,11 +182,11 @@ namespace Bloom.web.controllers
                             : "";
 
                         if (newBranding == "Default")
-                            _enterpriseStatus = CollectionSettingsApi.EnterpriseStatus.None;
+                            _subscriptionTier = CollectionSettingsApi.SubscriptionTier.None;
                         else if (newBranding == "Local-Community")
-                            _enterpriseStatus = CollectionSettingsApi.EnterpriseStatus.Community;
+                            _subscriptionTier = CollectionSettingsApi.SubscriptionTier.Community;
                         else
-                            _enterpriseStatus = CollectionSettingsApi.EnterpriseStatus.Subscription;
+                            _subscriptionTier = CollectionSettingsApi.SubscriptionTier.Enterprise;
 
                         // If the user has entered a different subscription code then what was previously saved, we
                         // generally want to clear out the Bookshelf. But if the BrandingKey is the same as the old one,
@@ -199,7 +199,7 @@ namespace Bloom.web.controllers
                             ResetBookshelf();
                         if (_subscriptionExpiry < DateTime.Now) // expired or invalid
                         {
-                            BrandingChangeHandler("Default", null);
+                            BrandingChangeHandler("Default", null); // TODO: this is the traditional behavior, but it doesn't seem right?
                         }
                         else
                         {
@@ -222,9 +222,9 @@ namespace Bloom.web.controllers
                 request =>
                 {
                     string branding = "";
-                    if (_enterpriseStatus == EnterpriseStatus.Community)
+                    if (_subscriptionTier == SubscriptionTier.Community)
                         branding = "Local-Community";
-                    else if (_enterpriseStatus == EnterpriseStatus.Subscription)
+                    else if (_subscriptionTier == SubscriptionTier.Enterprise)
                         branding =
                             _subscriptionExpiry == DateTime.MinValue
                                 ? ""
@@ -238,7 +238,7 @@ namespace Bloom.web.controllers
                 kApiUrlPart + "subscriptionExpiration",
                 request =>
                 {
-                    if (_enterpriseStatus == EnterpriseStatus.Community)
+                    if (_subscriptionTier == SubscriptionTier.Community)
                     {
                         request.ReplyWithText(kExpiryDateForDeprecatedBrandings);
                         return;
@@ -259,14 +259,14 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "subscriptionCodeStatus",
+                kApiUrlPart + "subscriptionCodeIntegrity",
                 request =>
                 {
-                    if (_enterpriseStatus == EnterpriseStatus.Community)
-                    {
-                        request.ReplyWithText("ok");
-                        return;
-                    }
+                    //if (_subscriptionStatus == SubscriptionStatus.Community)
+                    //{
+                    //    request.ReplyWithText("ok");
+                    //    return;
+                    //}
 
                     if (String.IsNullOrWhiteSpace(SubscriptionCode))
                     {
@@ -807,7 +807,7 @@ namespace Bloom.web.controllers
             if (!Int32.TryParse(parts[last], out combinedChecksum))
                 return DateTime.MinValue;
 
-            int checkSum = CheckSum(GetBrandingFromCode(input));
+            int checkSum = CheckSum(GetBrandingFromCode(input, true));
             if ((Math.Floor(Math.Sqrt(datePart)) + checkSum) % 10000 != combinedChecksum)
                 return DateTime.MinValue;
             int dateNum = datePart + 40000; // days since Dec 30 1899
@@ -821,7 +821,7 @@ namespace Bloom.web.controllers
 
         // From the same sort of code extract the project name,
         // everything up to the second-last hyphen.
-        public static string GetBrandingFromCode(string input)
+        public static string GetBrandingFromCode(string input, bool forCheckSum = false)
         {
             if (input == null)
                 return "";
@@ -830,7 +830,14 @@ namespace Bloom.web.controllers
                 return "";
             parts.RemoveAt(parts.Count - 1);
             parts.RemoveAt(parts.Count - 1);
-            return string.Join("-", parts.ToArray());
+            var branding = string.Join("-", parts.ToArray());
+
+            // allow for future community codes like HuyaVillage-LC-12335-3233434
+            if (!forCheckSum && branding.EndsWith("-LC"))
+            {
+                return "Local-Community";
+            }
+            return branding;
         }
 
         // Must match the function associated with the code generation google sheet
@@ -848,12 +855,16 @@ namespace Bloom.web.controllers
         // Used to initialize things in the constructor.
         //
         // Also used by the settings dialog to ensure things are initialized properly there for a special "legacy" case.
-        public static void SetSubscriptionCode(string code, bool knownCode, EnterpriseStatus status)
+        public static void SetSubscriptionCode(
+            string code,
+            bool haveBrandingForCode,
+            SubscriptionTier status
+        )
         {
             SubscriptionCode = code;
             _subscriptionExpiry = GetExpirationDate(code);
-            _knownBrandingInSubscriptionCode = knownCode;
-            _enterpriseStatus = status;
+            _knownBrandingInSubscriptionCode = haveBrandingForCode;
+            _subscriptionTier = status;
         }
     }
 }

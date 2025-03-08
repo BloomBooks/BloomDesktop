@@ -19,7 +19,7 @@ import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import { getBoolean, post, postBoolean } from "../utils/bloomApi";
 import {
     useEnterpriseAvailable,
-    useGetEnterpriseStatus
+    useGetSubscriptionStatus
 } from "./requiresBloomEnterprise";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
 import { kUiFontStack } from "../bloomMaterialUITheme";
@@ -81,16 +81,22 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
     // CollectionSettingsDialog, but not here in menu items. The absence of enterpriseAvailable needs to
     // take precedence. But by rules of hooks we still need to run the hook and then modify the value.
     const enterpriseAvailable = useEnterpriseAvailable();
-    let enterpriseStatus = useGetEnterpriseStatus();
+    let subscriptionStatus = useGetSubscriptionStatus();
     if (!enterpriseAvailable) {
-        enterpriseStatus = "None";
+        subscriptionStatus = "None"; // (years later) I don't know why we don't trust the useGetSubscriptionStatus() to return this
     }
 
-    const meetsEnterpriseRequirement = props.requiresEnterpriseSubscription
-        ? enterpriseStatus === "Subscription"
-        : props.requiresAnyEnterprise
-        ? enterpriseAvailable
-        : true;
+    let meetsEnterpriseRequirement = true; // Default to true (no enterprise requirement)
+
+    // If requires subscription, check for "Subscription" status
+    if (props.requiresEnterpriseSubscription) {
+        meetsEnterpriseRequirement = subscriptionStatus !== "None";
+    }
+    // If requires any enterprise, check if enterprise is available
+    else if (props.requiresAnyEnterprise) {
+        meetsEnterpriseRequirement = enterpriseAvailable;
+    }
+    // Otherwise, keep the default true value
 
     const iconElement = props.icon ? (
         <ListItemIcon

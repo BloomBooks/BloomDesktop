@@ -1405,10 +1405,10 @@ namespace Bloom.web.controllers
             AppendWritingSystem(book.BookData.Language3, "Language3", bldr);
             AppendWritingSystem(book.BookData.SignLanguage, "SignLanguage", bldr);
             AppendWritingSystem(book.BookData.MetadataLanguage1, "MetadataLanguage1", bldr);
-            var enterpriseStatus = settings.GetEnterpriseStatus(false).ToString();
+            var subscriptionTier = settings.GetEnterpriseStatus(false).ToString();
             var branding = settings.BrandingProjectKey;
             bldr.AppendLine();
-            bldr.AppendLine("Enterprise status: " + enterpriseStatus);
+            bldr.AppendLine("Enterprise status: " + subscriptionTier);
             bldr.AppendLine(
                 "Branding: " + (string.IsNullOrEmpty(branding) ? "None found" : branding)
             );

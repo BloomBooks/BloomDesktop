@@ -2322,6 +2322,30 @@ namespace Bloom.Book
                                 CollectionSettings.DefaultBookshelf
                             );
                     }
+
+                    // if the CollectionSettings has a BrandingPersonalization, replace any instances of {personalization} with the value
+                    if (!string.IsNullOrWhiteSpace(this.CollectionSettings.BrandingPersonalization))
+                    {
+                        content = content.Replace(
+                            "{personalization}",
+                            this.CollectionSettings.BrandingPersonalization
+                        );
+                    }
+
+                    // We don't want to set the data-book attribute to empty, so if the content is empty, skip it.
+                    if (string.IsNullOrWhiteSpace(content))
+                        continue;
+
+                    // We don't want to set the data-book attribute to empty, so if the content is empty, skip it.
+                    if (string.IsNullOrWhiteSpace(content))
+                        continue;
+
+                    // If the content is a URL, we need to make sure it's not encoded.
+                    if (KeysOfVariablesThatAreUrlEncoded.Contains(item.DataBook))
+                    {
+                        content = UrlPathString.CreateFromUrlEncodedString(content).NotEncoded;
+                    }
+
                     Set(item.DataBook, XmlString.FromXml(content), item.Lang);
                 }
             }

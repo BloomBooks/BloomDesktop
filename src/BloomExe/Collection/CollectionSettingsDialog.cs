@@ -645,7 +645,7 @@ namespace Bloom.Collection
             }
             CollectionSettingsApi.SetSubscriptionCode(
                 _subscriptionCode,
-                _collectionSettings.IsSubscriptionCodeKnown(),
+                _collectionSettings.HaveBrandingForCode(),
                 _collectionSettings.GetEnterpriseStatus(FixingEnterpriseSubscriptionCode)
             );
             _loaded = true;

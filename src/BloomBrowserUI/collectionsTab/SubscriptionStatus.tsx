@@ -22,7 +22,7 @@ export const SubscriptionStatus: React.FunctionComponent<{
         "dbed-pending"
     );
     const {
-        subscriptionCodeStatus,
+        subscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD,
         brandingProjectKey
     } = useSubscriptionInfo();
@@ -67,7 +67,7 @@ export const SubscriptionStatus: React.FunctionComponent<{
         localizedExpiryDate
     );
 
-    if (subscriptionCodeStatus !== "ok") return null;
+    if (subscriptionCodeIntegrity !== "ok") return null;
 
     // don't show anything until we have this info
     if (expiryDateStringAsYYYYMMDD === "") return null;
@@ -132,7 +132,19 @@ const ExpiringSubscriptionStatus: React.FunctionComponent<{
             hasBorder={true}
             icon={props.expired ? <CancelIcon /> : <WarningIcon />}
         >
-            <div>
+            <div
+                css={css`
+                    /* Prevent links in this warning box from getting tab focus */
+                    a {
+                        tabindex: -1;
+                        /* Remove outline when focused via mouse/click */
+                        &:focus {
+                            outline: none;
+                        }
+                        color: black !important;
+                    }
+                `}
+            >
                 {props.message}
                 <Markdown
                     l10nKey="SubscriptionStatus.RenewalMessage"

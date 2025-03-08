@@ -32,6 +32,9 @@ import {
 import { getBloomApiPrefix } from "../utils/bloomApi";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
+//  From the enum values in CollectionSettingsApi.cs.
+const subscriptionTiers = ["None", "Community", "Enterprise"] as const;
+type SubscriptionTier = typeof subscriptionTiers[number];
 
 /**
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
@@ -49,20 +52,18 @@ export function useEnterpriseAvailable() {
     return enterpriseAvailable;
 }
 
-/**
- * This function sets up a hook to get the Bloom Enterprise status.
- * @returns A string which matches one of the enum values in CollectionSettingsApi.cs.
- */
-export function useGetEnterpriseStatus(): string {
-    const [enterpriseStatus, setEnterpriseStatus] = useState<string>("None");
+export function useGetSubscriptionStatus(): SubscriptionTier {
+    const [status, setEnterpriseStatus] = useState<SubscriptionTier>("None");
 
     useEffect(() => {
-        get("settings/enterpriseStatus", result => {
+        get("settings/subscriptionTier", result => {
             setEnterpriseStatus(result.data);
         });
     }, []);
-
-    return enterpriseStatus;
+    if (!(subscriptionTiers as readonly string[]).includes(status)) {
+        throw new Error(`Invalid subscription status: ${status}`);
+    }
+    return status;
 }
 
 /**

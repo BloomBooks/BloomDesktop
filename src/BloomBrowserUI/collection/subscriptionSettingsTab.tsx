@@ -15,7 +15,7 @@ import {
 
 // This component implements the Bloom Subscription tab of the Settings dialog.
 export const SubscriptionSettings: React.FunctionComponent = () => {
-    const { subscriptionCodeStatus } = useSubscriptionInfo();
+    const { subscriptionCodeIntegrity } = useSubscriptionInfo();
 
     return (
         <div
@@ -52,7 +52,7 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
             <SubscriptionControls />
             <br />
             <SubscriptionStatus minimalUI />
-            {subscriptionCodeStatus === "none" && (
+            {subscriptionCodeIntegrity === "none" && (
                 <NoteBox
                     css={css`
                         margin-top: auto; // push to bottom
