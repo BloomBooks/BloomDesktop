@@ -252,7 +252,8 @@ namespace Bloom.web.controllers
                         // O is ISO 8601, the only format I can find that C# ToString() can produce and JS is guaranteed to parse.
                         // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse
                         request.ReplyWithText(
-                            _subscriptionExpiry.ToString("O", CultureInfo.InvariantCulture)
+                            // Format as YYYY-MM-DD, with no time and no timezone
+                            _subscriptionExpiry.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
                         );
                     }
                     else
