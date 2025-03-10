@@ -48,7 +48,7 @@ namespace Bloom.Spreadsheet
         public void ShowExportToSpreadsheetUI(Book.Book book)
         {
             // Throw up a Requires Bloom Enterprise dialog if it's not turned on
-            if (!_collectionModel.CollectionSettings.HaveEnterpriseFeatures)
+            if (!_collectionModel.CollectionSettings.Subscription.HaveEnterpriseFeatures)
             {
                 Enterprise.ShowRequiresEnterpriseNotice(Form.ActiveForm, "Export to Spreadsheet");
                 return;
@@ -108,7 +108,7 @@ namespace Bloom.Spreadsheet
         /// </summary>
         public void HandleImportContentFromSpreadsheet(Book.Book book)
         {
-            if (!_collectionModel.CollectionSettings.HaveEnterpriseFeatures)
+            if (!_collectionModel.CollectionSettings.Subscription.HaveEnterpriseFeatures)
             {
                 Enterprise.ShowRequiresEnterpriseNotice(Form.ActiveForm, "Import to Spreadsheet");
                 return;

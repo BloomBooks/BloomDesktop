@@ -168,7 +168,7 @@ namespace BloomTests.Publish
             bool unpaginated = true
         )
         {
-            book.CollectionSettings.BrandingProjectKey = branding;
+            //book.CollectionSettings.Subscription.BrandingKey = branding;
 
             // BringBookUpToDate is done on entering the Publish tab, outside the scope of these tests.
             // But note that it must be done AFTER setting the branding (which in Bloom will happen well before

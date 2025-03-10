@@ -604,7 +604,7 @@ namespace Bloom.Book
             var headXml = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
             var originalBody = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/body");
 
-            var enterpriseStatusClass = this.CollectionSettings.HaveEnterpriseFeatures
+            var enterpriseStatusClass = this.CollectionSettings.Subscription.HaveEnterpriseFeatures
                 ? "enterprise-on"
                 : "enterprise-off";
             var dom = new HtmlDom(
@@ -1953,7 +1953,7 @@ namespace Bloom.Book
                 _bookData,
                 BookInfo.MetaData.UseOriginalCopyright
             );
-            _bookData.MergeBrandingSettings(CollectionSettings.BrandingProjectKey);
+            _bookData.MergeBrandingSettings(CollectionSettings.Subscription.BrandingKey);
             _bookData.SynchronizeDataItemsThroughoutDOM();
             licenseMetadata = GetLicenseMetadata();
             // I think we should only mess with tags if we are updating the book for real.
@@ -1963,7 +1963,7 @@ namespace Bloom.Book
                 ConvertTagsToMetaData(oldTagsPath, BookInfo);
                 RobustFile.Delete(oldTagsPath);
             }
-            BookInfo.BrandingProjectKey = CollectionSettings.BrandingProjectKey;
+            BookInfo.BrandingProjectKey = CollectionSettings.Subscription.BrandingKey;
 
             // get any license info into the json and restored in the replaced front matter.
             BookCopyrightAndLicense.SetMetadata(
@@ -3985,7 +3985,7 @@ namespace Bloom.Book
 
         public bool FullBleed =>
             BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-            && CollectionSettings.HaveEnterpriseFeatures;
+            && CollectionSettings.Subscription.HaveEnterpriseFeatures;
 
         /// <summary>
         /// Save the page content to the DOM.
@@ -5413,13 +5413,14 @@ namespace Bloom.Book
             // If we wanted to, it is also possible to compute it as a language-specific feature.
             // (That is, check if the languages in the book have non-empty text for part of the quiz section)
             BookInfo.MetaData.Feature_Quiz =
-                CollectionSettings.HaveEnterpriseFeatures && HasQuizPages;
+                CollectionSettings.Subscription.HaveEnterpriseFeatures && HasQuizPages;
         }
 
         private void UpdateSimpleDomChoiceFeature()
         {
             BookInfo.MetaData.Feature_SimpleDomChoice =
-                CollectionSettings.HaveEnterpriseFeatures && OurHtmlDom.HasSimpleDomChoicePages();
+                CollectionSettings.Subscription.HaveEnterpriseFeatures
+                && OurHtmlDom.HasSimpleDomChoicePages();
         }
 
         /// <summary>

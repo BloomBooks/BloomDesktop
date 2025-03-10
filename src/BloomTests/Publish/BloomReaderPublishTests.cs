@@ -1866,7 +1866,7 @@ namespace BloomTests.Publish
             var testBook = CreateBookWithPhysicalFile(originalBookHtml, bringBookUpToDate: true);
 
             // Branding must be something other than "Default" or all the Enterprise-only features get stripped
-            testBook.CollectionSettings.BrandingProjectKey = branding;
+            testBook.CollectionSettings.Subscription = Subscription.ForUnitTest();
 
             var bookFileName = Path.GetFileName(testBook.GetPathHtmlFile());
 

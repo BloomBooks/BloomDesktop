@@ -257,7 +257,7 @@ namespace Bloom.Book
             if (useInstalledBranding && relativePath == "branding.css")
             {
                 return BloomFileLocator.GetOptionalBrandingFile(
-                    _collectionSettings.BrandingProjectKey,
+                    _collectionSettings.Subscription.BrandingKey,
                     "branding.css"
                 );
             }
@@ -2679,7 +2679,7 @@ namespace Bloom.Book
 
         public ExpandoObject BrandingAppearanceSettings =>
             Api.BrandingSettings
-                .GetSettingsOrNull(CollectionSettings.BrandingProjectKey)
+                .GetSettingsOrNull(CollectionSettings.Subscription.BrandingKey)
                 ?.Appearance;
 
         // Brandings come with logos and such... we want them in the book folder itself so that they work
@@ -2703,7 +2703,7 @@ namespace Bloom.Book
                     )
                 )
                     return;
-                var key = _collectionSettings.BrandingProjectKey;
+                var key = _collectionSettings.Subscription.BrandingKey;
                 // I think this is redundant: BrandingProjectKey will be set to 'Default' if we don't have some definite one.
                 // Keeping this for paranoia, in case there's some path I don't know about where that doesn't happen.
                 if (String.IsNullOrEmpty(key))
@@ -2762,7 +2762,7 @@ namespace Bloom.Book
                     null,
                     err,
                     "There was a problem applying the branding: "
-                        + _collectionSettings.BrandingProjectKey,
+                        + _collectionSettings.Subscription.BrandingKey,
                     "nonfatal"
                 );
             }

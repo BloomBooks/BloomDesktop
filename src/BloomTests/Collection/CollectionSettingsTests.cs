@@ -223,7 +223,7 @@ namespace BloomTests.Collection
             // We don't want to expose a valid name/code pair in the source code so this test is all we have.
             Assert.That(settings.DefaultBookshelf, Is.EqualTo(""));
             Assert.That(settings.BrandingProjectKey, Is.EqualTo("Default"));
-            Assert.That(settings.SubscriptionCode, Is.EqualTo("FakeCode"));
+            Assert.That(settings.Subscription, Is.EqualTo("FakeCode"));
             // We don't protect writing the same way as reading, since users aren't able to select a bookshelf unless
             // they've established a valid project which has one or more bookshelves.
             settings.DefaultBookshelf = "some-other-shelf";
@@ -243,7 +243,7 @@ namespace BloomTests.Collection
             // The fake SubscriptionCode has disappeared because the Default project doesn't need a subscription code so it isn't saved.
             Assert.That(settings2.DefaultBookshelf, Is.EqualTo(""));
             Assert.That(settings2.BrandingProjectKey, Is.EqualTo("Default"));
-            Assert.That(settings2.SubscriptionCode, Is.Null);
+            Assert.That(settings2.Subscription, Is.Null);
         }
 
         [TestCase(null, null, null, new[] { "en" })]

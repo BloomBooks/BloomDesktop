@@ -534,7 +534,7 @@ namespace Bloom.Publish
                 foreach (var label in omittedPages.Keys.OrderBy(x => x))
                     warningMessages.Add($"{omittedPages[label]} {label}");
             }
-            if (!book.CollectionSettings.HaveEnterpriseFeatures)
+            if (!book.CollectionSettings.Subscription.HaveEnterpriseFeatures)
                 RemoveEnterpriseOnlyAssets(book);
         }
 
@@ -550,7 +550,7 @@ namespace Bloom.Publish
         )
         {
             var omittedPages = new Dictionary<string, int>();
-            if (!bookData.CollectionSettings.HaveEnterpriseFeatures)
+            if (!bookData.CollectionSettings.Subscription.HaveEnterpriseFeatures)
             {
                 var pageRemoved = false;
                 foreach (var page in pageElts.ToList())

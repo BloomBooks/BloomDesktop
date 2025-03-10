@@ -233,7 +233,7 @@ namespace Bloom.TeamCollection
                         CurrentCollection.SyncLocalAndRepoCollectionFiles(false);
                     }
                     else if (
-                        Settings.HaveEnterpriseFeatures
+                        Settings.Subscription.HaveEnterpriseFeatures
                         && CurrentCollectionEvenIfDisconnected != null
                         && CurrentCollectionEvenIfDisconnected
                             is DisconnectedTeamCollection disconnectedTC
@@ -526,7 +526,7 @@ namespace Bloom.TeamCollection
                 return; // already disabled, or not a TC
             string msg = null;
             string l10nId = null;
-            if (!settings.HaveEnterpriseFeatures)
+            if (!settings.Subscription.HaveEnterpriseFeatures)
             {
                 l10nId = "TeamCollection.DisabledForEnterprise";
                 msg = "Bloom Enterprise is not enabled.";
@@ -545,7 +545,7 @@ namespace Bloom.TeamCollection
                     new TeamCollectionMessage(MessageAndMilestoneType.Error, l10nId, msg),
                     CurrentCollection.RepoDescription
                 );
-                if (!settings.HaveEnterpriseFeatures)
+                if (!settings.Subscription.HaveEnterpriseFeatures)
                     (
                         CurrentCollectionEvenIfDisconnected as DisconnectedTeamCollection
                     ).DisconnectedBecauseNoEnterprise = true;

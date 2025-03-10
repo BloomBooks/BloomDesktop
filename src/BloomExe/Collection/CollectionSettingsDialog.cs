@@ -31,8 +31,6 @@ namespace Bloom.Collection
         private readonly XMatterPackFinder _xmatterPackFinder;
         private bool _restartRequired;
         private bool _loaded;
-        private string _subscriptionCode;
-        private string _brand;
         private bool _settingsProtectionRequirePassword;
         private bool _settingsProtectionNormallyHidden;
         private bool _currentCollectionIsTeamCollection;
@@ -167,7 +165,8 @@ namespace Bloom.Collection
             // The result is the bookshelf selection gets cleared when other collection settings are saved. See BL-10093.
             PendingDefaultBookshelf = _collectionSettings.DefaultBookshelf;
 
-            CollectionSettingsApi.BrandingChangeHandler = ChangeBranding;
+            SubscriptionSettingsEditorApi.NotifyPendingSubscriptionChange =
+                OnPendingSubscriptionChange;
 
             TeamCollectionApi.TheOneInstance.SetCallbackToReopenCollection(() =>
             {
@@ -435,32 +434,13 @@ namespace Bloom.Collection
 
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
 
-            var oldBrand = _collectionSettings.BrandingProjectKey;
-            // I don't understand this. For sure it means you cannot upgrade to a newer expiry date: if (oldBrand != _brand || _collectionSettings.IgnoreExpiration)
+            if (_pendingSubscription.BrandingKey != _collectionSettings.Subscription.BrandingKey)
             {
-                _collectionSettings.BrandingProjectKey = _brand;
-                _collectionSettings.SubscriptionCode = _subscriptionCode;
-                // An early version of this code allowed a download-for-edit collection to be unlocked once a valid
-                // branding code was provided. We decided not to do that, but here is the code we'd reinstate if we change our minds.
-                // We've definitely selected some branding, even if it's the default. If necessary, we have a valid code
-                // for it. So if this collection was created using the "Download for editing" button on Blorg
-                // and has been getting special permission to use some branding because of that, it no longer needs
-                // that special permission. Nor does the rule that books can't be added to such a collection apply
-                // any longer. And in case the user has now selected a different branding, we no longer want the book to use the
-                // branding we downloaded it with. A simple way to achieve all this is to delete the file (if any) that
-                // constitutes our record that this is a collection made using "Download for editing".
-                // (Everything that depends on it gets cleaned up when we restart bloom with the new branding.)
-                //var downloadEditPath = Path.Combine(
-                //    _collectionSettings.FolderPath,
-                //    BloomLibraryPublishModel.kNameOfDownloadForEditFile
-                //);
-                //RobustFile.Delete(downloadEditPath);
+                // The user has entered a different subscription code than what was previously saved.
+                // We need to clear out the Bookshelf, since the new branding may not have the same bookshelf as the old one.
+                // (We don't know if it does or not, so we have to assume it doesn't.)
+                PendingDefaultBookshelf = string.Empty;
             }
-
-            // We don't know which if any of the new branding's bookshelves we should upload to by default,
-            // but it will certainly be wrong to upload to one that belongs to some previous branding.
-            if (oldBrand != _brand)
-                _collectionSettings.DefaultBookshelf = "";
 
             string xmatterKeyForcedByBranding =
                 _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
@@ -492,6 +472,7 @@ namespace Bloom.Collection
                 _queueRenameOfCollection.Raise(_bloomCollectionName.Text.SanitizeFilename('-'));
                 //_collectionSettings.PrepareToRenameCollection(_bloomCollectionName.Text.SanitizeFilename('-'));
             }
+
             Logger.WriteEvent("Closing Settings Dialog");
 
             _collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
@@ -626,6 +607,7 @@ namespace Bloom.Collection
         /// the code is needed for.
         /// </summary>
         public bool FixingEnterpriseSubscriptionCode;
+        private Subscription _pendingSubscription;
 
         private void OnLoad(object sender, EventArgs e)
         {
@@ -633,21 +615,6 @@ namespace Bloom.Collection
             _provinceText.Text = _collectionSettings.Province;
             _districtText.Text = _collectionSettings.District;
             _bloomCollectionName.Text = _collectionSettings.CollectionName;
-            _brand = _collectionSettings.BrandingProjectKey;
-            _subscriptionCode = _collectionSettings.SubscriptionCode;
-            // Set the branding as an (incomplete) code if we are running with a legacy branding
-            if (
-                CollectionSettingsApi.LegacyBrandingName != null
-                && string.IsNullOrEmpty(_subscriptionCode)
-            )
-            {
-                _subscriptionCode = CollectionSettingsApi.LegacyBrandingName;
-            }
-            CollectionSettingsApi.SetSubscriptionCode(
-                _subscriptionCode,
-                _collectionSettings.HaveBrandingForCode(),
-                _collectionSettings.GetEnterpriseStatus(FixingEnterpriseSubscriptionCode)
-            );
             _loaded = true;
             Logger.WriteEvent("Entered Settings Dialog");
         }
@@ -738,43 +705,13 @@ namespace Bloom.Collection
             }
         }
 
-        /// <summary>
-        /// We configure the SettingsApi to use this method to notify this (as the manager of the whole dialog
-        /// including the "need to reload" message and the Ok/Cancel buttons) of changes the user makes
-        /// in the Enterprise tab.
-        /// </summary>
-        /// <param name="fullBrandingName"></param>
-        /// <param name="subscriptionCode"></param>
-        /// <returns></returns>
-        public bool ChangeBranding(string fullBrandingName, string subscriptionCode)
+        public void OnPendingSubscriptionChange(string subscriptionCode)
         {
-            if (
-                _brand != fullBrandingName
-                || DifferentSubscriptionCodes(subscriptionCode, _subscriptionCode)
-            )
+            if (_collectionSettings.Subscription.IsDifferent(subscriptionCode))
             {
+                _pendingSubscription = new Subscription(subscriptionCode);
                 Invoke((Action)ChangeThatRequiresRestart);
-                _brand = fullBrandingName;
-                _subscriptionCode = subscriptionCode;
-                //if (BrandingProject.HaveFilesForBranding(fullBrandingName))
-                //{
-                //	// if the branding.json specifies an xmatter, set the default for this collection to that.
-                //	var correspondingXMatterPack = BrandingSettings.GetSettingsOrNull(fullBrandingName).GetXmatterToUse();
-                //	if (!string.IsNullOrEmpty(correspondingXMatterPack))
-                //	{
-                //		_collectionSettings.XMatterPackName = correspondingXMatterPack;
-                //	}
-                //}
-                return true;
             }
-            return false;
-        }
-
-        private bool DifferentSubscriptionCodes(string code1, string code2)
-        {
-            if (string.IsNullOrEmpty(code1) && string.IsNullOrEmpty(code2))
-                return false;
-            return code1 != code2;
         }
 
         private void _numberStyleCombo_SelectedIndexChanged(object sender, EventArgs e)

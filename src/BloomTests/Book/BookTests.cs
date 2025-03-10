@@ -5149,7 +5149,7 @@ namespace BloomTests.Book
             );
 
             var book = CreateBook();
-            book.CollectionSettings.BrandingProjectKey = "MyCustomBrand"; // Needed so Enterprise Features is considered enabled which is needed for quizzes
+            book.CollectionSettings.Subscription = Subscription.ForUnitTest(); // Needed so Enterprise Features is considered enabled which is needed for quizzes
 
             book.UpdateMetadataFeatures(false, false, null);
 
@@ -5176,7 +5176,7 @@ namespace BloomTests.Book
             );
 
             var book = CreateBook();
-            book.CollectionSettings.BrandingProjectKey = "MyCustomBrand"; // Needed so Enterprise Features is considered enabled which is needed for quizzes
+            book.CollectionSettings.Subscription = Subscription.ForUnitTest(); // Needed so Enterprise Features is considered enabled which is needed for quizzes
 
             book.UpdateMetadataFeatures(false, false, null);
 
