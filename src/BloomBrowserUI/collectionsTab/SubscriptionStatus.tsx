@@ -148,7 +148,7 @@ const ExpiringSubscriptionStatus: React.FunctionComponent<{
                 {props.message}
                 <Markdown
                     l10nKey="SubscriptionStatus.RenewalMessage"
-                    l10nParam0={"mailto://subscriptions@bloomlibrary.org"}
+                    l10nParam0={"mailto:subscriptions@bloomlibrary.org"}
                     css={css`
                         p {
                             margin: 0; // markdown wraps everything in a p tag which adds a big margin we don't need

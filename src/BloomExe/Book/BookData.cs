@@ -2336,10 +2336,6 @@ namespace Bloom.Book
                     if (string.IsNullOrWhiteSpace(content))
                         continue;
 
-                    // We don't want to set the data-book attribute to empty, so if the content is empty, skip it.
-                    if (string.IsNullOrWhiteSpace(content))
-                        continue;
-
                     // If the content is a URL, we need to make sure it's not encoded.
                     if (KeysOfVariablesThatAreUrlEncoded.Contains(item.DataBook))
                     {

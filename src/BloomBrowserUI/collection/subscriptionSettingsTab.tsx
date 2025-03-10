@@ -1,4 +1,3 @@
-/** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
@@ -44,7 +43,7 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
             <Markdown
                 l10nKey="Settings.Subscription.RequestSubscription"
                 l10nParam0={"subscriptions@bloomlibrary.org"}
-                l10nParam1={"mailto://subscriptions@bloomlibrary.org"}
+                l10nParam1={"mailto:subscriptions@bloomlibrary.org"}
             >
                 Please contact [%0](%1) to purchase your subscription code.
             </Markdown>
@@ -70,15 +69,14 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
                         <Markdown l10nKey="Settings.Subscription.Community.Invitation">
                             If your project is fully funded and managed by your
                             local language community, you may qualify for a free
-                            [Bloom Community Subscription](https://example.com).
+                            [Bloom Community
+                            Subscription](https://bloomlibrary.org/subscriptions).
                         </Markdown>
                         <br />
                         <Markdown
                             l10nKey="Settings.Subscription.RequestSubscription"
                             l10nParam0={"subscriptions@bloomlibrary.org"}
-                            l10nParam1={
-                                "mailto://subscriptions@bloomlibrary.org"
-                            }
+                            l10nParam1={"mailto:subscriptions@bloomlibrary.org"}
                         >
                             Please contact [%1](%2) to request your license.
                         </Markdown>

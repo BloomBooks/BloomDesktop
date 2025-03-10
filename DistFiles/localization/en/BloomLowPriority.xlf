@@ -85,7 +85,7 @@
             <note>%0 will be replaced with an email address, %1 with a mailto link to that address</note>
           </trans-unit>
           <trans-unit id="Settings.Subscription.Community.Invitation">
-            <source xml:lang="en">If your project is fully funded and managed by your local language community, you may qualify for a free [Bloom Community Subscription](https://example.com).</source>
+            <source xml:lang="en">If your project is fully funded and managed by your local language community, you may qualify for a free [Bloom Community Subscription](https://bloomlibrary.org/subscriptions).</source>
             <note>ID: Settings.Subscription.Community.Invitation</note>
           </trans-unit>
           <trans-unit id="Settings.Subscription.SubscriptionCodeLabel">

@@ -104,12 +104,12 @@ export const SubscriptionControls: React.FC = () => {
     };
 
     const shouldShowRedExclamation = () => {
-        return (
-            status === "SubscriptionIncorrect" ||
-            status === "SubscriptionUnknown" ||
-            status === "SubscriptionExpired" ||
-            status === "SubscriptionLegacy"
-        );
+        return [
+            "SubscriptionIncorrect",
+            "SubscriptionUnknown",
+            "SubscriptionExpired",
+            "SubscriptionLegacy"
+        ].includes(status);
     };
 
     const userTypedOrPastedCode = (
@@ -124,7 +124,8 @@ export const SubscriptionControls: React.FC = () => {
 
         setSubscriptionCode(event.target.value);
         const changeEvent = new Event("subscriptionCodeChanged");
-        console.log("raising subscriptionCodeChanged event...");
+        // Log the subscription code change event
+        // Replace this with a proper logging mechanism if needed
         document.dispatchEvent(changeEvent);
     };
 
@@ -134,13 +135,13 @@ export const SubscriptionControls: React.FC = () => {
             const codeElt = document.getElementById(
                 "subscriptionCodeInput"
             ) as HTMLInputElement;
-            if (codeElt && selectionPosition !== null) {
+            if (codeElt !== null && selectionPosition !== null) {
                 codeElt.selectionStart = codeElt.selectionEnd = selectionPosition;
             }
         } catch (e) {
-            // swallow
+            console.error("Error restoring cursor position:", e);
         }
-    });
+    }, [selectionPosition]);
 
     return (
         <div
@@ -317,8 +318,8 @@ const StatusText: React.FC<{
         )}
     </div>
 );
-export function getSafeLocalizedDate(dateAsYYYYMMDD: string | undefined) {
-    const dateParts = dateAsYYYYMMDD?.split("-");
+export function getSafeLocalizedDate(dateAsYYYYMMDD: string | null) {
+    const dateParts = dateAsYYYYMMDD ? dateAsYYYYMMDD.split("-") : null;
     return dateParts
         ? new Date(
               Number(dateParts[0]),
@@ -334,9 +335,6 @@ function getStatus(
     expiryDateStringAsYYYYMMDD: string,
     editingBlorgBook: boolean
 ): Status {
-    console.log(
-        `getStatus(${subscriptionCode}, ${expiryDateStringAsYYYYMMDD})`
-    );
     const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
     if (subscriptionCode === "" || subscriptionCodeIntegrity === "none") {
         return "None";
@@ -379,17 +377,13 @@ export const useSubscriptionInfo = () => {
 
     // This is called once initially, then each time the user types in the subscription code field or does a paste
     const querySubscriptionInfo = useCallback(() => {
-        console.log("querySubscriptionInfo()");
+        // Replace this with a proper logging mechanism if needed
         get("settings/subscriptionExpiration", result => {
-            console.log(
-                `querySubscriptionInfo() got subscriptionExpiration: ${result.data}`
-            );
+            // Replace this with a proper logging mechanism if needed
             setExpiryDateStringAsYYYYMMDD(result.data);
         });
         get("settings/subscriptionCodeIntegrity", result => {
-            console.log(
-                `querySubscriptionInfo() got subscriptionCodeIntegrity: ${result.data}`
-            );
+            // Replace this with a proper logging mechanism if needed
             setSubscriptionCodeIntegrity(result.data);
         });
 
@@ -425,7 +419,7 @@ export const useSubscriptionInfo = () => {
         setSubscriptionCodeIntegrity
     ]);
 
-    // get intial info once at startup
+    // get initial info once at startup
     React.useEffect(() => {
         querySubscriptionInfo();
     }, [querySubscriptionInfo]);
