@@ -39,7 +39,7 @@ import { SubscriptionStatus } from "../collectionsTab/SubscriptionStatus";
 interface IState {
     enterpriseStatus: string; // which radio button is active, controls the radio group
     subscriptionCode: string; // The content of the code box
-    subscriptionExpiry: Date | null; // displayed if all is well
+    subscriptionExpiryStringAsYYYYMMDD: string; // displayed if all is well
     subscriptionSummary: string; // markdown of the summary of the branding when identified
     hasSubscriptionFiles: boolean; // whether branding files exist or not
     controlState: string; // controls which parts of the dialog are visible (see above)
@@ -56,7 +56,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
     public readonly state: IState = {
         enterpriseStatus: "None",
         subscriptionCode: "",
-        subscriptionExpiry: null,
+        subscriptionExpiryStringAsYYYYMMDD: "",
         subscriptionSummary: "",
         hasSubscriptionFiles: false,
         controlState: "None",
@@ -109,6 +109,8 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         "https://gateway.sil.org/display/LSDEV/Bloom+enterprise+subscription+codes";
 
     public render() {
+        const nowAsYYYYMMDD = new Date().toISOString().slice(0, 10);
+
         return (
             <div
                 className="enterpriseSettings"
@@ -309,15 +311,11 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                                         Expires:
                                     </Label>
                                     <span>
-                                        {this.state.subscriptionExpiry &&
-                                            this.state.subscriptionExpiry.toLocaleDateString(
-                                                undefined,
-                                                {
-                                                    year: "numeric",
-                                                    day: "numeric",
-                                                    month: "long"
-                                                }
-                                            )}
+                                        {this.state
+                                            .subscriptionExpiryStringAsYYYYMMDD &&
+                                            new Date(
+                                                this.state.subscriptionExpiryStringAsYYYYMMDD
+                                            ).toLocaleDateString()}
                                     </span>
                                 </div>
                             )}
@@ -340,14 +338,13 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                             className="communityRadio"
                             l10nKey="Settings.Enterprise.Community"
                             value="Community"
-                            // Disable if we are at or past the date for deprecating legacy subscriptions
-                            // Compare only the date parts (year, month, day) without time or timezone
+                            // Disable if we are at or past the date for deprecating legacy subscriptions.
+                            // deprecatedBrandingsExpiryDate is YYYY-MM-DD, so we can use string comparison
+                            // which is safer than things that involve date which brings in time zones.
                             disabled={
                                 this.state.deprecatedBrandingsExpiryDate
-                                    ? new Date(
-                                          this.state.deprecatedBrandingsExpiryDate
-                                      ).setHours(0, 0, 0, 0) <=
-                                      new Date().setHours(0, 0, 0, 0)
+                                    ? this.state.deprecatedBrandingsExpiryDate <
+                                      nowAsYYYYMMDD
                                     : false
                             }
                         >
@@ -380,7 +377,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                     overrideSubscriptionExpiration={
                         this.state.enterpriseStatus === "None"
                             ? ""
-                            : this.state.subscriptionExpiry?.toISOString()
+                            : this.state.subscriptionExpiryStringAsYYYYMMDD
                     }
                     minimalUI
                 />
@@ -434,11 +431,13 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
         legacyBrandingName: string,
         lockedToOneDownloadedBook: boolean
     ) {
+        // as part of squashing time zone issues, we use strings that omit times, and only use dates when we're ready to display
+        const nowAsYYYYMMDD = new Date().toISOString().slice(0, 10);
         if (legacyBrandingName) {
             this.setState({
                 enterpriseStatus: "Subscription",
                 subscriptionCode: code,
-                subscriptionExpiry: null,
+                subscriptionExpiryStringAsYYYYMMDD: "",
                 controlState: lockedToOneDownloadedBook
                     ? "SubscriptionDownload"
                     : "SubscriptionLegacy",
@@ -450,11 +449,12 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
             return;
         }
         this.setState({ enterpriseStatus: status });
+
         if (status === "None") {
             this.setState({
                 controlState: "None",
                 subscriptionCode: code,
-                subscriptionExpiry: null,
+                subscriptionExpiryStringAsYYYYMMDD: "",
                 subscriptionSummary: ""
             });
             return;
@@ -462,9 +462,8 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
             this.setState({
                 controlState: "Community",
                 subscriptionCode: code,
-                subscriptionExpiry: new Date(
-                    this.state.deprecatedBrandingsExpiryDate
-                )
+                subscriptionExpiryStringAsYYYYMMDD: this.state
+                    .deprecatedBrandingsExpiryDate
             });
             get("settings/enterpriseSummary", result => {
                 this.setSummary(result.data);
@@ -476,7 +475,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                 // Valid-looking code, but not one this version knows about.
                 this.setState({
                     subscriptionCode: code,
-                    subscriptionExpiry: null,
+                    subscriptionExpiryStringAsYYYYMMDD: "",
                     controlState: "SubscriptionUnknown",
                     subscriptionSummary: ""
                 });
@@ -486,25 +485,25 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                 // Invalid code, but looks as if they haven't finished typing
                 this.setState({
                     subscriptionCode: code,
-                    subscriptionExpiry: null,
+                    subscriptionExpiryStringAsYYYYMMDD: "",
                     controlState: "SubscriptionIncomplete",
                     subscriptionSummary: ""
                 });
                 return;
             }
-            const expiry = result.data === null ? null : new Date(result.data);
+            const expiryString = result.data === null ? null : result.data;
             this.setState({
                 subscriptionCode: code,
-                subscriptionExpiry: expiry
+                subscriptionExpiryStringAsYYYYMMDD: expiryString
             });
-            if (!expiry) {
+            if (!expiryString) {
                 this.setState({ controlState: "SubscriptionIncorrect" });
-            } else if (expiry < new Date()) {
+            } else if (expiryString < nowAsYYYYMMDD) {
                 this.setState({ controlState: "SubscriptionExpired" });
             } else {
                 this.setState({ controlState: "SubscriptionGood" });
             }
-            if (expiry) {
+            if (expiryString) {
                 get("settings/enterpriseSummary", result => {
                     this.setSummary(result.data);
                 });
