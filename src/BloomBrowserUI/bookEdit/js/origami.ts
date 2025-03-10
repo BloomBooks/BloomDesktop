@@ -5,7 +5,7 @@ import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { get, post, postThatMightNavigate } from "../../utils/bloomApi";
 import { ElementQueries } from "css-element-queries";
-import { theOneCanvasElementManager } from "./bubbleManager";
+import { theOneCanvasElementManager } from "./CanvasElementManager";
 
 $(() => {
     $("div.split-pane").splitPane();

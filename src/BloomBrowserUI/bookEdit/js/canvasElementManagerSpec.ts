@@ -1,5 +1,5 @@
 import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
-import { CanvasElementManager } from "./bubbleManager";
+import { CanvasElementManager } from "./CanvasElementManager";
 
 // A (currently very incomplete) set of tests for BubbleManager.
 

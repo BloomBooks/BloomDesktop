@@ -16,7 +16,7 @@ import {
     getTarget,
     shuffle
 } from "../../shared/dragActivityRuntime";
-import { setGeneratedDraggableId } from "../overlay/overlayItem";
+import { setGeneratedDraggableId } from "../overlay/CanvasElementItem";
 import {
     adjustTarget,
     DragActivityTool,
@@ -27,7 +27,7 @@ import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import {
     CanvasElementManager,
     theOneCanvasElementManager
-} from "../../js/bubbleManager";
+} from "../../js/CanvasElementManager";
 import { Bubble } from "comicaljs";
 import { getToolboxBundleExports } from "../../editViewFrame";
 import {
@@ -41,7 +41,7 @@ import {
     DialogOkButton
 } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { splitIntoGraphemes } from "../../../utils/textUtils";
-import { kCanvasElementClass } from "../overlay/overlayUtils";
+import { kCanvasElementClass } from "../overlay/canvasElementUtils";
 
 export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> = props => {
     const promptL10nId = props.prompt?.getAttribute("data-caption-l10nid");

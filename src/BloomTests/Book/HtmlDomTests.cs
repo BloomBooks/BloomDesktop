@@ -1856,14 +1856,14 @@ p {
 									</div>
 									<div class='bloom-videoContainer'>
 										<video>
-											<source src='video/videoGuidOverlay.mp4' type='video/mp4'></source>
+											<source src='video/videoGuidCanvasElement.mp4' type='video/mp4'></source>
 										</video>
 									</div>
 									<div class='bloom-imageContainer'>
-										<img src='myImageFileOverlay.png'></img>
+										<img src='myImageFileCanvasElement.png'></img>
 									</div>
 									<div class='bloom-widgetContainer'>
-										<iframe src='activities/balldragTouch/indexOverlay.html'>Must have a closing tag in HTML</iframe>
+										<iframe src='activities/balldragTouch/indexCanvasElement.html'>Must have a closing tag in HTML</iframe>
 									</div>
 								</div>
 								<img src='myImageFile.png'></img>
@@ -1985,7 +1985,7 @@ p {
                 1
             );
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[@id='canvasElementSlot']//video/source[@src='video/videoGuidCanvasElementy.mp4']",
+                "//div[@id='canvasElementSlot']//video/source[@src='video/videoGuidCanvasElement.mp4']",
                 1
             );
         }

@@ -12,15 +12,15 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import {
     kbackgroundImageClass,
     updateCanvasElementClass
-} from "./bubbleManager";
-import { kCanvasElementSelector } from "../toolbox/overlay/overlayUtils";
+} from "./CanvasElementManager";
+import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
 
 import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
-import { getCanvasElementManager } from "../toolbox/overlay/overlayUtils";
+import { getCanvasElementManager } from "../toolbox/overlay/canvasElementUtils";
 
 // This appears to be constant even on higher dpi screens.
 // (See http://www.w3.org/TR/css3-values/#absolute-lengths)

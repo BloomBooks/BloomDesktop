@@ -17,10 +17,10 @@ import {
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { SignLanguageIcon } from "../../../react_components/icons/SignLanguageIcon";
 import { GifIcon } from "../../../react_components/icons/GifIcon";
-import { theOneCanvasElementManager } from "../../js/bubbleManager";
+import { theOneCanvasElementManager } from "../../js/CanvasElementManager";
 import { Bubble, Comical } from "comicaljs";
 import { Point } from "../../js/point";
-import { getCanvasElementManager } from "./overlayUtils";
+import { getCanvasElementManager } from "./canvasElementUtils";
 
 const ondragstart = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,

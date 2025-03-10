@@ -16,7 +16,7 @@ import { selectVideoContainer } from "./videoUtils";
 import { getPlayIcon } from "../img/playIcon";
 import { getPauseIcon } from "../img/pauseIcon";
 import { getReplayIcon } from "../img/replayIcon";
-import { kCanvasElementSelector } from "../toolbox/overlay/overlayUtils";
+import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
 
 export function SetupVideoEditing(container) {
     get("settings/enterpriseEnabled", result => {

@@ -10,7 +10,7 @@ import "./impairmentVisualizer.less";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
-import { kHasCanvasElementClass } from "../overlay/overlayUtils";
+import { kHasCanvasElementClass } from "../overlay/canvasElementUtils";
 
 interface IState {
     kindOfColorBlindness: string;

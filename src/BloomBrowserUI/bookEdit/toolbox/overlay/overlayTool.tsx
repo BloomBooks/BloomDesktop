@@ -5,12 +5,15 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import * as ReactDOM from "react-dom";
-import "./overlay.less";
+import "./overlayTool.less";
 import {
     getEditablePageBundleExports,
     getEditTabBundleExports
 } from "../../js/bloomFrames";
-import { CanvasElementManager, ITextColorInfo } from "../../js/bubbleManager";
+import {
+    CanvasElementManager,
+    ITextColorInfo
+} from "../../js/CanvasElementManager";
 import { BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import FormControl from "@mui/material/FormControl";
@@ -42,11 +45,11 @@ import {
     CanvasElementItemRegion,
     CanvasElementItemRow,
     CanvasElementTextItem
-} from "./overlayItem";
+} from "./CanvasElementItem";
 import { isPageBloomGame } from "../dragActivity/dragActivityTool";
-import { getCanvasElementManager } from "./overlayUtils";
+import { getCanvasElementManager } from "./canvasElementUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
-import { CanvasElementKeyHints } from "./overlayKeyHints";
+import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";

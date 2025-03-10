@@ -61,7 +61,7 @@ import {
     showImageDescriptions
 } from "../imageDescription/imageDescriptionUtils";
 import { IAudioRecorder } from "./IAudioRecorder";
-import { kCanvasElementClass } from "../overlay/overlayUtils";
+import { kCanvasElementClass } from "../overlay/canvasElementUtils";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)

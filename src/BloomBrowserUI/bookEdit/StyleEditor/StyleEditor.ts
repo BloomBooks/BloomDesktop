@@ -33,9 +33,9 @@ import {
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import { kBloomYellow } from "../../bloomMaterialUITheme";
 import { RenderRoot } from "./AudioHilitePage";
-import { RenderCanvasElementRoot } from "./OverlayFormatPage";
-import { CanvasElementManager } from "../js/bubbleManager";
-import { kCanvasElementSelector } from "../toolbox/overlay/overlayUtils";
+import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
+import { CanvasElementManager } from "../js/CanvasElementManager";
+import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.

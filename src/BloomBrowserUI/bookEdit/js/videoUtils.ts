@@ -5,7 +5,7 @@ import { getPageIframeBody } from "../../utils/shared";
 import {
     kCanvasElementSelector,
     getCanvasElementManager
-} from "../toolbox/overlay/overlayUtils";
+} from "../toolbox/overlay/canvasElementUtils";
 
 export const kVideoContainerClass = "bloom-videoContainer";
 

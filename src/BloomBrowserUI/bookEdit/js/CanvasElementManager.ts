@@ -34,13 +34,13 @@ import {
 import { adjustTarget } from "../toolbox/dragActivity/dragActivityTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
-import { renderCanvasElementContextControls } from "./OverlayContextControls";
+import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
     kCanvasElementClass,
     kCanvasElementSelector,
     kHasCanvasElementClass
-} from "../toolbox/overlay/overlayUtils";
+} from "../toolbox/overlay/canvasElementUtils";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { handlePlayClick } from "./bloomVideo";
@@ -69,7 +69,7 @@ type ResizeDirection = "ne" | "nw" | "sw" | "se";
 // Some may have been missed. (It's even conceivable that some references to the other things were
 // accidentally renamed to "canvas element".)
 export class CanvasElementManager {
-    // The min width/height needs to be kept in sync with the corresponding values in canvasElement.less
+    // The min width/height needs to be kept in sync with the corresponding values in overlayTool.less
     public minTextBoxWidthPx = 30;
     public minTextBoxHeightPx = 30;
 
@@ -1319,8 +1319,8 @@ export class CanvasElementManager {
         this.currentDragControl?.classList.remove("active-control");
     };
 
-    private minWidth = 30; // @MinTextBoxWidth in canvasElement.less
-    private minHeight = 30; // @MinTextBoxHeight in canvasElement.less
+    private minWidth = 30; // @MinTextBoxWidth in overlayTool.less
+    private minHeight = 30; // @MinTextBoxHeight in overlayTool.less
 
     private getImageOrVideo(): HTMLElement | undefined {
         // It will have one or the other or neither, but not both, so it doesn't much matter
@@ -4535,7 +4535,7 @@ export class CanvasElementManager {
 
     // This 'wrapperBox' param has just been added to the DOM by JQuery before arriving here.
     // All of the text-based canvas elements' default heights are based on the min-height of 30px set
-    // in canvasElement.less for a .bloom-canvas-element element. For video or picture over pictures,
+    // in overlayTool.less for a .bloom-canvas-element element. For video or picture over pictures,
     // we want something a bit taller.
     private setDefaultWrapperBoxHeight(wrapperBox: JQuery) {
         const width = parseInt(wrapperBox.css("width"), 10);

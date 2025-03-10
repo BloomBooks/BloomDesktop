@@ -8,7 +8,7 @@ import { MeasureText } from "../../utils/measureText";
 import {
     CanvasElementManager,
     theOneCanvasElementManager
-} from "../js/bubbleManager";
+} from "../js/CanvasElementManager";
 import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
 import { addScrollbarsToPage, cleanupNiceScroll } from "../shared/scrolling";
 

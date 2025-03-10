@@ -115,7 +115,7 @@
     .drag-item-wrong,
     .drag-item-correct {
         // In front of targets, in case they overlap
-        z-index: @bubbleCanvasZIndex + 2;
+        z-index: @canvasElementCanvasZIndex + 2;
     }
 }
 // In the play tab we don't even have the concept of a video element being selected.
@@ -205,7 +205,7 @@
 [data-target-of] {
     position: absolute;
     // above canvas element canvas so we can drag it when the canvas is active
-    z-index: @bubbleCanvasZIndex + 1;
+    z-index: @canvasElementCanvasZIndex + 1;
     box-sizing: border-box;
     > * {
         // targets have children to show a shadow of what is supposed to go there.
@@ -244,9 +244,9 @@
 // (But we don't want pictures that are just part of the background to be in front of targets.)
 .drag-activity-play {
     .bloom-canvas-element[data-draggable-id] {
-        z-index: @bubbleCanvasZIndex + 2;
+        z-index: @canvasElementCanvasZIndex + 2;
         &.bloom-ui-dragging {
-            z-index: @bubbleCanvasZIndex + 3;
+            z-index: @canvasElementCanvasZIndex + 3;
         }
     }
     // Buttons for editing images and formatting text should not show in test mode.
@@ -292,7 +292,7 @@
 //         height: var(--slider-height);
 //         box-sizing: border-box;
 //         // Same as the canvas is enough to put in in front, since it comes later.
-//         z-index: @bubbleCanvasZIndex;
+//         z-index: @canvasElementCanvasZIndex;
 //         .bloom-activity-slider-content {
 //             display: flex;
 //             height: 100%;

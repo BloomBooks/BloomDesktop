@@ -46,7 +46,7 @@ import {
     CanvasElementManager,
     kbackgroundImageClass,
     theOneCanvasElementManager
-} from "./bubbleManager";
+} from "./CanvasElementManager";
 import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -112,8 +112,9 @@ const CanvasElementContextControls: React.FunctionComponent<{
         // a dialog opened by the menu command closes.  See BL-14123.
         if (!open) {
             setTimeout(() => {
-                if (launchingDialog) BubbleManager.skipNextFocusChange = true;
-                BubbleManager.ignoreFocusChanges = false;
+                if (launchingDialog)
+                    CanvasElementManager.skipNextFocusChange = true;
+                CanvasElementManager.ignoreFocusChanges = false;
             }, 0);
         }
     };

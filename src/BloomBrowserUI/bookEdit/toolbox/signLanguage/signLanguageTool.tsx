@@ -19,7 +19,7 @@ import theOneLocalizationManager from "../../../lib/localizationManager/localiza
 import calculateAspectRatio from "calculate-aspect-ratio";
 import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 import { updateVideoInContainer } from "../../js/bloomVideo";
-import { kCanvasElementSelector } from "../overlay/overlayUtils";
+import { kCanvasElementSelector } from "../overlay/canvasElementUtils";
 import { OverlayTool } from "../overlay/overlayTool";
 import { selectVideoContainer } from "../../js/videoUtils";
 

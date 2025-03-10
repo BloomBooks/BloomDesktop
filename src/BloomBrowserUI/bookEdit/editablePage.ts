@@ -10,7 +10,7 @@ import "errorHandler";
 import {
     theOneCanvasElementManager,
     CanvasElementManager
-} from "./js/bubbleManager";
+} from "./js/CanvasElementManager";
 import { renderDragActivityTabControl } from "./toolbox/dragActivity/DragActivityTabControl";
 
 function getPageId(): string {

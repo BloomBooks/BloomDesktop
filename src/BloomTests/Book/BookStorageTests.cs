@@ -1680,7 +1680,7 @@ namespace BloomTests.Book
             "{`version`:`1.0`,`level`:1,`style`:`none`,`tails`:[]}";
 
         [Test]
-        public void GetRequiredVersions_ComicStyleNoSvg_ReturnsNone()
+        public void GetRequiredVersions_ComicStyleNoSvg_ReturnsCanvasElement()
         {
             var storage = GetInitialStorageWithCustomHtml(
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
@@ -1694,11 +1694,13 @@ namespace BloomTests.Book
             );
             var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
-            Assert.That(requiredVersions.Length, Is.EqualTo(0));
+            Assert.That(requiredVersions.Length, Is.EqualTo(1));
+
+            Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("canvasElement"));
         }
 
         [Test]
-        public void GetRequiredVersions_MixtureOfComicStyles_ReturnsComic()
+        public void GetRequiredVersions_MixtureOfComicStyles_ReturnsComicAndCanvasElement()
         {
             const string captionBubbleWithNoTail =
                 "{`version`:`1.0`,`level`:1,`style`:`caption`,`tails`:[]}";
@@ -1718,16 +1720,20 @@ namespace BloomTests.Book
             );
             var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
-            Assert.That(requiredVersions.Length, Is.EqualTo(1));
+            Assert.That(requiredVersions.Length, Is.EqualTo(2));
 
-            Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("comical-1"));
-            Assert.That(requiredVersions[0].FeaturePhrase, Is.EqualTo("Support for Comics"));
-            Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("4.7"));
-            Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("1.0"));
+            Assert.That(requiredVersions[1].FeatureId, Is.EqualTo("comical-1"));
+            Assert.That(requiredVersions[1].FeaturePhrase, Is.EqualTo("Support for Comics"));
+            Assert.That(requiredVersions[1].BloomDesktopMinVersion, Is.EqualTo("4.7"));
+            Assert.That(requiredVersions[1].BloomReaderMinVersion, Is.EqualTo("1.0"));
+            // First because it has the highest version requirement
+            Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("canvasElement"));
+            Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("6.2"));
+            Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("3.3"));
         }
 
         [Test]
-        public void GetRequiredVersions_MixtureOfComics_ReturnsBothComic1and2()
+        public void GetRequiredVersions_MixtureOfComics_ReturnsComic1and2andCanvasElement()
         {
             const string ellipseBubble =
                 "{`version`:`1.0`,`level`:1,`style`:`ellipse`,`tails`:[{`tipX`:578,`tipY`:11,`midpointX`:566,`midpointY`:32,`autoCurve`:true}]}";
@@ -1750,20 +1756,21 @@ namespace BloomTests.Book
             );
             var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
-            Assert.That(requiredVersions.Length, Is.EqualTo(2));
+            Assert.That(requiredVersions.Length, Is.EqualTo(3));
 
-            Assert.That(requiredVersions[1].FeatureId, Is.EqualTo("comical-1"));
-            Assert.That(requiredVersions[1].FeaturePhrase, Is.EqualTo("Support for Comics"));
-            Assert.That(requiredVersions[1].BloomDesktopMinVersion, Is.EqualTo("4.7"));
-            Assert.That(requiredVersions[1].BloomReaderMinVersion, Is.EqualTo("1.0"));
+            Assert.That(requiredVersions[2].FeatureId, Is.EqualTo("comical-1"));
+            Assert.That(requiredVersions[2].FeaturePhrase, Is.EqualTo("Support for Comics"));
+            Assert.That(requiredVersions[2].BloomDesktopMinVersion, Is.EqualTo("4.7"));
+            Assert.That(requiredVersions[2].BloomReaderMinVersion, Is.EqualTo("1.0"));
 
-            Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("comical-2"));
+            Assert.That(requiredVersions[1].FeatureId, Is.EqualTo("comical-2"));
             Assert.That(
-                requiredVersions[0].FeaturePhrase,
+                requiredVersions[1].FeaturePhrase,
                 Is.EqualTo("Support for Comic Captions with Straight Line Tails")
             );
-            Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("5.0"));
-            Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("1.0"));
+            Assert.That(requiredVersions[1].BloomDesktopMinVersion, Is.EqualTo("5.0"));
+            Assert.That(requiredVersions[1].BloomReaderMinVersion, Is.EqualTo("1.0"));
+            Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("canvasElement"));
         }
 
         [Test]

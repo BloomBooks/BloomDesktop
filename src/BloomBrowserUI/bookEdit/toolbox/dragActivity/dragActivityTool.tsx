@@ -21,7 +21,7 @@ import {
     CanvasElementTextItem,
     CanvasElementVideoItem,
     setGeneratedDraggableId
-} from "../overlay/overlayItem";
+} from "../overlay/CanvasElementItem";
 import { ToolBox } from "../toolbox";
 import {
     adjustDraggablesForLanguage,
@@ -52,8 +52,8 @@ import { OverlayTool } from "../overlay/overlayTool";
 import {
     CanvasElementManager,
     theOneCanvasElementManager
-} from "../../js/bubbleManager";
-import { getCanvasElementManager } from "../overlay/overlayUtils";
+} from "../../js/CanvasElementManager";
+import { getCanvasElementManager } from "../overlay/canvasElementUtils";
 
 // This is the main code that manages the Bloom Games or Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,

@@ -727,7 +727,7 @@ img.hoverUp {
 // In edit mode we don't want such an automatic outline, because the control frame
 // provides one, and typically they don't even line up, becuase we grow the control
 // frame a little bit to prevent the side buttons overlapping text.
-// Note that, prior to 6.1, we also had two rules in canvasElement.less (in content) putting an outline
+// Note that, prior to 6.1, we also had two rules in overlayTool.less (in content) putting an outline
 // and shadow on a focused bloom-editable in a canvas element. If we put that back for some
 // reason, we'll need a box-shadow:none (maybe !important) here because it looks wrong
 // with the wider control frame.
@@ -1209,7 +1209,7 @@ body {
 }
 
 // Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image
-// (This and several following rules were moved from content/bookLayout/canvasElement.less)
+// (This and several following rules were moved from content/bookLayout/overlayTool.less)
 .bloom-imageContainer:not(.hoverUp) .bloom-canvas-element {
     .bloom-editable {
         border: none;

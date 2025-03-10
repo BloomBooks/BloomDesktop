@@ -2,7 +2,7 @@
 // to make them available to import with a minimum of dependencies.
 
 import { getEditablePageBundleExports } from "../../editViewFrame";
-import { CanvasElementManager } from "../../js/bubbleManager";
+import { CanvasElementManager } from "../../js/CanvasElementManager";
 
 export const kCanvasElementClass = "bloom-canvas-element";
 export const kCanvasElementSelector = `.${kCanvasElementClass}`;

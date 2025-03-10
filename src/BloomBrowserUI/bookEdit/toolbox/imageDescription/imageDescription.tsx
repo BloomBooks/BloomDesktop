@@ -18,7 +18,7 @@ import {
     hideImageDescriptions,
     showImageDescriptions
 } from "./imageDescriptionUtils";
-import { getCanvasElementManager } from "../overlay/overlayUtils";
+import { getCanvasElementManager } from "../overlay/canvasElementUtils";
 
 interface IImageDescriptionState {
     enabled: boolean;
