@@ -92,6 +92,7 @@ export default class BloomSourceBubbles {
         group: HTMLElement,
         newLangTag?: string
     ): JQuery {
+        if (group.classList.contains("bloom-no-source-bubble")) return $();
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
         const divForBubble = $(group).clone();
