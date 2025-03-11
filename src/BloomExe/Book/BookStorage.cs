@@ -516,6 +516,13 @@ namespace Bloom.Book
                     x => currentBloomDesktopVersion < new Version(x.BloomDesktopMinVersion)
                 );
 
+                // For 6.1 and 6.0 only; don't merge into 6.2
+                if (
+                    breakingFeatureRequirements.Count() == 1
+                    && breakingFeatureRequirements.First().FeatureId == "canvasElement"
+                )
+                    return "";
+
                 // Note: even though versionRequirements is guaranteed non-empty by now, the ones that actually break our current version of Bloom DESKTOP could be empty.
                 if (breakingFeatureRequirements.Any())
                 {
@@ -3785,6 +3792,34 @@ namespace Bloom.Book
             // the right links to be made and the right files copied to the book folder.
             BookInfo.AppearanceSettings.WriteToFolder(FolderPath);
 
+            Dom.UpdateMetaElement("maintenanceLevel", "4");
+        }
+
+        /// <summary>
+        /// Only for 6.1 and 6.0! Do not merge to 6.2.
+        /// </summary>
+        public void MigrateBackFromLevel5CanvasElement()
+        {
+            Guard.Against(
+                !BookInfo.IsSaveable,
+                "We should not even think about migrating a book that is not Saveable"
+            );
+            if (GetMaintenanceLevel() != 5)
+                return;
+            var legacyCanvasElements = Dom.SafeSelectNodes(
+                    "//*[contains(@class, 'bloom-canvas-element')]"
+                )
+                .Cast<SafeXmlElement>()
+                .ToList();
+            foreach (var element in legacyCanvasElements)
+            {
+                element.SetAttribute(
+                    "class",
+                    element
+                        .GetAttribute("class")
+                        .Replace("bloom-canvas-element", "bloom-textOverPicture")
+                );
+            }
             Dom.UpdateMetaElement("maintenanceLevel", "4");
         }
 
