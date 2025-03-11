@@ -102,6 +102,9 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
               const pageIsEnterpriseOnly = currentPageDiv.page.classList.contains(
                   "enterprise-only"
               );
+              const pageIsMarkedBilingual = currentPageDiv.page.classList.contains(
+                  "mark-bilingual"
+              );
 
               const thisPageIsSelected =
                   currentPageDiv.page.id === selectedPageId;
@@ -116,6 +119,15 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                         right: ${isLandscape ? "-4" : "8"}px;
                         font-size: 24px
                     }`
+                  : "";
+              const markedBilingualRules = pageIsMarkedBilingual
+                  ? `:before {
+                    content: "B";
+                    font-size: 14px;
+                    position: absolute;
+                    bottom: 11px;
+                    right: ${isLandscape ? "-9" : "2"}px;
+                }`
                   : "";
               const backgroundCss = thisPageIsSelected
                   ? `background: ${transparentHighlightColor};`
@@ -137,6 +149,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                           // this, not an ancestor. This keeps them together during scrolling, etc.
                           position: relative;
                           ${enterpriseOnlyRules}
+                          ${markedBilingualRules}
                       `}
                   >
                       {/* A selection overlay that covers the actual thumbnail image. */}

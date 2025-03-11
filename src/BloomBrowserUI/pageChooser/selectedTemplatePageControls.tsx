@@ -18,6 +18,7 @@ interface ISelectedTemplatePageProps {
     pageDescription: string | null;
     pageIsDigitalOnly: boolean;
     pageIsEnterpriseOnly?: boolean;
+    pageIsMarkedBilingual?: boolean;
     templateBookPath: string;
     pageId: string;
     forChangeLayout?: boolean;
@@ -91,16 +92,34 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
             `}
         >
             {props.imageSource && (
-                <img
+                <div
                     css={css`
-                        border: 1px solid #b0dee4;
-                        max-width: 98%;
-                        max-height: 232px;
-                        width: ${props.isLandscape ? "unset" : "auto"};
-                        height: ${props.isLandscape ? "150px" : "auto"};
+                        display: flex;
+                        flex-direction: row;
+                        align-items: flex-end;
                     `}
-                    src={props.imageSource}
-                />
+                >
+                    <img
+                        css={css`
+                            border: 1px solid #b0dee4;
+                            max-width: 98%;
+                            max-height: 232px;
+                            width: ${props.isLandscape ? "unset" : "auto"};
+                            height: ${props.isLandscape ? "150px" : "auto"};
+                        `}
+                        src={props.imageSource}
+                    />
+                    {props.pageIsMarkedBilingual && (
+                        <div
+                            css={css`
+                                font-size: 28pt;
+                                margin-bottom: -8px;
+                            `}
+                        >
+                            B
+                        </div>
+                    )}
+                </div>
             )}
             <Div
                 css={css`

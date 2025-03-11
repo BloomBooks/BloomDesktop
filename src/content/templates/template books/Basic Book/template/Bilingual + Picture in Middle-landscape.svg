@@ -2,20 +2,20 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="224mm"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
    height="148mm"
-   viewBox="0 0 793.70077 524.40944"
+   viewBox="0 0 744.09449 524.40944"
    id="svg2"
    version="1.1"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
-   sodipodi:docname="Bilingual + Picture in Middle-landscape.svg"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:dc="http://purl.org/dc/elements/1.1/">
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="Picture in Middle-landscape.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -26,36 +26,30 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
-     inkscape:cx="352.85714"
-     inkscape:cy="299.28571"
+     inkscape:cx="352.85725"
+     inkscape:cy="298.71069"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="2560"
-     inkscape:window-height="1377"
-     inkscape:window-x="-8"
+     inkscape:window-width="1754"
+     inkscape:window-height="1177"
+     inkscape:window-x="1192"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      showguides="true"
-     inkscape:guide-bbox="true"
-     inkscape:showpageshadow="2"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1">
+     inkscape:guide-bbox="true">
     <sodipodi:guide
        position="447.14288,450"
        orientation="1,0"
-       id="guide5434"
-       inkscape:locked="false" />
+       id="guide5434" />
     <sodipodi:guide
        position="48.571429,597.14287"
        orientation="1,0"
-       id="guide4152"
-       inkscape:locked="false" />
+       id="guide4152" />
     <sodipodi:guide
        position="694.28572,648.57144"
        orientation="1,0"
-       id="guide4154"
-       inkscape:locked="false" />
+       id="guide4154" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -65,6 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -137,16 +132,5 @@
          x="66.960503"
          y="399.99246" />
     </g>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:87.9712px;font-family:'Noto Sans';-inkscape-font-specification:'Noto Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:0.6;stroke-width:0.9375"
-       x="740.62506"
-       y="1052.9529"
-       id="text1"><tspan
-         sodipodi:role="line"
-         id="tspan1"
-         style="stroke-width:0.9375"
-         x="740.62506"
-         y="1052.9529">B</tspan></text>
   </g>
 </svg>
