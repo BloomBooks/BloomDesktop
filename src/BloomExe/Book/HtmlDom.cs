@@ -1870,6 +1870,17 @@ namespace Bloom.Book
                 else
                     destinationPageDiv.SetAttribute(attr, value);
             }
+            // These attributes are of use only for template pages being displayed in the Add Pages
+            // dialog, or possibly similar temporary UI purposes.
+            string[] attrsToRemove = new[]
+            {
+                "data-ui-mark-bilingual"
+            };
+            foreach (var attrToRemove in attrsToRemove)
+            {
+                if (destinationPageDiv.HasAttribute(attrToRemove))
+                    destinationPageDiv.RemoveAttribute(attrToRemove);
+            }
 
             // If we have no music, we don't want to save a volume.
             if (edittedPageDiv.GetAttribute(musicAttrName) == null)
@@ -1906,12 +1917,12 @@ namespace Bloom.Book
             CleanupAnchorElements(destinationPageDiv);
         }
 
-        /// <summary>
-        /// Remove any empty &lt;a&gt; elements left by editing.  These cause trouble when the book/page is reopened.
-        /// Also remove the gratuitous data-cke-saved-href attribute added by ckeditor.  (It may have been involved
-        /// with the troublesome behavior noticed by the programmer.  It's certainly not needed.)
-        /// </summary>
-        public static void CleanupAnchorElements(SafeXmlElement topElement)
+		/// <summary>
+		/// Remove any empty &lt;a&gt; elements left by editing.  These cause trouble when the book/page is reopened.
+		/// Also remove the gratuitous data-cke-saved-href attribute added by ckeditor.  (It may have been involved
+		/// with the troublesome behavior noticed by the programmer.  It's certainly not needed.)
+		/// </summary>
+		public static void CleanupAnchorElements(SafeXmlElement topElement)
         {
             foreach (
                 var element in topElement.SafeSelectNodes(".//a").Cast<SafeXmlElement>().ToArray()
