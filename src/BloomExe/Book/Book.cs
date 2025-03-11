@@ -1724,7 +1724,6 @@ namespace Bloom.Book
             }
             RemoveObsoleteSoundAttributes(OurHtmlDom);
             Storage.RepairEmptyPages();
-            RemoveObsoleteImageAttributes(OurHtmlDom);
             BringBookInfoUpToDate(oldMetaData);
             FixErrorsEncounteredByUsers(OurHtmlDom);
             AddReaderBodyAttributes(OurHtmlDom);
@@ -1787,6 +1786,10 @@ namespace Bloom.Book
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
+            Storage.MigrateToLevel5CanvasElement();
+
+            // Must be after MigrateToLevel5, because it is looking for the renamed canvas element class.
+            RemoveObsoleteImageAttributes(OurHtmlDom);
 
             // Make sure the appearance settings have checked the current state of the css files.
             // This should be done before UpdateSupportFiles, because this can affect what files
@@ -4789,11 +4792,11 @@ namespace Bloom.Book
                         .GetOptionalStringAttribute("class", "")
                         .Contains("bloom-scale-with-code")
                     // Compare JS function SetupImage in bloomImages.ts. We stopped using explicit image
-                    // sizes in 2018 and added image overlays in 2022, so it should be very safe to
-                    // NOT remove explicit sizes from images in overlays. And in 6.1 (late 2024)
-                    // we started using explicit sizes in overlays for cropping, so removing them
+                    // sizes in 2018 and added image canvas elements in 2022, so it should be very safe to
+                    // NOT remove explicit sizes from images in canvas elements. And in 6.1 (late 2024)
+                    // we started using explicit sizes in canvas elements for cropping, so removing them
                     // is harmful.
-                    || img.ParentWithClass("bloom-textOverPicture") != null
+                    || img.ParentWithClass(HtmlDom.kCanvasElementClass) != null
                 )
                     continue;
                 var style = img.GetOptionalStringAttribute("style", "");
@@ -5312,7 +5315,7 @@ namespace Bloom.Book
         public bool HasQuizPages => OurHtmlDom.HasQuizPages();
         public bool HasActivities => OurHtmlDom.HasActivityPages();
 
-        public bool HasComicalOverlays => OurHtmlDom.HasComicalOverlays();
+        public bool HasComicalOverlays => OurHtmlDom.HasComicalCanvasElements();
 
         public bool HasOnlyPictureOnlyPages()
         {
@@ -5582,10 +5585,10 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Used by the publish tab to tell the user they can't publish a book with Overlay elements w/o Enterprise.
+        /// Used by the publish tab to tell the user they can't publish a book with canvas elements w/o Enterprise.
         /// </summary>
         /// <returns></returns>
-        public string GetNumberOfFirstPageWithOverlay()
+        public string GetNumberOfFirstPageWithCanvasElement()
         {
             var pageNodes = RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
             if (pageNodes.Length == 0) // Unexpected!
@@ -5593,7 +5596,7 @@ namespace Bloom.Book
             foreach (var pageNode in pageNodes)
             {
                 var resultNode = pageNode.SelectSingleNode(
-                    ".//div[contains(@class,'bloom-textOverPicture')]"
+                    ".//div[contains(@class,'" + HtmlDom.kCanvasElementClass + "')]"
                 );
                 if (resultNode == null)
                     continue;
@@ -5602,7 +5605,7 @@ namespace Bloom.Book
                 {
                     return pageNumberAttribute;
                 }
-                // If at some point we allow overlay elements on xmatter,
+                // If at some point we allow canvas element elements on xmatter,
                 // we will need to find and return the 'data-xmatter-page' attribute.
             }
             return ""; // Also unexpected!

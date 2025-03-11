@@ -22,7 +22,7 @@ import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import { SetupElements, attachToCkEditor } from "./bloomEditing";
 import {
     EnableAllImageEditing,
-    getImageFromOverlay,
+    getImageFromCanvasElement,
     kImageContainerSelector,
     getImageFromContainer,
     kImageContainerClass,
@@ -34,11 +34,14 @@ import {
 import { adjustTarget } from "../toolbox/dragActivity/dragActivityTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
-import { renderOverlayContextControls } from "./OverlayContextControls";
-import { data, get } from "jquery";
+import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
+import {
+    kCanvasElementClass,
+    kCanvasElementSelector,
+    kHasCanvasElementClass
+} from "../toolbox/overlay/canvasElementUtils";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
-import { MeasureText } from "../../utils/measureText";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
@@ -53,47 +56,47 @@ const kComicalGeneratedClass: string = "comical-generated";
 // For now we're keeping this name for backwards-compatibility, even though now the element could be
 // a video or even another picture.
 // In the process of moving these two definitions to overlayUtils.ts, but duplicating here for now.
-export const kTextOverPictureClass = "bloom-textOverPicture";
-export const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 export const kbackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
 
-export const kOverlayClass = "hasOverlay";
-
 type ResizeDirection = "ne" | "nw" | "sw" | "se";
 
-// References to "TOP" in the code refer to the actual TextOverPicture box (what "Bubble"s were
-// originally called) installed in the Bloom page. We are gradually removing these, since now there
-// are multiple types of elements that can be placed over pictures, not just Text.
-// "Bubble" now becomes a generic name for any element placed over a picture that communicates with
-// comicaljs.
-export class BubbleManager {
-    // The min width/height needs to be kept in sync with the corresponding values in bubble.less
+// Canvas elements are the movable items that can be placed over images (or empty image containers).
+// Some of them are associated with ComicalJs bubbles. Earlier in Bloom's history, they were variously
+// called TextOverPicture boxes, TOPs, Overlays, and Bubbles. We have attempted to clean up all such
+// names, but it is difficult, as "top" is a common CSS property, many other things are called overlays,
+// and "bubble" is used in reference to ComicalJs, Source Bubbles, Hint Bubbles, and other qtips.
+// Some may have been missed. (It's even conceivable that some references to the other things were
+// accidentally renamed to "canvas element".)
+export class CanvasElementManager {
+    // The min width/height needs to be kept in sync with the corresponding values in overlayTool.less
     public minTextBoxWidthPx = 30;
     public minTextBoxHeightPx = 30;
 
     private activeElement: HTMLElement | undefined;
-    public isComicEditingOn: boolean = false;
-    private thingsToNotifyOfBubbleChange: {
+    public isCanvasElementEditingOn: boolean = false;
+    private thingsToNotifyOfCanvasElementChange: {
         // identifies the source that requested the notification; allows us to remove the
         // right one when no longer needed, and prevent multiple notifiers to the same client.
         id: string;
         handler: (x: BubbleSpec | undefined) => void;
     }[] = [];
 
-    // These variables are used by the bubble's onmouse* event handlers
+    // These variables are used by the canvas element's onmouse* event handlers
     private bubbleToDrag: Bubble | undefined; // Use Undefined to indicate that there is no active drag in progress
-    private bubbleDragGrabOffset: { x: number; y: number } = { x: 0, y: 0 };
-    private activeContainer: HTMLElement | undefined;
+    private bubbleDragGrabOffset: { x: number; y: number } = {
+        x: 0,
+        y: 0
+    };
 
-    public initializeBubbleManager(): void {
+    public initializeCanvasElementManager(): void {
         // Currently nothing to do; used to set up web socket listener
         // for right-click messages to add and delete OverPicture elements.
         // Keeping hook in case we want it one day...
     }
 
-    public getIsComicEditingOn(): boolean {
-        return this.isComicEditingOn;
+    public getIsCanvasElementEditingOn(): boolean {
+        return this.isCanvasElementEditingOn;
     }
 
     // Given the box has been determined to be overflowing vertically by
@@ -110,7 +113,7 @@ export class BubbleManager {
         overflowY: number,
         doNotShrink?: boolean
     ): boolean {
-        const wrapperBox = box.closest(kTextOverPictureSelector) as HTMLElement;
+        const wrapperBox = box.closest(kCanvasElementSelector) as HTMLElement;
         if (
             !wrapperBox ||
             wrapperBox.classList.contains("bloom-noAutoHeight")
@@ -121,7 +124,7 @@ export class BubbleManager {
             return false; // we don't want to change the box's size
         }
 
-        const container = BubbleManager.getTopLevelImageContainerElement(
+        const container = CanvasElementManager.getTopLevelImageContainerElement(
             wrapperBox
         );
         if (!container) {
@@ -159,7 +162,10 @@ export class BubbleManager {
         }
 
         wrapperBox.style.height = newHeight + "px"; // next line will change to percent
-        BubbleManager.convertTextboxPositionToAbsolute(wrapperBox, container);
+        CanvasElementManager.convertTextboxPositionToAbsolute(
+            wrapperBox,
+            container
+        );
         this.adjustTarget(wrapperBox);
         this.alignControlFrameWithActiveElement();
         return true;
@@ -174,11 +180,11 @@ export class BubbleManager {
                 "bloom-editable bloom-visibility-code-on"
             )[0] as HTMLElement;
 
-            this.adjustBubbleHeightToContentOrMarkOverflow(editable);
+            this.adjustCanvasElementHeightToContentOrMarkOverflow(editable);
         }
         this.alignControlFrameWithActiveElement();
     }
-    public adjustBubbleHeightToContentOrMarkOverflow(
+    public adjustCanvasElementHeightToContentOrMarkOverflow(
         editable: HTMLElement
     ): void {
         if (!this.activeElement) return;
@@ -192,7 +198,7 @@ export class BubbleManager {
 
         // This mimics the relevant part of OverflowChecker.MarkOverflowInternal
         if (
-            theOneBubbleManager.growOverflowingBox(
+            theOneCanvasElementManager.growOverflowingBox(
                 this.activeElement,
                 overflowY
             )
@@ -202,31 +208,31 @@ export class BubbleManager {
         editable.classList.toggle("overflow", overflowY > 0);
     }
 
-    // When the format dialog changes the amount of padding for overlays, adjust their sizes
+    // When the format dialog changes the amount of padding for canvas elements, adjust their sizes
     // and positions (keeping the text in the same place).
-    // This function assumes that the postion and size of overlays are determined by the
-    // top, left, width, and height properties of the .bloom-textOverPicture elements,
+    // This function assumes that the postion and size of canvas elements are determined by the
+    // top, left, width, and height properties of the canvas elements,
     // and that they are measured in pixels.
-    public static adjustOverlaysForPaddingChange(
+    public static adjustCanvasElementsForPaddingChange(
         container: HTMLElement,
         style: string,
         oldPaddingStr: string, // number+px
         newPaddingStr: string // number+px
     ) {
         const wrapperBoxes = Array.from(
-            container.getElementsByClassName(kTextOverPictureClass)
+            container.getElementsByClassName(kCanvasElementClass)
         ) as HTMLElement[];
-        const oldPadding = BubbleManager.pxToNumber(oldPaddingStr);
-        const newPadding = BubbleManager.pxToNumber(newPaddingStr);
+        const oldPadding = CanvasElementManager.pxToNumber(oldPaddingStr);
+        const newPadding = CanvasElementManager.pxToNumber(newPaddingStr);
         const delta = newPadding - oldPadding;
-        const overlayLang = GetSettings().languageForNewTextBoxes;
+        const canvasElementLang = GetSettings().languageForNewTextBoxes;
         wrapperBoxes.forEach(wrapperBox => {
             // The language check is a belt-and-braces thing. At the time I did this PR, we had a bug where
             // the bloom-editables in a TG did not necessarily all have the same style.
             // We could possibly enconuter books where this is still true.
             if (
                 Array.from(wrapperBox.getElementsByClassName(style)).filter(
-                    x => x.getAttribute("lang") === overlayLang
+                    x => x.getAttribute("lang") === canvasElementLang
                 ).length > 0
             ) {
                 if (!wrapperBox.style.height.endsWith("px")) {
@@ -249,7 +255,7 @@ export class BubbleManager {
                 const oldLeft = this.pxToNumber(wrapperBox.style.left);
                 wrapperBox.style.left = oldLeft - delta + "px";
 
-                BubbleManager.convertTextboxPositionToAbsolute(
+                CanvasElementManager.convertTextboxPositionToAbsolute(
                     wrapperBox,
                     this.getTopLevelImageContainerElement(wrapperBox)!
                 );
@@ -310,7 +316,7 @@ export class BubbleManager {
         }
         if (focusableDivs.length === 0) {
             // This could be a bit tricky, since the whole canvas is in a 'bloom-imageContainer'.
-            // But 'overPictureContainerElement' here is a div.bloom-textOverPicture element,
+            // But 'overPictureContainerElement' here is a canvas element,
             // so if we find any imageContainers inside of that, they are picture over picture elements.
             focusableDivs = Array.from(
                 overPictureContainerElement.getElementsByClassName(
@@ -336,36 +342,29 @@ export class BubbleManager {
         return false;
     }
 
-    public turnOnBubbleEditing(): void {
-        if (this.isComicEditingOn === true) {
+    public turnOnCanvasElementEditing(): void {
+        if (this.isCanvasElementEditingOn === true) {
             return; // Already on. No work needs to be done
         }
-        this.isComicEditingOn = true;
+        this.isCanvasElementEditingOn = true;
         this.handleResizeAdjustments();
-
-        Comical.setActiveBubbleListener(activeElement => {
-            // No longer want to focus a bubble when activated.
-            // if (activeElement) {
-            //     this.focusFirstVisibleFocusable(activeElement);
-            // }
-        });
 
         const imageContainers: HTMLElement[] = this.getAllPrimaryImageContainersOnPage();
 
         imageContainers.forEach(container => {
-            this.adjustOverlaysForCurrentLanguage(container);
-            this.ensureBubblesIntersectParent(container);
+            this.adjustCanvasElementsForCurrentLanguage(container);
+            this.ensureCanvasElementsIntersectParent(container);
             // image containers are already set by CSS to overflow:hidden, so they
             // SHOULD never scroll. But there's also a rule that when something is
-            // focused, it has to be scrolled to. If we set focus to a bubble that's
+            // focused, it has to be scrolled to. If we set focus to a canvas element that's
             // sufficiently (almost entirely?) off-screen, the browser decides that
             // it MUST scroll to show it. For a reason I haven't determined, the
             // element it picks to scroll seems to be the image container. This puts
             // the display in a confusing state where the text that should be hidden
-            // is visible, though the canvas has moved over and most of the bubble
+            // is visible, though the canvas has moved over and most of the canvas element
             // is still hidden (BL-11646).
             // Another solution would be to find the code that is focusing the
-            // bubble after page load, and give it the option {preventScroll: true}.
+            // canvas element after page load, and give it the option {preventScroll: true}.
             // But (a) this is not supported in Gecko (added in FF68), and (b) you
             // can get a similar bad effect by moving the cursor through text that
             // is supposed to be hidden. This drastic approach prevents both.
@@ -386,7 +385,7 @@ export class BubbleManager {
         // todo: make sure comical is turned on for the right parent, in case there's more than one
         // image on the page?
         const overPictureElements = Array.from(
-            document.getElementsByClassName(kTextOverPictureClass)
+            document.getElementsByClassName(kCanvasElementClass)
         ).filter(
             x => !EditableDivUtils.isInHiddenLanguageBlock(x)
         ) as HTMLElement[];
@@ -410,14 +409,14 @@ export class BubbleManager {
             //this.focusFirstVisibleFocusable(this.activeElement);
             Comical.setUserInterfaceProperties({ tailHandleColor: kBloomBlue });
             Comical.startEditing(imageContainers);
-            this.migrateOldTextOverPictureElements(overPictureElements);
+            this.migrateOldCanvasElements(overPictureElements);
             Comical.activateElement(this.activeElement);
             overPictureElements.forEach(container => {
                 this.addEventsToFocusableElements(container, false);
             });
             document.addEventListener(
                 "click",
-                BubbleManager.onDocClickClearActiveElement
+                CanvasElementManager.onDocClickClearActiveElement
             );
             // If we have sign language video over picture elements that are so far only placeholders,
             // they are not focusable by default and so won't get the blue border that elements
@@ -436,8 +435,8 @@ export class BubbleManager {
             });
         } else {
             // Focus something!
-            // BL-8073: if Comic Tool is open, this 'turnOnBubbleEditing()' method will get run.
-            // If this particular page has no comic bubbles, we can actually arrive here with the 'body'
+            // BL-8073: if Comic Tool is open, this 'turnOnCanvasElementEditing()' method will get run.
+            // If this particular page has no canvas elements, we can actually arrive here with the 'body'
             // as the document's activeElement. So we focus the first visible focusable element
             // we come to.
             const marginBox = document.getElementsByClassName("marginBox");
@@ -450,13 +449,13 @@ export class BubbleManager {
         Array.from(this.getAllPrimaryImageContainersOnPage()).forEach(
             (container: HTMLElement) => {
                 container.addEventListener("click", event => {
-                    // The goal here is that if the user clicks outside any comical bubble,
-                    // we want none of the comical bubbles selected, so that
+                    // The goal here is that if the user clicks outside any comical canvas element,
+                    // we want none of the canvas elements selected, so that
                     // (after moving the mouse away to get rid of hover effects)
                     // the user can see exactly what the final comic will look like.
                     // This is a difficult and horrible kludge.
                     // First problem is that this click handler is fired for a click
-                    // ANYWHERE in the image...none of the bubble- or OverPicture element- related
+                    // ANYWHERE in the image...none of the canvas element-related
                     // click handlers preventDefault(). So we have to figure out
                     // whether the click was simply on the picture, or on something
                     // inside it. A first step is to ignore any clicks where the target
@@ -471,7 +470,7 @@ export class BubbleManager {
                         )
                     ) {
                         // OK, we clicked on the canvas, but we may still have clicked on
-                        // some part of a bubble rather than away from it.
+                        // some part of a canvas element rather than away from it.
                         // We now use a Comical function to determine whether we clicked
                         // on a Comical object.
                         const x = event.offsetX;
@@ -497,18 +496,18 @@ export class BubbleManager {
         }
     }
     // declare this strange way so it has the right 'this' when added as event listener.
-    private bubbleLosingFocus = event => {
-        if (BubbleManager.ignoreFocusChanges) return;
-        // removing focus from a text bubble means the next click on it could drag it.
-        // However, it's possible the active bubble already moved; don't clear theBubbleWeAreTextEditing if so
-        if (event.currentTarget === this.theBubbleWeAreTextEditing) {
-            this.theBubbleWeAreTextEditing = undefined;
+    private canvasElementLosingFocus = event => {
+        if (CanvasElementManager.ignoreFocusChanges) return;
+        // removing focus from a text canvas element means the next click on it could drag it.
+        // However, it's possible the active canvas element already moved; don't clear theCanvasElementWeAreTextEditing if so
+        if (event.currentTarget === this.theCanvasElementWeAreTextEditing) {
+            this.theCanvasElementWeAreTextEditing = undefined;
             this.removeFocusClass();
         }
     };
 
     // This is not a great place to make this available to the world.
-    // But GetSettings only works in the page Iframe, and the bubble manager
+    // But GetSettings only works in the page Iframe, and the canvas element manager
     // is one componenent from there that the Game code already works with
     // and that already uses the injected GetSettings(). I don't have a better idea,
     // short of refactoring so that we get settings from an API call rather than
@@ -517,7 +516,7 @@ export class BubbleManager {
         return GetSettings();
     }
 
-    // This is invoked when the toolbox adds a bubble that wants source and/or hint bubbles.
+    // This is invoked when the toolbox adds a canvas element that wants source and/or hint bubbles.
     public addSourceAndHintBubbles(translationGroup: HTMLElement) {
         const bubble = BloomSourceBubbles.ProduceSourceBubbles(
             translationGroup
@@ -544,14 +543,18 @@ export class BubbleManager {
         }
     }
 
-    adjustOverlaysForCurrentLanguage(container: HTMLElement) {
-        const overlayLang = GetSettings().languageForNewTextBoxes;
+    // if there is a bloom-editable in the canvas element that has a data-bubble-alternate,
+    // use it to set the data-bubble of the canvas element. (data-bubble is used by Comical-js,
+    // which is continuing to use the term bubble, so I think it's appropriate to still use that
+    // name here.)
+    adjustCanvasElementsForCurrentLanguage(container: HTMLElement) {
+        const canvasElementLang = GetSettings().languageForNewTextBoxes;
         Array.from(
-            container.getElementsByClassName("bloom-textOverPicture")
-        ).forEach(top => {
+            container.getElementsByClassName(kCanvasElementClass)
+        ).forEach(canvasElement => {
             const editable = Array.from(
-                top.getElementsByClassName("bloom-editable")
-            ).find(e => e.getAttribute("lang") === overlayLang);
+                canvasElement.getElementsByClassName("bloom-editable")
+            ).find(e => e.getAttribute("lang") === canvasElementLang);
             if (editable) {
                 const alternatesString = editable.getAttribute(
                     "data-bubble-alternate"
@@ -560,8 +563,10 @@ export class BubbleManager {
                     const alternate = JSON.parse(
                         alternatesString.replace(/`/g, '"')
                     ) as IAlternate;
-                    top.setAttribute("style", alternate.style);
-                    const bubbleData = top.getAttribute("data-bubble");
+                    canvasElement.setAttribute("style", alternate.style);
+                    const bubbleData = canvasElement.getAttribute(
+                        "data-bubble"
+                    );
                     if (bubbleData) {
                         const bubbleDataObj = JSON.parse(
                             bubbleData.replace(/`/g, '"')
@@ -570,13 +575,16 @@ export class BubbleManager {
                         const newBubbleData = JSON.stringify(
                             bubbleDataObj
                         ).replace(/"/g, "`");
-                        top.setAttribute("data-bubble", newBubbleData);
+                        canvasElement.setAttribute(
+                            "data-bubble",
+                            newBubbleData
+                        );
                     }
                 }
             }
 
             // If we don't find a matching bloom-editable, or there is no alternate attribute
-            // there, that's fine; just let the current state of the bubble serve as a
+            // there, that's fine; just let the current state of the data-bubble serve as a
             // default for the new language.
         });
         // If we have an existing alternate SVG for this language, remove it.
@@ -584,7 +592,7 @@ export class BubbleManager {
         // made when we save the page.)
         const altSvg = Array.from(
             container.getElementsByClassName("comical-alternate")
-        ).find(svg => svg.getAttribute("data-lang") === overlayLang);
+        ).find(svg => svg.getAttribute("data-lang") === canvasElementLang);
         if (altSvg) {
             container.removeChild(altSvg);
         }
@@ -594,7 +602,7 @@ export class BubbleManager {
         )[0];
         if (currentSvg) {
             const currentSvgLang = currentSvg.getAttribute("data-lang");
-            if (currentSvgLang && currentSvgLang !== overlayLang) {
+            if (currentSvgLang && currentSvgLang !== canvasElementLang) {
                 // it was generated for some other language. Save it for possible use with
                 // that language in Bloom Player.
                 // We need to remove this class so Comical won't delete it.
@@ -610,22 +618,22 @@ export class BubbleManager {
         }
     }
 
-    public static saveStateOfOverlayAsCurrentLangAlternate(
-        top: HTMLElement,
-        overlayLangIn?: string
+    public static saveStateOfCanvasElementAsCurrentLangAlternate(
+        canvasElement: HTMLElement,
+        canvasElementLangIn?: string
     ) {
-        const overlayLang =
-            overlayLangIn ?? GetSettings().languageForNewTextBoxes;
+        const canvasElementLang =
+            canvasElementLangIn ?? GetSettings().languageForNewTextBoxes;
 
         const editable = Array.from(
-            top.getElementsByClassName("bloom-editable")
-        ).find(e => e.getAttribute("lang") === overlayLang);
+            canvasElement.getElementsByClassName("bloom-editable")
+        ).find(e => e.getAttribute("lang") === canvasElementLang);
         if (editable) {
-            const bubbleData = top.getAttribute("data-bubble") ?? "";
+            const bubbleData = canvasElement.getAttribute("data-bubble") ?? "";
             const bubbleDataObj = JSON.parse(bubbleData.replace(/`/g, '"'));
             const alternate = {
-                lang: overlayLang,
-                style: top.getAttribute("style") ?? "",
+                lang: canvasElementLang,
+                style: canvasElement.getAttribute("style") ?? "",
                 tails: bubbleDataObj.tails as object[]
             };
             editable.setAttribute(
@@ -636,27 +644,29 @@ export class BubbleManager {
     }
 
     // Save the current state of things so that we can later position everything
-    // correctly for this language, even if in the meantime we change bubble
+    // correctly for this language, even if in the meantime we change canvas element
     // positions for other languages.
-    saveCurrentOverlayStateAsCurrentLangAlternate(container: HTMLElement) {
-        const overlayLang = GetSettings().languageForNewTextBoxes;
+    saveCurrentCanvasElementStateAsCurrentLangAlternate(
+        container: HTMLElement
+    ) {
+        const canvasElementLang = GetSettings().languageForNewTextBoxes;
         Array.from(
-            container.getElementsByClassName("bloom-textOverPicture")
+            container.getElementsByClassName(kCanvasElementClass)
         ).forEach((top: HTMLElement) =>
-            BubbleManager.saveStateOfOverlayAsCurrentLangAlternate(
+            CanvasElementManager.saveStateOfCanvasElementAsCurrentLangAlternate(
                 top,
-                overlayLang
+                canvasElementLang
             )
         );
         // Record that the current comical-generated SVG is for this language.
         const currentSvg = container.getElementsByClassName(
             "comical-generated"
         )[0];
-        currentSvg?.setAttribute("data-lang", overlayLang);
+        currentSvg?.setAttribute("data-lang", canvasElementLang);
     }
 
-    // "container" refers to a .bloom-textOverPicture div, which holds one (and only one) of the
-    // 3 main types of "bubble": text, video or image.
+    // "container" refers to a .bloom-canvas-element div, which holds one (and only one) of the
+    // 3 main types of canvas element: text, video or image.
     // This method will attach the focusin event to each of these.
     private addEventsToFocusableElements(
         container: HTMLElement,
@@ -679,14 +689,14 @@ export class BubbleManager {
             }
         });
         Array.from(
-            document.getElementsByClassName(kTextOverPictureClass)
+            document.getElementsByClassName(kCanvasElementClass)
         ).forEach((element: HTMLElement) => {
-            element.addEventListener("focusout", this.bubbleLosingFocus);
+            element.addEventListener("focusout", this.canvasElementLosingFocus);
         });
     }
 
     private handleFocusInEvent(ev: FocusEvent) {
-        BubbleManager.onFocusSetActiveElement(ev);
+        CanvasElementManager.onFocusSetActiveElement(ev);
     }
 
     // This should not return any .bloom-imageContainers that have imageContainer ancestors.
@@ -700,36 +710,36 @@ export class BubbleManager {
         ) as HTMLElement[];
     }
 
-    // Use this one when adding/duplicating a bubble to avoid re-navigating the page.
-    // If we are passing "undefined" as the bubble, it's because we just deleted a bubble
-    // and we want Bloom to determine what to select next (it might not be a bubble at all).
-    public refreshBubbleEditing(
+    // Use this one when adding/duplicating a canvas element to avoid re-navigating the page.
+    // If we are passing "undefined" as the canvas element, it's because we just deleted a canvas element
+    // and we want Bloom to determine what to select next (it might not be a canvas element at all).
+    public refreshCanvasElementEditing(
         imageContainer: HTMLElement,
         bubble: Bubble | undefined,
         attachEventsToEditables: boolean,
-        activateBubble: boolean
+        activateCanvasElement: boolean
     ): void {
         Comical.startEditing([imageContainer]);
-        // necessary if we added the very first bubble, and Comical was not previously initialized
+        // necessary if we added the very first canvas element, and Comical was not previously initialized
         Comical.setUserInterfaceProperties({ tailHandleColor: kBloomBlue });
         if (bubble) {
             const newTextOverPictureElement = bubble.content;
-            if (activateBubble) {
+            if (activateCanvasElement) {
                 Comical.activateBubble(bubble);
             }
             this.updateComicalForSelectedElement(newTextOverPictureElement);
 
             // SetupElements (below) will do most of what we need, but when it gets to
-            // 'turnOnBubbleEditing()', it's already on, so the method will get skipped.
+            // 'turnOnCanvasElementEditing()', it's already on, so the method will get skipped.
             // The only piece left from that method that still needs doing is to set the
             // 'focusin' eventlistener.
             // And then the only thing left from a full refresh that needs to happen here is
             // to attach the new bloom-editable to ckEditor.
-            // If attachEventsToEditables is false, then this is a child or duplicate bubble that
+            // If attachEventsToEditables is false, then this is a child or duplicate canvas element that
             // was already sent through here once. We don't need to add more 'focusin' listeners and
             // re-attach to the StyleEditor again.
             // This must be done before we call SetupElements, which will attempt to focus the new
-            // bubble, and expects the focus event handler to get called.
+            // canvas element, and expects the focus event handler to get called.
             if (attachEventsToEditables) {
                 this.addEventsToFocusableElements(
                     newTextOverPictureElement,
@@ -738,34 +748,32 @@ export class BubbleManager {
             }
             SetupElements(
                 imageContainer,
-                activateBubble ? bubble.content : "none"
+                activateCanvasElement ? bubble.content : "none"
             );
 
             // Since we may have just added an element, check if the container has at least one
-            // overlay element and add the 'hasOverlay' class.
-            updateOverlayClass(imageContainer);
+            // canvas element and add the 'bloom-has-canvas-element' class.
+            updateCanvasElementClass(imageContainer);
         } else {
-            // deleted a bubble. Don't try to focus anything.
+            // deleted a canvas element. Don't try to focus anything.
             this.removeControlFrame(); // but don't leave this behind.
 
             // Also, since we just deleted an element, check if the original container no longer
-            // has any overlay elements and remove the 'hasOverlay' class.
-            updateOverlayClass(imageContainer);
+            // has any canvas elements and remove the 'bloom-has-canvas-element' class.
+            updateCanvasElementClass(imageContainer);
         }
     }
 
-    private migrateOldTextOverPictureElements(
-        textOverPictureElems: HTMLElement[]
-    ): void {
-        textOverPictureElems.forEach(top => {
+    private migrateOldCanvasElements(canvasElements: HTMLElement[]): void {
+        canvasElements.forEach(top => {
             if (!top.getAttribute("data-bubble")) {
                 const bubbleSpec = Bubble.getDefaultBubbleSpec(top, "none");
                 new Bubble(top).setBubbleSpec(bubbleSpec);
                 // it would be nice to do this only once, but there MIGHT
-                // be TOP elements in more than one image container...too complicated,
-                // and this only happens once per TOP.
+                // be canvas element elements in more than one image container...too complicated,
+                // and this only happens once per canvas element.
                 Comical.update(
-                    BubbleManager.getTopLevelImageContainerElement(top)!
+                    CanvasElementManager.getTopLevelImageContainerElement(top)!
                 );
             }
         });
@@ -784,24 +792,24 @@ export class BubbleManager {
     }
 
     // The event handler to be called when something relevant on the page frame gets focus.
-    // This will set the active textOverPicture element.
+    // This will set the active canvas element.
     public static onFocusSetActiveElement(event: FocusEvent) {
-        if (BubbleManager.ignoreFocusChanges) return;
+        if (CanvasElementManager.ignoreFocusChanges) return;
         // The following is the only fix I've found after a lot of experimentation
-        // to prevent the active bubble changing when we choose a menu command that
+        // to prevent the active canvas element changing when we choose a menu command that
         // brings up a dialog, at least a C# dialog.
-        if (BubbleManager.skipNextFocusChange) {
-            BubbleManager.skipNextFocusChange = false;
+        if (CanvasElementManager.skipNextFocusChange) {
+            CanvasElementManager.skipNextFocusChange = false;
             return;
         }
-        if (BubbleManager.inPlayMode(event.currentTarget as Element)) {
+        if (CanvasElementManager.inPlayMode(event.currentTarget as Element)) {
             return;
         }
 
         // The current target is the element we attached the event listener to
         const focusedElement = event.currentTarget as Element;
 
-        // This is a hack to prevent the active bubble changing when we change zoom level.
+        // This is a hack to prevent the active canvas element changing when we change zoom level.
         // For some reason I can't track down, the first focusable thing on the page is
         // given focus during the reload after a zoom change. I think somehow the
         // browser itself is trying to focus something, and it's not the thing we want.
@@ -813,12 +821,12 @@ export class BubbleManager {
         const topWindowZoomTransfrom = window.top?.[kTransformPropName];
         if (window.top && zoomTransform !== topWindowZoomTransfrom) {
             // We eventually want to reset the saved zoom level to the new one, so
-            // that this method can do its job...mainly allowing the user to tab between overlays.
+            // that this method can do its job...mainly allowing the user to tab between canvas elements.
             // We don't do it immediately because experience indicates that there may be more than
             // one focus event to suppress as we load the page. On my fast dev machine a 50ms
             // delay is enough to catch them all, so I'm going with ten times that. It's not
             // a catastrophe if we miss a tab key very soon after a zoom change, nor if the delay
-            // is not enough for a very slow machine and so the active bubble moves when it shouldn't.
+            // is not enough for a very slow machine and so the active canvas element moves when it shouldn't.
             setTimeout(() => {
                 if (window.top) {
                     window.top[kTransformPropName] = zoomTransform;
@@ -827,31 +835,33 @@ export class BubbleManager {
             return;
         }
 
-        // If we focus something on the page that isn't in a bubble, we need to switch
-        // to having no active bubble element. Note: we don't want to use focusout
-        // on the bubble elements, because then we lose the active element while clicking
+        // If we focus something on the page that isn't in a canvas element, we need to switch
+        // to having no active canvas element  Note: we don't want to use focusout
+        // on the canvas elements, because then we lose the active element while clicking
         // on controls in the toolbox (and while debugging).
 
         // We don't think this function ever gets called when it's not initialized, but it doesn't
         // hurt to make sure.
-        initializeBubbleManager();
+        initializeCanvasElementManager();
 
-        const bubbleElement = focusedElement.closest(kTextOverPictureSelector);
-        if (bubbleElement) {
-            theOneBubbleManager.setActiveElement(bubbleElement as HTMLElement);
-            // When a bubble is first clicked, we try hard not to let it get focus.
+        const canvasElement = focusedElement.closest(kCanvasElementSelector);
+        if (canvasElement) {
+            theOneCanvasElementManager.setActiveElement(
+                canvasElement as HTMLElement
+            );
+            // When a canvas element is first clicked, we try hard not to let it get focus.
             // Another click will focus it. Unfortunately, various other things do as well,
             // such as activating Bloom (which seems to focus the thing that most recently had
             // a text selection, possibly because of CkEditor), and Undo. If something
-            // has focused the bubble, it will typically have a selection visible, and so it
+            // has focused the canvas element, it will typically have a selection visible, and so it
             // looks as if it's in edit mode. I think it's best to just make it so.)
-            theOneBubbleManager.theBubbleWeAreTextEditing =
-                theOneBubbleManager.activeElement;
-            theOneBubbleManager.theBubbleWeAreTextEditing?.classList.add(
-                "bloom-focusedTOP"
+            theOneCanvasElementManager.theCanvasElementWeAreTextEditing =
+                theOneCanvasElementManager.activeElement;
+            theOneCanvasElementManager.theCanvasElementWeAreTextEditing?.classList.add(
+                "bloom-focusedCanvasElement"
             );
         } else {
-            theOneBubbleManager.setActiveElement(undefined);
+            theOneCanvasElementManager.setActiveElement(undefined);
         }
     }
 
@@ -866,7 +876,9 @@ export class BubbleManager {
             return; // we clicked outside a popup menu to close it. Don't mess with focus.
         }
         if (
-            BubbleManager.getTopLevelImageContainerElement(clickedElement) ||
+            CanvasElementManager.getTopLevelImageContainerElement(
+                clickedElement
+            ) ||
             clickedElement.closest(".source-copy-button")
         ) {
             // We have other code to handle setting and clearing Comical handles
@@ -876,8 +888,8 @@ export class BubbleManager {
             return;
         }
         if (
-            clickedElement.closest("#overlay-control-frame") ||
-            clickedElement.closest("#overlay-context-controls") ||
+            clickedElement.closest("#canvas-element-control-frame") ||
+            clickedElement.closest("#canvas-element-context-controls") ||
             clickedElement.closest(".MuiMenu-list") ||
             clickedElement.closest(".above-page-control-container") ||
             clickedElement.closest(".MuiDialog-container")
@@ -892,14 +904,14 @@ export class BubbleManager {
         // the active element for clicks outside the content window, e.g., on the
         // toolbox controls, or even in a debug window. This event handler is
         // attached to the page frame document.)
-        theOneBubbleManager.setActiveElement(undefined);
+        theOneCanvasElementManager.setActiveElement(undefined);
     }
 
     public getActiveElement() {
         return this.activeElement;
     }
 
-    // In drag-word-chooser-slider game, there are image TOP boxes with data-img-txt attributes
+    // In drag-word-chooser-slider game, there are image canvas element boxes with data-img-txt attributes
     // linking them to corresponding text boxes with data-txt-img attributes. Only one
     // of these text boxes is shown at a time, controlled by giving it the class
     // bloom-activeTextBox. If the argument passed is one of the image boxes,
@@ -941,11 +953,11 @@ export class BubbleManager {
     }
 
     public removeFocusClass() {
-        Array.from(document.getElementsByClassName("bloom-focusedTOP")).forEach(
-            element => {
-                element.classList.remove("bloom-focusedTOP");
-            }
-        );
+        Array.from(
+            document.getElementsByClassName("bloom-focusedCanvasElement")
+        ).forEach(element => {
+            element.classList.remove("bloom-focusedCanvasElement");
+        });
     }
 
     // Some controls, such as MUI menus, temporarily steal focus. We don't want the usual
@@ -957,7 +969,7 @@ export class BubbleManager {
 
     public setActiveElement(element: HTMLElement | undefined) {
         // Seems it should be sufficient to remove this from the old active element if any.
-        // But there's at least one case where code that adds a new bubble sets it as
+        // But there's at least one case where code that adds a new canvas element sets it as
         // this.activeElement before calling this method. It's safest to make sure this
         // attribute is not set on any other element.
         document.querySelectorAll("[data-bloom-active]").forEach(e => {
@@ -966,7 +978,7 @@ export class BubbleManager {
             }
         });
         if (this.activeElement !== element) {
-            this.theBubbleWeAreTextEditing = undefined; // even if focus doesn't move.
+            this.theCanvasElementWeAreTextEditing = undefined; // even if focus doesn't move.
             // For some reason this doesnt' trigger as a result of changing the selection.
             // But we definitely don't want to show the CkEditor toolbar until there is some
             // new range selection, so just set up the usual class to hide it.
@@ -977,9 +989,9 @@ export class BubbleManager {
                 this.activeElement &&
                 this.activeElement.contains(focusNode as Node)
             ) {
-                // clear any text selection that is part of the previously selected bubble.
+                // clear any text selection that is part of the previously selected canvas element.
                 // (but, we don't want to remove a selection we may just have made by
-                // clicking in a text block that is not a bubble)
+                // clicking in a text block that is not a canvas element)
                 window.getSelection()?.removeAllRanges();
             }
             this.removeFocusClass();
@@ -998,9 +1010,9 @@ export class BubbleManager {
         if (this.activeElement) {
             // We should call this if there is an active element, even if it is not a video,
             // because it will turn off the 'active video' class that might be on some
-            // non-overlay video.
+            // non-canvas element video.
             // But if there is no active element we should not, because we might be wanting to
-            // record a non-overlay video and wanting to show that one as active.
+            // record a non-canvas element video and wanting to show that one as active.
             // Indeed, we might have been called from the code that makes that so.
             selectVideoContainer(
                 this.activeElement.getElementsByClassName(
@@ -1035,7 +1047,7 @@ export class BubbleManager {
     private oldHeight: number;
     private oldLeft: number;
     private oldTop: number;
-    // The original size and position of the main img inside an overlay being resized or cropped
+    // The original size and position of the main img inside a canvas element being resized or cropped
     private oldImageWidth: number;
     private oldImageLeft: number;
     private oldImageTop: number;
@@ -1043,35 +1055,41 @@ export class BubbleManager {
     private resizeDragCorner: "ne" | "nw" | "se" | "sw" | undefined;
 
     // Keeps track of whether the mouse was moved during a mouse event in the main content of a
-    // bubble. If so, we interpret it as a drag, moving the bubble. If not, we interpret it as a click.
+    // canvas element. If so, we interpret it as a drag, moving the canvas element. If not, we interpret it as a click.
     private gotAMoveWhileMouseDown: boolean = false;
 
-    // Remove the overlay control frame if it exists (when no overlay is active)
+    // Remove the canvas element control frame if it exists (when no canvas element is active)
     // Also remove the menu if it's still open.  See BL-13852.
     removeControlFrame() {
         // this.activeElement is still set and works for hiding the menu.
         const eltWithControlOnIt = this.activeElement;
-        const controlFrame = document.getElementById("overlay-control-frame");
+        const controlFrame = document.getElementById(
+            "canvas-element-control-frame"
+        );
         if (controlFrame) {
             if (eltWithControlOnIt) {
-                // we're going to remove the container of the overlay context controls,
+                // we're going to remove the container of the canvas element context controls,
                 // but it seems best to let React clean up after itself.
                 // For example, there may be a context menu popup to remove, too.
-                renderOverlayContextControls(eltWithControlOnIt, false);
+                renderCanvasElementContextControls(eltWithControlOnIt, false);
             }
             // Reschedule so that the rerender can finish before removing the control frame.
             setTimeout(() => {
                 controlFrame.remove();
-                document.getElementById("overlay-context-controls")?.remove();
+                document
+                    .getElementById("canvas-element-context-controls")
+                    ?.remove();
             }, 0);
         }
     }
 
-    // Set up the control frame for the active overlay. This includes creating it if it
+    // Set up the control frame for the active canvas element. This includes creating it if it
     // doesn't exist, and positioning it correctly.
     setupControlFrame() {
         const eltToPutControlsOn = this.activeElement;
-        let controlFrame = document.getElementById("overlay-control-frame");
+        let controlFrame = document.getElementById(
+            "canvas-element-control-frame"
+        );
         if (!eltToPutControlsOn) {
             this.removeControlFrame();
             return;
@@ -1081,7 +1099,7 @@ export class BubbleManager {
             controlFrame = eltToPutControlsOn.ownerDocument.createElement(
                 "div"
             );
-            controlFrame.setAttribute("id", "overlay-control-frame");
+            controlFrame.setAttribute("id", "canvas-element-control-frame");
             controlFrame.classList.add("bloom-ui"); // makes sure it gets cleaned up.
             eltToPutControlsOn.parentElement?.appendChild(controlFrame);
             const corners = ["ne", "nw", "se", "sw"];
@@ -1089,9 +1107,9 @@ export class BubbleManager {
                 const control = eltToPutControlsOn.ownerDocument.createElement(
                     "div"
                 );
-                control.classList.add("bloom-ui-overlay-resize-handle");
+                control.classList.add("bloom-ui-canvas-element-resize-handle");
                 control.classList.add(
-                    "bloom-ui-overlay-resize-handle-" + corner
+                    "bloom-ui-canvas-element-resize-handle-" + corner
                 );
                 controlFrame?.appendChild(control);
                 control.addEventListener("mousedown", event => {
@@ -1107,9 +1125,11 @@ export class BubbleManager {
                 const sideControl = eltToPutControlsOn.ownerDocument.createElement(
                     "div"
                 );
-                sideControl.classList.add("bloom-ui-overlay-side-handle");
                 sideControl.classList.add(
-                    "bloom-ui-overlay-side-handle-" + side
+                    "bloom-ui-canvas-element-side-handle"
+                );
+                sideControl.classList.add(
+                    "bloom-ui-canvas-element-side-handle-" + side
                 );
                 controlFrame?.appendChild(sideControl);
                 sideControl.addEventListener("mousedown", event => {
@@ -1122,7 +1142,9 @@ export class BubbleManager {
             const sideHandle = eltToPutControlsOn.ownerDocument.createElement(
                 "div"
             );
-            sideHandle.classList.add("bloom-ui-overlay-move-crop-handle");
+            sideHandle.classList.add(
+                "bloom-ui-canvas-element-move-crop-handle"
+            );
             controlFrame?.appendChild(sideHandle);
             sideHandle.addEventListener("mousedown", event => {
                 if (event.buttons !== 1 || !this.activeElement) {
@@ -1133,7 +1155,7 @@ export class BubbleManager {
             const toolboxRoot = eltToPutControlsOn.ownerDocument.createElement(
                 "div"
             );
-            toolboxRoot.setAttribute("id", "overlay-context-controls");
+            toolboxRoot.setAttribute("id", "canvas-element-context-controls");
             // We don't have to worry about removing this before saving because it is above the level
             // of the bloom-page.
             document.body.appendChild(toolboxRoot);
@@ -1155,14 +1177,16 @@ export class BubbleManager {
         } else {
             controlFrame.classList.remove("has-text");
         }
-        // to reduce flicker we don't show this when switching to a different bubble until we determine
+        // to reduce flicker we don't show this when switching to a different canvas element until we determine
         // that it is wanted.
-        controlFrame.classList.remove("bloom-ui-overlay-show-move-crop-handle");
-        // If the overlay is not the right shape for a contained image, fix it now.
-        // This also aligns the overlay controls with the image (possibly after waiting
+        controlFrame.classList.remove(
+            "bloom-ui-canvas-element-show-move-crop-handle"
+        );
+        // If the canvas element is not the right shape for a contained image, fix it now.
+        // This also aligns the canvas element controls with the image (possibly after waiting
         // for the image dimensions)
         this.adjustContainerAspectRatio(eltToPutControlsOn);
-        renderOverlayContextControls(eltToPutControlsOn, false);
+        renderCanvasElementContextControls(eltToPutControlsOn, false);
     }
 
     private startMoveCropX: number;
@@ -1226,7 +1250,7 @@ export class BubbleManager {
         const imgStyle = img.style;
         // left can't be greater than zero; that would leave empty space on the left.
         // also can't be so small as to make the right of the image (img.clientWidth + newLeft) less than
-        // the right of the overlay (this.activeElement.clientLeft + this.activElement.clientWidth)
+        // the right of the canvas element (this.activeElement.clientLeft + this.activElement.clientWidth)
         const newLeft = Math.max(
             Math.min(this.oldImageLeft + deltaX, 0),
             this.activeElement.clientLeft +
@@ -1288,8 +1312,8 @@ export class BubbleManager {
         this.currentDragControl?.classList.remove("active-control");
     };
 
-    private minWidth = 30; // @MinTextBoxWidth in bubble.less
-    private minHeight = 30; // @MinTextBoxHeight in bubble.less
+    private minWidth = 30; // @MinTextBoxWidth in overlayTool.less
+    private minHeight = 30; // @MinTextBoxHeight in overlayTool.less
 
     private getImageOrVideo(): HTMLElement | undefined {
         // It will have one or the other or neither, but not both, so it doesn't much matter
@@ -1367,7 +1391,7 @@ export class BubbleManager {
             // original position of the point that is moving.
             // If the point where the mouse is is not on that line, we pick the closest
             // point that is.
-            // Note that we want to keep the aspect ratio of the overlay, not the original image.
+            // Note that we want to keep the aspect ratio of the canvas element, not the original image.
             // The aspect ratio is not changed by resizing (thanks to this code here), but it
             // can be changed by cropping, and subsequent resizing should keep the same part
             // of the image visible, and therefore keep the aspect ratio produced by the cropping.
@@ -1480,20 +1504,20 @@ export class BubbleManager {
     // This (and the other initial values) are set when the first drag on a particular
     // crop control starts since various events which reset it to undefined.
     // (This is modeled on Canva, but that is not an arbitrary choice. For example, if we
-    // did not reset cropping when the overlay was moved, we would need to adjust
-    // initialCropBubbleTop/Left in a non-obvious way).
+    // did not reset cropping when the canvas element was moved, we would need to adjust
+    // initialCropCanvasElementTop/Left in a non-obvious way).
     private lastCropControl: HTMLElement | undefined;
     private initialCropImageWidth: number;
     private initialCropImageHeight: number;
     private initialCropImageLeft: number;
     private initialCropImageTop: number;
-    private initialCropBubbleWidth: number;
-    private initialCropBubbleHeight: number;
-    private initialCropBubbleTop: number;
-    private initialCropBubbleLeft: number;
+    private initialCropCanvasElementWidth: number;
+    private initialCropCanvasElementHeight: number;
+    private initialCropCanvasElementTop: number;
+    private initialCropCanvasElementLeft: number;
     // If we're dragging a crop control, we generally want to snap when the edege
     // of the (underlying, uncropped) image is close to the corresponding edge
-    // of the overlay in which it is cropped...that is, no cropping on that edge,
+    // of the canvas element in which it is cropped...that is, no cropping on that edge,
     // nor have we (this cycle) expanded the image by dragging the crop handle outward.
     // However, if the drag started in the crop position we disable cropping so small
     // adjustments can be made. If the pointer moves more than the snap distance,
@@ -1533,10 +1557,10 @@ export class BubbleManager {
                 this.initialCropImageHeight = img.offsetHeight;
                 this.initialCropImageLeft = img.offsetLeft;
                 this.initialCropImageTop = img.offsetTop;
-                this.initialCropBubbleWidth = this.activeElement.offsetWidth;
-                this.initialCropBubbleHeight = this.activeElement.offsetHeight;
-                this.initialCropBubbleTop = this.activeElement.offsetTop;
-                this.initialCropBubbleLeft = this.activeElement.offsetLeft;
+                this.initialCropCanvasElementWidth = this.activeElement.offsetWidth;
+                this.initialCropCanvasElementHeight = this.activeElement.offsetHeight;
+                this.initialCropCanvasElementTop = this.activeElement.offsetTop;
+                this.initialCropCanvasElementLeft = this.activeElement.offsetLeft;
                 this.lastCropControl = event.currentTarget as HTMLElement;
             }
             // Determine whether the drag is starting in the "no cropping" position
@@ -1550,7 +1574,7 @@ export class BubbleManager {
             //         break;
             //     case "s":
             //         // initialCropImageTop + initialCropImageHeight is where the bottom of the image is.
-            //         // this.oldHeight is where the bottom of the overlay is. We're in this state if
+            //         // this.oldHeight is where the bottom of the canvas element is. We're in this state if
             //         // they are equal. There can be fractions of pixels involved, so we allow up to
             //         // a pixel and still consider it uncropped.
             //         this.cropSnapDisabled =
@@ -1619,14 +1643,17 @@ export class BubbleManager {
         this.stopMoving();
         // We may have changed the state of the fill space button, but the React code
         // doesn't know this unless we force a render.
-        renderOverlayContextControls(this.activeElement as HTMLElement, false);
+        renderCanvasElementContextControls(
+            this.activeElement as HTMLElement,
+            false
+        );
     };
     private continueTextBoxResize(event: MouseEvent, editable: HTMLElement) {
         if (!this.activeElement) return; // should never happen, but makes lint happy
         let deltaX = event.clientX - this.startSideDragX;
         let deltaY = event.clientY - this.startSideDragY;
-        let newBubbleWidth = this.oldWidth; // default
-        let newBubbleHeight = this.oldHeight; // default
+        let newCanvasElementWidth = this.oldWidth; // default
+        let newCanvasElementHeight = this.oldHeight; // default
         console.assert(
             this.currentDragSide === "e" ||
                 this.currentDragSide === "w" ||
@@ -1634,43 +1661,47 @@ export class BubbleManager {
         );
         switch (this.currentDragSide) {
             case "e":
-                newBubbleWidth = Math.max(
+                newCanvasElementWidth = Math.max(
                     this.oldWidth + deltaX,
                     this.minWidth
                 );
-                deltaX = newBubbleWidth - this.oldWidth;
-                this.activeElement.style.width = `${newBubbleWidth}px`;
+                deltaX = newCanvasElementWidth - this.oldWidth;
+                this.activeElement.style.width = `${newCanvasElementWidth}px`;
                 break;
             case "w":
-                newBubbleWidth = Math.max(
+                newCanvasElementWidth = Math.max(
                     this.oldWidth - deltaX,
                     this.minWidth
                 );
-                deltaX = this.oldWidth - newBubbleWidth;
-                this.activeElement.style.width = `${newBubbleWidth}px`;
+                deltaX = this.oldWidth - newCanvasElementWidth;
+                this.activeElement.style.width = `${newCanvasElementWidth}px`;
                 this.activeElement.style.left = `${this.oldLeft + deltaX}px`;
                 break;
             case "s":
-                newBubbleHeight = Math.max(
+                newCanvasElementHeight = Math.max(
                     this.oldHeight + deltaY,
                     this.minHeight
                 );
-                deltaY = newBubbleHeight - this.oldHeight;
-                this.activeElement.style.height = `${newBubbleHeight}px`;
+                deltaY = newCanvasElementHeight - this.oldHeight;
+                this.activeElement.style.height = `${newCanvasElementHeight}px`;
         }
         // This won't adjust the height of the editable, but it will mark overflow appropriately.
         // See BL-13902.
-        theOneBubbleManager.adjustBubbleHeightToContentOrMarkOverflow(editable);
+        theOneCanvasElementManager.adjustCanvasElementHeightToContentOrMarkOverflow(
+            editable
+        );
         this.alignControlFrameWithActiveElement();
     }
 
     // Determine which of the side handles, if any, should have the class "bloom-currently-cropped"
     private updateCurrentlyCropped() {
         const sideHandles = Array.from(
-            document.getElementsByClassName("bloom-ui-overlay-side-handle")
+            document.getElementsByClassName(
+                "bloom-ui-canvas-element-side-handle"
+            )
         );
         if (sideHandles.length === 0 || !this.activeElement) return;
-        const img = getImageFromOverlay(this.activeElement);
+        const img = getImageFromCanvasElement(this.activeElement);
         if (!img) {
             // only images do cropping. Remove them all.
             sideHandles.forEach(handle => {
@@ -1679,22 +1710,22 @@ export class BubbleManager {
             return;
         }
         const imgRect = img.getBoundingClientRect();
-        const overlayRect = this.activeElement.getBoundingClientRect();
+        const canvasElementRect = this.activeElement.getBoundingClientRect();
         const slop = 1; // allow for rounding errors
         const cropped = {
-            n: imgRect.top + slop < overlayRect.top,
-            e: imgRect.right > overlayRect.right + slop,
-            s: imgRect.bottom > overlayRect.bottom + slop,
-            w: imgRect.left + slop < overlayRect.left
+            n: imgRect.top + slop < canvasElementRect.top,
+            e: imgRect.right > canvasElementRect.right + slop,
+            s: imgRect.bottom > canvasElementRect.bottom + slop,
+            w: imgRect.left + slop < canvasElementRect.left
         };
         sideHandles.forEach(handle => {
             //const side = handle.classList[1].split("-")[4];
             const longClass = Array.from(handle.classList).find(c =>
-                c.startsWith("bloom-ui-overlay-side-handle-")
+                c.startsWith("bloom-ui-canvas-element-side-handle-")
             );
             if (!longClass) return;
             const side = longClass.substring(
-                "bloom-ui-overlay-side-handle-".length
+                "bloom-ui-canvas-element-side-handle-".length
             );
             if (cropped[side]) {
                 handle.classList.add("bloom-currently-cropped");
@@ -1729,8 +1760,8 @@ export class BubbleManager {
         let deltaY = event.clientY - this.startSideDragY;
         if (event.movementX === 0 && event.movementY === 0) return;
 
-        let newBubbleWidth = this.oldWidth; // default
-        let newBubbleHeight = this.oldHeight;
+        let newCanvasElementWidth = this.oldWidth; // default
+        let newCanvasElementHeight = this.oldHeight;
         // ctrl key suppresses snapping, and we also suppress it if we started
         // snapped and haven't moved far. This is to allow very small adjustments.
         const snapping = !event.ctrlKey && !this.cropSnapDisabled;
@@ -1746,12 +1777,12 @@ export class BubbleManager {
             ) as HTMLElement;
             const containerAspectRatio =
                 container.clientWidth / container.clientHeight;
-            const overlayAspectRatio = this.oldWidth / this.oldHeight;
+            const canvasElementAspectRatio = this.oldWidth / this.oldHeight;
             switch (this.currentDragSide) {
                 case "n":
-                    if (containerAspectRatio > overlayAspectRatio) {
-                        // The overlay has extra space left and right. Removing just enough at the top
-                        // will make the overlay the same shape as the container. We want to snap to that.
+                    if (containerAspectRatio > canvasElementAspectRatio) {
+                        // The canvas element has extra space left and right. Removing just enough at the top
+                        // will make the canvas element the same shape as the container. We want to snap to that.
                         // That is, how much smaller would our height have to be to make the aspect ratios
                         // match?
                         backgroundSnapDelta =
@@ -1761,9 +1792,9 @@ export class BubbleManager {
                     }
                     break;
                 case "w":
-                    if (containerAspectRatio < overlayAspectRatio) {
-                        // The overlay has extra space top and bottom. Removing just enough at the left
-                        // will make the overlay the same shape as the container. We want to snap to that.
+                    if (containerAspectRatio < canvasElementAspectRatio) {
+                        // The canvas element has extra space top and bottom. Removing just enough at the left
+                        // will make the canvas element the same shape as the container. We want to snap to that.
                         backgroundSnapDelta =
                             this.oldWidth -
                             this.oldHeight * containerAspectRatio;
@@ -1771,9 +1802,9 @@ export class BubbleManager {
                     }
                     break;
                 case "s":
-                    if (containerAspectRatio > overlayAspectRatio) {
-                        // The overlay has extra space left and right. Removing just enough at the bottom
-                        // will make the overlay the same shape as the container. We want to snap to that.
+                    if (containerAspectRatio > canvasElementAspectRatio) {
+                        // The canvas element has extra space left and right. Removing just enough at the bottom
+                        // will make the canvas element the same shape as the container. We want to snap to that.
                         backgroundSnapDelta =
                             this.oldWidth / containerAspectRatio -
                             this.oldHeight;
@@ -1781,9 +1812,9 @@ export class BubbleManager {
                     }
                     break;
                 case "e":
-                    if (containerAspectRatio < overlayAspectRatio) {
-                        // The overlay has extra space top and bottom. Removing just enough at the right
-                        // will make the overlay the same shape as the container. We want to snap to that.
+                    if (containerAspectRatio < canvasElementAspectRatio) {
+                        // The canvas element has extra space top and bottom. Removing just enough at the right
+                        // will make the canvas element the same shape as the container. We want to snap to that.
                         backgroundSnapDelta =
                             this.oldHeight * containerAspectRatio -
                             this.oldWidth;
@@ -1797,7 +1828,7 @@ export class BubbleManager {
         // zooming the image by dragging the crop handles outward).
         // Each case begins by figuring out whether, if we are snapping, we should snap.
         // Next it figures out whether we've moved far enough to end the "start at zero"
-        // non-snapping. Then it figures out a first approximation of how the overlay and image
+        // non-snapping. Then it figures out a first approximation of how the canvas element and image
         // position and size should change, without considering the possibility that
         // dragging outward would leave white space. A later step adjusts for that.
         // switch (this.currentDragSide) {
@@ -1813,24 +1844,24 @@ export class BubbleManager {
         //             // for future moves (without ctrl-key).
         //             this.cropSnapDisabled = false;
         //         }
-        //         newBubbleHeight = Math.max(
+        //         newCanvasElementHeight = Math.max(
         //             this.oldHeight - deltaY,
         //             this.minHeight
         //         );
         //         // Everything subsequent behaves as if it only moved as far as permitted.
-        //         deltaY = this.oldHeight - newBubbleHeight;
-        //         this.activeElement.style.height = `${newBubbleHeight}px`;
-        //         // Moves down by the amount the bubble shrank (or up by the amount it grew),
+        //         deltaY = this.oldHeight - newCanvasElementHeight;
+        //         this.activeElement.style.height = `${newCanvasElementHeight}px`;
+        //         // Moves down by the amount the canvas element shrank (or up by the amount it grew),
         //         // so the bottom stays in the same place
         //         this.activeElement.style.top = `${this.oldTop + deltaY}px`;
-        //         // For a first attempt, we move it the oppposite of how the bubble actually
+        //         // For a first attempt, we move it the oppposite of how the canvas element actually
         //         // changd size. That might leave a gap at the top, but we'll adjust for that later.
         //         img.style.top = `${this.oldImageTop - deltaY}px`;
         //         break;
         //     case "s":
         //         // These variables would make the next line more comprehensible, but they only apply
         //         // to this case and lint does not like declaring variables inside a switch.
-        //         // Essentially we're trying to determine how far apart the bottom of the image and the bottom of the overlay are.
+        //         // Essentially we're trying to determine how far apart the bottom of the image and the bottom of the canvas element are.
         //         // const heightThatMathchesBottomOfImage = this.initialCropImageTop + this.initialCropImageHeight;
         //         // const newHeight = this.oldHeight + deltaY;
         //         if (
@@ -1859,12 +1890,12 @@ export class BubbleManager {
         //             // for future moves (without ctrl-key).
         //             this.cropSnapDisabled = false;
         //         }
-        //         newBubbleHeight = Math.max(
+        //         newCanvasElementHeight = Math.max(
         //             this.oldHeight + deltaY,
         //             this.minHeight
         //         );
-        //         deltaY = newBubbleHeight - this.oldHeight;
-        //         this.activeElement.style.height = `${newBubbleHeight}px`;
+        //         deltaY = newCanvasElementHeight - this.oldHeight;
+        //         this.activeElement.style.height = `${newCanvasElementHeight}px`;
         //         break;
         //     case "e":
         //         // const widthThatMathchesRightOfImage = this.initialCropImageLeft + this.initialCropImageWidth;
@@ -1895,12 +1926,12 @@ export class BubbleManager {
         //             // for future moves (without ctrl-key).
         //             this.cropSnapDisabled = false;
         //         }
-        //         newBubbleWidth = Math.max(
+        //         newCanvasElementWidth = Math.max(
         //             this.oldWidth + deltaX,
         //             this.minWidth
         //         );
-        //         deltaX = newBubbleWidth - this.oldWidth;
-        //         this.activeElement.style.width = `${newBubbleWidth}px`;
+        //         deltaX = newCanvasElementWidth - this.oldWidth;
+        //         this.activeElement.style.width = `${newCanvasElementWidth}px`;
         //         break;
         //     case "w":
         //         if (
@@ -1914,12 +1945,12 @@ export class BubbleManager {
         //             // for future moves (without ctrl-key).
         //             this.cropSnapDisabled = false;
         //         }
-        //         newBubbleWidth = Math.max(
+        //         newCanvasElementWidth = Math.max(
         //             this.oldWidth - deltaX,
         //             this.minWidth
         //         );
-        //         deltaX = this.oldWidth - newBubbleWidth;
-        //         this.activeElement.style.width = `${newBubbleWidth}px`;
+        //         deltaX = this.oldWidth - newCanvasElementWidth;
+        //         this.activeElement.style.width = `${newCanvasElementWidth}px`;
         //         this.activeElement.style.left = `${this.oldLeft + deltaX}px`;
         //         img.style.left = `${this.oldImageLeft - deltaX}px`;
         //         break;
@@ -1939,17 +1970,17 @@ export class BubbleManager {
                     deltaY = this.oldImageTop;
                 }
                 // correct if we moved too far down, violating the minimum image height constraint.
-                newBubbleHeight = Math.max(
+                newCanvasElementHeight = Math.max(
                     this.oldHeight - deltaY,
                     this.minHeight
                 );
                 // Everything subsequent behaves as if it only moved as far as permitted.
-                deltaY = this.oldHeight - newBubbleHeight;
-                this.activeElement.style.height = `${newBubbleHeight}px`;
-                // Moves down by the amount the bubble shrank (or up by the amount it grew),
+                deltaY = this.oldHeight - newCanvasElementHeight;
+                this.activeElement.style.height = `${newCanvasElementHeight}px`;
+                // Moves down by the amount the canvas element shrank (or up by the amount it grew),
                 // so the bottom stays in the same place
                 this.activeElement.style.top = `${this.oldTop + deltaY}px`;
-                // We move it the oppposite of how the bubble actually
+                // We move it the oppposite of how the canvas element actually
                 // changd size.
                 img.style.top = `${this.oldImageTop - deltaY}px`;
                 break;
@@ -1963,7 +1994,7 @@ export class BubbleManager {
                 // correct if we moved too far down, which would leave a gap at the bottom
                 // These variables would make the next line more comprehensible, but they only apply
                 // to this case and lint does not like declaring variables inside a switch.
-                // Essentially we're trying to determine whether we moved the bottom of the overlay beyond the bottom of the image.
+                // Essentially we're trying to determine whether we moved the bottom of the canvas element beyond the bottom of the image.
                 // const heightThatMathchesBottomOfImage = this.initialCropImageTop + this.initialCropImageHeight;
                 // const newHeight = this.oldHeight + deltaY;
                 if (
@@ -1976,12 +2007,12 @@ export class BubbleManager {
                         this.oldHeight;
                 }
                 // correct if we moved too far up, violating the minimum image height constraint.
-                newBubbleHeight = Math.max(
+                newCanvasElementHeight = Math.max(
                     this.oldHeight + deltaY,
                     this.minHeight
                 );
-                deltaY = newBubbleHeight - this.oldHeight;
-                this.activeElement.style.height = `${newBubbleHeight}px`;
+                deltaY = newCanvasElementHeight - this.oldHeight;
+                this.activeElement.style.height = `${newCanvasElementHeight}px`;
                 break;
             case "e":
                 deltaX = this.adjustDeltaForSnap(
@@ -2001,12 +2032,12 @@ export class BubbleManager {
                         this.oldWidth;
                 }
                 // correct if we moved too far left, violating the minimum image width constraint.
-                newBubbleWidth = Math.max(
+                newCanvasElementWidth = Math.max(
                     this.oldWidth + deltaX,
                     this.minWidth
                 );
-                deltaX = newBubbleWidth - this.oldWidth;
-                this.activeElement.style.width = `${newBubbleWidth}px`;
+                deltaX = newCanvasElementWidth - this.oldWidth;
+                this.activeElement.style.width = `${newCanvasElementWidth}px`;
                 break;
             case "w":
                 deltaX = this.adjustDeltaForSnap(
@@ -2020,12 +2051,12 @@ export class BubbleManager {
                     deltaX = this.oldImageLeft;
                 }
                 // correct if we moved too far right, violating the minimum image width constraint.
-                newBubbleWidth = Math.max(
+                newCanvasElementWidth = Math.max(
                     this.oldWidth - deltaX,
                     this.minWidth
                 );
-                deltaX = this.oldWidth - newBubbleWidth;
-                this.activeElement.style.width = `${newBubbleWidth}px`;
+                deltaX = this.oldWidth - newCanvasElementWidth;
+                this.activeElement.style.width = `${newCanvasElementWidth}px`;
                 this.activeElement.style.left = `${this.oldLeft + deltaX}px`;
                 img.style.left = `${this.oldImageLeft - deltaX}px`;
                 break;
@@ -2040,28 +2071,28 @@ export class BubbleManager {
         // // and makes lint happy if we don't declare variables inside the switch.
         // const leftFraction =
         //     -this.initialCropImageLeft / this.initialCropImageWidth;
-        // // Fraction of the total image width that is left of the center of the bubble.
+        // // Fraction of the total image width that is left of the center of the canvas element.
         // // This stays constant as we crop on the top and bottom.
         // const centerFractionX =
         //     leftFraction +
-        //     this.initialCropBubbleWidth / this.initialCropImageWidth / 2;
+        //     this.initialCropCanvasElementWidth / this.initialCropImageWidth / 2;
         // const rightFraction =
         //     (this.initialCropImageWidth +
         //         this.initialCropImageLeft -
-        //         this.initialCropBubbleWidth) /
+        //         this.initialCropCanvasElementWidth) /
         //     this.initialCropImageWidth;
         // const bottomFraction =
         //     (this.initialCropImageHeight +
         //         this.initialCropImageTop -
-        //         this.initialCropBubbleHeight) /
+        //         this.initialCropCanvasElementHeight) /
         //     this.initialCropImageHeight;
         // const topFraction =
         //     -this.initialCropImageTop / this.initialCropImageHeight;
-        // // fraction of the total image height that is above the center of the bubble.
+        // // fraction of the total image height that is above the center of the canvas element.
         // // This stays constant as we crop on the left and right.
         // const centerFractionY =
         //     topFraction +
-        //     this.initialCropBubbleHeight / this.initialCropImageHeight / 2;
+        //     this.initialCropCanvasElementHeight / this.initialCropImageHeight / 2;
         // // Deliberately dividing by the WIDTH here; all our calculations are
         // // based on the adjusted width of the image.
         // const topAsFractionOfWidth =
@@ -2072,14 +2103,14 @@ export class BubbleManager {
         // switch (this.currentDragSide) {
         //     case "e":
         //         if (
-        //             // the bubble has stretched beyond the right side of the image
-        //             newBubbleWidth >
+        //             // the canvas element has stretched beyond the right side of the image
+        //             newCanvasElementWidth >
         //             this.initialCropImageLeft + this.initialCropImageWidth
         //         ) {
-        //             // grow the image. We want its right edge to end up at newBubbleWidth,
+        //             // grow the image. We want its right edge to end up at newCanvasElementWidth,
         //             // after being stretched enough to leave the same fraction as before
         //             // cropped on the left.
-        //             newImageWidth = newBubbleWidth / (1 - leftFraction);
+        //             newImageWidth = newCanvasElementWidth / (1 - leftFraction);
         //             img.style.width = `${newImageWidth}px`;
         //             // fiddle with the left to keep the same part cropped
         //             img.style.left = `${-leftFraction * newImageWidth}px`;
@@ -2087,7 +2118,7 @@ export class BubbleManager {
         //             newImageHeight = newImageWidth * aspectRatio;
         //             const newTopFraction =
         //                 centerFractionY -
-        //                 this.initialCropBubbleHeight / newImageHeight / 2;
+        //                 this.initialCropCanvasElementHeight / newImageHeight / 2;
         //             img.style.top = `${-newTopFraction * newImageHeight}px`;
         //         } else {
         //             // no need to stretch. Restore the image to its original position and size.
@@ -2097,17 +2128,17 @@ export class BubbleManager {
         //         break;
         //     case "w":
         //         if (
-        //             // the bubble has stretched beyond the original left side of the image
-        //             // this.oldLeft + deltaX is where the left of the bubble is now
-        //             // this.initialCropImageLeft + this.initialBubbleImageLeft is where
+        //             // the canvas element has stretched beyond the original left side of the image
+        //             // this.oldLeft + deltaX is where the left of the canvas element is now
+        //             // this.initialCropImageLeft + this.initialCanvasElementImageLeft is where
         //             // the left of the image was when we started.
         //             this.oldLeft + deltaX <
-        //             this.initialCropImageLeft + this.initialCropBubbleLeft
+        //             this.initialCropImageLeft + this.initialCropCanvasElementLeft
         //         ) {
         //             // grow the image. We want its left edge to end up at zero,
         //             // after being stretched enough to leave the same fraction as before
         //             // cropped on the right.
-        //             newImageWidth = newBubbleWidth / (1 - rightFraction);
+        //             newImageWidth = newCanvasElementWidth / (1 - rightFraction);
         //             img.style.width = `${newImageWidth}px`;
         //             // no cropping on the left
         //             img.style.left = `0`;
@@ -2115,7 +2146,7 @@ export class BubbleManager {
         //             newImageHeight = newImageWidth * aspectRatio;
         //             const newTopFraction =
         //                 centerFractionY -
-        //                 this.initialCropBubbleHeight / newImageHeight / 2;
+        //                 this.initialCropCanvasElementHeight / newImageHeight / 2;
         //             img.style.top = `${-newTopFraction * newImageHeight}px`;
         //         } else {
         //             img.style.width = `${this.initialCropImageWidth}px`;
@@ -2124,25 +2155,25 @@ export class BubbleManager {
         //         break;
         //     case "s":
         //         if (
-        //             // the bubble has stretched beyond the bottom side of the image
-        //             newBubbleHeight >
+        //             // the canvas element has stretched beyond the bottom side of the image
+        //             newCanvasElementHeight >
         //             this.initialCropImageTop + this.initialCropImageHeight
         //         ) {
-        //             // grow the image. We want its bottom edge to end up at newBubbleHeight,
+        //             // grow the image. We want its bottom edge to end up at newCanvasElementHeight,
         //             // after being stretched enough to leave the same fraction as before
         //             // cropped on the top.
-        //             newImageHeight = newBubbleHeight / (1 - topFraction);
+        //             newImageHeight = newCanvasElementHeight / (1 - topFraction);
         //             newImageWidth = newImageHeight / aspectRatio;
         //             img.style.width = `${newImageWidth}px`;
         //             // fiddle with the top to keep the same part cropped
         //             img.style.top = `${-topAsFractionOfWidth *
         //                 newImageWidth}px`;
         //             // and the left to split the extra width between top and bottom
-        //             // centerFractionX = leftFraction + this.initialCropBubbleWidth / this.initialCropImageWidth / 2;
-        //             // centerFractionX = newleftFraction + this.initialCropBubbleWidth / newImageWidth / 2;
+        //             // centerFractionX = leftFraction + this.initialCropCanvasElementWidth / this.initialCropImageWidth / 2;
+        //             // centerFractionX = newleftFraction + this.initialCropCanvasElementWidth / newImageWidth / 2;
         //             const newleftFraction =
         //                 centerFractionX -
-        //                 this.initialCropBubbleWidth / newImageWidth / 2;
+        //                 this.initialCropCanvasElementWidth / newImageWidth / 2;
         //             img.style.left = `${-newleftFraction * newImageWidth}px`;
         //         } else {
         //             img.style.width = `${this.initialCropImageWidth}px`;
@@ -2151,17 +2182,17 @@ export class BubbleManager {
         //         break;
         //     case "n":
         //         if (
-        //             // the bubble has stretched beyond the original top side of the image
-        //             // this.oldTop + deltaY is where the top of the bubble is now
-        //             // this.initialCropImageTop + this.initialBubbleImageTop is where
+        //             // the canvas element has stretched beyond the original top side of the image
+        //             // this.oldTop + deltaY is where the top of the canvas element is now
+        //             // this.initialCropImageTop + this.initialCanvasElementImageTop is where
         //             // the top of the image was when we started.
         //             this.oldTop + deltaY <
-        //             this.initialCropImageTop + this.initialCropBubbleTop
+        //             this.initialCropImageTop + this.initialCropCanvasElementTop
         //         ) {
         //             // grow the image. We want its top edge to end up at zero,
         //             // after being stretched enough to leave the same fraction as before
         //             // cropped on the bottom.
-        //             newImageHeight = newBubbleHeight / (1 - bottomFraction);
+        //             newImageHeight = newCanvasElementHeight / (1 - bottomFraction);
         //             newImageWidth = newImageHeight / aspectRatio;
         //             img.style.width = `${newImageWidth}px`;
         //             // no cropping on the top
@@ -2169,7 +2200,7 @@ export class BubbleManager {
         //             // and the left to split the extra width between top and bottom
         //             const newleftFraction =
         //                 centerFractionX -
-        //                 this.initialCropBubbleWidth / newImageWidth / 2;
+        //                 this.initialCropCanvasElementWidth / newImageWidth / 2;
         //             img.style.left = `${-newleftFraction * newImageWidth}px`;
         //         } else {
         //             img.style.width = `${this.initialCropImageWidth}px`;
@@ -2192,12 +2223,12 @@ export class BubbleManager {
         if (!shouldSnap) return delta;
         const snapDelta = 30;
         const controlFrame = document.getElementById(
-            "overlay-control-frame"
+            "canvas-element-control-frame"
         ) as HTMLElement;
         if (Math.abs(backgroundSnapDelta - delta) < snapDelta) {
             this.getHandleTitlesAsync(
                 controlFrame,
-                "bloom-ui-overlay-side-handle-" + side,
+                "bloom-ui-canvas-element-side-handle-" + side,
                 "Fill",
                 true,
                 "data-title"
@@ -2207,7 +2238,7 @@ export class BubbleManager {
         // not snapping
         this.getHandleTitlesAsync(
             controlFrame,
-            "bloom-ui-overlay-side-handle-" + side,
+            "bloom-ui-canvas-element-side-handle-" + side,
             "Crop",
             true,
             "data-title"
@@ -2217,7 +2248,7 @@ export class BubbleManager {
 
     public resetCropping(adjustContainer = true) {
         if (!this.activeElement) return;
-        const img = getImageFromOverlay(this.activeElement);
+        const img = getImageFromCanvasElement(this.activeElement);
         if (!img) return;
         img.style.width = "";
         img.style.top = "";
@@ -2228,7 +2259,7 @@ export class BubbleManager {
         }
     }
 
-    // If the background overlay doesn't fill the container, we can expand the image to make it so.
+    // If the background canvas element doesn't fill the container, we can expand the image to make it so.
     public canExpandToFillSpace(): boolean {
         if (
             !this.activeElement ||
@@ -2251,7 +2282,7 @@ export class BubbleManager {
             !this.activeElement.classList.contains(kbackgroundImageClass)
         )
             return;
-        const img = getImageFromOverlay(this.activeElement);
+        const img = getImageFromCanvasElement(this.activeElement);
         if (!img) return;
         const container = this.activeElement.closest(
             kImageContainerSelector
@@ -2291,16 +2322,16 @@ export class BubbleManager {
         this.adjustBackgroundImageSize(container, this.activeElement, false);
         // We will have changed the state of the fill space button, but the React code
         // doesn't know this unless we force a render.
-        renderOverlayContextControls(this.activeElement, false);
+        renderCanvasElementContextControls(this.activeElement, false);
     }
 
-    // If this overlay contains an image, and it has not already been adjusted so that the overlay
+    // If this canvas element contains an image, and it has not already been adjusted so that the canvas element
     // dimensions have the same aspect ratio as the image, make it so, reducing either height or
     // width as necessary, or possibly increasing one if the usual adjustment would make it too small.
     // After making the adjustment if necessary (which might be delayed if the image dimensions
     // are not available), align the control frame with the active element.
     private adjustContainerAspectRatio(
-        overlay: HTMLElement,
+        canvasElement: HTMLElement,
         useSizeOfNewImage = false,
         // Sometimes we think we need to wait for onload, but the data arrives before we set up
         // the watcher. We make a timeout so we will go ahead and adjust if we have dimensions
@@ -2312,10 +2343,10 @@ export class BubbleManager {
         if (timeoutHandler) {
             clearTimeout(timeoutHandler);
         }
-        if (overlay.classList.contains(kbackgroundImageClass)) {
+        if (canvasElement.classList.contains(kbackgroundImageClass)) {
             this.adjustBackgroundImageSize(
-                overlay.closest(kImageContainerSelector)!,
-                overlay,
+                canvasElement.closest(kImageContainerSelector)!,
+                canvasElement,
                 useSizeOfNewImage
             );
             return;
@@ -2327,8 +2358,8 @@ export class BubbleManager {
             this.alignControlFrameWithActiveElement();
             return;
         }
-        const containerWidth = overlay.clientWidth;
-        const containerHeight = overlay.clientHeight;
+        const containerWidth = canvasElement.clientWidth;
+        const containerHeight = canvasElement.clientHeight;
         let imgWidth = 1;
         let imgHeight = 1;
         if (imgOrVideo instanceof HTMLImageElement) {
@@ -2340,7 +2371,7 @@ export class BubbleManager {
                 imgOrVideo.classList.contains("bloom-imageLoadError") // error occurred while trying to load
             ) {
                 // Image is in an error state; we probably won't ever get useful dimensions. Just leave
-                // the overlay the shape it is.
+                // the canvas element the shape it is.
                 return;
             }
             if (imgHeight === 0 || useSizeOfNewImage) {
@@ -2348,7 +2379,7 @@ export class BubbleManager {
                 const handle = (setTimeout(
                     () =>
                         this.adjustContainerAspectRatio(
-                            overlay,
+                            canvasElement,
                             false, // if we've got dimensions just use them
                             0
                         ), // if we get this call we don't have a timeout to cancel
@@ -2363,7 +2394,7 @@ export class BubbleManager {
                     "load",
                     () =>
                         this.adjustContainerAspectRatio(
-                            overlay,
+                            canvasElement,
                             false, // it's loaded, we don't want to wait again
                             handle
                         ), // if we get this call we can cancel the timeout above.
@@ -2381,7 +2412,7 @@ export class BubbleManager {
                 // always available by the time this routine is called.
                 video.addEventListener(
                     "loadedmetadata",
-                    () => this.adjustContainerAspectRatio(overlay),
+                    () => this.adjustContainerAspectRatio(canvasElement),
                     { once: true }
                 );
                 return;
@@ -2406,31 +2437,32 @@ export class BubbleManager {
                 newHeight = newWidth / imgRatio;
             }
         }
-        const oldHeight = overlay.clientHeight;
+        const oldHeight = canvasElement.clientHeight;
         if (Math.abs(oldHeight - newHeight) > 0.1) {
             // don't let small rounding errors accumulate
-            overlay.style.height = `${newHeight}px`;
+            canvasElement.style.height = `${newHeight}px`;
         }
         // and move container down so image does not move
-        const oldTop = overlay.offsetTop;
-        overlay.style.top = `${oldTop + (oldHeight - newHeight) / 2}px`;
-        const oldWidth = overlay.clientWidth;
-        overlay.style.width = `${newWidth}px`;
+        const oldTop = canvasElement.offsetTop;
+        canvasElement.style.top = `${oldTop + (oldHeight - newHeight) / 2}px`;
+        const oldWidth = canvasElement.clientWidth;
+        canvasElement.style.width = `${newWidth}px`;
         // and move container right so image does not move
-        const oldLeft = overlay.offsetLeft;
+        const oldLeft = canvasElement.offsetLeft;
         if (Math.abs(oldWidth - newWidth) > 0.1) {
-            overlay.style.left = `${oldLeft + (oldWidth - newWidth) / 2}px`;
+            canvasElement.style.left = `${oldLeft +
+                (oldWidth - newWidth) / 2}px`;
         }
         this.alignControlFrameWithActiveElement();
     }
 
-    // When the image is changed in a bubble (e.g., choose or paste image),
+    // When the image is changed in a canvas element (e.g., choose or paste image),
     // we remove cropping, adjust the aspect ratio, and move the control frame.
-    updateBubbleForChangedImage(imgOrImageContainer: HTMLElement) {
-        const overlay = imgOrImageContainer.closest(
-            kTextOverPictureSelector
+    updateCanvasElementForChangedImage(imgOrImageContainer: HTMLElement) {
+        const canvasElement = imgOrImageContainer.closest(
+            kCanvasElementSelector
         ) as HTMLElement;
-        if (!overlay) return;
+        if (!canvasElement) return;
         const img =
             imgOrImageContainer.tagName === "IMG"
                 ? imgOrImageContainer
@@ -2442,14 +2474,14 @@ export class BubbleManager {
         img.style.left = "";
         img.style.top = "";
         // Get the aspect ratio right (aligns control frame)
-        if (overlay.classList.contains(kbackgroundImageClass)) {
+        if (canvasElement.classList.contains(kbackgroundImageClass)) {
             this.adjustBackgroundImageSize(
-                overlay.closest(kImageContainerSelector)!,
-                overlay,
+                canvasElement.closest(kImageContainerSelector)!,
+                canvasElement,
                 true
             );
         } else {
-            this.adjustContainerAspectRatio(overlay, true);
+            this.adjustContainerAspectRatio(canvasElement, true);
         }
     }
 
@@ -2478,9 +2510,11 @@ export class BubbleManager {
         }
     }
 
-    // Align the control frame with the active overlay.
+    // Align the control frame with the active canvas element.
     private alignControlFrameWithActiveElement = () => {
-        const controlFrame = document.getElementById("overlay-control-frame");
+        const controlFrame = document.getElementById(
+            "canvas-element-control-frame"
+        );
         let controlsAbove = false;
         if (controlFrame && this.activeElement) {
             if (
@@ -2501,12 +2535,12 @@ export class BubbleManager {
             // once the localization manager retrieves them.
             this.getHandleTitlesAsync(
                 controlFrame,
-                "bloom-ui-overlay-resize-handle",
+                "bloom-ui-canvas-element-resize-handle",
                 "Resize"
             );
             this.getHandleTitlesAsync(
                 controlFrame,
-                "bloom-ui-overlay-side-handle",
+                "bloom-ui-canvas-element-side-handle",
                 hasText ? "ChangeShape" : "Crop",
                 // We don't need to change it while we're moving the frame, only if we're switching
                 // between text and image. And there's another state we want
@@ -2516,15 +2550,15 @@ export class BubbleManager {
             );
             this.getHandleTitlesAsync(
                 controlFrame,
-                "bloom-ui-overlay-move-crop-handle",
+                "bloom-ui-canvas-element-move-crop-handle",
                 "Shift"
             );
             // Text boxes get a little extra padding, making the control frame bigger than
-            // the overlay itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
+            // the canvas element itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
             // but one pixel less seems to be enough to prevent the side handles actually overlapping text,
             // though maybe I've just been lucky and this should really be 4.
             // Seems like it should be easy to do this in the .less file, but the control frame is not
-            // a child of the overlay (for z-order reasons), so it's not easy for CSS to move it left
+            // a child of the canvas element (for z-order reasons), so it's not easy for CSS to move it left
             // when the style is already absolutely controlling style.left. It's easier to just tweak
             // it here.
             const extraPadding = hasText ? 3 : 0;
@@ -2552,7 +2586,7 @@ export class BubbleManager {
         controlsAbove: boolean
     ) {
         const contextControl = document.getElementById(
-            "overlay-context-controls"
+            "canvas-element-context-controls"
         );
         if (!contextControl) return;
         if (!controlFrame) {
@@ -2613,15 +2647,15 @@ export class BubbleManager {
 
     public doNotifyChange() {
         const spec = this.getSelectedFamilySpec();
-        this.thingsToNotifyOfBubbleChange.forEach(f => f.handler(spec));
+        this.thingsToNotifyOfCanvasElementChange.forEach(f => f.handler(spec));
     }
 
-    // Set the color of the text in all of the active bubble family's TextOverPicture boxes.
-    // If hexOrRgbColor is empty string, we are setting the bubble to use the style default.
+    // Set the color of the text in all of the active canvas element family's TextOverPicture boxes.
+    // If hexOrRgbColor is empty string, we are setting the canvas element to use the style default.
     public setTextColor(hexOrRgbColor: string) {
-        const activeEl = theOneBubbleManager.getActiveElement();
+        const activeEl = theOneCanvasElementManager.getActiveElement();
         if (activeEl) {
-            // First, see if this bubble is in parent/child relationship with any others.
+            // First, see if this canvas element is in parent/child relationship with any others.
             // We need to set text color on the whole 'family' at once.
             const bubble = new Bubble(activeEl);
             const relatives = Comical.findRelatives(bubble);
@@ -2634,11 +2668,11 @@ export class BubbleManager {
     }
 
     private setTextColorInternal(hexOrRgbColor: string, element: HTMLElement) {
-        // BL-11621: We are in the process of moving to putting the Overlay text color on the inner
-        // bloom-editables. So we clear any color on the textOverPicture div and set it on all of the
+        // BL-11621: We are in the process of moving to putting the canvas element text color on the inner
+        // bloom-editables. So we clear any color on the canvas element div and set it on all of the
         // inner bloom-editables.
         const topBox = element.closest(
-            kTextOverPictureSelector
+            kCanvasElementSelector
         ) as HTMLDivElement;
         topBox.style.color = "";
         const editables = topBox.getElementsByClassName("bloom-editable");
@@ -2649,20 +2683,20 @@ export class BubbleManager {
     }
 
     public getTextColorInformation(): ITextColorInfo {
-        const activeEl = theOneBubbleManager.getActiveElement();
+        const activeEl = theOneCanvasElementManager.getActiveElement();
         let textColor = "";
         let isDefaultStyleColor = false;
         if (activeEl) {
             const topBox = activeEl.closest(
-                kTextOverPictureSelector
+                kCanvasElementSelector
             ) as HTMLDivElement;
             // const allUserStyles = StyleEditor.GetFormattingStyleRules(
             //     topBox.ownerDocument
             // );
             const style = topBox.style;
             textColor = style && style.color ? style.color : "";
-            // We are in the process of moving to putting the Overlay text color on the inner
-            // bloom-editables. So if the textOverPicture div didn't have a color, check the inner
+            // We are in the process of moving to putting the Canvas element text color on the inner
+            // bloom-editables. So if the canvas element div didn't have a color, check the inner
             // bloom-editables.
             if (textColor === "") {
                 const editables = topBox.getElementsByClassName(
@@ -2690,13 +2724,13 @@ export class BubbleManager {
     }
 
     // Returns the computed color of the text, which in the absence of a color style from the
-    // Overlay Tool will be from the Bubble-style (set in the StyleEditor).
+    // Canvas element Tool will be from the Bubble-style (set in the StyleEditor).
     // An unfortunate, but greatly simplifying, use of JQuery.
     public getDefaultStyleTextColor(firstEditable: HTMLElement): string {
         return $(firstEditable).css("color");
     }
 
-    // This gives us the patriarch (farthest ancestor) bubble of a family of bubbles.
+    // This gives us the patriarch (farthest ancestor) canvas element of a family of canvas elements.
     // If the active element IS the parent of our family, this returns the active element's bubble.
     public getPatriarchBubbleOfActiveElement(): Bubble | undefined {
         if (!this.activeElement) {
@@ -2707,7 +2741,7 @@ export class BubbleManager {
         return ancestors.length > 0 ? ancestors[0] : tempBubble;
     }
 
-    // Set the color of the background in all of the active bubble family's TextOverPicture boxes.
+    // Set the color of the background in all of the active canvas element family's TextOverPicture boxes.
     public setBackgroundColor(colors: string[], opacity: number | undefined) {
         if (!this.activeElement) {
             return;
@@ -2734,8 +2768,8 @@ export class BubbleManager {
 
     // Here we keep track of something (currently, typically, an input box in
     // the color chooser) to which focus needs to be restored after we modify
-    // foreground or background color on the bubble, since those processes
-    // involve focusing the bubble and this is inconvenient when typing in the
+    // foreground or background color on the canvas element, since those processes
+    // involve focusing the canvas element and this is inconvenient when typing in the
     // input boxes.
     private thingToFocusAfterSettingColor: HTMLElement;
     private restoreFocus() {
@@ -2764,50 +2798,50 @@ export class BubbleManager {
         return familySpec.backgroundColors;
     }
 
-    // drag-and-drop support for bubbles from comical toolbox
+    // drag-and-drop support for canvas elements from comical toolbox
     private setDragAndDropHandlers(container: HTMLElement): void {
         if (isLinux()) return; // these events never fire on Linux: see BL-7958.
         // This suppresses the default behavior, which is to forbid dragging things to
-        // an element, but only if the source of the drag is a bloom bubble.
+        // an element, but only if the source of the drag is a bloom canvas element.
         container.ondragover = ev => {
             if (
                 ev.dataTransfer &&
-                // don't be tempted to return to ev.dataTransfer.getData("text/x-bloombubble")
+                // don't be tempted to return to ev.dataTransfer.getData("text/x-bloomCanvasElement")
                 // as we used with geckofx. In WebView2, this returns an empty string.
                 // I think it is some sort of security thing, the idea is that something
                 // you're just dragging over shouldn't have access to the content.
                 // The presence of our custom data type at all indicates this is something
                 // we want to accept dropped here.
                 // (types is an array: indexOf returns -1 if the item is not found)
-                ev.dataTransfer.types.indexOf("text/x-bloombubble") >= 0
+                ev.dataTransfer.types.indexOf("text/x-bloomCanvasElement") >= 0
             ) {
                 ev.preventDefault();
             }
         };
-        // Controls what happens when a bloom bubble is dropped. We get the style
-        // set in ComicToolControls.ondragstart() and make a bubble with that style
+        // Controls what happens when a bloom canvas element is dropped. We get the style
+        // set in ComicToolControls.ondragstart() and make a canvas element with that style
         // at the drop position.
         container.ondrop = ev => {
             // test this so we don't interfere with dragging for text edit,
-            // nor add bubbles when something else is dragged
+            // nor add canvas elements when something else is dragged
             if (
                 ev.dataTransfer &&
-                ev.dataTransfer.getData("text/x-bloombubble") &&
+                ev.dataTransfer.getData("text/x-bloomCanvasElement") &&
                 !ev.dataTransfer.getData("text/x-bloomdraggable") // items that create a draggable use another approach
             ) {
                 ev.preventDefault();
                 const style = ev.dataTransfer
-                    ? ev.dataTransfer.getData("text/x-bloombubble")
+                    ? ev.dataTransfer.getData("text/x-bloomCanvasElement")
                     : "speech";
                 // If this got used, we'd want it to have a rightTopOffset value. But I think all our things that can
-                // be dragged are now using overlayItem, and its dragStart sets text/x-bloomdraggable, so this
+                // be dragged are now using CanvasElementItem, and its dragStart sets text/x-bloomdraggable, so this
                 // code does't get used.
-                this.addOverPictureElement(ev.clientX, ev.clientY, style);
+                this.addCanvasElement(ev.clientX, ev.clientY, style);
             }
         };
     }
 
-    // Setup event handlers that allow the bubble to be moved around or resized.
+    // Setup event handlers that allow the canvas element to be moved around or resized.
     private setMouseDragHandlers(container: HTMLElement): void {
         // An earlier version of this code set onmousedown to this.onMouseDown, etc.
         // We need to use addEventListener so we can capture.
@@ -2820,7 +2854,7 @@ export class BubbleManager {
         container.onmouseup = null;
 
         // We use mousemove effects instead of drag due to concerns that drag effects would make the entire image container appear to drag.
-        // Instead, with mousemove, we can make only the specific bubble move around
+        // Instead, with mousemove, we can make only the specific canvas element move around
         // Grabbing these (particularly the move event) in the capture phase allows us to suppress
         // effects of ctrl and alt clicks on the text.
         container.addEventListener("mousedown", this.onMouseDown, {
@@ -2836,43 +2870,43 @@ export class BubbleManager {
         // mouse up handler is added to document in onMouseDown
 
         container.onkeypress = (event: Event) => {
-            // If the user is typing in a bubble, make sure automatic shrinking is off.
+            // If the user is typing in a canvas element, make sure automatic shrinking is off.
             // Automatic shrinking while typing might be useful when originally authoring a comic,
-            // but it's a nuisance when translating one, as the bubble is initially empty
+            // but it's a nuisance when translating one, as the canvas element is initially empty
             // and shrinks to one line, messing up the whole layout.
             if (!event.target || !(event.target as Element).closest) return;
             const topBox = (event.target as Element).closest(
-                kTextOverPictureSelector
+                kCanvasElementSelector
             ) as HTMLElement;
             if (!topBox) return;
             topBox.classList.remove("bloom-allowAutoShrink");
         };
     }
 
-    // Move all child bubbles as necessary so they are at least partly inside their container
+    // Move all child canvas elements as necessary so they are at least partly inside their container
     // (by as much as we require when dragging them).
-    public ensureBubblesIntersectParent(parentContainer: HTMLElement) {
-        const overlays = Array.from(
-            parentContainer.getElementsByClassName(kTextOverPictureClass)
+    public ensureCanvasElementsIntersectParent(parentContainer: HTMLElement) {
+        const canvasElements = Array.from(
+            parentContainer.getElementsByClassName(kCanvasElementClass)
         );
         let changed = false;
-        overlays.forEach(overlay => {
-            const bubbleRect = overlay.getBoundingClientRect();
-            // If the bubble is not visible, its width will be 0. Don't try to adjust it.
-            if (bubbleRect.width === 0) return;
-            this.adjustBubbleLocation(
-                overlay as HTMLElement,
+        canvasElements.forEach(canvasElement => {
+            const canvasElementRect = canvasElement.getBoundingClientRect();
+            // If the canvas element is not visible, its width will be 0. Don't try to adjust it.
+            if (canvasElementRect.width === 0) return;
+            this.adjustCanvasElementLocation(
+                canvasElement as HTMLElement,
                 parentContainer,
                 new Point(
-                    bubbleRect.left,
-                    bubbleRect.top,
+                    canvasElementRect.left,
+                    canvasElementRect.top,
                     PointScaling.Scaled,
-                    "ensureBubblesIntersectParent"
+                    "ensureCanvasElementsIntersectParent"
                 )
             );
             changed = this.ensureTailsInsideParent(
                 parentContainer,
-                overlay as HTMLElement,
+                canvasElement as HTMLElement,
                 changed
             );
         });
@@ -2881,14 +2915,14 @@ export class BubbleManager {
         }
     }
 
-    // Make sure the handles of the tail(s) of the overlay are within the container.
+    // Make sure the handles of the tail(s) of the canvas element are within the container.
     // Return true if any tail was changed (or if changed was already true)
     private ensureTailsInsideParent(
         imageContainer: HTMLElement,
-        overlay: HTMLElement,
+        canvasElement: HTMLElement,
         changed: boolean
     ) {
-        const originalTailSpecs = Bubble.getBubbleSpec(overlay).tails;
+        const originalTailSpecs = Bubble.getBubbleSpec(canvasElement).tails;
         const newTails = originalTailSpecs.map(spec => {
             const tipPoint = this.adjustRelativePointToImageContainer(
                 imageContainer,
@@ -2922,7 +2956,7 @@ export class BubbleManager {
                 midpointY: midPoint.getUnscaledY()
             };
         });
-        const bubble = new Bubble(overlay);
+        const bubble = new Bubble(canvasElement);
         bubble.mergeWithNewBubbleProps({ tails: newTails });
         return changed;
     }
@@ -2937,63 +2971,69 @@ export class BubbleManager {
     //   might still be entirely invisible as its curve places it entirely beyond the bottom
     //   left corner.
     // - The constraint would actually be different depending on the type of bubble,
-    //   which means a bubble might need to move as a result of changing its bubble type.
-    private minBubbleVisible = 10;
+    //   which means a canvas element might need to move as a result of changing its bubble type.
+    private minCanvasElementVisible = 10;
 
-    // Conceptually, move the bubble to the specified location (which may be where it is already).
-    // However, first adjust the location to make sure at least a little of the bubble is visible
+    // Conceptually, move the canvas element to the specified location (which may be where it is already).
+    // However, first adjust the location to make sure at least a little of the canvas element is visible
     // within the specified container. (This means the method may be used both to constrain moving
-    // the bubble, and also, by passing its current location, to ensure it becomes visible if
+    // the canvas element, and also, by passing its current location, to ensure it becomes visible if
     // it somehow stopped being.)
-    private adjustBubbleLocation(
-        bubble: HTMLElement,
+    private adjustCanvasElementLocation(
+        canvasElement: HTMLElement,
         container: HTMLElement,
         location: Point
     ) {
-        const bubbleRect = bubble.getBoundingClientRect();
+        const canvasElementRect = canvasElement.getBoundingClientRect();
         const parentRect = container.getBoundingClientRect();
         const left = location.getScaledX();
-        const right = left + bubbleRect.width;
+        const right = left + canvasElementRect.width;
         const top = location.getScaledY();
-        const bottom = top + bubbleRect.height;
+        const bottom = top + canvasElementRect.height;
         let x = left;
         let y = top;
-        if (right < parentRect.left + this.minBubbleVisible) {
-            x = parentRect.left + this.minBubbleVisible - bubbleRect.width;
+        if (right < parentRect.left + this.minCanvasElementVisible) {
+            x =
+                parentRect.left +
+                this.minCanvasElementVisible -
+                canvasElementRect.width;
         }
-        if (left > parentRect.right - this.minBubbleVisible) {
-            x = parentRect.right - this.minBubbleVisible;
+        if (left > parentRect.right - this.minCanvasElementVisible) {
+            x = parentRect.right - this.minCanvasElementVisible;
         }
-        if (bottom < parentRect.top + this.minBubbleVisible) {
-            y = parentRect.top + this.minBubbleVisible - bubbleRect.height;
+        if (bottom < parentRect.top + this.minCanvasElementVisible) {
+            y =
+                parentRect.top +
+                this.minCanvasElementVisible -
+                canvasElementRect.height;
         }
-        if (top > parentRect.bottom - this.minBubbleVisible) {
-            y = parentRect.bottom - this.minBubbleVisible;
+        if (top > parentRect.bottom - this.minCanvasElementVisible) {
+            y = parentRect.bottom - this.minCanvasElementVisible;
         }
         // The 0.1 here is rather arbitrary. On the one hand, I don't want to do all the work
-        // of placeElementAtPosition in the rather common case that we're just checking bubble
+        // of placeElementAtPosition in the rather common case that we're just checking canvas element
         // positions at startup and none need to move. On the other hand, we're dealing with scaling
         // here, and it's possible that even a half pixel might get scaled so that the difference
         // is noticeable. I'm compromizing on a discrepancy that is less than a pixel at our highest
         // zoom.
         if (
-            Math.abs(x - bubbleRect.left) > 0.1 ||
-            Math.abs(y - bubbleRect.top) > 0.1
+            Math.abs(x - canvasElementRect.left) > 0.1 ||
+            Math.abs(y - canvasElementRect.top) > 0.1
         ) {
             const moveTo = new Point(
                 x,
                 y,
                 PointScaling.Scaled,
-                "AdjustBubbleLocation"
+                "AdjustCanvasElementLocation"
             );
-            this.placeElementAtPosition($(bubble), container, moveTo);
+            this.placeElementAtPosition($(canvasElement), container, moveTo);
         }
         this.alignControlFrameWithActiveElement();
     }
 
     // Move the text insertion point to the specified location.
     // This is what a click at that location would typically do, but we are intercepting
-    // those events to turn the click into a drag of the bubble if there is mouse movement.
+    // those events to turn the click into a drag of the canvas element if there is mouse movement.
     // This uses the browser's caretPositionFromPoint or caretRangeFromPoint, which are not
     // supported by all browsers, but at least one of them works in WebView2, which is all we need.
     private moveInsertionPointAndFocusTo = (x, y): Range | undefined => {
@@ -3079,7 +3119,7 @@ export class BubbleManager {
             container,
             coordinates.getUnscaledX(),
             coordinates.getUnscaledY(),
-            true // only consider bubbles with pointer events allowed.
+            true // only consider canvas elements with pointer events allowed.
         );
         if (bubble && event.button === 2) {
             // Right mouse button
@@ -3092,7 +3132,7 @@ export class BubbleManager {
             event.preventDefault();
             event.stopPropagation();
             // re-render the toolbox with its menu open at the desired location
-            renderOverlayContextControls(bubble.content, true, {
+            renderCanvasElementContextControls(bubble.content, true, {
                 left: event.clientX,
                 top: event.clientY
             });
@@ -3118,7 +3158,6 @@ export class BubbleManager {
 
             // Possible move action started
             this.bubbleToDrag = bubble;
-            this.activeContainer = container;
             // in case this is somehow left from earlier, we want a fresh start for the new move.
             this.animationFrame = 0;
 
@@ -3141,36 +3180,40 @@ export class BubbleManager {
             if (event.altKey) {
                 event.preventDefault();
                 event.stopPropagation();
-                // using this trick for a bubble that is part of a family doesn't work well.
-                // We can only drag one bubble at once, so where should we put the other duplicate?
+                // using this trick for a canvas element that is part of a family doesn't work well.
+                // We can only drag one canvas element at once, so where should we put the other duplicate?
                 // Maybe we can come up with an answer, but for now, I'm just going to ignore the alt key.
                 if (Comical.findRelatives(bubble).length === 0) {
-                    // duplicate the bubble and drag that.
-                    // currently duplicateTOPBox actually dupliates the current active element,
+                    // duplicate the canvas element and drag that.
+                    // currently duplicateCanvasElementBox actually dupliates the current active element,
                     // not the one it is passed. So make sure the one we clicked is active, though it won't be for long.
                     this.setActiveElement(bubble.content);
-                    const newBubble = this.duplicateTOPBox(
+                    const newCanvasElement = this.duplicateCanvasElementBox(
                         bubble.content,
                         true
                     );
-                    if (!newBubble) return;
-                    startDraggingBubble(new Bubble(newBubble));
+                    if (!newCanvasElement) return;
+                    startDraggingBubble(new Bubble(newCanvasElement));
                     return;
                 }
             }
-            // We clicked on a bubble that's not disabled. If we clicked inside the bubble we are
+            // We clicked on a canvas element that's not disabled. If we clicked inside the canvas element we are
             // text editing, and neither ctrl nor alt is down, we handle it normally. Otherwise, we
-            // need to suppress. If we're outside the editable but inside the bubble, we don't need any default event processing,
+            // need to suppress. If we're outside the editable but inside the canvas element, we don't need any default event processing,
             // and if we're inside and ctrl or alt is down, we want to prevent the events being
-            // processed by the text. And if we're inside a bubble not yet recognized as the one we're
+            // processed by the text. And if we're inside a canvas element not yet recognized as the one we're
             // editing, we want to suppress the event because, unless it turns out to be a simple click
-            // with no movement, we're going to treat it as dragging the bubble.
-            const clickOnBubbleWeAreEditing =
-                this.theBubbleWeAreTextEditing ===
+            // with no movement, we're going to treat it as dragging the canvas element.
+            const clickOnCanvasElementWeAreEditing =
+                this.theCanvasElementWeAreTextEditing ===
                     (event.target as HTMLElement)?.closest(
-                        kTextOverPictureSelector
-                    ) && this.theBubbleWeAreTextEditing;
-            if (event.altKey || event.ctrlKey || !clickOnBubbleWeAreEditing) {
+                        kCanvasElementSelector
+                    ) && this.theCanvasElementWeAreTextEditing;
+            if (
+                event.altKey ||
+                event.ctrlKey ||
+                !clickOnCanvasElementWeAreEditing
+            ) {
                 event.preventDefault();
                 event.stopPropagation();
             }
@@ -3185,7 +3228,9 @@ export class BubbleManager {
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseMove = (event: MouseEvent) => {
-        if (BubbleManager.inPlayMode(event.currentTarget as HTMLElement)) {
+        if (
+            CanvasElementManager.inPlayMode(event.currentTarget as HTMLElement)
+        ) {
             return; // no edit mode functionality is relevant
         }
         if (event.buttons === 0 && this.mouseIsDown) {
@@ -3215,21 +3260,23 @@ export class BubbleManager {
         if (!this.bubbleToDrag) {
             this.handleMouseMoveHover(event, container);
         } else if (this.bubbleToDrag) {
-            this.handleMouseMoveDragBubble(event, container);
+            this.handleMouseMoveDragCanvasElement(event, container);
         }
     };
 
     // Add the classes that let various controls know that a move, resize, or drag is in progress.
     private startMoving() {
-        const controlFrame = document.getElementById("overlay-control-frame");
+        const controlFrame = document.getElementById(
+            "canvas-element-control-frame"
+        );
         controlFrame?.classList?.add("moving");
         this.activeElement?.classList?.add("moving");
         document
-            .getElementById("overlay-context-controls")
+            .getElementById("canvas-element-context-controls")
             ?.classList?.add("moving");
     }
 
-    // Mouse hover - No move or resize is currently active, but check if there is a bubble under the mouse that COULD be
+    // Mouse hover - No move or resize is currently active, but check if there is a canvas element under the mouse that COULD be
     // and add or remove the classes we use to indicate this
     private handleMouseMoveHover(event: MouseEvent, container: HTMLElement) {
         if (this.isMouseEventAlreadyHandled(event)) {
@@ -3243,7 +3290,7 @@ export class BubbleManager {
         // "if" statement. But note, this first one may change hoveredBubble to null,
         // which then changes which of the following options is chosen. Be careful!
         if (hoveredBubble && hoveredBubble.content !== this.activeElement) {
-            // The hovered bubble is not selected. If it's an image, the user might
+            // The hovered canvas element is not selected. If it's an image, the user might
             // want to drag a tail tip there, which is hard to do with a grab cursor,
             // so don't switch.
             if (this.isPictureOverPictureElement(hoveredBubble.content)) {
@@ -3253,7 +3300,7 @@ export class BubbleManager {
     }
 
     /**
-     * Gets the bubble under the mouse location, or null if no bubble is
+     * Gets the canvas element under the mouse location, or null if no canvas element is
      */
     public getBubbleUnderMouse(
         event: MouseEvent,
@@ -3278,9 +3325,9 @@ export class BubbleManager {
     private lastMoveEvent: MouseEvent;
     private lastMoveContainer: HTMLElement;
 
-    // A bubble is currently in drag mode, and the mouse is being moved.
-    // Move the bubble accordingly.
-    private handleMouseMoveDragBubble(
+    // A canvas element is currently in drag mode, and the mouse is being moved.
+    // Move the canvas element accordingly.
+    private handleMouseMoveDragCanvasElement(
         event: MouseEvent,
         container: HTMLElement
     ) {
@@ -3343,9 +3390,9 @@ export class BubbleManager {
                 this.lastMoveEvent.pageX - this.bubbleDragGrabOffset.x,
                 this.lastMoveEvent.pageY - this.bubbleDragGrabOffset.y,
                 PointScaling.Scaled,
-                "Created by handleMouseMoveDragBubble()"
+                "Created by handleMouseMoveDragCanvasElement()"
             );
-            this.adjustBubbleLocation(
+            this.adjustCanvasElementLocation(
                 this.bubbleToDrag.content,
                 this.lastMoveContainer,
                 newPosition
@@ -3355,12 +3402,14 @@ export class BubbleManager {
         });
     }
 
-    // The center handle, used to move the picture under the bubble, does nothing
-    // unless the bubble has actually been cropped. Unless we figure out something
+    // The center handle, used to move the picture under the canvas element, does nothing
+    // unless the canvas element has actually been cropped. Unless we figure out something
     // sensible to do in this case, it's better not to show it, lest the user be
     // confused by a control that does nothing.
     private adjustMoveCropHandleVisibility(removeCropAttrsIfNotNeeded = false) {
-        const controlFrame = document.getElementById("overlay-control-frame");
+        const controlFrame = document.getElementById(
+            "canvas-element-control-frame"
+        );
         if (!controlFrame || !this.activeElement) return;
         const imgC = this.activeElement.getElementsByClassName(
             kImageContainerClass
@@ -3384,7 +3433,7 @@ export class BubbleManager {
             }
         }
         controlFrame.classList.toggle(
-            "bloom-ui-overlay-show-move-crop-handle",
+            "bloom-ui-canvas-element-show-move-crop-handle",
             wantMoveCropHandle
         );
         this.updateCurrentlyCropped();
@@ -3392,7 +3441,7 @@ export class BubbleManager {
 
     private stopMoving() {
         if (this.lastMoveContainer) this.lastMoveContainer.style.cursor = "";
-        // We want to get rid of it at least from the control frame and the active bubble,
+        // We want to get rid of it at least from the control frame and the active canvas element,
         // but may as well make sure it doesn't get left anywhere.
         Array.from(document.getElementsByClassName("moving")).forEach(
             element => {
@@ -3410,7 +3459,7 @@ export class BubbleManager {
         document.removeEventListener("mouseup", this.onMouseUp, {
             capture: true
         });
-        if (BubbleManager.inPlayMode(this.mouseDownContainer)) {
+        if (CanvasElementManager.inPlayMode(this.mouseDownContainer)) {
             return;
         }
         this.stopMoving();
@@ -3424,7 +3473,7 @@ export class BubbleManager {
 
         if (this.bubbleToDrag) {
             // if we're doing a resize or drag, we don't want ordinary mouseup activity
-            // on the text inside the bubble.
+            // on the text inside the canvas element.
             event.preventDefault();
             event.stopPropagation();
         }
@@ -3437,52 +3486,52 @@ export class BubbleManager {
         );
         if (
             editable &&
-            editable.closest(kTextOverPictureSelector) ===
-                this.theBubbleWeAreTextEditing
+            editable.closest(kCanvasElementSelector) ===
+                this.theCanvasElementWeAreTextEditing
         ) {
-            // We're text editing in this overlay, let the mouse do its normal things.
+            // We're text editing in this canvas element, let the mouse do its normal things.
             // In particular, we don't want to do moveInsertionPointAndFocusTo here,
             // because it will force the selection back to an IP when we might want a range
             // (e.g., after a double-click).
-            // (But note, if we started out with the overlay not active, a double click
-            // is properly interpreted as one click to select the overlay, one to put it
+            // (But note, if we started out with the canvas element not active, a double click
+            // is properly interpreted as one click to select the canvas element, one to put it
             // into edit mode...that is NOT a regular double-click that selects a word.
             // At least, that seems to be what Canva does.)
             return;
         }
-        // a click without movement on an overlay that is already the active one puts it in edit mode.
+        // a click without movement on a canvas element that is already the active one puts it in edit mode.
         if (
             !this.gotAMoveWhileMouseDown &&
             editable &&
             this.activeElementAtMouseDown === this.activeElement
         ) {
-            // Going into edit mode on this bubble.
-            this.theBubbleWeAreTextEditing = (event.target as HTMLElement)?.closest(
-                kTextOverPictureSelector
+            // Going into edit mode on this canvas element.
+            this.theCanvasElementWeAreTextEditing = (event.target as HTMLElement)?.closest(
+                kCanvasElementSelector
             ) as HTMLElement;
-            this.theBubbleWeAreTextEditing?.classList.add("bloom-focusedTOP");
+            this.theCanvasElementWeAreTextEditing?.classList.add(
+                "bloom-focusedCanvasElement"
+            );
             // We want to position the IP as if the user clicked where they did.
             // Since we already suppressed the mouseDown event, it's not enough to just
             // NOT suppress the mouseUp event. We need to actually move the IP to the
-            // appropriate spot and give the bubble focus.
+            // appropriate spot and give the canvas element focus.
             this.moveInsertionPointAndFocusTo(event.clientX, event.clientY);
         } else {
             // prevent the click giving it focus (or any other default behavior). This mouse up
-            // is part of dragging a bubble or resizing it or some similar special behavior that
+            // is part of dragging a canvas element or resizing it or some similar special behavior that
             // we are handling.
             event.preventDefault();
             event.stopPropagation();
         }
     };
 
-    public turnOffResizing(container: Element) {
-        this.activeContainer = undefined;
-    }
+    public turnOffResizing(container: Element) {}
 
-    // If we get a click (without movement) on a text bubble, we treat subsequent mouse events on
-    // that bubble as text editing events, rather than drag events, as long as it keeps focus.
-    // This is the bubble, if any, that is currently in that state.
-    public theBubbleWeAreTextEditing: HTMLElement | undefined;
+    // If we get a click (without movement) on a text canvas element, we treat subsequent mouse events on
+    // that canvas element as text editing events, rather than drag events, as long as it keeps focus.
+    // This is the canvas element, if any, that is currently in that state.
+    public theCanvasElementWeAreTextEditing: HTMLElement | undefined;
     /**
      * Returns true if a handler already exists to sufficiently process this mouse event
      * without needing our custom onMouseDown/onMouseHover/etc event handlers to process it
@@ -3505,12 +3554,12 @@ export class BubbleManager {
             // return false.
             return false;
         }
-        if (BubbleManager.inPlayMode(targetElement)) {
+        if (CanvasElementManager.inPlayMode(targetElement)) {
             // Game in play mode...no edit mode functionality is relevant
             return true;
         }
         if (targetElement.classList.contains("bloom-dragHandle")) {
-            // The drag handle is outside the bubble, so dragging it with the mouse
+            // The drag handle is outside the canvas element, so dragging it with the mouse
             // events we handle doesn't work. Returning true lets its own event handler
             // deal with things, and is a good thing even when ctrl or alt is down.
             return true;
@@ -3519,7 +3568,7 @@ export class BubbleManager {
             targetElement.closest("#animationEnd") ||
             targetElement.closest("#animationStart")
         ) {
-            // These are used by the motion tool rectangles. Don't want bubble code
+            // These are used by the motion tool rectangles. Don't want canvas element code
             // interfering.
             return true;
         }
@@ -3531,7 +3580,7 @@ export class BubbleManager {
             // Ignore clicks on the image overlay buttons. The button's handler should process that instead.
             return true;
         }
-        if (targetElement.closest("#overlay-control-frame")) {
+        if (targetElement.closest("#canvas-element-control-frame")) {
             // New drag controls
             return true;
         }
@@ -3544,7 +3593,7 @@ export class BubbleManager {
             targetElement.closest(".bloom-videoPauseIcon")
         ) {
             // The play button has special code in onMouseUp to handle a click on it.
-            // It does NOT have its own click handler (in overlays), because we want to allow the overlay
+            // It does NOT have its own click handler (in canvas elements), because we want to allow the canvas element
             // to be dragged normally if a mouseDown on it is followed by sufficient mouse
             // movement to be considered a drag.
             // But I decided not to do that for the other two buttons, which only appear
@@ -3559,11 +3608,11 @@ export class BubbleManager {
         const editable = targetElement.closest(".bloom-editable");
         if (
             editable &&
-            this.theBubbleWeAreTextEditing &&
-            this.theBubbleWeAreTextEditing.contains(editable) &&
+            this.theCanvasElementWeAreTextEditing &&
+            this.theCanvasElementWeAreTextEditing.contains(editable) &&
             ev.button !== 2
         ) {
-            // an editable is allowed to handle its own events only if it's parent bubble has
+            // an editable is allowed to handle its own events only if it's parent canvas element has
             // been established as active for text editing and it's not a right-click.
             // Otherwise, we handle it as a move (or context menu request, or...).
             return true;
@@ -3592,7 +3641,7 @@ export class BubbleManager {
             "MouseEvent Client (Relative to viewport)"
         );
 
-        return BubbleManager.convertPointFromViewportToElementFrame(
+        return CanvasElementManager.convertPointFromViewportToElementFrame(
             pointRelativeToViewport,
             canvas
         );
@@ -3627,13 +3676,13 @@ export class BubbleManager {
         // So we need to subtract out the border and padding
         // Exterior gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
         // So we need to subtract out the border and padding
-        const border = BubbleManager.getLeftAndTopBorderWidths(element);
-        const padding = BubbleManager.getLeftAndTopPaddings(element);
+        const border = CanvasElementManager.getLeftAndTopBorderWidths(element);
+        const padding = CanvasElementManager.getLeftAndTopPaddings(element);
         const borderAndPadding = border.add(padding);
 
         // Try not to be scrolled. It's not easy to figure out how to adjust the calculations
         // properly across all zoom levels if the box is scrolled.
-        const scroll = BubbleManager.getScrollAmount(element);
+        const scroll = CanvasElementManager.getScrollAmount(element);
         if (scroll.length() > 0.001) {
             const error = new Error(
                 `Assert failed. container.scroll expected to be (0, 0), but it was: (${scroll.getScaledX()}, ${scroll.getScaledY()})`
@@ -3672,10 +3721,10 @@ export class BubbleManager {
             styleInfo = window.getComputedStyle(element);
         }
 
-        const borderRight: number = BubbleManager.extractNumber(
+        const borderRight: number = CanvasElementManager.extractNumber(
             styleInfo.getPropertyValue("border-right-width")
         );
-        const borderBottom: number = BubbleManager.extractNumber(
+        const borderBottom: number = CanvasElementManager.extractNumber(
             styleInfo.getPropertyValue("border-bottom-width")
         );
 
@@ -3857,18 +3906,18 @@ export class BubbleManager {
         return { x: centerX, y: centerY };
     }
 
-    public turnOffBubbleEditing(): void {
-        if (this.isComicEditingOn === false) {
+    public turnOffCanvasElementEditing(): void {
+        if (this.isCanvasElementEditingOn === false) {
             return; // Already off. No work needs to be done.
         }
-        this.isComicEditingOn = false;
+        this.isCanvasElementEditingOn = false;
         this.removeControlFrame();
         this.removeFocusClass();
 
         Comical.setActiveBubbleListener(undefined);
         Comical.stopEditing();
         this.getAllPrimaryImageContainersOnPage().forEach(container =>
-            this.saveCurrentOverlayStateAsCurrentLangAlternate(
+            this.saveCurrentCanvasElementStateAsCurrentLangAlternate(
                 container as HTMLElement
             )
         );
@@ -3877,7 +3926,7 @@ export class BubbleManager {
 
         // Clean up event listeners that we no longer need
         Array.from(
-            document.getElementsByClassName(kTextOverPictureClass)
+            document.getElementsByClassName(kCanvasElementClass)
         ).forEach(container => {
             const editables = this.getAllVisibileEditableDivs(
                 container as HTMLElement
@@ -3886,13 +3935,13 @@ export class BubbleManager {
                 // Don't use an arrow function as an event handler here. These can never be identified as duplicate event listeners, so we'll end up with tons of duplicates
                 element.removeEventListener(
                     "focusin",
-                    BubbleManager.onFocusSetActiveElement
+                    CanvasElementManager.onFocusSetActiveElement
                 );
             });
         });
         document.removeEventListener(
             "click",
-            BubbleManager.onDocClickClearActiveElement
+            CanvasElementManager.onDocClickClearActiveElement
         );
     }
 
@@ -3914,20 +3963,23 @@ export class BubbleManager {
         return tempBubble ? tempBubble.getBubbleSpec() : undefined;
     }
 
-    public requestBubbleChangeNotification(
+    public requestCanvasElementChangeNotification(
         id: string,
         notifier: (bubble: BubbleSpec | undefined) => void
     ): void {
-        this.detachBubbleChangeNotification(id);
-        this.thingsToNotifyOfBubbleChange.push({ id, handler: notifier });
+        this.detachCanvasElementChangeNotification(id);
+        this.thingsToNotifyOfCanvasElementChange.push({
+            id,
+            handler: notifier
+        });
     }
 
-    public detachBubbleChangeNotification(id: string): void {
-        const index = this.thingsToNotifyOfBubbleChange.findIndex(
+    public detachCanvasElementChangeNotification(id: string): void {
+        const index = this.thingsToNotifyOfCanvasElementChange.findIndex(
             x => x.id === id
         );
         if (index >= 0) {
-            this.thingsToNotifyOfBubbleChange.splice(index, 1);
+            this.thingsToNotifyOfCanvasElementChange.splice(index, 1);
         }
     }
 
@@ -3938,8 +3990,8 @@ export class BubbleManager {
             return undefined;
         }
 
-        // ENHANCE: Constructing new bubble instances is dangerous. It may get out of sync with the instance that Comical knows about.
-        // It would be preferable if we asked Comical to find the bubble instance corresponding to this element.
+        // ENHANCE: Constructing new canvas element instances is dangerous. It may get out of sync with the instance that Comical knows about.
+        // It would be preferable if we asked Comical to find the canvas element instance corresponding to this element.
         const activeBubble = new Bubble(this.activeElement);
 
         return this.updateBubbleWithPropsHelper(activeBubble, newBubbleProps);
@@ -3961,38 +4013,38 @@ export class BubbleManager {
         bubble.mergeWithNewBubbleProps(newBubbleProps);
         Comical.update(this.activeElement.parentElement!);
 
-        // BL-9548: Interaction with the toolbox panel makes the bubble lose focus, which requires
+        // BL-9548: Interaction with the toolbox panel makes the canvas element lose focus, which requires
         // we re-activate the current comical element.
         Comical.activateElement(this.activeElement);
 
         return bubble.getBubbleSpec();
     }
 
-    // Adjust the ordering of bubbles so that draggables are at the end.
+    // Adjust the ordering of canvas elements so that draggables are at the end.
     // We want the things that can be moved around to be on top of the ones that can't.
     // We don't use z-index because that makes stacking contexts and interferes with
-    // the way we keep bubble children on top of the canvas.
+    // the way we keep canvas element children on top of the canvas.
     // Bubble levels should be consistent with the order of the elements in the DOM,
     // since the former controls which one is treated as being clicked when there is overlap,
     // while the latter determines which is on top.
-    public adjustBubbleOrdering = () => {
+    public adjustCanvasElementOrdering = () => {
         const parents = this.getAllPrimaryImageContainersOnPage();
         parents.forEach(imageContainer => {
-            const bubbles = Array.from(
-                imageContainer.getElementsByClassName("bloom-textOverPicture")
+            const canvasElements = Array.from(
+                imageContainer.getElementsByClassName(kCanvasElementClass)
             );
             let maxLevel = Math.max(
-                ...bubbles.map(
+                ...canvasElements.map(
                     b => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0
                 )
             );
-            const draggables = bubbles.filter(b =>
-                b.getAttribute("data-bubble-id")
+            const draggables = canvasElements.filter(b =>
+                b.getAttribute("data-draggable-id")
             );
             if (
                 draggables.length === 0 ||
-                bubbles.indexOf(draggables[0]) ===
-                    bubbles.length - draggables.length
+                canvasElements.indexOf(draggables[0]) ===
+                    canvasElements.length - draggables.length
             ) {
                 return; // already all at end (or none to move)
             }
@@ -4002,7 +4054,7 @@ export class BubbleManager {
                 const bubble = new Bubble(draggable as HTMLElement);
                 // This would need to get fancier if draggbles came in groups with the same level.
                 // As it is, we just want their levels to be in the same order as their DOM order
-                // (relative to each other and the other bubbles) so getBubbleHit() will return
+                // (relative to each other and the other canvas elements) so getBubbleHit() will return
                 // the one that appears on top when they are stacked.
                 bubble.getBubbleSpec().level = maxLevel + 1;
                 bubble.persistBubbleSpec();
@@ -4015,19 +4067,19 @@ export class BubbleManager {
         });
     };
 
-    // Adds a new over-picture element as a child of the specified {parentElement}
+    // Adds a new canvas element as a child of the specified {parentElement}
     //    (It is a child in the sense that the Comical library will recognize it as a child)
     // {offsetX}/{offsetY} is the offset in position from the parent to the child elements
     //    (i.e., offsetX = child.left - parent.left)
     //    (remember that positive values of Y are further to the bottom)
     // This is what the comic tool calls when the user clicks ADD CHILD BUBBLE.
-    public addChildOverPictureElementAndRefreshPage(
+    public addChildCanvasElementAndRefreshPage(
         parentElement: HTMLElement,
         offsetX: number,
         offsetY: number
     ): void {
         // The only reason to keep a separate method here is that the 'internal' form returns
-        // the new child. We don't need it here, but we do in the duplicate bubble function.
+        // the new child. We don't need it here, but we do in the duplicate canvas element function.
         this.addChildInternal(parentElement, offsetX, offsetY);
     }
 
@@ -4036,7 +4088,7 @@ export class BubbleManager {
         if (!element) {
             return;
         }
-        const imageContainer = BubbleManager.getTopLevelImageContainerElement(
+        const imageContainer = CanvasElementManager.getTopLevelImageContainerElement(
             element
         );
         if (!imageContainer) {
@@ -4058,7 +4110,7 @@ export class BubbleManager {
         // Make sure everything in parent is "saved".
         this.updateComicalForSelectedElement(parentElement);
 
-        const newPoint = this.findBestLocationForNewBubble(
+        const newPoint = this.findBestLocationForNewCanvasElement(
             parentElement,
             offsetX,
             offsetY
@@ -4067,7 +4119,7 @@ export class BubbleManager {
             return undefined;
         }
 
-        const childElement = this.addOverPictureElement(
+        const childElement = this.addCanvasElement(
             newPoint.getScaledX(),
             newPoint.getScaledY(),
             undefined
@@ -4076,7 +4128,7 @@ export class BubbleManager {
             return undefined;
         }
 
-        // Make sure that the child inherits any non-default text color from the parent bubble
+        // Make sure that the child inherits any non-default text color from the parent canvas element
         // (which must be the active element).
         this.setActiveElement(parentElement);
         const parentTextColor = this.getTextColorInformation();
@@ -4085,11 +4137,13 @@ export class BubbleManager {
         }
 
         Comical.initializeChild(childElement, parentElement);
-        // In this case, the 'addOverPictureElement()' above will already have done the new bubble's
+        // In this case, the 'addCanvasElement()' above will already have done the new canvas element's
         // refresh. We still want to refresh, but not attach to ckeditor, etc., so we pass
         // attachEventsToEditables as false.
-        this.refreshBubbleEditing(
-            BubbleManager.getTopLevelImageContainerElement(parentElement)!,
+        this.refreshCanvasElementEditing(
+            CanvasElementManager.getTopLevelImageContainerElement(
+                parentElement
+            )!,
             new Bubble(childElement),
             false,
             true
@@ -4097,8 +4151,8 @@ export class BubbleManager {
         return childElement;
     }
 
-    // The 'new bubble' is either going to be a child of the 'parentElement', or a duplicate of it.
-    private findBestLocationForNewBubble(
+    // The 'new canvas element' is either going to be a child of the 'parentElement', or a duplicate of it.
+    private findBestLocationForNewCanvasElement(
         parentElement: HTMLElement,
         proposedOffsetX: number,
         proposedOffsetY: number
@@ -4106,7 +4160,7 @@ export class BubbleManager {
         const parentBoundingRect = parentElement.getBoundingClientRect();
 
         // // Ensure newX and newY is within the bounds of the container.
-        const container = BubbleManager.getTopLevelImageContainerElement(
+        const container = CanvasElementManager.getTopLevelImageContainerElement(
             parentElement
         );
         if (!container) {
@@ -4137,16 +4191,16 @@ export class BubbleManager {
         if (newX < containerBoundingRect.left) {
             newX = containerBoundingRect.left + bufferPixels;
         } else if (newX + width > containerBoundingRect.right) {
-            // ENHANCE: parentElement.clientWidth is just an estimate of the size of the new bubble's width.
-            //          It would be better if we could actually plug in the real value of the new bubble's width
+            // ENHANCE: parentElement.clientWidth is just an estimate of the size of the new canvas element's width.
+            //          It would be better if we could actually plug in the real value of the new canvas element's width
             newX = containerBoundingRect.right - width;
         }
 
         if (newY < containerBoundingRect.top) {
             newY = containerBoundingRect.top + bufferPixels;
         } else if (newY + height > containerBoundingRect.bottom) {
-            // ENHANCE: parentElement.clientHeight is just an estimate of the size of the new bubble's height.
-            //          It would be better if we could actually plug in the real value of the new bubble's height
+            // ENHANCE: parentElement.clientHeight is just an estimate of the size of the new canvas element's height.
+            //          It would be better if we could actually plug in the real value of the new canvas element's height
             newY = containerBoundingRect.bottom - height;
         }
         return new Point(
@@ -4188,7 +4242,7 @@ export class BubbleManager {
         );
     }
 
-    public addOverPictureElementWithScreenCoords(
+    public addCanvasElementWithScreenCoords(
         screenX: number,
         screenY: number,
         style: string,
@@ -4197,7 +4251,7 @@ export class BubbleManager {
     ): HTMLElement | undefined {
         const clientX = screenX - window.screenX;
         const clientY = screenY - window.screenY;
-        return this.addOverPictureElement(
+        return this.addCanvasElement(
             clientX,
             clientY,
             style,
@@ -4206,13 +4260,13 @@ export class BubbleManager {
         );
     }
 
-    private addOverPictureElementFromOriginal(
+    private addCanvasElementFromOriginal(
         offsetX: number,
         offsetY: number,
         originalElement: HTMLElement,
         style?: string
     ): HTMLElement | undefined {
-        const imageContainer = BubbleManager.getTopLevelImageContainerElement(
+        const imageContainer = CanvasElementManager.getTopLevelImageContainerElement(
             originalElement
         );
         if (!imageContainer) {
@@ -4291,7 +4345,7 @@ export class BubbleManager {
 
     // This method is called when the user "drops" an element from the comicTool onto an image.
     // It is also called by addChildInternal() and by the Linux version of dropping: "ondragend".
-    public addOverPictureElement(
+    public addCanvasElement(
         mouseX: number,
         mouseY: number,
         style?: string,
@@ -4342,7 +4396,7 @@ export class BubbleManager {
     ): HTMLElement {
         const defaultNewTextLanguage = GetSettings().languageForNewTextBoxes;
         const userDefinedStyle = userDefinedStyleName ?? "Bubble";
-        // add a draggable text bubble to the html dom of the current page
+        // add a draggable text canvas element to the html dom of the current page
         const editableDivClasses = `bloom-editable bloom-content1 bloom-visibility-code-on ${userDefinedStyle}-style`;
         const editableDivHtml =
             "<div class='" +
@@ -4426,11 +4480,11 @@ export class BubbleManager {
         const lastContainerChild = imageContainerJQuery.children().last();
         const wrapperHtml =
             "<div class='" +
-            kTextOverPictureClass +
+            kCanvasElementClass +
             "'>" +
             internalHtml +
             "</div>";
-        // It's especially important that the new overlay comes AFTER the main image,
+        // It's especially important that the new canvas element comes AFTER the main image,
         // since that's all that keeps it on top of the image. We're deliberately not
         // using z-index so that the image-container is not a stacking context so we
         // can use z-index on the buttons inside it to put them above the comicaljs canvas.
@@ -4444,12 +4498,12 @@ export class BubbleManager {
             rightTopOffset
         );
 
-        // The following code would not be needed for Picture and Video bubbles if the focusin
+        // The following code would not be needed for Picture and Video canvas elements if the focusin
         // handler were reliably called after being attached by refreshBubbleEditing() below.
         // However, calling the jquery.focus() method in bloomEditing.focusOnChildIfFound()
-        // causes the handler to fire ONLY for Text bubbles.  This is a complete mystery to me.
-        // Therefore, for Picture and Video bubbles, we set the content active and notify the
-        // overlay tool. But we don't need/want the actions of setActiveElement() which overlap
+        // causes the handler to fire ONLY for Text canvas elements.  This is a complete mystery to me.
+        // Therefore, for Picture and Video canvas elements, we set the content active and notify the
+        // canvas element tool. But we don't need/want the actions of setActiveElement() which overlap
         // with refreshBubbleEditing(). This code actually prevents bloomEditing.focusOnChildIfFound()
         // from being called, but that doesn't really matter since calling it does no good.
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-11620.
@@ -4465,10 +4519,10 @@ export class BubbleManager {
         );
         bubble.setBubbleSpec(bubbleSpec);
         const imageContainer = imageContainerJQuery.get(0);
-        // background image in parent imageContainer may need to become overlay
-        // (before we refreshBubbleEditing, since we may change some bubbles here.)
+        // background image in parent imageContainer may need to become canvas element
+        // (before we refreshBubbleEditing, since we may change some canvas elements here.)
         this.handleResizeAdjustments();
-        this.refreshBubbleEditing(imageContainer, bubble, true, true);
+        this.refreshCanvasElementEditing(imageContainer, bubble, true, true);
         const editable = contentElement.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on"
         )[0] as HTMLElement;
@@ -4477,8 +4531,8 @@ export class BubbleManager {
     }
 
     // This 'wrapperBox' param has just been added to the DOM by JQuery before arriving here.
-    // All of the text-based bubbles' default heights are based on the min-height of 30px set
-    // in bubble.less for a .bloom-textOverPicture element. For video or picture over pictures,
+    // All of the text-based canvas elements' default heights are based on the min-height of 30px set
+    // in overlayTool.less for a .bloom-canvas-element element. For video or picture over pictures,
     // we want something a bit taller.
     private setDefaultWrapperBoxHeight(wrapperBox: JQuery) {
         const width = parseInt(wrapperBox.css("width"), 10);
@@ -4498,7 +4552,7 @@ export class BubbleManager {
     private getImageContainerFromMouse(mouseX: number, mouseY: number): JQuery {
         const elements = document.elementsFromPoint(mouseX, mouseY);
         for (let i = 0; i < elements.length; i++) {
-            const trial = BubbleManager.getTopLevelImageContainerElement(
+            const trial = CanvasElementManager.getTopLevelImageContainerElement(
                 elements[i]
             );
             if (trial) {
@@ -4526,7 +4580,7 @@ export class BubbleManager {
         positionInViewport: Point,
         rightTopOffset?: string
     ) {
-        const newPoint = BubbleManager.convertPointFromViewportToElementFrame(
+        const newPoint = CanvasElementManager.convertPointFromViewportToElementFrame(
             positionInViewport,
             container
         );
@@ -4546,12 +4600,12 @@ export class BubbleManager {
 
         // Note: This code will not clear out the rest of the style properties... they are preserved.
         //       If some or all style properties need to be removed before doing this processing, it is the caller's responsibility to do so beforehand
-        //       The reason why we do this is because a bubble's onmousemove handler calls this function,
-        //       and in that case we want to preserve the bubble's width/height which are set in the style
+        //       The reason why we do this is because a canvas element's onmousemove handler calls this function,
+        //       and in that case we want to preserve the canvas element's width/height which are set in the style
         wrapperBox.css("left", xOffset); // assumes numbers are in pixels
         wrapperBox.css("top", yOffset); // assumes numbers are in pixels
 
-        BubbleManager.setTextboxPosition(wrapperBox, xOffset, yOffset);
+        CanvasElementManager.setTextboxPosition(wrapperBox, xOffset, yOffset);
 
         this.adjustTarget(wrapperBox.get(0));
     }
@@ -4562,7 +4616,7 @@ export class BubbleManager {
             adjustTarget(document.firstElementChild as HTMLElement, undefined);
             return;
         }
-        const targetId = draggable.getAttribute("data-bubble-id");
+        const targetId = draggable.getAttribute("data-draggable-id");
         const target = targetId
             ? document.querySelector(`[data-target-of="${targetId}"]`)
             : undefined;
@@ -4572,19 +4626,19 @@ export class BubbleManager {
     // This used to be called from a right-click context menu, but now it only gets called
     // from the comicTool where we verify that we have an active element BEFORE calling this
     // method. That simplifies things here.
-    public deleteTOPBox(textOverPicDiv: HTMLElement) {
+    public deleteCanvasElement(textOverPicDiv: HTMLElement) {
         // Simple guard, just in case.
         if (!textOverPicDiv || !textOverPicDiv.parentElement) {
             return;
         }
         if (textOverPicDiv.classList.contains(kbackgroundImageClass)) {
             // just revert it to a placeholder
-            const img = getImageFromOverlay(textOverPicDiv);
+            const img = getImageFromCanvasElement(textOverPicDiv);
             if (img) {
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
-                this.updateBubbleForChangedImage(img);
+                this.updateCanvasElementForChangedImage(img);
             }
             return;
         }
@@ -4600,9 +4654,14 @@ export class BubbleManager {
         Comical.deleteBubbleFromFamily(textOverPicDiv, containerElement);
 
         // Update UI and make sure things get redrawn correctly.
-        this.refreshBubbleEditing(containerElement, undefined, false, false);
+        this.refreshCanvasElementEditing(
+            containerElement,
+            undefined,
+            false,
+            false
+        );
         // We no longer have an active element, but the old active element may be
-        // needed by the removeControlFrame method called by refreshBubbleEditing
+        // needed by the removeControlFrame method called by refreshCanvasElementEditing
         // to remove a popup menu.
         this.setActiveElement(undefined);
         // By this point it's really gone, so this will clean up if it had a target.
@@ -4610,7 +4669,7 @@ export class BubbleManager {
     }
 
     // We verify that 'textElement' is the active element before calling this method.
-    public duplicateTOPBox(
+    public duplicateCanvasElementBox(
         textElement: HTMLElement,
         sameLocation?: boolean
     ): HTMLElement | undefined {
@@ -4626,7 +4685,7 @@ export class BubbleManager {
         ) {
             Comical.update(imageContainer);
         }
-        // Get the patriarch bubble of this comical family. Can only be undefined if no active element.
+        // Get the patriarch canvas element of this comical family. Can only be undefined if no active element.
         const patriarchBubble = this.getPatriarchBubbleOfActiveElement();
         if (patriarchBubble) {
             if (textElement !== patriarchBubble.content) {
@@ -4640,13 +4699,13 @@ export class BubbleManager {
                 return;
             }
 
-            const result = this.duplicateBubbleFamily(
+            const result = this.duplicateCanvasElementFamily(
                 patriarchBubble,
                 bubbleSpecToDuplicate,
                 sameLocation
             );
 
-            // The JQuery resizable event handler needs to be removed after the duplicate bubble
+            // The JQuery resizable event handler needs to be removed after the duplicate canvas element
             // family is created, and then the over picture editing needs to be initialized again.
             // See BL-13617.
             this.removeJQueryResizableWidget();
@@ -4656,23 +4715,23 @@ export class BubbleManager {
         return undefined;
     }
 
-    // Should duplicate all bubbles and their size and relative placement and color, etc.,
-    // and the actual text in the bubbles.
-    // The 'patriarchSourceBubble' is the head of a family of bubbles to duplicate,
-    // although this one bubble may be all there is.
+    // Should duplicate all canvas elements and their size and relative placement and color, etc.,
+    // and the actual text in the canvas elements.
+    // The 'patriarchSourceBubble' is the head of a family of canvas elements to duplicate,
+    // although this one canvas element may be all there is.
     // The content of 'patriarchSourceBubble' is now the active element.
-    // The 'bubbleSpecToDuplicate' param is the bubbleSpec for the patriarch source bubble.
+    // The 'bubbleSpecToDuplicate' param is the bubbleSpec for the patriarch source canvas element.
     // The function returns the patriarch textOverPicture element of the new
-    // duplicated bubble family.
-    // This method handles all needed refreshing of the duplicate bubbles.
-    private duplicateBubbleFamily(
+    // duplicated canvas element family.
+    // This method handles all needed refreshing of the duplicate canvas elements.
+    private duplicateCanvasElementFamily(
         patriarchSourceBubble: Bubble,
         bubbleSpecToDuplicate: BubbleSpec,
         sameLocation: boolean = false
     ): HTMLElement | undefined {
         const sourceElement = patriarchSourceBubble.content;
         const proposedOffset = 15;
-        const newPoint = this.findBestLocationForNewBubble(
+        const newPoint = this.findBestLocationForNewCanvasElement(
             sourceElement,
             sameLocation ? 0 : proposedOffset + sourceElement.clientWidth, // try to not overlap too much
             sameLocation ? 0 : proposedOffset
@@ -4680,7 +4739,7 @@ export class BubbleManager {
         if (!newPoint) {
             return;
         }
-        const patriarchDuplicateElement = this.addOverPictureElementFromOriginal(
+        const patriarchDuplicateElement = this.addCanvasElementFromOriginal(
             newPoint.getScaledX(),
             newPoint.getScaledY(),
             sourceElement,
@@ -4709,7 +4768,7 @@ export class BubbleManager {
 
         this.setActiveElement(patriarchDuplicateElement);
         this.matchSizeOfSource(sourceElement, patriarchDuplicateElement);
-        const container = BubbleManager.getTopLevelImageContainerElement(
+        const container = CanvasElementManager.getTopLevelImageContainerElement(
             patriarchDuplicateElement
         );
         if (!container) {
@@ -4721,9 +4780,9 @@ export class BubbleManager {
             sourceElement,
             patriarchDuplicateElement
         );
-        // This is the bubbleSpec for the brand new (now active) copy of the patriarch bubble.
+        // This is the bubbleSpec for the brand new (now active) copy of the patriarch canvas element.
         // We will overwrite most of it, but keep its level and version properties. The level will be
-        // different so the copied bubble(s) will be in a separate child chain from the original(s).
+        // different so the copied canvas element(s) will be in a separate child chain from the original(s).
         // The version will probably be the same, but if it differs, we want the new one.
         // We will update this bubbleSpec with an adjusted version of the original tail and keep
         // other original properties (like backgroundColor and border style/color and order).
@@ -4737,11 +4796,11 @@ export class BubbleManager {
             level: specOfCopiedElement.level,
             version: specOfCopiedElement.version
         });
-        // OK, now we're done with our manipulation of the patriarch bubble and we're about to go on
-        // and deal with the child bubbles (if any). But we replaced the innerHTML after creating the
-        // initial duplicate bubble and the editable divs may not have the appropriate events attached,
+        // OK, now we're done with our manipulation of the patriarch canvas element and we're about to go on
+        // and deal with the child canvas elements (if any). But we replaced the innerHTML after creating the
+        // initial duplicate canvas element and the editable divs may not have the appropriate events attached,
         // so we'll refresh again with 'attachEventsToEditables' set to 'true'.
-        this.refreshBubbleEditing(
+        this.refreshCanvasElementEditing(
             container,
             new Bubble(patriarchDuplicateElement),
             true,
@@ -4753,7 +4812,7 @@ export class BubbleManager {
                 sourceElement,
                 childBubble.content
             );
-            this.duplicateOneChildBubble(
+            this.duplicateOneChildCanvasElement(
                 childOffsetFromPatriarch,
                 patriarchDuplicateElement,
                 childBubble
@@ -4828,7 +4887,7 @@ export class BubbleManager {
         );
     }
 
-    private duplicateOneChildBubble(
+    private duplicateOneChildCanvasElement(
         offsetFromPatriarch: Point,
         parentElement: HTMLElement,
         childSourceBubble: Bubble
@@ -4851,11 +4910,13 @@ export class BubbleManager {
 
         this.matchSizeOfSource(sourceElement, newChildElement);
         // We just replaced the bloom-editables from the 'addChildInternal' with a clone of the source
-        // bubble's HTML. This will undo any event handlers that might have been attached by the
+        // canvas element's HTML. This will undo any event handlers that might have been attached by the
         // refresh triggered by 'addChildInternal'. So we send the newly modified child through again,
         // with 'attachEventsToEditables' set to 'true'.
-        this.refreshBubbleEditing(
-            BubbleManager.getTopLevelImageContainerElement(parentElement)!,
+        this.refreshCanvasElementEditing(
+            CanvasElementManager.getTopLevelImageContainerElement(
+                parentElement
+            )!,
             new Bubble(newChildElement),
             true,
             true
@@ -4881,8 +4942,8 @@ export class BubbleManager {
         // Cleanup this node
         this.safelyRemoveAttribute(element, "id");
         // Picture over picture elements need the tabindex (="0") in order to be focusable.
-        // But for text-based bubbles we need to delete positive tabindex, so we don't do weird
-        // things to talking book playback order when we duplicate a family of bubbles.
+        // But for text-based canvas elements we need to delete positive tabindex, so we don't do weird
+        // things to talking book playback order when we duplicate a family of canvas elements.
         this.removePositiveTabindex(element);
         this.safelyRemoveAttribute(element, "data-duration");
         this.safelyRemoveAttribute(element, "data-audiorecordingendtimes");
@@ -4940,19 +5001,19 @@ export class BubbleManager {
     private splitterResizeObservers: ResizeObserver[] = [];
     public startDraggingSplitter() {
         this.getAllPrimaryImageContainersOnPage().forEach(container => {
-            const backgroundOverlay = container.getElementsByClassName(
+            const backgroundCanvasElement = container.getElementsByClassName(
                 kbackgroundImageClass
             )[0] as HTMLElement;
-            if (backgroundOverlay) {
+            if (backgroundCanvasElement) {
                 // These two attributes are what the resize observer will mess with to make
                 // the background resize as the splitter moves. We will restore them in
-                // endDraggingSplitter so the code that adjusts all the overlays has the
+                // endDraggingSplitter so the code that adjusts all the canvas elements has the
                 // correct starting size.
-                backgroundOverlay.setAttribute(
+                backgroundCanvasElement.setAttribute(
                     "data-oldStyle",
-                    backgroundOverlay.getAttribute("style") ?? ""
+                    backgroundCanvasElement.getAttribute("style") ?? ""
                 );
-                const img = getImageFromOverlay(backgroundOverlay);
+                const img = getImageFromCanvasElement(backgroundCanvasElement);
                 img?.setAttribute(
                     "data-oldStyle",
                     img.getAttribute("style") ?? ""
@@ -4960,7 +5021,7 @@ export class BubbleManager {
                 const resizeObserver = new ResizeObserver(() => {
                     this.adjustBackgroundImageSize(
                         container,
-                        backgroundOverlay,
+                        backgroundCanvasElement,
                         false
                     );
                 });
@@ -4972,18 +5033,18 @@ export class BubbleManager {
 
     public endDraggingSplitter() {
         this.getAllPrimaryImageContainersOnPage().forEach(container => {
-            const backgroundOverlay = container.getElementsByClassName(
+            const backgroundCanvasElement = container.getElementsByClassName(
                 kbackgroundImageClass
             )[0] as HTMLElement;
             // We need to remove the results of the continuous adjustments so that we can make the change again,
-            // but this time adjust all the other overlays with it.
-            if (backgroundOverlay) {
-                backgroundOverlay.setAttribute(
+            // but this time adjust all the other canvas elements with it.
+            if (backgroundCanvasElement) {
+                backgroundCanvasElement.setAttribute(
                     "style",
-                    backgroundOverlay.getAttribute("data-oldStyle") ?? ""
+                    backgroundCanvasElement.getAttribute("data-oldStyle") ?? ""
                 );
-                backgroundOverlay.removeAttribute("data-oldStyle");
-                const img = getImageFromOverlay(backgroundOverlay);
+                backgroundCanvasElement.removeAttribute("data-oldStyle");
+                const img = getImageFromCanvasElement(backgroundCanvasElement);
                 img?.setAttribute(
                     "style",
                     img.getAttribute("data-oldStyle") ?? ""
@@ -4999,22 +5060,22 @@ export class BubbleManager {
     public suspendComicEditing(
         forWhat: "forDrag" | "forTool" | "forGamePlayMode"
     ) {
-        if (!this.isComicEditingOn) {
+        if (!this.isCanvasElementEditingOn) {
             // Note that this prevents us from getting into one of the suspended states
             // unless it was on to begin with. Therefore a subsequent resume won't turn
             // it back on unless it was to start with.
             return;
         }
-        this.turnOffBubbleEditing();
+        this.turnOffCanvasElementEditing();
         if (forWhat === "forDrag") {
             this.startDraggingSplitter();
         }
 
         if (forWhat === "forGamePlayMode") {
             const allOverPictureElements = Array.from(
-                document.getElementsByClassName(kTextOverPictureClass)
+                document.getElementsByClassName(kCanvasElementClass)
             );
-            // We don't want the user to be able to edit the text in the bubbles while playing a game.
+            // We don't want the user to be able to edit the text in the canvas elements while playing a game.
             // This doesn't need to be in the game prepareActivity because we remove contenteditable
             // from all elements when publishing a book.
             allOverPictureElements.forEach(element => {
@@ -5057,7 +5118,7 @@ export class BubbleManager {
         }
         if (this.comicEditingSuspendedState === "forGamePlayMode") {
             const allOverPictureElements = Array.from(
-                document.getElementsByClassName(kTextOverPictureClass)
+                document.getElementsByClassName(kCanvasElementClass)
             );
             allOverPictureElements.forEach(element => {
                 const editables = Array.from(
@@ -5070,7 +5131,7 @@ export class BubbleManager {
             this.setupControlFrame();
         }
         this.comicEditingSuspendedState = "none";
-        this.turnOnBubbleEditing();
+        this.turnOnCanvasElementEditing();
     }
 
     private draggingSplitter = false;
@@ -5094,18 +5155,18 @@ export class BubbleManager {
         const detachedTargets = Array.from(
             document.querySelectorAll("[data-target-of]")
         );
-        const bubbles = Array.from(
-            document.querySelectorAll("[data-bubble-id]")
+        const canvasElements = Array.from(
+            document.querySelectorAll("[data-draggable-id]")
         );
-        bubbles.forEach(bubble => {
-            const bubbleId = bubble.getAttribute("data-bubble-id");
-            if (bubbleId) {
+        canvasElements.forEach(canvasElement => {
+            const draggableId = canvasElement.getAttribute("data-draggable-id");
+            if (draggableId) {
                 const index = detachedTargets.findIndex(
                     (target: Element) =>
-                        target.getAttribute("data-target-of") === bubbleId
+                        target.getAttribute("data-target-of") === draggableId
                 );
                 if (index > -1) {
-                    detachedTargets.splice(index, 1); // not detached if bubble points to it
+                    detachedTargets.splice(index, 1); // not detached if draggable points to it
                 }
             }
         });
@@ -5146,7 +5207,7 @@ export class BubbleManager {
 
     public initializeOverPictureEditing(): void {
         // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
-        // load, so that bubble editing works even when the Overlay tool is not active. So it definitely
+        // load, so that canvas element editing works even when the Canvas element tool is not active. So it definitely
         // needs to be called there when we're calling SetupElements during page load. It's possible
         // that's the only time it needs to be called from there, but I'm not sure so I'm leaving it
         // called always. However, there's at least one situation where we call SetupElements but do
@@ -5166,24 +5227,24 @@ export class BubbleManager {
 
         this.setupSplitterEventHandling();
 
-        this.turnOnBubbleEditing();
+        this.turnOnCanvasElementEditing();
     }
 
     // When dragging origami sliders, turn comical off.
-    // With this, we get some weirdness during dragging: overlay text moves, but
-    // the bubbles do not. But everything clears up when we turn it back on afterwards.
+    // With this, we get some weirdness during dragging: canvas element text moves, but
+    // the canvas elements do not. But everything clears up when we turn it back on afterwards.
     // Without it, things are even weirder, and the end result may be weird, too.
     // The comical canvas does not change size as the slider moves, and things may end
-    // up in strange states with bubbles cut off where the boundary used to be.
+    // up in strange states with canvas elements cut off where the boundary used to be.
     // It's possible that we could do better by forcing the canvas to stay the same
     // size as the image container, but I'm very unsure how resizing an active canvas
     // containing objects will affect ComicalJs and the underlying PaperJs.
-    // It should be pretty rare to resize an image after adding bubbles, so I think it's
+    // It should be pretty rare to resize an image after adding canvas elements, so I think it's
     // better to go with this, which at least gives a predictable result.
     // Note: we don't ever need to remove these; they can usefully hang around until
     // we load some other page. (We don't turn off comical when we hide the tool, since
-    // the bubbles are still visible and editable, and we need it's help to support
-    // all the relevant behaviors and keep the bubbles in sync with the text.)
+    // the canvas elements are still visible and editable, and we need it's help to support
+    // all the relevant behaviors and keep the canvas elements in sync with the text.)
     // Because we're adding a fixed method, not a local function, adding multiple
     // times will not cause duplication.
     public setupSplitterEventHandling() {
@@ -5196,7 +5257,7 @@ export class BubbleManager {
     }
 
     public cleanupOverPictureElements() {
-        const allOverPictureElements = $("body").find(kTextOverPictureSelector);
+        const allOverPictureElements = $("body").find(kCanvasElementSelector);
         allOverPictureElements.each((index, element) => {
             const thisOverPictureElement = $(element);
 
@@ -5218,7 +5279,7 @@ export class BubbleManager {
     private removeJQueryResizableWidget() {
         try {
             const allOverPictureElements = $("body").find(
-                kTextOverPictureSelector
+                kCanvasElementSelector
             );
             // Removes the resizable functionality completely. This will return the element back to its pre-init state.
             allOverPictureElements.resizable("destroy");
@@ -5239,7 +5300,9 @@ export class BubbleManager {
         let unscaledRelativeTop: number;
 
         if (!container) {
-            container = BubbleManager.getTopLevelImageContainerElement(textBox);
+            container = CanvasElementManager.getTopLevelImageContainerElement(
+                textBox
+            );
         }
 
         if (container) {
@@ -5280,16 +5343,16 @@ export class BubbleManager {
 
     // Sets a text box's position permanently to where it is now.
     // (Not sure if this ever changes anything, except when migrating. Earlier versions of Bloom
-    // stored the bubble position and size as a percentage of the image container size.
+    // stored the canvas element position and size as a percentage of the image container size.
     // The reasons for that are lost in history; probably we thought that it would better
     // preserve the user's intent to keep in the same shape and position.
     // But in practice it didn't work well, especially since everything was relative to the
     // image container, and the image moves around in that as determined by content:fit etc
     // to keep its aspect ratio. The reasons to prefer an absolute position and
-    // size are in BL-11667. Basically, we don't want the overlay to change its size or position
+    // size are in BL-11667. Basically, we don't want the canvas element to change its size or position
     // relative to its own tail when the image is resized, either because the page size changed
     // or because of dragging a splitter. It would usually be even better if everything kept
-    // its position relative to the image itself, but that is much harder to do since the overlay
+    // its position relative to the image itself, but that is much harder to do since the canvas element
     // isn't (can't be) a child of the img.)
     private static setTextboxPosition(
         textBox: JQuery,
@@ -5365,7 +5428,7 @@ export class BubbleManager {
             : (firstTry as HTMLElement); // element was just inside of a top level imageContainer
     }
 
-    // When showing a tail for a bubble style that doesn't have one by default, we get one here.
+    // When showing a tail for a canvas element style that doesn't have one by default, we get one here.
     public getDefaultTailSpec(): TailSpec | undefined {
         const activeElement = this.getActiveElement();
         if (activeElement) {
@@ -5380,34 +5443,34 @@ export class BubbleManager {
             ?.parentElement?.classList.contains("drag-activity-play");
     }
 
-    public deleteBubble(): void {
+    public deleteCurrentCanvasElement(): void {
         // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
-        if (this !== theOneBubbleManager) {
-            theOneBubbleManager.deleteBubble();
+        if (this !== theOneCanvasElementManager) {
+            theOneCanvasElementManager.deleteCurrentCanvasElement();
             return;
         }
         const active = this.getActiveElement();
         if (active) {
-            this.deleteTOPBox(active);
+            this.deleteCanvasElement(active);
         }
     }
 
-    public duplicateBubble(): HTMLElement | undefined {
+    public duplicateCanvasElement(): HTMLElement | undefined {
         // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
-        if (this !== theOneBubbleManager) {
-            return theOneBubbleManager.duplicateBubble();
+        if (this !== theOneCanvasElementManager) {
+            return theOneCanvasElementManager.duplicateCanvasElement();
         }
         const active = this.getActiveElement();
         if (active) {
-            return this.duplicateTOPBox(active);
+            return this.duplicateCanvasElementBox(active);
         }
         return undefined;
     }
 
-    public addChildBubble(): void {
+    public addChildCanvasElement(): void {
         // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
-        if (this !== theOneBubbleManager) {
-            theOneBubbleManager.addChildBubble();
+        if (this !== theOneCanvasElementManager) {
+            theOneCanvasElementManager.addChildCanvasElement();
             return;
         }
         const parentElement = this.getActiveElement();
@@ -5425,20 +5488,20 @@ export class BubbleManager {
         const [
             offsetX,
             offsetY
-        ] = BubbleManager.GetChildPositionFromParentBubble(
+        ] = CanvasElementManager.GetChildPositionFromParentCanvasElement(
             parentElement,
             bubbleSpec
         );
-        this.addChildOverPictureElementAndRefreshPage(
+        this.addChildCanvasElementAndRefreshPage(
             parentElement,
             offsetX,
             offsetY
         );
     }
 
-    // Returns a 2-tuple containing the desired x and y offsets of the child bubble from the parent bubble
+    // Returns a 2-tuple containing the desired x and y offsets of the child canvas element from the parent canvas element
     //   (i.e., offsetX = child.left - parent.left)
-    public static GetChildPositionFromParentBubble(
+    public static GetChildPositionFromParentCanvasElement(
         parentElement: HTMLElement,
         parentBubbleSpec: BubbleSpec | undefined
     ): number[] {
@@ -5452,13 +5515,13 @@ export class BubbleManager {
         ) {
             const tail = parentBubbleSpec.tails[0];
 
-            const bubbleCenterX =
+            const canvasElementCenterX =
                 parentElement.offsetLeft + parentElement.clientWidth / 2.0;
-            const bubbleCenterY =
+            const canvasElementCenterY =
                 parentElement.offsetTop + parentElement.clientHeight / 2.0;
 
-            const deltaX = tail.tipX - bubbleCenterX;
-            const deltaY = tail.tipY - bubbleCenterY;
+            const deltaX = tail.tipX - canvasElementCenterX;
+            const deltaY = tail.tipY - canvasElementCenterY;
 
             // Place the new child in the opposite quandrant of the tail
             if (deltaX > 0) {
@@ -5479,16 +5542,16 @@ export class BubbleManager {
         return [offsetX, offsetY];
     }
 
-    // 6.2 is the release that should properly handle background overlays.
+    // 6.2 is the release that should properly handle background canvas elements.
     // Reverting them is a temporary hack to prevent problems in 6.1 and 6.0.
     // So this is not currently called in 6.2 like it is in 6.1 and 6.0.
     // But I'm leaving the code for now, because last I heard, we want to use this (or some variation of it)
     // at publish time to set the image containers back to the original, more simple state.
-    private revertBackgroundOverlays() {
+    private revertBackgroundCanvasElements() {
         for (const bgo of Array.from(
             document.getElementsByClassName(kbackgroundImageClass)
         )) {
-            const bgImage = getImageFromOverlay(bgo as HTMLElement);
+            const bgImage = getImageFromCanvasElement(bgo as HTMLElement);
             const mainImage = getImageFromContainer(
                 bgo.parentElement as HTMLElement
             );
@@ -5508,71 +5571,73 @@ export class BubbleManager {
     private handleResizeAdjustments() {
         const primaryImageContainers = this.getAllPrimaryImageContainersOnPage();
         primaryImageContainers.forEach(imageContainer => {
-            this.switchBackgroundToOverlayIfNeeded(imageContainer);
+            this.switchBackgroundToCanvasElementIfNeeded(imageContainer);
             this.AdjustChildrenIfSizeChanged(imageContainer);
         });
     }
 
     // If an image container has a non-placeholder background image, we switch the
-    // background image to an image overlay. This allows it to be manipuluated more easily.
+    // background image to an image canvas element. This allows it to be manipuluated more easily.
     // More importantly, it prevents the difficult-to-account-for movement of the
-    // background image when the container is resized. Once it is an overlay,
-    // we can apply our algorithm to adjust all the overlays together when the container
+    // background image when the container is resized. Once it is a canvas element,
+    // we can apply our algorithm to adjust all the canvas elements together when the container
     // is resized. A further benefit is that it is somewhat backwards compatible:
-    // older code will not mess with overlay positioning like it would tend to
+    // older code will not mess with canvas element positioning like it would tend to
     // if we put position and size attributes on the background image directly.
-    private switchBackgroundToOverlayIfNeeded(imageContainer: HTMLElement) {
-        const bgOverlay = imageContainer.getElementsByClassName(
+    private switchBackgroundToCanvasElementIfNeeded(
+        imageContainer: HTMLElement
+    ) {
+        const bgCanvasElement = imageContainer.getElementsByClassName(
             kbackgroundImageClass
         )[0] as HTMLElement;
-        if (bgOverlay) {
+        if (bgCanvasElement) {
             // I think this is redundant, but it got added by mistake at one point,
             // and will hide the placeholder if it's there, so make sure it's not.
-            bgOverlay.classList.remove(kOverlayClass);
+            bgCanvasElement.classList.remove(kHasCanvasElementClass);
             return; // already have one.
         }
-        this.switchBackgroundToOverlay(imageContainer);
+        this.switchBackgroundToCanvasElement(imageContainer);
     }
 
-    private switchBackgroundToOverlay(imageContainer: HTMLElement) {
+    private switchBackgroundToCanvasElement(imageContainer: HTMLElement) {
         const img = getImageFromContainer(imageContainer);
         if (!img) return; // should not happen
-        let bgOverlay = imageContainer.getElementsByClassName(
+        let bgCanvasElement = imageContainer.getElementsByClassName(
             kbackgroundImageClass
         )[0] as HTMLElement;
-        if (!bgOverlay) {
+        if (!bgCanvasElement) {
             // various legacy behavior, such as hiding the old-style background placeholder.
-            imageContainer.classList.add(kOverlayClass);
-            bgOverlay = document.createElement("div");
-            bgOverlay.classList.add(kTextOverPictureClass);
-            bgOverlay.classList.add(kbackgroundImageClass);
+            imageContainer.classList.add(kHasCanvasElementClass);
+            bgCanvasElement = document.createElement("div");
+            bgCanvasElement.classList.add(kCanvasElementClass);
+            bgCanvasElement.classList.add(kbackgroundImageClass);
 
-            // Make a new image container to hold just the background image, inside the new overlay.
-            // We don't want a deep clone...that will copy all the overlays, too.
+            // Make a new image container to hold just the background image, inside the new canvas element.
+            // We don't want a deep clone...that will copy all the canvas elements, too.
             const newImgContainer = imageContainer.cloneNode(
                 false
             ) as HTMLElement;
-            newImgContainer.classList.remove(kOverlayClass);
-            bgOverlay.appendChild(newImgContainer);
+            newImgContainer.classList.remove(kHasCanvasElementClass);
+            bgCanvasElement.appendChild(newImgContainer);
             const newImg = img.cloneNode(false) as HTMLImageElement;
             newImg.classList.remove("bloom-imageLoadError");
             newImgContainer.appendChild(newImg);
 
-            // Set level so Comical will consider the new overlay to be under the existing ones.
-            const overlayElements = Array.from(
-                imageContainer.getElementsByClassName("bloom-textOverPicture")
+            // Set level so Comical will consider the new canvas element to be under the existing ones.
+            const canvasElementElements = Array.from(
+                imageContainer.getElementsByClassName(kCanvasElementClass)
             );
             let minLevel = Math.min(
-                ...overlayElements.map(
+                ...canvasElementElements.map(
                     b => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0
                 )
             );
             if (minLevel <= 1) {
                 // bump all the others up so we can insert one at level 1 below them all
                 // We don't want to use zero as a level...some Comical code complains that
-                // the bubble doesn't have a level at all. And I'm nervous about using
+                // the canvas element doesn't have a level at all. And I'm nervous about using
                 // negative numbers...something that wants a level one higher might get zero.
-                overlayElements.forEach(b => {
+                canvasElementElements.forEach(b => {
                     const bubble = new Bubble(b as HTMLElement);
                     const spec = bubble.getBubbleSpec();
                     // the one previously at minLevel will now be at 2, others higher in same sequence.
@@ -5581,13 +5646,13 @@ export class BubbleManager {
                 });
                 minLevel = 2;
             }
-            const bubble = new Bubble(bgOverlay as HTMLElement);
+            const bubble = new Bubble(bgCanvasElement as HTMLElement);
             bubble.getBubbleSpec().level = minLevel - 1;
             bubble.persistBubbleSpec();
-            bgOverlay.style.visibility = "none"; // hide it until we adjust its shape and position
+            bgCanvasElement.style.visibility = "none"; // hide it until we adjust its shape and position
             // consistent with level, we want it in front of the (new, placeholder) background image
-            // and behind the other overlays.
-            imageContainer.insertBefore(bgOverlay, img.nextSibling);
+            // and behind the other canvas elements.
+            imageContainer.insertBefore(bgCanvasElement, img.nextSibling);
         }
         const bgImage = getBackgroundImageFromContainer(
             imageContainer
@@ -5596,8 +5661,8 @@ export class BubbleManager {
         bgImage.classList.remove("bloom-imageLoadError");
         bgImage.onerror = HandleImageError;
         bgImage.setAttribute("src", img.getAttribute("src") ?? "");
-        this.adjustBackgroundImageSize(imageContainer, bgOverlay, true);
-        bgOverlay.style.visibility = ""; // now we can show it, if it was new and hidden
+        this.adjustBackgroundImageSize(imageContainer, bgCanvasElement, true);
+        bgCanvasElement.style.visibility = ""; // now we can show it, if it was new and hidden
         SetupMetadataButton(imageContainer);
 
         // remove all attributes from img and set src to make it a plain vanilla placeholder.
@@ -5616,21 +5681,21 @@ export class BubbleManager {
 
     private adjustBackgroundImageSize(
         imageContainer: HTMLElement,
-        bgOverlay: HTMLElement,
+        bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean
     ) {
         return this.adjustBackgroundImageSizeToFit(
             imageContainer.clientWidth,
             imageContainer.clientHeight,
-            bgOverlay,
+            bgCanvasElement,
             useSizeOfNewImage,
             0
         );
     }
 
-    // Given a bgOverlay element, which is always an overlay having the bloom-backgroundImage
+    // Given a bg canvas element, which is always a canvas element having the bloom-backgroundImage
     // class, and the height and width of the parent imageContainer, this method attempts to
-    // make the bgOverlay the right size and position to fill as much as possible of the parent,
+    // make the bgCanvasElement the right size and position to fill as much as possible of the parent,
     // rather like object-fit:contain. It is used in two main scenarios: the user may have
     // selected a different image, which means we must adjust to suit a different image aspect
     // ratio. Or, the size of the container may have changed, e.g., using origami. We must also
@@ -5641,19 +5706,19 @@ export class BubbleManager {
     // get its natural dimensions to figure an aspect ratio. In this case, the method arranges
     // to be called again after the image loads or a timeout.
     // A further complication is that the image may fail to load, so we never get natural
-    // dimensions. In this case, we expand the bgOverlay to the full size of the container so
+    // dimensions. In this case, we expand the bgCanvasElement to the full size of the container so
     // all the space is available to display the error icon and message.
     private adjustBackgroundImageSizeToFit(
         containerWidth: number,
         containerHeight: number,
-        // The "overlay" div that contains the background image.
-        // (Since this is the background that we overlay things on, it is itself an
-        // overlay only in the sense that it has the same HTML structure in order to
-        // allow many commands and functions to work on it as if it were an ordinary overlay.)
-        bgOverlay: HTMLElement,
+        // The canvas element div that contains the background image.
+        // (Since this is the background that we overlay things on, it is itself a
+        // canvas element only in the sense that it has the same HTML structure in order to
+        // allow many commands and functions to work on it as if it were an ordinary canvas element.)
+        bgCanvasElement: HTMLElement,
         // if this is set true, we've updated the src of the background image and want to
         // ignore any cropping (assumes the img doesn't have any
-        // cropping-related style settings) and just adjust the overlay to fit the image.
+        // cropping-related style settings) and just adjust the canvas element to fit the image.
         // We'll always have to wait for it to load in this case, otherwise, we may get
         // the dimensions of a previous image.
         useSizeOfNewImage: boolean,
@@ -5667,11 +5732,12 @@ export class BubbleManager {
         if (timeoutHandler) {
             clearTimeout(timeoutHandler);
         }
-        let imgAspectRatio = bgOverlay.clientWidth / bgOverlay.clientHeight;
-        const img = getImageFromOverlay(bgOverlay);
+        let imgAspectRatio =
+            bgCanvasElement.clientWidth / bgCanvasElement.clientHeight;
+        const img = getImageFromCanvasElement(bgCanvasElement);
         let failedImage = false;
         // We don't ever expect there not to be an img. If it happens, we'll just go
-        // ahead and adjust based on the current shape of the overlay (as set above).
+        // ahead and adjust based on the current shape of the canvas element (as set above).
         if (img) {
             // The image may not have loaded yet or may have failed to load.  If either of these
             // cases is true, then the naturalHeight and naturalWidth will be zero.  If the image
@@ -5703,7 +5769,7 @@ export class BubbleManager {
                         this.adjustBackgroundImageSizeToFit(
                             containerWidth,
                             containerHeight,
-                            bgOverlay,
+                            bgCanvasElement,
                             // after the timeout we don't consider that we MUST wait if we have dimensions
                             false,
                             0 // when we get this call, we're responding to the timeout, so don't need to cancel.
@@ -5722,7 +5788,7 @@ export class BubbleManager {
                         this.adjustBackgroundImageSizeToFit(
                             containerWidth,
                             containerHeight,
-                            bgOverlay,
+                            bgCanvasElement,
                             false, // when this call happens we have the new dimensions.
                             handle // if this callback happens we can cancel the timeout.
                         ),
@@ -5733,52 +5799,59 @@ export class BubbleManager {
                 // there is established cropping. Use the cropped size to determine the
                 // aspect ratio.
                 imgAspectRatio =
-                    BubbleManager.pxToNumber(bgOverlay.style.width) /
-                    BubbleManager.pxToNumber(bgOverlay.style.height);
+                    CanvasElementManager.pxToNumber(
+                        bgCanvasElement.style.width
+                    ) /
+                    CanvasElementManager.pxToNumber(
+                        bgCanvasElement.style.height
+                    );
             } else {
                 // not cropped, so we can use the natural dimensions
                 imgAspectRatio = img.naturalWidth / img.naturalHeight;
             }
         }
 
-        const oldWidth = bgOverlay.clientWidth;
+        const oldWidth = bgCanvasElement.clientWidth;
         const containerAspectRatio = containerWidth / containerHeight;
         if (imgAspectRatio > containerAspectRatio) {
             // size of image is width-limited
-            bgOverlay.style.width = containerWidth + "px";
-            bgOverlay.style.left = "0px";
+            bgCanvasElement.style.width = containerWidth + "px";
+            bgCanvasElement.style.left = "0px";
             const imgHeight = containerWidth / imgAspectRatio;
-            bgOverlay.style.top = (containerHeight - imgHeight) / 2 + "px";
-            bgOverlay.style.height = imgHeight + "px";
+            bgCanvasElement.style.top =
+                (containerHeight - imgHeight) / 2 + "px";
+            bgCanvasElement.style.height = imgHeight + "px";
         } else {
             const imgWidth = containerHeight * imgAspectRatio;
-            bgOverlay.style.width = imgWidth + "px";
-            bgOverlay.style.top = "0px";
-            bgOverlay.style.left = (containerWidth - imgWidth) / 2 + "px";
-            bgOverlay.style.height = containerHeight + "px";
+            bgCanvasElement.style.width = imgWidth + "px";
+            bgCanvasElement.style.top = "0px";
+            bgCanvasElement.style.left = (containerWidth - imgWidth) / 2 + "px";
+            bgCanvasElement.style.height = containerHeight + "px";
         }
         if (!useSizeOfNewImage && img?.style.width) {
             // need to adjust image settings to preserve cropping
-            const scale = bgOverlay.clientWidth / oldWidth;
+            const scale = bgCanvasElement.clientWidth / oldWidth;
             img.style.width =
-                BubbleManager.pxToNumber(img.style.width) * scale + "px";
+                CanvasElementManager.pxToNumber(img.style.width) * scale + "px";
             img.style.left =
-                BubbleManager.pxToNumber(img.style.left) * scale + "px";
+                CanvasElementManager.pxToNumber(img.style.left) * scale + "px";
             img.style.top =
-                BubbleManager.pxToNumber(img.style.top) * scale + "px";
+                CanvasElementManager.pxToNumber(img.style.top) * scale + "px";
         }
         // Ensure that the missing image message is displayed without being cropped.
         // See BL-14241.
         if (failedImage && img && img.style && img.style.width.length > 0) {
-            const imgLeft = BubbleManager.pxToNumber(img.style.left);
-            const imgTop = BubbleManager.pxToNumber(img.style.top);
+            const imgLeft = CanvasElementManager.pxToNumber(img.style.left);
+            const imgTop = CanvasElementManager.pxToNumber(img.style.top);
             if (imgLeft < 0 || imgTop < 0) {
                 // The failed image was cropped. Remove the cropping to facilitate displaying the error state.
                 img.setAttribute(
                     "data-style",
                     `left:${img.style.left}; width:${img.style.width}; top:${img.style.top};`
                 );
-                const imgWidth = BubbleManager.pxToNumber(img.style.width);
+                const imgWidth = CanvasElementManager.pxToNumber(
+                    img.style.width
+                );
                 console.warn(
                     `Missing image: resetting left from ${imgLeft} to 0, top from ${imgTop} to 0, and width from ${imgWidth} to ${imgWidth +
                         imgLeft}`
@@ -5804,10 +5877,9 @@ export class BubbleManager {
         const oldSizeData = container.getAttribute("data-imgSizeBasedOn");
         if (!oldSizeData) {
             // Can't make a useful adjustment now, with no previous size to work from.
-            // But if this is an image with overlays, we'll want to remember the size for next time.
+            // But if this is an image with canvas elements, we'll want to remember the size for next time.
             if (
-                container.getElementsByClassName(kTextOverPictureClass).length >
-                0
+                container.getElementsByClassName(kCanvasElementClass).length > 0
             ) {
                 this.updateImgSizeData(container);
             }
@@ -5831,7 +5903,7 @@ export class BubbleManager {
         );
         if (children.length === 0) return;
 
-        // Figure out the rectangle that contains all the overlays. We'll adjust the size and position
+        // Figure out the rectangle that contains all the canvas elements. We'll adjust the size and position
         // of this rectangle to fit the new container. (But if there's a background image, we'll instead
         // adjust to keep it in the content-fit position.)
         // Review: should we consider any data-bubble-alternate values on other language bloom-editables?
@@ -5870,17 +5942,17 @@ export class BubbleManager {
                 ) {
                     // The background image was not properly adjusted to fit the old container size.
                     // We'll pretend the old container size properly matched the old BG image so everything else adjusts properly.
-                    // Move all the overlays so the BG image is in the top left.
+                    // Move all the canvas elements so the BG image is in the top left.
                     const deltaX = child.clientLeft;
                     const deltaY = child.clientTop;
                     for (let j = 0; j < children.length; j++) {
                         const c = children[j];
                         c.style.left =
-                            BubbleManager.pxToNumber(c.style.left) -
+                            CanvasElementManager.pxToNumber(c.style.left) -
                             deltaX +
                             "px";
                         c.style.top =
-                            BubbleManager.pxToNumber(c.style.top) -
+                            CanvasElementManager.pxToNumber(c.style.top) -
                             deltaY +
                             "px";
                     }
@@ -5962,25 +6034,31 @@ export class BubbleManager {
                         c.classList.contains("bloom-videoContainer")
                 )
             ) {
-                // an image or video overlay: the position is OK, we want to scale the size.
+                // an image or video canvas element: the position is OK, we want to scale the size.
                 newChildWidth = child.clientWidth * scale;
                 newChildHeight = child.clientHeight * scale;
                 const img = child.getElementsByTagName("img")[0];
                 if (img && img.style.width) {
                     // The image has been cropped. We want to keep the crop looking the same,
                     // which means we need to scale its width, left, and top.
-                    const imgLeft = BubbleManager.pxToNumber(img.style.left);
-                    const imgTop = BubbleManager.pxToNumber(img.style.top);
-                    const imgWidth = BubbleManager.pxToNumber(img.style.width);
+                    const imgLeft = CanvasElementManager.pxToNumber(
+                        img.style.left
+                    );
+                    const imgTop = CanvasElementManager.pxToNumber(
+                        img.style.top
+                    );
+                    const imgWidth = CanvasElementManager.pxToNumber(
+                        img.style.width
+                    );
                     img.style.left = imgLeft * scale + "px";
                     img.style.top = imgTop * scale + "px";
                     img.style.width = imgWidth * scale + "px";
                 }
             } else if (
-                child.classList.contains(kTextOverPictureClass) ||
+                child.classList.contains(kCanvasElementClass) ||
                 child.hasAttribute("data-target-of")
             ) {
-                // text overlay (or target): we want to leave the size alone and preserve the position of the center.
+                // text canvas element (or target): we want to leave the size alone and preserve the position of the center.
                 const oldCenterX = childLeft + child.clientWidth / 2;
                 const oldCenterY = childTop + child.clientHeight / 2;
                 const newCenterX = newLeft + (oldCenterX - left) * scale;
@@ -5997,7 +6075,7 @@ export class BubbleManager {
                 child.style.width = newChildWidth + "px";
                 child.style.height = newChildHeight + "px";
             }
-            if (child.classList.contains(kTextOverPictureClass)) {
+            if (child.classList.contains(kCanvasElementClass)) {
                 const tails: TailSpec[] = Bubble.getBubbleSpec(child).tails;
                 tails.forEach(tail => {
                     tail.tipX = newLeft + (tail.tipX - left) * scale;
@@ -6014,16 +6092,16 @@ export class BubbleManager {
                             c.classList.contains("bloom-videoContainer")
                     )
                 ) {
-                    // This must be done after we adjust the overlay, since its new settings are
+                    // This must be done after we adjust the canvas element, since its new settings are
                     // written into the alternate for the current language.
-                    // Review: adjusting the data-bubble-alternate means that the bubbles in
+                    // Review: adjusting the data-bubble-alternate means that the canvas elements in
                     // other languages will look right if we go in and edit them. However,
                     // to make things look right automatically in publications, we'd need to
                     // switch each alternative to be the live one, fire up Comical, and adjust the SVG.
                     // I think this would cause flicker, and certainly delay. If we decide we want
                     // to make that fully automatic, I think it might be better to do it
                     // as a publishing step when we know what languages will be published.
-                    BubbleManager.adjustBubbleAlternates(
+                    CanvasElementManager.adjustCanvasElementAlternates(
                         child,
                         scale,
                         left,
@@ -6037,91 +6115,88 @@ export class BubbleManager {
         this.updateImgSizeData(container);
     }
 
-    public static adjustBubbleAlternates(
-        overlay: HTMLElement,
+    public static adjustCanvasElementAlternates(
+        canvasElement: HTMLElement,
         scale: number,
         oldLeft: number,
         oldTop: number,
         newLeft: number,
         newTop: number
     ) {
-        const overlayLang = GetSettings().languageForNewTextBoxes;
-        Array.from(overlay.getElementsByClassName("bloom-editable")).forEach(
-            editable => {
-                const lang = editable.getAttribute("lang");
-                if (lang === overlayLang) {
-                    // We want to update this lang's alternate to the current data we already figured out.
-                    const alternate = {
-                        style: overlay.getAttribute("style"),
-                        tails: Bubble.getBubbleSpec(overlay).tails
-                    };
+        const canvasElementLang = GetSettings().languageForNewTextBoxes;
+        Array.from(
+            canvasElement.getElementsByClassName("bloom-editable")
+        ).forEach(editable => {
+            const lang = editable.getAttribute("lang");
+            if (lang === canvasElementLang) {
+                // We want to update this lang's alternate to the current data we already figured out.
+                const alternate = {
+                    style: canvasElement.getAttribute("style"),
+                    tails: Bubble.getBubbleSpec(canvasElement).tails
+                };
+                editable.setAttribute(
+                    "data-bubble-alternate",
+                    JSON.stringify(alternate).replace(/"/g, "`")
+                );
+            } else {
+                const alternatesString = editable.getAttribute(
+                    "data-bubble-alternate"
+                );
+                if (alternatesString) {
+                    const alternate = JSON.parse(
+                        alternatesString.replace(/`/g, '"')
+                    ) as IAlternate;
+                    const style = alternate.style;
+                    const width = CanvasElementManager.getLabeledNumberInPx(
+                        "width",
+                        style
+                    );
+                    const height = CanvasElementManager.getLabeledNumberInPx(
+                        "height",
+                        style
+                    );
+                    let newStyle = CanvasElementManager.adjustCenterOfTextBox(
+                        "left",
+                        style,
+                        scale,
+                        oldLeft,
+                        newLeft,
+                        width
+                    );
+                    newStyle = CanvasElementManager.adjustCenterOfTextBox(
+                        "top",
+                        newStyle,
+                        scale,
+                        oldTop,
+                        newTop,
+                        height
+                    );
+
+                    const tails = alternate.tails;
+                    tails.forEach(
+                        (tail: {
+                            tipX: number;
+                            tipY: number;
+                            midpointX: number;
+                            midpointY: number;
+                        }) => {
+                            tail.tipX = newLeft + (tail.tipX - oldLeft) * scale;
+                            tail.tipY = newTop + (tail.tipY - oldTop) * scale;
+                            tail.midpointX =
+                                newLeft + (tail.midpointX - oldLeft) * scale;
+                            tail.midpointY =
+                                newTop + (tail.midpointY - oldTop) * scale;
+                        }
+                    );
+                    alternate.style = newStyle;
+                    alternate.tails = tails;
                     editable.setAttribute(
                         "data-bubble-alternate",
                         JSON.stringify(alternate).replace(/"/g, "`")
                     );
-                } else {
-                    const alternatesString = editable.getAttribute(
-                        "data-bubble-alternate"
-                    );
-                    if (alternatesString) {
-                        const alternate = JSON.parse(
-                            alternatesString.replace(/`/g, '"')
-                        ) as IAlternate;
-                        const style = alternate.style;
-                        const width = BubbleManager.getLabeledNumberInPx(
-                            "width",
-                            style
-                        );
-                        const height = BubbleManager.getLabeledNumberInPx(
-                            "height",
-                            style
-                        );
-                        let newStyle = BubbleManager.adjustCenterOfTextBox(
-                            "left",
-                            style,
-                            scale,
-                            oldLeft,
-                            newLeft,
-                            width
-                        );
-                        newStyle = BubbleManager.adjustCenterOfTextBox(
-                            "top",
-                            newStyle,
-                            scale,
-                            oldTop,
-                            newTop,
-                            height
-                        );
-
-                        const tails = alternate.tails;
-                        tails.forEach(
-                            (tail: {
-                                tipX: number;
-                                tipY: number;
-                                midpointX: number;
-                                midpointY: number;
-                            }) => {
-                                tail.tipX =
-                                    newLeft + (tail.tipX - oldLeft) * scale;
-                                tail.tipY =
-                                    newTop + (tail.tipY - oldTop) * scale;
-                                tail.midpointX =
-                                    newLeft +
-                                    (tail.midpointX - oldLeft) * scale;
-                                tail.midpointY =
-                                    newTop + (tail.midpointY - oldTop) * scale;
-                            }
-                        );
-                        alternate.style = newStyle;
-                        alternate.tails = tails;
-                        editable.setAttribute(
-                            "data-bubble-alternate",
-                            JSON.stringify(alternate).replace(/"/g, "`")
-                        );
-                    }
                 }
             }
-        );
+        });
     }
 
     private static numberPxRegex = ": ?(-?\\d+.?\\d*)px";
@@ -6140,7 +6215,7 @@ export class BubbleManager {
         newC: number,
         oldRange: number
     ): string {
-        const old = BubbleManager.getLabeledNumberInPx(label, style);
+        const old = CanvasElementManager.getLabeledNumberInPx(label, style);
         const center = old + oldRange / 2;
         const newCenter = newC + (center - oldC) * scale;
         const newVal = newCenter - oldRange / 2;
@@ -6154,7 +6229,7 @@ export class BubbleManager {
     // We want to pass "top" and get 79.6.
     public static getLabeledNumberInPx(label: string, source: string): number {
         const match = source.match(
-            new RegExp(label + BubbleManager.numberPxRegex)
+            new RegExp(label + CanvasElementManager.numberPxRegex)
         );
         if (match) {
             return parseFloat(match[1]);
@@ -6164,42 +6239,43 @@ export class BubbleManager {
 }
 
 // For use by bloomImages.ts, so that newly opened books get this class updated for their images.
-export function updateOverlayClass(imageContainer: HTMLElement) {
-    if (
-        imageContainer.getElementsByClassName(kTextOverPictureClass).length > 0
-    ) {
-        imageContainer.classList.add(kOverlayClass);
+export function updateCanvasElementClass(imageContainer: HTMLElement) {
+    if (imageContainer.getElementsByClassName(kCanvasElementClass).length > 0) {
+        imageContainer.classList.add(kHasCanvasElementClass);
     } else {
-        imageContainer.classList.remove(kOverlayClass);
+        imageContainer.classList.remove(kHasCanvasElementClass);
     }
 }
 
 // Note: do NOT use this directly in toolbox code; it will import its own copy of
-// bubbleManager and not use the proper one from the page iframe. Instead, use
-// the OverlayTool.bubbleManager().
-export let theOneBubbleManager: BubbleManager;
+// CanvasElementManager and not use the proper one from the page iframe. Instead, use
+// the CanvasElementUtils.getCanvasElementManager().
+export let theOneCanvasElementManager: CanvasElementManager;
 
-export function initializeBubbleManager() {
-    if (theOneBubbleManager) return;
-    theOneBubbleManager = new BubbleManager();
-    theOneBubbleManager.initializeBubbleManager();
+export function initializeCanvasElementManager() {
+    if (theOneCanvasElementManager) return;
+    theOneCanvasElementManager = new CanvasElementManager();
+    theOneCanvasElementManager.initializeCanvasElementManager();
 }
 
 // This is a definition of the object we store as JSON in data-bubble-alternate.
-// Tails has further structure but BubbleManager doesn't care about it.
+// Tails has further structure but CanvasElementManager doesn't care about it.
 interface IAlternate {
-    style: string; // What to put in the style attr of the overlay; determines size and position
+    style: string; // What to put in the style attr of the canvas element; determines size and position
     tails: object[]; // The tails of the data-bubble; determines placing of tail.
 }
 
-// This is just for debugging. It produces a string that describes the bubble, generally
+// This is just for debugging. It produces a string that describes the canvas element, generally
 // well enough to identify it in console.log.
-export function bubbleDescription(e: Element | null | undefined): string {
+export function canvasElementDescription(
+    e: Element | null | undefined
+): string {
     const elt = e as HTMLElement;
     if (!elt) {
-        return "no bubble";
+        return "no canvas element";
     }
-    const result = "bubble at (" + elt.style.left + ", " + elt.style.top + ") ";
+    const result =
+        "canvas element at (" + elt.style.left + ", " + elt.style.top + ") ";
     const imageContainer = elt.getElementsByClassName(
         "bloom-imageContainer"
     )[0];

@@ -1,9 +1,9 @@
 import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
-import { BubbleManager } from "./bubbleManager";
+import { CanvasElementManager } from "./CanvasElementManager";
 
-// A (currently very incomplete) set of tests for BubbleManager.
+// A (currently very incomplete) set of tests for CanvasElementManager.
 
-describe("BubbleManager.getLabeledNumber", () => {
+describe("CanvasElementManager.getLabeledNumber", () => {
     // beforeEach(() => {
     // });
 
@@ -11,7 +11,7 @@ describe("BubbleManager.getLabeledNumber", () => {
     // afterAll(removeTestRoot);
 
     it("extracts integer size from style", () => {
-        const result = BubbleManager.getLabeledNumberInPx(
+        const result = CanvasElementManager.getLabeledNumberInPx(
             "width",
             "left: 224px; top: 79.6px; width: 66px; height: 30px;"
         );
@@ -19,14 +19,14 @@ describe("BubbleManager.getLabeledNumber", () => {
     });
 
     it("extracts float size from style", () => {
-        const result = BubbleManager.getLabeledNumberInPx(
+        const result = CanvasElementManager.getLabeledNumberInPx(
             "top",
             "left: 224px; top: 79.6px; width: 66px; height: 30px;"
         );
         expect(result).toBe(79.6);
     });
     it("extracts negative size from style", () => {
-        const result = BubbleManager.getLabeledNumberInPx(
+        const result = CanvasElementManager.getLabeledNumberInPx(
             "left",
             "left: -10.4px; top: 79.6px; width: 66px; height: 30px;"
         );
@@ -34,7 +34,7 @@ describe("BubbleManager.getLabeledNumber", () => {
     });
 });
 
-describe("BubbleManager.adjustLabeledNumber", () => {
+describe("CanvasElementManager.adjustLabeledNumber", () => {
     // beforeEach(() => {
     // });
 
@@ -42,7 +42,7 @@ describe("BubbleManager.adjustLabeledNumber", () => {
     // afterAll(removeTestRoot);
 
     it("adjusts center of text box", () => {
-        const result = BubbleManager.adjustCenterOfTextBox(
+        const result = CanvasElementManager.adjustCenterOfTextBox(
             "left",
             "left: 30px; top: 79.6px; width: 66px; height: 30px;",
             2, // making stuff 2x larger

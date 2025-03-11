@@ -14,7 +14,7 @@ import {
     DisableImageEditing,
     EnableImageEditing,
     getBackgroundImageFromContainer,
-    getBackgroundOverlayFromContainer
+    getBackgroundCanvasElementFromContainer
 } from "../../js/bloomImages";
 import { css } from "@emotion/react";
 
@@ -645,7 +645,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     // - this code is also simpler because we don't have to worry about the image not yet being loaded by the time we
     // want to set up the animation
     // - this code is complicated by having to deal with problems caused by parent divs using scale for zoom.
-    // - currently, this code animates the new way of representing images as "background overlays", while
+    // - currently, this code animates the new way of representing images as "background canvas elements", while
     //   BloomPlayer still uses the old way of representing them as the direct img child of the container.
     //   (Export converts to this representation.)
     // somewhat more care is needed here to avoid adding the animation stuff permanently to the document
@@ -784,23 +784,24 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             movingDiv.appendChild(picToAnimate);
             this.animationRootDiv.appendChild(this.animationWrapDiv);
             page.documentElement.appendChild(this.animationRootDiv);
-            // Eventually we may animate all the overlays in the image container that
+            // Eventually we may animate all the canvas elements in the image container that
             // holds the animation rectangles. For now, we just handle the one
             // (normally the only one) that holds the main (background) image.
             // Enhance: handle a cropped image. (Would not have to change Bloom Player,
             // since the image will be really cropped during export.)
-            const backgroundOverlay = getBackgroundOverlayFromContainer(
+            const backgroundCanvasElement = getBackgroundCanvasElementFromContainer(
                 picToAnimate
             ) as HTMLElement;
 
-            // unfortunately the cloned overlay brings over attributes that position it in the current container.
+            // unfortunately the cloned canvas element brings over attributes that position it in the current container.
             // The new parent is not the same size and we need different values to center it and make
             // it fill the container as much as possible.
             // We'd like to position it using SetupImage(actualImage); (from bloomImages) but for some reason,
             // probably because several parents are newly created, that's proving flaky.
             // The code here is a simplification of that method.
             const imgAspectRatio =
-                backgroundOverlay.clientWidth / backgroundOverlay.clientHeight;
+                backgroundCanvasElement.clientWidth /
+                backgroundCanvasElement.clientHeight;
             const containerWidth = this.getWidth(picToAnimate);
             const containerHeight = this.getHeight(picToAnimate);
             let newWidth: number, newHeight: number;
@@ -816,12 +817,12 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 newWidth = containerHeight * imgAspectRatio;
                 newLeft = (this.getWidth(this.animationWrapDiv) - newWidth) / 2;
             }
-            backgroundOverlay.style.width = "" + newWidth + "px";
-            backgroundOverlay.style.height = "" + newHeight + "px";
-            backgroundOverlay.style.left = "" + newLeft + "px";
-            backgroundOverlay.style.top = "" + 0 + "px";
-            backgroundOverlay.style.marginLeft = "0px";
-            backgroundOverlay.style.marginTop = "0px";
+            backgroundCanvasElement.style.width = "" + newWidth + "px";
+            backgroundCanvasElement.style.height = "" + newHeight + "px";
+            backgroundCanvasElement.style.left = "" + newLeft + "px";
+            backgroundCanvasElement.style.top = "" + 0 + "px";
+            backgroundCanvasElement.style.marginLeft = "0px";
+            backgroundCanvasElement.style.marginTop = "0px";
             this.animationStyleElement = pageDoc.createElement("style");
             this.animationStyleElement.setAttribute("type", "text/css");
             this.animationStyleElement.setAttribute("id", "animationSheet");

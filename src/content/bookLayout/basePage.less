@@ -1,5 +1,5 @@
 @import "basePage-sharedRules.less";
-@import "bubble.less";
+@import "canvasElement.less";
 @import (reference) "../../BloomBrowserUI/bloomUI.less"; // importing by reference only brings in the constants
 @import "pageBoxesSizing.less";
 @import "marginBox.less";
@@ -310,7 +310,7 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
         }
 
         // above canvas so we can click playback controls
-        z-index: @bubbleCanvasZIndex + 1;
+        z-index: @canvasElementCanvasZIndex + 1;
 
         video {
             // I don't know exactly why this works, but it makes the video shrink to fit,
@@ -494,9 +494,9 @@ div[data-book*="branding"] {
 }
 
 // Both canvas used in editing and svg used in permanent doc need to be
-// above image and below TOP box and overlayed.
+// above image and below canvas element and overlayed.
 .comical-generated {
-    z-index: @bubbleCanvasZIndex;
+    z-index: @canvasElementCanvasZIndex;
     position: absolute;
     top: 0;
     left: 0;
@@ -729,7 +729,7 @@ div.bloom-page.coverColor {
     background-color: @dark !important;
     color: white !important; // Ensure any error message is visible.  See BL-14241.
 
-    .bloom-textOverPicture.bloom-backgroundImage img.bloom-imageLoadError {
+    .bloom-canvas-element.bloom-backgroundImage img.bloom-imageLoadError {
         // Ensure the error message is not cropped.  See BL-14241.
         padding: 20px;
     }

@@ -19,8 +19,6 @@ import theOneLocalizationManager from "../../../lib/localizationManager/localiza
 import calculateAspectRatio from "calculate-aspect-ratio";
 import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 import { updateVideoInContainer } from "../../js/bloomVideo";
-import { kTextOverPictureSelector } from "../../js/bubbleManager";
-import { OverlayTool } from "../overlay/overlayTool";
 import { selectVideoContainer } from "../../js/videoUtils";
 
 // The recording process can be in one of these states:
@@ -669,11 +667,11 @@ export class SignLanguageToolControls extends React.Component<
                 break;
             case "recording":
                 SignLanguageTool.showOverlayToHideVideo();
-                SignLanguageTool.addLabelToOverlay("Recording");
+                SignLanguageTool.addLabelToRecordingOverlay("Recording");
                 break;
             case "processing":
                 SignLanguageTool.showOverlayToHideVideo();
-                SignLanguageTool.addLabelToOverlay("Processing");
+                SignLanguageTool.addLabelToRecordingOverlay("Processing");
                 break;
             default:
                 // back to 'idle'
@@ -1011,9 +1009,10 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         );
     }
 
-    private static overlayClass: string = "bloom-videoOverlay";
+    private static videoOverlayClass: string = "bloom-videoOverlay";
 
-    // Make an overlay and slap it over the selected edit pane video still while we're recording
+    // Make an overlay element and slap it over the selected edit pane video still while we're recording
+    // (Note: this is NOT a canvas element!)
     public static showOverlayToHideVideo(): void {
         const videoContainers = SignLanguageTool.getVideoContainers(true);
         if (!videoContainers) return;
@@ -1024,13 +1023,13 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             container.ownerDocument &&
             (!container.previousElementSibling ||
                 !container.previousElementSibling.classList.contains(
-                    SignLanguageTool.overlayClass
+                    SignLanguageTool.videoOverlayClass
                 ))
         ) {
             // bloom-ui class makes sure this div is removed before saving
             const overlayDiv =
                 "<div class='" +
-                SignLanguageTool.overlayClass +
+                SignLanguageTool.videoOverlayClass +
                 " bloom-ui'><label></label></div";
             container.parentElement.insertBefore(
                 SignLanguageTool.createNode(
@@ -1043,7 +1042,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     // Grab the "Recording" label in React-land and stick it in the edit pane overlay
-    public static addLabelToOverlay(key: string): void {
+    public static addLabelToRecordingOverlay(key: string): void {
         const videoContainers = SignLanguageTool.getVideoContainers(true);
         if (!videoContainers) return;
         const container = videoContainers[0];
@@ -1066,7 +1065,11 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         const container = videoContainers[0];
         if (!container || !container.previousElementSibling) return;
         const overlayElement = container.previousElementSibling;
-        if (overlayElement.classList.contains(SignLanguageTool.overlayClass)) {
+        if (
+            overlayElement.classList.contains(
+                SignLanguageTool.videoOverlayClass
+            )
+        ) {
             container.previousElementSibling.remove();
         }
     }

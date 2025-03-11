@@ -16,15 +16,18 @@ import {
     getTarget,
     shuffle
 } from "../../shared/dragActivityRuntime";
-import { setGeneratedBubbleId } from "../overlay/overlayItem";
+import { setGeneratedDraggableId } from "../overlay/CanvasElementItem";
 import {
     adjustTarget,
     DragActivityTool,
-    makeTargetForBubble
+    makeTargetForDraggable
 } from "./dragActivityTool";
 import * as ReactDOM from "react-dom";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
-import { BubbleManager, theOneBubbleManager } from "../../js/bubbleManager";
+import {
+    CanvasElementManager,
+    theOneCanvasElementManager
+} from "../../js/CanvasElementManager";
 import { Bubble } from "comicaljs";
 import { getToolboxBundleExports } from "../../editViewFrame";
 import {
@@ -38,6 +41,7 @@ import {
     DialogOkButton
 } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { splitIntoGraphemes } from "../../../utils/textUtils";
+import { kCanvasElementClass } from "../overlay/canvasElementUtils";
 
 export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> = props => {
     const promptL10nId = props.prompt?.getAttribute("data-caption-l10nid");
@@ -255,7 +259,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
     // capture where the top left draggable and target are (before we add or remove any).
     // Also capture various bits of initial state that cancel() might need.
     originalDraggables = Array.from(
-        page.getElementsByClassName("bloom-textOverPicture draggable-text")
+        page.getElementsByClassName(kCanvasElementClass + " draggable-text")
     ) as HTMLElement[];
     createdBubbles = [];
     originalClassLists = [];
@@ -265,7 +269,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
     originalTargetContents = [];
     draggableX = draggableY = targetX = targetY = 1000000; // will get reduced to minimums
     const draggables = Array.from(
-        page.querySelectorAll("[data-bubble-id]")
+        page.querySelectorAll("[data-draggable-id]")
     ) as HTMLElement[];
     const first = draggables[0];
     const firstEditable = first.getElementsByClassName(
@@ -287,7 +291,9 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         );
         first.style.left = minx + "px";
         // remember it to make sure we never take this branch again for this language
-        BubbleManager.saveStateOfOverlayAsCurrentLangAlternate(first);
+        CanvasElementManager.saveStateOfCanvasElementAsCurrentLangAlternate(
+            first
+        );
     }
     // Adjust which targets are visible based on the current language.
     // Must be after the adjustment of the first draggable, since it may affect which ones are unused.
@@ -335,7 +341,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         }
         p.textContent = text ?? "";
         // And we need to make sure the blank class is set correctly, otherwise,
-        // we can get shadow English letters in bubbles that have content in the
+        // we can get shadow English letters in canvas elements that have content in the
         // current language. This is usually handled by a mutation observer, but
         // it doesn't get attached to extra letters we create here. Their content
         // mainly gets changed by this method, so I think this is good enough.
@@ -351,7 +357,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         // Split the prompt text into letter groups consisting of a base letter and any combining marks.
         const letters = splitIntoGraphemes(promptText);
         const draggables = Array.from(
-            page.getElementsByClassName("bloom-textOverPicture draggable-text")
+            page.getElementsByClassName(kCanvasElementClass + " draggable-text")
         ) as HTMLElement[];
         // make sure we get some reasonable offsetWidth for the first one, if there are
         // any letters. (Can become display:none if we have no letters.)
@@ -377,7 +383,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 const newDraggable = lastDraggable.cloneNode(
                     true
                 ) as HTMLElement;
-                setGeneratedBubbleId(newDraggable);
+                setGeneratedDraggableId(newDraggable);
                 // Ensure the new draggable starts out empty.  See BL-14348.
                 // (This covers all languages present, visible or not.)
                 const paras = newDraggable.querySelectorAll(
@@ -390,7 +396,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
                     );
                 });
                 lastDraggable.parentElement?.appendChild(newDraggable);
-                makeTargetForBubble(newDraggable);
+                makeTargetForDraggable(newDraggable);
                 // It's available to push letter groups into
                 draggables.push(newDraggable);
                 // It needs refreshBubbleEditing to be called on it later.
@@ -437,7 +443,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         // what it was when we started adding the ckeditor. So changes we make after that
         // get lost.
         newBubbles.forEach((newDraggable: HTMLElement) => {
-            theOneBubbleManager!.refreshBubbleEditing(
+            theOneCanvasElementManager!.refreshCanvasElementEditing(
                 newDraggable.closest(".bloom-imageContainer") as HTMLElement,
                 new Bubble(newDraggable),
                 true, // attach events

@@ -28,7 +28,7 @@ import {
 import {
     copyAndPlaySoundAsync,
     makeDuplicateOfDragBubble,
-    makeTargetForBubble,
+    makeTargetForDraggable,
     playSound,
     showDialogToChooseSoundFileAsync
 } from "../toolbox/dragActivity/dragActivityTool";
@@ -43,10 +43,10 @@ import Menu from "@mui/material/Menu";
 import { Divider } from "@mui/material";
 import { DuplicateIcon } from "./DuplicateIcon";
 import {
-    BubbleManager,
+    CanvasElementManager,
     kbackgroundImageClass,
-    theOneBubbleManager
-} from "./bubbleManager";
+    theOneCanvasElementManager
+} from "./CanvasElementManager";
 import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -64,13 +64,13 @@ interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
 }
 
-// This is the controls bar that appears beneath an overlay when it is selected. It contains buttons
-// for the most common operations that apply to the overlay in its current state, and a menu for less common
+// This is the controls bar that appears beneath a canvas element when it is selected. It contains buttons
+// for the most common operations that apply to the canvas element in its current state, and a menu for less common
 // operations.
 
-const OverlayContextControls: React.FunctionComponent<{
-    overlay: HTMLElement;
-    // These props support reusing the context controls menu for a right-click on the overlay.
+const CanvasElementContextControls: React.FunctionComponent<{
+    canvasElement: HTMLElement;
+    // These props support reusing the context controls menu for a right-click on the canvas element.
     // The first two make the open state of the menu a controlled property. Basically the
     // parent stores the state and passes it in, but to get the normal behavior of
     // clicking on the "..." menu and closing the menu, this component can request that
@@ -80,13 +80,13 @@ const OverlayContextControls: React.FunctionComponent<{
     setMenuOpen: (open: boolean) => void;
     menuAnchorPosition?: { left: number; top: number };
 }> = props => {
-    const imgContainer = props.overlay.getElementsByClassName(
+    const imgContainer = props.canvasElement.getElementsByClassName(
         "bloom-imageContainer"
     )[0];
     const hasImage = !!imgContainer;
     const img = imgContainer?.getElementsByTagName("img")[0];
     //const hasLicenseProblem = hasImage && !img.getAttribute("data-copyright");
-    const videoContainer = props.overlay.getElementsByClassName(
+    const videoContainer = props.canvasElement.getElementsByClassName(
         "bloom-videoContainer"
     )[0];
     const hasVideo = !!videoContainer;
@@ -99,10 +99,10 @@ const OverlayContextControls: React.FunctionComponent<{
         hasImage && !isPlaceHolder && !img.getAttribute("data-copyright");
     const setMenuOpen = (open: boolean, launchingDialog?: boolean) => {
         // Even though we've done our best to tell the MUI menu NOT to steal focus, it seems it still does...
-        // or some other code somewhere is doing it when we choose a menu item. So we tell the bubble manager
+        // or some other code somewhere is doing it when we choose a menu item. So we tell the CanvasElementManager
         // to ignore focus changes while the menu is open.
         if (open) {
-            BubbleManager.ignoreFocusChanges = true;
+            CanvasElementManager.ignoreFocusChanges = true;
         }
         props.setMenuOpen(open);
         // Setting ignoreFocusChanges to false immediately after closing the menu doesn't work,
@@ -112,8 +112,9 @@ const OverlayContextControls: React.FunctionComponent<{
         // a dialog opened by the menu command closes.  See BL-14123.
         if (!open) {
             setTimeout(() => {
-                if (launchingDialog) BubbleManager.skipNextFocusChange = true;
-                BubbleManager.ignoreFocusChanges = false;
+                if (launchingDialog)
+                    CanvasElementManager.skipNextFocusChange = true;
+                CanvasElementManager.ignoreFocusChanges = false;
             }, 0);
         }
     };
@@ -123,24 +124,26 @@ const OverlayContextControls: React.FunctionComponent<{
     // Menu item names for 'none' and "Choose...", options.
     const noneLabel = useL10n("None", "EditTab.Toolbox.DragActivity.None", "");
 
-    const currentBubbleTargetId = props.overlay?.getAttribute("data-bubble-id");
-    const [currentBubbleTarget, setCurrentBubbleTarget] = useState<
+    const currentDraggableTargetId = props.canvasElement?.getAttribute(
+        "data-draggable-id"
+    );
+    const [currentDraggableTarget, setCurrentDraggableTarget] = useState<
         HTMLElement | undefined
     >();
     useEffect(() => {
-        if (!currentBubbleTargetId) {
-            setCurrentBubbleTarget(undefined);
+        if (!currentDraggableTargetId) {
+            setCurrentDraggableTarget(undefined);
             return;
         }
-        const page = props.overlay.closest(".bloom-page") as HTMLElement;
-        setCurrentBubbleTarget(
+        const page = props.canvasElement.closest(".bloom-page") as HTMLElement;
+        setCurrentDraggableTarget(
             page?.querySelector(
-                `[data-target-of="${currentBubbleTargetId}"]`
+                `[data-target-of="${currentDraggableTargetId}"]`
             ) as HTMLElement
         );
         // We need to re-evaluate when changing pages, it's possible the initially selected item
-        // on a new page has the same currentBubbleTargetId.
-    }, [currentBubbleTargetId]);
+        // on a new page has the same currentDraggableTargetId.
+    }, [currentDraggableTargetId]);
 
     // Currently we only allow associating an extra audio with images (and gifs), which have
     // no other audio (except possibly image descriptions?). If we get an actual user request
@@ -150,21 +153,21 @@ const OverlayContextControls: React.FunctionComponent<{
 
     const [imageSound, setImageSound] = useState("none");
     useEffect(() => {
-        setImageSound(props.overlay.getAttribute("data-sound") ?? "none");
-    }, [props.overlay]);
-    const isBackgroundImage = props.overlay.classList.contains(
+        setImageSound(props.canvasElement.getAttribute("data-sound") ?? "none");
+    }, [props.canvasElement]);
+    const isBackgroundImage = props.canvasElement.classList.contains(
         kbackgroundImageClass
     );
-    const canExpandBackgroundImage = theOneBubbleManager?.canExpandToFillSpace();
+    const canExpandBackgroundImage = theOneCanvasElementManager?.canExpandToFillSpace();
 
-    // These commands apply to all overlays (currently none!).
+    // These commands apply to all canvas elements (currently none!).
     const menuOptions: IMenuItemWithSubmenu[] = [];
     // These to everything except background images
     if (!isBackgroundImage) {
         menuOptions.unshift({
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",
-            onClick: theOneBubbleManager?.duplicateBubble,
+            onClick: theOneCanvasElementManager?.duplicateCanvasElement,
             icon: <DuplicateIcon css={getMenuIconCss()} />
         });
     }
@@ -172,22 +175,22 @@ const OverlayContextControls: React.FunctionComponent<{
         menuOptions.splice(0, 0, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
             english: "Add Child Bubble",
-            onClick: theOneBubbleManager?.addChildBubble
+            onClick: theOneCanvasElementManager?.addChildCanvasElement
         });
     }
-    if (currentBubbleTargetId) {
+    if (currentDraggableTargetId) {
         addMenuItemsForDraggable(
             menuOptions,
-            props.overlay,
-            currentBubbleTargetId,
-            currentBubbleTarget,
-            setCurrentBubbleTarget
+            props.canvasElement,
+            currentDraggableTargetId,
+            currentDraggableTarget,
+            setCurrentDraggableTarget
         );
     }
     if (canChooseAudioForElement) {
         addAudioMenuItems(
             menuOptions,
-            props.overlay,
+            props.canvasElement,
             imageSound,
             noneLabel,
             setImageSound,
@@ -195,7 +198,7 @@ const OverlayContextControls: React.FunctionComponent<{
         );
     }
     if (hasImage) {
-        addImageMenuOptions(menuOptions, props.overlay, img, setMenuOpen);
+        addImageMenuOptions(menuOptions, props.canvasElement, img, setMenuOpen);
     }
     if (hasVideo) {
         addVideoMenuItems(menuOptions, videoContainer, setMenuOpen);
@@ -204,7 +207,7 @@ const OverlayContextControls: React.FunctionComponent<{
         const fillItem = {
             l10nId: "EditTab.Toolbox.ComicTool.Options.FillSpace",
             english: "Fit Space",
-            onClick: () => theOneBubbleManager?.expandImageToFillSpace(),
+            onClick: () => theOneCanvasElementManager?.expandImageToFillSpace(),
             disabled: !canExpandBackgroundImage,
             icon: (
                 <img
@@ -227,7 +230,7 @@ const OverlayContextControls: React.FunctionComponent<{
     menuOptions.push(divider, {
         l10nId: "Common.Delete",
         english: "Delete",
-        onClick: theOneBubbleManager?.deleteBubble,
+        onClick: theOneCanvasElementManager?.deleteCurrentCanvasElement,
         icon: <DeleteIcon css={getMenuIconCss()} />
     });
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
@@ -241,17 +244,17 @@ const OverlayContextControls: React.FunctionComponent<{
         e.stopPropagation();
         setMenuOpen(true); // Review: better on mouse down? But then the mouse up may be missed, if the menu is on top...
     };
-    const editable = props.overlay.getElementsByClassName(
+    const editable = props.canvasElement.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
     const langName = editable?.getAttribute("data-languagetipcontent");
     // and these for text boxes
     if (editable) {
-        addTextMenuItems(menuOptions, editable, props.overlay);
+        addTextMenuItems(menuOptions, editable, props.canvasElement);
     }
 
     const runMetadataDialog = () => {
-        if (!props.overlay) return;
+        if (!props.canvasElement) return;
         if (!imgContainer) return;
         showCopyrightAndLicenseDialog(
             getImageUrlFromImageContainer(imgContainer as HTMLElement)
@@ -273,7 +276,7 @@ const OverlayContextControls: React.FunctionComponent<{
                     padding: 0px 10px 0px;
                     margin: 0 auto 0 auto;
                     width: fit-content;
-                    // needed because it's a child of #overlay-context-controls which has pointer-events:none
+                    // needed because it's a child of #canvas-element-context-controls which has pointer-events:none
                     pointer-events: all;
                 `}
             >
@@ -310,8 +313,8 @@ const OverlayContextControls: React.FunctionComponent<{
                                     tipL10nKey="EditTab.Image.ChooseImage"
                                     icon={SearchIcon}
                                     onClick={_ => {
-                                        if (!props.overlay) return;
-                                        const imgContainer = props.overlay.getElementsByClassName(
+                                        if (!props.canvasElement) return;
+                                        const imgContainer = props.canvasElement.getElementsByClassName(
                                             "bloom-imageContainer"
                                         )[0] as HTMLElement;
                                         if (!imgContainer) return;
@@ -330,8 +333,8 @@ const OverlayContextControls: React.FunctionComponent<{
                                     icon={PasteIcon}
                                     relativeSize={0.9}
                                     onClick={_ => {
-                                        if (!props.overlay) return;
-                                        const imgContainer = props.overlay.getElementsByClassName(
+                                        if (!props.canvasElement) return;
+                                        const imgContainer = props.canvasElement.getElementsByClassName(
                                             "bloom-imageContainer"
                                         )[0] as HTMLElement;
                                         if (!imgContainer) return;
@@ -352,7 +355,7 @@ const OverlayContextControls: React.FunctionComponent<{
                             icon={CogIcon}
                             relativeSize={0.8}
                             onClick={() => {
-                                if (!props.overlay) return;
+                                if (!props.canvasElement) return;
                                 GetEditor().runFormatDialog(editable);
                             }}
                         />
@@ -392,21 +395,21 @@ const OverlayContextControls: React.FunctionComponent<{
                             icon={DuplicateIcon}
                             relativeSize={0.9}
                             onClick={() => {
-                                if (!props.overlay) return;
+                                if (!props.canvasElement) return;
                                 makeDuplicateOfDragBubble();
                             }}
                         />
                     )}
                     {// Not sure of the reasoning here, since we do have a way to 'delete' a background image,
-                    // not by removing the overlay but by setting the image back to a placeholder.
+                    // not by removing the canvas element but by setting the image back to a placeholder.
                     // But the mockup in BL-14069 definitely doesn't have it.
                     isBackgroundImage || (
                         <ButtonWithTooltip
                             tipL10nKey="Common.Delete"
                             icon={DeleteIcon}
                             onClick={() => {
-                                if (!props.overlay) return;
-                                theOneBubbleManager?.deleteBubble();
+                                if (!props.canvasElement) return;
+                                theOneCanvasElementManager?.deleteCurrentCanvasElement();
                             }}
                         />
                     )}
@@ -416,8 +419,8 @@ const OverlayContextControls: React.FunctionComponent<{
                             icon={FillSpaceIcon}
                             disabled={!canExpandBackgroundImage}
                             onClick={() => {
-                                if (!props.overlay) return;
-                                theOneBubbleManager?.expandImageToFillSpace();
+                                if (!props.canvasElement) return;
+                                theOneCanvasElementManager?.expandImageToFillSpace();
                             }}
                         />
                     )}
@@ -550,19 +553,19 @@ const ButtonWithTooltip: React.FunctionComponent<{
     );
 };
 
-// This is used to render the OverlayContextControls as the root component of a div.
-export function renderOverlayContextControls(
-    overlay: HTMLElement,
+// This is used to render the CanvasElementContextControls as the root component of a div.
+export function renderCanvasElementContextControls(
+    canvasElement: HTMLElement,
     menuOpen: boolean,
     menuAnchorPosition?: { left: number; top: number }
 ) {
-    const root = document.getElementById("overlay-context-controls");
+    const root = document.getElementById("canvas-element-context-controls");
     if (!root) {
         // not created yet, try later
         setTimeout(
             () =>
-                renderOverlayContextControls(
-                    overlay,
+                renderCanvasElementContextControls(
+                    canvasElement,
                     menuOpen,
                     menuAnchorPosition
                 ),
@@ -571,13 +574,13 @@ export function renderOverlayContextControls(
         return;
     }
     ReactDOM.render(
-        <OverlayContextControls
-            overlay={overlay}
+        <CanvasElementContextControls
+            canvasElement={canvasElement}
             menuOpen={menuOpen}
             setMenuOpen={(open: boolean) => {
                 // turns out we don't need to store it anywhere. When it requests a change, we just
                 // re-render it that way.
-                renderOverlayContextControls(overlay, open);
+                renderCanvasElementContextControls(canvasElement, open);
             }}
             menuAnchorPosition={menuAnchorPosition}
         />,
@@ -613,12 +616,12 @@ function getMenuIconCss(relativeSize?: number, extra = "") {
 function addTextMenuItems(
     menuOptions: IMenuItemWithSubmenu[],
     editable: HTMLElement,
-    overlay: HTMLElement
+    canvasElement: HTMLElement
 ) {
-    const autoHeight = !overlay.classList.contains("bloom-noAutoHeight");
+    const autoHeight = !canvasElement.classList.contains("bloom-noAutoHeight");
     const toggleAutoHeight = () => {
-        overlay.classList.toggle("bloom-noAutoHeight");
-        theOneBubbleManager.updateAutoHeight();
+        canvasElement.classList.toggle("bloom-noAutoHeight");
+        theOneCanvasElementManager.updateAutoHeight();
         // In most contexts, we would need to do something now to make the control render, so we get
         // an updated value for autoHeight. But the menu is going to be hidden, and showing it again
         // will involve a re-render, and we don't care until then.
@@ -702,18 +705,18 @@ function addVideoMenuItems(
 
 function addImageMenuOptions(
     menuOptions: IMenuItemWithSubmenu[],
-    overlay: HTMLElement,
+    canvasElement: HTMLElement,
     img: HTMLElement,
     setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
 ) {
-    const imgContainer = overlay.getElementsByClassName(
+    const imgContainer = canvasElement.getElementsByClassName(
         "bloom-imageContainer"
     )[0] as HTMLElement;
 
     const isCropped = !!img.style.width;
 
     const runMetadataDialog = () => {
-        if (!overlay) return;
+        if (!canvasElement) return;
         if (!imgContainer) return;
         showCopyrightAndLicenseDialog(
             getImageUrlFromImageContainer(imgContainer)
@@ -753,7 +756,7 @@ function addImageMenuOptions(
             l10nId: "EditTab.Image.Reset",
             english: "Reset Image",
             onClick: () => {
-                theOneBubbleManager?.resetCropping();
+                theOneCanvasElementManager?.resetCropping();
             },
             disabled: !isCropped,
             icon: (
@@ -772,7 +775,7 @@ function addImageMenuOptions(
                 "Currently: " + imgContainer.getAttribute("data-href") ||
                 undefined,
             requiresEnterpriseSubscription: true,
-            onClick: () => pasteLink(overlay)
+            onClick: () => pasteLink(canvasElement)
 
             /*
             Since the clipboard is not readable by us directly, but
@@ -785,8 +788,8 @@ function addImageMenuOptions(
         // Enhance: some way to remove a link you don't want anymore. For now, you can paste an empty string.
     );
 }
-function pasteLink(overlay: HTMLElement) {
-    const imgContainer = overlay.getElementsByClassName(
+function pasteLink(canvasElement: HTMLElement) {
+    const imgContainer = canvasElement.getElementsByClassName(
         "bloom-imageContainer"
     )[0];
 
@@ -811,23 +814,23 @@ function pasteLink(overlay: HTMLElement) {
 
 function addMenuItemsForDraggable(
     menuOptions: IMenuItemWithSubmenu[],
-    overlay: HTMLElement,
-    currentBubbleTargetId: string,
-    currentBubbleTarget: HTMLElement | undefined,
-    setCurrentBubbleTarget: (target: HTMLElement | undefined) => void
+    canvasElement: HTMLElement,
+    currentDraggableTargetId: string,
+    currentDraggableTarget: HTMLElement | undefined,
+    setCurrentDraggableTarget: (target: HTMLElement | undefined) => void
 ) {
     const toggleIsPartOfRightAnswer = () => {
-        if (!currentBubbleTargetId) {
+        if (!currentDraggableTargetId) {
             return;
         }
-        if (currentBubbleTarget) {
-            currentBubbleTarget.ownerDocument
+        if (currentDraggableTarget) {
+            currentDraggableTarget.ownerDocument
                 .getElementById("target-arrow")
                 ?.remove();
-            currentBubbleTarget.remove();
-            setCurrentBubbleTarget(undefined);
+            currentDraggableTarget.remove();
+            setCurrentDraggableTarget(undefined);
         } else {
-            setCurrentBubbleTarget(makeTargetForBubble(overlay));
+            setCurrentDraggableTarget(makeTargetForDraggable(canvasElement));
         }
     };
     menuOptions.push(divider, {
@@ -835,7 +838,7 @@ function addMenuItemsForDraggable(
         english: "Part of the right answer",
         subLabelL10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore",
         onClick: toggleIsPartOfRightAnswer,
-        icon: currentBubbleTarget ? (
+        icon: currentDraggableTarget ? (
             <CheckIcon css={getMenuIconCss()} />
         ) : (
             undefined
@@ -845,7 +848,7 @@ function addMenuItemsForDraggable(
 
 function addAudioMenuItems(
     menuOptions: IMenuItemWithSubmenu[],
-    overlay: HTMLElement,
+    canvasElement: HTMLElement,
     imageSound: string,
     noneLabel: string,
     setImageSound: (sound: string) => void,
@@ -861,9 +864,9 @@ function addAudioMenuItems(
             return;
         }
 
-        const page = overlay.closest(".bloom-page") as HTMLElement;
+        const page = canvasElement.closest(".bloom-page") as HTMLElement;
         const copyBuiltIn = false; // already copied, and not in our sounds folder
-        overlay.setAttribute("data-sound", newSoundId);
+        canvasElement.setAttribute("data-sound", newSoundId);
         setImageSound(newSoundId);
         copyAndPlaySoundAsync(newSoundId, page, copyBuiltIn);
     };
@@ -874,7 +877,7 @@ function addAudioMenuItems(
             l10nId: "EditTab.Toolbox.DragActivity.None",
             english: "None",
             onClick: () => {
-                overlay.removeAttribute("data-sound");
+                canvasElement.removeAttribute("data-sound");
                 setImageSound("none");
                 setMenuOpen(false);
             }
@@ -906,7 +909,7 @@ function addAudioMenuItems(
                 playSound(
                     imageSound,
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    overlay.closest(".bloom-page")!
+                    canvasElement.closest(".bloom-page")!
                 );
                 setMenuOpen(false);
             },

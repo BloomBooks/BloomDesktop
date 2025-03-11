@@ -1,17 +1,17 @@
 @import (reference) "../../../../BloomBrowserUI/bloomUI.less";
 // Important classes and attributes that bloom game template pages contain or that
 // bloom maniupulates to run games (maybe the classes should all be bloom-X?):
-// drag-item-correct, drag-item-wrong: put on overlay items that should only show
+// drag-item-correct, drag-item-wrong: put on canvas element items that should only show
 //    in the correct or wrong tab, or the Play tab when the user has given an answer.
 // drag-activity-{start/correct/wrong/play/solution}: put on the div above the bloom-page
 //    to indicate state. One of the first four should always be present to indicate which
 //    tab we are in. When in the Play tab, one of drag-activity-{correct/wrong/solution} may
 //    also be present, indicating that we have checked an answer and found it correct (or wrong),
 //    or that we are showing the correct answer.
-// data-bubble-id attribute identifies an overlay that can be dragged in play mode. Except for distractors,
+// data-draggable-id attribute identifies an canvas element that can be dragged in play mode. Except for distractors,
 //    each has an associated 'target' that has the same id in its data-target-of attribute,
 //    indicating the correct place it should be dragged to.
-// drag-item-order-sentence is put on an overlay that, in Play mode, is replaced with a sequence
+// drag-item-order-sentence is put on a canvas element that, in Play mode, is replaced with a sequence
 //    of its words in random order.
 // drag-item-random-sentence is put on the div containing the randomized words in Play mode.
 // drag-item-order-word is put on the words that are part of such a sequence.
@@ -40,23 +40,23 @@
 }
 // in play mode suppress these focus effects
 .drag-activity-play {
-    .bloom-imageContainer .bloom-textOverPicture div:focus,
-    .bloom-imageContainer .bloom-textOverPicture video:focus {
+    .bloom-imageContainer .bloom-canvas-element div:focus,
+    .bloom-imageContainer .bloom-canvas-element video:focus {
         outline-color: transparent;
         box-shadow: none;
     }
 }
 
 // We want these only in the start tab, except for ones that are specific to the other tabs
-.drag-activity-correct .bloom-textOverPicture:not(.drag-item-correct),
-.drag-activity-wrong .bloom-textOverPicture:not(.drag-item-wrong),
-.drag-activity-play .bloom-textOverPicture,
-.drag-activity-solution .bloom-textOverPicture {
+.drag-activity-correct .bloom-canvas-element:not(.drag-item-correct),
+.drag-activity-wrong .bloom-canvas-element:not(.drag-item-wrong),
+.drag-activity-play .bloom-canvas-element,
+.drag-activity-solution .bloom-canvas-element {
     img[src="placeHolder.png"] {
         display: none;
     }
 }
-[data-bubble-id] {
+[data-draggable-id] {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -76,7 +76,7 @@
 // }
 
 // .drag-activity-correct .bloom-page:not([data-activity="drag-word-chooser-slider"]) {
-//     .bloom-textOverPicture:not(.drag-item-correct):not(.bloom-change-page-button),
+//     .bloom-canvas-element:not(.drag-item-correct):not(.bloom-change-page-button),
 //     [data-target-of],
 //     .drag-item-random-sentence {
 //         opacity: 30%;
@@ -90,7 +90,7 @@
 // .drag-activity-wrong .bloom-page:not([data-activity="drag-word-chooser-slider"]) {
 //     // Review: we want the change-page buttons to be visible and clickable always.
 //     // Should we have a distinct class for this, like bloom-all-tabs?
-//     .bloom-textOverPicture:not(.drag-item-wrong):not(.bloom-change-page-button),
+//     .bloom-canvas-element:not(.drag-item-wrong):not(.bloom-change-page-button),
 //     [data-target-of],
 //     .drag-item-random-sentence {
 //         opacity: 30%;
@@ -115,7 +115,7 @@
     .drag-item-wrong,
     .drag-item-correct {
         // In front of targets, in case they overlap
-        z-index: @bubbleCanvasZIndex + 2;
+        z-index: @canvasElementCanvasZIndex + 2;
     }
 }
 // In the play tab we don't even have the concept of a video element being selected.
@@ -204,15 +204,15 @@
 
 [data-target-of] {
     position: absolute;
-    // above overlay canvas so we can drag it when the canvas is active
-    z-index: @bubbleCanvasZIndex + 1;
+    // above canvas element canvas so we can drag it when the canvas is active
+    z-index: @canvasElementCanvasZIndex + 1;
     box-sizing: border-box;
     > * {
         // targets have children to show a shadow of what is supposed to go there.
         // the contents are identical, this makes them a shadow.
         opacity: 50%;
     }
-    // in targets, as in image overlays, we want the height to be derived from the width.
+    // in targets, as in image canvas elements, we want the height to be derived from the width.
     .bloom-imageContainer img {
         height: unset;
     }
@@ -221,7 +221,7 @@
 // This might be more specific than it needs to be, but it roughly matches a rule that gives it a border and shadow,
 // and another that gives it an outline, that we don't want in play mode.
 .drag-activity-play {
-    .bloom-textOverPicture {
+    .bloom-canvas-element {
         .bloom-translationGroup {
             .bloom-editable.bloom-editable.bloom-editable {
                 // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
@@ -243,10 +243,10 @@
 // when testing we need to be able to drag the bubble over the target.
 // (But we don't want pictures that are just part of the background to be in front of targets.)
 .drag-activity-play {
-    .bloom-textOverPicture[data-bubble-id] {
-        z-index: @bubbleCanvasZIndex + 2;
+    .bloom-canvas-element[data-draggable-id] {
+        z-index: @canvasElementCanvasZIndex + 2;
         &.bloom-ui-dragging {
-            z-index: @bubbleCanvasZIndex + 3;
+            z-index: @canvasElementCanvasZIndex + 3;
         }
     }
     // Buttons for editing images and formatting text should not show in test mode.
@@ -292,7 +292,7 @@
 //         height: var(--slider-height);
 //         box-sizing: border-box;
 //         // Same as the canvas is enough to put in in front, since it comes later.
-//         z-index: @bubbleCanvasZIndex;
+//         z-index: @canvasElementCanvasZIndex;
 //         .bloom-activity-slider-content {
 //             display: flex;
 //             height: 100%;
@@ -322,7 +322,7 @@
 //             display: block;
 //         }
 //     }
-//     .bloom-textOverPicture {
+//     .bloom-canvas-element {
 //         transition: opacity 1s ease-in-out;
 //     }
 //     .bloom-hideSliderImage {
@@ -420,7 +420,7 @@
 //         background-color: var(--text-background);
 //     }
 // }
-.bloom-textOverPicture.draggable-text {
+.bloom-canvas-element.draggable-text {
     background-color: var(--draggable-background-color);
     color: var(--draggable-color);
     &.bloom-unused-in-lang {
@@ -464,7 +464,7 @@
     padding: 3px 2px 2px 10px;
     box-sizing: border-box;
     // This puts it in front of other things so it can actually be clicked.
-    z-index: @textOverPictureZIndex;
+    z-index: @canvasElementZIndex;
     // In bloom-player, cursor seems to be auto, which here gives us a text editing cursor.
     // Not sure why that doesn't happen in play mode in Bloom desktop.
     // But anyway, we don't want it.

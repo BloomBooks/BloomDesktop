@@ -105,6 +105,7 @@ namespace Bloom.Book
         void MigrateToLevel3PutImgFirst();
 
         void MigrateToLevel4UseAppearanceSystem();
+        void MigrateToLevel5CanvasElement();
 
         CollectionSettings CollectionSettings { get; }
 
@@ -160,12 +161,13 @@ namespace Bloom.Book
         ///   the DOM and can safely be done in memory. (Later in 6.0 we stopped doing incomplete
         ///   book updates in memory, so this distinction may no longer be helpful.))
         ///   Bloom 6.0  4 = Switched to using a theme (or explicitly using legacy)
+        ///   Bloom 6.2  5 = bloom-textOverPicture became bloom-canvas-element
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 4;
+        public const int kMaintenanceLevel = 5;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -1040,9 +1042,11 @@ namespace Bloom.Book
                 BloomReaderMinVersion = "1.0",
                 // Bloom now allows comical Captions to have straight line tails, but if we open such a book
                 // in an older version of Bloom which nevertheless has comical, it will give it a normal bubble tail.
-                // This xpath finds a bubble with a "caption" style and a non-empty tail spec.
+                // This xpath finds a canvas element with a "caption" style and a non-empty tail spec.
                 XPath =
-                    "//div[contains(@class,'bloom-textOverPicture') and contains(@data-bubble, '`caption`') and contains(@data-bubble, '`tails`:[{`')]"
+                    "//div[contains(@class,'"
+                    + HtmlDom.kCanvasElementClass
+                    + "') and contains(@data-bubble, '`caption`') and contains(@data-bubble, '`tails`:[{`')]"
             },
             new Feature()
             {
@@ -1059,7 +1063,9 @@ namespace Bloom.Book
                 BloomDesktopMinVersion = "6.1",
                 BloomReaderMinVersion = "1.0",
                 XPath =
-                    "//div[contains(@class,'bloom-textOverPicture')]/div[contains(@class, 'bloom-imageContainer')]/img[contains(@style, 'width') and contains(@style, 'left') ]"
+                    "//div[contains(@class,'"
+                    + HtmlDom.kCanvasElementClass
+                    + "')]/div[contains(@class, 'bloom-imageContainer')]/img[contains(@style, 'width') and contains(@style, 'left') ]"
             },
             new Feature()
             {
@@ -1069,6 +1075,16 @@ namespace Bloom.Book
                 BloomReaderMinVersion = "3.3",
                 XPath =
                     "//div[@data-activity='drag-letter-to-target' or @data-activity='drag-image-to-target' or @data-activity='drag-sort-sentence' ]"
+            },
+            new Feature()
+            {
+                FeatureId = "canvasElement",
+                FeaturePhrase = "6.2 representation of canvas elements",
+                // Plan is to make a special exception to this for late releases of 6.1 and 6.0,
+                // which will know how to reverse the migration.
+                BloomDesktopMinVersion = "6.2",
+                BloomReaderMinVersion = "3.3",
+                XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
             }
         };
 
@@ -3608,7 +3624,7 @@ namespace Bloom.Book
             {
                 var container = svgElement.ParentNode; // bloom-imageContainer div (not gonna be null)
                 var textOverPictureDivs = container.SafeSelectNodes(
-                    "div[contains(@class, 'bloom-textOverPicture')]"
+                    "div[contains(@class, '" + HtmlDom.kCanvasElementClass + "')]"
                 );
                 if (textOverPictureDivs == null) // unlikely, but maybe possible
                     continue;
@@ -3629,7 +3645,7 @@ namespace Bloom.Book
                 }
             }
 
-            // Now delete the SVGs that only have bubbles of style 'none'.
+            // Now delete the SVGs that only have canvas elements of style 'none'.
             var dirty = false;
             foreach (var svgElement in comicalSvgs.ToArray())
             {
@@ -3660,10 +3676,10 @@ namespace Bloom.Book
                 return;
 
             // Make sure that in every image container, the first element is the img.
-            // This is important because, since 5.4, we don't use a z-index to put overlays above the base image
-            // (so the overlay image container does not become a stacking context, so we can use
+            // This is important because, since 5.4, we don't use a z-index to put canvas elements above the base image
+            // (so the canvas element image container does not become a stacking context, so we can use
             // z-index on its children to put them above the comicaljs canvas),
-            // which means we depend on the img being first to make sure the overlays are on top of it.
+            // which means we depend on the img being first to make sure the canvas elements are on top of it.
             // (I'm not sure we ever created situations where the img was not first, but now it's vital,
             // so I added this maintenance to make sure of it.)
             var imageContainers = Dom.SafeSelectNodes(
@@ -3847,6 +3863,52 @@ namespace Bloom.Book
             BookInfo.AppearanceSettings.WriteToFolder(FolderPath);
 
             Dom.UpdateMetaElement("maintenanceLevel", "4");
+        }
+
+        private void MigrateClassName(string oldClassName, string newClassName)
+        {
+            var elements = Dom.SafeSelectNodes($"//*[contains(@class, '{oldClassName}')]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            foreach (var element in elements)
+            {
+                element.SetAttribute(
+                    "class",
+                    element.GetAttribute("class").Replace(oldClassName, newClassName)
+                );
+            }
+        }
+
+        private void MigrateAttributeName(string oldAttrName, string newAttrName)
+        {
+            var elements = Dom.SafeSelectNodes($"//*[@{oldAttrName}]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            foreach (var element in elements)
+            {
+                element.SetAttribute(newAttrName, element.GetAttribute(oldAttrName));
+                element.RemoveAttribute(oldAttrName);
+            }
+        }
+
+        public void MigrateToLevel5CanvasElement()
+        {
+            if (GetMaintenanceLevel() >= 5)
+                return;
+            MigrateClassName("bloom-textOverPicture", HtmlDom.kCanvasElementClass);
+            MigrateClassName("hasOverlay", "bloom-has-canvas-element");
+            // Note: this is deliberately not inverted in the 6.1 back-migration, since it is
+            // only used in earlier 6.2's.
+            MigrateAttributeName("data-bubble-id", "data-draggable-id");
+            // When we change the ID used for the canvas element tool in the metadata
+            //var metaData = BookMetaData.FromFolder(FolderPath);
+            //var ceTool = metaData.ToolStates.FirstOrDefault(x => x.ToolId == "overlay");
+            //if (ceTool != null)
+            //    ceTool.ToolId = "canvasElement";
+            //if (metaData.CurrentTool == "overlayTool")
+            //    metaData.CurrentTool = "canvasElementTool";
+            //metaData.WriteToFolder(FolderPath);
+            Dom.UpdateMetaElement("maintenanceLevel", "5");
         }
 
         /// <summary>

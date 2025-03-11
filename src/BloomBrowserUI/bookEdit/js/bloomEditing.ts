@@ -21,13 +21,14 @@ import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import {
-    bubbleDescription,
-    BubbleManager,
-    initializeBubbleManager,
-    kTextOverPictureClass,
-    kTextOverPictureSelector,
-    theOneBubbleManager
-} from "./bubbleManager";
+    CanvasElementManager,
+    initializeCanvasElementManager,
+    theOneCanvasElementManager
+} from "./CanvasElementManager";
+import {
+    kCanvasElementClass,
+    kCanvasElementSelector
+} from "../toolbox/overlay/canvasElementUtils";
 import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
@@ -302,12 +303,9 @@ function AddLanguageTags(container) {
             // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
             // with each other, leading to flashing back and forth
             // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
-            // August 2024: for overlays, the language is now displayed in the context controls box, and isn't
+            // August 2024: for canvas elements, the language is now displayed in the context controls box, and isn't
             // a problem for small text boxes.
-            if (
-                $this.width() < 100 &&
-                !this.closest(kTextOverPictureSelector)
-            ) {
+            if ($this.width() < 100 && !this.closest(kCanvasElementSelector)) {
                 return;
             }
 
@@ -430,7 +428,9 @@ export function changeImage(imageInfo: {
     }
     // id is just a temporary expedient to find the right image easily in this method.
     imgOrImageContainer.removeAttribute("id");
-    theOneBubbleManager.updateBubbleForChangedImage(imgOrImageContainer);
+    theOneCanvasElementManager.updateCanvasElementForChangedImage(
+        imgOrImageContainer
+    );
 }
 
 // This origami checking business is related BL-13120
@@ -453,13 +453,13 @@ export function SetupElements(
     elementToFocus?: HTMLElement | "none"
 ) {
     recordWhatThisPageLooksLikeForSanityCheck(container);
-    BubbleManager.recordInitialZoom(container);
+    CanvasElementManager.recordInitialZoom(container);
 
     SetupImagesInContainer(container);
 
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
-    initializeBubbleManager();
+    initializeCanvasElementManager();
 
     $(container)
         .find(".bloom-editable")
@@ -741,7 +741,7 @@ export function SetupElements(
             );
         }
         BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
-        if (theOneBubbleManager.isComicEditingOn) {
+        if (theOneCanvasElementManager.isCanvasElementEditingOn) {
             // If we saved the page with an indication that a particular element should be
             // active, and calling code is not specifying one, restore the one we saved.
             // This is especially useful when the page is unexpectedly reloaded, for example,
@@ -753,7 +753,7 @@ export function SetupElements(
                     ?.getAttribute("id");
                 if (currentPageId === (window.top as any).lastPageId) {
                     elementToFocus = Array.from(
-                        document.getElementsByClassName(kTextOverPictureClass)
+                        document.getElementsByClassName(kCanvasElementClass)
                     ).find(e =>
                         e.hasAttribute("data-bloom-active")
                     ) as HTMLElement;
@@ -762,13 +762,13 @@ export function SetupElements(
                     (window.top as any).lastPageId = currentPageId;
                 }
             }
-            // If we don't have some specific reason to focus on a particular overlay, we
+            // If we don't have some specific reason to focus on a particular canvas element, we
             // don't want to arbitrarily select one. It seems the browser will try
             // to focus something, and sometimes it doesn't make a good choice, especially after
             // changing zoom, which for some unknown reason seems to make it want to focus the
             // first thing on the page that CAN be focused. And usually we automatically activate
-            // an overlay that gets focus.
-            // Prior to /4d9ff2a0860d78ecd96771a93a839ce60ab7a8d3, we made a call here to bubbleManager
+            // a canvas element that gets focus.
+            // Prior to /4d9ff2a0860d78ecd96771a93a839ce60ab7a8d3, we made a call here to CanvasElementManager
             // to tell it to ignore the next focusIn event. That was dubious and fragile.
             // Then just prior to this commit, we were explicitly setting the active element to undefined
             // here, but (since this is in a timeout) that could undo (for example) the sign language tool's
@@ -786,32 +786,32 @@ export function SetupElements(
             // The sign language tool wants to be able to select a video (if any) on any page we load.
             // if (!elementToFocus) {
             //     // Make sure the active element is cleared if we're not setting it.
-            //     theOneBubbleManager.setActiveElement(undefined);
+            //     theOneCanvasElementManager.setActiveElement(undefined);
             // }
 
             if (elementToFocus !== "none") {
                 const focusable = elementToFocus
                     ? $(elementToFocus).find(":focusable")
                     : undefined;
-                // If we were passed an element to focus, it could be a new comic bubble, and we'd like to
+                // If we were passed an element to focus, it could be a new canvas element, and we'd like to
                 // be all set to type in it. So we focus it.
                 // I'm not sure whether this is desirable when we found one from data-bloom-active,
-                // but there may be a case where the page gets reloaded while a text-editable bubble is active.
+                // but there may be a case where the page gets reloaded while a text-editable canvas element is active.
                 if (elementToFocus && focusable) {
                     focusable.focus();
                     // Ideally calling focus above has this as a side effect.
                     // However, the focusin event handler doesn't seem to get called at this point
                     // for image containers, even though we have set tabindex to zero,
                     // so make sure it becomes the active element at least.
-                    theOneBubbleManager.setActiveElement(elementToFocus);
+                    theOneCanvasElementManager.setActiveElement(elementToFocus);
                     // see similar code below
                     BloomSourceBubbles.ShowSourceBubbleForElement(
                         elementToFocus
                     );
                 } else {
                     // It's OK not to focus anything.  The priority for focusing text boxes is:
-                    // 1) empty overlay "Text Box" which has no border to indicate that it's there
-                    // 2) empty text box, whether overlay or origami
+                    // 1) empty canvas element "Text Box" which has no border to indicate that it's there
+                    // 2) empty text box, whether canvas element or origami
                     // 3) origami text box, empty or not
                     // Note that image description text boxes are never focused here since we can't
                     // tell whether they're actually visible or not.
@@ -834,26 +834,28 @@ export function SetupElements(
                         e => !e.textContent?.trim()
                     );
                     if (emptyEditables.length) {
-                        const emptyTextBlockOverlay = emptyEditables.find(e => {
-                            const div = e.closest(".bloom-textOverPicture");
-                            if (div === null) return false;
-                            return div
-                                .getAttribute("data-bubble")
-                                ?.includes("`style`:`none`");
-                        });
-                        if (emptyTextBlockOverlay) {
-                            // We want to focus on the first empty overlay text with style "none".
-                            $(emptyTextBlockOverlay).focus();
+                        const emptyTextBlockCanvasElement = emptyEditables.find(
+                            e => {
+                                const div = e.closest(kCanvasElementSelector);
+                                if (div === null) return false;
+                                return div
+                                    .getAttribute("data-bubble")
+                                    ?.includes("`style`:`none`");
+                            }
+                        );
+                        if (emptyTextBlockCanvasElement) {
+                            // We want to focus on the first empty canvas element text with style "none".
+                            $(emptyTextBlockCanvasElement).focus();
                             return;
                         } else {
-                            // otherwise, focus on the first empty text box, whether overlay or origami.
+                            // otherwise, focus on the first empty text box, whether canvas element or origami.
                             $(emptyEditables[0]).focus();
                             return;
                         }
                     }
-                    // don't want overlays selected here
+                    // don't want canvas elements selected here
                     const editable = visibleEditables.find(
-                        e => e.closest(".bloom-textOverPicture") === null
+                        e => e.closest(kCanvasElementSelector) === null
                     );
                     if (editable) {
                         // focus on the first available origami text box
@@ -889,8 +891,8 @@ export function SetupElements(
     activateLongPressFor(editableJQuery);
 
     // make any added over-picture elements draggable and clickable
-    if (theOneBubbleManager) {
-        theOneBubbleManager.initializeOverPictureEditing();
+    if (theOneCanvasElementManager) {
+        theOneCanvasElementManager.initializeOverPictureEditing();
     }
 
     // focus on the first editable field
@@ -1229,9 +1231,10 @@ export function getBodyContentForSavePage() {
         );
     }
 
-    const bubbleEditingOn = theOneBubbleManager.isComicEditingOn;
-    if (bubbleEditingOn) {
-        theOneBubbleManager.turnOffBubbleEditing();
+    const canvasElementEditingOn =
+        theOneCanvasElementManager.isCanvasElementEditingOn;
+    if (canvasElementEditingOn) {
+        theOneCanvasElementManager.turnOffCanvasElementEditing();
     }
     // Active element should be forced to blur
     if (document.activeElement instanceof HTMLElement) {
@@ -1257,8 +1260,8 @@ export function getBodyContentForSavePage() {
 
     const result = document.body.innerHTML;
 
-    if (bubbleEditingOn) {
-        theOneBubbleManager.turnOnBubbleEditing();
+    if (canvasElementEditingOn) {
+        theOneCanvasElementManager.turnOnCanvasElementEditing();
     }
 
     return result;
@@ -1277,10 +1280,10 @@ export const userStylesheetContent = () => {
 };
 
 export const pageUnloading = () => {
-    // It's just possible that 'theOneBubbleManager' hasn't been initialized.
+    // It's just possible that 'theOneCanvasElementManager' hasn't been initialized.
     // If not, just ignore this, since it's a no-op at this point anyway.
-    if (theOneBubbleManager) {
-        theOneBubbleManager.cleanUp();
+    if (theOneCanvasElementManager) {
+        theOneCanvasElementManager.cleanUp();
     }
 };
 
@@ -1299,17 +1302,19 @@ export const copySelection = () => {
 async function copyImpl() {
     const sel = document.getSelection();
     if (!sel?.toString()) {
-        const activeBubble = theOneBubbleManager?.getActiveElement();
-        const activeBubbleEditable = activeBubble?.getElementsByClassName(
+        const activeCanvasElement = theOneCanvasElementManager?.getActiveElement();
+        const activeCanvasElementEditable = activeCanvasElement?.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on"
         )[0] as HTMLElement;
 
-        // No active text selection to copy; copy the bubble's entire content.
+        // No active text selection to copy; copy the canvas element's entire content.
         // There's a slight chance that the user wanted to copy some trailing
         // whitespace. But there's a greater chance they **don't** want unintended
         // trailing line breaks. This ".trimEnd()" works around an issue where multiple
         // copy/pastes can result in an extra line break being added. See BL-14051.
-        navigator.clipboard.writeText(activeBubbleEditable.innerText.trimEnd());
+        navigator.clipboard.writeText(
+            activeCanvasElementEditable.innerText.trimEnd()
+        );
         return;
     }
     navigator.clipboard.writeText(sel.toString());
@@ -1344,10 +1349,10 @@ export const pasteClipboard = (imageAvailable: boolean) => {
 };
 
 async function pasteImpl(imageAvailable: boolean) {
-    const bubbleManager = theOneBubbleManager;
-    // Enhance: in what case would we consider a non-overlay image container to be the natural destination for pasting?
-    const activeBubble = bubbleManager?.getActiveElement();
-    const imageContainer = activeBubble?.getElementsByClassName(
+    const canvasElementManager = theOneCanvasElementManager;
+    // Enhance: in what case would we consider a non-canvas element image container to be the natural destination for pasting?
+    const activeElement = canvasElementManager?.getActiveElement();
+    const imageContainer = activeElement?.getElementsByClassName(
         "bloom-imageContainer"
     )[0];
     if (imageContainer) {
@@ -1359,7 +1364,7 @@ async function pasteImpl(imageAvailable: boolean) {
             doImageCommand(img, "paste");
         } else {
             const imageIsGif =
-                activeBubble?.classList.contains("bloom-gif") ?? false;
+                activeElement?.classList.contains("bloom-gif") ?? false;
             BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
                 imageIsGif
                     ? "EditTab.NoGifFoundOnClipboard"
@@ -1368,19 +1373,19 @@ async function pasteImpl(imageAvailable: boolean) {
                 ""
             );
         }
-        return; // can't paste anything but an image into an image container overlay
+        return; // can't paste anything but an image into an image container canvas element
     }
-    const activeBubbleEditable = activeBubble?.getElementsByClassName(
+    const activeCanvasElementEditable = activeElement?.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
 
     if (
-        activeBubbleEditable &&
-        activeBubble !== bubbleManager.theBubbleWeAreTextEditing
+        activeCanvasElementEditable &&
+        activeElement !== canvasElementManager.theCanvasElementWeAreTextEditing
     ) {
-        // We've issued a paste command on a bubble that isn't active for editing.
+        // We've issued a paste command on a canvas element that isn't active for editing.
         // Replace its entire content with what's on the clipboard.
-        const editor = (activeBubbleEditable as any).bloomCkEditor;
+        const editor = (activeCanvasElementEditable as any).bloomCkEditor;
         if (editor) {
             const manager = editor.undoManager;
             const textToPaste = await navigator.clipboard.readText();
@@ -1398,8 +1403,8 @@ async function pasteImpl(imageAvailable: boolean) {
             editor.insertText(textToPaste);
             manager.unlock();
             manager.save(true);
-            // We need to update the bubble height (BL-14004).
-            bubbleManager.updateAutoHeight();
+            // We need to update the canvas element height (BL-14004).
+            canvasElementManager.updateAutoHeight();
         }
         // It shouldn't happen that we don't have an editor, but if we don't, we just don't paste.
         // Otherwise, the paste is likely to go somewhere unexpected, wherever a ckeditor last had
@@ -1415,12 +1420,12 @@ async function pasteImpl(imageAvailable: boolean) {
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
     CKEDITOR.currentInstance.insertText(textToPaste);
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
-    // We need to update the bubble height (BL-14004).
+    // We need to update the canvas element height (BL-14004).
     if (
-        activeBubbleEditable &&
-        activeBubble === bubbleManager.theBubbleWeAreTextEditing
+        activeCanvasElementEditable &&
+        activeElement === canvasElementManager.theCanvasElementWeAreTextEditing
     ) {
-        bubbleManager.updateAutoHeight();
+        canvasElementManager.updateAutoHeight();
     }
 }
 

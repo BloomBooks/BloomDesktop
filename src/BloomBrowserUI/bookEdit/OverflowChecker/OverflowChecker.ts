@@ -5,7 +5,10 @@
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
-import { BubbleManager, theOneBubbleManager } from "../js/bubbleManager";
+import {
+    CanvasElementManager,
+    theOneCanvasElementManager
+} from "../js/CanvasElementManager";
 import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
 import { addScrollbarsToPage, cleanupNiceScroll } from "../shared/scrolling";
 
@@ -393,7 +396,11 @@ export default class OverflowChecker {
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
         if (
-            theOneBubbleManager.growOverflowingBox(box, overflowY, doNotShrink)
+            theOneCanvasElementManager.growOverflowingBox(
+                box,
+                overflowY,
+                doNotShrink
+            )
         ) {
             overflowY = 0;
         }
@@ -402,7 +409,7 @@ export default class OverflowChecker {
             // above we did a much more precise calculation and gave it just enough padding
             // to prevent it (if necessary).
             // It's likely that the calls above to getSelfOverflowAmounts and growOverflowingBox above are
-            // redundant in this case. The latter only applies to TOP boxes, which are unlikely
+            // redundant in this case. The latter only applies to canvas element boxes, which are unlikely
             // to be bloom-padForOverflow. However, I can't guarantee that a bloom-padForOverflow box
             // can't overflow horizontally. It seemed safest to leave the existing code alone and just
             // prevent the spurious overflow markup.
@@ -557,7 +564,7 @@ export default class OverflowChecker {
             return false;
         }
         // This is the most reliable way I can find to detect data-overflow tooltips,
-        // at least on TOP boxes. By experiment in the debugger, qtipContent does
+        // at least on canvas element boxes. By experiment in the debugger, qtipContent does
         // not seem to be an element at all, but some sort of configuration object
         // for the qtip, so trying to retrieve it as an attribute (as the code below does)
         // does not work.

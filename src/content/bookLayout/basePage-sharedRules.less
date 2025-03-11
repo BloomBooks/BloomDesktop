@@ -1,4 +1,4 @@
-// Styles that are shared by both the regular book css and the more minimalist epub css.
+﻿// Styles that are shared by both the regular book css and the more minimalist epub css.
 
 @preferredBackgroundGray: hsl(0, 0%, 86%);
 
@@ -72,17 +72,17 @@ textarea,
 // A third possible state is that we have converted to 6.1 but not cropped. In this case,
 // it doeesn't matter whether we override the old rule, since the imageContainer is already
 // the right size. The easiest way to make
-// sure we don't mess up the old overlays but do get this rule for cropped images
+// sure we don't mess up the old canvas elements but do get this rule for cropped images
 // where we need it is to look for the width in the style attribute, which is always
-// present for cropped images (and not otherwise, at least in overlays).
-.bloom-textOverPicture .bloom-imageContainer img[style*="width"] {
+// present for cropped images (and not otherwise, at least in canvas elements).
+.bloom-canvas-element .bloom-imageContainer img[style*="width"] {
     object-fit: unset;
     height: unset;
     // width will initially be 100%, but typically overridden by object style
 }
 
-// Now that we have overlay elements, we don't want to show the placeholder flower underneath them.
-.bloom-imageContainer.hasOverlay > img[src="placeHolder.png"] {
+// Now that we have canvas element elements, we don't want to show the placeholder flower underneath them.
+.bloom-imageContainer.bloom-has-canvas-element > img[src="placeHolder.png"] {
     display: none;
 }
 
@@ -184,7 +184,7 @@ span.bloom-linebreak {
         text-wrap: balance;
     }
     &.Bubble-style {
-        // Ensure that the text wrapping in overlays is generally stable.  See BL-13135.
+        // Ensure that the text wrapping in canvas elements is generally stable.  See BL-13135.
         // We would use the "stable" keyword, but that isn't implemented in most browsers.
         text-wrap: wrap;
     }

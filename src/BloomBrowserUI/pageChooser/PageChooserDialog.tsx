@@ -710,7 +710,7 @@ export function getAttributeStringSafely(
 }
 
 // We want to count all the translationGroups that do not occur inside of a bloom-imageContainer div.
-// The reason for this is that images can have textOverPicture divs and imageDescription divs inside of them
+// The reason for this is that images can have canvas element divs and imageDescription divs inside of them
 // and these are completely independent of the template page. We need to count regular translationGroups and
 // also ensure that translationGroups inside of images get migrated correctly. If this algorithm changes, be
 // sure to also change 'GetTranslationGroupsInternal()' in HtmlDom.cs.

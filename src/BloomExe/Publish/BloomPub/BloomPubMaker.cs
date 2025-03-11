@@ -459,13 +459,11 @@ namespace Bloom.Publish.BloomPub
                 && modifiedBook.OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null
             )
             {
-                // This indicates that we are harvesting a book with comic speech bubbles or other overlays (Overlay Tool).
-                // For books with overlays, we only publish a single language. It's not currently feasible to
-                // allow the reader to switch language in a book with overlays, because typically that requires
-                // adjusting the positions of the overlays, and we don't yet support having more than one
-                // set of overlay locations in a single book. See BL-7912 for some ideas on how we might
-                // eventually improve this. In the meantime, switching language would have bad effects,
-                // and if you can't switch language, there's no point in the book containing more than one.
+                // This indicates that we are harvesting a book with canvas elements (Overlay Tool).
+                // For books with canvas elements, we only publish a single language. This harks back to a time when we couldn't
+                // store different sizes and positions for overlays in different languages. Now we can, but a book we're
+                // harvesting doesn't necessarily have appropriate locations stored for each language. So for now we'll just
+                // publish the first one.
                 var languagesToInclude = new string[1] { modifiedBook.BookData.Language1.Tag };
                 PublishModel.RemoveUnwantedLanguageData(
                     modifiedBook.OurHtmlDom,

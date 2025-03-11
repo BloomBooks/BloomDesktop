@@ -61,6 +61,7 @@ import {
     showImageDescriptions
 } from "../imageDescription/imageDescriptionUtils";
 import { IAudioRecorder } from "./IAudioRecorder";
+import { kCanvasElementClass } from "../overlay/canvasElementUtils";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -665,10 +666,10 @@ export default class AudioRecording implements IAudioRecorder {
                 return false;
             }
             if (this.showingImageDescriptions) {
-                // overlays are hidden, don't include them
+                // canvas elements are hidden, don't include them
                 if (
                     transgroup.parentElement?.classList?.contains(
-                        "bloom-textOverPicture"
+                        kCanvasElementClass
                     )
                 ) {
                     return false;
@@ -1960,7 +1961,7 @@ export default class AudioRecording implements IAudioRecorder {
         }
         // Whether or not we had to move the selection, some button states may need to change.
         // For example, perhaps there was previously nowhere for the 'next' button to take us,
-        // but now we revealed a overlay which is set to be after the current element.
+        // but now we revealed a canvas element which is set to be after the current element.
         await this.updateButtonStateAsync("record");
         this.updateDisplay();
     }
@@ -2615,7 +2616,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     // Called upon newPageReady(). Calls updateMarkup
     public async setupAndUpdateMarkupAsync(): Promise<void> {
-        // For this purpose we want to include overlays even if they are hidden to show an image description,
+        // For this purpose we want to include canvas elements even if they are hidden to show an image description,
         // since they may become visible when the show image description checkbox is deselected without
         // this code running again.
         const recordables = this.getRecordableDivs(true, true, false);

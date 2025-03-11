@@ -10,7 +10,7 @@ import "./impairmentVisualizer.less";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
-import { kOverlayClass } from "../../js/bubbleManager";
+import { kHasCanvasElementClass } from "../overlay/canvasElementUtils";
 
 interface IState {
     kindOfColorBlindness: string;
@@ -154,7 +154,7 @@ export class ImpairmentVisualizerControls extends React.Component<
                 ) {
                     const child = immediateChildren[childIndex] as HTMLElement;
                     if (!child || child.nodeName !== "IMG") continue;
-                    // Don't make an overlay for a draghandle or other UI element.
+                    // Don't make a overlay for a draghandle or other UI element.
                     if (child.classList.contains("bloom-ui")) continue;
                     this.makeColorBlindnessOverlay(child as HTMLImageElement);
                 }
@@ -238,7 +238,7 @@ export class ImpairmentVisualizerControls extends React.Component<
         // in the same stacking context. Therefore, all things being equal, this one would be covered
         // by that later one.
         const parentContainer = img.parentElement;
-        if (!parentContainer.classList.contains(kOverlayClass)) {
+        if (!parentContainer.classList.contains(kHasCanvasElementClass)) {
             canvas.style.zIndex = "1";
         }
         // And position it within the container the same as the img.
