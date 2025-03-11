@@ -12,10 +12,10 @@ export const kVideoContainerClass = "bloom-videoContainer";
 // Set the attribute which makes a canvas element active for the sign language tool.
 // Make sure nothing else has it.
 // If it's in a canvas element, make that canvas element active. If not, make sure no canvas element is active.
-// notifyBubbleManager is false when calling FROM setActiveElement, and should not be otherwise.
+// notifyCanvasElementManager is false when calling FROM setActiveElement, and should not be otherwise.
 export function selectVideoContainer(
     videoContainer: Element | undefined | null,
-    notifyBubbleManager = true
+    notifyCanvasElementManager = true
 ) {
     const body = getPageIframeBody();
     if (body) {
@@ -29,7 +29,7 @@ export function selectVideoContainer(
     ) as HTMLElement;
     // If it's in a canvas element, make that canvas element active. If not, make sure no canvas element is active.
     // We don't need the confusion of two different ideas of what's active.
-    if (notifyBubbleManager) {
+    if (notifyCanvasElementManager) {
         getCanvasElementManager()?.setActiveElement(canvasElement);
     }
 }

@@ -1,9 +1,9 @@
 import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
 import { CanvasElementManager } from "./CanvasElementManager";
 
-// A (currently very incomplete) set of tests for BubbleManager.
+// A (currently very incomplete) set of tests for CanvasElementManager.
 
-describe("BubbleManager.getLabeledNumber", () => {
+describe("CanvasElementManager.getLabeledNumber", () => {
     // beforeEach(() => {
     // });
 
@@ -34,7 +34,7 @@ describe("BubbleManager.getLabeledNumber", () => {
     });
 });
 
-describe("BubbleManager.adjustLabeledNumber", () => {
+describe("CanvasElementManager.adjustLabeledNumber", () => {
     // beforeEach(() => {
     // });
 

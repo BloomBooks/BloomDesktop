@@ -349,13 +349,6 @@ export class CanvasElementManager {
         this.isCanvasElementEditingOn = true;
         this.handleResizeAdjustments();
 
-        Comical.setActiveBubbleListener(activeElement => {
-            // No longer want to focus a canvas element when activated.
-            // if (activeElement) {
-            //     this.focusFirstVisibleFocusable(activeElement);
-            // }
-        });
-
         const imageContainers: HTMLElement[] = this.getAllPrimaryImageContainersOnPage();
 
         imageContainers.forEach(container => {
@@ -442,7 +435,7 @@ export class CanvasElementManager {
             });
         } else {
             // Focus something!
-            // BL-8073: if Comic Tool is open, this 'turnOnBubbleEditing()' method will get run.
+            // BL-8073: if Comic Tool is open, this 'turnOnCanvasElementEditing()' method will get run.
             // If this particular page has no canvas elements, we can actually arrive here with the 'body'
             // as the document's activeElement. So we focus the first visible focusable element
             // we come to.
@@ -506,9 +499,9 @@ export class CanvasElementManager {
     private canvasElementLosingFocus = event => {
         if (CanvasElementManager.ignoreFocusChanges) return;
         // removing focus from a text canvas element means the next click on it could drag it.
-        // However, it's possible the active canvas element already moved; don't clear theBubbleWeAreTextEditing if so
-        if (event.currentTarget === this.theBubbleWeAreTextEditing) {
-            this.theBubbleWeAreTextEditing = undefined;
+        // However, it's possible the active canvas element already moved; don't clear theCanvasElementWeAreTextEditing if so
+        if (event.currentTarget === this.theCanvasElementWeAreTextEditing) {
+            this.theCanvasElementWeAreTextEditing = undefined;
             this.removeFocusClass();
         }
     };
@@ -737,7 +730,7 @@ export class CanvasElementManager {
             this.updateComicalForSelectedElement(newTextOverPictureElement);
 
             // SetupElements (below) will do most of what we need, but when it gets to
-            // 'turnOnBubbleEditing()', it's already on, so the method will get skipped.
+            // 'turnOnCanvasElementEditing()', it's already on, so the method will get skipped.
             // The only piece left from that method that still needs doing is to set the
             // 'focusin' eventlistener.
             // And then the only thing left from a full refresh that needs to happen here is
@@ -862,9 +855,9 @@ export class CanvasElementManager {
             // a text selection, possibly because of CkEditor), and Undo. If something
             // has focused the canvas element, it will typically have a selection visible, and so it
             // looks as if it's in edit mode. I think it's best to just make it so.)
-            theOneCanvasElementManager.theBubbleWeAreTextEditing =
+            theOneCanvasElementManager.theCanvasElementWeAreTextEditing =
                 theOneCanvasElementManager.activeElement;
-            theOneCanvasElementManager.theBubbleWeAreTextEditing?.classList.add(
+            theOneCanvasElementManager.theCanvasElementWeAreTextEditing?.classList.add(
                 "bloom-focusedCanvasElement"
             );
         } else {
@@ -985,7 +978,7 @@ export class CanvasElementManager {
             }
         });
         if (this.activeElement !== element) {
-            this.theBubbleWeAreTextEditing = undefined; // even if focus doesn't move.
+            this.theCanvasElementWeAreTextEditing = undefined; // even if focus doesn't move.
             // For some reason this doesnt' trigger as a result of changing the selection.
             // But we definitely don't want to show the CkEditor toolbar until there is some
             // new range selection, so just set up the usual class to hide it.
@@ -1512,16 +1505,16 @@ export class CanvasElementManager {
     // crop control starts since various events which reset it to undefined.
     // (This is modeled on Canva, but that is not an arbitrary choice. For example, if we
     // did not reset cropping when the canvas element was moved, we would need to adjust
-    // initialCropBubbleTop/Left in a non-obvious way).
+    // initialCropCanvasElementTop/Left in a non-obvious way).
     private lastCropControl: HTMLElement | undefined;
     private initialCropImageWidth: number;
     private initialCropImageHeight: number;
     private initialCropImageLeft: number;
     private initialCropImageTop: number;
-    private initialCropBubbleWidth: number;
-    private initialCropBubbleHeight: number;
-    private initialCropBubbleTop: number;
-    private initialCropBubbleLeft: number;
+    private initialCropCanvasElementWidth: number;
+    private initialCropCanvasElementHeight: number;
+    private initialCropCanvasElementTop: number;
+    private initialCropCanvasElementLeft: number;
     // If we're dragging a crop control, we generally want to snap when the edege
     // of the (underlying, uncropped) image is close to the corresponding edge
     // of the canvas element in which it is cropped...that is, no cropping on that edge,
@@ -1564,10 +1557,10 @@ export class CanvasElementManager {
                 this.initialCropImageHeight = img.offsetHeight;
                 this.initialCropImageLeft = img.offsetLeft;
                 this.initialCropImageTop = img.offsetTop;
-                this.initialCropBubbleWidth = this.activeElement.offsetWidth;
-                this.initialCropBubbleHeight = this.activeElement.offsetHeight;
-                this.initialCropBubbleTop = this.activeElement.offsetTop;
-                this.initialCropBubbleLeft = this.activeElement.offsetLeft;
+                this.initialCropCanvasElementWidth = this.activeElement.offsetWidth;
+                this.initialCropCanvasElementHeight = this.activeElement.offsetHeight;
+                this.initialCropCanvasElementTop = this.activeElement.offsetTop;
+                this.initialCropCanvasElementLeft = this.activeElement.offsetLeft;
                 this.lastCropControl = event.currentTarget as HTMLElement;
             }
             // Determine whether the drag is starting in the "no cropping" position
@@ -1659,8 +1652,8 @@ export class CanvasElementManager {
         if (!this.activeElement) return; // should never happen, but makes lint happy
         let deltaX = event.clientX - this.startSideDragX;
         let deltaY = event.clientY - this.startSideDragY;
-        let newBubbleWidth = this.oldWidth; // default
-        let newBubbleHeight = this.oldHeight; // default
+        let newCanvasElementWidth = this.oldWidth; // default
+        let newCanvasElementHeight = this.oldHeight; // default
         console.assert(
             this.currentDragSide === "e" ||
                 this.currentDragSide === "w" ||
@@ -1668,29 +1661,29 @@ export class CanvasElementManager {
         );
         switch (this.currentDragSide) {
             case "e":
-                newBubbleWidth = Math.max(
+                newCanvasElementWidth = Math.max(
                     this.oldWidth + deltaX,
                     this.minWidth
                 );
-                deltaX = newBubbleWidth - this.oldWidth;
-                this.activeElement.style.width = `${newBubbleWidth}px`;
+                deltaX = newCanvasElementWidth - this.oldWidth;
+                this.activeElement.style.width = `${newCanvasElementWidth}px`;
                 break;
             case "w":
-                newBubbleWidth = Math.max(
+                newCanvasElementWidth = Math.max(
                     this.oldWidth - deltaX,
                     this.minWidth
                 );
-                deltaX = this.oldWidth - newBubbleWidth;
-                this.activeElement.style.width = `${newBubbleWidth}px`;
+                deltaX = this.oldWidth - newCanvasElementWidth;
+                this.activeElement.style.width = `${newCanvasElementWidth}px`;
                 this.activeElement.style.left = `${this.oldLeft + deltaX}px`;
                 break;
             case "s":
-                newBubbleHeight = Math.max(
+                newCanvasElementHeight = Math.max(
                     this.oldHeight + deltaY,
                     this.minHeight
                 );
-                deltaY = newBubbleHeight - this.oldHeight;
-                this.activeElement.style.height = `${newBubbleHeight}px`;
+                deltaY = newCanvasElementHeight - this.oldHeight;
+                this.activeElement.style.height = `${newCanvasElementHeight}px`;
         }
         // This won't adjust the height of the editable, but it will mark overflow appropriately.
         // See BL-13902.
@@ -1851,13 +1844,13 @@ export class CanvasElementManager {
         //             // for future moves (without ctrl-key).
         //             this.cropSnapDisabled = false;
         //         }
-        //         newBubbleHeight = Math.max(
+        //         newCanvasElementHeight = Math.max(
         //             this.oldHeight - deltaY,
         //             this.minHeight
         //         );
         //         // Everything subsequent behaves as if it only moved as far as permitted.
-        //         deltaY = this.oldHeight - newBubbleHeight;
-        //         this.activeElement.style.height = `${newBubbleHeight}px`;
+        //         deltaY = this.oldHeight - newCanvasElementHeight;
+        //         this.activeElement.style.height = `${newCanvasElementHeight}px`;
         //         // Moves down by the amount the canvas element shrank (or up by the amount it grew),
         //         // so the bottom stays in the same place
         //         this.activeElement.style.top = `${this.oldTop + deltaY}px`;
@@ -1897,12 +1890,12 @@ export class CanvasElementManager {
         //             // for future moves (without ctrl-key).
         //             this.cropSnapDisabled = false;
         //         }
-        //         newBubbleHeight = Math.max(
+        //         newCanvasElementHeight = Math.max(
         //             this.oldHeight + deltaY,
         //             this.minHeight
         //         );
-        //         deltaY = newBubbleHeight - this.oldHeight;
-        //         this.activeElement.style.height = `${newBubbleHeight}px`;
+        //         deltaY = newCanvasElementHeight - this.oldHeight;
+        //         this.activeElement.style.height = `${newCanvasElementHeight}px`;
         //         break;
         //     case "e":
         //         // const widthThatMathchesRightOfImage = this.initialCropImageLeft + this.initialCropImageWidth;
@@ -1933,12 +1926,12 @@ export class CanvasElementManager {
         //             // for future moves (without ctrl-key).
         //             this.cropSnapDisabled = false;
         //         }
-        //         newBubbleWidth = Math.max(
+        //         newCanvasElementWidth = Math.max(
         //             this.oldWidth + deltaX,
         //             this.minWidth
         //         );
-        //         deltaX = newBubbleWidth - this.oldWidth;
-        //         this.activeElement.style.width = `${newBubbleWidth}px`;
+        //         deltaX = newCanvasElementWidth - this.oldWidth;
+        //         this.activeElement.style.width = `${newCanvasElementWidth}px`;
         //         break;
         //     case "w":
         //         if (
@@ -1952,12 +1945,12 @@ export class CanvasElementManager {
         //             // for future moves (without ctrl-key).
         //             this.cropSnapDisabled = false;
         //         }
-        //         newBubbleWidth = Math.max(
+        //         newCanvasElementWidth = Math.max(
         //             this.oldWidth - deltaX,
         //             this.minWidth
         //         );
-        //         deltaX = this.oldWidth - newBubbleWidth;
-        //         this.activeElement.style.width = `${newBubbleWidth}px`;
+        //         deltaX = this.oldWidth - newCanvasElementWidth;
+        //         this.activeElement.style.width = `${newCanvasElementWidth}px`;
         //         this.activeElement.style.left = `${this.oldLeft + deltaX}px`;
         //         img.style.left = `${this.oldImageLeft - deltaX}px`;
         //         break;
@@ -2082,16 +2075,16 @@ export class CanvasElementManager {
         // // This stays constant as we crop on the top and bottom.
         // const centerFractionX =
         //     leftFraction +
-        //     this.initialCropBubbleWidth / this.initialCropImageWidth / 2;
+        //     this.initialCropCanvasElementWidth / this.initialCropImageWidth / 2;
         // const rightFraction =
         //     (this.initialCropImageWidth +
         //         this.initialCropImageLeft -
-        //         this.initialCropBubbleWidth) /
+        //         this.initialCropCanvasElementWidth) /
         //     this.initialCropImageWidth;
         // const bottomFraction =
         //     (this.initialCropImageHeight +
         //         this.initialCropImageTop -
-        //         this.initialCropBubbleHeight) /
+        //         this.initialCropCanvasElementHeight) /
         //     this.initialCropImageHeight;
         // const topFraction =
         //     -this.initialCropImageTop / this.initialCropImageHeight;
@@ -2099,7 +2092,7 @@ export class CanvasElementManager {
         // // This stays constant as we crop on the left and right.
         // const centerFractionY =
         //     topFraction +
-        //     this.initialCropBubbleHeight / this.initialCropImageHeight / 2;
+        //     this.initialCropCanvasElementHeight / this.initialCropImageHeight / 2;
         // // Deliberately dividing by the WIDTH here; all our calculations are
         // // based on the adjusted width of the image.
         // const topAsFractionOfWidth =
@@ -2111,13 +2104,13 @@ export class CanvasElementManager {
         //     case "e":
         //         if (
         //             // the canvas element has stretched beyond the right side of the image
-        //             newBubbleWidth >
+        //             newCanvasElementWidth >
         //             this.initialCropImageLeft + this.initialCropImageWidth
         //         ) {
-        //             // grow the image. We want its right edge to end up at newBubbleWidth,
+        //             // grow the image. We want its right edge to end up at newCanvasElementWidth,
         //             // after being stretched enough to leave the same fraction as before
         //             // cropped on the left.
-        //             newImageWidth = newBubbleWidth / (1 - leftFraction);
+        //             newImageWidth = newCanvasElementWidth / (1 - leftFraction);
         //             img.style.width = `${newImageWidth}px`;
         //             // fiddle with the left to keep the same part cropped
         //             img.style.left = `${-leftFraction * newImageWidth}px`;
@@ -2125,7 +2118,7 @@ export class CanvasElementManager {
         //             newImageHeight = newImageWidth * aspectRatio;
         //             const newTopFraction =
         //                 centerFractionY -
-        //                 this.initialCropBubbleHeight / newImageHeight / 2;
+        //                 this.initialCropCanvasElementHeight / newImageHeight / 2;
         //             img.style.top = `${-newTopFraction * newImageHeight}px`;
         //         } else {
         //             // no need to stretch. Restore the image to its original position and size.
@@ -2137,15 +2130,15 @@ export class CanvasElementManager {
         //         if (
         //             // the canvas element has stretched beyond the original left side of the image
         //             // this.oldLeft + deltaX is where the left of the canvas element is now
-        //             // this.initialCropImageLeft + this.initialBubbleImageLeft is where
+        //             // this.initialCropImageLeft + this.initialCanvasElementImageLeft is where
         //             // the left of the image was when we started.
         //             this.oldLeft + deltaX <
-        //             this.initialCropImageLeft + this.initialCropBubbleLeft
+        //             this.initialCropImageLeft + this.initialCropCanvasElementLeft
         //         ) {
         //             // grow the image. We want its left edge to end up at zero,
         //             // after being stretched enough to leave the same fraction as before
         //             // cropped on the right.
-        //             newImageWidth = newBubbleWidth / (1 - rightFraction);
+        //             newImageWidth = newCanvasElementWidth / (1 - rightFraction);
         //             img.style.width = `${newImageWidth}px`;
         //             // no cropping on the left
         //             img.style.left = `0`;
@@ -2153,7 +2146,7 @@ export class CanvasElementManager {
         //             newImageHeight = newImageWidth * aspectRatio;
         //             const newTopFraction =
         //                 centerFractionY -
-        //                 this.initialCropBubbleHeight / newImageHeight / 2;
+        //                 this.initialCropCanvasElementHeight / newImageHeight / 2;
         //             img.style.top = `${-newTopFraction * newImageHeight}px`;
         //         } else {
         //             img.style.width = `${this.initialCropImageWidth}px`;
@@ -2163,24 +2156,24 @@ export class CanvasElementManager {
         //     case "s":
         //         if (
         //             // the canvas element has stretched beyond the bottom side of the image
-        //             newBubbleHeight >
+        //             newCanvasElementHeight >
         //             this.initialCropImageTop + this.initialCropImageHeight
         //         ) {
-        //             // grow the image. We want its bottom edge to end up at newBubbleHeight,
+        //             // grow the image. We want its bottom edge to end up at newCanvasElementHeight,
         //             // after being stretched enough to leave the same fraction as before
         //             // cropped on the top.
-        //             newImageHeight = newBubbleHeight / (1 - topFraction);
+        //             newImageHeight = newCanvasElementHeight / (1 - topFraction);
         //             newImageWidth = newImageHeight / aspectRatio;
         //             img.style.width = `${newImageWidth}px`;
         //             // fiddle with the top to keep the same part cropped
         //             img.style.top = `${-topAsFractionOfWidth *
         //                 newImageWidth}px`;
         //             // and the left to split the extra width between top and bottom
-        //             // centerFractionX = leftFraction + this.initialCropBubbleWidth / this.initialCropImageWidth / 2;
-        //             // centerFractionX = newleftFraction + this.initialCropBubbleWidth / newImageWidth / 2;
+        //             // centerFractionX = leftFraction + this.initialCropCanvasElementWidth / this.initialCropImageWidth / 2;
+        //             // centerFractionX = newleftFraction + this.initialCropCanvasElementWidth / newImageWidth / 2;
         //             const newleftFraction =
         //                 centerFractionX -
-        //                 this.initialCropBubbleWidth / newImageWidth / 2;
+        //                 this.initialCropCanvasElementWidth / newImageWidth / 2;
         //             img.style.left = `${-newleftFraction * newImageWidth}px`;
         //         } else {
         //             img.style.width = `${this.initialCropImageWidth}px`;
@@ -2191,15 +2184,15 @@ export class CanvasElementManager {
         //         if (
         //             // the canvas element has stretched beyond the original top side of the image
         //             // this.oldTop + deltaY is where the top of the canvas element is now
-        //             // this.initialCropImageTop + this.initialBubbleImageTop is where
+        //             // this.initialCropImageTop + this.initialCanvasElementImageTop is where
         //             // the top of the image was when we started.
         //             this.oldTop + deltaY <
-        //             this.initialCropImageTop + this.initialCropBubbleTop
+        //             this.initialCropImageTop + this.initialCropCanvasElementTop
         //         ) {
         //             // grow the image. We want its top edge to end up at zero,
         //             // after being stretched enough to leave the same fraction as before
         //             // cropped on the bottom.
-        //             newImageHeight = newBubbleHeight / (1 - bottomFraction);
+        //             newImageHeight = newCanvasElementHeight / (1 - bottomFraction);
         //             newImageWidth = newImageHeight / aspectRatio;
         //             img.style.width = `${newImageWidth}px`;
         //             // no cropping on the top
@@ -2207,7 +2200,7 @@ export class CanvasElementManager {
         //             // and the left to split the extra width between top and bottom
         //             const newleftFraction =
         //                 centerFractionX -
-        //                 this.initialCropBubbleWidth / newImageWidth / 2;
+        //                 this.initialCropCanvasElementWidth / newImageWidth / 2;
         //             img.style.left = `${-newleftFraction * newImageWidth}px`;
         //         } else {
         //             img.style.width = `${this.initialCropImageWidth}px`;
@@ -2908,7 +2901,7 @@ export class CanvasElementManager {
                     canvasElementRect.left,
                     canvasElementRect.top,
                     PointScaling.Scaled,
-                    "ensureBubblesIntersectParent"
+                    "ensureCanvasElementsIntersectParent"
                 )
             );
             changed = this.ensureTailsInsideParent(
@@ -2978,7 +2971,7 @@ export class CanvasElementManager {
     //   might still be entirely invisible as its curve places it entirely beyond the bottom
     //   left corner.
     // - The constraint would actually be different depending on the type of bubble,
-    //   which means a bubble might need to move as a result of changing its bubble type.
+    //   which means a canvas element might need to move as a result of changing its bubble type.
     private minCanvasElementVisible = 10;
 
     // Conceptually, move the canvas element to the specified location (which may be where it is already).
@@ -3031,7 +3024,7 @@ export class CanvasElementManager {
                 x,
                 y,
                 PointScaling.Scaled,
-                "AdjustBubbleLocation"
+                "AdjustCanvasElementLocation"
             );
             this.placeElementAtPosition($(canvasElement), container, moveTo);
         }
@@ -3195,12 +3188,12 @@ export class CanvasElementManager {
                     // currently duplicateCanvasElementBox actually dupliates the current active element,
                     // not the one it is passed. So make sure the one we clicked is active, though it won't be for long.
                     this.setActiveElement(bubble.content);
-                    const newBubble = this.duplicateCanvasElementBox(
+                    const newCanvasElement = this.duplicateCanvasElementBox(
                         bubble.content,
                         true
                     );
-                    if (!newBubble) return;
-                    startDraggingBubble(new Bubble(newBubble));
+                    if (!newCanvasElement) return;
+                    startDraggingBubble(new Bubble(newCanvasElement));
                     return;
                 }
             }
@@ -3211,12 +3204,16 @@ export class CanvasElementManager {
             // processed by the text. And if we're inside a canvas element not yet recognized as the one we're
             // editing, we want to suppress the event because, unless it turns out to be a simple click
             // with no movement, we're going to treat it as dragging the canvas element.
-            const clickOnBubbleWeAreEditing =
-                this.theBubbleWeAreTextEditing ===
+            const clickOnCanvasElementWeAreEditing =
+                this.theCanvasElementWeAreTextEditing ===
                     (event.target as HTMLElement)?.closest(
                         kCanvasElementSelector
-                    ) && this.theBubbleWeAreTextEditing;
-            if (event.altKey || event.ctrlKey || !clickOnBubbleWeAreEditing) {
+                    ) && this.theCanvasElementWeAreTextEditing;
+            if (
+                event.altKey ||
+                event.ctrlKey ||
+                !clickOnCanvasElementWeAreEditing
+            ) {
                 event.preventDefault();
                 event.stopPropagation();
             }
@@ -3263,7 +3260,7 @@ export class CanvasElementManager {
         if (!this.bubbleToDrag) {
             this.handleMouseMoveHover(event, container);
         } else if (this.bubbleToDrag) {
-            this.handleMouseMoveDragBubble(event, container);
+            this.handleMouseMoveDragCanvasElement(event, container);
         }
     };
 
@@ -3330,7 +3327,7 @@ export class CanvasElementManager {
 
     // A canvas element is currently in drag mode, and the mouse is being moved.
     // Move the canvas element accordingly.
-    private handleMouseMoveDragBubble(
+    private handleMouseMoveDragCanvasElement(
         event: MouseEvent,
         container: HTMLElement
     ) {
@@ -3393,7 +3390,7 @@ export class CanvasElementManager {
                 this.lastMoveEvent.pageX - this.bubbleDragGrabOffset.x,
                 this.lastMoveEvent.pageY - this.bubbleDragGrabOffset.y,
                 PointScaling.Scaled,
-                "Created by handleMouseMoveDragBubble()"
+                "Created by handleMouseMoveDragCanvasElement()"
             );
             this.adjustCanvasElementLocation(
                 this.bubbleToDrag.content,
@@ -3490,7 +3487,7 @@ export class CanvasElementManager {
         if (
             editable &&
             editable.closest(kCanvasElementSelector) ===
-                this.theBubbleWeAreTextEditing
+                this.theCanvasElementWeAreTextEditing
         ) {
             // We're text editing in this canvas element, let the mouse do its normal things.
             // In particular, we don't want to do moveInsertionPointAndFocusTo here,
@@ -3509,10 +3506,10 @@ export class CanvasElementManager {
             this.activeElementAtMouseDown === this.activeElement
         ) {
             // Going into edit mode on this canvas element.
-            this.theBubbleWeAreTextEditing = (event.target as HTMLElement)?.closest(
+            this.theCanvasElementWeAreTextEditing = (event.target as HTMLElement)?.closest(
                 kCanvasElementSelector
             ) as HTMLElement;
-            this.theBubbleWeAreTextEditing?.classList.add(
+            this.theCanvasElementWeAreTextEditing?.classList.add(
                 "bloom-focusedCanvasElement"
             );
             // We want to position the IP as if the user clicked where they did.
@@ -3534,7 +3531,7 @@ export class CanvasElementManager {
     // If we get a click (without movement) on a text canvas element, we treat subsequent mouse events on
     // that canvas element as text editing events, rather than drag events, as long as it keeps focus.
     // This is the canvas element, if any, that is currently in that state.
-    public theBubbleWeAreTextEditing: HTMLElement | undefined;
+    public theCanvasElementWeAreTextEditing: HTMLElement | undefined;
     /**
      * Returns true if a handler already exists to sufficiently process this mouse event
      * without needing our custom onMouseDown/onMouseHover/etc event handlers to process it
@@ -3611,8 +3608,8 @@ export class CanvasElementManager {
         const editable = targetElement.closest(".bloom-editable");
         if (
             editable &&
-            this.theBubbleWeAreTextEditing &&
-            this.theBubbleWeAreTextEditing.contains(editable) &&
+            this.theCanvasElementWeAreTextEditing &&
+            this.theCanvasElementWeAreTextEditing.contains(editable) &&
             ev.button !== 2
         ) {
             // an editable is allowed to handle its own events only if it's parent canvas element has
@@ -3909,7 +3906,7 @@ export class CanvasElementManager {
         return { x: centerX, y: centerY };
     }
 
-    public turnOffBubbleEditing(): void {
+    public turnOffCanvasElementEditing(): void {
         if (this.isCanvasElementEditingOn === false) {
             return; // Already off. No work needs to be done.
         }
@@ -4030,7 +4027,7 @@ export class CanvasElementManager {
     // Bubble levels should be consistent with the order of the elements in the DOM,
     // since the former controls which one is treated as being clicked when there is overlap,
     // while the latter determines which is on top.
-    public adjustBubbleOrdering = () => {
+    public adjustCanvasElementOrdering = () => {
         const parents = this.getAllPrimaryImageContainersOnPage();
         parents.forEach(imageContainer => {
             const canvasElements = Array.from(
@@ -4070,13 +4067,13 @@ export class CanvasElementManager {
         });
     };
 
-    // Adds a new over-picture element as a child of the specified {parentElement}
+    // Adds a new canvas element as a child of the specified {parentElement}
     //    (It is a child in the sense that the Comical library will recognize it as a child)
     // {offsetX}/{offsetY} is the offset in position from the parent to the child elements
     //    (i.e., offsetX = child.left - parent.left)
     //    (remember that positive values of Y are further to the bottom)
     // This is what the comic tool calls when the user clicks ADD CHILD BUBBLE.
-    public addChildOverPictureElementAndRefreshPage(
+    public addChildCanvasElementAndRefreshPage(
         parentElement: HTMLElement,
         offsetX: number,
         offsetY: number
@@ -4113,7 +4110,7 @@ export class CanvasElementManager {
         // Make sure everything in parent is "saved".
         this.updateComicalForSelectedElement(parentElement);
 
-        const newPoint = this.findBestLocationForNewBubble(
+        const newPoint = this.findBestLocationForNewCanvasElement(
             parentElement,
             offsetX,
             offsetY
@@ -4155,7 +4152,7 @@ export class CanvasElementManager {
     }
 
     // The 'new canvas element' is either going to be a child of the 'parentElement', or a duplicate of it.
-    private findBestLocationForNewBubble(
+    private findBestLocationForNewCanvasElement(
         parentElement: HTMLElement,
         proposedOffsetX: number,
         proposedOffsetY: number
@@ -4664,7 +4661,7 @@ export class CanvasElementManager {
             false
         );
         // We no longer have an active element, but the old active element may be
-        // needed by the removeControlFrame method called by refreshBubbleEditing
+        // needed by the removeControlFrame method called by refreshCanvasElementEditing
         // to remove a popup menu.
         this.setActiveElement(undefined);
         // By this point it's really gone, so this will clean up if it had a target.
@@ -4702,7 +4699,7 @@ export class CanvasElementManager {
                 return;
             }
 
-            const result = this.duplicateBubbleFamily(
+            const result = this.duplicateCanvasElementFamily(
                 patriarchBubble,
                 bubbleSpecToDuplicate,
                 sameLocation
@@ -4727,14 +4724,14 @@ export class CanvasElementManager {
     // The function returns the patriarch textOverPicture element of the new
     // duplicated canvas element family.
     // This method handles all needed refreshing of the duplicate canvas elements.
-    private duplicateBubbleFamily(
+    private duplicateCanvasElementFamily(
         patriarchSourceBubble: Bubble,
         bubbleSpecToDuplicate: BubbleSpec,
         sameLocation: boolean = false
     ): HTMLElement | undefined {
         const sourceElement = patriarchSourceBubble.content;
         const proposedOffset = 15;
-        const newPoint = this.findBestLocationForNewBubble(
+        const newPoint = this.findBestLocationForNewCanvasElement(
             sourceElement,
             sameLocation ? 0 : proposedOffset + sourceElement.clientWidth, // try to not overlap too much
             sameLocation ? 0 : proposedOffset
@@ -4815,7 +4812,7 @@ export class CanvasElementManager {
                 sourceElement,
                 childBubble.content
             );
-            this.duplicateOneChildBubble(
+            this.duplicateOneChildCanvasElement(
                 childOffsetFromPatriarch,
                 patriarchDuplicateElement,
                 childBubble
@@ -4890,7 +4887,7 @@ export class CanvasElementManager {
         );
     }
 
-    private duplicateOneChildBubble(
+    private duplicateOneChildCanvasElement(
         offsetFromPatriarch: Point,
         parentElement: HTMLElement,
         childSourceBubble: Bubble
@@ -5069,7 +5066,7 @@ export class CanvasElementManager {
             // it back on unless it was to start with.
             return;
         }
-        this.turnOffBubbleEditing();
+        this.turnOffCanvasElementEditing();
         if (forWhat === "forDrag") {
             this.startDraggingSplitter();
         }
@@ -5446,10 +5443,10 @@ export class CanvasElementManager {
             ?.parentElement?.classList.contains("drag-activity-play");
     }
 
-    public deleteBubble(): void {
+    public deleteCurrentCanvasElement(): void {
         // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
         if (this !== theOneCanvasElementManager) {
-            theOneCanvasElementManager.deleteBubble();
+            theOneCanvasElementManager.deleteCurrentCanvasElement();
             return;
         }
         const active = this.getActiveElement();
@@ -5458,10 +5455,10 @@ export class CanvasElementManager {
         }
     }
 
-    public duplicateBubble(): HTMLElement | undefined {
+    public duplicateCanvasElement(): HTMLElement | undefined {
         // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
         if (this !== theOneCanvasElementManager) {
-            return theOneCanvasElementManager.duplicateBubble();
+            return theOneCanvasElementManager.duplicateCanvasElement();
         }
         const active = this.getActiveElement();
         if (active) {
@@ -5470,10 +5467,10 @@ export class CanvasElementManager {
         return undefined;
     }
 
-    public addChildBubble(): void {
+    public addChildCanvasElement(): void {
         // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
         if (this !== theOneCanvasElementManager) {
-            theOneCanvasElementManager.addChildBubble();
+            theOneCanvasElementManager.addChildCanvasElement();
             return;
         }
         const parentElement = this.getActiveElement();
@@ -5491,11 +5488,11 @@ export class CanvasElementManager {
         const [
             offsetX,
             offsetY
-        ] = CanvasElementManager.GetChildPositionFromParentBubble(
+        ] = CanvasElementManager.GetChildPositionFromParentCanvasElement(
             parentElement,
             bubbleSpec
         );
-        this.addChildOverPictureElementAndRefreshPage(
+        this.addChildCanvasElementAndRefreshPage(
             parentElement,
             offsetX,
             offsetY
@@ -5504,7 +5501,7 @@ export class CanvasElementManager {
 
     // Returns a 2-tuple containing the desired x and y offsets of the child canvas element from the parent canvas element
     //   (i.e., offsetX = child.left - parent.left)
-    public static GetChildPositionFromParentBubble(
+    public static GetChildPositionFromParentCanvasElement(
         parentElement: HTMLElement,
         parentBubbleSpec: BubbleSpec | undefined
     ): number[] {
@@ -6262,7 +6259,7 @@ export function initializeCanvasElementManager() {
 }
 
 // This is a definition of the object we store as JSON in data-bubble-alternate.
-// Tails has further structure but BubbleManager doesn't care about it.
+// Tails has further structure but CanvasElementManager doesn't care about it.
 interface IAlternate {
     style: string; // What to put in the style attr of the canvas element; determines size and position
     tails: object[]; // The tails of the data-bubble; determines placing of tail.

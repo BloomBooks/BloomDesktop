@@ -786,7 +786,7 @@ export function SetupElements(
             // The sign language tool wants to be able to select a video (if any) on any page we load.
             // if (!elementToFocus) {
             //     // Make sure the active element is cleared if we're not setting it.
-            //     theOneBubbleManager.setActiveElement(undefined);
+            //     theOneCanvasElementManager.setActiveElement(undefined);
             // }
 
             if (elementToFocus !== "none") {
@@ -1234,7 +1234,7 @@ export function getBodyContentForSavePage() {
     const canvasElementEditingOn =
         theOneCanvasElementManager.isCanvasElementEditingOn;
     if (canvasElementEditingOn) {
-        theOneCanvasElementManager.turnOffBubbleEditing();
+        theOneCanvasElementManager.turnOffCanvasElementEditing();
     }
     // Active element should be forced to blur
     if (document.activeElement instanceof HTMLElement) {
@@ -1280,7 +1280,7 @@ export const userStylesheetContent = () => {
 };
 
 export const pageUnloading = () => {
-    // It's just possible that 'theOneBubbleManager' hasn't been initialized.
+    // It's just possible that 'theOneCanvasElementManager' hasn't been initialized.
     // If not, just ignore this, since it's a no-op at this point anyway.
     if (theOneCanvasElementManager) {
         theOneCanvasElementManager.cleanUp();
@@ -1302,8 +1302,8 @@ export const copySelection = () => {
 async function copyImpl() {
     const sel = document.getSelection();
     if (!sel?.toString()) {
-        const activeBubble = theOneCanvasElementManager?.getActiveElement();
-        const activeBubbleEditable = activeBubble?.getElementsByClassName(
+        const activeCanvasElement = theOneCanvasElementManager?.getActiveElement();
+        const activeCanvasElementEditable = activeCanvasElement?.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on"
         )[0] as HTMLElement;
 
@@ -1312,7 +1312,9 @@ async function copyImpl() {
         // whitespace. But there's a greater chance they **don't** want unintended
         // trailing line breaks. This ".trimEnd()" works around an issue where multiple
         // copy/pastes can result in an extra line break being added. See BL-14051.
-        navigator.clipboard.writeText(activeBubbleEditable.innerText.trimEnd());
+        navigator.clipboard.writeText(
+            activeCanvasElementEditable.innerText.trimEnd()
+        );
         return;
     }
     navigator.clipboard.writeText(sel.toString());
@@ -1373,17 +1375,17 @@ async function pasteImpl(imageAvailable: boolean) {
         }
         return; // can't paste anything but an image into an image container canvas element
     }
-    const activeBubbleEditable = activeElement?.getElementsByClassName(
+    const activeCanvasElementEditable = activeElement?.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
 
     if (
-        activeBubbleEditable &&
-        activeElement !== canvasElementManager.theBubbleWeAreTextEditing
+        activeCanvasElementEditable &&
+        activeElement !== canvasElementManager.theCanvasElementWeAreTextEditing
     ) {
         // We've issued a paste command on a canvas element that isn't active for editing.
         // Replace its entire content with what's on the clipboard.
-        const editor = (activeBubbleEditable as any).bloomCkEditor;
+        const editor = (activeCanvasElementEditable as any).bloomCkEditor;
         if (editor) {
             const manager = editor.undoManager;
             const textToPaste = await navigator.clipboard.readText();
@@ -1420,8 +1422,8 @@ async function pasteImpl(imageAvailable: boolean) {
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
     // We need to update the canvas element height (BL-14004).
     if (
-        activeBubbleEditable &&
-        activeElement === canvasElementManager.theBubbleWeAreTextEditing
+        activeCanvasElementEditable &&
+        activeElement === canvasElementManager.theCanvasElementWeAreTextEditing
     ) {
         canvasElementManager.updateAutoHeight();
     }

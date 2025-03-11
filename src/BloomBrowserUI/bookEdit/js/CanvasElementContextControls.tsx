@@ -124,26 +124,26 @@ const CanvasElementContextControls: React.FunctionComponent<{
     // Menu item names for 'none' and "Choose...", options.
     const noneLabel = useL10n("None", "EditTab.Toolbox.DragActivity.None", "");
 
-    const currentBubbleTargetId = props.canvasElement?.getAttribute(
+    const currentDraggableTargetId = props.canvasElement?.getAttribute(
         "data-draggable-id"
     );
-    const [currentBubbleTarget, setCurrentBubbleTarget] = useState<
+    const [currentDraggableTarget, setCurrentDraggableTarget] = useState<
         HTMLElement | undefined
     >();
     useEffect(() => {
-        if (!currentBubbleTargetId) {
-            setCurrentBubbleTarget(undefined);
+        if (!currentDraggableTargetId) {
+            setCurrentDraggableTarget(undefined);
             return;
         }
         const page = props.canvasElement.closest(".bloom-page") as HTMLElement;
-        setCurrentBubbleTarget(
+        setCurrentDraggableTarget(
             page?.querySelector(
-                `[data-target-of="${currentBubbleTargetId}"]`
+                `[data-target-of="${currentDraggableTargetId}"]`
             ) as HTMLElement
         );
         // We need to re-evaluate when changing pages, it's possible the initially selected item
-        // on a new page has the same currentBubbleTargetId.
-    }, [currentBubbleTargetId]);
+        // on a new page has the same currentDraggableTargetId.
+    }, [currentDraggableTargetId]);
 
     // Currently we only allow associating an extra audio with images (and gifs), which have
     // no other audio (except possibly image descriptions?). If we get an actual user request
@@ -167,7 +167,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         menuOptions.unshift({
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",
-            onClick: theOneCanvasElementManager?.duplicateBubble,
+            onClick: theOneCanvasElementManager?.duplicateCanvasElement,
             icon: <DuplicateIcon css={getMenuIconCss()} />
         });
     }
@@ -175,16 +175,16 @@ const CanvasElementContextControls: React.FunctionComponent<{
         menuOptions.splice(0, 0, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
             english: "Add Child Bubble",
-            onClick: theOneCanvasElementManager?.addChildBubble
+            onClick: theOneCanvasElementManager?.addChildCanvasElement
         });
     }
-    if (currentBubbleTargetId) {
+    if (currentDraggableTargetId) {
         addMenuItemsForDraggable(
             menuOptions,
             props.canvasElement,
-            currentBubbleTargetId,
-            currentBubbleTarget,
-            setCurrentBubbleTarget
+            currentDraggableTargetId,
+            currentDraggableTarget,
+            setCurrentDraggableTarget
         );
     }
     if (canChooseAudioForElement) {
@@ -230,7 +230,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     menuOptions.push(divider, {
         l10nId: "Common.Delete",
         english: "Delete",
-        onClick: theOneCanvasElementManager?.deleteBubble,
+        onClick: theOneCanvasElementManager?.deleteCurrentCanvasElement,
         icon: <DeleteIcon css={getMenuIconCss()} />
     });
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
@@ -409,7 +409,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             icon={DeleteIcon}
                             onClick={() => {
                                 if (!props.canvasElement) return;
-                                theOneCanvasElementManager?.deleteBubble();
+                                theOneCanvasElementManager?.deleteCurrentCanvasElement();
                             }}
                         />
                     )}
@@ -815,22 +815,22 @@ function pasteLink(canvasElement: HTMLElement) {
 function addMenuItemsForDraggable(
     menuOptions: IMenuItemWithSubmenu[],
     canvasElement: HTMLElement,
-    currentBubbleTargetId: string,
-    currentBubbleTarget: HTMLElement | undefined,
-    setCurrentBubbleTarget: (target: HTMLElement | undefined) => void
+    currentDraggableTargetId: string,
+    currentDraggableTarget: HTMLElement | undefined,
+    setCurrentDraggableTarget: (target: HTMLElement | undefined) => void
 ) {
     const toggleIsPartOfRightAnswer = () => {
-        if (!currentBubbleTargetId) {
+        if (!currentDraggableTargetId) {
             return;
         }
-        if (currentBubbleTarget) {
-            currentBubbleTarget.ownerDocument
+        if (currentDraggableTarget) {
+            currentDraggableTarget.ownerDocument
                 .getElementById("target-arrow")
                 ?.remove();
-            currentBubbleTarget.remove();
-            setCurrentBubbleTarget(undefined);
+            currentDraggableTarget.remove();
+            setCurrentDraggableTarget(undefined);
         } else {
-            setCurrentBubbleTarget(makeTargetForDraggable(canvasElement));
+            setCurrentDraggableTarget(makeTargetForDraggable(canvasElement));
         }
     };
     menuOptions.push(divider, {
@@ -838,7 +838,7 @@ function addMenuItemsForDraggable(
         english: "Part of the right answer",
         subLabelL10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore",
         onClick: toggleIsPartOfRightAnswer,
-        icon: currentBubbleTarget ? (
+        icon: currentDraggableTarget ? (
             <CheckIcon css={getMenuIconCss()} />
         ) : (
             undefined

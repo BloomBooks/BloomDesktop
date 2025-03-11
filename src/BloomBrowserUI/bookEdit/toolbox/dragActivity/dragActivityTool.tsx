@@ -827,7 +827,7 @@ const DragActivityControls: React.FunctionComponent<{
     const currentCanvasElementTargetId = currentCanvasElement?.getAttribute(
         "data-draggable-id"
     );
-    const [currentBubbleTarget, setCurrentBubbleTarget] = useState<
+    const [currentDraggableTarget, setCurrentDraggableTarget] = useState<
         HTMLElement | undefined
     >();
     const [_, setBubble] = useState<BubbleSpec | undefined>(undefined);
@@ -847,17 +847,17 @@ const DragActivityControls: React.FunctionComponent<{
     }, [props.pageGeneration, canvasElementManager]);
     useEffect(() => {
         if (!currentCanvasElementTargetId) {
-            setCurrentBubbleTarget(undefined);
+            setCurrentDraggableTarget(undefined);
             return;
         }
         const page = getPage();
-        setCurrentBubbleTarget(
+        setCurrentDraggableTarget(
             page?.querySelector(
                 `[data-target-of="${currentCanvasElementTargetId}"]`
             ) as HTMLElement
         );
         // We need to re-evaluate when changing pages, it's possible the initially selected item
-        // on a new page has the same currentBubbleTargetId.
+        // on a new page has the same currentDraggableTargetId.
     }, [props.pageGeneration, currentCanvasElementTargetId]);
     // The main point of this is to make the visibility of the arrow consistent with whether
     // a draggable is actually selected when changing pages. As far as I know, we don't need to do it when the
@@ -865,19 +865,19 @@ const DragActivityControls: React.FunctionComponent<{
     // but it's fairly harmless to do it an extra time, and makes lint happy, and maybe will
     // catch some inconsistency that would otherwise be missed.
     useEffect(() => {
-        // careful here. After a change to currentBubbleElement, there will unfortunately be a render
-        // before the useEffect above runs and sets currentBubbleTarget. We don't want to
+        // careful here. After a change to currentDraggableElement, there will unfortunately be a render
+        // before the useEffect above runs and sets currentDraggableTarget. We don't want to
         // adjust the old target to conform to the new canvas element.
         // (It's harmless to adjust it passing undefined as the target and then again with
         // the correct target, and preventing it would require searching the whole page for
         // a matching target, so we don't try to prevent that.)
         if (currentCanvasElement) {
             if (
-                !currentBubbleTarget ||
-                currentBubbleTarget.getAttribute("data-target-of") ===
+                !currentDraggableTarget ||
+                currentDraggableTarget.getAttribute("data-target-of") ===
                     currentCanvasElement.getAttribute("data-draggable-id")
             ) {
-                adjustTarget(currentCanvasElement, currentBubbleTarget);
+                adjustTarget(currentCanvasElement, currentDraggableTarget);
             }
         } else {
             const page = getPage();
@@ -886,7 +886,7 @@ const DragActivityControls: React.FunctionComponent<{
                 arrow.remove();
             }
         }
-    }, [currentCanvasElement, currentBubbleTarget, props.pageGeneration]);
+    }, [currentCanvasElement, currentDraggableTarget, props.pageGeneration]);
     // If applicable, set up an observer to copy changes to the current canvas element to its target,
     // whenever the target (or other relevant factors) changes. I don't think there's any
     // way an unselected canvas element can change in a way that requires the target to do so.
@@ -902,7 +902,7 @@ const DragActivityControls: React.FunctionComponent<{
         if (
             props.activeTab !== playTabIndex &&
             currentCanvasElement &&
-            currentBubbleTarget
+            currentDraggableTarget
         ) {
             draggableToTargetObserver.current = new MutationObserver(_ => {
                 // if it's no longer current, we just haven't removed the observer yet,
@@ -920,7 +920,7 @@ const DragActivityControls: React.FunctionComponent<{
                 attributes: true // e.g., cropping of image
             });
         }
-    }, [currentCanvasElement, currentBubbleTarget, props.activeTab]);
+    }, [currentCanvasElement, currentDraggableTarget, props.activeTab]);
     // Get various state values from the current page, initially and whenever it changes.
     useEffect(() => {
         const getStateFromPage = () => {
@@ -1470,7 +1470,7 @@ const DragActivityControls: React.FunctionComponent<{
                                 color="primary"
                                 fontSize="large"
                                 onClick={() =>
-                                    canvasElementManager?.deleteBubble()
+                                    canvasElementManager?.deleteCurrentCanvasElement()
                                 }
                             />
                         </BloomTooltip>
@@ -1585,7 +1585,7 @@ const CorrectWrongControls: React.FunctionComponent<{
 export const makeDuplicateOfDragBubble = () => {
     const canvasElementManager = getCanvasElementManager();
     const old = canvasElementManager?.getActiveElement();
-    const duplicate = canvasElementManager?.duplicateBubble();
+    const duplicate = canvasElementManager?.duplicateCanvasElement();
     if (!duplicate || !old) {
         // can't be duplicate without an old, but make TS happy
         return;
@@ -1819,7 +1819,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const canvasElementManager = getCanvasElementManager()!;
             canvasElementManager.removeDetachedTargets();
-            canvasElementManager.adjustBubbleOrdering();
+            canvasElementManager.adjustCanvasElementOrdering();
 
             // Force things to Start tab as we change page.
             // If we decide not to do this, we should probably at least find a way to do it
@@ -1944,7 +1944,7 @@ export function playSound(newSoundId: string, page: HTMLElement) {
 //         b => b.getElementsByTagName("img")[0].getAttribute("src") === src
 //     );
 //     if (bubbleToSelect) {
-//         theOneBubbleManager?.setActiveElement(
+//         theOneCanvasElementManager?.setActiveElement(
 //             bubbleToSelect as HTMLElement
 //         );
 //     }

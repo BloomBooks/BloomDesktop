@@ -5315,7 +5315,7 @@ namespace Bloom.Book
         public bool HasQuizPages => OurHtmlDom.HasQuizPages();
         public bool HasActivities => OurHtmlDom.HasActivityPages();
 
-        public bool HasComicalOverlays => OurHtmlDom.HasComicalOverlays();
+        public bool HasComicalOverlays => OurHtmlDom.HasComicalCanvasElements();
 
         public bool HasOnlyPictureOnlyPages()
         {

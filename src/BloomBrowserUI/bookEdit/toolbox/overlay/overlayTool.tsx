@@ -335,7 +335,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
     };
 
     // We use this to get React's 'currentFamilySpec' up-to-date with what comical has, since some minor
-    // React-initiated changes don't trigger BubbleManager's 'requestBubbleChangeNotification'.
+    // React-initiated changes don't trigger CanvasElementManager's 'requestBubbleChangeNotification'.
     // Changing 'currentFamilySpec' is what updates the UI of the toolbox in general.
     const updateReactFromComical = (
         canvasElementManager: CanvasElementManager

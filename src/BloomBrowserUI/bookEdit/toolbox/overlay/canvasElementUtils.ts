@@ -8,7 +8,7 @@ export const kCanvasElementClass = "bloom-canvas-element";
 export const kCanvasElementSelector = `.${kCanvasElementClass}`;
 export const kHasCanvasElementClass = "bloom-has-canvas-element";
 
-// Enhance: we could reduce cross-bundle dependencies by separately defining the BubbleManager interface
+// Enhance: we could reduce cross-bundle dependencies by separately defining the CanvasElementManager interface
 // and just importing that here.
 export function getCanvasElementManager(): CanvasElementManager | undefined {
     const exports = getEditablePageBundleExports();

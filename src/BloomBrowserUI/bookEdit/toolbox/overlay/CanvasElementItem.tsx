@@ -27,7 +27,7 @@ const ondragstart = (
     style: string
 ) => {
     // Here "text/x-bloomCanvasElement" is a unique, private data type recognised
-    // by ondragover and ondragdrop methods that BubbleManager
+    // by ondragover and ondragdrop methods that CanvasElementManager
     // attaches to bloom image containers. It doesn't make sense to
     // drag these objects anywhere else, so they don't need any of
     // the common data types. Using a private type means that other drop handlers
@@ -217,7 +217,7 @@ const ondragend = (
     }
     // This must be done AFTER we give the canvas element its id if we're going to, because that's how we know
     // it's one of the ones that should be ordered to the end.
-    canvasElementManager.adjustBubbleOrdering();
+    canvasElementManager.adjustCanvasElementOrdering();
 };
 
 // Make a unique id for the canvas element, and set it on the canvas element.

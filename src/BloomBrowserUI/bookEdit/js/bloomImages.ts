@@ -476,15 +476,15 @@ function DisableImageTooltip(container: HTMLElement | undefined | null) {
 export function UpdateImageTooltipVisibility(
     container: HTMLElement | undefined | null
 ) {
-    const theOneBubbleManager = getCanvasElementManager();
+    const theOneCanvasElementManager = getCanvasElementManager();
     if (
         !container ||
         container.classList.contains("bloom-hideImageButtons") ||
         playingBloomGame(container) ||
         EditableDivUtils.isInHiddenLanguageBlock(container) ||
-        !theOneBubbleManager ||
+        !theOneCanvasElementManager ||
         container.getElementsByClassName("bloom-backgroundImage")[0] !==
-            theOneBubbleManager.getActiveElement()
+            theOneCanvasElementManager.getActiveElement()
     ) {
         // We don't want the tooltip unless this container's background image is active.
         DisableImageTooltip(container);
