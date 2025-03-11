@@ -38,40 +38,7 @@ namespace Bloom.web.controllers
                     {
                         var codeString = request.RequiredPostString();
                         _subscription = new Subscription(codeString);
-
                         NotifyPendingSubscriptionChange?.Invoke(codeString);
-
-                        // var newBranding = Subscription.GetBranding(_displayedCode);
-                        // var oldBranding = !string.IsNullOrEmpty(_collectionSettings.InvalidBranding)
-                        //     ? _collectionSettings.InvalidBranding
-                        //     : "";
-
-
-
-                        // If the user has entered a different subscription code then what was previously saved, we
-                        // generally want to clear out the Bookshelf. But if the BrandingKey is the same as the old one,
-                        // we'll leave it alone, since they probably renewed for another year or so and want to use the
-                        // same bookshelf.
-                        // if (
-                        //     _displayedCode != _collectionSettings.SubscriptionCode
-                        //     && newBranding != oldBranding
-                        // )
-                        //     ResetBookshelf();
-                        // if (Subscription.Expired(_displayedCode)) // expired or invalid
-                        // {
-                        //     BrandingChangeHandler("Default", null); // TODO: this is the traditional behavior, but it doesn't seem right?
-                        // }
-                        // else
-                        // {
-                        //     _knownBrandingIn_displayedCode = BrandingChangeHandler(
-                        //         Subscription.GetBranding(_displayedCode),
-                        //         _displayedCode
-                        //     );
-                        //     if (!_knownBrandingIn_displayedCode)
-                        //     {
-                        //         BrandingChangeHandler("Default", null); // Review: or just leave unchanged?
-                        //     }
-                        // }
                         request.PostSucceeded();
                     }
                 },

@@ -270,7 +270,7 @@ namespace Bloom.Publish
 
                 var bookIsTranslatedFromShell =
                     BookSelection?.CurrentSelection?.BookData?.BookIsDerivative() ?? false;
-                return !_collectionSettings.Subscription.HaveEnterpriseFeatures
+                return !_collectionSettings.Subscription.HaveActiveSubscription
                     && bookContainsOverlayElements
                     && !bookIsTranslatedFromShell;
             }

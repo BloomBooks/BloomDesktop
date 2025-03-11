@@ -236,7 +236,7 @@ namespace Bloom.WebLibraryIntegration
 
             if (!String.IsNullOrEmpty(collectionSettings?.DefaultBookshelf))
             {
-                if (collectionSettings.Subscription.HaveEnterpriseFeatures)
+                if (collectionSettings.Subscription.HaveActiveSubscription)
                     tags = tags.Concat(
                         new[] { "bookshelf:" + collectionSettings.DefaultBookshelf }
                     );
@@ -777,7 +777,7 @@ namespace Bloom.WebLibraryIntegration
         )
         {
             if (
-                book.CollectionSettings.Subscription.HaveEnterpriseFeatures
+                book.CollectionSettings.Subscription.HaveActiveSubscription
                 && !PublishHelper.BookHasUnpublishableData(book)
             )
                 return false; // no need to prune the book data
@@ -795,7 +795,7 @@ namespace Bloom.WebLibraryIntegration
             var pages = new List<SafeXmlElement>();
             foreach (SafeXmlElement page in copiedBook.GetPageElements())
                 pages.Add(page);
-            if (!book.CollectionSettings.Subscription.HaveEnterpriseFeatures)
+            if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
             {
                 // Remove enterprise features since they aren't allowed.
                 ISet<string> warningMessages = new HashSet<string>();

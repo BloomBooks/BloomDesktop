@@ -404,7 +404,7 @@ namespace Bloom.Publish.BloomPub
             //    than the one written to the .htm file.
             string modifiedBookFolderPath = modifiedBook.FolderPath;
 
-            if (modifiedBook.CollectionSettings.Subscription.HaveEnterpriseFeatures)
+            if (modifiedBook.CollectionSettings.Subscription.HaveActiveSubscription)
                 ProcessQuizzes(modifiedBookFolderPath, modifiedBook.RawDom);
 
             // Right here, let's maintain the history of what the BloomdVersion signifies to a reader.

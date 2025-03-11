@@ -604,7 +604,7 @@ namespace Bloom.Book
             var headXml = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
             var originalBody = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/body");
 
-            var enterpriseStatusClass = this.CollectionSettings.Subscription.HaveEnterpriseFeatures
+            var enterpriseStatusClass = this.CollectionSettings.Subscription.HaveActiveSubscription
                 ? "enterprise-on"
                 : "enterprise-off";
             var dom = new HtmlDom(
@@ -3985,7 +3985,7 @@ namespace Bloom.Book
 
         public bool FullBleed =>
             BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-            && CollectionSettings.Subscription.HaveEnterpriseFeatures;
+            && CollectionSettings.Subscription.HaveActiveSubscription;
 
         /// <summary>
         /// Save the page content to the DOM.
@@ -5413,13 +5413,13 @@ namespace Bloom.Book
             // If we wanted to, it is also possible to compute it as a language-specific feature.
             // (That is, check if the languages in the book have non-empty text for part of the quiz section)
             BookInfo.MetaData.Feature_Quiz =
-                CollectionSettings.Subscription.HaveEnterpriseFeatures && HasQuizPages;
+                CollectionSettings.Subscription.HaveActiveSubscription && HasQuizPages;
         }
 
         private void UpdateSimpleDomChoiceFeature()
         {
             BookInfo.MetaData.Feature_SimpleDomChoice =
-                CollectionSettings.Subscription.HaveEnterpriseFeatures
+                CollectionSettings.Subscription.HaveActiveSubscription
                 && OurHtmlDom.HasSimpleDomChoicePages();
         }
 
@@ -5534,7 +5534,7 @@ namespace Bloom.Book
             }
         }
 
-        public static bool IsPageBloomEnterpriseOnly(SafeXmlElement page)
+        public static bool IsPageBloomSubscriptionOnly(SafeXmlElement page)
         {
             var classAttrib = page.GetAttribute("class");
             return classAttrib.Contains("enterprise-only")

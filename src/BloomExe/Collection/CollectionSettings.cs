@@ -110,6 +110,7 @@ namespace Bloom.Collection
 
         public CollectionSettings()
         {
+            Subscription = new Subscription(null);
             //Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
             //See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
             Func<string> getTagOfDefaultLanguageForNaming = () => Language2.Tag;
@@ -567,7 +568,7 @@ namespace Bloom.Collection
                 DefaultBookshelf =
                     (
                         defaultBookshelfTag != null
-                        && Subscription.Tier == Subscription.TierEnum.Enterprise
+                        && Subscription.Tier == Subscription.SubscriptionTier.Enterprise
                     )
                         ? defaultBookshelfTag.Substring("bookshelf:".Length)
                         : "";

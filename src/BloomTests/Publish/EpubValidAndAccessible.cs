@@ -190,8 +190,7 @@ namespace BloomTests.Publish
                 "output",
                 "ExportEpubWithSvgTests",
                 book,
-                BookInfo.HowToPublishImageDescriptions.OnPage,
-                branding
+                BookInfo.HowToPublishImageDescriptions.OnPage
             );
             GetPageOneData();
             _ns = GetNamespaceManager();

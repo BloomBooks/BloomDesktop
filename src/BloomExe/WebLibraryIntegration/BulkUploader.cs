@@ -208,7 +208,7 @@ namespace Bloom.WebLibraryIntegration
                     );
                     return;
                 }
-                if (!settings.Subscription.HaveEnterpriseFeatures)
+                if (!settings.Subscription.HaveActiveSubscription)
                 {
                     progress.WriteError(
                         $"Skipping {uploadParams.Folder} because bulk upload is an Enterprise-only feature."

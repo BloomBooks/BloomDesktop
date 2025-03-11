@@ -4,9 +4,11 @@ using System.Linq;
 public class Subscription
 {
     public static string kExpiryDateForDeprecatedBrandings = "2025-07-01"; // per Cate. Careful! Make sure to use leading zeros in month and day.
+    private SubscriptionTier? TierOverride;
+    private DateTime ExpirationDateOverride = DateTime.MinValue;
 
     // These options must match the strings used in requiresBloomEnterprise.tsx
-    public enum TierEnum
+    public enum SubscriptionTier
     {
         None,
         Community,
@@ -27,10 +29,10 @@ public class Subscription
     private string GetBranding(bool forCheckSum = false)
     {
         if (_code == null)
-            return "";
+            return "Default"; // enhance: maybe change everything to just empty string?
         var parts = _code.Split('-').ToList();
         if (parts.Count < 3)
-            return "";
+            return "Default";
         parts.RemoveAt(parts.Count - 1);
         parts.RemoveAt(parts.Count - 1);
         var branding = string.Join("-", parts.ToArray());
@@ -56,6 +58,9 @@ public class Subscription
     // would be difficult for someone willing to take the trouble to read this code.
     public DateTime GetExpirationDate()
     {
+        if (ExpirationDateOverride != DateTime.MinValue)
+            return ExpirationDateOverride;
+
         if (_code == null)
             return DateTime.MinValue;
 
@@ -163,36 +168,45 @@ public class Subscription
         {
             return "none";
         }
-        if (!GetChecksumCorrect())
-        {
-            return "invalid";
-        }
         if (LooksIncomplete())
         {
             return "incomplete";
         }
+        if (!GetChecksumCorrect())
+        {
+            return "invalid";
+        }
+
         return "ok";
     }
 
-    public TierEnum Tier
+    public SubscriptionTier Tier
     {
         get
         {
+            if (TierOverride != null)
+                return TierOverride.Value;
             var branding = GetBranding();
             if (string.IsNullOrWhiteSpace(branding) || branding == "Default")
-                return TierEnum.None;
+                return SubscriptionTier.None;
             else if (
                 branding == "Local-Community" || branding == "Local Community" /* pre 4.4 */
             )
-                return TierEnum.Community;
+                return SubscriptionTier.Community;
             else
-                return TierEnum.Enterprise;
+                return SubscriptionTier.Enterprise;
         }
     }
 
     public static Subscription FromSettingsXml(string code, string brandingForMigration)
     {
-        if (string.IsNullOrWhiteSpace(code) && brandingForMigration == "Local-Community")
+        if (
+            string.IsNullOrWhiteSpace(code)
+            && (
+                brandingForMigration == "Local-Community"
+                || brandingForMigration == "Local Community"
+            )
+        )
         {
             // migrating to actual code
             code = "Legacy-LC-005809-2533";
@@ -201,6 +215,17 @@ public class Subscription
         return new Subscription(code);
     }
 
+    public string Personalization
+    {
+        // everything before the -LC- is the personalization code, e.g. "Foobar-Village". Replace dashes with spaces.
+        get { return _code.Substring(0, _code.IndexOf("-LC-")).Replace("-", " "); }
+    }
+
+    // Enhance: soon we will devide up these so that they don't have exactly the same set of features
+    public bool HaveActiveSubscription =>
+        Tier == Subscription.SubscriptionTier.Enterprise
+        || Tier == Subscription.SubscriptionTier.Community;
+
     internal bool IsDifferent(string code)
     {
         if (string.IsNullOrEmpty(_code) && string.IsNullOrEmpty(code))
@@ -208,20 +233,32 @@ public class Subscription
         return _code != code;
     }
 
-    internal static Subscription ForUnitTest()
+    // Since normally all info comes from the code, this allows us to ignore the code and just set what we need.
+    // If a unit test breaks because of an expired subscription, consider fixing it by using this method or one like it.
+    public static Subscription ForUnitTestWithOverrideTierOrBranding(
+        SubscriptionTier tier,
+        string brandingKey
+    )
     {
-        return new Subscription("UnitTest-E-006046-3301"); // when this expires, just give it a new code
+        var subscription = FromSettingsXml("", brandingKey);
+        subscription.TierOverride = tier;
+        subscription.ExpirationDateOverride = DateTime.Now.AddDays(1);
+        return subscription;
     }
 
-    public string Peronsalization
+    // Since normally all info comes from the code, this allows us to ignore the code and just set what we need.
+    // If a unit test breaks because of an expired subscription, consider fixing it by using this method or one like it.
+    public static Subscription ForUnitTestWithOverrideBranding(string brandingKey)
     {
-        // everything before the -LC- is the personalization code, e.g. "Foobar-Village". Replace dashes with spaces.
-        get { return _code.Substring(0, _code.IndexOf("-LC-")).Replace("-", " "); }
+        var subscription = FromSettingsXml("", brandingKey);
+        subscription.ExpirationDateOverride = DateTime.Now.AddDays(1);
+        return subscription;
     }
 
-    // Enhance: soon we will devide up these so that they don't have exactly the same set of features
-    public bool HaveEnterpriseFeatures =>
-        Tier == Subscription.TierEnum.Enterprise || Tier == Subscription.TierEnum.Community;
-
-    public bool HaveEnterpriseSubscription => Tier == Subscription.TierEnum.Enterprise;
+    internal static Subscription ForUnitTestWithOverrideTier(SubscriptionTier tier)
+    {
+        var subscription = new Subscription("");
+        subscription.TierOverride = tier;
+        return subscription;
+    }
 }

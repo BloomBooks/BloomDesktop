@@ -46,7 +46,7 @@ namespace Bloom.web.controllers
         {
             if (failIfLockedToOneBook && _collectionSettings.LockedToOneDownloadedBook)
                 return false;
-            return _collectionSettings.Subscription.HaveEnterpriseFeatures;
+            return _collectionSettings.Subscription.HaveActiveSubscription;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
