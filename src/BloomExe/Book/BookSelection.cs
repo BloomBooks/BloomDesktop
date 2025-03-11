@@ -37,6 +37,11 @@ namespace Bloom.Book
             Settings.Default.Save();
         }
 
+        public void ClearSelectionWithoutNotifications()
+        {
+            _currentSelection = null;
+        }
+
         // virtual for mocking
         public virtual Book CurrentSelection
         {

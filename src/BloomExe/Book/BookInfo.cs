@@ -69,6 +69,8 @@ namespace Bloom.Book
                 );
         }
 
+        public ISaveContext SaveContext => _saveContext;
+
         public BookInfo(string folderPath, bool isInEditableCollection, ISaveContext saveContext)
             : this()
         {

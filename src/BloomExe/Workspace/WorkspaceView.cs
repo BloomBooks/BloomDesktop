@@ -316,6 +316,17 @@ namespace Bloom.Workspace
         {
             try
             {
+                // Now that _bookSelection is an application-level object, it's possible that it retains a
+                // value from a previous collection when we switch collections while Bloom is running.
+                // In such situations, we're restarting almost everything else, so we don't need notifications
+                // that the book selection has changed. But we do need it to be cleared. For one thing,
+                // it might be a book that isn't in any current collection and shouldn't be visible. For another,
+                // the collection that it's part of might have been theOneEditableCollection last time, but
+                // not now, or vice versa. In that case, we could end up retaining an obsolete BookInfo object
+                // with stale data about editability, because when we go to create BookInfos for a collection,
+                // we use the one from the book selection if it matches one of the folder paths.
+                _bookSelection.ClearSelectionWithoutNotifications();
+
                 var selBookPath =
                     Program.PathToBookDownloadedAtStartup ?? Settings.Default.CurrentBookPath;
                 if (IsSelectedBookObsoleteOrInvalid(selBookPath))
