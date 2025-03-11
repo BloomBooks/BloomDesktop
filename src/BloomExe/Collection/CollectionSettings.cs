@@ -535,9 +535,10 @@ namespace Bloom.Collection
                     }
                 }
 
-                Subscription = Subscription.FromSettingsXml(
+                Subscription = Subscription.FromCollectionSettingsInfo(
                     ReadString(xml, "SubscriptionCode", null),
-                    ReadString(xml, "BrandingProjectName", "Default")
+                    ReadString(xml, "BrandingProjectName", "Default"),
+                    LockedToOneDownloadedBook
                 );
 
                 Country = ReadString(xml, "Country", "");

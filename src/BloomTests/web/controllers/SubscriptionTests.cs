@@ -36,11 +36,11 @@ namespace BloomTests.Collection
         )] // ignore branding if we have a code
         public void FromSettingsXml_ReturnsCorrectValue(
             string code,
-            string brandingForMigration,
+            string branding,
             string expectedCode
         )
         {
-            var subscription = Subscription.FromSettingsXml(code, brandingForMigration);
+            var subscription = Subscription.FromCollectionSettingsInfo(code, branding);
             Assert.AreEqual(expectedCode, subscription.Code);
         }
 
