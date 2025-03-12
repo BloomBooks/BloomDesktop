@@ -544,7 +544,7 @@ async function DetermineImageTooltipAsync(
     container: HTMLElement
 ): Promise<string> {
     const containerJQ = $(container);
-    const imgElement = $(container).find("img");
+    const imgElement = containerJQ.find(".bloom-imageContainer>img");
 
     if (!imgElement) {
         return "";
