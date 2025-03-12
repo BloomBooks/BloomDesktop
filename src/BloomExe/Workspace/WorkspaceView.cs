@@ -807,6 +807,9 @@ namespace Bloom.Workspace
             item.Select();
             UpdateMenuTextToShorterNameOfSelection(toolStripButton, item.Text);
 
+            // Currently needed for the language chooser to update its localization
+            BloomWebSocketServer.Instance.SendString("app", "uiLanguageChanged", tag.LangTag);
+
             finishClickAction?.Invoke();
         }
 
