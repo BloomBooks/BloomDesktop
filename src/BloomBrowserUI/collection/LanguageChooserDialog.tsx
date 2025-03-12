@@ -15,7 +15,7 @@ import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
-import { postData } from "../utils/bloomApi";
+import { get, postData } from "../utils/bloomApi";
 import {
     BloomDialog,
     DialogBottomButtons
@@ -114,6 +114,13 @@ export const LanguageChooserDialog: React.FunctionComponent<{
         closeDialog();
     }
 
+    const [uiLanguage, setUiLanguage] = React.useState("en");
+    React.useEffect(() => {
+        get("currentUiLanguage", result => {
+            setUiLanguage(result.data);
+        });
+    }, []);
+
     return (
         <BloomDialog
             {...propsForBloomDialog}
@@ -147,6 +154,7 @@ export const LanguageChooserDialog: React.FunctionComponent<{
                 </H1>
             </AppBar>
             <LanguageChooser
+                uiLanguage={uiLanguage}
                 searchResultModifier={defaultSearchResultModifier}
                 initialSearchString={props.initialLanguageTag?.split("-")[0]}
                 initialSelectionLanguageTag={props.initialLanguageTag}
