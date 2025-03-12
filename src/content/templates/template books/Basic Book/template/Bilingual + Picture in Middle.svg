@@ -2,29 +2,22 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="160mm"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="148mm"
    height="210mm"
-   viewBox="0 0 566.92913 744.09448"
+   viewBox="0 0 524.40945 744.09448"
    id="svg2"
    version="1.1"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
-   sodipodi:docname="Bilingual + Picture in Middle.svg"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:dc="http://purl.org/dc/elements/1.1/">
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="Picture in Middle.svg">
   <defs
-     id="defs4">
-    <rect
-       x="509.11688"
-       y="745.49257"
-       width="4.0406102"
-       height="24.243661"
-       id="rect2" />
-  </defs>
+     id="defs4" />
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -33,46 +26,22 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.49497475"
-     inkscape:cx="-5.0507627"
-     inkscape:cy="508.10673"
+     inkscape:cx="-3.8358422"
+     inkscape:cy="507.74847"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1150"
-     inkscape:window-height="1211"
-     inkscape:window-x="1207"
-     inkscape:window-y="99"
-     inkscape:window-maximized="0"
+     inkscape:window-width="1754"
+     inkscape:window-height="1177"
+     inkscape:window-x="1192"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
      showguides="true"
-     inkscape:guide-bbox="true"
-     inkscape:showpageshadow="2"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1">
+     inkscape:guide-bbox="true">
     <sodipodi:guide
-       position="558.74063,977.06092"
+       position="447.14288,450"
        orientation="1,0"
-       id="guide5434"
-       inkscape:locked="false" />
-    <sodipodi:guide
-       position="0,744.09449"
-       orientation="0,559.37008"
-       id="guide2"
-       inkscape:locked="false" />
-    <sodipodi:guide
-       position="556.84659,829.32611"
-       orientation="793.70079,0"
-       id="guide3"
-       inkscape:locked="false" />
-    <sodipodi:guide
-       position="-392.06546,1.6323727"
-       orientation="0,-559.37008"
-       id="guide4"
-       inkscape:locked="false" />
-    <sodipodi:guide
-       position="0,0"
-       orientation="-793.70079,0"
-       id="guide5"
-       inkscape:locked="false" />
+       id="guide5434" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -82,6 +51,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -161,17 +131,5 @@
          x="66.960503"
          y="399.99246" />
     </g>
-    <text
-       xml:space="preserve"
-       style="font-size:87.9712px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;display:inline;fill:#000000;fill-opacity:0.6;stroke-width:7.33093;-inkscape-font-specification:'Noto Sans, Normal';font-family:'Noto Sans';font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
-       x="593.55133"
-       y="797.4693"
-       id="text1"
-       transform="scale(0.75835611,1.3186417)"><tspan
-         sodipodi:role="line"
-         id="tspan1"
-         style="fill:#000000;fill-opacity:0.6;stroke-width:7.33093;-inkscape-font-specification:'Noto Sans, Normal';font-family:'Noto Sans';font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:87.97119894px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
-         x="581"
-         y="797.4693">     B</tspan></text>
   </g>
 </svg>

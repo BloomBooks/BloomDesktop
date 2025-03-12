@@ -659,6 +659,11 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                             pageIsEnterpriseOnly={selectedTemplatePageDiv.classList.contains(
                                 "enterprise-only"
                             )}
+                            pageIsMarkedBilingual={
+                                selectedTemplatePageDiv.getAttribute(
+                                    "data-ui-mark-bilingual"
+                                ) === "true"
+                            }
                             pageIsDigitalOnly={isDigitalOnly(
                                 selectedTemplatePageDiv
                             )}
