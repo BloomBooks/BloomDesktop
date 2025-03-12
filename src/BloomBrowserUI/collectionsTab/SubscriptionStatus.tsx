@@ -22,7 +22,8 @@ export const SubscriptionStatus: React.FunctionComponent<{
     const {
         subscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD,
-        brandingKey
+        subscriptionDescriptor,
+        haveData
     } = useSubscriptionInfo();
 
     // If component has a prop override, use that instead of API value
@@ -30,9 +31,9 @@ export const SubscriptionStatus: React.FunctionComponent<{
     //     expiryDateString = props.overrideSubscriptionExpirationYYYYMMDD;
     // }
 
-    let keyToShow = brandingKey;
+    let descriptorToShow = subscriptionDescriptor;
 
-    if (props.minimalUI) keyToShow = ""; // in the Settings Dialog context, the backend doesn't yet know what the user is clicking on, so it will give the wrong branding
+    if (props.minimalUI) descriptorToShow = ""; // in the Settings Dialog context, the backend doesn't yet know what the user is clicking on, so it will give the wrong branding
 
     // a "deprecated" subscription is one that used to be eternal but is now being phased out
     const haveDeprecatedSubscription = expiryDateStringAsYYYYMMDD.startsWith(
@@ -47,24 +48,26 @@ export const SubscriptionStatus: React.FunctionComponent<{
         "Your {0} subscription expires on {1}.",
         "SubscriptionStatus.ExpiringSoonMessage",
         "",
-        keyToShow,
+        descriptorToShow,
         localizedExpiryDate
     ).replace("  ", " "); // remove extra space
     const expiredMessage = useL10n(
         "Your {0} subscription expired on {1}.",
         "SubscriptionStatus.ExpiredMessage",
         "",
-        keyToShow,
+        descriptorToShow,
         localizedExpiryDate
     );
     const defaultStatusMessage = useL10n(
         "Using subscription: {0}. Expires {1}",
         "SubscriptionStatus.DefaultMessage",
         "",
-        keyToShow,
+        descriptorToShow,
         localizedExpiryDate
     );
-
+    if (!haveData) {
+        return null;
+    }
     if (subscriptionCodeIntegrity !== "ok") return null;
 
     // don't show anything until we have this info

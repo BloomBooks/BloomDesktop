@@ -434,17 +434,18 @@ namespace Bloom.Collection
 
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
 
-            if (
-                _pendingSubscription != null
-                && _pendingSubscription.BrandingKey != _collectionSettings.Subscription.BrandingKey
-            )
+            if (_pendingSubscription != null)
             {
-                // The user has entered a different subscription code than what was previously saved.
-                // We need to clear out the Bookshelf, since the new branding may not have the same bookshelf as the old one.
-                // (We don't know if it does or not, so we have to assume it doesn't.)
-                PendingDefaultBookshelf = string.Empty;
-            }
+                _collectionSettings.Subscription = _pendingSubscription;
 
+                if (_pendingSubscription.Descriptor != _collectionSettings.Subscription.Descriptor)
+                {
+                    // The user has entered a different subscription code than what was previously saved.
+                    // We need to clear out the Bookshelf, since the new branding may not have the same bookshelf as the old one.
+                    // (We don't know if it does or not, so we have to assume it doesn't.)
+                    PendingDefaultBookshelf = string.Empty;
+                }
+            }
             string xmatterKeyForcedByBranding =
                 _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
             PendingXmatter = this._xmatterPackFinder.GetValidXmatter(

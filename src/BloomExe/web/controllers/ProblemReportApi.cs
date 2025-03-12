@@ -438,7 +438,7 @@ namespace Bloom.web.controllers
                             .CurrentSelection
                             .CollectionSettings
                             .Subscription
-                            .BrandingKey,
+                            .Descriptor,
                         issueId = basename // the issueID (unless we're doing an email report, in which case it's "ProblemBook")
                     };
                     _reportZipFile.AddTopLevelFileWithText(
@@ -1407,7 +1407,7 @@ namespace Bloom.web.controllers
             AppendWritingSystem(book.BookData.SignLanguage, "SignLanguage", bldr);
             AppendWritingSystem(book.BookData.MetadataLanguage1, "MetadataLanguage1", bldr);
             var subscriptionTier = settings.Subscription.Tier;
-            var branding = settings.Subscription.BrandingKey;
+            var branding = settings.Subscription.Descriptor;
             bldr.AppendLine();
             bldr.AppendLine("Subscription tier: " + subscriptionTier);
             bldr.AppendLine(

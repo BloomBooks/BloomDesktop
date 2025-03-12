@@ -311,7 +311,7 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Remove any SubscriptionCode element content and replace any BrandingProjectName element
+        /// Remove any SubscriptionCode element content and replace any SubscriptionDescriptor element
         /// content with the text "Default".  We don't want to publish Bloom Enterprise subscription
         /// codes after all!
         /// </summary>

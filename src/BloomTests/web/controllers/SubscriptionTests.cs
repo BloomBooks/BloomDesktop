@@ -19,10 +19,10 @@ namespace BloomTests.Collection
         [TestCase("Incomplete-Code", "Default")]
         [TestCase("Test-Expired-Code-005658-9576", "Test-Expired-Code")]
         [TestCase("การทดสอบ-LC-005908-3073", "Local-Community")]
-        public void BrandingKey_ReturnsCorrectValue(string code, string expectedBranding)
+        public void BrandingProjectName_ReturnsCorrectValue(string code, string expectedBranding)
         {
             var subscription = new Subscription(code);
-            Assert.AreEqual(expectedBranding, subscription.BrandingKey);
+            Assert.AreEqual(expectedBranding, subscription.Descriptor);
         }
 
         [TestCase("", "", "")]

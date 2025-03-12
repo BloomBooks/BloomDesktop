@@ -23,9 +23,14 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
     const {
         subscriptionCodeIntegrity,
         editingBlorgBook,
-        brandingKey,
-        subscriptionSummary
+        subscriptionDescriptor,
+        subscriptionSummary,
+        haveData
     } = useSubscriptionInfo();
+
+    if (!haveData) {
+        return null;
+    }
 
     return (
         <div
@@ -47,7 +52,7 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
                         has the same Subscription Settings as when it was last
                         uploaded.
                     </NoteBox>
-                    {brandingKey}
+                    {subscriptionDescriptor}
                     <BrandingSummary summaryHtml={subscriptionSummary} />
                 </>
             )}

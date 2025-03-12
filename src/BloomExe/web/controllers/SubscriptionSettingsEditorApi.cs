@@ -38,16 +38,16 @@ namespace Bloom.web.controllers
                         {
                             Code = _subscription.Code ?? "",
                             Tier = _subscription.Tier.ToString(),
-                            Summary = GetSummaryHtml(_subscription.BrandingKey),
+                            Summary = GetSummaryHtml(_subscription.Descriptor),
                             Expiration = _subscription
                                 .GetExpirationDate()
                                 .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                             CodeIntegrity = _subscription.GetIntegrityLabel(),
-                            BrandingKey = _subscription.BrandingKey,
-                            HaveBrandingFiles = string.IsNullOrWhiteSpace(_subscription.BrandingKey)
+                            BrandingProjectName = _subscription.Descriptor,
+                            HaveBrandingFiles = string.IsNullOrWhiteSpace(_subscription.Descriptor)
                                 // We have them in the sense that we have the default logo we show on the back, so "true"
                                 ? true
-                                : BrandingProject.HaveFilesForBranding(_subscription.BrandingKey),
+                                : BrandingProject.HaveFilesForBranding(_subscription.Descriptor),
                             EditingBlorgBook = _subscription.EditingBlorgBook,
                         };
 
@@ -60,6 +60,13 @@ namespace Bloom.web.controllers
                         );
                     }
                 },
+                false
+            );
+
+            apiHandler.RegisterEnumEndpointHandler(
+                kApiUrlPart + "subscriptionTier",
+                request => _subscription.Tier,
+                null,
                 false
             );
 
@@ -86,7 +93,7 @@ namespace Bloom.web.controllers
 
         private static string GetSummaryHtml(string branding)
         {
-            BrandingSettings.ParseBrandingKey(
+            BrandingSettings.ParseSubscriptionDescriptor(
                 branding,
                 out var baseKey,
                 out var flavor,

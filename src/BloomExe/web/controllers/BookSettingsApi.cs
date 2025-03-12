@@ -76,7 +76,7 @@ namespace Bloom.Api
                 .CurrentSelection
                 .CollectionSettings
                 .Subscription
-                .BrandingKey;
+                .Descriptor;
             x["xmatterName"] = _bookSelection.CurrentSelection.CollectionSettings.XMatterPackName;
             request.ReplyWithJson(JsonConvert.SerializeObject(x));
         }

@@ -58,10 +58,12 @@ export const SubscriptionControls: React.FC = () => {
         expiryDateStringAsYYYYMMDD,
         subscriptionSummary,
         haveBrandingFiles,
-        editingBlorgBook
+        editingBlorgBook,
+        haveData
     } = useSubscriptionInfo();
 
     const [status, setStatus] = useState<Status>("None");
+
     React.useEffect(() => {
         setStatus(
             getStatus(
@@ -79,6 +81,10 @@ export const SubscriptionControls: React.FC = () => {
         subscriptionCodeIntegrity,
         haveBrandingFiles
     ]);
+
+    if (!haveData) {
+        return null;
+    }
 
     return (
         <div

@@ -298,9 +298,13 @@ namespace Bloom.Collection
             xml.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
             xml.Add(new XElement("XMatterPack", XMatterPackName));
             xml.Add(new XElement("PageNumberStyle", PageNumberStyle));
-            // this is not needed anymore (we can get it from the Subscription Code), but we keep it for now (Bloom 6.1) for backwards compatibility
-            xml.Add(new XElement("BrandingProjectName", Subscription.BrandingKey));
-            xml.Add(new XElement("SubscriptionCode", Subscription));
+
+            // What used to be "BrandingProjectName" pre BLoom 6.1 is now the "SubscriptionDescriptor", the part of the code before the numbers start.
+            // Normally, we can get the SubscriptionDescriptor from the Subscription Code, but we do not publish the code when publishing a book.
+            // Also, we want it for now (Bloom 6.1) for backwards compatibility.
+            // Enhance: A preferable approach would be to just use SuscriptionCode but redact part of the Code when publishing, e.g. Huya-LC-xxxx-xxxx
+            xml.Add(new XElement("BrandingProjectName", Subscription.Descriptor));
+            xml.Add(new XElement("SubscriptionCode", Subscription.Code));
             xml.Add(new XElement("Country", Country));
             xml.Add(new XElement("Province", Province));
             xml.Add(new XElement("District", District));
@@ -800,10 +804,10 @@ namespace Bloom.Collection
 
         public string GetXMatterPackNameSpecifiedByBrandingOrNull()
         {
-            if (!string.IsNullOrEmpty(Subscription.BrandingKey))
+            if (!string.IsNullOrEmpty(Subscription.Descriptor))
             {
                 var xmatterToUse = BrandingSettings
-                    .GetSettingsOrNull(Subscription.BrandingKey)
+                    .GetSettingsOrNull(Subscription.Descriptor)
                     ?.GetXmatterToUse();
                 if (xmatterToUse != null)
                 {
@@ -850,8 +854,8 @@ namespace Bloom.Collection
 
         public string GetBrandingFlavor()
         {
-            BrandingSettings.ParseBrandingKey(
-                Subscription.BrandingKey,
+            BrandingSettings.ParseSubscriptionDescriptor(
+                Subscription.Descriptor,
                 out var baseKey,
                 out var flavor,
                 out var subUnitName
@@ -861,8 +865,8 @@ namespace Bloom.Collection
 
         public string GetBrandingFolderName()
         {
-            BrandingSettings.ParseBrandingKey(
-                Subscription.BrandingKey,
+            BrandingSettings.ParseSubscriptionDescriptor(
+                Subscription.Descriptor,
                 out var folderName,
                 out var flavor,
                 out var subUnitName
@@ -1151,7 +1155,7 @@ namespace Bloom.Collection
             Analytics.SetApplicationProperty("Language3Iso639Code", Language3Tag ?? "---");
             Analytics.SetApplicationProperty("SignLanguageIso639Code", SignLanguageTag ?? "---");
             Analytics.SetApplicationProperty("Language1Iso639Name", Language1.Name);
-            Analytics.SetApplicationProperty("BrandingProjectName", Subscription.BrandingKey);
+            Analytics.SetApplicationProperty("BrandingProjectName", Subscription.Descriptor);
         }
 
         public string GetWritingSystemDisplayForUICss()

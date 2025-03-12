@@ -4,9 +4,9 @@ using Amazon.S3.Model;
 
 public class Subscription
 {
-    public static string kExpiryDateForDeprecatedBrandings = "2025-07-01"; // per Cate. Careful! Make sure to use leading zeros in month and day.
+    public static string kExpiryDateForDeprecatedCodes = "2025-07-01"; // per Cate. Careful! Make sure to use leading zeros in month and day.
     private SubscriptionTier? TierOverride;
-    private string? BrandingKeyOverride;
+    private string? DescriptorOverride;
     private DateTime ExpirationDateOverride = DateTime.MinValue;
     public bool EditingBlorgBook { get; private set; } = false;
 
@@ -34,13 +34,13 @@ public class Subscription
     // them "overrides" and instead just fill them in the constructor.
     public static Subscription FromCollectionSettingsInfo(
         string code,
-        string branding,
+        string descriptor,
         bool editingABlorgBook = false
     )
     {
         if (
             string.IsNullOrWhiteSpace(code)
-            && (branding == "Local-Community" || branding == "Local Community")
+            && (descriptor == "Local-Community" || descriptor == "Local Community")
         )
         {
             // migrating to actual code
@@ -49,17 +49,13 @@ public class Subscription
 
         // When on BloomLibrary.org ou click "Download for Edit", we want to let you use the same tier and
         // branding as when it was uploaded, even if it is expired.
-        if (
-            editingABlorgBook
-            && string.IsNullOrWhiteSpace(code)
-            && !string.IsNullOrWhiteSpace(branding)
-        )
+        if (editingABlorgBook)
         {
             var sub = new Subscription(code);
             sub.EditingBlorgBook = editingABlorgBook;
-            sub.BrandingKeyOverride = branding;
+            sub.DescriptorOverride = descriptor;
             sub.ExpirationDateOverride = DateTime.Now.AddDays(1);
-            if (branding == "Local-Community" || branding == "Local Community")
+            if (descriptor == "Local-Community" || descriptor == "Local Community")
             {
                 sub.TierOverride = SubscriptionTier.Community;
             }
@@ -74,17 +70,19 @@ public class Subscription
     }
 
     public readonly string Code;
-    public string BrandingKey
+
+    // This is the part of the subscription code before the numbers start. It can tell us the branding, the tier, flavors, and individual subscriber account.
+    public string Descriptor
     {
-        get { return GetBranding(false); }
+        get { return GetDescriptor(false); }
     }
 
     // From the subscription code extract the project name,
     // everything up to the second-last hyphen.
-    private string GetBranding(bool forCheckSum = false)
+    private string GetDescriptor(bool forCheckSum = false)
     {
-        if (BrandingKeyOverride != null)
-            return BrandingKeyOverride;
+        if (DescriptorOverride != null)
+            return DescriptorOverride;
         if (Code == null)
             return "Default"; // enhance: maybe change everything to just empty string?
         var parts = Code.Split('-').ToList();
@@ -92,14 +90,14 @@ public class Subscription
             return "Default";
         parts.RemoveAt(parts.Count - 1);
         parts.RemoveAt(parts.Count - 1);
-        var branding = string.Join("-", parts.ToArray());
+        var descriptor = string.Join("-", parts.ToArray());
 
         // allow for future community codes like HuyaVillage-LC-12335-3233434
-        if (!forCheckSum && branding.EndsWith("-LC"))
+        if (!forCheckSum && descriptor.EndsWith("-LC"))
         {
             return "Local-Community";
         }
-        return branding;
+        return descriptor;
     }
 
     // Parse a string like PNG-RISE-361769-363798 or SIL-LEAD-361769-363644,
@@ -117,7 +115,7 @@ public class Subscription
             return DateTime.MinValue;
 
         if (Code == "Local-Community")
-            return DateTime.Parse(kExpiryDateForDeprecatedBrandings);
+            return DateTime.Parse(kExpiryDateForDeprecatedCodes);
         var parts = Code.Split('-');
         if (parts.Length < 3)
             return DateTime.MinValue;
@@ -131,7 +129,7 @@ public class Subscription
         if (!Int32.TryParse(parts[last], out combinedChecksum))
             return DateTime.MinValue;
 
-        int checkSum = CheckSum(GetBranding(true));
+        int checkSum = CheckSum(GetDescriptor(true));
         if ((Math.Floor(Math.Sqrt(datePart)) + checkSum) % 10000 != combinedChecksum)
             return DateTime.MinValue;
         int dateNum = datePart + 40000; // days since Dec 30 1899
@@ -139,7 +137,7 @@ public class Subscription
 
         // At one time there were some subscriptions which never ended. Those have been retired.
         if (date.Year == 3000)
-            return DateTime.Parse(kExpiryDateForDeprecatedBrandings);
+            return DateTime.Parse(kExpiryDateForDeprecatedCodes);
         return date;
     }
 
@@ -161,7 +159,7 @@ public class Subscription
         if (!Int32.TryParse(parts[last], out combinedChecksum))
             return false;
 
-        int checkSum = CheckSum(GetBranding(true));
+        int checkSum = CheckSum(GetDescriptor(true));
         if ((Math.Floor(Math.Sqrt(datePart)) + checkSum) % 10000 != combinedChecksum)
             return false;
         return true;
@@ -238,11 +236,11 @@ public class Subscription
         {
             if (TierOverride != null)
                 return TierOverride.Value;
-            var branding = GetBranding();
-            if (string.IsNullOrWhiteSpace(branding) || branding == "Default")
+            var descriptor = GetDescriptor();
+            if (string.IsNullOrWhiteSpace(descriptor) || descriptor == "Default")
                 return SubscriptionTier.None;
             else if (
-                branding == "Local-Community" || branding == "Local Community" /* pre 4.4 */
+                descriptor == "Local-Community" || descriptor == "Local Community" /* pre 4.4 */
             )
                 return SubscriptionTier.Community;
             else
@@ -270,12 +268,12 @@ public class Subscription
 
     // Since normally all info comes from the code, this allows us to ignore the code and just set what we need.
     // If a unit test breaks because of an expired subscription, consider fixing it by using this method or one like it.
-    public static Subscription ForUnitTestWithOverrideTierOrBranding(
+    public static Subscription ForUnitTestWithOverrideTierOrDescriptor(
         SubscriptionTier tier,
-        string brandingKey
+        string descriptor
     )
     {
-        var subscription = FromCollectionSettingsInfo("", brandingKey);
+        var subscription = FromCollectionSettingsInfo("", descriptor);
         subscription.TierOverride = tier;
         subscription.ExpirationDateOverride = DateTime.Now.AddDays(1);
         return subscription;
@@ -283,9 +281,9 @@ public class Subscription
 
     // Since normally all info comes from the code, this allows us to ignore the code and just set what we need.
     // If a unit test breaks because of an expired subscription, consider fixing it by using this method or one like it.
-    public static Subscription ForUnitTestWithOverrideBranding(string brandingKey)
+    public static Subscription ForUnitTestWithOverrideDescriptor(string descriptor)
     {
-        var subscription = FromCollectionSettingsInfo("", brandingKey);
+        var subscription = FromCollectionSettingsInfo("", descriptor);
         subscription.ExpirationDateOverride = DateTime.Now.AddDays(1);
         return subscription;
     }

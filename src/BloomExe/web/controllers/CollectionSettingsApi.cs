@@ -102,20 +102,20 @@ namespace Bloom.web.controllers
                 true
             );
 
-            // Enhance: The get here has one signature {brandingProjectName, defaultBookshelf} while the post has another (defaultBookshelfId:string).
+            // Enhance: The get here has one signature {descriptor, defaultBookshelf} while the post has another (defaultBookshelfId:string).
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "bookShelfData",
                 request =>
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
-                        var brandingKey = _collectionSettings.Subscription.BrandingKey;
+                        var descriptor = _collectionSettings.Subscription.Descriptor;
                         var defaultBookshelfUrlKey = _collectionSettings.DefaultBookshelf;
-                        request.ReplyWithJson(new { brandingKey, defaultBookshelfUrlKey });
+                        request.ReplyWithJson(new { descriptor, defaultBookshelfUrlKey });
                     }
                     else
                     {
-                        // post: doesn't include the brandingProjectName, as this is not where we edit that.
+                        // post: doesn't include the descriptor, as this is not where we edit that.
                         var newShelf = request.RequiredPostString();
                         if (newShelf == "none")
                             newShelf = ""; // RequiredPostString won't allow us to just pass this
@@ -194,7 +194,7 @@ namespace Bloom.web.controllers
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
-                        request.ReplyWithJson(_collectionSettings.Subscription.BrandingKey);
+                        request.ReplyWithJson(_collectionSettings.Subscription.Descriptor);
                     }
                     else
                     {
@@ -251,7 +251,7 @@ namespace Bloom.web.controllers
                 kApiUrlPart + "deprecatedBrandingsExpiryDate",
                 request =>
                 {
-                    request.ReplyWithText(Subscription.kExpiryDateForDeprecatedBrandings);
+                    request.ReplyWithText(Subscription.kExpiryDateForDeprecatedCodes);
                 },
                 false
             );
@@ -501,7 +501,7 @@ namespace Bloom.web.controllers
 
         public static string GetSummaryHtml(string branding)
         {
-            BrandingSettings.ParseBrandingKey(
+            BrandingSettings.ParseSubscriptionDescriptor(
                 branding,
                 out var baseKey,
                 out var flavor,

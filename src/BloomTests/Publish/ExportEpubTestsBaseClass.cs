@@ -473,7 +473,7 @@ namespace BloomTests.Publish
             book.CollectionSettings.XMatterPackName = "Device"; // give us predictable xmatter with content on page 2
 
             book.CollectionSettings.Subscription =
-                Subscription.ForUnitTestWithOverrideTierOrBranding(
+                Subscription.ForUnitTestWithOverrideTierOrDescriptor(
                     Subscription.SubscriptionTier.Community,
                     "Local-Community"
                 );

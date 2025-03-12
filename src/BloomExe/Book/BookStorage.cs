@@ -257,7 +257,7 @@ namespace Bloom.Book
             if (useInstalledBranding && relativePath == "branding.css")
             {
                 return BloomFileLocator.GetOptionalBrandingFile(
-                    _collectionSettings.Subscription.BrandingKey,
+                    _collectionSettings.Subscription.Descriptor,
                     "branding.css"
                 );
             }
@@ -2679,7 +2679,7 @@ namespace Bloom.Book
 
         public ExpandoObject BrandingAppearanceSettings =>
             Api.BrandingSettings
-                .GetSettingsOrNull(CollectionSettings.Subscription.BrandingKey)
+                .GetSettingsOrNull(CollectionSettings.Subscription.Descriptor)
                 ?.Appearance;
 
         // Brandings come with logos and such... we want them in the book folder itself so that they work
@@ -2703,12 +2703,12 @@ namespace Bloom.Book
                     )
                 )
                     return;
-                var key = _collectionSettings.Subscription.BrandingKey;
+                var subscriptionDescriptor = _collectionSettings.Subscription.Descriptor;
                 // I think this is redundant: BrandingProjectKey will be set to 'Default' if we don't have some definite one.
                 // Keeping this for paranoia, in case there's some path I don't know about where that doesn't happen.
-                if (String.IsNullOrEmpty(key))
-                    key = "Default"; // The "default" Branding folder contains the branding-type stuff for non-enterprise books.
-                var brandingFolder = BloomFileLocator.GetBrandingFolder(key);
+                if (String.IsNullOrEmpty(subscriptionDescriptor))
+                    subscriptionDescriptor = "Default"; // The "default" Branding folder contains the branding-type stuff for non-enterprise books.
+                var brandingFolder = BloomFileLocator.GetBrandingFolder(subscriptionDescriptor);
                 if (String.IsNullOrEmpty(brandingFolder))
                 {
                     // This special "branding" contains a message about being patient until the branding ships.
@@ -2762,7 +2762,7 @@ namespace Bloom.Book
                     null,
                     err,
                     "There was a problem applying the branding: "
-                        + _collectionSettings.Subscription.BrandingKey,
+                        + _collectionSettings.Subscription.Descriptor,
                     "nonfatal"
                 );
             }

@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Dynamic;
-using System.IO;
 using System.Linq;
-using System.Windows.Forms;
-using Bloom.Book;
-using Bloom.Collection;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Linq;
@@ -110,28 +106,28 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// extract the base and flavor parts of a Branding name
+        /// extract the various parts of a Subscription Descriptor
         /// </summary>
-        /// <param name="fullBrandingName">the full key</param>
+        /// <param name="fullBrandingsubscriptionDescriptor">the part of the subcription code before the numbers start</param>
         /// <param name="folderName">the name before any branding; this will match the folder holding all the files.</param>
         /// <param name="flavor">a name or empty string</param>
         /// <param name="subUnitName">a name (normally a country) or empty string</param>
-        public static void ParseBrandingKey(
-            String fullBrandingName,
+        public static void ParseSubscriptionDescriptor(
+            String fullBrandingsubscriptionDescriptor,
             out String folderName,
             out String flavor,
             out String subUnitName
         )
         {
-            // A Branding may optionally have a suffix of the form "[FLAVOR]" where flavor is typically
+            // A Subscription Descriptor may optionally have a suffix of the form "[FLAVOR]" where flavor is typically
             // a language name. This is used to select different logo files without having to create
             // a completely separate branding folder (complete with summary, stylesheets, etc) for each
             // language in a project that is publishing in a situation with multiple major languages.
-            var parts = fullBrandingName.Split('[');
+            var parts = fullBrandingsubscriptionDescriptor.Split('[');
             folderName = parts[0];
             flavor = parts.Length > 1 ? parts[1].Replace("]", "") : "";
 
-            // A Branding may optionally have a suffix of the form "(SUBUNIT)" where subUnitName is typically
+            // A Subscription Descriptor may optionally have a suffix of the form "(SUBUNIT)" where subUnitName is typically
             // a country name. This is useful when the project wants different codes, but wants *exactly*
             // the same branding.
             parts = folderName.Split('(');
@@ -170,7 +166,7 @@ namespace Bloom.Api
 
             try
             {
-                ParseBrandingKey(
+                ParseSubscriptionDescriptor(
                     brandingNameOrFolderPath,
                     out var brandingFolderName,
                     out var flavor,

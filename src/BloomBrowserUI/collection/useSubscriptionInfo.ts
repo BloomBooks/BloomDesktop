@@ -15,7 +15,7 @@ interface SubscriptionData {
     Summary: string;
     Expiration: string;
     CodeIntegrity: string;
-    BrandingKey: string;
+    BrandingProjectName: string;
     HaveBrandingFiles: boolean;
     EditingBlorgBook: boolean;
 }
@@ -29,15 +29,17 @@ export const useSubscriptionInfo = () => {
         Summary: "",
         Expiration: "",
         CodeIntegrity: "none",
-        BrandingKey: "",
+        BrandingProjectName: "",
         HaveBrandingFiles: false,
         EditingBlorgBook: false
     });
+    const [haveData, setHaveData] = useState(false);
 
     // This is called once initially, then each time the user types in the subscription code field or does a paste
     const querySubscriptionInfo = useCallback(() => {
         get("settings/Subscription", result => {
             setSubscriptionData(result.data);
+            setHaveData(true);
         });
     }, [setSubscriptionData]);
 
@@ -65,9 +67,10 @@ export const useSubscriptionInfo = () => {
         code: subscriptionData.Code,
         subscriptionCodeIntegrity: subscriptionData.CodeIntegrity as SubscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD: subscriptionData.Expiration,
-        brandingKey: subscriptionData.BrandingKey,
+        subscriptionDescriptor: subscriptionData.BrandingProjectName,
         subscriptionSummary: subscriptionData.Summary,
         haveBrandingFiles: subscriptionData.HaveBrandingFiles,
-        editingBlorgBook: subscriptionData.EditingBlorgBook
+        editingBlorgBook: subscriptionData.EditingBlorgBook,
+        haveData
     };
 };

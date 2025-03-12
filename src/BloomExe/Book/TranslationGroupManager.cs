@@ -332,7 +332,7 @@ namespace Bloom.Book
                 if (match.Success)
                 {
                     var brandingSettings = BrandingSettings.GetSettingsOrNull(
-                        bookData.CollectionSettings.Subscription.BrandingKey
+                        bookData.CollectionSettings.Subscription.Descriptor
                     );
                     languagesAttributeString = brandingSettings?.GetPresetKeyValueOrDefault(
                         match.Groups["brandingPresetKey"].Value,
