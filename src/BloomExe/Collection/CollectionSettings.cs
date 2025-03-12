@@ -872,11 +872,6 @@ namespace Bloom.Collection
 
         public Subscription Subscription;
 
-        // I really want to get rid of this, because it is normally derivable from SubscriptionCode, but in two contexts, we don't have the subscription code:
-        // 1) It's a legacy (pre Bloom 6.1) "Local Community" collection without a subscription.
-        // 2) It's a book downloaded for editing from Blorg, where we don't publish the subscription code they used.
-        private string _brandingProjectKey; // wondering if I can rename it to _brandingProjectKeyWhenSubscriptionCodeIsUnknown
-
         public int OneTimeCheckVersionNumber { get; set; }
 
         public bool AllowNewBooks { get; set; }

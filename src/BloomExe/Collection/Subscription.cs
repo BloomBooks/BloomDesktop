@@ -8,6 +8,7 @@ public class Subscription
     private SubscriptionTier? TierOverride;
     private string? BrandingKeyOverride;
     private DateTime ExpirationDateOverride = DateTime.MinValue;
+    public bool EditingBlorgBook { get; private set; } = false;
 
     // These options must match the strings used in requiresBloomEnterprise.tsx
     public enum SubscriptionTier
@@ -55,6 +56,7 @@ public class Subscription
         )
         {
             var sub = new Subscription(code);
+            sub.EditingBlorgBook = editingABlorgBook;
             sub.BrandingKeyOverride = branding;
             sub.ExpirationDateOverride = DateTime.Now.AddDays(1);
             if (branding == "Local-Community" || branding == "Local Community")

@@ -1,26 +1,28 @@
-/** @jsx jsx **/
+/**
+ * @jsx jsx
+ * @jsxFrag React.Fragment
+ **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import { Div, Label } from "../react_components/l10nComponents";
+import { Label } from "../react_components/l10nComponents";
 import { Link } from "../react_components/link";
-import {
-    get,
-    post,
-    postJson,
-    useApiBoolean,
-    useApiStringState
-} from "../utils/bloomApi";
+import { get, post, postJson, useApiStringState } from "../utils/bloomApi";
 import { FontAwesomeIcon } from "../bloomIcons";
 import Button from "@mui/material/Button";
 import { Stack } from "@mui/material";
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import ContentPaste from "@mui/icons-material/ContentPaste";
-import { useCallback, useState } from "react";
+import { useState } from "react";
+import {
+    SubscriptionCodeIntegrity,
+    useSubscriptionInfo
+} from "./useSubscriptionInfo";
+import { WarningBox } from "../react_components/boxes";
 
 type Status =
     | "None"
     | "SubscriptionGood"
-    | "SubscriptionUnknown"
+    | "NoBrandingFilesYet"
     | "SubscriptionExpired"
     | "SubscriptionIncomplete"
     | "SubscriptionIncorrect"
@@ -32,7 +34,7 @@ type Status =
 // The remaining states all involve the EnterpriseSubscription button being selected
 // SubscriptionGood: a valid, current, known code has been entered (or remembered)
 //      We get a green check, an expiration date, and a 'summary' of the branding
-// SubscriptionUnknown: a valid code has been entered, but this version of Bloom does not recognize it
+// NoBrandingFilesYet: a valid code has been entered, but this version of Bloom does not recognize it
 //      We get a red ! icon and a message
 // SubscriptionExpired: a valid code has been entered, but its expiration date is past.
 //      We get a red ! icon, a red message about the expiration, and a branding summary
@@ -51,97 +53,32 @@ type Status =
 // Component for managing subscription code input and display
 export const SubscriptionControls: React.FC = () => {
     const {
+        code,
         subscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD,
-        brandingProjectKey,
-        subscriptionSummary
+        subscriptionSummary,
+        haveBrandingFiles,
+        editingBlorgBook
     } = useSubscriptionInfo();
-
-    // const [status, setStatus] = React.useState<Status>("None");
-    const [subscriptionCode, setSubscriptionCode] = useApiStringState(
-        "settings/subscriptionCode",
-        ""
-    );
-
-    const [editingBlorgBook] = useApiBoolean(
-        "settings/lockedToOneDownloadedBook",
-        false
-    );
-
-    const [selectionPosition, setSelectionPosition] = React.useState<
-        number | null
-    >(0);
 
     const [status, setStatus] = useState<Status>("None");
     React.useEffect(() => {
         setStatus(
             getStatus(
-                subscriptionCode,
+                code,
                 subscriptionCodeIntegrity,
                 expiryDateStringAsYYYYMMDD,
-                editingBlorgBook
+                editingBlorgBook,
+                haveBrandingFiles
             )
         );
     }, [
-        subscriptionCode,
+        code,
         expiryDateStringAsYYYYMMDD,
         editingBlorgBook,
-        subscriptionCodeIntegrity
+        subscriptionCodeIntegrity,
+        haveBrandingFiles
     ]);
-
-    // Handle copy/paste operations
-    const handleCopy = () => {
-        postJson("common/clipboardText", {
-            text: subscriptionCode
-        });
-    };
-
-    const handlePaste = () => {
-        get("common/clipboardText", result => {
-            setSubscriptionCode(result.data);
-            document.dispatchEvent(new Event("subscriptionCodeChanged"));
-        });
-    };
-
-    const shouldShowRedExclamation = () => {
-        return [
-            "SubscriptionIncorrect",
-            "SubscriptionUnknown",
-            "SubscriptionExpired",
-            "SubscriptionLegacy"
-        ].includes(status);
-    };
-
-    const userTypedOrPastedCode = (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        // Store the selection position before React updates
-        setSelectionPosition(
-            (document.getElementById(
-                "subscriptionCodeInput"
-            ) as HTMLInputElement)?.selectionStart
-        );
-
-        setSubscriptionCode(event.target.value);
-        const changeEvent = new Event("subscriptionCodeChanged");
-        // Log the subscription code change event
-        // Replace this with a proper logging mechanism if needed
-        document.dispatchEvent(changeEvent);
-    };
-
-    // Restore cursor position after update
-    React.useEffect(() => {
-        try {
-            const codeElt = document.getElementById(
-                "subscriptionCodeInput"
-            ) as HTMLInputElement;
-            if (codeElt !== null && selectionPosition !== null) {
-                codeElt.selectionStart = codeElt.selectionEnd = selectionPosition;
-            }
-        } catch (e) {
-            console.error("Error restoring cursor position:", e);
-        }
-    }, [selectionPosition]);
 
     return (
         <div
@@ -151,96 +88,7 @@ export const SubscriptionControls: React.FC = () => {
                 flex-direction: column;
             `}
         >
-            {editingBlorgBook && (
-                <Div
-                    l10nKey="Settings.Subscription.DownloadForEdit"
-                    className={"legacyBrandingName"}
-                >
-                    This collection is in "Download for Edit" mode. The book has
-                    the same Bloom Enterprise branding as when it was last
-                    uploaded.
-                </Div>
-            )}
-
-            <div
-                css={css`
-                    display: flex;
-                    flex-direction: row;
-                    align-items: baseline;
-                `}
-            >
-                <div
-                    css={css`
-                        display: flex;
-                        flex-direction: row;
-                        align-items: baseline;
-                        flex-grow: 1;
-                    `}
-                >
-                    <Label
-                        className="subscriptionCodeLabel"
-                        l10nKey="Settings.Subscription.SubscriptionCodeLabel"
-                    >
-                        Subscription Code:
-                    </Label>
-
-                    <input
-                        id="subscriptionCodeInput"
-                        //className="subscriptionCodeInput"
-                        type="text"
-                        value={subscriptionCode}
-                        onChange={userTypedOrPastedCode}
-                        css={css`
-                            width: 260px;
-                            margin-left: 5px;
-                            padding-right: 20px; // clear of icon
-                            flex-grow: 1;
-                            font-family: "Consolas"; // show zeros distinctly
-                            padding: 5px;
-                        `}
-                    />
-                    {status === "SubscriptionGood" && (
-                        <span className={"evaluationCode"}>
-                            <FontAwesomeIcon icon="check" />
-                        </span>
-                    )}
-                    {status === "SubscriptionIncomplete" && (
-                        <span className={"evaluationCode"}>
-                            <FontAwesomeIcon icon="question" />
-                        </span>
-                    )}
-                    {shouldShowRedExclamation() && (
-                        <span className={"evaluationCode"}>
-                            <FontAwesomeIcon
-                                icon="exclamation-circle"
-                                css={{ color: "red" }}
-                            />
-                        </span>
-                    )}
-                </div>
-                <Button variant="text" onClick={handleCopy} size="small">
-                    <Stack direction="column" alignItems="center">
-                        <ContentCopy />
-                        <Label
-                            className="editButtonLabel"
-                            l10nKey="EditTab.CopyButton"
-                        >
-                            Copy
-                        </Label>
-                    </Stack>
-                </Button>
-                <Button variant="text" onClick={handlePaste} size="small">
-                    <Stack direction="column" alignItems="center">
-                        <ContentPaste />
-                        <Label
-                            className="editButtonLabel"
-                            l10nKey="EditTab.PasteButton"
-                        >
-                            Paste
-                        </Label>
-                    </Stack>
-                </Button>
-            </div>
+            <Editor />
 
             <StatusText
                 status={status}
@@ -248,17 +96,7 @@ export const SubscriptionControls: React.FC = () => {
             />
 
             {status === "SubscriptionGood" && subscriptionSummary && (
-                <div
-                    className="summary"
-                    css={css`
-                        background-color: white;
-                        padding: 5px;
-                        height: 106px;
-                    `}
-                    dangerouslySetInnerHTML={{
-                        __html: subscriptionSummary
-                    }}
-                />
+                <BrandingSummary summaryHtml={subscriptionSummary} />
             )}
         </div>
     );
@@ -282,22 +120,29 @@ const StatusText: React.FC<{
                 The code should look like SOMENAME-123456-7890
             </Label>
         )}
-        {props.status === "SubscriptionUnknown" && (
-            <div>
-                <Label
-                    l10nKey="Settings.Subscription.UnknownCode"
-                    className="error"
-                >
+        {props.status === "NoBrandingFilesYet" && (
+            <div
+                css={css`
+                    display: flex;
+                    flex-direction: column;
+                    width: 100%;
+                `}
+            >
+                <WarningBox l10nKey="Settings.Subscription.UnknownCode">
                     This version of Bloom does not have the artwork that goes
                     with that subscription.
-                </Label>
-                <Link
-                    className="error"
-                    l10nKey="Settings.Subscription.CheckUpdates"
+                </WarningBox>
+                <Button
+                    variant="text"
+                    css={css`
+                        margin-left: auto;
+                    `}
                     onClick={() => post("common/checkForUpdates")}
                 >
-                    Check for updates
-                </Link>
+                    <Label l10nKey="Settings.Subscription.CheckUpdates">
+                        Check for updates
+                    </Label>
+                </Button>
             </div>
         )}
         {props.status === "SubscriptionExpired" && (
@@ -329,11 +174,13 @@ export function getSafeLocalizedDate(dateAsYYYYMMDD: string | null) {
         : "";
 }
 
+// takes in all the info and distills down to one "mode", which then drives icons and a message to give to the user
 function getStatus(
     subscriptionCode: string,
-    subscriptionCodeIntegrity: string,
+    subscriptionCodeIntegrity: SubscriptionCodeIntegrity,
     expiryDateStringAsYYYYMMDD: string,
-    editingBlorgBook: boolean
+    editingBlorgBook: boolean,
+    haveBrandingFiles: boolean
 ): Status {
     const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
     if (subscriptionCode === "" || subscriptionCodeIntegrity === "none") {
@@ -342,8 +189,8 @@ function getStatus(
     if (subscriptionCodeIntegrity === "invalid") return "SubscriptionIncorrect";
     // this is the case where we have a valid-looking code, but the server
     // does not have special files for it
-    if (subscriptionCodeIntegrity === "unknown") {
-        return "SubscriptionUnknown";
+    if (!haveBrandingFiles) {
+        return "NoBrandingFilesYet";
     }
     // if it looks like they haven't finished typing
     if (subscriptionCodeIntegrity === "incomplete") {
@@ -359,75 +206,161 @@ function getStatus(
     return "SubscriptionGood";
 }
 
-// Note, this hook automatically refreshes when it anything raises the subscriptionCodeChanged event
-// It's mostly needed because our API for some reason hands out one morsel of data at a time. But when
-// that is fixed to just give a json with all the info about subscriptions, a simplified version of
-// this will still be helpful in that it auomatically refreshes all the components that us it when
-// the user types in the subscription code field.
-export const useSubscriptionInfo = () => {
-    const [subscriptionCodeIntegrity, setSubscriptionCodeIntegrity] = useState<
-        "ok" | "none" | "incomplete" | "invalid"
-    >("none");
-    const [
-        expiryDateStringAsYYYYMMDD,
-        setExpiryDateStringAsYYYYMMDD
-    ] = useState("");
-    const [subscriptionSummary, setSubscriptionSummary] = useState("");
-    const [brandingProjectKey, setBrandingProjectKey] = useState("");
+export const BrandingSummary: React.FC<{ summaryHtml: string }> = props => {
+    return (
+        <div
+            className="summary"
+            css={css`
+                background-color: white;
+                padding: 5px;
+                height: 106px;
+            `}
+            dangerouslySetInnerHTML={{
+                __html: props.summaryHtml
+            }}
+        />
+    );
+};
 
-    // This is called once initially, then each time the user types in the subscription code field or does a paste
-    const querySubscriptionInfo = useCallback(() => {
-        // Replace this with a proper logging mechanism if needed
-        get("settings/subscriptionExpiration", result => {
-            // Replace this with a proper logging mechanism if needed
-            setExpiryDateStringAsYYYYMMDD(result.data);
-        });
-        get("settings/subscriptionCodeIntegrity", result => {
-            // Replace this with a proper logging mechanism if needed
-            setSubscriptionCodeIntegrity(result.data);
-        });
+const Editor: React.FC = () => {
+    const [subscriptionCode, setSubscriptionCode] = useApiStringState(
+        "settings/subscriptionCode",
+        ""
+    );
 
-        get("settings/brandingProjectKey", result => {
-            setBrandingProjectKey(result.data);
+    // Handle copy/paste operations
+    const handleCopy = () => {
+        postJson("common/clipboardText", {
+            text: subscriptionCode
         });
-        get("settings/subscriptionSummary", result => {
-            setSubscriptionSummary(result.data);
-        });
-    }, [
-        setExpiryDateStringAsYYYYMMDD,
-        setSubscriptionCodeIntegrity,
-        setBrandingProjectKey,
-        setSubscriptionSummary
-    ]);
+    };
 
-    // refresh when the subscription code changes
+    const handlePaste = () => {
+        get("common/clipboardText", result => {
+            setSubscriptionCode(result.data);
+            document.dispatchEvent(new Event("subscriptionCodeChanged"));
+        });
+    };
+
+    const shouldShowRedExclamation = () => {
+        return [
+            "SubscriptionIncorrect",
+            "NoBrandingFilesYet",
+            "SubscriptionExpired",
+            "SubscriptionLegacy"
+        ].includes(status);
+    };
+    const [selectionPosition, setSelectionPosition] = React.useState<
+        number | null
+    >(0); // Restore cursor position after update
     React.useEffect(() => {
-        document.addEventListener(
-            "subscriptionCodeChanged",
-            querySubscriptionInfo
+        try {
+            const codeElt = document.getElementById(
+                "subscriptionCodeInput"
+            ) as HTMLInputElement;
+            if (codeElt !== null && selectionPosition !== null) {
+                codeElt.selectionStart = codeElt.selectionEnd = selectionPosition;
+            }
+        } catch (e) {
+            console.error("Error restoring cursor position:", e);
+        }
+    }, [selectionPosition]);
+    const userTypedOrPastedCode = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        // Store the selection position before React updates
+        setSelectionPosition(
+            (document.getElementById(
+                "subscriptionCodeInput"
+            ) as HTMLInputElement)?.selectionStart
         );
 
-        return () => {
-            document.removeEventListener(
-                "subscriptionCodeChanged",
-                querySubscriptionInfo
-            );
-        };
-    }, [
-        querySubscriptionInfo,
-        setExpiryDateStringAsYYYYMMDD,
-        setSubscriptionCodeIntegrity
-    ]);
-
-    // get initial info once at startup
-    React.useEffect(() => {
-        querySubscriptionInfo();
-    }, [querySubscriptionInfo]);
-
-    return {
-        subscriptionCodeIntegrity,
-        expiryDateStringAsYYYYMMDD,
-        brandingProjectKey,
-        subscriptionSummary
+        setSubscriptionCode(event.target.value);
+        const changeEvent = new Event("subscriptionCodeChanged");
+        // Log the subscription code change event
+        // Replace this with a proper logging mechanism if needed
+        document.dispatchEvent(changeEvent);
     };
+
+    return (
+        <div
+            css={css`
+                display: flex;
+                flex-direction: row;
+                align-items: baseline;
+            `}
+        >
+            <div
+                css={css`
+                    display: flex;
+                    flex-direction: row;
+                    align-items: baseline;
+                    flex-grow: 1;
+                `}
+            >
+                <Label
+                    className="subscriptionCodeLabel"
+                    l10nKey="Settings.Subscription.SubscriptionCodeLabel"
+                >
+                    Subscription Code:
+                </Label>
+
+                <input
+                    id="subscriptionCodeInput"
+                    //className="subscriptionCodeInput"
+                    type="text"
+                    value={subscriptionCode}
+                    onChange={userTypedOrPastedCode}
+                    css={css`
+                        width: 260px;
+                        margin-left: 5px;
+                        padding-right: 20px; // clear of icon
+                        flex-grow: 1;
+                        font-family: "Consolas"; // show zeros distinctly
+                        padding: 5px;
+                    `}
+                />
+                {status === "SubscriptionGood" && (
+                    <span className={"evaluationCode"}>
+                        <FontAwesomeIcon icon="check" />
+                    </span>
+                )}
+                {status === "SubscriptionIncomplete" && (
+                    <span className={"evaluationCode"}>
+                        <FontAwesomeIcon icon="question" />
+                    </span>
+                )}
+                {shouldShowRedExclamation() && (
+                    <span className={"evaluationCode"}>
+                        <FontAwesomeIcon
+                            icon="exclamation-circle"
+                            css={{ color: "red" }}
+                        />
+                    </span>
+                )}
+            </div>
+            <Button variant="text" onClick={handleCopy} size="small">
+                <Stack direction="column" alignItems="center">
+                    <ContentCopy />
+                    <Label
+                        className="editButtonLabel"
+                        l10nKey="EditTab.CopyButton"
+                    >
+                        Copy
+                    </Label>
+                </Stack>
+            </Button>
+            <Button variant="text" onClick={handlePaste} size="small">
+                <Stack direction="column" alignItems="center">
+                    <ContentPaste />
+                    <Label
+                        className="editButtonLabel"
+                        l10nKey="EditTab.PasteButton"
+                    >
+                        Paste
+                    </Label>
+                </Stack>
+            </Button>
+        </div>
+    );
 };

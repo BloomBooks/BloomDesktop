@@ -4,6 +4,7 @@ using System.Text;
 using Bloom.Api;
 using Bloom.Collection;
 using SIL.IO;
+using Newtonsoft.Json;
 
 namespace Bloom.web.controllers
 {
@@ -26,6 +27,43 @@ namespace Bloom.web.controllers
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
+            // Combined endpoint that returns all subscription data
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "Subscription",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Get)
+                    {
+                        var subscriptionData = new
+                        {
+                            Code = _subscription.Code ?? "",
+                            Tier = _subscription.Tier.ToString(),
+                            Summary = GetSummaryHtml(_subscription.BrandingKey),
+                            Expiration = _subscription
+                                .GetExpirationDate()
+                                .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                            CodeIntegrity = _subscription.GetIntegrityLabel(),
+                            BrandingKey = _subscription.BrandingKey,
+                            HaveBrandingFiles = string.IsNullOrWhiteSpace(_subscription.BrandingKey)
+                                // We have them in the sense that we have the default logo we show on the back, so "true"
+                                ? true
+                                : BrandingProject.HaveFilesForBranding(_subscription.BrandingKey),
+                            EditingBlorgBook = _subscription.EditingBlorgBook,
+                        };
+
+                        request.ReplyWithJson(JsonConvert.SerializeObject(subscriptionData));
+                    }
+                    else
+                    {
+                        request.Failed(
+                            "Only GET method is supported for the Subscription endpoint"
+                        );
+                    }
+                },
+                false
+            );
+
+            // Existing endpoints kept for backward compatibility
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "subscriptionCode",
                 request =>
@@ -44,78 +82,9 @@ namespace Bloom.web.controllers
                 },
                 false
             );
-            apiHandler.RegisterEnumEndpointHandler(
-                kApiUrlPart + "subscriptionTier",
-                request => _subscription.Tier,
-                null, // this is read-only
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "subscriptionSummary",
-                request =>
-                {
-                    string branding = _subscription.BrandingKey ?? "";
-                    if (string.IsNullOrEmpty(branding))
-                    {
-                        request.ReplyWithText("");
-                        return;
-                    }
-                    var html = GetSummaryHtml(branding);
-                    request.ReplyWithText(html);
-                },
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "subscriptionExpiration",
-                request =>
-                {
-                    if (_subscription != null && _subscription.GetIntegrityLabel() == "ok")
-                        request.ReplyWithText(
-                            _subscription
-                                .GetExpirationDate()
-                                .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-                        );
-                    else
-                        request.ReplyWithText("");
-                },
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "subscriptionCodeIntegrity",
-                request =>
-                {
-                    request.ReplyWithText(_subscription?.GetIntegrityLabel() ?? "none");
-                },
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "brandingProjectKey",
-                request =>
-                {
-                    request.ReplyWithText(_subscription.BrandingKey);
-                },
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "hasSubscriptionFiles",
-                request =>
-                {
-                    if (!string.IsNullOrEmpty(_subscription.BrandingKey))
-                    {
-                        request.ReplyWithText("false");
-                        return;
-                    }
-                    var haveFiles = BrandingProject.HaveFilesForBranding(
-                        _subscription.BrandingKey ?? ""
-                    );
-
-                    request.ReplyWithText(haveFiles ? "true" : "false");
-                },
-                false
-            );
         }
 
-        public static string GetSummaryHtml(string branding)
+        private static string GetSummaryHtml(string branding)
         {
             BrandingSettings.ParseBrandingKey(
                 branding,

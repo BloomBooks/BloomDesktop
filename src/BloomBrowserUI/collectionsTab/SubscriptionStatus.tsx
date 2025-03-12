@@ -9,10 +9,8 @@ import { BoxWithIconAndText } from "../react_components/boxes";
 import { useL10n } from "../react_components/l10nHooks";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { Markdown } from "../react_components/markdown";
-import {
-    getSafeLocalizedDate,
-    useSubscriptionInfo
-} from "../collection/subscriptionCodeControl";
+import { getSafeLocalizedDate } from "../collection/subscriptionCodeControl";
+import { useSubscriptionInfo } from "../collection/useSubscriptionInfo";
 
 export const SubscriptionStatus: React.FunctionComponent<{
     minimalUI?: boolean;
@@ -24,7 +22,7 @@ export const SubscriptionStatus: React.FunctionComponent<{
     const {
         subscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD,
-        brandingProjectKey
+        brandingKey
     } = useSubscriptionInfo();
 
     // If component has a prop override, use that instead of API value
@@ -32,13 +30,13 @@ export const SubscriptionStatus: React.FunctionComponent<{
     //     expiryDateString = props.overrideSubscriptionExpirationYYYYMMDD;
     // }
 
-    let keyToShow = brandingProjectKey;
+    let keyToShow = brandingKey;
 
     if (props.minimalUI) keyToShow = ""; // in the Settings Dialog context, the backend doesn't yet know what the user is clicking on, so it will give the wrong branding
 
     // a "deprecated" subscription is one that used to be eternal but is now being phased out
     const haveDeprecatedSubscription = expiryDateStringAsYYYYMMDD.startsWith(
-        deprecatedBrandingsExpiryDate
+        deprecatedBrandingsExpiryDateAsYYYYMMDD
     ); // just the year-month-day, ignore the time the time that follows it
 
     const localizedExpiryDate = expiryDateStringAsYYYYMMDD

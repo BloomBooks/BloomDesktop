@@ -434,7 +434,10 @@ namespace Bloom.Collection
 
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
 
-            if (_pendingSubscription.BrandingKey != _collectionSettings.Subscription.BrandingKey)
+            if (
+                _pendingSubscription != null
+                && _pendingSubscription.BrandingKey != _collectionSettings.Subscription.BrandingKey
+            )
             {
                 // The user has entered a different subscription code than what was previously saved.
                 // We need to clear out the Bookshelf, since the new branding may not have the same bookshelf as the old one.
