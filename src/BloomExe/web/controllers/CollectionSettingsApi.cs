@@ -184,7 +184,7 @@ namespace Bloom.web.controllers
                         var newBranding = GetBrandingFromCode(SubscriptionCode);
                         var oldBranding = !string.IsNullOrEmpty(_collectionSettings.InvalidBranding)
                             ? _collectionSettings.InvalidBranding
-                            : "";
+                            : _collectionSettings.BrandingProjectKey;   // (update before expired)
                         // If the user has entered a different subscription code then what was previously saved, we
                         // generally want to clear out the Bookshelf. But if the BrandingKey is the same as the old one,
                         // we'll leave it alone, since they probably renewed for another year or so and want to use the
