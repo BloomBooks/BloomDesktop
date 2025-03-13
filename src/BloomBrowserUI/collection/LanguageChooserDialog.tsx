@@ -41,12 +41,13 @@ export function getLanguageData(
     languageTag: string | undefined,
     selection: IOrthography | undefined
 ): ILanguageData {
+    const defaultName = selection?.language
+        ? defaultDisplayName(selection.language)
+        : null;
     return {
         LanguageTag: languageTag || null,
-        DefaultName: selection?.language
-            ? defaultDisplayName(selection.language)
-            : null,
-        DesiredName: selection?.customDetails?.displayName || null,
+        DefaultName: defaultName,
+        DesiredName: selection?.customDetails?.customDisplayName || defaultName,
         Country: languageTag ? defaultRegionForLangTag(languageTag)?.name : null
     };
 }
@@ -172,10 +173,16 @@ let show: () => void = () => {
     window.alert("LanguageChooserDialog is not set up yet.");
 };
 
-export function showLanguageChooserDialog(initialLanguageTag?: string) {
+export function showLanguageChooserDialog(
+    initialLanguageTag?: string,
+    initialCustomName?: string
+) {
     try {
         ReactDOM.render(
-            <LanguageChooserDialog initialLanguageTag={initialLanguageTag} />,
+            <LanguageChooserDialog
+                initialLanguageTag={initialLanguageTag}
+                initialCustomName={initialCustomName}
+            />,
             getModalContainer()
         );
     } catch (error) {
