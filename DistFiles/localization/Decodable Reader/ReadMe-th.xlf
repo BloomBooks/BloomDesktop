@@ -2,39 +2,39 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="th">
     <body>
-      <trans-unit id="decodable.definition">
+      <trans-unit id="decodable.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
-        <target xml:lang="th" state="needs-translation">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</target>
+        <target xml:lang="th" state="final"><g id="genid-1" ctype="x-html-strong"> หนังสือฝึกอ่าน </g> นั้นคือหนังสือที่ออกแบบให้จำกัดการใช้ตัวอักษรและคำ เพื่อที่จะได้เหมาะสมกับผู้ที่เริ่มฝึกอ่าน โดยทั่วไปแล้วแต่ละภาษาจะมีระดับการฝึกอ่านอยู่ 5 - 10 <g id="genid-2" ctype="x-html-em"> ระดับการฝึกอ่าน </g> ที่ผู้อ่านจะได้ฝึก</target>
         <note>ID: decodable.definition</note>
       </trans-unit>
-      <trans-unit id="decodable.stages">
+      <trans-unit id="decodable.stages" approved="yes">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
-        <target xml:lang="th" state="needs-translation">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</target>
+        <target xml:lang="th" state="final">Bloom ช่วยให้คุณจำแนก <g id="genid-3" ctype="x-html-em">ระดับการฝึกอ่าน</g> ที่ผู้อ่านจะต้องผ่าน หนังสือที่คุณสร้างนั้นจะถูกออกแบบสำหรับแต่ละระดับการฝึกอ่าน และ Bloom ช่วยคุณในการตรวจเช็คว่าหนังสือของคุณนั้น<g id="genid-4" ctype="x-html-em">ตัวผู้เรียนอ่านออกได้</g> (อ่านเข้าใจได้)หรือไม่ ตาม <g id="genid-5" ctype="x-html-em">ระดับการฝึกอ่านของผู้เรียน</g></target>
         <note>ID: decodable.stages</note>
       </trans-unit>
-      <trans-unit id="decodable.templates">
+      <trans-unit id="decodable.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="th" state="needs-translation">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</target>
+        <target xml:lang="th" state="final">คุณยังสามารถสร้าง "ชุดโครง<g id="genid-6" ctype="x-html-em">แบบ</g>หนังสือ" หรือ "Bloom Pack" ที่ผู้อื่นสามารถใช้เพื่อสร้างหนังสือใหม่แบบรวดเร็วได้ ตามระดับทักษะการอ่านและระดับการอ่านออกที่ถูกจัดเตรียมด้วยผู้เชี่ยวชาญด้านทักษะการอ่านออกเขียนได้</target>
         <note>ID: decodable.templates</note>
       </trans-unit>
-      <trans-unit id="decodable.learn">
+      <trans-unit id="decodable.learn" approved="yes">
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
-        <target xml:lang="th" state="needs-translation">To learn about using Decodable Readers in Bloom, you can:</target>
+        <target xml:lang="th" state="final">เพื่อที่จะเรียนรู้การใช้หนังสือฝึกอ่านใน Bloom คุณสามารถ</target>
         <note>ID: decodable.learn</note>
       </trans-unit>
-      <trans-unit id="decodable.learn.videos">
+      <trans-unit id="decodable.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="th" state="needs-translation">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</target>
+        <target xml:lang="th" state="final">ดู <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux"> สำหรับวิดีโอการสอนต่างๆ</g></target>
         <note>ID: decodable.learn.videos</note>
       </trans-unit>
-      <trans-unit id="decodable.learn.helpindex">
+      <trans-unit id="decodable.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
-        <target xml:lang="th" state="needs-translation">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</target>
+        <target xml:lang="th" state="final">ไปที่เมนู "ช่วยเหลือ" เลือก "เอกสารประกอบ" และดูสารบัญในช่อง "หนังสือฝึกอ่าน"</target>
         <note>ID: decodable.learn.helpindex</note>
       </trans-unit>
-      <trans-unit id="decodable.learn.helpmenu">
+      <trans-unit id="decodable.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="th" state="needs-translation">Go to the Help menu and choose: "Building Reader Templates".</target>
+        <target xml:lang="th" state="final">ไปที่เมนู "ช่วยเหลือ" และเลือก "การสร้างโครงแบบหนังสือ"</target>
         <note>ID: decodable.learn.helpmenu</note>
       </trans-unit>
     </body>
