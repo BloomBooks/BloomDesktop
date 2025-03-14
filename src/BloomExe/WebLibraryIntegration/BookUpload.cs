@@ -557,26 +557,40 @@ namespace Bloom.WebLibraryIntegration
         {
             if (String.IsNullOrEmpty(settingsPath) || !RobustFile.Exists(settingsPath))
                 return;
+            var doc = SanitizeCollectionSettingsForUpload(settingsPath);
+            Directory.CreateDirectory(Path.Combine(tempBookFolder, "collectionFiles"));
+            doc.Save(
+                Path.Combine(tempBookFolder, "collectionFiles", "book.uploadCollectionSettings")
+            );
+        }
+
+        /// <summary>
+        /// Sanitize collection settings file for upload by redacting subscription code and removing unpublishable languages.
+        /// </summary>
+        /// <param name="settingsPath">The path to the collection settings file</param>
+        /// <returns>A SafeXmlDocument with sanitized collection settings</returns>
+        public static SafeXmlDocument SanitizeCollectionSettingsForUpload(string settingsPath)
+        {
             var settingsText = RobustFile.ReadAllText(settingsPath);
             var doc = SafeXmlDocument.Create();
             doc.PreserveWhitespace = true;
             doc.LoadXml(settingsText);
             var subscriptionNode = doc.SelectSingleNode("/Collection/SubscriptionCode");
             if (subscriptionNode != null)
-                subscriptionNode.InnerText = "";
+            {
+                var sub = new Subscription(subscriptionNode.InnerText);
+                subscriptionNode.InnerText = sub.GetRedactedCode();
+            }
             // Remove traces of AI generated data from the collection settings.
-            var languages = doc.SafeSelectNodes("/Collection/Languages/Language")
-                .Cast<SafeXmlElement>();
+            var languages = doc.SafeSelectNodes("/Collection/Languages/Language");
+
             foreach (SafeXmlElement lang in languages)
             {
                 var code = lang.GetChildWithName("languageiso639code")?.InnerText;
                 if (PublishHelper.IsUnpublishableLanguage(code))
                     lang.ParentNode.RemoveChild(lang);
             }
-            Directory.CreateDirectory(Path.Combine(tempBookFolder, "collectionFiles"));
-            doc.Save(
-                Path.Combine(tempBookFolder, "collectionFiles", "book.uploadCollectionSettings")
-            );
+            return doc;
         }
 
         private void RemoveUnwantedLanguageData(

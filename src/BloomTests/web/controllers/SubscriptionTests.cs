@@ -13,16 +13,30 @@ namespace BloomTests.Collection
             Assert.AreEqual("Test-Code", subscription.Code);
         }
 
+        [TestCase(null, "")]
+        [TestCase("", "")]
+        [TestCase("Sample-361769-1209", "Sample")]
+        [TestCase("Foo", "Foo")]
+        [TestCase("Foo-Bar", "Foo-Bar")]
+        [TestCase("Foo-Bar-Blah", "Foo-Bar-Blah")]
+        [TestCase("Test-Expired-Code-005658-9576", "Test-Expired-Code")]
+        [TestCase("การทดสอบ-LC-005908-3073", "การทดสอบ-LC")]
+        public void Descriptor_ReturnsCorrectValue(string code, string expectedBranding)
+        {
+            var subscription = new Subscription(code);
+            Assert.AreEqual(expectedBranding, subscription.Descriptor);
+        }
+
         [TestCase(null, "Default")]
         [TestCase("", "Default")]
         [TestCase("Sample-361769-1209", "Sample")]
-        [TestCase("Incomplete-Code", "Default")]
+        [TestCase("Foo-Bar-Blah", "Foo-Bar-Blah")]
         [TestCase("Test-Expired-Code-005658-9576", "Test-Expired-Code")]
         [TestCase("การทดสอบ-LC-005908-3073", "Local-Community")]
         public void BrandingProjectName_ReturnsCorrectValue(string code, string expectedBranding)
         {
             var subscription = new Subscription(code);
-            Assert.AreEqual(expectedBranding, subscription.Descriptor);
+            Assert.AreEqual(expectedBranding, subscription.BrandingProjectKey);
         }
 
         [TestCase("", "", "")]
@@ -132,7 +146,7 @@ namespace BloomTests.Collection
         public void GetExpirationDate_CalculatesCorrectly(string code, string expectedYYYYmmDD)
         {
             var subscription = new Subscription(code);
-            var expirationDate = subscription.GetExpirationDate();
+            var expirationDate = subscription.ExpirationDate;
             Assert.AreEqual(expectedYYYYmmDD, expirationDate.ToString("yyyy-MM-dd"));
         }
 
@@ -149,7 +163,7 @@ namespace BloomTests.Collection
         )
         {
             var subscription = new Subscription(input);
-            var result = subscription.GetExpirationDate();
+            var result = subscription.ExpirationDate;
 
             Assert.That(result.Year, Is.EqualTo(year));
             Assert.That(result.Month, Is.EqualTo(month));
@@ -170,7 +184,7 @@ namespace BloomTests.Collection
         public void GetExpirationDate_InValid_ReturnsMinDate(string input)
         {
             var subscription = new Subscription(input);
-            var result = subscription.GetExpirationDate();
+            var result = subscription.ExpirationDate;
 
             Assert.That(result, Is.EqualTo(DateTime.MinValue));
         }

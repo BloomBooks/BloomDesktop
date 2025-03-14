@@ -94,7 +94,7 @@ export const SubscriptionControls: React.FC = () => {
                 flex-direction: column;
             `}
         >
-            <Editor />
+            <Editor status={status} />
 
             <StatusText
                 status={status}
@@ -228,7 +228,7 @@ export const BrandingSummary: React.FC<{ summaryHtml: string }> = props => {
     );
 };
 
-const Editor: React.FC = () => {
+const Editor: React.FC<{ status: Status }> = ({ status }) => {
     const [subscriptionCode, setSubscriptionCode] = useApiStringState(
         "settings/subscriptionCode",
         ""

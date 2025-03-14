@@ -13,6 +13,7 @@ using BloomTemp;
 using BloomTests.Book;
 using NUnit.Framework;
 using SIL.Extensions;
+using SIL.IO;
 
 // It would be nice to have some tests for the new FirebaseLogin code, too, but so far
 // we have not been able to get that code to run except after starting Bloom fully.
@@ -583,6 +584,7 @@ namespace BloomTests.WebLibraryIntegration
                     Language1Tag = "dmx", // Dema language of Mozambique (arbitrary choice)
                     Language2Tag = "en",
                     Language3Tag = "fr",
+                    Subscription = new Subscription("การทดสอบ-LC-005908-3073")
                 }
             );
             var bookObjectId = _uploader.UploadBook_ForUnitTest(
@@ -771,6 +773,54 @@ namespace BloomTests.WebLibraryIntegration
             // indicating the user needs a new version if the problem is actually something else.
             // They should get other indicators when other things go badly.
             Assert.True(BookDownload.IsThisVersionAllowedToDownloadInner(url, "6.0"));
+        }
+
+        [Test]
+        public void SanitizeCollectionSettingsForUpload_ShouldRedactSubscriptionCode()
+        {
+            using (var tempFile = TempFile.WithExtension(".bloomCollection"))
+            {
+                File.WriteAllText(
+                    tempFile.Path,
+                    @"<?xml version='1.0' encoding='utf-8'?>
+<Collection version='0.2'>
+  <Language1Tag>en</Language1Tag>
+  <SubscriptionCode>foo-bar-123456-1234</SubscriptionCode>
+  <Language2Tag>es</Language2Tag>
+</Collection>"
+                );
+
+                var doc = BookUpload.SanitizeCollectionSettingsForUpload(tempFile.Path);
+                var subscriptionNode = doc.SelectSingleNode("/Collection/SubscriptionCode");
+                Assert.That(subscriptionNode.InnerText, Is.EqualTo("foo-bar-***-***"));
+            }
+        }
+
+        [Test]
+        public void SanitizeCollectionSettingsForUpload_ShouldRemoveAiLanguages()
+        {
+            using (var tempFile = TempFile.WithExtension(".bloomCollection"))
+            {
+                File.WriteAllText(
+                    tempFile.Path,
+                    @"<?xml version='1.0' encoding='utf-8'?>
+<Collection version='0.2'>
+  <Languages>
+    <Language><languageiso639code>en</languageiso639code></Language>
+    <Language><languageiso639code>fr-x-ai</languageiso639code></Language>
+    <Language><languageiso639code>es</languageiso639code></Language>
+  </Languages>
+</Collection>"
+                );
+
+                var doc = BookUpload.SanitizeCollectionSettingsForUpload(tempFile.Path);
+                var languages = doc.SafeSelectNodes("/Collection/Languages/Language");
+                Assert.That(languages.Count, Is.EqualTo(2));
+                var langCodes = languages
+                    .Select(l => l.SelectSingleNode("languageiso639code").InnerText)
+                    .ToList();
+                Assert.That(langCodes, Is.EquivalentTo(new[] { "en", "es" }));
+            }
         }
 
         // Wait (up to three seconds) for data uploaded to become available.

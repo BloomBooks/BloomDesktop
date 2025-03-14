@@ -1,15 +1,8 @@
 using System;
 using System.Linq;
-using Amazon.S3.Model;
 
 public class Subscription
 {
-    public static string kExpiryDateForDeprecatedCodes = "2025-07-01"; // per Cate. Careful! Make sure to use leading zeros in month and day.
-    private SubscriptionTier? TierOverride;
-    private string? DescriptorOverride;
-    private DateTime ExpirationDateOverride = DateTime.MinValue;
-    public bool EditingBlorgBook { get; private set; } = false;
-
     // These options must match the strings used in requiresBloomEnterprise.tsx
     public enum SubscriptionTier
     {
@@ -18,20 +11,30 @@ public class Subscription
         Enterprise
     }
 
+    public static string kExpiryDateForDeprecatedCodes = "2025-07-01"; // per Cate. Careful! Make sure to use leading zeros in month and day.
+
+    // The "descriptor" is the part of the subscription code before the numbers start. It can tell us the branding, the tier, flavors, and individual subscriber account.
+    public string Descriptor { get; private set; }
+    public DateTime ExpirationDate { get; private set; }
+    public bool EditingBlorgBook { get; private set; } = false;
+    public readonly string Code;
+
+    public SubscriptionTier Tier { get; private set; }
+
     public Subscription(string code)
     {
         Code = code;
+        Descriptor = CalculateDescriptor();
+        Tier = CalculateTier();
+        ExpirationDate = CalculateExpirationDate();
     }
 
+    // Factor Method
     // We would really like to say look it's only the code, from that we can get everything else.
     // However there are two cases where that is not enough:
     // 1. Legacy collections will have no code, but only a branding of "Local-Community".
     // 2. We are editing a book that was uploaded to BloomLibrary.org, and we want to use the same branding as when it was uploaded but the code
     // was intentionally blanked so as not to publish it.
-    //
-    // Though: the existance of specially-named "overrides" feels just barely worth it at the moment. There's a small sense that
-    // if everything is overridable, then we should give up on functional approach of computing the other things as needed. I.e., we could stop calling
-    // them "overrides" and instead just fill them in the constructor.
     public static Subscription FromCollectionSettingsInfo(
         string code,
         string descriptor,
@@ -47,119 +50,55 @@ public class Subscription
             code = "Legacy-LC-005809-2533"; // expires on 1 July 2025
         }
 
-        // When on BloomLibrary.org ou click "Download for Edit", we want to let you use the same tier and
+        // When on BloomLibrary.org you click "Download for Edit", we want to let you use the same tier and
         // branding as when it was uploaded, even if it is expired.
         if (editingABlorgBook)
         {
             var sub = new Subscription(code);
             sub.EditingBlorgBook = editingABlorgBook;
-            sub.DescriptorOverride = descriptor;
-            sub.ExpirationDateOverride = DateTime.Now.AddDays(1);
-            if (descriptor == "Local-Community" || descriptor == "Local Community")
-            {
-                sub.TierOverride = SubscriptionTier.Community;
-            }
-            else
-            {
-                sub.TierOverride = SubscriptionTier.Enterprise; // see https://issues.bloomlibrary.org/youtrack/issue/BL-14419
-            }
+
+            sub.Descriptor = descriptor;
+            sub.ExpirationDate = DateTime.Now.AddDays(1);
+
+            sub.Tier =
+                descriptor == "Local-Community" || descriptor == "Local Community"
+                    ? SubscriptionTier.Community
+                    : SubscriptionTier.Enterprise; // see https://issues.bloomlibrary.org/youtrack/issue/BL-14419
+
             return sub;
         }
 
         return new Subscription(code);
     }
 
-    public readonly string Code;
-
-    // This is the part of the subscription code before the numbers start. It can tell us the branding, the tier, flavors, and individual subscriber account.
-    public string Descriptor
+    public string BrandingProjectKey
     {
-        get { return GetDescriptor(false); }
-    }
-
-    // From the subscription code extract the project name,
-    // everything up to the second-last hyphen.
-    private string GetDescriptor(bool forCheckSum = false)
-    {
-        if (DescriptorOverride != null)
-            return DescriptorOverride;
-        if (Code == null)
-            return "Default"; // enhance: maybe change everything to just empty string?
-        var parts = Code.Split('-').ToList();
-        if (parts.Count < 3)
-            return "Default";
-        parts.RemoveAt(parts.Count - 1);
-        parts.RemoveAt(parts.Count - 1);
-        var descriptor = string.Join("-", parts.ToArray());
-
-        // allow for future community codes like HuyaVillage-LC-12335-3233434
-        if (!forCheckSum && descriptor.EndsWith("-LC"))
+        get
         {
-            return "Local-Community";
+            if (Descriptor.Contains("-LC"))
+                return "Local-Community";
+            if (string.IsNullOrWhiteSpace(Descriptor))
+                return "Default";
+            return Descriptor; // a normal Enterprise code, perhaps with a region or flavor
         }
-        return descriptor;
     }
 
-    // Parse a string like PNG-RISE-361769-363798 or SIL-LEAD-361769-363644,
-    // generated by a private google spreadsheet. The two last elements are numbers;
-    // the first is an encoding of an expiry date, the second is a simple hash of
-    // the project name (case-insensitive) and the expiry date, used to make it
-    // a little less trivial to fake codes. We're not aiming for something that
-    // would be difficult for someone willing to take the trouble to read this code.
-    public DateTime GetExpirationDate()
-    {
-        if (ExpirationDateOverride != DateTime.MinValue)
-            return ExpirationDateOverride;
-
-        if (Code == null)
-            return DateTime.MinValue;
-
-        if (Code == "Local-Community")
-            return DateTime.Parse(kExpiryDateForDeprecatedCodes);
-        var parts = Code.Split('-');
-        if (parts.Length < 3)
-            return DateTime.MinValue;
-        int last = parts.Length - 1;
-        if (parts[last].Length != 4 || parts[last - 1].Length != 6)
-            return DateTime.MinValue;
-        int datePart;
-        if (!Int32.TryParse(parts[last - 1], out datePart))
-            return DateTime.MinValue;
-        int combinedChecksum;
-        if (!Int32.TryParse(parts[last], out combinedChecksum))
-            return DateTime.MinValue;
-
-        int checkSum = CheckSum(GetDescriptor(true));
-        if ((Math.Floor(Math.Sqrt(datePart)) + checkSum) % 10000 != combinedChecksum)
-            return DateTime.MinValue;
-        int dateNum = datePart + 40000; // days since Dec 30 1899
-        var date = new DateTime(1899, 12, 30) + TimeSpan.FromDays(dateNum);
-
-        // At one time there were some subscriptions which never ended. Those have been retired.
-        if (date.Year == 3000)
-            return DateTime.Parse(kExpiryDateForDeprecatedCodes);
-        return date;
-    }
-
-    // enhance extract and normalize the date part
+    // enhance: extract and normalize the date part
     public bool GetChecksumCorrect()
     {
         if (Code == null)
             return false;
-        var parts = Code.Split('-');
-        if (parts.Length < 3)
-            return false;
-        int last = parts.Length - 1;
-        if (parts[last].Length != 4 || parts[last - 1].Length != 6)
-            return false;
+
+        string descriptor;
         int datePart;
-        if (!Int32.TryParse(parts[last - 1], out datePart))
-            return false;
         int combinedChecksum;
-        if (!Int32.TryParse(parts[last], out combinedChecksum))
+        ParseCode(out descriptor, out datePart, out combinedChecksum);
+
+        // Early exit for invalid code formats
+        if (string.IsNullOrEmpty(descriptor) || datePart == 0 || combinedChecksum == 0)
             return false;
 
-        int checkSum = CheckSum(GetDescriptor(true));
+        int checkSum = CheckSum(CalculateDescriptor());
         if ((Math.Floor(Math.Sqrt(datePart)) + checkSum) % 10000 != combinedChecksum)
             return false;
         return true;
@@ -169,7 +108,7 @@ public class Subscription
     {
         if (Code == null)
             return true;
-        var date = GetExpirationDate();
+        var date = ExpirationDate;
         if (date == DateTime.MinValue)
             return true; // invalid code
         return date < DateTime.Now;
@@ -230,24 +169,6 @@ public class Subscription
         return "ok";
     }
 
-    public SubscriptionTier Tier
-    {
-        get
-        {
-            if (TierOverride != null)
-                return TierOverride.Value;
-            var descriptor = GetDescriptor();
-            if (string.IsNullOrWhiteSpace(descriptor) || descriptor == "Default")
-                return SubscriptionTier.None;
-            else if (
-                descriptor == "Local-Community" || descriptor == "Local Community" /* pre 4.4 */
-            )
-                return SubscriptionTier.Community;
-            else
-                return SubscriptionTier.Enterprise;
-        }
-    }
-
     public string Personalization
     {
         // everything before the -LC- is the personalization code, e.g. "Foobar-Village". Replace dashes with spaces.
@@ -259,13 +180,6 @@ public class Subscription
         Tier == Subscription.SubscriptionTier.Enterprise
         || Tier == Subscription.SubscriptionTier.Community;
 
-    internal bool IsDifferent(string code)
-    {
-        if (string.IsNullOrEmpty(Code) && string.IsNullOrEmpty(code))
-            return false;
-        return Code != code;
-    }
-
     // Since normally all info comes from the code, this allows us to ignore the code and just set what we need.
     // If a unit test breaks because of an expired subscription, consider fixing it by using this method or one like it.
     public static Subscription ForUnitTestWithOverrideTierOrDescriptor(
@@ -273,9 +187,13 @@ public class Subscription
         string descriptor
     )
     {
-        var subscription = FromCollectionSettingsInfo("", descriptor);
-        subscription.TierOverride = tier;
-        subscription.ExpirationDateOverride = DateTime.Now.AddDays(1);
+        var subscription = new Subscription("");
+
+        // Directly set the internal fields for testing
+        subscription.Descriptor = descriptor;
+        subscription.Tier = tier;
+        subscription.ExpirationDate = DateTime.Now.AddDays(1);
+
         return subscription;
     }
 
@@ -283,15 +201,135 @@ public class Subscription
     // If a unit test breaks because of an expired subscription, consider fixing it by using this method or one like it.
     public static Subscription ForUnitTestWithOverrideDescriptor(string descriptor)
     {
-        var subscription = FromCollectionSettingsInfo("", descriptor);
-        subscription.ExpirationDateOverride = DateTime.Now.AddDays(1);
+        var subscription = new Subscription("");
+
+        // Directly set the descriptor and expiration date for testing
+        subscription.Descriptor = descriptor;
+        subscription.ExpirationDate = DateTime.Now.AddDays(1);
+
         return subscription;
+    }
+
+    // From the subscription code extract everything up to the second-last hyphen.
+    private string CalculateDescriptor()
+    {
+        ParseCode(out var descriptor, out var datePart, out var combinedChecksum);
+        return descriptor;
+    }
+
+    private void ParseCode(out string descriptor, out int datePortion, out int checksum)
+    {
+        // valid codes are
+        // (empty) = "", 0, 0
+        // foobar = "foobar", 0, 0
+        // foo-bar  = "foo-bar", 0, 0
+        // foo-blah-bar = "foo-blah-bar", 0, 0
+        // foo-bar-123456-7890 = "foo-bar", 123456, 7890
+        // foo-bar-*****-****  = "foo-bar", 0, 0
+        datePortion = 0;
+        checksum = 0;
+        descriptor = "";
+
+        if (string.IsNullOrEmpty(Code))
+            return;
+        // see if the last part has "***-***" like a redacted date and checksum. If so, the descriptor is what precedes it.
+        if (Code.EndsWith("-***-***"))
+        {
+            descriptor = Code.Replace("-***-***", "");
+            return;
+        }
+        var parts = Code.Split('-').ToList();
+        // if the last two parts are digits, remove them and parse them as numbers.
+        if (parts.Count < 3)
+        {
+            datePortion = 0;
+            checksum = 0;
+            descriptor = Code;
+            return;
+        }
+        if (parts.Last().Length == 4 && parts[parts.Count - 2].Length == 6)
+        {
+            Int32.TryParse(parts.Last(), out checksum);
+            Int32.TryParse(parts[parts.Count - 2], out datePortion);
+            parts.RemoveAt(parts.Count - 1);
+            parts.RemoveAt(parts.Count - 1);
+        }
+        descriptor = string.Join("-", parts.ToArray());
+    }
+
+    // Parse a string like PNG-RISE-361769-363798 or SIL-LEAD-361769-363644,
+    // generated by a private google spreadsheet. The two last elements are numbers;
+    // the first is an encoding of an expiry date, the second is a simple hash of
+    // the project name (case-insensitive) and the expiry date, used to make it
+    // a little less trivial to fake codes. We're not aiming for something that
+    // would be difficult for someone willing to take the trouble to read this code.
+    private DateTime CalculateExpirationDate()
+    {
+        if (Code == null)
+            return DateTime.MinValue;
+
+        if (Code == "Local-Community")
+            return DateTime.Parse(kExpiryDateForDeprecatedCodes);
+
+        ParseCode(out var descriptor, out var datePart, out var combinedChecksum);
+
+        // Early exit for invalid code formats
+        if (string.IsNullOrEmpty(descriptor) || datePart == 0 || combinedChecksum == 0)
+            return DateTime.MinValue;
+
+        int checkSum = CheckSum(CalculateDescriptor());
+        if ((Math.Floor(Math.Sqrt(datePart)) + checkSum) % 10000 != combinedChecksum)
+            return DateTime.MinValue;
+
+        int dateNum = datePart + 40000; // days since Dec 30 1899
+        var date = new DateTime(1899, 12, 30) + TimeSpan.FromDays(dateNum);
+
+        // At one time there were some subscriptions which never ended. Those have been retired.
+        if (date.Year == 3000)
+            return DateTime.Parse(kExpiryDateForDeprecatedCodes);
+        return date;
+    }
+
+    private SubscriptionTier CalculateTier()
+    {
+        var descriptor = CalculateDescriptor();
+        if (string.IsNullOrWhiteSpace(descriptor) || descriptor == "Default")
+            return SubscriptionTier.None;
+        else if (
+            descriptor == "Local-Community"
+            || descriptor == "Local Community" /* pre 4.4 */
+            || descriptor.EndsWith("-LC")
+        )
+            return SubscriptionTier.Community;
+        else
+            return SubscriptionTier.Enterprise;
+    }
+
+    public string GetRedactedCode()
+    {
+        if (string.IsNullOrEmpty(Code))
+            return "";
+
+        // In the future we may redact parts of the descriptor; the parts we need to retain will
+        // be the tier and any actual branding name, region and "flavor"
+        // needed to get the right files, styling, and defaults.
+        return Descriptor + "-***-***";
+    }
+
+    internal bool IsDifferent(string code)
+    {
+        if (string.IsNullOrEmpty(Code) && string.IsNullOrEmpty(code))
+            return false;
+        return Code != code;
     }
 
     internal static Subscription ForUnitTestWithOverrideTier(SubscriptionTier tier)
     {
         var subscription = new Subscription("");
-        subscription.TierOverride = tier;
+
+        // Directly set the tier for testing
+        subscription.Tier = tier;
+
         return subscription;
     }
 }

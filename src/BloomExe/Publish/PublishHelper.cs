@@ -1341,7 +1341,7 @@ namespace Bloom.Publish
             }
         }
 
-        private const string AILangTagFragment = "-x-ai-";
+        private const string AILangTagFragment = "-x-ai";
         private const string BasicAIDataSelector =
             $"//div[@lang and contains(@lang,'{AILangTagFragment}')]";
 

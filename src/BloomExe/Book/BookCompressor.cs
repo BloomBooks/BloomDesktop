@@ -312,8 +312,7 @@ namespace Bloom.Book
 
         /// <summary>
         /// Remove any SubscriptionCode element content and replace any SubscriptionDescriptor element
-        /// content with the text "Default".  We don't want to publish Bloom Enterprise subscription
-        /// codes after all!
+        /// content with the text "Default".
         /// </summary>
         /// <remarks>
         /// See https://issues.bloomlibrary.org/youtrack/issue/BL-6938.

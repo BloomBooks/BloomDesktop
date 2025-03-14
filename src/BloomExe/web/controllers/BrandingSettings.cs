@@ -119,6 +119,14 @@ namespace Bloom.Api
             out String subUnitName
         )
         {
+            if (fullBrandingsubscriptionDescriptor.Contains("-LC"))
+            {
+                folderName = "Local-Community";
+                flavor = null;
+                subUnitName = null;
+                return;
+            }
+
             // A Subscription Descriptor may optionally have a suffix of the form "[FLAVOR]" where flavor is typically
             // a language name. This is used to select different logo files without having to create
             // a completely separate branding folder (complete with summary, stylesheets, etc) for each
