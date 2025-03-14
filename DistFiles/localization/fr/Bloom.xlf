@@ -5196,9 +5196,9 @@
         <target xml:lang="fr" state="final">Il s'agit d'une police fournie par Microsoft pour une utilisation sur votre ordinateur uniquement. Microsoft ne permet pas à ses polices d'être librement utilisées sur le Web ou distribuées dans des livres électroniques. Veuillez utiliser une police différente.</target>
         <note>ID: PublishTab.FontProblem.Microsoft</note>
       </trans-unit>
-      <trans-unit id="PublishTab.FontProblem.Result">
+      <trans-unit id="PublishTab.FontProblem.Result" approved="yes">
         <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the "READ" button or downloads for BloomPUB or ePUB.</source>
-        <target xml:lang="fr" state="translated">BloomLibrary.org va afficher le PDF et autoriser les téléchargements pour la traduction, mais ne peut pas offrir le bouton « READ » ou les téléchargements vers BloomPUB ou ePUB.</target>
+        <target xml:lang="fr" state="final">BloomLibrary.org va afficher le PDF et autoriser les téléchargements pour la traduction, mais ne peut pas offrir le bouton « READ » ou les téléchargements vers BloomPUB ou ePUB.</target>
         <note>ID: PublishTab.FontProblem.Result</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog" approved="yes">
