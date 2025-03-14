@@ -42,8 +42,9 @@ export function getLanguageData(
     selection: IOrthography | undefined
 ): ILanguageData {
     const defaultName = selection?.language
-        ? defaultDisplayName(selection.language)
+        ? defaultDisplayName(selection.language) || null
         : null;
+    // Ensure values are null rather than undefined. Otherwise, the property won't be serialized at all.
     return {
         LanguageTag: languageTag || null,
         DefaultName: defaultName,
