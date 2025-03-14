@@ -134,21 +134,29 @@ const StatusText: React.FC<{
                     width: 100%;
                 `}
             >
-                <WarningBox l10nKey="Settings.Subscription.UnknownCode">
+                <WarningBox
+                    l10nKey="Settings.Subscription.UnknownCode"
+                    bottomRightButton={
+                        <Button
+                            variant="outlined"
+                            onClick={() => post("common/checkForUpdates")}
+                            sx={{
+                                color: "black",
+                                borderColor: "black",
+                                "&:hover": {
+                                    borderColor: "black"
+                                }
+                            }}
+                        >
+                            <Label l10nKey="Settings.Subscription.CheckUpdates">
+                                Check for updates
+                            </Label>
+                        </Button>
+                    }
+                >
                     This version of Bloom does not have the artwork that goes
                     with that subscription.
                 </WarningBox>
-                <Button
-                    variant="text"
-                    css={css`
-                        margin-left: auto;
-                    `}
-                    onClick={() => post("common/checkForUpdates")}
-                >
-                    <Label l10nKey="Settings.Subscription.CheckUpdates">
-                        Check for updates
-                    </Label>
-                </Button>
             </div>
         )}
         {props.status === "SubscriptionExpired" && (
