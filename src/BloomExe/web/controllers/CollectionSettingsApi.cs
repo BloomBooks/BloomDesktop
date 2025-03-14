@@ -501,7 +501,7 @@ namespace Bloom.web.controllers
 
         public static string GetSummaryHtml(string branding)
         {
-            BrandingSettings.ParseSubscriptionDescriptor(
+            BrandingSettings.ParseBrandingKey(
                 branding,
                 out var baseKey,
                 out var flavor,

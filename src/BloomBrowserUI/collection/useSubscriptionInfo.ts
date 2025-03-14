@@ -15,7 +15,7 @@ interface SubscriptionData {
     Summary: string;
     Expiration: string;
     CodeIntegrity: string;
-    BrandingProjectName: string;
+    BrandingKey: string;
     HaveBrandingFiles: boolean;
     EditingBlorgBook: boolean;
 }
@@ -29,7 +29,7 @@ export const useSubscriptionInfo = () => {
         Summary: "",
         Expiration: "",
         CodeIntegrity: "none",
-        BrandingProjectName: "",
+        BrandingKey: "",
         HaveBrandingFiles: false,
         EditingBlorgBook: false
     });
@@ -67,7 +67,7 @@ export const useSubscriptionInfo = () => {
         code: subscriptionData.Code,
         subscriptionCodeIntegrity: subscriptionData.CodeIntegrity as SubscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD: subscriptionData.Expiration,
-        subscriptionDescriptor: subscriptionData.BrandingProjectName,
+        subscriptionDescriptor: subscriptionData.BrandingKey,
         subscriptionSummary: subscriptionData.Summary,
         haveBrandingFiles: subscriptionData.HaveBrandingFiles,
         editingBlorgBook: subscriptionData.EditingBlorgBook,

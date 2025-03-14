@@ -322,22 +322,15 @@ namespace Bloom.Book
             var dom = SafeXmlDocument.Create();
             dom.PreserveWhitespace = true;
             dom.Load(filePath);
+
+            // we don't pass subscription info to templates
             foreach (
-                var node in dom.SafeSelectNodes("//SubscriptionCode")
+                var node in dom.SafeSelectNodes("//SubscriptionCode|//BrandProjectName")
                     .Cast<SafeXmlElement>()
                     .ToArray()
             )
             {
                 node.RemoveAll(); // should happen at most once
-            }
-            foreach (
-                var node in dom.SafeSelectNodes("//BrandingProjectName")
-                    .Cast<SafeXmlElement>()
-                    .ToArray()
-            )
-            {
-                node.RemoveAll(); // should happen at most once
-                node.AppendChild(dom.CreateTextNode("Default"));
             }
             return dom.OuterXml;
         }

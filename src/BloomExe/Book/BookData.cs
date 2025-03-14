@@ -2324,11 +2324,15 @@ namespace Bloom.Book
                     }
 
                     // if the CollectionSettings has a BrandingPersonalization, replace any instances of {personalization} with the value
-                    if (!string.IsNullOrWhiteSpace(this.CollectionSettings.BrandingPersonalization))
+                    if (
+                        !string.IsNullOrWhiteSpace(
+                            this.CollectionSettings.Subscription.Personalization
+                        )
+                    )
                     {
                         content = content.Replace(
                             "{personalization}",
-                            this.CollectionSettings.BrandingPersonalization
+                            this.CollectionSettings.Subscription.Personalization
                         );
                     }
 

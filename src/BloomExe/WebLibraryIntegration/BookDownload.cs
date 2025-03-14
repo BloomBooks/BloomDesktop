@@ -364,7 +364,7 @@ namespace Bloom.WebLibraryIntegration
                         CollectionSettings.ReadDescriptorFromPublishedCollectionFile(
                             CollectionCreatedForLastDownload
                         );
-                    editData["branding"] = subscriptionDescriptor;
+                    editData["branding"] = subscriptionDescriptor; // review I have angst about this still being called "branding". I don't see where it gets used.
                     RobustFile.WriteAllText(
                         pathToForEditDataFile,
                         Newtonsoft.Json.JsonConvert.SerializeObject(editData)

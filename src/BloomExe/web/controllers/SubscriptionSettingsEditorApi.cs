@@ -45,12 +45,12 @@ namespace Bloom.web.controllers
                             ),
                             CodeIntegrity = _subscription.GetIntegrityLabel(),
                             BrandingProjectName = _subscription.Descriptor,
-                            HaveBrandingFiles = string.IsNullOrWhiteSpace(_subscription.Descriptor)
-                                // We have them in the sense that we have the default logo we show on the back, so "true"
+                            HaveBrandingFiles = (
+                                string.IsNullOrWhiteSpace(_subscription.Descriptor)
+                                || _subscription.BrandingKey == "Default"
+                            )
                                 ? true
-                                : BrandingProject.HaveFilesForBranding(
-                                    _subscription.BrandingProjectKey
-                                ),
+                                : BrandingProject.HaveFilesForBranding(_subscription.BrandingKey),
                             EditingBlorgBook = _subscription.EditingBlorgBook,
                         };
 
@@ -96,7 +96,7 @@ namespace Bloom.web.controllers
 
         private static string GetSummaryHtml(string descriptor)
         {
-            BrandingSettings.ParseSubscriptionDescriptor(
+            BrandingSettings.ParseBrandingKey(
                 descriptor,
                 out var baseKey,
                 out var flavor,

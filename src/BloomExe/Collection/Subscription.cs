@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Web.UI.WebControls.WebParts;
 
 public class Subscription
 {
@@ -14,8 +13,12 @@ public class Subscription
 
     public static string kExpiryDateForDeprecatedCodes = "2025-07-01"; // per Cate. Careful! Make sure to use leading zeros in month and day.
 
-    // The "descriptor" is the part of the subscription code before the numbers start. It can tell us the branding, the tier, flavors, and individual subscriber account.
+    // The "descriptor" is the part of the subscription code before the numbers start. It can tell us the branding,
+    // the tier, flavors, and individual subscriber account.
+    // If the subscription is invalid or expired, and nothing overrode this, the descriptor will be empty.
+    // Use RawDescriptor to get the original value from the code even if the code is invalid or expired.
     public string Descriptor { get; private set; }
+
     public DateTime ExpirationDate { get; private set; }
     public bool EditingBlorgBook { get; private set; } = false;
     public readonly string Code;
@@ -26,8 +29,8 @@ public class Subscription
     {
         Code = code;
         Descriptor = CalculateDescriptor();
-        Tier = CalculateTier();
         ExpirationDate = CalculateExpirationDate();
+        Tier = CalculateTier();
     }
 
     // Factor Method
@@ -72,10 +75,17 @@ public class Subscription
         return new Subscription(code);
     }
 
-    public string BrandingProjectKey
+    // A BrandingKey must match a folder name under the src/content/branding folder,
+    // unless that branding isn't yet supported by the current running Bloom.
+    // The BrandingKey will sometimes be the same as the descriptor, e.g. "Acme-Literacy".
+    // But a descriptor like "Acme-LC" will have a BrandingKey of "Local-Community".
+    // An empty descriptor will have a BrandingKey of "Default".
+    public string BrandingKey
     {
         get
         {
+            if (IsExpired())
+                return "Default";
             if (Descriptor.Contains("-LC"))
                 return "Local-Community";
             if (string.IsNullOrWhiteSpace(Descriptor))
@@ -84,7 +94,6 @@ public class Subscription
         }
     }
 
-    // enhance: extract and normalize the date part
     public bool GetChecksumCorrect()
     {
         if (Code == null)
@@ -128,20 +137,6 @@ public class Subscription
         var datePart = parts[parts.Length - 2];
         if (datePart.Length < 6)
             return true;
-
-        //int dummy;
-        //if (!Int32.TryParse(checksumPart, out dummy))
-        //    return true; // If they haven't started typing numbers, assume they're still in the name part, which could include a hyphen
-        //// If they've typed one number, we expect another. (Might not be true...ethnos-360-guatemala is incomplete...)
-        //// So, we already know the second-last part is a number, only short numbers or empty last part qualify as incomplete now.
-        //// Moreover, for the whole thing to be incomplete in this case, the completed number must be the right length; otherwise,
-        //// we consider it definitely wrong.
-        //if (
-        //    parts[last - 1].Length == 6
-        //    && parts[last].Length < 4
-        //    && (parts[last].Length == 0 || Int32.TryParse(parts[last], out dummy))
-        //)
-        //    return true;
 
         return false;
     }
@@ -195,10 +190,25 @@ public class Subscription
         return "ok";
     }
 
+    // Personalization is the part of the some descriptors that is used to output something unique to this subscription
+    // without creating a custom branding.
     public string Personalization
     {
-        // everything before the -LC- is the personalization code, e.g. "Foobar-Village". Replace dashes with spaces.
-        get { return Code.Substring(0, Code.IndexOf("-LC-")).Replace("-", " "); }
+        // In Local Community subsription, the personalization code is everything preceding the "-LC-". We replace dashes with spaces.
+        get
+        {
+            // if the descriptor contains "-LC", we want to return the part before that, with dashes replaced by spaces. Otherwise, empty string.
+            if (string.IsNullOrWhiteSpace(Descriptor))
+                return "";
+            var parts = Descriptor.Split('-');
+            var lcIndex = Array.IndexOf(parts, "LC");
+            if (lcIndex > 0)
+            {
+                var personalization = string.Join(" ", parts.Take(lcIndex).ToArray());
+                return personalization;
+            }
+            return ""; // no "-LC" found, so return empty string.
+        }
     }
 
     // Enhance: soon we will devide up these so that they don't have exactly the same set of features
@@ -237,6 +247,7 @@ public class Subscription
     }
 
     // From the subscription code extract everything up to the second-last hyphen.
+    // Pays no attention to the validity of the code, just returns the part before the numbers.
     private string CalculateDescriptor()
     {
         ParseCode(out var descriptor, out var datePart, out var combinedChecksum);
@@ -318,6 +329,8 @@ public class Subscription
 
     private SubscriptionTier CalculateTier()
     {
+        if (GetIntegrityLabel() != "ok" || ExpirationDate < DateTime.Now)
+            return SubscriptionTier.None;
         var descriptor = CalculateDescriptor();
         if (string.IsNullOrWhiteSpace(descriptor) || descriptor == "Default")
             return SubscriptionTier.None;

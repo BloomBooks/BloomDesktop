@@ -366,7 +366,7 @@ namespace Bloom
 
         public static string GetBrandingFolder(string subscriptionDescriptor)
         {
-            BrandingSettings.ParseSubscriptionDescriptor(
+            BrandingSettings.ParseBrandingKey(
                 subscriptionDescriptor,
                 out var brandingFolderName,
                 out var flavor,

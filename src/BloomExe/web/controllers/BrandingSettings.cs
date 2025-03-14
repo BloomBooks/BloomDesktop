@@ -112,7 +112,7 @@ namespace Bloom.Api
         /// <param name="folderName">the name before any branding; this will match the folder holding all the files.</param>
         /// <param name="flavor">a name or empty string</param>
         /// <param name="subUnitName">a name (normally a country) or empty string</param>
-        public static void ParseSubscriptionDescriptor(
+        public static void ParseBrandingKey(
             String fullBrandingsubscriptionDescriptor,
             out String folderName,
             out String flavor,
@@ -174,7 +174,7 @@ namespace Bloom.Api
 
             try
             {
-                ParseSubscriptionDescriptor(
+                ParseBrandingKey(
                     brandingNameOrFolderPath,
                     out var brandingFolderName,
                     out var flavor,

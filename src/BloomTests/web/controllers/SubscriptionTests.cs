@@ -29,15 +29,30 @@ namespace BloomTests.Collection
 
         [TestCase(null, "Default")]
         [TestCase("", "Default")]
-        [TestCase("Sample-361769-1209", "Sample")]
-        [TestCase("Foo-Bar-Blah", "Foo-Bar-Blah")]
-        [TestCase("Test-Expired-Code-005658-9576", "Test-Expired-Code")]
-        [TestCase("การทดสอบ-LC-005908-3073", "Local-Community")]
-        public void BrandingProjectName_ReturnsCorrectValue(string code, string expectedBranding)
+        [TestCase("Sample-361769-1709", "Sample")]
+        [TestCase("Foo-Bar-Blah", "Default")] // missing parts, invalid, thus branding is "Default"
+        [TestCase("Fake-LC-006273-1463", "Local-Community")] // this code will eventually expire, after which it should be replaced
+        [TestCase("Test-Expired-005691-4935", "Default")] //  expired, thus "Default"
+        [TestCase("Test-Invalid-111-1111", "Default")] //  invalid, thus "Default"
+        [TestCase("Foobar-***-***", "Default")] //  invalid, thus "Default". To use a redacted code, you have to use a factory method
+        public void BrandingKey_ReturnsCorrectValue(string code, string expectedBranding)
         {
             var subscription = new Subscription(code);
-            Assert.AreEqual(expectedBranding, subscription.BrandingProjectKey);
+            Assert.AreEqual(expectedBranding, subscription.BrandingKey);
         }
+
+        // [TestCase(null, "Default")]
+        // [TestCase("", "Default")]
+        // [TestCase("Test-Expired-005691-4935", "")] // if expired, it's "Default"
+        // [TestCase("Foo-Bar-***-**", "Foo-Bar")]
+        // public void BrandingKeyEvenIfRedacted_ReturnsCorrectValue(
+        //     string code,
+        //     string expectedBranding
+        // )
+        // {
+        //     var subscription = new Subscription(code);
+        //     Assert.AreEqual(expectedBranding, subscription.BrandingKeyEvenIfRedacted);
+        // }
 
         [TestCase("", "", "")]
         [TestCase(null, null, null)]
@@ -72,8 +87,9 @@ namespace BloomTests.Collection
         [TestCase(null, Subscription.SubscriptionTier.None)]
         [TestCase("", Subscription.SubscriptionTier.None)]
         [TestCase("Legacy-LC-005809-2533", Subscription.SubscriptionTier.Community)]
-        [TestCase("SIL-LEAD-123456-7890", Subscription.SubscriptionTier.Enterprise)]
-        [TestCase("การทดสอบ-LC-005908-3073", Subscription.SubscriptionTier.Community)]
+        [TestCase("Fake-006273-0501", Subscription.SubscriptionTier.Enterprise)]
+        [TestCase("Fake-LC-006273-1463", Subscription.SubscriptionTier.Community)]
+        [TestCase("Test-Expired-005691-4935", Subscription.SubscriptionTier.None)] // if expired, it's none
         public void Tier_ReturnsCorrectEnum(string code, Subscription.SubscriptionTier expectedTier)
         {
             var subscription = new Subscription(code);
@@ -120,27 +136,26 @@ namespace BloomTests.Collection
             Assert.AreEqual(expectedResult, subscription.IsDifferent(newCode));
         }
 
-        [Test]
-        public void HaveEnterpriseFeatures_DependsOnTier()
+        [TestCase(null, false)]
+        [TestCase("", false)]
+        [TestCase("Test-Expired-005691-4935", false)]
+        [TestCase("Legacy-LC-005809-2533", true)]
+        [TestCase("Fake-006273-0501", true)]
+        [TestCase("Fake-LC-006273-1463", true)]
+        public void HaveActiveSubscription_ReturnsCorrectValue(string code, bool hasSubscription)
         {
-            // Community tier should have enterprise features
-            var communitySubscription = new Subscription("HuyaVillage-LC-123456-7890");
-            Assert.IsTrue(communitySubscription.HaveActiveSubscription);
-
-            // Enterprise tier should have enterprise features
-            var enterpriseSubscription = new Subscription("SIL-LEAD-123456-7890");
-            Assert.IsTrue(enterpriseSubscription.HaveActiveSubscription);
-
-            // None tier should not have enterprise features
-            var noneSubscription = new Subscription("");
-            Assert.IsFalse(noneSubscription.HaveActiveSubscription);
+            var subscription = new Subscription(code);
+            Assert.AreEqual(hasSubscription, subscription.HaveActiveSubscription);
         }
 
-        [Test]
-        public void Personalization_ExtractsCorrectly()
+        [TestCase(null, "")]
+        [TestCase("", "")]
+        [TestCase("Fake-Thing-LC-006273-5397", "Fake Thing")] // dashes are replaced by spaces
+        [TestCase("Fake-006273-0501", "")] // this is a full-on enterprise subscription, so no personalization
+        public void Personalization_ReturnsCorrectValue(string code, string personalization)
         {
-            var subscription = new Subscription("Huya-Village-LC-123456-7890");
-            Assert.AreEqual("Huya Village", subscription.Personalization);
+            var subscription = new Subscription(code);
+            Assert.AreEqual(subscription.Personalization, personalization);
         }
 
         [TestCase("", "0001-01-01")]

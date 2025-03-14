@@ -785,6 +785,7 @@ namespace BloomTests.WebLibraryIntegration
                     @"<?xml version='1.0' encoding='utf-8'?>
 <Collection version='0.2'>
   <Language1Tag>en</Language1Tag>
+<BrandingProjectName>foo-bar</BrandingProjectName>
   <SubscriptionCode>foo-bar-123456-1234</SubscriptionCode>
   <Language2Tag>es</Language2Tag>
 </Collection>"
@@ -795,8 +796,12 @@ namespace BloomTests.WebLibraryIntegration
                 Assert.That(subscriptionNode.InnerText, Is.EqualTo("foo-bar-***-***"));
 
                 // also, don't include the unused "BrandingName" anymore
-                var brandingNode = doc.SelectSingleNode("/Collection/BrandingName");
-                Assert.That(brandingNode, Is.Null, "BrandingName should not be included in upload");
+                var brandingNode = doc.SelectSingleNode("/Collection/BrandingProjectName");
+                Assert.That(
+                    brandingNode,
+                    Is.Null,
+                    "BrandingProjectName should not be included in upload"
+                );
             }
         }
 

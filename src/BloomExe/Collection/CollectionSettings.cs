@@ -299,11 +299,9 @@ namespace Bloom.Collection
             xml.Add(new XElement("XMatterPack", XMatterPackName));
             xml.Add(new XElement("PageNumberStyle", PageNumberStyle));
 
-            // What used to be "BrandingProjectName" pre BLoom 6.1 is now the "SubscriptionDescriptor", the part of the code before the numbers start.
-            // Normally, we can get the SubscriptionDescriptor from the Subscription Code, but we do not publish the code when publishing a book.
-            // Also, we want it for now (Bloom 6.1) for backwards compatibility.
-            // Enhance: A preferable approach would be to just use SuscriptionCode but redact part of the Code when publishing, e.g. Huya-LC-xxxx-xxxx
-            xml.Add(new XElement("BrandingProjectName", Subscription.Descriptor));
+            // Version before Bloom 6.1 read this in. Starting with Bloom 6.1, we ignore this and just parse the SubscriptionCode.
+            // For now we are still saving this for backwards compatibility.
+            xml.Add(new XElement("BrandingProjectName", Subscription.BrandingKey));
             xml.Add(new XElement("SubscriptionCode", Subscription.Code));
             xml.Add(new XElement("Country", Country));
             xml.Add(new XElement("Province", Province));
@@ -428,7 +426,7 @@ namespace Bloom.Collection
         /// as we would do if creating a settings object from the settings file.
         /// We use it to record the original subscription desriptor for a book downloaded using
         /// the "Download for editing" button on Blorg, since books on Bloom library keep their branding
-        /// but either with a <BrandingName> (old) or a redacted <SubscriptionCode> (current), though we make an exception for that
+        /// but either with a <BrandingProjectName> (old) or a redacted <SubscriptionCode> (current), though we make an exception for that
         /// one book.)
         /// </summary>
         public static string ReadDescriptorFromPublishedCollectionFile(string pathToCollectionFile)
@@ -854,12 +852,9 @@ namespace Bloom.Collection
             return langTags;
         }
 
-        // used to personalize the branding when it's not actually custom. E.g. Local Community & Bloom Pro scenarios.
-        public string BrandingPersonalization;
-
         public string GetBrandingFlavor()
         {
-            BrandingSettings.ParseSubscriptionDescriptor(
+            BrandingSettings.ParseBrandingKey(
                 Subscription.Descriptor,
                 out var baseKey,
                 out var flavor,
@@ -870,7 +865,7 @@ namespace Bloom.Collection
 
         public string GetBrandingFolderName()
         {
-            BrandingSettings.ParseSubscriptionDescriptor(
+            BrandingSettings.ParseBrandingKey(
                 Subscription.Descriptor,
                 out var folderName,
                 out var flavor,
