@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Web.UI.WebControls.WebParts;
 
 public class Subscription
 {
@@ -114,27 +115,33 @@ public class Subscription
         return date < DateTime.Now;
     }
 
-    public bool LooksIncomplete()
+    private bool LooksIncomplete()
     {
         if (Code == null)
             return true;
         var parts = Code.Split('-');
         if (parts.Length < 3)
             return true; // less than the required three components
-        int last = parts.Length - 1;
-        int dummy;
-        if (!Int32.TryParse(parts[last - 1], out dummy))
-            return true; // If they haven't started typing numbers, assume they're still in the name part, which could include a hyphen
-        // If they've typed one number, we expect another. (Might not be true...ethnos-360-guatemala is incomplete...)
-        // So, we already know the second-last part is a number, only short numbers or empty last part qualify as incomplete now.
-        // Moreover, for the whole thing to be incomplete in this case, the completed number must be the right length; otherwise,
-        // we consider it definitely wrong.
-        if (
-            parts[last - 1].Length == 6
-            && parts[last].Length < 4
-            && (parts[last].Length == 0 || Int32.TryParse(parts[last], out dummy))
-        )
+        var checksumPart = parts[parts.Length - 1];
+        if (checksumPart.Length < 4)
             return true;
+        var datePart = parts[parts.Length - 2];
+        if (datePart.Length < 6)
+            return true;
+
+        //int dummy;
+        //if (!Int32.TryParse(checksumPart, out dummy))
+        //    return true; // If they haven't started typing numbers, assume they're still in the name part, which could include a hyphen
+        //// If they've typed one number, we expect another. (Might not be true...ethnos-360-guatemala is incomplete...)
+        //// So, we already know the second-last part is a number, only short numbers or empty last part qualify as incomplete now.
+        //// Moreover, for the whole thing to be incomplete in this case, the completed number must be the right length; otherwise,
+        //// we consider it definitely wrong.
+        //if (
+        //    parts[last - 1].Length == 6
+        //    && parts[last].Length < 4
+        //    && (parts[last].Length == 0 || Int32.TryParse(parts[last], out dummy))
+        //)
+        //    return true;
 
         return false;
     }
@@ -157,10 +164,29 @@ public class Subscription
         {
             return "none";
         }
-        if (LooksIncomplete())
-        {
+        var parts = Code.Split('-');
+        if (parts.Length < 3)
             return "incomplete";
-        }
+        // the date part is the first part that starts with a digit
+
+        var datePart = parts.FirstOrDefault(part => part.All(char.IsDigit)) ?? "";
+        if (string.IsNullOrWhiteSpace(datePart))
+            return "incomplete";
+        // if that is the last part, then this is incomplete
+        if (datePart == parts.Last())
+            return "incomplete";
+        if (datePart.Length < 6)
+            return "invalid"; // we say invalid because they have moved on to the checksum part, but the date part was too short
+        // the checksum is the part after that, and amust be the last part
+        var checksumPart = parts.Last();
+        if (!checksumPart.All(char.IsDigit))
+            return "invalid";
+        if (checksumPart.Length < 4)
+            return "incomplete";
+
+        if (checksumPart.Length < 4)
+            return "incomplete";
+
         if (!GetChecksumCorrect())
         {
             return "invalid";

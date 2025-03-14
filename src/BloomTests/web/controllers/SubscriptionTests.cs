@@ -80,26 +80,30 @@ namespace BloomTests.Collection
             Assert.AreEqual(expectedTier, subscription.Tier);
         }
 
-        [TestCase(null, true)]
-        [TestCase("", true)]
-        [TestCase("Invalid", true)]
-        [TestCase("Invalid-Code", true)]
-        [TestCase("Project-Name-12345", true)]
-        [TestCase("Project-Name-123456", true)]
-        [TestCase("Project-Name-123456-", true)]
-        [TestCase("Project-Name-123456-1", true)]
-        [TestCase("Project-Name-123456-123", true)]
-        [TestCase("Test-Expired-Code-005658-9576", false)]
-        public void LooksIncomplete_DetectsIncompleteCode(string code, bool expectedResult)
-        {
-            var subscription = new Subscription(code);
-            Assert.AreEqual(expectedResult, subscription.LooksIncomplete());
-        }
-
         [TestCase("", "none")]
         [TestCase(null, "none")]
-        [TestCase("Tttest-Expired-Code-005658-9576", "invalid")]
+        [TestCase("NameOnly", "incomplete")]
+        [TestCase("Name-Only", "incomplete")]
         [TestCase("Project-123456", "incomplete")]
+        [TestCase("Acme3506487", "incomplete")] // no dashes
+        [TestCase("Acme-3506487", "incomplete")] // too few dashes
+        [TestCase("Acme-003506-", "incomplete")] // No digits in part 3 is OK, even though part 3 won't parse
+        [TestCase("Project-Name-12345", "incomplete")]
+        [TestCase("Project-Name-123456", "incomplete")]
+        [TestCase("Project-Name-123456-", "incomplete")]
+        [TestCase("Project-Name-123456-1", "incomplete")]
+        [TestCase("Project-Name-123456-123", "incomplete")]
+        [TestCase("Acme-3506-487-nonsense", "invalid")] // clearly wrong here
+        [TestCase("Acme-silly-1234", "incomplete")] // not a number in part 2... but could be start of Acme-silly-123456-7890
+        [TestCase("Acme-003506-487", "incomplete")] // Too few digits in part 3
+        [TestCase("Somevery long fake thing-361769-19523", "invalid")] // Too many digits in part 3
+        [TestCase("Project-12345-11", "invalid")] // Too few digits in date part
+        [TestCase("Acme-3506-487", "invalid")] // Last two parts are numbers, but first is too short
+        [TestCase("Acme-003506-0488", "invalid")] // wrong checksum
+        [TestCase("Acme-7484-silly", "invalid")] // not a number in part 3...debatable, COULD be start of Acme-7484-silly-123456-7890
+        [TestCase("Acme-7484-si", "invalid")] // short not a number in part 3...debatable, COULD be start of Acme-7484-si-123456-7890
+        [TestCase("Quite-Phony-3098-4247", "invalid")] // Too few digits in part 2
+        [TestCase("Tttest-Expired-Code-005658-9576", "invalid")]
         [TestCase("UnitTest-E-006046-3301", "ok")] // Using the test code that should be valid
         public void GetIntegrityLabel_ReturnsCorrectValue(string code, string expectedLabel)
         {
@@ -187,28 +191,6 @@ namespace BloomTests.Collection
             var result = subscription.ExpirationDate;
 
             Assert.That(result, Is.EqualTo(DateTime.MinValue));
-        }
-
-        [TestCase("", true)]
-        [TestCase(null, true)]
-        [TestCase("Acme3506487", true)] // no dashes
-        [TestCase("Acme-3506487", true)] // too few dashes
-        [TestCase("Acme-3506-487-nonsense", false)] // clearly wrong here
-        [TestCase("Acme-003506-0488", false)] // wrong checksum
-        [TestCase("Acme-silly-1234", true)] // not a number in part 2... but could be start of Acme-silly-123456-7890
-        [TestCase("Acme-7484-silly", false)] // not a number in part 3...debatable, COULD be start of Acme-7484-silly-123456-7890
-        [TestCase("Acme-7484-si", false)] // short not a number in part 3...debatable, COULD be start of Acme-7484-si-123456-7890
-        [TestCase("Quite-Phony-3098-4247", false)] // Too few digits in part 2
-        [TestCase("Acme-003506-487", true)] // Too few digits in part 3
-        [TestCase("Somevery long fake thing-361769-19523", false)] // Too many digits in part 3
-        [TestCase("Acme-3506-487", false)] // Last two parts are numbers, but first is too short
-        [TestCase("Acme-003506-", true)] // No digits in part 3 is OK, even though part 3 won't parse
-        public void SubscriptionAppearsIncomplete(string input, bool incomplete)
-        {
-            var subscription = new Subscription(input);
-            var result = subscription.LooksIncomplete();
-
-            Assert.That(result, Is.EqualTo(incomplete));
         }
     }
 }
