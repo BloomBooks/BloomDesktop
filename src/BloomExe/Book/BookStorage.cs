@@ -106,6 +106,7 @@ namespace Bloom.Book
 
         void MigrateToLevel4UseAppearanceSystem();
         void MigrateToLevel5CanvasElement();
+        void MigrateToLevel6LegacyActivities();
 
         CollectionSettings CollectionSettings { get; }
 
@@ -162,12 +163,14 @@ namespace Bloom.Book
         ///   book updates in memory, so this distinction may no longer be helpful.))
         ///   Bloom 6.0  4 = Switched to using a theme (or explicitly using legacy)
         ///   Bloom 6.2  5 = bloom-textOverPicture became bloom-canvas-element
+        ///   Bloom 6.2  6 = Legacy activities were updated to have data-tool-id="game", class
+        ///     game-theme-legacy, and to give simple-comprehension-quiz a data-activity.
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 5;
+        public const int kMaintenanceLevel = 6;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -3909,6 +3912,28 @@ namespace Bloom.Book
             //    metaData.CurrentTool = "canvasElementTool";
             //metaData.WriteToFolder(FolderPath);
             Dom.UpdateMetaElement("maintenanceLevel", "5");
+        }
+
+        public void MigrateToLevel6LegacyActivities()
+        {
+            if (GetMaintenanceLevel() >= 6)
+                return;
+            var quizzes = Dom.SafeSelectNodes(
+                "//div[contains(@class, 'simple-comprehension-quiz')]"
+            );
+            foreach (SafeXmlElement quiz in quizzes)
+            {
+                quiz.SetAttribute("data-activity", "simple-comprehension-quiz");
+            }
+            var choices = Dom.SafeSelectNodes("//div[@data-activity = 'simple-dom-choice']");
+            foreach (SafeXmlElement elt in choices.Concat(quizzes))
+            {
+                elt.SetAttribute("data-tool-id", "game");
+                // In case this runs on something that's already migrated, don't change an existing theme.
+                if (!elt.GetClasses().Any(x => x.StartsWith("game-theme")))
+                    elt.AddClass("game-theme-legacy");
+            }
+            Dom.UpdateMetaElement("maintenanceLevel", "6");
         }
 
         /// <summary>

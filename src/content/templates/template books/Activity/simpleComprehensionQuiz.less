@@ -19,8 +19,8 @@
     .QuizHeader-style {
         font-size: 20pt;
         text-align: center;
-        color: white;
-        background-color: @bloom-red;
+        color: var(--header-color);
+        background-color: var(--header-background-color);
         // Hide a problem where if there are multiple lines, the browser thinks there is overflow.
         // https://issues.bloomlibrary.org/youtrack/issue/BL-9021
         // We can make the scroll bar go away in at least 3 ways:
@@ -72,7 +72,7 @@
             border-radius: 50%;
             width: 40px;
             height: 40px;
-            background-color: rgba(var(--pure-material-onsurface-rgb), 0.6);
+            background-color: rgba(var(--button-color-rgb), 0.6);
             box-shadow: none;
             outline: none;
             opacity: 1;
@@ -93,7 +93,7 @@
             left: -30px;
             top: 3px;
             border: solid 2px;
-            border-color: rgba(var(--pure-material-onsurface-rgb), 0.6);
+            border-color: var(--button-border-color);
             border-radius: 2px;
             width: 18px;
             height: 18px;
@@ -118,19 +118,19 @@
         // is the red. This changes the effect of all the opacities that might be
         // used in hover, focus, active.
         & > input:checked ~ .placeToPutVariableCircle {
-            background-color: rgb(var(--pure-material-primary-rgb));
+            background-color: rgb(var(--button-color));
         }
 
         // When checked, the box (and its border) take on this color.
         & > input:checked + div::before {
-            border-color: rgb(var(--pure-material-primary-rgb));
-            background-color: rgb(var(--pure-material-primary-rgb));
+            border-color: var(--button-color);
+            background-color: var(--button-color);
         }
 
         // When checked, the check mark goes from transparent to the appropriate color
         // for stuff like text on the primary color
         > input:checked + div::after {
-            border-color: rgb(var(--pure-material-onprimary-rgb));
+            border-color: var(--text-color);
         }
 
         // This makes the circle faintly visible when hovered over.

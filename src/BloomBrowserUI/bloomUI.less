@@ -37,6 +37,10 @@
 @dragHandleEventZIndex: @canvasElementZIndex + 1;
 @resizeHandleEventZIndex: @canvasElementZIndex + 1; // Not directly referenced via .less, but conceptually used in canvas elementManager.ts
 
+// These two constants are also in bloomMaterialUITheme.ts
+@toolboxZIndex: 18000; // Just over help bubbles, but under topic dialog
+@toolboxPopupZIndex: @toolboxZIndex + 1; // Must be above it to be seen at all.
+
 // Bloom's web palette
 @bloom-blue: #1d94a4; // used in decodable reader and various text backgrounds and Paste Image button
 @bloom-lightblue: #b0dee4; // used in a few highlight and hover situations

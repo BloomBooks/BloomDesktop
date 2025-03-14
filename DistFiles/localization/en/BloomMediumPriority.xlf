@@ -233,6 +233,30 @@
         <source xml:lang="en">Book is not Decodable</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Theme" translate="no">
+        <source xml:lang="en">Theme:</source>
+        <note>ID: EditTab.Toolbox.Games.Theme</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.blue-on-white" translate="no">
+        <source xml:lang="en">Blue on white</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.blue-on-white</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.default" translate="no">
+        <source xml:lang="en">Default</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.default</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.legacy" translate="no">
+        <source xml:lang="en">Legacy</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.legacy</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.monochrome-PDF" translate="no">
+        <source xml:lang="en">Monochrome PDF</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.monochrome-PDF</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.red-on-white" translate="no">
+        <source xml:lang="en">Red on white</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool">
         <source xml:lang="en">
           Game Tool

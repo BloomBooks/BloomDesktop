@@ -285,18 +285,22 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
 // // page-specific stylesheets can call this with (false) to turn it off
 // .Common-SeparateMultilingualEditables(@StandardMultilingualEditBoxSeparation);
 
+.bloom-imageContainer {
+    // NO z-index for image containers! They are ordered by document order.
+    // (This allows them NOT to be a stacking context, so their child buttons can
+    // be above the comicaljs canvas.)
+    // z-index: @baseZIndexForContainers;
+    // Solves BL-1033 small picture frames cycling red overflow.
+    // Also part of the implementation of cropping, which is achieved by making the image
+    // larger than the container and then giving it a left and top to position it.
+    // (Therefore must NOT be limited to customPage; this must be true wherever we allow cropping.)
+    overflow: hidden;
+}
 .customPage {
     .bloom-imageContainer {
         width: 100%;
         height: 100%;
         box-sizing: border-box; // need any borders inside that 100% sizing (otherwise they tend to be clipped on at least one side)
-
-        // NO z-index for image containers! They are ordered by document order.
-        // (This allows them NOT to be a stacking context, so their child buttons can
-        // be above the comicaljs canvas.)
-        // z-index: @baseZIndexForContainers;
-        // Solves BL-1033 small picture frames cycling red overflow
-        overflow: hidden;
     }
 
     .bloom-videoContainer {

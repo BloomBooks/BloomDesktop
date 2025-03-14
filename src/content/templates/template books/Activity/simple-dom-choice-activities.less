@@ -90,6 +90,13 @@
                 margin-right: 10px;
                 width: 50%;
                 height: 80%; // undesirable but see note above about align-items:center on the parent, imageAndChoices
+                .bloom-canvas-element .bloom-imageContainer {
+                    // fix: won't be needed when the outer rule is bloom-canvas. For now, we need to revert
+                    // to the usual settings for overlay image containers
+                    width: 100%;
+                    height: 100%;
+                    margin: 0;
+                }
             }
 
             .choices {
@@ -266,12 +273,20 @@
     // page
 
     & {
-        background-color: #539eff; // legacy-only, beaten by appearance system setting to var with !important
-        --page-background-color: #539eff; // appearance system
+        background-color: var(
+            --simple-dom-choice-page-background-color
+        ); // controlled by game theme, usually --page-background-color
+        color: var(--page-foreground-color);
+        // in previous versions, a definition of Prompt-stle set color:white.
+        // Migrating this causes a problem if the book is opened using an older Bloom.
+        // So, this stronger rule defeats that one.
+        .bloom-editable.Prompt-style {
+            color: var(--page-foreground-color);
+        }
     }
     // page number
     &.numberedPage::after {
-        color: white;
+        color: var(--page-foreground-color);
         --pageNumber-background-color: var(
             --page-background-color
         ); // appearance system
@@ -284,14 +299,17 @@
         border-radius: 10px;
         background-color: white;
 
+        color: var(--button-choice-color);
+        background-color: var(--button-choice-background-color);
+
         &.chosen-correct {
-            color: white;
-            background-color: #ffb453;
+            color: var(--button-corect-color);
+            background-color: var(--button-corect-background-color);
         }
 
         &.chosen-wrong {
-            color: white;
-            background-color: #848484;
+            color: var(--button-wrong-color);
+            background-color: var(--button-wrong-background-color);
         }
 
         // when the button is depressed
@@ -312,7 +330,7 @@
 
     .wordThenChoices {
         .TextToMatch-style {
-            color: white;
+            color: var(--page-foreground-color);
         }
 
         .bloom-imageContainer {
