@@ -328,6 +328,9 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         const ed = draggable.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on"
         )[0] as HTMLElement;
+        // bubbles that are the output of a prompt dialog should not have source bubbles.
+        // We'll reserve that for the dialog.
+        ed?.parentElement?.classList.add("bloom-no-source-bubble");
         const p = ed?.getElementsByTagName("p")?.[0];
         // one use of this method is to clear the text, in which case, it's fine
         // for there to be no p present to clear. But if we're trying to set
