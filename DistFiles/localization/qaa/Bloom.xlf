@@ -2154,6 +2154,11 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Paste image</target>
         <note>ID: EditTab.Image.PasteImage</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.Reset" sil:dynamic="true">
+        <source xml:lang="en">Reset image</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Reset image</target>
+        <note>ID: EditTab.Image.Reset</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
         <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</target>
@@ -2424,14 +2429,19 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Crop</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
+        <source xml:lang="en">Fill the space</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Fill the space</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Fit</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
         <source xml:lang="en">Resize</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Resize</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Resize</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Shift" sil:dynamic="true">
-        <source xml:lang="en">Shift Picture</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Shift Picture</target>
+        <source xml:lang="en">Move image</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Move image</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Shift</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true">
@@ -2468,6 +2478,11 @@
         <source xml:lang="en">Duplicate</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Duplicate</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Expand image to fill space</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Expand image to fill space</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FillSpace</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true">
         <source xml:lang="en">Format text...</source>
@@ -3629,10 +3644,10 @@
         <target xml:lang="qaa-x-test" state="needs-translation">13cm Square</target>
         <note>ID: LayoutChoices.Cm13Landscape</note>
       </trans-unit>
-      <trans-unit id="LayoutChoices.ComicPortrait" sil:dynamic="true">
-        <source xml:lang="en">Comic Portrait</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Comic Portrait</target>
-        <note>ID: LayoutChoices.ComicPortrait</note>
+      <trans-unit id="LayoutChoices.USComicPortrait" sil:dynamic="true">
+        <source xml:lang="en">US Comic Portrait</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">US Comic Portrait</target>
+        <note>ID: LayoutChoices.USComicPortrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true">
         <source xml:lang="en">Device16x9 Landscape</source>
@@ -5182,8 +5197,8 @@
         <note>ID: PublishTab.FontProblem.Microsoft</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.Result">
-        <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</target>
+        <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the "READ" button or downloads for BloomPUB or ePUB.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the "READ" button or downloads for BloomPUB or ePUB.</target>
         <note>ID: PublishTab.FontProblem.Result</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog">
@@ -6149,8 +6164,8 @@
         <note>ID: Settings.Enterprise.LearnMore</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode" sil:dynamic="true">
-        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</target>
+        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
+        <target xml:lang="qaa-x-test" state="needs-translation">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </target>
         <note>ID: Settings.Enterprise.NeedsCode</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None" sil:dynamic="true">
@@ -6474,6 +6489,11 @@
         <source xml:lang="en">Use for comprehension testing on devices.</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Use for comprehension testing on devices.</target>
         <note>ID: TemplateBooks.PageDescription.Bloom Reader Quiz</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle" sil:dynamic="true" translate="no">
+        <source xml:lang="en">A page with one language above the image and another below it.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">A page with one language above the image and another below it.</target>
+        <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true">
         <source xml:lang="en">A blank page that allows you to add items.</source>
@@ -6875,6 +6895,11 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Picture in Middle</target>
         <note>ID: TemplateBooks.PageLabel.Picture in Middle</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Bilingual &amp; Picture in Middle</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Bilingual &amp; Picture in Middle</target>
+        <note>ID: TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true">
         <source xml:lang="en">Picture on Bottom</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Picture on Bottom</target>
@@ -6949,6 +6974,26 @@
         <source xml:lang="en">Setup</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Setup</target>
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
+        <source xml:lang="en">Your {0} subscription expires on {1}.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Your {0} subscription expires on {1}.</target>
+        <note>ID: SubscriptionStatus.ExpiringSoonMessage</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.ExpiredMessage">
+        <source xml:lang="en">Your {0} subscription expired on {1}.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Your {0} subscription expired on {1}.</target>
+        <note>ID: SubscriptionStatus.ExpiredMessage</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.DefaultMessage">
+        <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Using subscription: {0}. Expires {1}</target>
+        <note>ID: SubscriptionStatus.DefaultMessage</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.RenewalMessage">
+        <source xml:lang="en">Please [contact us](%0) to renew.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Please [contact us](%0) to renew.</target>
+        <note>ID: SubscriptionStatus.RenewalMessage</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true">
         <source xml:lang="en">Put a possible answer here. Check it if it is correct.</source>
