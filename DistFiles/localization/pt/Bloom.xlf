@@ -5194,9 +5194,9 @@
         <target xml:lang="pt-PT" state="final">Esta é uma fonte fornecida pela Microsoft para uso apenas no seu computador. A Microsoft não permite o uso livre de suas fontes na internet ou em eBooks. Use outra fonte.</target>
         <note>ID: PublishTab.FontProblem.Microsoft</note>
       </trans-unit>
-      <trans-unit id="PublishTab.FontProblem.Result">
+      <trans-unit id="PublishTab.FontProblem.Result" approved="yes">
         <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the "READ" button or downloads for BloomPUB or ePUB.</source>
-        <target xml:lang="pt-PT" state="translated">BloomLibrary.org irá exibir o PDF e permitir que downloads sejam traduzidos, mas não pode oferecer o botão "READ" ou downloads para BloomPUB ou ePUB.</target>
+        <target xml:lang="pt-PT" state="final">BloomLibrary.org irá exibir o PDF e permitir que downloads sejam traduzidos, mas não pode oferecer o botão "READ" ou downloads para BloomPUB ou ePUB.</target>
         <note>ID: PublishTab.FontProblem.Result</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog">
