@@ -2,46 +2,46 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="th">
     <body>
-      <trans-unit id="bigbook.title">
+      <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="th" state="translated">เกี่ยวกับหนังสือเล่มใหญ่</target>
+        <target xml:lang="th" state="final">เกี่ยวกับหนังสือเล่มใหญ่</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
-      <trans-unit id="bigbook.use">
+      <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="th" state="translated">หนังสือเล่มใหญ่ถูกออกเเบบไว้สําหรับครูเพื่อถือและอ่านหน้าชั้นเรียน สำหรับข้อมูลเพิ่มเติม ดูที่นี่  <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF (ภาษาอังกฤษ) จาก Scholastic</g>.</target>
+        <target xml:lang="th" state="final">หนังสือเล่มใหญ่ถูกออกเเบบไว้สําหรับครูเพื่อถือและอ่านหน้าชั้นเรียน สำหรับข้อมูลเพิ่มเติม ดูที่นี่ <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf"> รูปแบบไฟล์ PDF จาก Scholastic </g>.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing">
+      <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="th" state="translated">พิมพ์หนังสือเล่มใหญ่</target>
+        <target xml:lang="th" state="final">พิมพ์หนังสือเล่มใหญ่</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4">
+      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 A4 Portrait is also available.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="th" state="translated">เพื่อจัดการสิ่งต่างๆ ได้ง่ายขึ้นเทมเพลตนี้ตั้งไว้ A4 แนวนอน ด้วยฟอนต์ขนาดใหญ่ คุณสามารถผลิตหนังสือ A3 (ขนาดใหญ่สองเท่า) อย่างง่ายดายโดยนำไฟล์ PDF ขนาด A4 ไปที่ร้านพิมพ์และขอให้ขยายเป็น A3</target>
+        <target xml:lang="th" state="final">เพื่อจัดการสิ่งต่างๆ ได้ง่ายขึ้น รูปแบบของหนังสือเล่มใหญ่นี้ตั้งขนาดไว้เป็น A4 แนวนอน ด้วยตัวหนังสือขนาดใหญ่ คุณยังสามารถผลิตหนังสือ A3 (ที่ขนาดใหญ่สองเท่า) โดยการนำไฟล์ PDF ขนาด A4 ไปที่ร้านพิมพ์และขอให้ขยายเป็น A3</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>
-      <trans-unit id="bigbook.limits">
+      <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="th" state="translated">ข้อจำกัดของเวอร์ชันนี้</target>
+        <target xml:lang="th" state="final">ข้อจำกัดของเวอร์ชันนี้</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
-      <trans-unit id="bigbook.limits.smallscreen">
+      <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="th" state="translated">หากคุณใช้หน้าจอขนาดเล็ก อาจอ่านหน้าเครดิตได้ยาก เพื่อแก้ไขลองซูมเข้าไปโดยใช้ปุ่มควบคุมการซูม +/- ที่ด้านบนขวาของหน้าจอ</target>
+        <target xml:lang="th" state="final">หากคุณใช้หน้าจอขนาดเล็ก อาจอ่านหน้าเครดิตได้ยาก เพื่อแก้ไขลองซูมเข้าไปโดยใช้ปุ่มควบคุมการซูม +/- ที่ด้านบนขวาของหน้าจอ</target>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
-      <trans-unit id="bigbook.limits.Englishtemplate">
+      <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="th" state="needs-translation">This version includes an "Instructions for Teachers" page that is already filled out, in English.
-If you would like to have instructions in a different language, you can delete that text and type in your own.
-If you send us that text, we can include it in a future version of the template.</target>
+        <target xml:lang="th" state="final">เวอร์ชันนี้มีหน้า "คำแนะนำการใช้งานสำหรับครูผู้สอน" ที่เป็นข้อความภาษาอังกฤษ
+ถ้าหากว่าคุณต้องการคำแนะนำการใช้งานในภาษาอื่นๆ คุณสามารถลบข้อความนั้น และพิมพ์ขึ้นใหม่ในภาษาของคุณ
+และถ้าคุณส่งข้อความที่คุณพิมพ์ใหม่มาให้เรา เราจะเพิ่มข้อความของคุณในโปรแกรมเวอร์ชันในอนาคต</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
       </trans-unit>
     </body>
