@@ -4,57 +4,57 @@
     <body>
       <trans-unit id="leveled.definition">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
-        <target xml:lang="th" state="needs-translation">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</target>
+        <target xml:lang="th" state="translated"><g id="genid-1" ctype="x-html-strong">หนังสือระดับการอ่าน</g> คือหนังสือที่เขียนสำหรับผู้เรียนตามระดับทักษะการอ่านของการพัฒนาด้านการอ่าน ระดับทักษะการอ่านนั้นจะถูกกำหนดโดยความยาวของคำ ความยาวประโยค ฯลฯ อีกทั้งยังสามารถกำหนดรูปแบบ คำศัพท์ รูปภาพประกอบเสริม และหัวข้อที่เหมาะสมสำหรับผู้เรียนได้</target>
         <note>ID: leveled.definition</note>
       </trans-unit>
       <trans-unit id="leveled.levels">
         <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
-        <target xml:lang="th" state="needs-translation">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</target>
+        <target xml:lang="th" state="translated">หลังจากที่คุณกำหนดช่วง <g id="genid-2" ctype="x-html-em">ระดับทักษะการอ่าน</g> คุณสามารถระบุระดับทักษะนั้นลงบนหนังสือที่คุณสร้างได้ด้วยโครงแบบของ Bloom หรือโครงแบบหนังสือฝึกอ่าน ในระหว่างที่คุณพิมพ์หนังสืออยู่ Bloom จะช่วยคงระดับทักษะการอ่านที่คุณต้องการผลิต และเตือนคุณเมื่อคุณเขียนหนังสือเกินกว่าระดับที่คุณระบุไว้ข้างต้น</target>
         <note>ID: leveled.levels</note>
       </trans-unit>
       <trans-unit id="leveled.templates">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="th" state="needs-translation">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</target>
+        <target xml:lang="th" state="translated">คุณยังสามารถสร้าง "ชุดตั้งค่า<g id="genid-3" ctype="x-html-em">แบบ</g>หนังสือ" หรือ "Bloom Pack" ที่ผู้อื่นสามารถใช้เพื่อสร้างหนังสือใหม่แบบรวดเร็วได้ ตามระดับการฝึกอ่าน และระดับการอ่านที่ถูกจัดเตรียมด้วยผู้เชี่ยวชาญด้านทักษะการอ่านออกเขียนได้</target>
         <note>ID: leveled.templates</note>
       </trans-unit>
       <trans-unit id="leveled.learn">
         <source xml:lang="en">To learn about using Leveled Readers in Bloom, you can:</source>
-        <target xml:lang="th" state="needs-translation">To learn about using Leveled Readers in Bloom, you can:</target>
+        <target xml:lang="th" state="translated">เพื่อที่จะเรียนรู้การใช้หนังสือระดับการอ่านใน Bloom คุณสามารถ</target>
         <note>ID: leveled.learn</note>
       </trans-unit>
       <trans-unit id="leveled.learn.videos">
         <source xml:lang="en">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="th" state="needs-translation">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</target>
+        <target xml:lang="th" state="translated">ดู <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">สำหรับวิดีโอการสอนต่างๆ</g></target>
         <note>ID: leveled.learn.videos</note>
       </trans-unit>
       <trans-unit id="leveled.learn.helpindex">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
-        <target xml:lang="th" state="needs-translation">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</target>
+        <target xml:lang="th" state="translated">ไปที่เมนู "ช่วยเหลือ" เลือก "เอกสารประกอบ" และดูสารบัญในช่อง "หนังสือระดับการอ่าน"</target>
         <note>ID: leveled.learn.helpindex</note>
       </trans-unit>
       <trans-unit id="leveled.learn.helpmenu">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="th" state="needs-translation">Go to the Help menu and choose: "Building Reader Templates".</target>
+        <target xml:lang="th" state="translated">ไปที่เมนู "ช่วยเหลือ" และเลือก "การสร้างโครงแบบหนังสือ"</target>
         <note>ID: leveled.learn.helpmenu</note>
       </trans-unit>
       <trans-unit id="leveled.vs.decodable">
         <source xml:lang="en">Relationship to Decodable Readers</source>
-        <target xml:lang="th" state="needs-translation">Relationship to Decodable Readers</target>
+        <target xml:lang="th" state="translated">ความเกี่ยวข้องกับหนังสือฝึกอ่าน</target>
         <note>ID: leveled.vs.decodable</note>
       </trans-unit>
       <trans-unit id="leveled.and.decodable">
         <source xml:lang="en">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
-        <target xml:lang="th" state="needs-translation">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</target>
+        <target xml:lang="th" state="translated">แล้ว <g id="genid-5" ctype="x-html-em">ระดับทักษะการอ่าน</g> ในหนังสือระดับการอ่านใช้งานร่วมกับ <g id="genid-6" ctype="x-html-em">ระดับการฝึกอ่าน</g> ในหนังสือฝึกอ่านได้อย่างไร? ทั้งสองแนวคิดนั้นส่งเสริมกันและกัน Bloom นั้นให้คุณสามารถระบุ <g id="genid-7" ctype="x-html-em">ระดับการฝึกอ่าน</g> และ <g id="genid-8" ctype="x-html-em">ระดับทักษะการอ่าน</g> ในหนังสือที่คุณกำลังเขียนได้ โดยทั่วไปแล้วหนังสือที่มีระดับทักษะการอ่าน 1 และ 2 นั้นจะต้องเขียนโดยคำนึงถึง<g id="genid-9" ctype="x-html-em">ระดับการฝึกอ่าน</g>ด้วย หนังสือที่อยู่ในระดับ 1 หรือ 2 ควรจะคำนึงถึง <g id="genid-10" ctype="x-html-em">ระดับที่ผู้เรียนนั้นอ่านออก</g> (เช่น การใช้ตัวหนังสือที่ผู้เรียนเคยเรียนเป็นต้น) ดังนั้นลำดับของหนังสืออาจมีลักษณะแบบนี้</target>
         <note>ID: leveled.and.decodable</note>
       </trans-unit>
       <trans-unit id="leveled.reader.level">
         <source xml:lang="en">Leveled Reader Level</source>
-        <target xml:lang="th" state="needs-translation">Leveled Reader Level</target>
+        <target xml:lang="th" state="translated">ระดับทักษะการอ่าน</target>
         <note>ID: leveled.reader.level</note>
       </trans-unit>
       <trans-unit id="decodable.stage">
         <source xml:lang="en">Decodable Stage</source>
-        <target xml:lang="th" state="needs-translation">Decodable Stage</target>
+        <target xml:lang="th" state="translated">ระดับการอ่านออก</target>
         <note>ID: decodable.stage</note>
       </trans-unit>
     </body>
