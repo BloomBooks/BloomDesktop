@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="wall.calendar">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="th" state="needs-translation">About the Wall Calendar Template</target>
+        <target xml:lang="th" state="translated">เกี่ยวกับโครงแบบปฏิทินแขวน</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="th" state="needs-translation">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</target>
+        <target xml:lang="th" state="translated">ใช้โครงแบบของ Bloom นี้ เพื่อสร้างปฏิทินสำหรับ 12 เดือนในขนาด A5 พร้อมรูปและคำกำกับบนส่วนบนของหน้า และวันในเดือนอยู่ข้างล่าง ปฏิทินนี้จะใช้ชื่อเดือนและวันในภาษาของคุณ</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="th" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="th" state="translated">ข้อจำกัดของเวอร์ชันนี้</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="th" state="needs-translation">Currently, you cannot make a "shell" for other languages to use.</target>
+        <target xml:lang="th" state="translated">คุณยังไม่สามารถสร้าง "เปลือก" สำหรับภาษาอื่นได้ในตอนนี้</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="th" state="needs-translation">Credits</target>
+        <target xml:lang="th" state="translated">เครดิต</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="th" state="needs-translation">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</target>
+        <target xml:lang="th" state="translated">ขอบคุณ Bruce Cox (SIL แคเมอรูน) ที่สร้างโครงแบบเริ่มต้นนี้</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>
