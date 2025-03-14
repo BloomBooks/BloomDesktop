@@ -13,12 +13,12 @@
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.Check">
         <source xml:lang="en">Check</source>
-        <target xml:lang="th" state="needs-translation">Check</target>
+        <target xml:lang="th" state="translated">ตรวจสอบ</target>
         <note>ID: EditTab.Toolbox.DragActivity.Check</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CheckAnswer">
         <source xml:lang="en">Check Answer</source>
-        <target xml:lang="th" state="needs-translation">Check Answer</target>
+        <target xml:lang="th" state="translated">ตรวจสอบคำตอบ</target>
         <note>ID: EditTab.Toolbox.DragActivity.CheckAnswer</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CheckHint">
@@ -28,9 +28,9 @@
         <note>ID: EditTab.Toolbox.DragActivity.CheckHint</note>
         <target xml:lang="th" state="needs-translation">Clicking this validates the positions things have been dragged to.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound" approved="yes">
         <source xml:lang="en">Choose...</source>
-        <target xml:lang="th" state="needs-translation">Choose...</target>
+        <target xml:lang="th" state="final">เลือก...</target>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile">
@@ -40,7 +40,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Correct">
         <source xml:lang="en">Correct</source>
-        <target xml:lang="th" state="needs-translation">Correct</target>
+        <target xml:lang="th" state="translated">ถูกต้อง</target>
         <note>ID: EditTab.Toolbox.DragActivity.Correct</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CorrectInstructions">
@@ -125,7 +125,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.None">
         <source xml:lang="en">None</source>
-        <target xml:lang="th" state="needs-translation">None</target>
+        <target xml:lang="th" state="translated">ไม่มี</target>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceHeading">
@@ -179,7 +179,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.None">
         <source xml:lang="en">None</source>
-        <target xml:lang="th" state="needs-translation">None</target>
+        <target xml:lang="th" state="translated">ไม่มี</target>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SameSize">
@@ -259,7 +259,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Wrong">
         <source xml:lang="en">Wrong</source>
-        <target xml:lang="th" state="needs-translation">Wrong</target>
+        <target xml:lang="th" state="translated">ผิด</target>
         <note>ID: EditTab.Toolbox.DragActivity.Wrong</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WrongInstructions">
@@ -339,10 +339,35 @@
         <target xml:lang="th" state="needs-translation">Edit Timings File...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Extra" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Use an external tool like Audacity. When you're done, use "Apply Timings File..."</source>
+        <target xml:lang="th" state="needs-translation">Use an external tool like Audacity. When you're done, use "Apply Timings File..."</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Extra</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings" sil:dynamic="true" translate="no">
         <source xml:lang="en">Adjust Timings...</source>
         <target xml:lang="th" state="needs-translation">Adjust Timings...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Use Aeneas to guess timings</source>
+        <target xml:lang="th" state="needs-translation">Use Aeneas to guess timings</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas.Extra" sil:dynamic="true" translate="no">
+        <source xml:lang="en">If Bloom's timing guesses based on pauses aren't accurate enough, you can use this more advanced tool instead. Keep in mind that this will erase any changes you've made. Check [here] for more details.</source>
+        <target xml:lang="th" state="needs-translation">If Bloom's timing guesses based on pauses aren't accurate enough, you can use this more advanced tool instead. Keep in mind that this will erase any changes you've made. Check [here] for more details.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas.Extra</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Re-run pause-based timing guesses</source>
+        <target xml:lang="th" state="needs-translation">Re-run pause-based timing guesses</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun.Extra" sil:dynamic="true" translate="no">
+        <source xml:lang="en">This will remove any adjustments you have made.</source>
+        <target xml:lang="th" state="needs-translation">This will remove any adjustments you have made.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun.Extra</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title" sil:dynamic="true" translate="no">
         <source xml:lang="en">Adjust Timings</source>
@@ -660,14 +685,14 @@
         <target xml:lang="th" state="translated">ขนาดภาพสูงสุด</target>
         <note>BookSettings.eBook.Image.MaxResolution</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.Small" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Small</source>
-        <target xml:lang="th" state="translated">เล็ก</target>
+        <target xml:lang="th" state="final">เล็ก</target>
         <note>BookSettings.eBook.Image.MaxResolution.Small</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.HD" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HD</source>
-        <target xml:lang="th" state="translated">ความชัดสูง</target>
+        <target xml:lang="th" state="final">ความชัดสูง</target>
         <note>BookSettings.eBook.Image.MaxResolution.HD</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution.Full HD" sil:dynamic="true">
@@ -675,9 +700,9 @@
         <target xml:lang="th" state="translated">ความคมชัดสูงเต็มรูปแบบ</target>
         <note>BookSettings.eBook.Image.MaxResolution.Full HD</note>
       </trans-unit>
-      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true">
+      <trans-unit id="BookSettings.eBook.Image.MaxResolution.4K" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4K</source>
-        <target xml:lang="th" state="translated">4K</target>
+        <target xml:lang="th" state="final">4K</target>
         <note>BookSettings.eBook.Image.MaxResolution.4K</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution.Directions" sil:dynamic="true">
