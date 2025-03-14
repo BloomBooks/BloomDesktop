@@ -360,10 +360,11 @@ namespace Bloom.WebLibraryIntegration
                     editData["instanceId"] = id;
                     editData["bookFolder"] = LastBookDownloadedPath.Replace("\\", "/");
                     // We can't create an instance and read the branding, because load will wipe it out when it sees no code.
-                    var branding = CollectionSettings.ReadBrandingNameFromCollectionFile(
-                        CollectionCreatedForLastDownload
-                    );
-                    editData["branding"] = branding;
+                    var subscriptionDescriptor =
+                        CollectionSettings.ReadDescriptorFromPublishedCollectionFile(
+                            CollectionCreatedForLastDownload
+                        );
+                    editData["branding"] = subscriptionDescriptor;
                     RobustFile.WriteAllText(
                         pathToForEditDataFile,
                         Newtonsoft.Json.JsonConvert.SerializeObject(editData)

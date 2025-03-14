@@ -424,20 +424,25 @@ namespace Bloom.Collection
         }
 
         /// <summary>
-        /// Get the branding that the settings file specifies, without checking the subscription code
-        /// as we would do if creating a settings object from the settings file. (This is useful when
-        /// displaying the Branding dialog, to remind the user which branding they might want to find
-        /// a code for. We also use it to record the original branding for a book downloaded using
+        /// Get the descriptor that the settings file specifies, without checking the subscription code
+        /// as we would do if creating a settings object from the settings file.
+        /// We use it to record the original subscription desriptor for a book downloaded using
         /// the "Download for editing" button on Blorg, since books on Bloom library keep their branding
-        /// but not the code that normally allows it to be used, though we make an exception for that
+        /// but either with a <BrandingName> (old) or a redacted <SubscriptionCode> (current), though we make an exception for that
         /// one book.)
         /// </summary>
-        public static string ReadBrandingNameFromCollectionFile(string pathToCollectionFile)
+        public static string ReadDescriptorFromPublishedCollectionFile(string pathToCollectionFile)
         {
             try
             {
                 var settingsContent = RobustFile.ReadAllText(pathToCollectionFile, Encoding.UTF8);
                 var xml = XElement.Parse(settingsContent);
+                var code = ReadString(xml, "SubscriptionCode", null);
+                if (code != null)
+                {
+                    return new Subscription(code).Descriptor;
+                }
+                // look for an older approach
                 return ReadString(xml, "BrandingProjectName", "");
             }
             catch (Exception ex)

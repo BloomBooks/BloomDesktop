@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Xml.Linq;
 using Bloom.Book;
 using Bloom.Collection;
-using FFMpegCore.Arguments;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
@@ -600,6 +599,42 @@ namespace BloomTests.Collection
         public void ValidateAdministrators_ValidEmails_ReturnsTrue(string input)
         {
             Assert.That(CollectionSettings.ValidateAdministrators(input), Is.True);
+        }
+
+        [TestCase("", "", "")]
+        [TestCase("Foo-bar", "", "Foo-bar")]
+        [TestCase("", "Foo-bar-***-***", "Foo-bar")]
+        [TestCase("I-am-in-conflict", "Foo-bar-***-***", "Foo-bar")]
+        public void ReadSubscriptionFromCollectionFile_ReadsSubscriptionCorrectly(
+            string brandingName,
+            string subscriptionCode,
+            string expectedResult
+        )
+        {
+            var collectionName = "subscriptionTest";
+            var collectionPath = Path.Combine(_folder.Path, collectionName);
+            Directory.CreateDirectory(collectionPath);
+            var collectionSettingsPath = Path.Combine(
+                collectionPath,
+                $"{collectionName}.bloomCollection"
+            );
+
+            // Create a collection settings file with the specified branding and subscription values
+            var xml = new XElement("Collection", new XAttribute("version", "0.2"));
+            if (!string.IsNullOrEmpty(brandingName))
+                xml.Add(new XElement("BrandingProjectName", brandingName));
+            if (!string.IsNullOrEmpty(subscriptionCode))
+                xml.Add(new XElement("SubscriptionCode", subscriptionCode));
+
+            RobustFile.WriteAllText(collectionSettingsPath, xml.ToString());
+
+            // Act
+            var result = CollectionSettings.ReadDescriptorFromPublishedCollectionFile(
+                collectionSettingsPath
+            );
+
+            // Assert
+            Assert.That(result, Is.EqualTo(expectedResult));
         }
     }
 }

@@ -575,12 +575,20 @@ namespace Bloom.WebLibraryIntegration
             var doc = SafeXmlDocument.Create();
             doc.PreserveWhitespace = true;
             doc.LoadXml(settingsText);
+
             var subscriptionNode = doc.SelectSingleNode("/Collection/SubscriptionCode");
             if (subscriptionNode != null)
             {
                 var sub = new Subscription(subscriptionNode.InnerText);
                 subscriptionNode.InnerText = sub.GetRedactedCode();
             }
+            // we don't publish the "BrandingName" anymore, since we're using a recacted code instead
+            var brandingNameNode = doc.SelectSingleNode("/Collection/BrandingName");
+            if (brandingNameNode != null)
+            {
+                brandingNameNode.ParentNode.RemoveChild(brandingNameNode);
+            }
+
             // Remove traces of AI generated data from the collection settings.
             var languages = doc.SafeSelectNodes("/Collection/Languages/Language");
 

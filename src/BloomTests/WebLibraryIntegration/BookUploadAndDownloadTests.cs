@@ -793,6 +793,10 @@ namespace BloomTests.WebLibraryIntegration
                 var doc = BookUpload.SanitizeCollectionSettingsForUpload(tempFile.Path);
                 var subscriptionNode = doc.SelectSingleNode("/Collection/SubscriptionCode");
                 Assert.That(subscriptionNode.InnerText, Is.EqualTo("foo-bar-***-***"));
+
+                // also, don't include the unused "BrandingName" anymore
+                var brandingNode = doc.SelectSingleNode("/Collection/BrandingName");
+                Assert.That(brandingNode, Is.Null, "BrandingName should not be included in upload");
             }
         }
 
