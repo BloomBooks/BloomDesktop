@@ -2158,7 +2158,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.Reset" sil:dynamic="true">
         <source xml:lang="en">Reset image</source>
-        <target xml:lang="es-ES" state="needs-translation">Reset image</target>
+        <target xml:lang="es-ES" state="translated">Reiniciar imagen</target>
         <note>ID: EditTab.Image.Reset</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true" approved="yes">
@@ -5196,9 +5196,9 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="translated">Esta es una fuente distribuida por Microsoft para uso exclusivo en su computadora. Microsoft no permite que sus fuentes se utilicen libremente en Internet o se distribuyan en libros electrónicos. Utilice otro tipo de letra.</target>
         <note>ID: PublishTab.FontProblem.Microsoft</note>
       </trans-unit>
-      <trans-unit id="PublishTab.FontProblem.Result">
+      <trans-unit id="PublishTab.FontProblem.Result" approved="yes">
         <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the "READ" button or downloads for BloomPUB or ePUB.</source>
-        <target xml:lang="es-ES" state="translated">BloomLibrary.org mostrará el PDF y permitirá las descargas para la traducción, pero no puede ofrecer el botón "LEER" ni las descargas para BloomPUB o ePUB.</target>
+        <target xml:lang="es-ES" state="final">BloomLibrary.org mostrará el PDF y permitirá las descargas para la traducción, pero no puede ofrecer el botón "LEER" ni las descargas para BloomPUB o ePUB.</target>
         <note>ID: PublishTab.FontProblem.Result</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.CheckInBookSettingsDialog">
