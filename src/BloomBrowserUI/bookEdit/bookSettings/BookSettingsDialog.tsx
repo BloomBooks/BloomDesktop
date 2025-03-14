@@ -218,7 +218,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
     );
     //TODO real links (and change .xlf)
     const coverIsImageDescription = useL10n(
-        "Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org) for information on sizing your image to fit.",
+        "Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
         "BookSettings.CoverIsImage.Description"
     );
 
