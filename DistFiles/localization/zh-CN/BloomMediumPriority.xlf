@@ -339,10 +339,35 @@
         <target xml:lang="zh-CN" state="needs-translation">Edit Timings File...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Extra" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Use an external tool like Audacity. When you're done, use "Apply Timings File..."</source>
+        <target xml:lang="zh-CN" state="needs-translation">Use an external tool like Audacity. When you're done, use "Apply Timings File..."</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Extra</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings" sil:dynamic="true" translate="no">
         <source xml:lang="en">Adjust Timings...</source>
         <target xml:lang="zh-CN" state="needs-translation">Adjust Timings...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Use Aeneas to guess timings</source>
+        <target xml:lang="zh-CN" state="needs-translation">Use Aeneas to guess timings</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas.Extra" sil:dynamic="true" translate="no">
+        <source xml:lang="en">If Bloom's timing guesses based on pauses aren't accurate enough, you can use this more advanced tool instead. Keep in mind that this will erase any changes you've made. Check [here] for more details.</source>
+        <target xml:lang="zh-CN" state="needs-translation">If Bloom's timing guesses based on pauses aren't accurate enough, you can use this more advanced tool instead. Keep in mind that this will erase any changes you've made. Check [here] for more details.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas.Extra</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Re-run pause-based timing guesses</source>
+        <target xml:lang="zh-CN" state="needs-translation">Re-run pause-based timing guesses</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun.Extra" sil:dynamic="true" translate="no">
+        <source xml:lang="en">This will remove any adjustments you have made.</source>
+        <target xml:lang="zh-CN" state="needs-translation">This will remove any adjustments you have made.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun.Extra</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title" sil:dynamic="true" translate="no">
         <source xml:lang="en">Adjust Timings</source>
