@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Dynamic;
+using System.IO; // Add this for Path operations
 using System.Linq;
 using Newtonsoft.Json;
 using SIL.IO;
@@ -174,51 +175,68 @@ namespace Bloom.Api
 
             try
             {
-                ParseBrandingKey(
-                    brandingNameOrFolderPath,
-                    out var brandingFolderName,
-                    out var flavor,
-                    out var subUnitName
-                );
-
-                // check to see if we have a special branding.json just for this flavor.
-                // Note that we could instead add code that allows a single branding.json to
-                // have rules that apply only on a flavor basis. As of 4.9, all we have is the
-                // ability for a branding.json (and anything else) to use "{flavor}" anywhere in the
-                // name of an image; this will often be enough to avoid making a new branding.json.
-                // But if we needed to have different boilerplate text, well then we would need to
-                // either use this here mechanism (separate json) or implement the ability to add
-                // "flavor:" to the rules.
                 string settingsPath = null;
-                if (!string.IsNullOrEmpty(flavor))
-                {
-                    settingsPath = BloomFileLocator.GetOptionalBrandingFile(
-                        brandingFolderName,
-                        "branding[" + flavor + "].json"
-                    );
-                }
+                string brandingFolderName = null;
+                string flavor = null;
 
-                // if not, fall back to just "branding.json"
-                if (string.IsNullOrEmpty(settingsPath))
+                // First check if this is a direct path to a folder
+                if (Directory.Exists(brandingNameOrFolderPath))
                 {
-                    settingsPath = BloomFileLocator.GetOptionalBrandingFile(
-                        brandingFolderName,
-                        "branding.json"
+                    // If it's a directory path, look for branding.json directly in that folder
+                    settingsPath = Path.Combine(brandingNameOrFolderPath, "branding.json");
+                    if (!File.Exists(settingsPath))
+                    {
+                        settingsPath = null;
+                    }
+                }
+                else
+                {
+                    // Regular case: treat it as a branding name/key
+                    ParseBrandingKey(
+                        brandingNameOrFolderPath,
+                        out brandingFolderName,
+                        out flavor,
+                        out var subUnitName
                     );
+
+                    // check to see if we have a special branding.json just for this flavor.
+                    // Note that we could instead add code that allows a single branding.json to
+                    // have rules that apply only on a flavor basis. As of 4.9, all we have is the
+                    // ability for a branding.json (and anything else) to use "{flavor}" anywhere in the
+                    // name of an image; this will often be enough to avoid making a new branding.json.
+                    // But if we needed to have different boilerplate text, well then we would need to
+                    // either use this here mechanism (separate json) or implement the ability to add
+                    // "flavor:" to the rules.
+                    if (!string.IsNullOrEmpty(flavor))
+                    {
+                        settingsPath = BloomFileLocator.GetOptionalBrandingFile(
+                            brandingFolderName,
+                            "branding[" + flavor + "].json"
+                        );
+                    }
+
+                    // if not, fall back to just "branding.json"
                     if (string.IsNullOrEmpty(settingsPath))
                     {
-                        // Is the branding missing? If not, it is guaranteed to have a branding.css.
-                        var cssPath = BloomFileLocator.GetOptionalBrandingFile(
+                        settingsPath = BloomFileLocator.GetOptionalBrandingFile(
                             brandingFolderName,
-                            "branding.css"
+                            "branding.json"
                         );
-                        if (string.IsNullOrEmpty(cssPath))
+                        if (string.IsNullOrEmpty(settingsPath))
                         {
-                            // Branding has not yet shipped. We want the branding.json from the "Missing" branding
-                            settingsPath = BloomFileLocator.GetOptionalBrandingFile(
-                                "Missing",
-                                "branding.json"
+                            // Is the branding missing? If not, it is guaranteed to have a branding.css.
+                            var cssPath = BloomFileLocator.GetOptionalBrandingFile(
+                                brandingFolderName,
+                                "branding.css"
                             );
+                            if (string.IsNullOrEmpty(cssPath))
+                            {
+                                // Branding has not yet shipped. We want the branding.json from the "Missing" branding
+                                settingsPath = BloomFileLocator.GetOptionalBrandingFile(
+                                    "Missing",
+                                    "branding.json"
+                                );
+                            }
                         }
                     }
                 }
@@ -255,20 +273,23 @@ namespace Bloom.Api
                         return null;
                     }
 
-                    settings.Presets.ForEach(p =>
+                    if (settings.Presets != null && flavor != null)
                     {
-                        if (p.Content != null)
+                        settings.Presets.ForEach(p =>
                         {
-                            if (string.IsNullOrEmpty(flavor) && p.Content.Contains("{flavor"))
+                            if (p.Content != null)
                             {
-                                throw new ApplicationException(
-                                    "The branding had variable {flavor} but the branding key did not specify one: "
-                                        + brandingFolderName
-                                );
+                                if (string.IsNullOrEmpty(flavor) && p.Content.Contains("{flavor"))
+                                {
+                                    throw new ApplicationException(
+                                        "The branding had variable {flavor} but the branding key did not specify one: "
+                                            + (brandingFolderName ?? brandingNameOrFolderPath)
+                                    );
+                                }
+                                p.Content = p.Content.Replace("{flavor}", flavor);
                             }
-                            p.Content = p.Content.Replace("{flavor}", flavor);
-                        }
-                    });
+                        });
+                    }
                     // lock for thread safety
                     lock (_cacheLock)
                     {
