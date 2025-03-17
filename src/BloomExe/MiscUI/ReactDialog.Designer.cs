@@ -1,4 +1,4 @@
-﻿
+
 namespace Bloom.MiscUI
 {
 	partial class ReactDialog
@@ -32,28 +32,29 @@ namespace Bloom.MiscUI
 			this.reactControl = new Bloom.web.ReactControl();
 			this.SuspendLayout();
 			// 
-			// reactControl1
-			// 
-			this.reactControl.BackColor = System.Drawing.Color.White;
+            // reactControl
+            // 
+            this.reactControl.BackColor = System.Drawing.Color.White;
 			this.reactControl.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.reactControl.Location = new System.Drawing.Point(0, 0);
 			this.reactControl.Name = "reactControl";
-			this.reactControl.Size = new System.Drawing.Size(800, 450);
-			this.reactControl.TabIndex = 0;
-			this.reactControl.UseEditContextMenu = true;
-			// 
-			// ReactDialog
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(800, 450);
-			this.ControlBox = false;
-			this.Controls.Add(this.reactControl);
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-			this.Name = "ReactDialog";
-			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "ReactDialog";
-			this.ResumeLayout(false);
+            this.reactControl.Size = new System.Drawing.Size(800, 450);
+            this.reactControl.TabIndex = 0;
+            this.reactControl.UseEditContextMenu = true;
+            this.reactControl.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form_KeyDown);
+            // 
+            // ReactDialog
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ControlBox = false;
+            this.Controls.Add(this.reactControl);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Name = "ReactDialog";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Text = "ReactDialog";
+            this.ResumeLayout(false);
 
 		}
 

@@ -126,8 +126,6 @@ export const LanguageChooserDialog: React.FunctionComponent<{
     return (
         <BloomDialog
             {...propsForBloomDialog}
-            onCancel={closeDialog}
-            onClose={closeDialog}
             css={css`
                 padding: 0;
             `}
