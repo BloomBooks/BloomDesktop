@@ -1789,9 +1789,8 @@ namespace Bloom.Book
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
-            // 6.1 and 6.0 only; do not merge to 6.2
-            (Storage as BookStorage)?.MigrateBackFromLevel5CanvasElement();
-            // After MigrateBack, since looking for the renamed class
+            Storage.DoBackMigrations();
+            // After DoBackMigrations, since looking for the renamed class
             RemoveObsoleteImageAttributes(OurHtmlDom);
 
             // Make sure the appearance settings have checked the current state of the css files.
