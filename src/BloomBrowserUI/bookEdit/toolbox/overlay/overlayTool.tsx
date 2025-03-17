@@ -26,7 +26,7 @@ import { IColorPickerDialogProps } from "../../../react_components/color-picking
 import * as tinycolor from "tinycolor2";
 import { showSignLanguageTool } from "../../js/bloomVideo";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
-import { RequiresBloomEnterpriseOverlayWrapper } from "../../../react_components/requiresBloomEnterprise";
+import { RequiresBloomEnterpriseOverlayWrapper } from "../../../react_components/requiresSubscription";
 import { kOverlayToolId } from "../toolIds";
 import {
     BloomPalette,

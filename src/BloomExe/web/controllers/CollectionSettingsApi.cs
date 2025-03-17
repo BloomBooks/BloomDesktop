@@ -15,8 +15,8 @@ using SIL.Progress;
 namespace Bloom.web.controllers
 {
     /// <summary>
-    /// Used by the settings dialog (currently just the EnterpriseSettings tab) and various places that need to know
-    /// if Enterprise is enabled or not.
+    /// Used by the settings dialog (currently just the Subscription Settings tab) and various places that need to know
+    /// if a subscription is enabled or not.
     /// </summary>
     public class CollectionSettingsApi
     {
@@ -42,7 +42,7 @@ namespace Bloom.web.controllers
             this._bookSelection = bookSelection;
         }
 
-        private bool IsEnterpriseEnabled(bool failIfLockedToOneBook)
+        private bool IsSubscriptionEnabled(bool failIfLockedToOneBook)
         {
             if (failIfLockedToOneBook && _collectionSettings.LockedToOneDownloadedBook)
                 return false;
@@ -75,7 +75,7 @@ namespace Bloom.web.controllers
             );
 
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "enterpriseEnabled",
+                kApiUrlPart + "subscriptionEnabled",
                 request =>
                 {
                     if (request.HttpMethod == HttpMethods.Get)
@@ -83,12 +83,12 @@ namespace Bloom.web.controllers
                         lock (request)
                         {
                             // Some things (currently only creating a Team Collection) are not allowed if we're only
-                            // in enterprise mode as a concession to allowing editing of a book that was downloaded
+                            // in subscription mode as a concession to allowing editing of a book that was downloaded
                             // for direct editing.
                             var failIfLockedToOneBook =
                                 (request.GetParamOrNull("failIfLockedToOneBook") ?? "false")
                                 == "true";
-                            request.ReplyWithBoolean(IsEnterpriseEnabled(failIfLockedToOneBook));
+                            request.ReplyWithBoolean(IsSubscriptionEnabled(failIfLockedToOneBook));
                         }
                     }
                     else // post

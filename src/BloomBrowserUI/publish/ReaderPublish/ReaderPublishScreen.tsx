@@ -25,7 +25,7 @@ import { Link, LinkWithDisabledStyles } from "../../react_components/link";
 import {
     RequiresBloomEnterpriseAdjacentIconWrapper,
     RequiresBloomEnterpriseDialog
-} from "../../react_components/requiresBloomEnterprise";
+} from "../../react_components/requiresSubscription";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";

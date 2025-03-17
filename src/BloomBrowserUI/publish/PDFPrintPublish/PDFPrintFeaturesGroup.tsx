@@ -12,7 +12,7 @@ import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { Div } from "../../react_components/l10nComponents";
-import { RequiresBloomEnterpriseAdjacentIconWrapper } from "../../react_components/requiresBloomEnterprise";
+import { RequiresBloomEnterpriseAdjacentIconWrapper } from "../../react_components/requiresSubscription";
 import { kSelectCss } from "../../bloomMaterialUITheme";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { ToggleButton, Typography } from "@mui/material";

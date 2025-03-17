@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using Bloom.Api;
 using L10NSharp;
-using SIL.IO;
 
 namespace Bloom.Collection
 {

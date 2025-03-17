@@ -18,9 +18,9 @@ import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import { getBoolean, post, postBoolean } from "../utils/bloomApi";
 import {
-    useEnterpriseAvailable,
+    useSubscriptionAvailable,
     useGetSubscriptionStatus
-} from "./requiresBloomEnterprise";
+} from "./requiresSubscription";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
 import { kUiFontStack } from "../bloomMaterialUITheme";
 import { Variant } from "@mui/material/styles/createTypography";
@@ -80,7 +80,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
     // but `useGetEnterpriseStatus()` returns "Subscription". That state of things is useful for the
     // CollectionSettingsDialog, but not here in menu items. The absence of enterpriseAvailable needs to
     // take precedence. But by rules of hooks we still need to run the hook and then modify the value.
-    const enterpriseAvailable = useEnterpriseAvailable();
+    const enterpriseAvailable = useSubscriptionAvailable();
     let subscriptionStatus = useGetSubscriptionStatus();
     if (!enterpriseAvailable) {
         subscriptionStatus = "None"; // (years later) I don't know why we don't trust the useGetSubscriptionStatus() to return this
@@ -127,8 +127,8 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
     const ellipsis = props.addEllipsis ? "..." : "";
 
     const requiresEnterpriseTooltip = useL10n(
-        "To use this feature, you'll need to enable Bloom Enterprise.",
-        "CollectionSettingsDialog.RequiresEnterprise_ToolTip_"
+        "To use this feature, you'll need a Bloom Subscription.",
+        "CollectionSettingsDialog.RequiresSubscription_ToolTip_"
     );
 
     const enterpriseElement =

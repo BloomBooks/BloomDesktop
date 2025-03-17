@@ -304,9 +304,9 @@
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
         <note>ID: Browser.ProblemSaving</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AboutBloomEnterprise">
-        <source xml:lang="en">About the Bloom Enterprise Service</source>
-        <note>ID: CollectionSettingsDialog.AboutBloomEnterprise</note>
+      <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
+        <source xml:lang="en">About the Bloom Subscriptions</source>
+        <note>ID: CollectionSettingsDialog.AboutBloomSubscriptions</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
         <source xml:lang="en">Advanced Program Settings</source>
@@ -547,10 +547,6 @@
         <source xml:lang="en">Bloom Collection Name</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject">
-        <source xml:lang="en">Bloom Enterprise Project</source>
-        <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject</note>
-      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country">
         <source xml:lang="en">Country</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Country</note>
@@ -567,10 +563,10 @@
         <source xml:lang="en">Province</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.RequiresEnterprise_ToolTip_" sil:dynamic="true">
-        <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
-        <note>ID: CollectionSettingsDialog.RequiresEnterprise_ToolTip_</note>
-        <note>Same as the text for "EditTab.RequiresEnterprise"</note>
+      <trans-unit id="CollectionSettingsDialog.RequiresSubscription_ToolTip_" sil:dynamic="true">
+        <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
+        <note>ID: CollectionSettingsDialog.RequiresSubscription_ToolTip_</note>
+        <note>Same as the text for "EditTab.RequiresSubscription"</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart">
         <source xml:lang="en">Restart</source>
@@ -884,10 +880,10 @@
         <note>ID: Common.BackButton</note>
         <note>In a wizard, this button takes you to the previous step.</note>
       </trans-unit>
-      <trans-unit id="Common.BloomEnterpriseFeature">
-        <source xml:lang="en">Bloom Enterprise Feature</source>
-        <note>ID: Common.BloomEnterpriseFeature</note>
-        <note>This tooltip shows over the Bloom Enterprise icon.</note>
+      <trans-unit id="Common.BloomSubscriptionFeature">
+        <source xml:lang="en">Bloom Subscription Feature</source>
+        <note>ID: Common.BloomSubscriptionFeature</note>
+        <note>This tooltip shows over the Bloom Subcription icon.</note>
       </trans-unit>
       <trans-unit id="Common.Cancel">
         <source xml:lang="en">Cancel</source>
@@ -949,9 +945,9 @@
         <note>ID: Common.Done</note>
         <note>Shown in a list of messages when Bloom has completed a task.</note>
       </trans-unit>
-      <trans-unit id="Common.EnterpriseRequired">
-        <source xml:lang="en">Enterprise Required</source>
-        <note>ID: Common.EnterpriseRequired</note>
+      <trans-unit id="Common.SubscriptionRequired">
+        <source xml:lang="en">Subscription Required</source>
+        <note>ID: Common.SubscriptionRequired</note>
       </trans-unit>
       <trans-unit id="Common.Error">
         <source xml:lang="en">Error</source>
@@ -1437,15 +1433,15 @@
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
       </trans-unit>
-      <trans-unit id="EditTab.EnterpriseEnabled" sil:dynamic="true">
-        <source xml:lang="en">This Bloom Enterprise feature is enabled for you.</source>
-        <note>ID: EditTab.EnterpriseEnabled</note>
-        <note>Appears in a tooltip on the Enterprise button when the user DOES have enterprise (cf EditTab.RequiresEnterprise).</note>
+      <trans-unit id="EditTab.SubscriptionEnabled" sil:dynamic="true">
+        <source xml:lang="en">This Bloom Subscription feature is enabled for you.</source>
+        <note>ID: EditTab.SubscriptionEnabled</note>
+        <note>Appears in a tooltip on the Subscription button when the user DOES have a subcription (cf EditTab.RequiresSubscription).</note>
       </trans-unit>
-      <trans-unit id="EditTab.EnterpriseSettingsButton" sil:dynamic="true">
-        <source xml:lang="en">Bloom Enterprise Settings</source>
-        <note>ID: EditTab.EnterpriseSettingsButton</note>
-        <note>Text of button that appears when Bloom Enterprise is needed for access to a feature.</note>
+      <trans-unit id="EditTab.SubscriptionSettingsButton" sil:dynamic="true">
+        <source xml:lang="en">Bloom Subscription Settings</source>
+        <note>ID: EditTab.SubscriptionSettingsButton</note>
+        <note>Text of button that appears when Bloom Subscription is needed for access to a feature.</note>
       </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
@@ -1962,10 +1958,10 @@
         <source xml:lang="en">Paste Page</source>
         <note>ID: EditTab.PastePage</note>
       </trans-unit>
-      <trans-unit id="EditTab.RequiresEnterprise" sil:dynamic="true">
-        <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
-        <note>ID: EditTab.RequiresEnterprise</note>
-        <note>Appears in notice (possibly obscuring other controls when they may not be used) because no Bloom Enterprise project has been selected.</note>
+      <trans-unit id="EditTab.RequiresSubscription" sil:dynamic="true">
+        <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
+        <note>ID: EditTab.RequiresSubscription</note>
+        <note>Appears in notice (possibly obscuring other controls when they may not be used) because no Bloom Subcription project has been selected.</note>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
@@ -4255,18 +4251,18 @@
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
+      <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage">
         <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
-        <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
+        <note>ID: PublishTab.PublishRequiresSubscription.FirstOverlayPage</note>
         <note>The {0} will be replaced by a page number.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
-        <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
-        <note>ID: PublishTab.PublishRequiresEnterprise.Options</note>
+      <trans-unit id="PublishTab.PublishRequiresSubscription.Options">
+        <source xml:lang="en">In order to publish your book, you need to either have an active Bloom Subscription, or remove the Overlay elements from your book.</source>
+        <note>ID: PublishTab.PublishRequiresSubscription.Options</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.ProblemExplanation">
-        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</source>
-        <note>ID: PublishTab.PublishRequiresEnterprise.ProblemExplanation</note>
+      <trans-unit id="PublishTab.PublishRequiresSubscription.ProblemExplanation">
+        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Subscription feature.</source>
+        <note>ID: PublishTab.PublishRequiresSubscription.ProblemExplanation</note>
         <note>{0} will be replaced with the book's title.</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute">
@@ -4511,6 +4507,7 @@
       <trans-unit id="PublishTab.Upload.EnterpriseShelfRequiredTooltip">
         <source xml:lang="en">This feature requires an Enterprise subscription and a destination shelf selected in Collection Settings.</source>
         <note>ID: PublishTab.Upload.EnterpriseShelfRequiredTooltip</note>
+        <note>Leaving this one as "enterprise" instead of "Subscription" becuase it really does require the Enterprise Tier.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ErrorUploading">
         <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
@@ -4826,6 +4823,7 @@ Do you want to go ahead?</note>
         </source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBookCancel.Commentary</note>
         <note>This is explanatory commentary on a radio button. Don't translate the email in brackets ([librarian@bloomlibrary.org]). It will be replaced by a link to send an email.</note>
+        <note>Leaving this one as "enterprise" instead of "Subscription" becuase it really does require the Enterprise Tier.</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.SameBook">
         <source xml:lang="en">Is this an update of your existing book?</source>

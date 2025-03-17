@@ -614,9 +614,9 @@ namespace Bloom.Collection
 			// _enterpriseRequiredForTeamCollection
 			//
 			this._enterpriseRequiredForTeamCollection.Image = global::Bloom.Properties.Resources.enterpriseBadge;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForTeamCollection, "To use this feature, you\'ll need to enable Bloom Enterprise.");
+			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForTeamCollection, "To use this feature, you\'ll need a Bloom Subscription.");
 			this._L10NSharpExtender.SetLocalizationComment(this._enterpriseRequiredForTeamCollection, null);
-			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForTeamCollection, "CollectionSettingsDialog.RequiresEnterprise");
+			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForTeamCollection, "CollectionSettingsDialog.RequiresSubscription");
 			this._enterpriseRequiredForTeamCollection.Location = new System.Drawing.Point(0, 129);
 			this._enterpriseRequiredForTeamCollection.Name = "_enterpriseRequiredForTeamCollection";
 			this._enterpriseRequiredForTeamCollection.Size = new System.Drawing.Size(23, 23);
@@ -640,9 +640,9 @@ namespace Bloom.Collection
 			// _enterpriseRequiredForSpreadsheetImportExport
 			//
 			this._enterpriseRequiredForSpreadsheetImportExport.Image = global::Bloom.Properties.Resources.enterpriseBadge;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForSpreadsheetImportExport, "To use this feature, you\'ll need to enable Bloom Enterprise.");
+			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForSpreadsheetImportExport, "To use this feature, you\'ll need a Bloom Subscription.");
 			this._L10NSharpExtender.SetLocalizationComment(this._enterpriseRequiredForSpreadsheetImportExport, null);
-			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForSpreadsheetImportExport, "CollectionSettingsDialog.RequiresEnterprise");
+			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForSpreadsheetImportExport, "CollectionSettingsDialog.RequiresSubscription");
 			this._enterpriseRequiredForSpreadsheetImportExport.Location = new System.Drawing.Point(0, 158);
 			this._enterpriseRequiredForSpreadsheetImportExport.Name = "_enterpriseRequiredForSpreadsheetImportExport";
 			this._enterpriseRequiredForSpreadsheetImportExport.Size = new System.Drawing.Size(23, 23);

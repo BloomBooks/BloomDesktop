@@ -68,8 +68,8 @@ module.exports = merge(core, {
         messageBoxBundle: "./utils/BloomMessageBox.tsx",
         bookMakingSettingsBundle: "./collection/bookMakingSettingsControl.tsx",
         progressDialogBundle: "./react_components/Progress/ProgressDialog.tsx",
-        requiresBloomEnterpriseBundle:
-            "./react_components/requiresBloomEnterprise.tsx",
+        requiresSubscriptionBundle:
+            "./react_components/requiresSubscription.tsx",
         createTeamCollectionDialogBundle:
             "./teamCollection/CreateTeamCollection.tsx",
         teamCollectionSettingsBundle:

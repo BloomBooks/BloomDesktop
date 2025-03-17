@@ -40,11 +40,11 @@ type SubscriptionTier = typeof subscriptionTiers[number];
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
  * @returns A boolean, which is true if Bloom Enterprise is enabled and false otherwise
  */
-export function useEnterpriseAvailable() {
+export function useSubscriptionAvailable() {
     const [enterpriseAvailable, setEnterpriseAvailable] = useState(true);
 
     useEffect(() => {
-        get("settings/enterpriseEnabled", response => {
+        get("settings/subscriptionEnabled", response => {
             setEnterpriseAvailable(response.data);
         });
     }, []);
@@ -86,15 +86,17 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
         | React.ReactElement<IDisableable>
         | Array<React.ReactElement<IDisableable>>;
 }) => {
-    const enterpriseAvailable = useEnterpriseAvailable();
+    const enterpriseAvailable = useSubscriptionAvailable();
 
     // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
     const tooltip = useL10n(
         enterpriseAvailable
             ? "This Bloom Enterprise feature is enabled for you."
-            : "To use this feature, you'll need to enable Bloom Enterprise.",
+            : "To use this feature, you'll need a Bloom Subscription.",
         "EditTab." +
-            (enterpriseAvailable ? "EnterpriseEnabled" : "RequiresEnterprise")
+            (enterpriseAvailable
+                ? "SubscriptionEnabled"
+                : "RequiresSubscription")
     );
 
     // // Set the disabled property on all the children
@@ -152,14 +154,14 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
 
 export const BloomEnterpriseIcon = props => {
     const needEnterpriseTooltip = useL10n(
-        "To use this feature, you'll need to enable Bloom Enterprise.",
-        "EditTab.RequiresEnterprise"
+        "To use this feature, you'll need a Bloom Subscription.",
+        "EditTab.RequiresSubscription"
     );
     const enterpriseFeatureTooltip = useL10n(
         "Bloom Enterprise Feature",
-        "Common.BloomEnterpriseFeature"
+        "Common.BloomSubscriptionFeature"
     );
-    const enterpriseAvailable = useEnterpriseAvailable();
+    const enterpriseAvailable = useSubscriptionAvailable();
 
     // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
     const tooltip = enterpriseAvailable
@@ -183,7 +185,7 @@ export const BloomEnterpriseIcon = props => {
  * Checks the Bloom Enterprise settings and overlays a RequiresBloomEnterprise notice over the children if enterprise is off.
  */
 export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = props => {
-    const enterpriseAvailable = useEnterpriseAvailable();
+    const enterpriseAvailable = useSubscriptionAvailable();
     return (
         <div
             css={css`
@@ -234,8 +236,8 @@ export interface IRequiresEnterpriseNoticeProps {
 // This element displays a notice saying that a certain feature requires a Bloom Enterprise subscription,
 // if a bloom enterprise project has not been selected; if one has, it displays nothing at all.
 // Typically, it is displayed along with a div that shows all the controls requiring the subscription,
-// which is visible when this is not, that is, when enterpriseEnabled(), a function in this
-// module, returns true. Currently this is detected by looking for the class enterprise-on being set
+// which is visible when this is not, that is, when subscriptionEnabled(), a function in this
+// module, returns true. Currently this is detected by looking for the class subscription-yes being set
 // on the content page body.
 // Often it will be convenient to use this by embedding the controls to be hidden in a
 // RequiresBloomEnterpriseWrapper, also defined in this file.
@@ -246,7 +248,7 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        get("settings/enterpriseEnabled", response => {
+        get("settings/subscriptionEnabled", response => {
             setVisible(!response.data);
         });
     }, []);
@@ -335,7 +337,7 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
                             }
                         >
                             <Div
-                                l10nKey="EditTab.RequiresEnterprise"
+                                l10nKey="EditTab.RequiresSubscription"
                                 css={
                                     inSeparateDialog
                                         ? css`
@@ -371,8 +373,8 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
                                 }
                             >
                                 <img src={badgeUrl} />
-                                <Div l10nKey="EditTab.EnterpriseSettingsButton">
-                                    Bloom Enterprise Settings
+                                <Div l10nKey="EditTab.SubscriptionSettingsButton">
+                                    Bloom Subscription Settings
                                 </Div>
                             </Button>
                         </div>
@@ -452,7 +454,7 @@ export const RequiresBloomEnterpriseDialog: React.FunctionComponent<{
 
     const dialogTitle = useL10n(
         "Bloom Enterprise Feature",
-        "Common.BloomEnterpriseFeature"
+        "Common.BloomSubscriptionFeature"
     );
 
     return (
@@ -504,7 +506,7 @@ export function checkIfEnterpriseAvailable(): EnterpriseEnabledPromise {
 // The function will be called with argument true if enterprise features are enabled, false otherwise.
 class EnterpriseEnabledPromise {
     public then(resolve: (enterpriseAvailable: boolean) => void) {
-        get("settings/enterpriseEnabled", response => {
+        get("settings/subscriptionEnabled", response => {
             resolve(response.data);
         });
     }

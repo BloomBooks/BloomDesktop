@@ -604,11 +604,13 @@ namespace Bloom.Book
             var headXml = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
             var originalBody = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/body");
 
-            var enterpriseStatusClass = this.CollectionSettings.Subscription.HaveActiveSubscription
-                ? "enterprise-on"
-                : "enterprise-off";
+            var subcriptionStatusClasses = this.CollectionSettings
+                .Subscription
+                .HaveActiveSubscription
+                ? "subscription-yes"
+                : "subscription-no";
             var dom = new HtmlDom(
-                @"<html>" + headXml + $"<body class='{enterpriseStatusClass}'></body></html>"
+                @"<html>" + headXml + $"<body class='{subcriptionStatusClasses}'></body></html>"
             );
             dom = Storage.MakeDomRelocatable(dom);
             // Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)

@@ -29,7 +29,7 @@ import {
     RequiresBloomEnterpriseNotice,
     RequiresBloomEnterpriseNoticeDialog,
     RequiresBloomEnterpriseOverlayWrapper
-} from "./requiresBloomEnterprise";
+} from "./requiresSubscription";
 import {
     StorybookDialogWrapper,
     normalDialogEnvironmentForStorybook

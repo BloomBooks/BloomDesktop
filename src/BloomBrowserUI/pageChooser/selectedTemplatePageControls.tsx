@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Div } from "../react_components/l10nComponents";
 import { Checkbox } from "../react_components/checkbox";
 import BloomButton from "../react_components/bloomButton";
-import { RequiresBloomEnterpriseNotice } from "../react_components/requiresBloomEnterprise";
+import { RequiresBloomEnterpriseNotice } from "../react_components/requiresSubscription";
 import SmallNumberPicker from "../react_components/smallNumberPicker";
 import { Link } from "../react_components/link";
 import { useL10n } from "../react_components/l10nHooks";

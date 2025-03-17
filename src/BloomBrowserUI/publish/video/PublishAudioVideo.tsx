@@ -32,7 +32,7 @@ import {
 } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
 import { Link } from "../../react_components/link";
-import { RequiresBloomEnterpriseDialog } from "../../react_components/requiresBloomEnterprise";
+import { RequiresBloomEnterpriseDialog } from "../../react_components/requiresSubscription";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
