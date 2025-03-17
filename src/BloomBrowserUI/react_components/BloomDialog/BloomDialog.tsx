@@ -135,6 +135,25 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
             ...propsToPass
         } = props;
 
+        // Add a key down handler for when dialogFrameProvidedExternally is true.
+        // When dialogFrameProvidedExternally is false, Escape is handled by the Dialog component.
+        useEffect(() => {
+            if (dialogFrameProvidedExternally && (onCancel || onClose)) {
+                const handleKeyDown = (event: KeyboardEvent) => {
+                    if (event.key === "Escape") {
+                        if (onCancel) onCancel("escapeKeyDown");
+                        else onClose(event, "escapeKeyDown");
+                    }
+                };
+
+                document.addEventListener("keydown", handleKeyDown);
+                return () => {
+                    document.removeEventListener("keydown", handleKeyDown);
+                };
+            }
+            return undefined;
+        }, [dialogFrameProvidedExternally, onCancel, onClose]);
+
         const disableDragging =
             disableDraggingProp !== undefined
                 ? disableDraggingProp

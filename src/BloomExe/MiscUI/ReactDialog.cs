@@ -132,5 +132,13 @@ namespace Bloom.MiscUI
         {
             _activeDialogs.Remove(this);
         }
+
+        private void Form_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Needed for closing the dialog before focus has been given to the browser (i.e. when first launched).
+            // Once the dialog has focus, the .ts side handles Escape by calling CloseCurrentModal via the API.
+            if (e.KeyCode == Keys.Escape)
+                CloseCurrentModal();
+        }
     }
 }
