@@ -2154,9 +2154,9 @@
         <target xml:lang="fr" state="final">Coller l'image</target>
         <note>ID: EditTab.Image.PasteImage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.Reset" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.Reset" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reset image</source>
-        <target xml:lang="fr" state="needs-translation">Reset image</target>
+        <target xml:lang="fr" state="final">Réinitialiser l'image</target>
         <note>ID: EditTab.Image.Reset</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true" approved="yes">
@@ -2429,9 +2429,9 @@
         <target xml:lang="fr" state="final">Rogner</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Fill the space</source>
-        <target xml:lang="fr" state="needs-translation">Fill the space</target>
+        <target xml:lang="fr" state="final">Remplissez l'espace</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Fit</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true" approved="yes">
@@ -6975,14 +6975,14 @@
         <target xml:lang="fr" state="final">Paramétrage</target>
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
       </trans-unit>
-      <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
+      <trans-unit id="SubscriptionStatus.ExpiringSoonMessage" approved="yes">
         <source xml:lang="en">Your {0} subscription expires on {1}.</source>
-        <target xml:lang="fr" state="needs-translation">Your {0} subscription expires on {1}.</target>
+        <target xml:lang="fr" state="final">Votre abonnement {0} expire le {1}.</target>
         <note>ID: SubscriptionStatus.ExpiringSoonMessage</note>
       </trans-unit>
-      <trans-unit id="SubscriptionStatus.ExpiredMessage">
+      <trans-unit id="SubscriptionStatus.ExpiredMessage" approved="yes">
         <source xml:lang="en">Your {0} subscription expired on {1}.</source>
-        <target xml:lang="fr" state="needs-translation">Your {0} subscription expired on {1}.</target>
+        <target xml:lang="fr" state="final">Votre abonnement {0} a expiré le {1}.</target>
         <note>ID: SubscriptionStatus.ExpiredMessage</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.DefaultMessage">
@@ -6990,9 +6990,9 @@
         <target xml:lang="fr" state="needs-translation">Using subscription: {0}. Expires {1}</target>
         <note>ID: SubscriptionStatus.DefaultMessage</note>
       </trans-unit>
-      <trans-unit id="SubscriptionStatus.RenewalMessage">
+      <trans-unit id="SubscriptionStatus.RenewalMessage" approved="yes">
         <source xml:lang="en">Please [contact us](%0) to renew.</source>
-        <target xml:lang="fr" state="needs-translation">Please [contact us](%0) to renew.</target>
+        <target xml:lang="fr" state="final">Veuillez [nous contacter](%0) pour renouveler.</target>
         <note>ID: SubscriptionStatus.RenewalMessage</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true" approved="yes">
