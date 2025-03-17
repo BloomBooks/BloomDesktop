@@ -1377,7 +1377,7 @@ namespace Bloom.Book
             );
             usedAudioFileNames.AddRange(narrationAudioFileNames);
 
-            audioFilesToDeleteIfNotUsed.ExceptWith(usedAudioFileNames);
+            audioFilesToDeleteIfNotUsed.ExceptWith(usedAudioFileNames.Select(path => GetNormalizedPathForOS(path)));
 
             //Delete any files still in the list
             foreach (var fileName in audioFilesToDeleteIfNotUsed)
