@@ -867,7 +867,8 @@ const DragActivityControls: React.FunctionComponent<{
         // We need to re-evaluate when changing pages, it's possible the initially selected item
         // on a new page has the same currentDraggableTargetId.
     }, [props.pageGeneration, currentCanvasElementTargetId]);
-    // The set of possible themes, derived from stylesheet rules that start with .gameThemePrefix
+    // The set of possible themes, derived from stylesheet rules that start with a dot
+    // followed by gameThemePrefix
     const [themes, setThemes] = useState<string[]>([]);
     const gameThemePrefix = "game-theme-";
     // The theme of the current page, derived from any class on the .bloom-page that starts with
@@ -896,16 +897,16 @@ const DragActivityControls: React.FunctionComponent<{
     };
     useEffect(() => {
         const page = getPage();
-        const pageThemeClass = page
-            .getAttribute("class")
-            ?.match(/game-theme-([\w-]+)/);
+        const pageThemeClass = Array.from(page.classList)
+            .find(c => c.startsWith(gameThemePrefix))
+            ?.substring(gameThemePrefix.length);
         if (currentTheme && !pageThemeClass) {
             // it's a new page and we've been on a game page this session.
             // Instead of updating our control, update the page to match
             // the theme of the page we were on previously.
             page.classList.add(`${gameThemePrefix}${currentTheme}`);
         } else {
-            setCurrentTheme(pageThemeClass ? pageThemeClass[1] : "default");
+            setCurrentTheme(pageThemeClass || "default");
         }
 
         // Figure out the values for the theme menu. We do this by finding ALL the style
@@ -917,7 +918,7 @@ const DragActivityControls: React.FunctionComponent<{
         themeSet.add("default");
         // Make sure we have the one that's actually in use.
         if (pageThemeClass) {
-            themeSet.add(pageThemeClass[1]);
+            themeSet.add(pageThemeClass);
         }
 
         // setThemes to all the themes we can find in the active stylesheets.
@@ -970,8 +971,6 @@ const DragActivityControls: React.FunctionComponent<{
             setThemes((Array.from(themeSet) as string[]).sort());
         };
 
-        // get whatever we can now; also ensures we get them if the page is already loaded.
-        getGameThemesFromStylesheets();
         // In case the page is not fully loaded yet, try again when it is, to make sure we don't miss any.
         if (page.ownerDocument.readyState !== "complete") {
             page.ownerDocument.defaultView?.addEventListener(
@@ -985,6 +984,13 @@ const DragActivityControls: React.FunctionComponent<{
                     getGameThemesFromStylesheets
                 );
         }
+        // If the document was already complete, we'll get the themes now. If not, we'll get them when the load
+        // completes. If, by some bizarre race condition, the load completed between when we checked the
+        // status and when we added the event handler, then it must be complete now, so we'll get them now.
+        // We may possibly get the themes twice, but that's harmless. In my testing, the document was always
+        // complete, so checking it and possibly calling from the event handler is just a precaution and should
+        // seldom slow things down at all.
+        getGameThemesFromStylesheets();
         // didn't add a listener, no cleanup needed.
         return () => {};
         // switching pages could change the currentTheme, at least, so we need to run this again.
@@ -1456,16 +1462,9 @@ const DragActivityControls: React.FunctionComponent<{
                             onChange={event => {
                                 handleChooseTheme(event);
                             }}
-                            className="gameThemeDropdown"
                             inputProps={{
                                 name: "style",
                                 id: "game-theme-dropdown"
-                            }}
-                            MenuProps={{
-                                // NOT game-theme-dropdown-menu, or anything else that starts with
-                                // game-theme-. Using a selector with that prefix in a rule will automatically
-                                // make it a menu item in the theme list.
-                                className: "gameThemeDropdownMenu"
                             }}
                             css={css`
                                 svg.MuiSvgIcon-root {
@@ -1484,9 +1483,6 @@ const DragActivityControls: React.FunctionComponent<{
                                 }
                             `}
                             size="small"
-                            sx={{
-                                width: 170
-                            }}
                         >
                             {themes.map(theme => (
                                 <MenuItem
