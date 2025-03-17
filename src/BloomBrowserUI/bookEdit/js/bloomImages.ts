@@ -216,45 +216,49 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
         return;
     }
     SetImageTooltip(containerDiv);
-    const bgImageContainer = img.parentElement as HTMLElement;
 
-    const $bgImageContainer = $(bgImageContainer);
     if (
         containerDiv.getElementsByClassName(kPlaybackOrderContainerClass)
             .length > 0
     ) {
         return; // Playback order controls are active, deactivate image container stuff.
     }
-    if (containerDiv.getElementsByClassName("imageOverlayButton").length > 0) {
-        return; // already have buttons
+
+    const bgImageContainer = img.parentElement as HTMLElement;
+    SetupChangeImageButton(bgImageContainer, img);
+}
+
+function SetupChangeImageButton(
+    bgImageContainer: HTMLElement,
+    img: HTMLElement
+) {
+    for (const oldButton of Array.from(
+        bgImageContainer.getElementsByClassName("changeImageButton")
+    )) {
+        oldButton.remove();
     }
-    const buttonModifier = GetButtonModifier($bgImageContainer);
-
-    const addButtonHandler = (command: "change") => {
-        const button = $bgImageContainer.get(0)?.firstElementChild;
-        button?.addEventListener("click", (e: MouseEvent) => {
-            // "detail >1" in chromium means this is a double click.
-            // Note, if we have problems with timing, this wouldn't necessarily fix them.
-            // It's only going to debounce clicks that come in close enough to count as
-            // double clicks, presumably based on the OS's double click timing setting.
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((e as any).detail > 1) {
-                return;
-            }
-            doImageCommand(img, command);
+    const button = bgImageContainer.ownerDocument.createElement("button");
+    button.className = `changeImageButton imageButton imageOverlayButton bloom-ui ${GetButtonModifier(
+        bgImageContainer
+    )}`;
+    button.addEventListener("click", (e: MouseEvent) => {
+        if ((e as any).detail > 1) {
+            return;
+        }
+        doImageCommand(img, "change");
+    });
+    const titleId = "EditTab.Image.ChangeImage";
+    const titleText = "Change image";
+    theOneLocalizationManager
+        .asyncGetText(titleId, titleText, "tooltip text")
+        .done(translation => {
+            button.title = translation;
+            bgImageContainer.prepend(button);
+        })
+        .fail(() => {
+            button.title = titleText;
+            bgImageContainer.prepend(button);
         });
-    };
-
-    $bgImageContainer.prepend(
-        '<button class="changeImageButton imageButton imageOverlayButton bloom-ui' +
-            buttonModifier +
-            '" title="' +
-            theOneLocalizationManager.getText("EditTab.Image.ChangeImage") +
-            '"></button>'
-    );
-    addButtonHandler("change");
-
-    SetupMetadataButton(bgImageContainer);
 }
 
 /**
@@ -752,12 +756,9 @@ export function SetImageElementUrl(imgOrDivWithBackgroundImage, url) {
 // While the actual metadata is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
 // so that we can easily & quickly get to it here.
 // Currently this button is only shown on top of background images, which are usually large enough for it.
-// This function takes a container which may or may not have background images, removes any old editMetadataButton,
-// and adds a new one if appropriate, to each backgroundImage. Container might also BE a canvas element that is specified to hold the background image.
+// This function takes a parent element which is currently the body element.
 export function SetupMetadataButton(parent: HTMLElement) {
-    // I _think_ this is only called when parent is either a canvas element or the parent of an image container,
-    // and thus can only have one background image. But for safety I've coded it to work even if passed the
-    // whole page.
+    // This method is called from bloomEditing.ts / SetupElements with the body element.
     let bgImageCanvasElements: HTMLElement[] = [];
     if (parent.classList.contains(kbackgroundImageClass)) {
         bgImageCanvasElements.push(parent);

@@ -3576,10 +3576,6 @@ export class CanvasElementManager {
             // Ignore clicks on the JQuery resize handles.
             return true;
         }
-        if (targetElement.classList.contains("imageOverlayButton")) {
-            // Ignore clicks on the image overlay buttons. The button's handler should process that instead.
-            return true;
-        }
         if (targetElement.closest("#canvas-element-control-frame")) {
             // New drag controls
             return true;
