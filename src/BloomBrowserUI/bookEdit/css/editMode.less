@@ -532,6 +532,16 @@ body.bloom-fullBleed {
             height: calc(100% - @imageDescriptionTopBorderWidth);
         }
     }
+    .bloom-describedImage {
+        svg,
+        .bloom-canvas-element {
+            // display:none doesn't quite work for some reason.  text can leak through.
+            visibility: hidden;
+            &.bloom-backgroundImage {
+                visibility: visible;
+            }
+        }
+    }
 }
 
 @imageDescriptionBorderWidth: 3px;
