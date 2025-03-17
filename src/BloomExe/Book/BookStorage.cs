@@ -107,6 +107,8 @@ namespace Bloom.Book
 
         void MigrateToLevel4UseAppearanceSystem();
 
+        void DoBackMigrations();
+
         CollectionSettings CollectionSettings { get; }
 
         void ReloadFromDisk(string renamedTo, Action betweenReloadAndEvents);
@@ -149,7 +151,7 @@ namespace Bloom.Book
         internal const string kMaxBloomFormatVersionToRead = "2.1";
 
         /// <summary>
-        /// These constants are not currently actually used in code, but indicate the largest
+        /// These constants indicate the largest
         /// number currently used for some DOM metadata elements that keep track of how much
         /// a book has been migrated.
         /// History of kMaintenanceLevel:
@@ -468,6 +470,52 @@ namespace Bloom.Book
             return null;
         }
 
+        private VersionRequirement[] GetBreakingFeatureRequirements()
+        {
+            var featureVersionRequirementJson = Dom.GetMetaValue("FeatureRequirement", "");
+            if (string.IsNullOrEmpty(featureVersionRequirementJson))
+            {
+                return Array.Empty<VersionRequirement>();
+            }
+
+            VersionRequirement[] featureVersionRequirementList = (VersionRequirement[])
+                JsonConvert.DeserializeObject(
+                    featureVersionRequirementJson,
+                    typeof(VersionRequirement[])
+                );
+
+            if (featureVersionRequirementList != null && featureVersionRequirementList.Length >= 1)
+            {
+                return featureVersionRequirementList
+                    .Where(
+                        x => CurrentBloomDesktopVersion() < new Version(x.BloomDesktopMinVersion)
+                    )
+                    .ToArray();
+            }
+
+            return Array.Empty<VersionRequirement>();
+        }
+
+        private static Version CurrentBloomDesktopVersion()
+        {
+            var assemblyVersion = typeof(BookStorage).Assembly?.GetName()?.Version;
+            Version currentBloomDesktopVersion;
+            if (assemblyVersion == null)
+            {
+                currentBloomDesktopVersion = new Version(1, 0);
+            }
+            else
+            {
+                // Make it so that it only compares Major/Minor and doesn't care about different or missing Build or Revision numbers.
+                currentBloomDesktopVersion = new Version(
+                    assemblyVersion.Major,
+                    assemblyVersion.Minor
+                );
+            }
+
+            return currentBloomDesktopVersion;
+        }
+
         /// <summary>
         /// Returns HTML with error message for any features that this book contains which cannot be opened
         /// by this version of Bloom.
@@ -483,115 +531,81 @@ namespace Bloom.Book
         public string GetHtmlMessageIfFeatureIncompatibility()
         {
             // Check if there are any features in this file format (which is readable), but which won't be supported (and have effects bad enough to warrant blocking opening) in this version.
-            var featureVersionRequirementJson = Dom.GetMetaValue("FeatureRequirement", "");
-            if (string.IsNullOrEmpty(featureVersionRequirementJson))
-            {
+            var breakingFeatureRequirements = GetBreakingFeatureRequirements();
+
+            // For 6.1 and 6.0 only; don't merge into 6.2
+            if (
+                breakingFeatureRequirements.Count() == 1
+                && breakingFeatureRequirements.First().FeatureId == "canvasElement"
+            )
                 return "";
-            }
-            VersionRequirement[] featureVersionRequirementList = (VersionRequirement[])
-                JsonConvert.DeserializeObject(
-                    featureVersionRequirementJson,
-                    typeof(VersionRequirement[])
+
+            // Note: even though versionRequirements is guaranteed non-empty by now, the ones that actually break our current version of Bloom DESKTOP could be empty.
+            if (breakingFeatureRequirements.Any())
+            {
+                string messageNewVersionNeededHeader = LocalizationManager.GetString(
+                    "Errors.NewVersionNeededHeader",
+                    "This book needs a new version of Bloom."
+                );
+                string messageCurrentRunningVersion = String.Format(
+                    LocalizationManager.GetString(
+                        "Errors.CurrentRunningVersion",
+                        "You are running Bloom {0}"
+                    ),
+                    CurrentBloomDesktopVersion()
+                );
+                string messageDownloadLatestVersion = LocalizationManager.GetString(
+                    "Errors.DownloadLatestVersion",
+                    "Upgrade to the latest Bloom (requires Internet connection)"
                 );
 
-            if (featureVersionRequirementList != null && featureVersionRequirementList.Length >= 1)
-            {
-                var assemblyVersion = typeof(BookStorage).Assembly?.GetName()?.Version;
-
-                Version currentBloomDesktopVersion;
-                if (assemblyVersion == null)
+                string messageFeatureRequiresNewerVersion;
+                if (breakingFeatureRequirements.Count() == 1)
                 {
-                    currentBloomDesktopVersion = new Version(1, 0);
+                    var requirement = breakingFeatureRequirements.First();
+                    messageFeatureRequiresNewerVersion =
+                        String.Format(
+                            LocalizationManager.GetString(
+                                "Errors.FeatureRequiresNewerVersionSingular",
+                                "This book requires Bloom {0} or greater because it uses the feature \"{1}\"."
+                            ),
+                            requirement.BloomDesktopMinVersion,
+                            requirement.FeaturePhrase
+                        ) + "<br/>";
                 }
                 else
                 {
-                    // Make it so that it only compares Major/Minor and doesn't care about different or missing Build or Revision numbers.
-                    currentBloomDesktopVersion = new Version(
-                        assemblyVersion.Major,
-                        assemblyVersion.Minor
+                    var sortedRequirements = breakingFeatureRequirements.OrderByDescending(
+                        x => new Version(x.BloomDesktopMinVersion)
                     );
-                }
+                    var highestVersionRequired = sortedRequirements.First().BloomDesktopMinVersion;
 
-                var breakingFeatureRequirements = featureVersionRequirementList.Where(
-                    x => currentBloomDesktopVersion < new Version(x.BloomDesktopMinVersion)
-                );
-
-                // For 6.1 and 6.0 only; don't merge into 6.2
-                if (
-                    breakingFeatureRequirements.Count() == 1
-                    && breakingFeatureRequirements.First().FeatureId == "canvasElement"
-                )
-                    return "";
-
-                // Note: even though versionRequirements is guaranteed non-empty by now, the ones that actually break our current version of Bloom DESKTOP could be empty.
-                if (breakingFeatureRequirements.Any())
-                {
-                    string messageNewVersionNeededHeader = LocalizationManager.GetString(
-                        "Errors.NewVersionNeededHeader",
-                        "This book needs a new version of Bloom."
-                    );
-                    string messageCurrentRunningVersion = String.Format(
+                    messageFeatureRequiresNewerVersion = String.Format(
                         LocalizationManager.GetString(
-                            "Errors.CurrentRunningVersion",
-                            "You are running Bloom {0}"
+                            "Errors.FeatureRequiresNewerVersionPlural",
+                            "This book requires Bloom {0} or greater because it uses the following features:"
                         ),
-                        currentBloomDesktopVersion
-                    );
-                    string messageDownloadLatestVersion = LocalizationManager.GetString(
-                        "Errors.DownloadLatestVersion",
-                        "Upgrade to the latest Bloom (requires Internet connection)"
+                        highestVersionRequired
                     );
 
-                    string messageFeatureRequiresNewerVersion;
-                    if (breakingFeatureRequirements.Count() == 1)
-                    {
-                        var requirement = breakingFeatureRequirements.First();
-                        messageFeatureRequiresNewerVersion =
-                            String.Format(
-                                LocalizationManager.GetString(
-                                    "Errors.FeatureRequiresNewerVersionSingular",
-                                    "This book requires Bloom {0} or greater because it uses the feature \"{1}\"."
-                                ),
-                                requirement.BloomDesktopMinVersion,
-                                requirement.FeaturePhrase
-                            ) + "<br/>";
-                    }
-                    else
-                    {
-                        var sortedRequirements = breakingFeatureRequirements.OrderByDescending(
-                            x => new Version(x.BloomDesktopMinVersion)
-                        );
-                        var highestVersionRequired = sortedRequirements
-                            .First()
-                            .BloomDesktopMinVersion;
-
-                        messageFeatureRequiresNewerVersion = String.Format(
-                            LocalizationManager.GetString(
-                                "Errors.FeatureRequiresNewerVersionPlural",
-                                "This book requires Bloom {0} or greater because it uses the following features:"
-                            ),
-                            highestVersionRequired
-                        );
-
-                        string listItemsHtml = String.Join(
-                            "",
-                            sortedRequirements.Select(x => $"<li>{x.FeaturePhrase}</li>")
-                        );
-                        messageFeatureRequiresNewerVersion += $"<ul>{listItemsHtml}</ul>";
-                    }
-
-                    string message =
-                        $"<strong>{messageNewVersionNeededHeader}</strong><br/><br/><br/>"
-                        + $"{messageCurrentRunningVersion}. {messageFeatureRequiresNewerVersion}<br/><br/>"
-                        +
-                        // If we just embed the URL, since we show this document in a plain browser without any
-                        // of our code loaded (in particular, our linkHandler code in typescript), the browser
-                        // control inside bloom will navigate there, which isn't what we want. The easiest
-                        // way around this is to have an api which does what we want.
-                        $"<a href='/bloom/api/app/showDownloadsPage'>{messageDownloadLatestVersion}</a>";
-
-                    return message;
+                    string listItemsHtml = String.Join(
+                        "",
+                        sortedRequirements.Select(x => $"<li>{x.FeaturePhrase}</li>")
+                    );
+                    messageFeatureRequiresNewerVersion += $"<ul>{listItemsHtml}</ul>";
                 }
+
+                string message =
+                    $"<strong>{messageNewVersionNeededHeader}</strong><br/><br/><br/>"
+                    + $"{messageCurrentRunningVersion}. {messageFeatureRequiresNewerVersion}<br/><br/>"
+                    +
+                    // If we just embed the URL, since we show this document in a plain browser without any
+                    // of our code loaded (in particular, our linkHandler code in typescript), the browser
+                    // control inside bloom will navigate there, which isn't what we want. The easiest
+                    // way around this is to have an api which does what we want.
+                    $"<a href='/bloom/api/app/showDownloadsPage'>{messageDownloadLatestVersion}</a>";
+
+                return message;
             }
 
             return "";
@@ -3796,6 +3810,31 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// This method and calls to it and the other changes here can be merged to master,
+        /// but without the test for canvasElement (which wouldn't build unless we merge the
+        /// method it calls too).
+        /// </summary>
+        public void DoBackMigrations()
+        {
+            if (GetMaintenanceLevel() <= kMaintenanceLevel)
+                return;
+            var breakingFeatureRequirements = GetBreakingFeatureRequirements();
+            // Building a general mechanism here, but this is the only one 6.1 currently
+            // knows how to do. (Note that this method doesn't get called at all if there
+            // are breaking feature requirements we don't know how to deal with.)
+            foreach (var requirement in breakingFeatureRequirements)
+            {
+                // These two lines should be removed merging to master, since not wanted in
+                // 6.2 and beyond. That will leave this method doing nothing until we have some
+                // new reason for a back migration, but I think it's worth keeping.
+                if (requirement.FeatureId == "canvasElement")
+                    MigrateBackFromLevel5CanvasElement();
+                // If you add a new back migration, you must also modify GetHtmlMessageIfFeatureIncompatibility
+                // to not complain if the only breaking changes are ones we can back-migrate.
+            }
+        }
+
+        /// <summary>
         /// Only for 6.1 and 6.0! Do not merge to 6.2.
         /// </summary>
         public void MigrateBackFromLevel5CanvasElement()
@@ -3804,7 +3843,7 @@ namespace Bloom.Book
                 !BookInfo.IsSaveable,
                 "We should not even think about migrating a book that is not Saveable"
             );
-            if (GetMaintenanceLevel() != 5)
+            if (GetMaintenanceLevel() <= 4)
                 return;
             var legacyCanvasElements = Dom.SafeSelectNodes(
                     "//*[contains(@class, 'bloom-canvas-element')]"
