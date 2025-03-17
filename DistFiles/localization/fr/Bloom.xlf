@@ -6985,9 +6985,9 @@
         <target xml:lang="fr" state="final">Votre abonnement {0} a expiré le {1}.</target>
         <note>ID: SubscriptionStatus.ExpiredMessage</note>
       </trans-unit>
-      <trans-unit id="SubscriptionStatus.DefaultMessage">
+      <trans-unit id="SubscriptionStatus.DefaultMessage" approved="yes">
         <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
-        <target xml:lang="fr" state="needs-translation">Using subscription: {0}. Expires {1}</target>
+        <target xml:lang="fr" state="final">Par l'abonnement : {0}. Expire {1}</target>
         <note>ID: SubscriptionStatus.DefaultMessage</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.RenewalMessage" approved="yes">
