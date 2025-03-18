@@ -980,12 +980,26 @@ export default class AudioRecording implements IAudioRecorder {
         // Get rid of all the audio-currents just to be sure.
         this.removeAudioCurrentFromPageDocBody();
 
+        // Double check that this page is not asking for another tool than talkingBook.
+        // The multiple asynchronous calls during page loading can result in the wrong
+        // tool getting a "newPageReady" method call when the new page calls for a
+        // different tool to be activated.  This is the simplest fix that I've found.
+        // (Note that returning early from this method, or using the notInTalkingBook
+        // variable in the outer if statement, gets Bloom into a wierd frozen state. The
+        // innocent looking "visible" is a method that has some necessary side-effects,
+        // which is poor programming practice, but I'm saving that for another day.)
+        // See BL-14434.
+        const dataToolId = newElement
+            .closest(".bloom-page")
+            ?.getAttribute("data-tool-id");
+        const mayBeInTalkingBook = !dataToolId || dataToolId === "talkingBook";
+
         if (!this.inShowPlaybackOrderMode) {
             // It's good for this to happen before awaiting the subsequent async behavior,
             // especially if the caller doesn't await this function.
             // This allows us to generally represent the correct current element immediately.
-            newElement.classList.add(kAudioCurrent);
-            if (visible) {
+            if (mayBeInTalkingBook) newElement.classList.add(kAudioCurrent);
+            if (visible && mayBeInTalkingBook) {
                 // This is a workaround for a Chromium bug; see BL-11633. We'd like our style rules
                 // to just put the icon on the element that has kAudioCurrent. But that element
                 // has a background color, so (due to the bug) it cannot have position:relative,
@@ -1114,7 +1128,7 @@ export default class AudioRecording implements IAudioRecorder {
     // based on the current time so that it asks the server for the file again.
     // Fixes BL-3161
     private updatePlayerStatus() {
-        console.assert(this.currentAudioId != null);
+        console.assert(this.currentAudioId !== null);
 
         const player = this.getMediaPlayer();
         player.setAttribute(
