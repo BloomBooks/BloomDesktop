@@ -825,7 +825,7 @@ const DragActivityControls: React.FunctionComponent<{
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const canvasElementManager = getCanvasElementManager()!;
-    let currentCanvasElement = canvasElementManager.getActiveElement();
+    let currentCanvasElement = canvasElementManager?.getActiveElement();
     // Currently we mainly use this to decide whether to show the delete and duplicate buttons.
     // Maybe those are obsolete now we have the new toolbox?
     // In any case, we don't want to duplicate or delete a background image, so it doesn't count.
@@ -906,7 +906,7 @@ const DragActivityControls: React.FunctionComponent<{
             // the theme of the page we were on previously.
             page.classList.add(`${gameThemePrefix}${currentTheme}`);
         } else {
-            setCurrentTheme(pageThemeClass || "default");
+            setCurrentTheme(pageThemeClass || "blue-on-white");
         }
 
         // Figure out the values for the theme menu. We do this by finding ALL the style
@@ -915,7 +915,7 @@ const DragActivityControls: React.FunctionComponent<{
         // and offer it.
         const themeSet = new Set();
         // Add default theme if it's not found in stylesheets
-        themeSet.add("default");
+        themeSet.add("blue-on-white");
         // Make sure we have the one that's actually in use.
         if (pageThemeClass) {
             themeSet.add(pageThemeClass);
@@ -1444,57 +1444,6 @@ const DragActivityControls: React.FunctionComponent<{
                         margin-left: 10px;
                     `}
                 >
-                    <Div
-                        css={css`
-                            margin-top: 10px;
-                            margin-bottom: 2px;
-                        `}
-                        l10nKey="EditTab.Toolbox.Games.Theme"
-                    ></Div>
-                    <ThemeProvider theme={toolboxMenuPopupTheme}>
-                        <Select
-                            variant="standard"
-                            value={currentTheme}
-                            onChange={event => {
-                                handleChooseTheme(event);
-                            }}
-                            inputProps={{
-                                name: "style",
-                                id: "game-theme-dropdown"
-                            }}
-                            css={css`
-                                svg.MuiSvgIcon-root {
-                                    color: white !important;
-                                }
-                                ul {
-                                    background-color: ${kOptionPanelBackgroundColor} !important;
-                                }
-                                fieldset {
-                                    border-color: rgba(
-                                        255,
-                                        255,
-                                        255,
-                                        0.5
-                                    ) !important;
-                                }
-                            `}
-                            size="small"
-                        >
-                            {themes.map(theme => (
-                                <MenuItem
-                                    value={theme}
-                                    key={theme}
-                                    disabled={false}
-                                >
-                                    <Div
-                                        l10nKey={`EditTab.Toolbox.Games.Themes.${theme}`}
-                                    >
-                                        {theme}
-                                    </Div>
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </ThemeProvider>
                     {startTabInstructionsData.headingKey && (
                         <Div
                             css={css`
@@ -1579,6 +1528,60 @@ const DragActivityControls: React.FunctionComponent<{
                             </BloomTooltip>
                         </div>
                     )}
+                    <Div
+                        css={css`
+                            margin-top: 10px;
+                            margin-bottom: 2px;
+                            border-top: 1px solid white;
+                            padding-top: 7px;
+                            margin-right: 10px;
+                        `}
+                        l10nKey="EditTab.Toolbox.Games.Theme"
+                    ></Div>
+                    <ThemeProvider theme={toolboxMenuPopupTheme}>
+                        <Select
+                            variant="standard"
+                            value={currentTheme}
+                            onChange={event => {
+                                handleChooseTheme(event);
+                            }}
+                            inputProps={{
+                                name: "style",
+                                id: "game-theme-dropdown"
+                            }}
+                            css={css`
+                                svg.MuiSvgIcon-root {
+                                    color: white !important;
+                                }
+                                ul {
+                                    background-color: ${kOptionPanelBackgroundColor} !important;
+                                }
+                                fieldset {
+                                    border-color: rgba(
+                                        255,
+                                        255,
+                                        255,
+                                        0.5
+                                    ) !important;
+                                }
+                            `}
+                            size="small"
+                        >
+                            {themes.map(theme => (
+                                <MenuItem
+                                    value={theme}
+                                    key={theme}
+                                    disabled={false}
+                                >
+                                    <Div
+                                        l10nKey={`EditTab.Toolbox.Games.Themes.${theme}`}
+                                    >
+                                        {theme}
+                                    </Div>
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </ThemeProvider>
                 </div>
             )}
 
@@ -1616,86 +1619,6 @@ const DragActivityControls: React.FunctionComponent<{
                         `}
                         l10nKey="EditTab.Toolbox.DragActivity.TestInstructions"
                     />
-                </div>
-            )}
-            {props.activeTab !== playTabIndex && currentCanvasElement && (
-                <div>
-                    <div
-                        css={css`
-                            display: flex;
-                            font-weight: bold;
-                            padding-top: 5px;
-                            border-top: 1px solid grey;
-                            margin: 10px 5px 0 10px;
-                            font-size: larger;
-                        `}
-                    >
-                        <Span
-                            css={css`
-                                margin-right: 5px;
-                            `}
-                            l10nKey="EditTab.Toolbox.DragActivity.Item"
-                        />
-                        {currentCanvasElementTargetId && (
-                            <Span l10nKey="EditTab.Toolbox.DragActivity.DraggableShape" />
-                        )}
-                        {!currentCanvasElementTargetId && (
-                            <Span l10nKey="EditTab.Toolbox.DragActivity.FixedShape" />
-                        )}
-                    </div>
-                    <div
-                        css={css`
-                            display: flex;
-                            justify-content: space-between;
-                        `}
-                    >
-                        <BloomTooltip
-                            // This tooltip comes out nearly the full width of the toolbox, because of
-                            // a fixed-width setting for tooltips in our material-ui theme.
-                            // I tried changing it, but could not find a combination of settings
-                            // that works better. Without a fixed width, the tooltip tends to extend off
-                            // the screen and cause the toolbox to scroll horizontally. A fixed width
-                            // suitable for "Delete" would not work well for some localizations.
-                            id="delete"
-                            placement="top"
-                            tip={{ l10nKey: "Common.Delete" }}
-                            css={css`
-                                margin: 10px;
-                                ${disabledCss(currentCanvasElement)};
-                            `}
-                        >
-                            <TrashIcon
-                                css={css`
-                                    font-size: 35px;
-                                `}
-                                id="trashIcon"
-                                color="primary"
-                                fontSize="large"
-                                onClick={() =>
-                                    canvasElementManager?.deleteCurrentCanvasElement()
-                                }
-                            />
-                        </BloomTooltip>
-                        <BloomTooltip
-                            id="duplicate"
-                            placement="top"
-                            tip={{
-                                l10nKey:
-                                    "EditTab.Toolbox.ComicTool.Options.Duplicate"
-                            }}
-                            css={css`
-                                margin: 10px;
-                                ${disabledCss(currentCanvasElement)};
-                            `}
-                        >
-                            <img
-                                height="30px"
-                                className="duplicate-canvasElement-icon"
-                                src="/bloom/bookEdit/toolbox/overlay/duplicate-bubble.svg"
-                                onClick={() => makeDuplicateOfDragBubble()}
-                            />
-                        </BloomTooltip>
-                    </div>
                 </div>
             )}
         </ThemeProvider>

@@ -4,7 +4,7 @@
 // This file contains the definitions of our game themes. All consist of values for a set of variables
 // defined and given a default value in this rule.
 .bloom-page, // defaults for all other themes
-.bloom-page.game-theme-default {
+.bloom-page.game-theme-blue-on-white {
     // and more definitely applying to the default theme
     // This page-background-color setting is more specific than the appearance rule for it.
     // It is also forced to white (by an !important rule) when in PDF publish mode.
@@ -90,19 +90,6 @@
     --button-choice-background-color: white;
 }
 
-.bloom-page.game-theme-blue-on-white {
-    // Taken from the old blue-on-tan theme for the newer games, which I think this is replacing.
-    // Currently the same as default theme, but some of those may change.
-
-    // I originally meant this to have a tan background, probably to match something from
-    // EducationForLife, but the theme is called blue-on-WHITE, and no one has complained,
-    // so it seems best to leave it that way for now.
-    //--page-background-color: #e9d9bd;
-    // Must have at least one rule, or less won't generate CSS for it at all,
-    // and we don't get a blue-on-white theme.
-    --page-background-color: white;
-}
-
 .bloom-page.game-theme-red-on-white {
     // probably not right or sufficient but lets us test
     --page-background-color: white;
@@ -115,8 +102,8 @@
 // is then more specific than any of the other theme rules).
 // probably not right or sufficient but lets us test
 // (We think of this theme as monochrome-PDF, but don't want that actually in the list,
-// so it's commented out here.)
-.bloom-page.game-theme-monochrome-PDF,
+// so it's commented out here. You can put it back for easier testing of this theme.)
+//.bloom-page.game-theme-monochrome-PDF,
 .pdfPublishMode.pdfPublishMode .bloom-page {
     --page-background-color: white;
     // review: too light to contrast with white text?
@@ -128,11 +115,4 @@
     --button-correct-background-color: black;
     --button-choice-border-color: black;
     --button-choice-color: black;
-    // review: anything to override here for simple-dom-choice?
-    // I think the correct and wrong colors are not used in a PDF,
-    // but this theme can be applied in edit (and hence in play).
-    // Correct background will get a reasonable default from the draggable-background-color.
-    // The default wrong-background-color is already a gray.
-    // The default foreground colors are black and white, which are fine.
-    // However, may need reconsideration if we change the defaults.
 }
