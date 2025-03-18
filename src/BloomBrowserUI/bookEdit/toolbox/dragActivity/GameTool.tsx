@@ -57,7 +57,7 @@ import {
 } from "../../js/CanvasElementManager";
 import { getCanvasElementManager } from "../overlay/canvasElementUtils";
 
-// This is the main code that manages the Bloom Games or Drag Activities.
+// This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
 // and DragActivityTool, which is the ToolboxToolReactAdaptor subclass that represents
 // the tool to the toolbox code. See also the summary in Games.less of important classes
