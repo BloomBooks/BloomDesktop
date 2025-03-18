@@ -9,7 +9,7 @@ import {
     CanvasElementManager,
     theOneCanvasElementManager
 } from "../js/CanvasElementManager";
-import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
+import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { addScrollbarsToPage, cleanupNiceScroll } from "../shared/scrolling";
 
 interface qtipInterface extends JQuery {

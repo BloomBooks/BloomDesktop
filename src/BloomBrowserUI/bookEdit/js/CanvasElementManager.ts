@@ -31,7 +31,7 @@ import {
     UpdateImageTooltipVisibility,
     HandleImageError
 } from "./bloomImages";
-import { adjustTarget } from "../toolbox/dragActivity/GameTool";
+import { adjustTarget } from "../toolbox/games/GameTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";

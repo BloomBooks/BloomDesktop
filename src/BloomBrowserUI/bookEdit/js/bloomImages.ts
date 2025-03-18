@@ -17,7 +17,7 @@ import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
 
 import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
-import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
+import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import { getCanvasElementManager } from "../toolbox/overlay/canvasElementUtils";

@@ -18,10 +18,7 @@ import { SignLanguageTool } from "./signLanguage/signLanguageTool";
 import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 import "errorHandler";
 import { OverlayTool } from "./overlay/overlayTool";
-import {
-    DragActivityTool,
-    setActiveDragActivityTab
-} from "./dragActivity/GameTool";
+import { DragActivityTool, setActiveDragActivityTab } from "./games/GameTool";
 import { IAudioRecorder } from "./talkingBook/IAudioRecorder";
 import { theOneAudioRecorder } from "./talkingBook/audioRecording";
 

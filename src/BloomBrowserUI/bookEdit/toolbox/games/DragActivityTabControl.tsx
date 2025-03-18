@@ -11,7 +11,7 @@ import * as ReactDOM from "react-dom";
 import { getToolboxBundleExports } from "../../js/bloomFrames";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { default as PencilIcon } from "@mui/icons-material/Edit";
-import { showGamePromptDialog } from "./GameTool";
+import { showGamePromptDialog } from "../games/GameTool";
 
 // This component is responsible for the Game Setup mode tabs in the Game tool.
 // Although the code seems to belong in this folder with the other Game code, it is actually

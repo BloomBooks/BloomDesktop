@@ -11,7 +11,7 @@ import {
     theOneCanvasElementManager,
     CanvasElementManager
 } from "./js/CanvasElementManager";
-import { renderDragActivityTabControl } from "./toolbox/dragActivity/DragActivityTabControl";
+import { renderDragActivityTabControl } from "./toolbox/games/DragActivityTabControl";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -86,7 +86,7 @@ import {
     removeImageId,
     changeImage
 } from "./js/bloomEditing";
-import { showGamePromptDialog } from "./toolbox/dragActivity/GameTool";
+import { showGamePromptDialog } from "./toolbox/games/GameTool";
 export {
     getBodyContentForSavePage,
     requestPageContent,

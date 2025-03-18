@@ -46,7 +46,7 @@ import {
     CanvasElementItemRow,
     CanvasElementTextItem
 } from "./CanvasElementItem";
-import { isPageBloomGame } from "../dragActivity/GameTool";
+import { isPageBloomGame } from "../games/GameTool";
 import { getCanvasElementManager } from "./canvasElementUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { CanvasElementKeyHints } from "./CanvasElementKeyHints";

@@ -31,7 +31,7 @@ import {
     makeTargetForDraggable,
     playSound,
     showDialogToChooseSoundFileAsync
-} from "../toolbox/dragActivity/GameTool";
+} from "../toolbox/games/GameTool";
 import { ThemeProvider } from "@mui/material/styles";
 import {
     divider,
