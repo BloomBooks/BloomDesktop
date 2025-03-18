@@ -69,7 +69,7 @@ import { removeToolboxMarkup } from "../toolbox/toolbox";
 import WebSocketManager, {
     IBloomWebSocketEvent
 } from "../../utils/WebSocketManager";
-import { setupDragActivityTabControl } from "../toolbox/dragActivity/dragActivityTool";
+import { setupDragActivityTabControl } from "../toolbox/dragActivity/GameTool";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { addScrollbarsToPage, cleanupNiceScroll } from "../shared/scrolling";
 import { showLinkGridSetupsDialog } from "../bookLinkSetup/LinkGridSetupDialog";

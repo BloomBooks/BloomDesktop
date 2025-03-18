@@ -21,7 +21,7 @@ import {
     adjustTarget,
     DragActivityTool,
     makeTargetForDraggable
-} from "./dragActivityTool";
+} from "./GameTool";
 import * as ReactDOM from "react-dom";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import {

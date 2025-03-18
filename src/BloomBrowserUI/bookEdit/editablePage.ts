@@ -86,7 +86,7 @@ import {
     removeImageId,
     changeImage
 } from "./js/bloomEditing";
-import { showGamePromptDialog } from "../bookEdit/toolbox/dragActivity/dragActivityTool";
+import { showGamePromptDialog } from "./toolbox/dragActivity/GameTool";
 export {
     getBodyContentForSavePage,
     requestPageContent,

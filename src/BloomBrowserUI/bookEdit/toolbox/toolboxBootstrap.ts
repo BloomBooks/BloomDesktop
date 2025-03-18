@@ -21,7 +21,7 @@ import { OverlayTool } from "./overlay/overlayTool";
 import {
     DragActivityTool,
     setActiveDragActivityTab
-} from "./dragActivity/dragActivityTool";
+} from "./dragActivity/GameTool";
 import { IAudioRecorder } from "./talkingBook/IAudioRecorder";
 import { theOneAudioRecorder } from "./talkingBook/audioRecording";
 

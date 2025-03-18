@@ -13,7 +13,7 @@ import {
     getPageIframeBody
 } from "../../utils/shared";
 import { EditableDivUtils } from "../js/editableDivUtils";
-import { DragActivityTool } from "./dragActivity/dragActivityTool";
+import { DragActivityTool } from "./dragActivity/GameTool";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
