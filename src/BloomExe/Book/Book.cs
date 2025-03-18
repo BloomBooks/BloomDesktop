@@ -1727,7 +1727,6 @@ namespace Bloom.Book
             }
             RemoveObsoleteSoundAttributes(OurHtmlDom);
             Storage.RepairEmptyPages();
-            RemoveObsoleteImageAttributes(OurHtmlDom);
             BringBookInfoUpToDate(oldMetaData);
             FixErrorsEncounteredByUsers(OurHtmlDom);
             AddReaderBodyAttributes(OurHtmlDom);
@@ -1790,6 +1789,9 @@ namespace Bloom.Book
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
+            Storage.DoBackMigrations();
+            // After DoBackMigrations, since looking for the renamed class
+            RemoveObsoleteImageAttributes(OurHtmlDom);
 
             // Make sure the appearance settings have checked the current state of the css files.
             // This should be done before UpdateSupportFiles, because this can affect what files

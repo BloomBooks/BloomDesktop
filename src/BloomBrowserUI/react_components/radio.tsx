@@ -8,6 +8,7 @@ export interface IRadioProps extends ILocalizationProps {
     labelClass?: string; // class for the label (text next to the radio button), in addition to default "radioLabel"
     defaultChecked?: boolean; // true if button should be checked; usually controlled by containing RadioGroup
     onSelected?: (value: string) => void; // passed this button's value when it is clicked; usually used by containing RadioGroup.
+    disabled?: boolean; // true if button should be disabled
 }
 
 // A radio button that is localizable.
@@ -49,6 +50,7 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
                             this.props.onSelected(this.props.value);
                         }
                     }}
+                    disabled={this.props.disabled}
                 />
                 <div
                     className={Radio.combineClasses(
@@ -56,7 +58,7 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
                         this.props.labelClass
                     )}
                     onClick={() => {
-                        if (this.props.onSelected) {
+                        if (!this.props.disabled && this.props.onSelected) {
                             this.props.onSelected(this.props.value);
                         }
                     }}

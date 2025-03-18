@@ -10,7 +10,6 @@ using Bloom.Book;
 using Bloom.Properties;
 using Bloom.Publish.BloomPub;
 using Bloom.Publish.Epub;
-using Bloom.ToPalaso;
 using Bloom.web;
 using BloomTemp;
 using CommandLine;
@@ -34,8 +33,8 @@ namespace Bloom.CLI
 
     class CreateArtifactsCommand
     {
-        private static ProjectContext _projectContext;
-        private static Book.Book _book;
+        private static ProjectContext s_projectContext;
+        private static Book.Book s_book;
 
         public static List<string> GetErrorsFromExitCode(int exitCode)
         {
@@ -107,12 +106,12 @@ namespace Bloom.CLI
                     Program.RunningHarvesterMode = true;
                     string collectionFilePath = options.CollectionPath;
                     using (
-                        _projectContext = applicationContainer.CreateProjectContext(
+                        s_projectContext = applicationContainer.CreateProjectContext(
                             collectionFilePath
                         )
                     )
                     {
-                        Bloom.Program.SetProjectContext(_projectContext);
+                        Bloom.Program.SetProjectContext(s_projectContext);
                         // This may be needed for bringing the book up to date.  See BH-7453, BH-7454, and BH-7455.
                         if (!Sldr.IsInitialized)
                             Sldr.Initialize();
@@ -209,7 +208,7 @@ namespace Bloom.CLI
                 // Report what we can about fonts and languages for this book.
                 // (See https://issues.bloomlibrary.org/youtrack/issue/BL-11512.)
                 SendFontAnalyticsCommand.ReportFontAnalytics(
-                    _book.ID,
+                    s_book.ID,
                     "harvester createArtifacts",
                     parameters.Testing,
                     !RobustFile.Exists(parameters.EpubOutputPath) || parameters.SkipEpubAnalytics,
@@ -242,18 +241,18 @@ namespace Bloom.CLI
 
         private static CreateArtifactsExitCode CreateJsonTextsArtifact(string jsonTextsOutputPath)
         {
-            var json = _book.OurHtmlDom.GetTextsJson();
+            var json = s_book.OurHtmlDom.GetTextsJson();
             RobustFile.WriteAllText(jsonTextsOutputPath, json);
             return CreateArtifactsExitCode.Success;
         }
 
         private static void LoadBook(string bookPath)
         {
-            _book = _projectContext.BookServer.GetBookFromBookInfo(
+            s_book = s_projectContext.BookServer.GetBookFromBookInfo(
                 new BookInfo(
                     bookPath,
                     true,
-                    _projectContext.TeamCollectionManager.CurrentCollectionEvenIfDisconnected
+                    s_projectContext.TeamCollectionManager.CurrentCollectionEvenIfDisconnected
                         ?? new AlwaysEditSaveContext() as ISaveContext
                 )
             );
@@ -282,7 +281,7 @@ namespace Bloom.CLI
                     zippedBloomPubOutputPath = tempBloomPub.Path;
                 }
 
-                BookServer bookServer = _projectContext.BookServer;
+                BookServer bookServer = s_projectContext.BookServer;
 
                 var metadata = BookMetaData.FromFolder(bookPath);
                 bool isTemplateBook = metadata.IsSuitableForMakingShells;
@@ -377,17 +376,17 @@ namespace Bloom.CLI
             string directoryName = Path.GetDirectoryName(parameters.EpubOutputPath);
             Directory.CreateDirectory(directoryName); // Ensures that the directory exists
 
-            BookServer bookServer = _projectContext.BookServer;
-            BookThumbNailer thumbNailer = _projectContext.ThumbNailer;
+            BookServer bookServer = s_projectContext.BookServer;
+            BookThumbNailer thumbNailer = s_projectContext.ThumbNailer;
             var maker = new EpubMaker(thumbNailer, bookServer);
             maker.ControlForInvoke = control;
 
-            maker.Book = _book;
+            maker.Book = s_book;
             // This is the previous default, but probably we should make it configurable, and possibly change the default.
             // Note that it will end up Fixed if the presence of Comic bubbles requires it.
             maker.Unpaginated = true;
             // and if it has explicitly been set to fixed, make it that way.
-            if (_book.BookInfo?.PublishSettings?.Epub?.Mode == "fixed")
+            if (s_book.BookInfo?.PublishSettings?.Epub?.Mode == "fixed")
                 maker.Unpaginated = false;
             maker.OneAudioPerPage = true; // default used in EpubApi
             // Enhance: maybe we want book to have image descriptions on page? use reader font sizes?
@@ -416,14 +415,14 @@ namespace Bloom.CLI
                 // For now, we'll just create the thumbnail every time
                 // It makes the code simpler than having fallback logic not to mention the complications of determining which folder the ePub is in, whether it's really up-to-date, etc.
                 string thumbnailPath = BookThumbNailer.GenerateCoverImageOfRequestedMaxSize(
-                    _book,
+                    s_book,
                     height
                 );
 
                 AppendPathIfExists(thumbnailPath, outputPaths);
             }
 
-            string shareThumbnail = BookThumbNailer.GenerateSocialMediaSharingThumbnail(_book);
+            string shareThumbnail = BookThumbNailer.GenerateSocialMediaSharingThumbnail(s_book);
             AppendPathIfExists(shareThumbnail, outputPaths);
 
             using (var writer = new StreamWriter(parameters.ThumbnailOutputInfoPath, append: false))

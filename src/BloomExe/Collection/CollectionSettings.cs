@@ -522,14 +522,14 @@ namespace Bloom.Collection
 
                 BrandingProjectKey = ReadString(xml, "BrandingProjectName", "Default");
                 SubscriptionCode = ReadString(xml, "SubscriptionCode", null);
-                if (
-                    BrandingProjectKey != "Default"
-                    && BrandingProjectKey != "Local-Community"
-                    && !Program.RunningHarvesterMode
-                )
+                if (BrandingProjectKey != "Default" && !Program.RunningHarvesterMode)
                 {
                     // Validate branding, so things can't be circumvented by just typing something random into settings
-                    var expirationDate = CollectionSettingsApi.GetExpirationDate(SubscriptionCode);
+                    var expirationDate = CollectionSettingsApi.GetExpirationDate(
+                        BrandingProjectKey == "Local-Community"
+                            ? "Local-Community"
+                            : SubscriptionCode
+                    );
                     if (expirationDate < DateTime.Now) // no longer require branding files to exist yet
                     {
                         InvalidBranding = BrandingProjectKey;

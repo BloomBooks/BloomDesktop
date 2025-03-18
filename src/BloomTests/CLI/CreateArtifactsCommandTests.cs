@@ -241,6 +241,17 @@ namespace BloomTests.CLI
             }
         }
 
+        // When running this test in the same run as CreateArtifacts_LegacyBookWithInvalidXmatter_HarvesterAllowedToConvert_ConvertsToDefaultTheme
+        // and CompressBookForDevice_BloomEnterprise_ConvertsNewQuizPagesToJson_AndKeepsThem, we often get a wv2 initialization error.
+        // I haven't yet figured out what is going on, but one thing is that we are creating a WebThumbNailList during this test because
+        // Autofac initializes it (through EditView through BookSettings currently) which creates a browser.
+        // One theory is this has something to do with the dataFolder being used by wv2 (see a bunch of comments in WebView2Browser).
+        // We do usually create new ones, but perhaps in some case we don't.
+        // Note that the project context (which ends up creating some browsers) in CreateArtifactsCommand is static, so that seems implicated.
+        //
+        // In the end, making this test not run all the time is not actually losing much. We test the basic functionality of creating the json
+        // in HTMLDom-Json-Tests.cs.
+        [Ignore("By hand for now. See comment.")]
         [Test]
         public void CreateArtifacts_WithJsonOutput_CreatesJsonFile()
         {
