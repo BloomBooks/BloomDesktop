@@ -3926,13 +3926,24 @@ namespace Bloom.Book
                 quiz.SetAttribute("data-activity", "simple-comprehension-quiz");
             }
             var choices = Dom.SafeSelectNodes("//div[@data-activity = 'simple-dom-choice']");
-            foreach (SafeXmlElement elt in choices.Concat(quizzes))
+
+            void MigrateList(SafeXmlNode[] choices, string newClass)
             {
-                elt.SetAttribute("data-tool-id", "game");
-                // In case this runs on something that's already migrated, don't change an existing theme.
-                if (!elt.GetClasses().Any(x => x.StartsWith("game-theme")))
-                    elt.AddClass("game-theme-legacy");
+                foreach (SafeXmlElement elt in choices)
+                {
+                    elt.SetAttribute("data-tool-id", "game");
+                    // In case this runs on something that's already migrated, don't change an existing theme.
+                    if (!elt.GetClasses().Any(x => x.StartsWith("game-theme")))
+                    {
+                        // This is the theme (once called 'legacy') that looks most like the old version
+                        // of these games...in fact we tried hard to make it identical.
+                        elt.AddClass(newClass);
+                    }
+                }
             }
+
+            MigrateList(quizzes, "game-theme-red-on-white");
+            MigrateList(choices, "game-theme-white-on-blue");
             Dom.UpdateMetaElement("maintenanceLevel", "6");
         }
 

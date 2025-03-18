@@ -121,6 +121,13 @@
             div.bloom-imageContainer {
                 height: 40% !important;
                 margin-bottom: 10px;
+                .bloom-imageContainer {
+                    // prevent the rule above applying to canvas elements,
+                    // especially the background one.
+                    height: 100% !important;
+                    width: 100% !important;
+                    margin: 0;
+                }
             }
             .choices .player-button {
                 width: 85%;
@@ -273,16 +280,13 @@
     // page
 
     & {
-        background-color: var(
-            --simple-dom-choice-page-background-color
-        ) !important; // controlled by game theme, usually --page-background-color
         color: var(--page-foreground-color);
         // in previous versions, a definition of Prompt-style set color:white.
         // Migrating this causes a problem if the book is opened using an older Bloom.
         // So, this stronger rule defeats that one.
         .bloom-editable.Prompt-style {
             color: var(--header-color);
-            background-color: var(--simple-dom-choice-header-background-color);
+            background-color: var(--header-background-color);
         }
     }
     // page number

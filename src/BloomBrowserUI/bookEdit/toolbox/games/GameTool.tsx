@@ -949,14 +949,7 @@ const DragActivityControls: React.FunctionComponent<{
             } catch (e) {
                 console.error("Error processing stylesheets:", e);
             }
-            // go with whatever we managed to get. Should include at least 'default'.
-            if (
-                activityType !== "simple-comprehension-quiz" &&
-                activityType !== "simple-dom-choice"
-            ) {
-                // remove the legacy theme, which does not apply to the newer games
-                themeSet.delete("legacy");
-            }
+            // go with whatever we managed to get. Should include at least 'blue on white'.
             setThemes((Array.from(themeSet) as string[]).sort());
         };
 

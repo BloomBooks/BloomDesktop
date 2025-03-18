@@ -2,6 +2,7 @@
 @vertical-space: 10px;
 
 .bloom-page.simple-comprehension-quiz {
+    color: var(--text-color);
     // These are usually defined under :root. But in bloom-player, any rules
     // using things above the "actual-page-preview" element where we attach the
     // 'scoped' style rules don't work. The rule will emerge as something like
@@ -97,6 +98,7 @@
             border-radius: 2px;
             width: 18px;
             height: 18px;
+            background-color: white;
         }
 
         /* Checkmark is done as a rotated half-bordered box that is the :after of the div */
@@ -207,6 +209,13 @@ body.editMode
             // In read mode, if they are selected but not correct, the whole answer dims
             opacity: 0.5;
         }
+    }
+    // page number
+    &.numberedPage::after {
+        color: var(--page-foreground-color);
+        --pageNumber-background-color: var(
+            --page-background-color
+        ); // appearance system
     }
 }
 

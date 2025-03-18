@@ -23,7 +23,7 @@
     // must be defined using rgb so we can add various alpha values
 
     // should not be overridden by other themes; override the rgb value instead
-    --button-color: rgba(var(--button-color-rgb), 1);
+    --button-color: rgb(var(--button-color-rgb));
     // These are for the slider game, which we're not releasing yet
     // --slider-button-color: var(--draggable-background-color);;
     // --slider-keyword-color: #902a90;
@@ -39,7 +39,8 @@
     // If you change these here, move these settings to legacy.
     --header-background-color: var(--button-color);
     --header-color: white;
-    --text-color: rgb(var(--pure-material-onprimary-rgb));
+    // might generalize this to other games. For now, it's the default text color for the quiz.
+    --text-color: black;
     // for the outline rectangle itself
     --unselected-checkbox-border-color: black;
     --selected-checkbox-border-color: var(--button-color);
@@ -48,8 +49,6 @@
 
     // from simple-dom-choice-activities.less
     // If you change these here, move these settings to legacy.
-    // The next line here gets ignored for a reason I can't imagine, so make it a rule we don't want.
-    --weird-compiler-error: purple;
     --button-correct-color: white;
     --button-correct-background-color: var(--draggable-background-color);
     --button-wrong-color: white;
@@ -59,27 +58,21 @@
         --button-color
     ); // this is the default for all buttons
     --button-choice-background-color: #white;
-    // we need this variable so that in legacy theme the simple dom choice activities
-    // can have a different background color from other games.
-    // By default it is the same as the page background color.
-    --simple-dom-choice-page-background-color: var(--page-background-color);
-    // likewise in this one case in legacy simple dom choice has a different
-    // background header color
-    --simple-dom-choice-header-background-color: var(--header-background-color);
 }
 
-.bloom-page.game-theme-legacy {
+.bloom-page.game-theme-white-on-blue {
     // from an old rule in simple-dom-choice-activities.less; a slightly lighter blue
     @legacy-blue: #539eff;
-    --page-background-color: white;
+    @legacy-orange: #ffb453;
+    @legacy-orange-rgb: 255, 180, 83;
+    --page-background-color: @legacy-blue;
     //--page-foreground-color: white;
-    --header-background-color: @bloom-red;
+    --header-background-color: @legacy-blue;
     --header-color: white;
-    --button-color-rgb: @bloom-red-rgb;
+    --button-color-rgb: @legacy-orange-rgb;
+    --text-color: white;
 
-    --button-correct-background-color: #ffb453; // light orange
-    --simple-dom-choice-page-background-color: @legacy-blue;
-    --simple-dom-choice-header-background-color: @legacy-blue;
+    --button-correct-background-color: @legacy-orange; // light orange
     --unselected-checkbox-border-color: #848484;
     // --selected-checkbox-border-color: @bloom-red;
     // --selected-checkbox-background-color: @bloom-red;
@@ -103,7 +96,7 @@
 // probably not right or sufficient but lets us test
 // (We think of this theme as monochrome-PDF, but don't want that actually in the list,
 // so it's commented out here. You can put it back for easier testing of this theme.)
-//.bloom-page.game-theme-monochrome-PDF,
+//.bloom-page.game-theme-monochrome-PDF
 .pdfPublishMode.pdfPublishMode .bloom-page {
     --page-background-color: white;
     // review: too light to contrast with white text?
@@ -112,7 +105,23 @@
     --header-color: white;
     --draggable-color: white;
     --button-color-rgb: 0, 0, 0;
-    --button-correct-background-color: black;
+    --button-correct-color: white;
+
     --button-choice-border-color: black;
     --button-choice-color: black;
+    // The correct choice is indistinguishable in this (paper.PDF) mode.
+    --button-correct-background-color: var(--button-choice-background-color);
+    --button-correct-color: var(--button-choice-color);
+
+    // Likewise no indication which checkbox should be checked.
+    --selected-checkbox-border-color: var(--unselected-checkbox-border-color);
+    --selected-checkbox-background-color: white;
+    --checkbox-checkmark-color: transparent;
+
+    // We're cheating a bit here, putting a rule in a theme which doesn't just set
+    // a color variable. But it's what we want to do to these buttons.
+    .game-button,
+    .page-turn-button {
+        display: none;
+    }
 }
