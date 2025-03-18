@@ -69,10 +69,6 @@
         <source xml:lang="en">Fixed In Place</source>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.DraggableShape">
-        <source xml:lang="en">Draggable Shape</source>
-        <note>ID: EditTab.Toolbox.DragActivity.DraggableShape</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions">
         <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
@@ -81,10 +77,6 @@
         <source xml:lang="en">Edit word to spell</source>
         <note>ID: EditTab.Toolbox.DragActivity.EditWordToSpell</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.FixedShape">
-        <source xml:lang="en">Fixed Shape</source>
-        <note>ID: EditTab.Toolbox.DragActivity.FixedShape</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Instructions">
         <source xml:lang="en">Instructions</source>
         <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
@@ -92,10 +84,6 @@
       <trans-unit id="EditTab.Toolbox.DragActivity.InstructionsOrLabels">
         <source xml:lang="en">Instructions or other labels</source>
         <note>ID: EditTab.Toolbox.DragActivity.InstructionsOrLabels</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Item">
-        <source xml:lang="en">Item:</source>
-        <note>ID: EditTab.Toolbox.DragActivity.Item</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Letter">
         <source xml:lang="en">M</source>

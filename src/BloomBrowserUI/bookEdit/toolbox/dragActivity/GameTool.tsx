@@ -49,11 +49,9 @@ import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { BubbleSpec } from "comicaljs";
 import { setPlayerUrlPrefixFromWindowLocationHref } from "../../shared/narration";
 import { renderGamePromptDialog } from "./GamePromptDialog";
-import { OverlayTool } from "../overlay/overlayTool";
 import {
     CanvasElementManager,
-    kbackgroundImageClass,
-    theOneCanvasElementManager
+    kbackgroundImageClass
 } from "../../js/CanvasElementManager";
 import { getCanvasElementManager } from "../overlay/canvasElementUtils";
 
@@ -681,11 +679,6 @@ const getPage = () => {
     const pageBody = ToolBox.getPage();
     return pageBody?.getElementsByClassName("bloom-page")[0] as HTMLElement;
 };
-
-// like definition of .disabled in toolbox.less"
-// if argument is false returns CSS to make the element look disabled and ignore pointer events.
-const disabledCss = enabled =>
-    enabled ? "" : "opacity:0.4; pointer-events:none;";
 
 const getSoundFilesAsync = async (prefix: string): Promise<string[]> => {
     const result = await getWithPromise(
