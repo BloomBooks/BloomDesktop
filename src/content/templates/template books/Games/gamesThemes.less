@@ -1,10 +1,9 @@
 @import (reference) "../../../../BloomBrowserUI/bloomUI.less";
-@tan: #e9d9bd;
-@paleTan: #f9e9cc;
+@bloom-red-rgb: 214, 86, 73;
 
 // This file contains the definitions of our game themes. All consist of values for a set of variables
 // defined and given a default value in this rule.
-.bloom-page, // defaults for all other thems
+.bloom-page, // defaults for all other themes
 .bloom-page.game-theme-default {
     // and more definitely applying to the default theme
     // This page-background-color setting is more specific than the appearance rule for it.
@@ -12,21 +11,21 @@
     --page-background-color: white;
     // general default, needs to contrast with --page-background-color
     --page-foreground-color: black;
-    // This is for the dashed rectangles that show where the draggable items can be dropped.
-    --target-color: #f9e9cc;
+    // Convert hex #2980bb (a grayish blue) to RGB values
+    --button-color-rgb: 41, 128, 187;
     // Colors for the elements that can be dragged in Play mode.
-    --draggable-background-color: #2980bb;
+    // BG color is also used for the dashed rectangles around targets
+    --draggable-background-color: rgb(var(--button-color-rgb));
     --draggable-color: white;
     // This is for text elements that are not draggable in games that involve dragging.
-    --fixed-color: #fc8602;
+    --fixed-color: #fc8602; // orange
     // Buttons in the various games, like the check/retry/show answer buttons.
     // must be defined using rgb so we can add various alpha values
-    // Convert hex #2980bb to RGB values: 41, 128, 187
-    --button-color-rgb: 41, 128, 187;
+
     // should not be overridden by other themes; override the rgb value instead
     --button-color: rgba(var(--button-color-rgb), 1);
     // These are for the slider game, which we're not releasing yet
-    // --slider-button-color: #2980bb;
+    // --slider-button-color: var(--draggable-background-color);;
     // --slider-keyword-color: #902a90;
     // --slider-text-background: #75d0ee;
 
@@ -41,57 +40,73 @@
     --header-background-color: var(--button-color);
     --header-color: white;
     --text-color: rgb(var(--pure-material-onprimary-rgb));
+    // for the outline rectangle itself
+    --unselected-checkbox-border-color: black;
+    --selected-checkbox-border-color: var(--button-color);
+    --selected-checkbox-background-color: var(--button-color);
+    --checkbox-checkmark-color: white;
 
     // from simple-dom-choice-activities.less
     // If you change these here, move these settings to legacy.
+    // The next line here gets ignored for a reason I can't imagine, so make it a rule we don't want.
+    --weird-compiler-error: purple;
     --button-correct-color: white;
     --button-correct-background-color: var(--draggable-background-color);
     --button-wrong-color: white;
-    --button-wrong-background-color: #848484;
-    --button-choice-color: black;
+    --button-wrong-background-color: #848484; // mid gray
+    --button-choice-border-color: var(--button-color);
+    --button-choice-color: var(
+        --button-color
+    ); // this is the default for all buttons
     --button-choice-background-color: #white;
     // we need this variable so that in legacy theme the simple dom choice activities
     // can have a different background color from other games.
     // By default it is the same as the page background color.
     --simple-dom-choice-page-background-color: var(--page-background-color);
+    // likewise in this one case in legacy simple dom choice has a different
+    // background header color
+    --simple-dom-choice-header-background-color: var(--header-background-color);
 }
 
 .bloom-page.game-theme-legacy {
-    --page-background-color: #539eff; // from a rule in simple-dom-choice-activities.less
-    --page-foreground-color: white;
+    // from an old rule in simple-dom-choice-activities.less; a slightly lighter blue
+    @legacy-blue: #539eff;
+    --page-background-color: white;
+    //--page-foreground-color: white;
     --header-background-color: @bloom-red;
     --header-color: white;
-    --button-color-rgb: 214, 86, 73; // from old comp quiz pure-material-primary-rgb...or we could define @bloom-red-rgb?
+    --button-color-rgb: @bloom-red-rgb;
 
-    --button-correct-background-color: #ffb453;
-    --simple-dom-choice-page-background-color: #539eff;
+    --button-correct-background-color: #ffb453; // light orange
+    --simple-dom-choice-page-background-color: @legacy-blue;
+    --simple-dom-choice-header-background-color: @legacy-blue;
+    --unselected-checkbox-border-color: #848484;
+    // --selected-checkbox-border-color: @bloom-red;
+    // --selected-checkbox-background-color: @bloom-red;
+    // --checkbox-checkmark-color: white;
+
+    --button-choice-border-color: @legacy-blue;
+    --button-choice-color: black;
+    --button-choice-background-color: white;
 }
 
 .bloom-page.game-theme-blue-on-white {
     // Taken from the old blue-on-tan theme for the newer games, which I think this is replacing.
-    // Currently mostly same as default theme, but some of those may change.
+    // Currently the same as default theme, but some of those may change.
+
     // I originally meant this to have a tan background, probably to match something from
     // EducationForLife, but the theme is called blue-on-WHITE, and no one has complained,
     // so it seems best to leave it that way for now.
     //--page-background-color: #e9d9bd;
-    --target-color: #f9e9cc;
-    --draggable-background-color: #2980bb;
-    --draggable-color: white;
-    --fixed-color: #fc8602;
-    --button-color-rgb: 41, 128, 187; // not changed, but I want this even if we change the default
-    --slider-button-color: #2980bb;
-    --slider-keyword-color: #902a90;
-    // These are probably not right. But at least they produce some feedback when
-    // a button is hovered and while the mouse is down over one.
-    --hover-button-border: @bloom-blue;
-    --active-button-border: black;
+    // Must have at least one rule, or less won't generate CSS for it at all,
+    // and we don't get a blue-on-white theme.
+    --page-background-color: white;
 }
 
 .bloom-page.game-theme-red-on-white {
     // probably not right or sufficient but lets us test
     --page-background-color: white;
-    // This is the rgb equivalent of @bloom-red.
-    --button-color-rgb: 214, 86, 73;
+    --button-color-rgb: @bloom-red-rgb;
     --draggable-background-color: rgb(var(--button-color-rgb));
 }
 
@@ -99,14 +114,20 @@
 // (because the publishing process puts .pdfPublishMode on the body element, and this rule
 // is then more specific than any of the other theme rules).
 // probably not right or sufficient but lets us test
-.pdfPublishMode.pdfPublishMode .bloom-page,
-.bloom-page.game-theme-monochrome-PDF {
+// (We think of this theme as monochrome-PDF, but don't want that actually in the list,
+// so it's commented out here.)
+.bloom-page.game-theme-monochrome-PDF,
+.pdfPublishMode.pdfPublishMode .bloom-page {
     --page-background-color: white;
     // review: too light to contrast with white text?
-    --draggable-background-color: lightgray;
-    --header-background-color: lightgray;
-    --draggable-color: black;
-    --button-color-rgb: 128, 128, 128;
+    --draggable-background-color: black;
+    --header-background-color: black;
+    --header-color: white;
+    --draggable-color: white;
+    --button-color-rgb: 0, 0, 0;
+    --button-correct-background-color: black;
+    --button-choice-border-color: black;
+    --button-choice-color: black;
     // review: anything to override here for simple-dom-choice?
     // I think the correct and wrong colors are not used in a PDF,
     // but this theme can be applied in edit (and hence in play).

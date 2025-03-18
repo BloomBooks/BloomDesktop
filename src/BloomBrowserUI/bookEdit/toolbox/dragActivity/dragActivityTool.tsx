@@ -935,24 +935,13 @@ const DragActivityControls: React.FunctionComponent<{
 
                         for (const rule of rules) {
                             if (rule.selectorText) {
-                                // Extract all class names from the selector
-                                const classNames = rule.selectorText.match(
-                                    /\.[\w-]+/g
+                                const re = new RegExp(
+                                    `\\.${gameThemePrefix}([\\w-]+)`,
+                                    "g"
                                 );
-                                if (classNames) {
-                                    classNames.forEach(className => {
-                                        if (
-                                            className.startsWith(
-                                                `.${gameThemePrefix}`
-                                            )
-                                        ) {
-                                            themeSet.add(
-                                                className.substring(
-                                                    gameThemePrefix.length + 1
-                                                )
-                                            ); // +1 for dot
-                                        }
-                                    });
+                                let match;
+                                while ((match = re.exec(rule.selectorText))) {
+                                    themeSet.add(match[1]); // add the theme name without the prefix
                                 }
                             }
                         }
@@ -968,6 +957,13 @@ const DragActivityControls: React.FunctionComponent<{
                 console.error("Error processing stylesheets:", e);
             }
             // go with whatever we managed to get. Should include at least 'default'.
+            if (
+                activityType !== "simple-comprehension-quiz" &&
+                activityType !== "simple-dom-choice"
+            ) {
+                // remove the legacy theme, which does not apply to the newer games
+                themeSet.delete("legacy");
+            }
             setThemes((Array.from(themeSet) as string[]).sort());
         };
 
@@ -994,7 +990,7 @@ const DragActivityControls: React.FunctionComponent<{
         // didn't add a listener, no cleanup needed.
         return () => {};
         // switching pages could change the currentTheme, at least, so we need to run this again.
-    }, [props.pageGeneration]);
+    }, [props.pageGeneration, activityType]);
     // The main point of this is to make the visibility of the arrow consistent with whether
     // a draggable is actually selected when changing pages. As far as I know, we don't need to do it when the
     // draggable or target change otherwise...other code handles target adjustment for those changes...

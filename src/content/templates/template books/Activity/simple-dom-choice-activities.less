@@ -27,7 +27,7 @@
 
         .player-button {
             display: block;
-            border: none;
+            border: 1px solid var(--button-choice-border-color);
             margin-bottom: 11px;
             margin-right: 7px; // need room to show any button shadows
 
@@ -275,13 +275,14 @@
     & {
         background-color: var(
             --simple-dom-choice-page-background-color
-        ); // controlled by game theme, usually --page-background-color
+        ) !important; // controlled by game theme, usually --page-background-color
         color: var(--page-foreground-color);
         // in previous versions, a definition of Prompt-style set color:white.
         // Migrating this causes a problem if the book is opened using an older Bloom.
         // So, this stronger rule defeats that one.
         .bloom-editable.Prompt-style {
-            color: var(--page-foreground-color);
+            color: var(--header-color);
+            background-color: var(--simple-dom-choice-header-background-color);
         }
     }
     // page number
