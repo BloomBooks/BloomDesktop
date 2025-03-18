@@ -31,7 +31,7 @@ import {
     UpdateImageTooltipVisibility,
     HandleImageError
 } from "./bloomImages";
-import { adjustTarget } from "../toolbox/dragActivity/dragActivityTool";
+import { adjustTarget } from "../toolbox/games/GameTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
@@ -5681,8 +5681,7 @@ export class CanvasElementManager {
         useSizeOfNewImage: boolean
     ) {
         return this.adjustBackgroundImageSizeToFit(
-            imageContainer.clientWidth,
-            imageContainer.clientHeight,
+            imageContainer,
             bgCanvasElement,
             useSizeOfNewImage,
             0
@@ -5705,8 +5704,7 @@ export class CanvasElementManager {
     // dimensions. In this case, we expand the bgCanvasElement to the full size of the container so
     // all the space is available to display the error icon and message.
     private adjustBackgroundImageSizeToFit(
-        containerWidth: number,
-        containerHeight: number,
+        imageContainer: HTMLElement,
         // The canvas element div that contains the background image.
         // (Since this is the background that we overlay things on, it is itself a
         // canvas element only in the sense that it has the same HTML structure in order to
@@ -5728,6 +5726,8 @@ export class CanvasElementManager {
         if (timeoutHandler) {
             clearTimeout(timeoutHandler);
         }
+        const containerWidth = imageContainer.clientWidth;
+        const containerHeight = imageContainer.clientHeight;
         let imgAspectRatio =
             bgCanvasElement.clientWidth / bgCanvasElement.clientHeight;
         const img = getImageFromCanvasElement(bgCanvasElement);
@@ -5763,8 +5763,7 @@ export class CanvasElementManager {
                 const handle = (setTimeout(
                     () =>
                         this.adjustBackgroundImageSizeToFit(
-                            containerWidth,
-                            containerHeight,
+                            imageContainer,
                             bgCanvasElement,
                             // after the timeout we don't consider that we MUST wait if we have dimensions
                             false,
@@ -5782,8 +5781,7 @@ export class CanvasElementManager {
                     "load",
                     () =>
                         this.adjustBackgroundImageSizeToFit(
-                            containerWidth,
-                            containerHeight,
+                            imageContainer,
                             bgCanvasElement,
                             false, // when this call happens we have the new dimensions.
                             handle // if this callback happens we can cancel the timeout.

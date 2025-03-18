@@ -1787,6 +1787,7 @@ namespace Bloom.Book
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
             Storage.MigrateToLevel5CanvasElement();
+            Storage.MigrateToLevel6LegacyActivities();
 
             // Must be after MigrateToLevel5, because it is looking for the renamed canvas element class.
             RemoveObsoleteImageAttributes(OurHtmlDom);

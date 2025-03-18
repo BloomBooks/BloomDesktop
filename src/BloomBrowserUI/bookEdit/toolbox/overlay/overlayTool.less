@@ -2,7 +2,6 @@
 
 @SideMargin: 6px;
 @ControlVerticalSpacing: 10px;
-@NecessaryZIndex: 30000;
 
 .ui-accordion h3[data-toolId="overlayTool"] {
     span.ui-accordion-header-icon {
@@ -217,10 +216,10 @@
 @dropdownLeftMargin: 16px;
 
 .canvasElement-options-dropdown-menu {
-    // Getting overwritten by the inline styles... :(
-    // TODO: Experiment with whether you can pass in a style through Material UI instead of using !important to bypass the inline style.
-    z-index: @NecessaryZIndex !important; // Note: 18,000 was experimentally determined to be the minimum required z-index, but seems safer to go up a bit from the minimum
-
+    // this allows the popup to be on top of the toolbox.
+    // A better way to do this is to wrap a Select in toolboxMenuPopupTheme. Not ready to switch
+    // the overlay tool to themes yet, but don't use this approach for new work.
+    z-index: @toolboxPopupZIndex !important;
     .MuiMenu-paper {
         min-width: calc(@toolboxWidth - 2 * @dropdownLeftMargin) !important;
     }

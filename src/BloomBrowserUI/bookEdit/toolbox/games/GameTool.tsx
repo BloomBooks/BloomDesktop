@@ -9,6 +9,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import {
     kBloomBlue,
     kOptionPanelBackgroundColor,
+    toolboxMenuPopupTheme,
     toolboxTheme
 } from "../../../bloomMaterialUITheme";
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
@@ -48,14 +49,13 @@ import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { BubbleSpec } from "comicaljs";
 import { setPlayerUrlPrefixFromWindowLocationHref } from "../../shared/narration";
 import { renderGamePromptDialog } from "./GamePromptDialog";
-import { OverlayTool } from "../overlay/overlayTool";
 import {
     CanvasElementManager,
-    theOneCanvasElementManager
+    kbackgroundImageClass
 } from "../../js/CanvasElementManager";
 import { getCanvasElementManager } from "../overlay/canvasElementUtils";
 
-// This is the main code that manages the Bloom Games or Drag Activities.
+// This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
 // and DragActivityTool, which is the ToolboxToolReactAdaptor subclass that represents
 // the tool to the toolbox code. See also the summary in Games.less of important classes
@@ -680,11 +680,6 @@ const getPage = () => {
     return pageBody?.getElementsByClassName("bloom-page")[0] as HTMLElement;
 };
 
-// like definition of .disabled in toolbox.less"
-// if argument is false returns CSS to make the element look disabled and ignore pointer events.
-const disabledCss = enabled =>
-    enabled ? "" : "opacity:0.4; pointer-events:none;";
-
 const getSoundFilesAsync = async (prefix: string): Promise<string[]> => {
     const result = await getWithPromise(
         `fileIO/listFiles?subPath=sounds&match=${prefix}_*`
@@ -801,7 +796,7 @@ const DragActivityControls: React.FunctionComponent<{
     const [wrongSound, setWrongSound] = useState("");
 
     // The core type of activity of the current page, from the data-activity attribute.
-    const [activityType, setActivityType] = useState("");
+    const [activityType, setActivityType] = useState<string>("");
 
     // Option values, stored in page attributes
     const [allItemsSameSize, setAllItemsSameSize] = useState(true);
@@ -823,7 +818,13 @@ const DragActivityControls: React.FunctionComponent<{
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const canvasElementManager = getCanvasElementManager()!;
-    const currentCanvasElement = canvasElementManager.getActiveElement();
+    let currentCanvasElement = canvasElementManager?.getActiveElement();
+    // Currently we mainly use this to decide whether to show the delete and duplicate buttons.
+    // Maybe those are obsolete now we have the new toolbox?
+    // In any case, we don't want to duplicate or delete a background image, so it doesn't count.
+    if (currentCanvasElement?.classList.contains(kbackgroundImageClass)) {
+        currentCanvasElement = undefined;
+    }
     const currentCanvasElementTargetId = currentCanvasElement?.getAttribute(
         "data-draggable-id"
     );
@@ -859,6 +860,123 @@ const DragActivityControls: React.FunctionComponent<{
         // We need to re-evaluate when changing pages, it's possible the initially selected item
         // on a new page has the same currentDraggableTargetId.
     }, [props.pageGeneration, currentCanvasElementTargetId]);
+    // The set of possible themes, derived from stylesheet rules that start with a dot
+    // followed by gameThemePrefix
+    const [themes, setThemes] = useState<string[]>([]);
+    const gameThemePrefix = "game-theme-";
+    // The theme of the current page, derived from any class on the .bloom-page that starts with
+    // gameThemePrefix, or "default" if there is none (but migration code and this tool makes sure
+    // that game pages always do).
+    const [currentTheme, setCurrentTheme] = useState("");
+    const handleChooseTheme = event => {
+        const newTheme = event.target.value;
+        if (newTheme === currentTheme) {
+            return;
+        }
+        const page = getPage();
+        if (page) {
+            // When all goes well, it should be enough to just remove the theme class that
+            // corresponds to the current theme. But when things go wrong, some other theme
+            // class might be hanging around, and having two of them produces unpredictable
+            // results. So play safe and remove any game theme class.
+            for (const className of Array.from(page.classList)) {
+                if (className.startsWith(gameThemePrefix)) {
+                    page.classList.remove(className);
+                }
+            }
+            page.classList.add(`${gameThemePrefix}${newTheme}`);
+            setCurrentTheme(newTheme);
+        }
+    };
+    useEffect(() => {
+        const page = getPage();
+        const pageThemeClass = Array.from(page.classList)
+            .find(c => c.startsWith(gameThemePrefix))
+            ?.substring(gameThemePrefix.length);
+        if (currentTheme && !pageThemeClass) {
+            // it's a new page and we've been on a game page this session.
+            // Instead of updating our control, update the page to match
+            // the theme of the page we were on previously.
+            page.classList.add(`${gameThemePrefix}${currentTheme}`);
+        } else {
+            setCurrentTheme(pageThemeClass || "blue-on-white");
+        }
+
+        // Figure out the values for the theme menu. We do this by finding ALL the style
+        // definitions in the page that have a selector starting with game-theme-. The ones we expect
+        // come from gameThemes.less, but if a user defines one in customStyles.css, we will find it
+        // and offer it.
+        const themeSet = new Set();
+        // Add default theme if it's not found in stylesheets
+        themeSet.add("blue-on-white");
+        // Make sure we have the one that's actually in use.
+        if (pageThemeClass) {
+            themeSet.add(pageThemeClass);
+        }
+
+        // setThemes to all the themes we can find in the active stylesheets.
+        // Called immediately and possibly again when the page is fully loaded.
+        const getGameThemesFromStylesheets = () => {
+            try {
+                const stylesheets = Array.from(page.ownerDocument.styleSheets);
+                for (const sheet of stylesheets) {
+                    try {
+                        // This could throw an error for cross-origin stylesheets, but we don't expect any.
+                        const rules = Array.from(
+                            sheet.cssRules
+                        ) as CSSStyleRule[];
+
+                        for (const rule of rules) {
+                            if (rule.selectorText) {
+                                const re = new RegExp(
+                                    `\\.${gameThemePrefix}([\\w-]+)`,
+                                    "g"
+                                );
+                                let match;
+                                while ((match = re.exec(rule.selectorText))) {
+                                    themeSet.add(match[1]); // add the theme name without the prefix
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.warn(
+                            "Could not access stylesheet rules:",
+                            sheet.href
+                        );
+                        console.warn(e);
+                    }
+                }
+            } catch (e) {
+                console.error("Error processing stylesheets:", e);
+            }
+            // go with whatever we managed to get. Should include at least 'blue on white'.
+            setThemes((Array.from(themeSet) as string[]).sort());
+        };
+
+        // In case the page is not fully loaded yet, try again when it is, to make sure we don't miss any.
+        if (page.ownerDocument.readyState !== "complete") {
+            page.ownerDocument.defaultView?.addEventListener(
+                "load",
+                getGameThemesFromStylesheets
+            );
+            // since we added a listener, arrange to eventually remove it.
+            return () =>
+                page.ownerDocument.defaultView?.removeEventListener(
+                    "load",
+                    getGameThemesFromStylesheets
+                );
+        }
+        // If the document was already complete, we'll get the themes now. If not, we'll get them when the load
+        // completes. If, by some bizarre race condition, the load completed between when we checked the
+        // status and when we added the event handler, then it must be complete now, so we'll get them now.
+        // We may possibly get the themes twice, but that's harmless. In my testing, the document was always
+        // complete, so checking it and possibly calling from the event handler is just a precaution and should
+        // seldom slow things down at all.
+        getGameThemesFromStylesheets();
+        // didn't add a listener, no cleanup needed.
+        return () => {};
+        // switching pages could change the currentTheme, at least, so we need to run this again.
+    }, [props.pageGeneration, activityType]);
     // The main point of this is to make the visibility of the arrow consistent with whether
     // a draggable is actually selected when changing pages. As far as I know, we don't need to do it when the
     // draggable or target change otherwise...other code handles target adjustment for those changes...
@@ -1138,7 +1256,24 @@ const DragActivityControls: React.FunctionComponent<{
     };
 
     // Does this activity type have items that should be dragged to a specific location during play?
-    const anyDraggables = activityType !== "drag-sort-sentence";
+    // Sentence sorting actually does involve dragging things, but not items that the author can add manually;
+    // they are created at play time. So it is not listed here.
+    // It ought to be possible to make this a const and assign the result of the or, but somehow
+    // doing so confuses typescript about the type of activityType, and we get spurious errors.
+    let anyDraggables = false;
+    if (
+        activityType === "drag-letter-to-target" ||
+        activityType === "drag-image-to-target" ||
+        // anticipating
+        activityType === "drag-to-destination"
+    ) {
+        anyDraggables = true;
+    }
+    let anyFixedInPlace = anyDraggables;
+    if (activityType === "drag-sort-sentence") {
+        anyFixedInPlace = true;
+    }
+
     // Does this activity type have a row of options buttons in Start mode?
     const anyOptions = anyDraggables; // but they might diverge as we do more?
     // which controls to show?
@@ -1245,27 +1380,28 @@ const DragActivityControls: React.FunctionComponent<{
                         </CanvasElementItemRow> */}
                         </CanvasElementItemRegion>
                     )}
-                    <CanvasElementItemRegion
-                        // Items in this region are draggable in Start mode, but not in Play mode.
-                        l10nKey="EditTab.Toolbox.DragActivity.FixedInPlace"
-                        theme="blueOnTan"
-                    >
-                        <CanvasElementItemRow>
-                            <CanvasElementTextItem
-                                css={textItemCss}
-                                l10nKey="EditTab.Toolbox.DragActivity.InstructionsOrLabels"
-                                style="none"
-                                makeTarget={false}
-                            />
-                        </CanvasElementItemRow>
-                        <CanvasElementItemRow>
-                            <CanvasElementImageItem
-                                style="image"
-                                makeTarget={false}
-                                color={kBloomBlue}
-                                strokeColor={kBloomBlue}
-                            />
-                            {/* built in to current activities
+                    {anyFixedInPlace && (
+                        <CanvasElementItemRegion
+                            // Items in this region are draggable in Start mode, but not in Play mode.
+                            l10nKey="EditTab.Toolbox.DragActivity.FixedInPlace"
+                            theme="blueOnTan"
+                        >
+                            <CanvasElementItemRow>
+                                <CanvasElementTextItem
+                                    css={textItemCss}
+                                    l10nKey="EditTab.Toolbox.DragActivity.InstructionsOrLabels"
+                                    style="none"
+                                    makeTarget={false}
+                                />
+                            </CanvasElementItemRow>
+                            <CanvasElementItemRow>
+                                <CanvasElementImageItem
+                                    style="image"
+                                    makeTarget={false}
+                                    color={kBloomBlue}
+                                    strokeColor={kBloomBlue}
+                                />
+                                {/* built in to current activities
                             <CanvasElementButtonItem
                                 l10nKey="EditTab.Toolbox.DragActivity.CheckAnswer"
                                 addClasses="check-button"
@@ -1273,18 +1409,19 @@ const DragActivityControls: React.FunctionComponent<{
                                 hintL10nKey="EditTab.Toolbox.DragActivity.CheckHint"
                                 userDefinedStyleName="GameButton"
                             /> */}
-                        </CanvasElementItemRow>
-                        <CanvasElementItemRow>
-                            <CanvasElementVideoItem
-                                style="video"
-                                color={kBloomBlue}
-                            />
-                            <CanvasElementGifItem
-                                style="image"
-                                strokeColor={kBloomBlue}
-                            />
-                        </CanvasElementItemRow>
-                    </CanvasElementItemRegion>
+                            </CanvasElementItemRow>
+                            <CanvasElementItemRow>
+                                <CanvasElementVideoItem
+                                    style="video"
+                                    color={kBloomBlue}
+                                />
+                                <CanvasElementGifItem
+                                    style="image"
+                                    strokeColor={kBloomBlue}
+                                />
+                            </CanvasElementItemRow>
+                        </CanvasElementItemRegion>
+                    )}
                 </div>
             )}
             {props.activeTab === startTabIndex && (
@@ -1377,6 +1514,60 @@ const DragActivityControls: React.FunctionComponent<{
                             </BloomTooltip>
                         </div>
                     )}
+                    <Div
+                        css={css`
+                            margin-top: 10px;
+                            margin-bottom: 2px;
+                            border-top: 1px solid white;
+                            padding-top: 7px;
+                            margin-right: 10px;
+                        `}
+                        l10nKey="EditTab.Toolbox.Games.Theme"
+                    ></Div>
+                    <ThemeProvider theme={toolboxMenuPopupTheme}>
+                        <Select
+                            variant="standard"
+                            value={currentTheme}
+                            onChange={event => {
+                                handleChooseTheme(event);
+                            }}
+                            inputProps={{
+                                name: "style",
+                                id: "game-theme-dropdown"
+                            }}
+                            css={css`
+                                svg.MuiSvgIcon-root {
+                                    color: white !important;
+                                }
+                                ul {
+                                    background-color: ${kOptionPanelBackgroundColor} !important;
+                                }
+                                fieldset {
+                                    border-color: rgba(
+                                        255,
+                                        255,
+                                        255,
+                                        0.5
+                                    ) !important;
+                                }
+                            `}
+                            size="small"
+                        >
+                            {themes.map(theme => (
+                                <MenuItem
+                                    value={theme}
+                                    key={theme}
+                                    disabled={false}
+                                >
+                                    <Div
+                                        l10nKey={`EditTab.Toolbox.Games.Themes.${theme}`}
+                                    >
+                                        {theme}
+                                    </Div>
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </ThemeProvider>
                 </div>
             )}
 
@@ -1414,86 +1605,6 @@ const DragActivityControls: React.FunctionComponent<{
                         `}
                         l10nKey="EditTab.Toolbox.DragActivity.TestInstructions"
                     />
-                </div>
-            )}
-            {props.activeTab !== playTabIndex && currentCanvasElement && (
-                <div>
-                    <div
-                        css={css`
-                            display: flex;
-                            font-weight: bold;
-                            padding-top: 5px;
-                            border-top: 1px solid grey;
-                            margin: 10px 5px 0 10px;
-                            font-size: larger;
-                        `}
-                    >
-                        <Span
-                            css={css`
-                                margin-right: 5px;
-                            `}
-                            l10nKey="EditTab.Toolbox.DragActivity.Item"
-                        />
-                        {currentCanvasElementTargetId && (
-                            <Span l10nKey="EditTab.Toolbox.DragActivity.DraggableShape" />
-                        )}
-                        {!currentCanvasElementTargetId && (
-                            <Span l10nKey="EditTab.Toolbox.DragActivity.FixedShape" />
-                        )}
-                    </div>
-                    <div
-                        css={css`
-                            display: flex;
-                            justify-content: space-between;
-                        `}
-                    >
-                        <BloomTooltip
-                            // This tooltip comes out nearly the full width of the toolbox, because of
-                            // a fixed-width setting for tooltips in our material-ui theme.
-                            // I tried changing it, but could not find a combination of settings
-                            // that works better. Without a fixed width, the tooltip tends to extend off
-                            // the screen and cause the toolbox to scroll horizontally. A fixed width
-                            // suitable for "Delete" would not work well for some localizations.
-                            id="delete"
-                            placement="top"
-                            tip={{ l10nKey: "Common.Delete" }}
-                            css={css`
-                                margin: 10px;
-                                ${disabledCss(currentCanvasElement)};
-                            `}
-                        >
-                            <TrashIcon
-                                css={css`
-                                    font-size: 35px;
-                                `}
-                                id="trashIcon"
-                                color="primary"
-                                fontSize="large"
-                                onClick={() =>
-                                    canvasElementManager?.deleteCurrentCanvasElement()
-                                }
-                            />
-                        </BloomTooltip>
-                        <BloomTooltip
-                            id="duplicate"
-                            placement="top"
-                            tip={{
-                                l10nKey:
-                                    "EditTab.Toolbox.ComicTool.Options.Duplicate"
-                            }}
-                            css={css`
-                                margin: 10px;
-                                ${disabledCss(currentCanvasElement)};
-                            `}
-                        >
-                            <img
-                                height="30px"
-                                className="duplicate-canvasElement-icon"
-                                src="/bloom/bookEdit/toolbox/overlay/duplicate-bubble.svg"
-                                onClick={() => makeDuplicateOfDragBubble()}
-                            />
-                        </BloomTooltip>
-                    </div>
                 </div>
             )}
         </ThemeProvider>
@@ -1809,7 +1920,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
 
         const pageId = page.getAttribute("id") ?? "";
         if (pageId === this.lastPageId) {
-            // reinitialize for the current tab. This is especially important in Try It mode,
+            // reinitialize for the current tab. This is especially important in Play mode,
             // because detachFromPage() undoes some of the initialization for that tab.
             const currentTab = getActiveDragActivityTab();
             setActiveDragActivityTab(currentTab);
@@ -1951,11 +2062,16 @@ export function playSound(newSoundId: string, page: HTMLElement) {
 // }
 
 const dragActivityTypes = [
+    // these two are not currently enabled
     "drag-word-chooser-slider",
     "drag-to-destination",
+
     "drag-sort-sentence",
     "drag-letter-to-target",
-    "drag-image-to-target"
+    "drag-image-to-target",
+    // not really dragActivities, but we're now using this toolbox for them.
+    "simple-dom-choice",
+    "simple-comprehension-quiz"
 ];
 
 // After careful thought, I think the right source of truth for which tab is active is a variable on the

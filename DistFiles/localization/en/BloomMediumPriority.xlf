@@ -69,10 +69,6 @@
         <source xml:lang="en">Fixed In Place</source>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.DraggableShape">
-        <source xml:lang="en">Draggable Shape</source>
-        <note>ID: EditTab.Toolbox.DragActivity.DraggableShape</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions">
         <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
@@ -81,10 +77,6 @@
         <source xml:lang="en">Edit word to spell</source>
         <note>ID: EditTab.Toolbox.DragActivity.EditWordToSpell</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.FixedShape">
-        <source xml:lang="en">Fixed Shape</source>
-        <note>ID: EditTab.Toolbox.DragActivity.FixedShape</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Instructions">
         <source xml:lang="en">Instructions</source>
         <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
@@ -92,10 +84,6 @@
       <trans-unit id="EditTab.Toolbox.DragActivity.InstructionsOrLabels">
         <source xml:lang="en">Instructions or other labels</source>
         <note>ID: EditTab.Toolbox.DragActivity.InstructionsOrLabels</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Item">
-        <source xml:lang="en">Item:</source>
-        <note>ID: EditTab.Toolbox.DragActivity.Item</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Letter">
         <source xml:lang="en">M</source>
@@ -232,6 +220,30 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable" sil:dynamic="true">
         <source xml:lang="en">Book is not Decodable</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Theme" translate="no">
+        <source xml:lang="en">Theme:</source>
+        <note>ID: EditTab.Toolbox.Games.Theme</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.blue-on-white" translate="no">
+        <source xml:lang="en">Blue on white</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.blue-on-white</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.default" translate="no">
+        <source xml:lang="en">Default</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.default</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.white-on-blue" translate="no">
+        <source xml:lang="en">White on blue</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.white-on-blue</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.monochrome-PDF" translate="no">
+        <source xml:lang="en">Monochrome PDF</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.monochrome-PDF</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.red-on-white" translate="no">
+        <source xml:lang="en">Red on white</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool">
         <source xml:lang="en">

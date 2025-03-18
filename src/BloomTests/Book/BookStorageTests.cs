@@ -1813,6 +1813,60 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void PerformNecessaryMaintenanceOnBook_UpdatesLegacyActivities()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='5'></meta>
+</head>
+<body>
+	<div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage Device16x9Landscape bloom-monolingual side-right"" id=""5bae7a40-358c-47ad-a76f-9cab976ea5a9"" data-page="""" data-analyticscategories=""comprehension"" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""5"" lang="""">
+	</div>
+    <div class=""bloom-page bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage Device16x9Landscape bloom-monolingual side-right"" id=""1b79ce8d-e7c5-4be6-b32f-7f8c5cc3045e"" data-page="""" data-analyticscategories=""simple-dom-choice"" data-activity=""simple-dom-choice"" data-pagelineage=""3325A8B6-EA15-4FB7-9F8D-271D7B3C8D33"" data-page-number=""7"" lang="""">
+	</div>
+These are similar but already have game-theme classes
+	<div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage Device16x9Landscape bloom-monolingual side-right game-theme-blue-on-white"" id=""5cae7a40-358c-47ad-a76f-9cab976ea5a9"" data-page="""" data-analyticscategories=""comprehension"" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""5"" lang="""">
+	</div>
+    <div class=""bloom-page bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage Device16x9Landscape bloom-monolingual side-right game-theme-red-on-white"" id=""1c79ce8d-e7c5-4be6-b32f-7f8c5cc3045e"" data-page="""" data-analyticscategories=""simple-dom-choice"" data-activity=""simple-dom-choice"" data-pagelineage=""3325A8B6-EA15-4FB7-9F8D-271D7B3C8D33"" data-page-number=""7"" lang="""">
+	</div>
+
+</body></html>"
+            );
+
+            //SUT
+            storage.MigrateToLevel6LegacyActivities();
+
+            //Verification
+            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("6"));
+            var quiz = storage.Dom.SelectSingleNode(
+                "//*[@data-activity='simple-comprehension-quiz']"
+            );
+            Assert.That(quiz, Is.Not.Null, "data-activity was not added to quiz");
+            Assert.That(quiz.GetAttribute("data-tool-id"), Is.EqualTo("game"));
+            Assert.That(quiz.HasClass("game-theme-red-on-white"));
+
+            var choice = storage.Dom.SelectSingleNode("//*[@data-activity='simple-dom-choice']");
+            Assert.That(choice, Is.Not.Null);
+            Assert.That(choice.GetAttribute("data-tool-id"), Is.EqualTo("game"));
+            Assert.That(choice.HasClass("game-theme-white-on-blue"));
+
+            var quiz2 = storage.Dom.SelectSingleNode(
+                "//*[@id='5cae7a40-358c-47ad-a76f-9cab976ea5a9']"
+            );
+            Assert.That(quiz2.HasClass("game-theme-blue-on-white"));
+            Assert.That(quiz2.HasClass("game-theme-red-on-white"), Is.False);
+
+            var choice2 = storage.Dom.SelectSingleNode(
+                "//*[@id='1c79ce8d-e7c5-4be6-b32f-7f8c5cc3045e']"
+            );
+            Assert.That(choice2.HasClass("game-theme-red-on-white"));
+            Assert.That(choice2.HasClass("game-theme-white-on-blue"), Is.False);
+        }
+
+        [Test]
         public void PerformNecessaryMaintenanceOnBook_EnsuresImgAtStartOfImageContainer()
         {
             var storage = GetInitialStorageWithCustomHtml(

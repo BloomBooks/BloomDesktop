@@ -27,7 +27,7 @@
 
         .player-button {
             display: block;
-            border: none;
+            border: 1px solid var(--button-choice-border-color);
             margin-bottom: 11px;
             margin-right: 7px; // need room to show any button shadows
 
@@ -90,6 +90,13 @@
                 margin-right: 10px;
                 width: 50%;
                 height: 80%; // undesirable but see note above about align-items:center on the parent, imageAndChoices
+                .bloom-canvas-element .bloom-imageContainer {
+                    // fix: won't be needed when the outer rule is bloom-canvas. For now, we need to revert
+                    // to the usual settings for overlay image containers
+                    width: 100%;
+                    height: 100%;
+                    margin: 0;
+                }
             }
 
             .choices {
@@ -114,6 +121,13 @@
             div.bloom-imageContainer {
                 height: 40% !important;
                 margin-bottom: 10px;
+                .bloom-imageContainer {
+                    // prevent the rule above applying to canvas elements,
+                    // especially the background one.
+                    height: 100% !important;
+                    width: 100% !important;
+                    margin: 0;
+                }
             }
             .choices .player-button {
                 width: 85%;
@@ -266,12 +280,18 @@
     // page
 
     & {
-        background-color: #539eff; // legacy-only, beaten by appearance system setting to var with !important
-        --page-background-color: #539eff; // appearance system
+        color: var(--page-foreground-color);
+        // in previous versions, a definition of Prompt-style set color:white.
+        // Migrating this causes a problem if the book is opened using an older Bloom.
+        // So, this stronger rule defeats that one.
+        .bloom-editable.Prompt-style {
+            color: var(--header-color);
+            background-color: var(--header-background-color);
+        }
     }
     // page number
     &.numberedPage::after {
-        color: white;
+        color: var(--page-foreground-color);
         --pageNumber-background-color: var(
             --page-background-color
         ); // appearance system
@@ -284,14 +304,17 @@
         border-radius: 10px;
         background-color: white;
 
+        color: var(--button-choice-color);
+        background-color: var(--button-choice-background-color);
+
         &.chosen-correct {
-            color: white;
-            background-color: #ffb453;
+            color: var(--button-correct-color);
+            background-color: var(--button-correct-background-color);
         }
 
         &.chosen-wrong {
-            color: white;
-            background-color: #848484;
+            color: var(--button-wrong-color);
+            background-color: var(--button-wrong-background-color);
         }
 
         // when the button is depressed
@@ -312,7 +335,7 @@
 
     .wordThenChoices {
         .TextToMatch-style {
-            color: white;
+            color: var(--page-foreground-color);
         }
 
         .bloom-imageContainer {

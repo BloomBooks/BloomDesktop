@@ -25,9 +25,7 @@
 //    (dimmed) when the L1 alternative is blank.
 // There are a few others, mostly containing 'slider' that relate to the incomplete drag-word-chooser-slider game.
 
-// When we really figure out how to do themes, we probably won't import this; instead, we'll generate
-// a css file for each theme and have the book import the one it wants.
-@import "blueOnTanTheme.less";
+@import "gamesThemes.less";
 
 // These ones show in the Correct tab, or when the user has given a correct answer.
 .drag-item-correct,
@@ -405,19 +403,16 @@
     [data-txt-img] {
         border: 8px solid var(--slider-keyword-color) !important;
         border-radius: 18px;
-        background-color: var(--text-background);
+        background-color: var(--slider-text-background);
     }
 }
-&.bloom-page {
-    // need this for specificity
-    background-color: var(--page-color);
-}
+
 //Slider: .bloom-activity-slider {
 //     //background-color: yellow; // Todo
 //     background-image: linear-gradient(white, yellow);
 //     .bloom-activity-slider-item {
 //         border: 6px solid var(--slider-button-color);
-//         background-color: var(--text-background);
+//         background-color: var(--slider-text-background);
 //     }
 // }
 .bloom-canvas-element.draggable-text {
@@ -525,4 +520,9 @@
 
 .drag-activity-start #promptButton {
     visibility: unset;
+}
+
+.Instructions-style {
+    color: var(--header-color);
+    background-color: var(--header-background-color);
 }

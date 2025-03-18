@@ -9,7 +9,7 @@ import {
     adjustTarget,
     enableDraggingTargets,
     makeTargetForDraggable
-} from "../dragActivity/dragActivityTool";
+} from "../games/GameTool";
 import {
     ImagePlaceholderIcon,
     WrongImagePlaceholderIcon
