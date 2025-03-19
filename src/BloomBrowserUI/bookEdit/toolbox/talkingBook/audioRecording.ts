@@ -42,7 +42,7 @@ import {
 } from "../../../utils/bloomApi";
 import * as toastr from "toastr";
 import WebSocketManager from "../../../utils/WebSocketManager";
-import { ToolBox } from "../toolbox";
+import { getActiveToolId, ToolBox } from "../toolbox";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {
@@ -939,6 +939,16 @@ export default class AudioRecording implements IAudioRecorder {
     public async setSoundAndHighlightAsync(
         setHighlightParams: ISetHighlightParams
     ): Promise<void> {
+        // Check that the active tool is not something other than "talkingBook".  A page
+        // can specify a tool it wants to be active initially when it first loads.
+        // The multiple asynchronous calls during page loading can result in the wrong
+        // tool getting the "newPageReady" method called when the new page specifies a
+        // different tool to be activated.  This is the simplest fix that I've found.
+        // See BL-14434.
+        const activeToolId = getActiveToolId();
+        const notInTalkingBook = activeToolId && activeToolId !== "talkingBook";
+        if (notInTalkingBook) return;
+
         // Note: setHighlightToAsync() should be run first so that ui-audioCurrent points to the correct element when setSoundFrom() is run.
         await this.setHighlightToAsync(setHighlightParams);
         this.setSoundFrom(setHighlightParams.newElement);
@@ -1114,7 +1124,7 @@ export default class AudioRecording implements IAudioRecorder {
     // based on the current time so that it asks the server for the file again.
     // Fixes BL-3161
     private updatePlayerStatus() {
-        console.assert(this.currentAudioId != null);
+        console.assert(this.currentAudioId !== null);
 
         const player = this.getMediaPlayer();
         player.setAttribute(

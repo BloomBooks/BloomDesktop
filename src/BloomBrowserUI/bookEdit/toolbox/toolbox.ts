@@ -92,6 +92,7 @@ export class ToolBox {
     private builtToolbox: boolean = false;
     public adjustToolListForPage(page: HTMLElement) {
         const requiredToolId = page.getAttribute("data-tool-id");
+        newToolId = requiredToolId || undefined;
 
         // This function is the main task of adjustToolListForPage. It may have to be postponed
         // until we've finished otherwise setting up the toolbox; in particular, we can't refresh
@@ -527,6 +528,11 @@ export function getTheOneToolbox() {
 const masterToolList: ITool[] = [];
 let currentTool: ITool | undefined = undefined;
 
+let newToolId: string | undefined = undefined;
+export function getActiveToolId(): string | undefined {
+    return newToolId ? newToolId : currentTool?.id();
+}
+
 /**
  * Handles the click event of the divs in Settings.htm that are styled to be check boxes.
  * @param chkbox
@@ -725,6 +731,7 @@ function switchTool(newToolName: string): void {
         // More... to the same tool doesn't activate that tool.
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-6720.
         currentTool = newTool ? newTool : undefined;
+        newToolId = undefined;
     }
 }
 
