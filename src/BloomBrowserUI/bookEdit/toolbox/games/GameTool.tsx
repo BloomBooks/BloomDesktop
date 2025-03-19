@@ -9,11 +9,9 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import {
     kBloomBlue,
     kOptionPanelBackgroundColor,
-    toolboxMenuPopupTheme,
     toolboxTheme
 } from "../../../bloomMaterialUITheme";
-import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
-import { Div, Span } from "../../../react_components/l10nComponents";
+import { Div } from "../../../react_components/l10nComponents";
 import {
     CanvasElementGifItem,
     CanvasElementImageItem,
@@ -29,11 +27,9 @@ import {
     classSetter,
     copyContentToTarget,
     doShowAnswersInTargets,
-    draggingSlider,
     getTarget,
     playInitialElements,
     prepareActivity,
-    shuffle,
     undoPrepareActivity
 } from "../../shared/dragActivityRuntime";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -45,7 +41,6 @@ import {
 import { MenuItem, Select } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
-import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { BubbleSpec } from "comicaljs";
 import { setPlayerUrlPrefixFromWindowLocationHref } from "../../shared/narration";
 import { renderGamePromptDialog } from "./GamePromptDialog";
@@ -54,7 +49,7 @@ import {
     kbackgroundImageClass
 } from "../../js/CanvasElementManager";
 import { getCanvasElementManager } from "../overlay/canvasElementUtils";
-import { getVariationsOnClass } from "../../../utils/getVariationsOnClass";
+import { ThemeChooser } from "./ThemeChooser";
 
 // This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -861,66 +856,6 @@ const DragActivityControls: React.FunctionComponent<{
         // We need to re-evaluate when changing pages, it's possible the initially selected item
         // on a new page has the same currentDraggableTargetId.
     }, [props.pageGeneration, currentCanvasElementTargetId]);
-    // The set of possible themes, derived from stylesheet rules that start with a dot
-    // followed by gameThemePrefix
-    const [themes, setThemes] = useState<string[]>([]);
-    const gameThemePrefix = "game-theme-";
-    // The theme of the current page, derived from any class on the .bloom-page that starts with
-    // gameThemePrefix, or "default" if there is none (but migration code and this tool makes sure
-    // that game pages always do).
-    const [currentTheme, setCurrentTheme] = useState("");
-    const handleChooseTheme = event => {
-        const newTheme = event.target.value;
-        if (newTheme === currentTheme) {
-            return;
-        }
-        const page = getPage();
-        if (page) {
-            // When all goes well, it should be enough to just remove the theme class that
-            // corresponds to the current theme. But when things go wrong, some other theme
-            // class might be hanging around, and having two of them produces unpredictable
-            // results. So play safe and remove any game theme class.
-            for (const className of Array.from(page.classList)) {
-                if (className.startsWith(gameThemePrefix)) {
-                    page.classList.remove(className);
-                }
-            }
-            page.classList.add(`${gameThemePrefix}${newTheme}`);
-            setCurrentTheme(newTheme);
-        }
-    };
-    useEffect(() => {
-        const page = getPage();
-        const pageThemeClass = Array.from(page.classList)
-            .find(c => c.startsWith(gameThemePrefix))
-            ?.substring(gameThemePrefix.length);
-        if (currentTheme && !pageThemeClass) {
-            // it's a new page and we've been on a game page this session.
-            // Instead of updating our control, update the page to match
-            // the theme of the page we were on previously.
-            page.classList.add(`${gameThemePrefix}${currentTheme}`);
-        } else {
-            setCurrentTheme(pageThemeClass || "blue-on-white");
-        }
-
-        // Figure out the values for the theme menu. We do this by finding ALL the style
-        // definitions in the page that have a selector starting with game-theme-. The ones we expect
-        // come from gameThemes.less, but if a user defines one in customStyles.css, we will find it
-        // and offer it.
-        const minmalThemes = ["blue-on-white"];
-        if (pageThemeClass) {
-            minmalThemes.push(pageThemeClass);
-        }
-        getVariationsOnClass(
-            gameThemePrefix,
-            page.ownerDocument,
-            setThemes,
-            minmalThemes
-        );
-
-        // We don't need to run again if currentTheme changes, since it can only change to something
-        // that's already in the list (except just possibly when pageGeneration changes).
-    }, [props.pageGeneration]);
     // The main point of this is to make the visibility of the arrow consistent with whether
     // a draggable is actually selected when changing pages. As far as I know, we don't need to do it when the
     // draggable or target change otherwise...other code handles target adjustment for those changes...
@@ -1400,50 +1335,7 @@ const DragActivityControls: React.FunctionComponent<{
                         `}
                         l10nKey="EditTab.Toolbox.Games.Theme"
                     ></Div>
-                    <ThemeProvider theme={toolboxMenuPopupTheme}>
-                        <Select
-                            variant="standard"
-                            value={currentTheme}
-                            onChange={event => {
-                                handleChooseTheme(event);
-                            }}
-                            inputProps={{
-                                name: "style",
-                                id: "game-theme-dropdown"
-                            }}
-                            css={css`
-                                svg.MuiSvgIcon-root {
-                                    color: white !important;
-                                }
-                                ul {
-                                    background-color: ${kOptionPanelBackgroundColor} !important;
-                                }
-                                fieldset {
-                                    border-color: rgba(
-                                        255,
-                                        255,
-                                        255,
-                                        0.5
-                                    ) !important;
-                                }
-                            `}
-                            size="small"
-                        >
-                            {themes.map(theme => (
-                                <MenuItem
-                                    value={theme}
-                                    key={theme}
-                                    disabled={false}
-                                >
-                                    <Div
-                                        l10nKey={`EditTab.Toolbox.Games.Themes.${theme}`}
-                                    >
-                                        {theme}
-                                    </Div>
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </ThemeProvider>
+                    <ThemeChooser pageGeneration={props.pageGeneration} />
                     {anyOptions && (
                         <Div
                             css={css`
