@@ -5295,6 +5295,27 @@ export class CanvasElementManager {
         let unscaledRelativeLeft: number;
         let unscaledRelativeTop: number;
 
+        const describedImageContainer = textBox.closest(
+            ".bloom-describedImage"
+        );
+        let imageScale = 1.0;
+        if (describedImageContainer) {
+            const styleMap = describedImageContainer.computedStyleMap();
+            const transform = styleMap.get("transform");
+            if (transform?.toString() === "scale(0.5, 0.5)") {
+                // We're viewing a reduced image in a mode where editing the
+                // overall image description is in play.  In practice, we've
+                // already gone through one round of detecting overflow triggered
+                // by bootstrap/SetupElements, and the call which has this
+                // transform is triggered by the origami split for creating the
+                // view with the image and image description side by side.
+                // The values we come up with here do not handle the reduction
+                // of the the background image to half-height and half-width.
+                // See BL-14312.
+                return;
+            }
+        }
+
         if (!container) {
             container = CanvasElementManager.getTopLevelImageContainerElement(
                 textBox
@@ -5329,7 +5350,6 @@ export class CanvasElementManager {
             unscaledRelativeLeft = pos.left / scale;
             unscaledRelativeTop = pos.top / scale;
         }
-
         this.setTextboxPosition(
             $(textBox),
             unscaledRelativeLeft,
