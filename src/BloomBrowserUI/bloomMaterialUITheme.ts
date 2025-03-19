@@ -346,9 +346,11 @@ export const toolboxMenuPopupTheme = createTheme(toolboxTheme, {
             styleOverrides: {
                 root: {
                     color: toolboxTextColor,
-                    border: `1px solid ${toolboxTextColor}`,
-                    borderRadius: "5px",
+                    border: `2px solid ${toolboxTextColor}`,
+                    borderRadius: "7px",
                     paddingLeft: "10px",
+                    paddingTop: "3px",
+                    width: "95%",
                     "&::after": {
                         // Normally there is a 2px border when the dropdown menu is open. I like it better without it, because
                         // the removal of the effect seems a little off because the border persists until after you select AND THEN after you click somewhere else.

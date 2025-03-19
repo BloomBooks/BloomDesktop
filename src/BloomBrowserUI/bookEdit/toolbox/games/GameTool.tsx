@@ -1448,6 +1448,58 @@ const DragActivityControls: React.FunctionComponent<{
                             l10nKey={startTabInstructionsData.instructionsKey}
                         />
                     )}
+                    <Div
+                        css={css`
+                            margin-top: 10px;
+                            margin-bottom: 5px;
+                            margin-right: 10px;
+                        `}
+                        l10nKey="EditTab.Toolbox.Games.Theme"
+                    ></Div>
+                    <ThemeProvider theme={toolboxMenuPopupTheme}>
+                        <Select
+                            variant="standard"
+                            value={currentTheme}
+                            onChange={event => {
+                                handleChooseTheme(event);
+                            }}
+                            inputProps={{
+                                name: "style",
+                                id: "game-theme-dropdown"
+                            }}
+                            css={css`
+                                svg.MuiSvgIcon-root {
+                                    color: white !important;
+                                }
+                                ul {
+                                    background-color: ${kOptionPanelBackgroundColor} !important;
+                                }
+                                fieldset {
+                                    border-color: rgba(
+                                        255,
+                                        255,
+                                        255,
+                                        0.5
+                                    ) !important;
+                                }
+                            `}
+                            size="small"
+                        >
+                            {themes.map(theme => (
+                                <MenuItem
+                                    value={theme}
+                                    key={theme}
+                                    disabled={false}
+                                >
+                                    <Div
+                                        l10nKey={`EditTab.Toolbox.Games.Themes.${theme}`}
+                                    >
+                                        {theme}
+                                    </Div>
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </ThemeProvider>
                     {anyOptions && (
                         <Div
                             css={css`
@@ -1514,60 +1566,6 @@ const DragActivityControls: React.FunctionComponent<{
                             </BloomTooltip>
                         </div>
                     )}
-                    <Div
-                        css={css`
-                            margin-top: 10px;
-                            margin-bottom: 2px;
-                            border-top: 1px solid white;
-                            padding-top: 7px;
-                            margin-right: 10px;
-                        `}
-                        l10nKey="EditTab.Toolbox.Games.Theme"
-                    ></Div>
-                    <ThemeProvider theme={toolboxMenuPopupTheme}>
-                        <Select
-                            variant="standard"
-                            value={currentTheme}
-                            onChange={event => {
-                                handleChooseTheme(event);
-                            }}
-                            inputProps={{
-                                name: "style",
-                                id: "game-theme-dropdown"
-                            }}
-                            css={css`
-                                svg.MuiSvgIcon-root {
-                                    color: white !important;
-                                }
-                                ul {
-                                    background-color: ${kOptionPanelBackgroundColor} !important;
-                                }
-                                fieldset {
-                                    border-color: rgba(
-                                        255,
-                                        255,
-                                        255,
-                                        0.5
-                                    ) !important;
-                                }
-                            `}
-                            size="small"
-                        >
-                            {themes.map(theme => (
-                                <MenuItem
-                                    value={theme}
-                                    key={theme}
-                                    disabled={false}
-                                >
-                                    <Div
-                                        l10nKey={`EditTab.Toolbox.Games.Themes.${theme}`}
-                                    >
-                                        {theme}
-                                    </Div>
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </ThemeProvider>
                 </div>
             )}
 
