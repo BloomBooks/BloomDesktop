@@ -54,6 +54,7 @@ import {
     kbackgroundImageClass
 } from "../../js/CanvasElementManager";
 import { getCanvasElementManager } from "../overlay/canvasElementUtils";
+import { getVariationsOnClass } from "../../../utils/getVariationsOnClass";
 
 // This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -906,77 +907,20 @@ const DragActivityControls: React.FunctionComponent<{
         // definitions in the page that have a selector starting with game-theme-. The ones we expect
         // come from gameThemes.less, but if a user defines one in customStyles.css, we will find it
         // and offer it.
-        const themeSet = new Set();
-        // Add default theme if it's not found in stylesheets
-        themeSet.add("blue-on-white");
-        // Make sure we have the one that's actually in use.
+        const minmalThemes = ["blue-on-white"];
         if (pageThemeClass) {
-            themeSet.add(pageThemeClass);
+            minmalThemes.push(pageThemeClass);
         }
+        getVariationsOnClass(
+            gameThemePrefix,
+            page.ownerDocument,
+            setThemes,
+            minmalThemes
+        );
 
-        // setThemes to all the themes we can find in the active stylesheets.
-        // Called immediately and possibly again when the page is fully loaded.
-        const getGameThemesFromStylesheets = () => {
-            try {
-                const stylesheets = Array.from(page.ownerDocument.styleSheets);
-                for (const sheet of stylesheets) {
-                    try {
-                        // This could throw an error for cross-origin stylesheets, but we don't expect any.
-                        const rules = Array.from(
-                            sheet.cssRules
-                        ) as CSSStyleRule[];
-
-                        for (const rule of rules) {
-                            if (rule.selectorText) {
-                                const re = new RegExp(
-                                    `\\.${gameThemePrefix}([\\w-]+)`,
-                                    "g"
-                                );
-                                let match;
-                                while ((match = re.exec(rule.selectorText))) {
-                                    themeSet.add(match[1]); // add the theme name without the prefix
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        console.warn(
-                            "Could not access stylesheet rules:",
-                            sheet.href
-                        );
-                        console.warn(e);
-                    }
-                }
-            } catch (e) {
-                console.error("Error processing stylesheets:", e);
-            }
-            // go with whatever we managed to get. Should include at least 'blue on white'.
-            setThemes((Array.from(themeSet) as string[]).sort());
-        };
-
-        // In case the page is not fully loaded yet, try again when it is, to make sure we don't miss any.
-        if (page.ownerDocument.readyState !== "complete") {
-            page.ownerDocument.defaultView?.addEventListener(
-                "load",
-                getGameThemesFromStylesheets
-            );
-            // since we added a listener, arrange to eventually remove it.
-            return () =>
-                page.ownerDocument.defaultView?.removeEventListener(
-                    "load",
-                    getGameThemesFromStylesheets
-                );
-        }
-        // If the document was already complete, we'll get the themes now. If not, we'll get them when the load
-        // completes. If, by some bizarre race condition, the load completed between when we checked the
-        // status and when we added the event handler, then it must be complete now, so we'll get them now.
-        // We may possibly get the themes twice, but that's harmless. In my testing, the document was always
-        // complete, so checking it and possibly calling from the event handler is just a precaution and should
-        // seldom slow things down at all.
-        getGameThemesFromStylesheets();
-        // didn't add a listener, no cleanup needed.
-        return () => {};
-        // switching pages could change the currentTheme, at least, so we need to run this again.
-    }, [props.pageGeneration, activityType]);
+        // We don't need to run again if currentTheme changes, since it can only change to something
+        // that's already in the list (except just possibly when pageGeneration changes).
+    }, [props.pageGeneration]);
     // The main point of this is to make the visibility of the arrow consistent with whether
     // a draggable is actually selected when changing pages. As far as I know, we don't need to do it when the
     // draggable or target change otherwise...other code handles target adjustment for those changes...
