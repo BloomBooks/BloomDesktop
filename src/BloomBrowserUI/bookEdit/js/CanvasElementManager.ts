@@ -90,9 +90,9 @@ export class CanvasElementManager {
     };
 
     public initializeCanvasElementManager(): void {
-        // Currently nothing to do; used to set up web socket listener
-        // for right-click messages to add and delete OverPicture elements.
-        // Keeping hook in case we want it one day...
+        Comical.setSelectorForBubblesWhichTailMidpointMayOverlap(
+            ".bloom-backgroundImage"
+        );
     }
 
     public getIsCanvasElementEditingOn(): boolean {
@@ -4048,7 +4048,7 @@ export class CanvasElementManager {
             draggables.forEach(draggable => {
                 draggable.parentElement?.appendChild(draggable);
                 const bubble = new Bubble(draggable as HTMLElement);
-                // This would need to get fancier if draggbles came in groups with the same level.
+                // This would need to get fancier if draggables came in groups with the same level.
                 // As it is, we just want their levels to be in the same order as their DOM order
                 // (relative to each other and the other canvas elements) so getBubbleHit() will return
                 // the one that appears on top when they are stacked.
