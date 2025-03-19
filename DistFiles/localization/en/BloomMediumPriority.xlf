@@ -222,7 +222,7 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Theme" translate="no">
-        <source xml:lang="en">Theme:</source>
+        <source xml:lang="en">Theme</source>
         <note>ID: EditTab.Toolbox.Games.Theme</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.blue-on-white" translate="no">
