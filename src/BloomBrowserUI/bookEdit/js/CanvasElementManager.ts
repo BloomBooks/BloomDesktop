@@ -5862,13 +5862,17 @@ export class CanvasElementManager {
     // this does not match the current size, we adjust everything according to how the size has changed.
     private updateImgSizeData(container: HTMLElement) {
         container.setAttribute(
-            "data-imgSizeBasedOn",
+            // originally data-imgSizeBasedOn, but that is technically invalid
+            // since data-* attributes must be lowercase. JS converts it to
+            // data-imgsizebasedon as we write, so that's what's in files.
+            // I'd prefer it to be data-img-size-based-on, but that would require data-migration.
+            "data-imgsizebasedon",
             `${container.clientWidth},${container.clientHeight}`
         );
     }
 
     public AdjustChildrenIfSizeChanged(container: HTMLElement): void {
-        const oldSizeData = container.getAttribute("data-imgSizeBasedOn");
+        const oldSizeData = container.getAttribute("data-imgsizebasedon");
         if (!oldSizeData) {
             // Can't make a useful adjustment now, with no previous size to work from.
             // But if this is an image with canvas elements, we'll want to remember the size for next time.

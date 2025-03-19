@@ -1328,6 +1328,13 @@ namespace Bloom.Book
                     FixStyle(oldContainerChild, "bloom-editable", childClassesFromTemplateByLang);
                     AddKnownStyleIfMissing(oldContainerChild);
                 }
+
+                // At least this attribute must be copied for image containers, or we don't get the right adjustments
+                // for the probably changed size of the container.
+                // Tempting to copy them all, but some might be specific to the old layout.
+                var oldSize = oldParent.GetAttribute("data-imgsizebasedon");
+                if (!string.IsNullOrEmpty(oldSize))
+                    newParent.SetAttribute("data-imgsizebasedon", oldSize);
             }
         }
 
@@ -1872,10 +1879,7 @@ namespace Bloom.Book
             }
             // These attributes are of use only for template pages being displayed in the Add Pages
             // dialog, or possibly similar temporary UI purposes.
-            string[] attrsToRemove = new[]
-            {
-                "data-ui-mark-bilingual"
-            };
+            string[] attrsToRemove = new[] { "data-ui-mark-bilingual" };
             foreach (var attrToRemove in attrsToRemove)
             {
                 if (destinationPageDiv.HasAttribute(attrToRemove))
@@ -1917,12 +1921,12 @@ namespace Bloom.Book
             CleanupAnchorElements(destinationPageDiv);
         }
 
-		/// <summary>
-		/// Remove any empty &lt;a&gt; elements left by editing.  These cause trouble when the book/page is reopened.
-		/// Also remove the gratuitous data-cke-saved-href attribute added by ckeditor.  (It may have been involved
-		/// with the troublesome behavior noticed by the programmer.  It's certainly not needed.)
-		/// </summary>
-		public static void CleanupAnchorElements(SafeXmlElement topElement)
+        /// <summary>
+        /// Remove any empty &lt;a&gt; elements left by editing.  These cause trouble when the book/page is reopened.
+        /// Also remove the gratuitous data-cke-saved-href attribute added by ckeditor.  (It may have been involved
+        /// with the troublesome behavior noticed by the programmer.  It's certainly not needed.)
+        /// </summary>
+        public static void CleanupAnchorElements(SafeXmlElement topElement)
         {
             foreach (
                 var element in topElement.SafeSelectNodes(".//a").Cast<SafeXmlElement>().ToArray()
