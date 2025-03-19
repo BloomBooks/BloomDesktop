@@ -1670,6 +1670,67 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void MigrateChildren_MigratesImages_WithImageSizeBasedOn()
+        {
+            var pageDom = new HtmlDom(
+                @"<html><head></head><body>
+					<div class='bloom-page' id='pageGuid'>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable ' contenteditable='true' lang='en'>Contents</div>
+							</div>
+							<div class='bloom-imageContainer' data-imgsizebasedon='703, 313'>
+								<img src='something.jpg' />
+							</div>
+						</div>
+					</div>
+				</body></html>"
+            );
+            var templateDom = new HtmlDom(
+                @"<html><head></head><body>
+					<div class='bloom-page' id='templateGuid'>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-imageContainer' />
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable ' contenteditable='true' lang='en'></div>
+							</div>
+						</div>
+					</div>
+				</body></html>"
+            );
+            bool didChange;
+            var lineage = "someGuid";
+            var pageElement = pageDom.SelectSingleNode("//div[@class='bloom-page']");
+            var templateElement = templateDom.SelectSingleNode("//div[@class='bloom-page']");
+
+            // SUT
+            pageDom.MigrateEditableData(
+                pageElement,
+                templateElement,
+                lineage,
+                false,
+                out didChange
+            );
+
+            // Verification
+            Assert.That(didChange, Is.True);
+            AssertThatXmlIn
+                .Dom(pageDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@data-pagelineage='someGuid']", 1);
+            var textContentsXpath =
+                "//div[contains(@class,'bloom-editable') and text()='Contents']";
+            var imgXPath = "//div[@data-imgsizebasedon='703, 313']/img[@src='something.jpg']";
+            AssertThatXmlIn.Dom(pageDom.RawDom).HasNoMatchForXpath("//div[@id='templateGuid']");
+            AssertThatXmlIn
+                .Dom(pageDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@id='pageGuid']", 1);
+            AssertThatXmlIn
+                .Dom(pageDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(textContentsXpath, 1);
+            AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(imgXPath, 1);
+        }
+
+        [Test]
         public void RemoveComments_WorksForCssData()
         {
             const string cssContent =
