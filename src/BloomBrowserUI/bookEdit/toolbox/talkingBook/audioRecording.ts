@@ -1953,18 +1953,15 @@ export default class AudioRecording {
                 showImageDescriptions(page);
             }
             // If we don't already have them, set them up
-            let changed = false;
             if (page) {
                 setupImageDescriptions(
                     page,
                     () => {},
-                    () => (changed = true)
+                    () => {}
                 );
-                if (changed) {
-                    // Make sure audio recording is set up for the new image descriptions,
-                    // even though for now they will be empty.
-                    await this.setupAndUpdateMarkupAsync();
-                }
+                // Make sure audio recording is set up for the image descriptions, whether
+                // they are new (and empty) or they already exist.  See BL-14436.
+                await this.setupAndUpdateMarkupAsync();
                 // The main reason for this is that we may need to change the enabled state
                 // of buttons so the audio highlight can be moved into the image description.
                 await this.changeStateAndSetExpectedAsync("record");
