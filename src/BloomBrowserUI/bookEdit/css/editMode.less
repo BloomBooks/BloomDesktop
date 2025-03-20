@@ -1376,6 +1376,7 @@ canvas.moving {
     outline: 1px solid @bloom-blue;
     box-sizing: border-box;
     pointer-events: none;
+    background-color: transparent;
 
     // background images can't be manually resized
     &.bloom-backgroundImage {
@@ -1554,16 +1555,16 @@ canvas.moving {
     // origami control gets in the way even more. So we move them inwards.
     &.bloom-backgroundImage {
         .bloom-ui-canvas-element-side-handle-n {
-            top: 0;
+            top: 1px;
         }
         .bloom-ui-canvas-element-side-handle-e {
-            right: 0;
+            right: 1px;
         }
         .bloom-ui-canvas-element-side-handle-s {
-            bottom: 0;
+            bottom: 1px;
         }
         .bloom-ui-canvas-element-side-handle-w {
-            left: 0;
+            left: 1px;
         }
     }
 }
