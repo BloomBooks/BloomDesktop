@@ -76,7 +76,7 @@
     /* When Bloom is configured to show each block of text in more than one language, this controls
        the space between the different language sections of each block. */
     --multilingual-editable-vertical-gap: 1em;
-    /* border-radius: value in .bloom-imageContainer (picture added by user to front cover or content page) */
+    /* border-radius: value in .bloom-canvas (picture added by user to front cover or content page) */
     --image-border-radius: 0px; /* 0px is the default, but we want to be explicit about square corners */
     /* Most Bloom books are too small to need a gutter. NB: THIS MUST HAVE UNITS even when 0, else calc() fails */
     --page-gutter: 0mm;

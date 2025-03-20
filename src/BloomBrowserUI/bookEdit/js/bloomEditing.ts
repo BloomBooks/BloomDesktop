@@ -401,6 +401,7 @@ export function changeImage(imageInfo: {
         );
     }
     // I can't remember why, but what this is doing is saying that if the imageContainer
+    // ...or just possibly bloom-canvas in legacy or publication mode?...
     // has an <img> element, we're setting the src on that. But if it does not, we're
     // setting the background-image on the container itself.
     if (imgOrImageContainer.tagName === "IMG") {
@@ -412,8 +413,11 @@ export function changeImage(imageInfo: {
         (imgOrImageContainer as HTMLImageElement).onerror = HandleImageError;
         (imgOrImageContainer as HTMLImageElement).src = imageInfo.src;
     }
-    // else if it has class bloom-imageContainer, we need to set the background-image on the container
-    else if (imgOrImageContainer.classList.contains("bloom-imageContainer")) {
+    // else if it has class bloom-imageContainer or bloom-canvas, we need to set the background-image on the container
+    else if (
+        imgOrImageContainer.classList.contains("bloom-imageContainer") ||
+        imgOrImageContainer.classList.contains("bloom-canvas")
+    ) {
         imgOrImageContainer.setAttribute(
             "style",
             "background-image:url('" + imageInfo.src + "')"
@@ -516,7 +520,7 @@ export function SetupElements(
             )[0] as HTMLElement;
             // When this is called initially on page load, container is the body,
             // and we will find a bloom-page and adjust the tool list.
-            // If it is called later to adjust something like an image container,
+            // If it is called later to adjust something like an image-container,
             // the toolbox should already be set for this page.
             // In that case we won't find a page inside it, which is fine since
             // we don't need to adjust the tool list again.
@@ -1084,7 +1088,7 @@ export function bootstrap() {
     if (typeof CKEDITOR === "undefined") return; // this happens during unit testing
     CKEDITOR.disableAutoInline = true;
 
-    if ($(this).find(".bloom-imageContainer").length) {
+    if ($(this).find(".bloom-canvas").length) {
         // We would *like* to wire up ckeditor, but would need to get it to stop interfering
         // with the embedded image. See https://silbloom.myjetbrains.com/youtrack/issue/BL-3125.
         // Currently this is only possible in the grade 4 Uganda books by SIL-LEAD.
@@ -1350,7 +1354,7 @@ export const pasteClipboard = (imageAvailable: boolean) => {
 
 async function pasteImpl(imageAvailable: boolean) {
     const canvasElementManager = theOneCanvasElementManager;
-    // Enhance: in what case would we consider a non-canvas element image container to be the natural destination for pasting?
+    // Enhance: in what case would we consider a bloom-canvas to be the natural destination for pasting?
     const activeElement = canvasElementManager?.getActiveElement();
     const imageContainer = activeElement?.getElementsByClassName(
         "bloom-imageContainer"
@@ -1373,7 +1377,7 @@ async function pasteImpl(imageAvailable: boolean) {
                 ""
             );
         }
-        return; // can't paste anything but an image into an image container canvas element
+        return; // can't paste anything but an image into an image-container
     }
     const activeCanvasElementEditable = activeElement?.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
@@ -1650,11 +1654,11 @@ function SetupBookLinkGrids(container: HTMLElement) {
                             );
                         }
                         // create elements for the thumbnail
-                        const imageContainer = document.createElement("div");
-                        button.appendChild(imageContainer);
-                        imageContainer.className = "bloom-imageContainer";
+                        const bloomCanvas = document.createElement("div");
+                        button.appendChild(bloomCanvas);
+                        bloomCanvas.className = "bloom-canvas";
                         const img = document.createElement("img");
-                        imageContainer.appendChild(img);
+                        bloomCanvas.appendChild(img);
 
                         const desiredFileNameWithoutExtension = `bookButton-${link.book.id}`;
 

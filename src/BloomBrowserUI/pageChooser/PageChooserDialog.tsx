@@ -19,6 +19,10 @@ import TemplateBookPages from "./TemplateBookPages";
 import { useHaveSubscription } from "../react_components/requiresSubscription";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 import axios from "axios";
+import {
+    kBloomCanvasClass,
+    kBloomCanvasSelector
+} from "../bookEdit/js/bloomImages";
 
 interface IPageChooserDialogProps {
     forChooseLayout: boolean;
@@ -460,15 +464,15 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         const selectedTemplateTranslationGroupCount = countTranslationGroupsForChangeLayout(
             templatePageDiv
         );
-        const selectedTemplatePictureCount = countEltsOfClassNotInImageContainer(
-            templatePageDiv,
-            "bloom-imageContainer"
-        );
-        const selectedTemplateVideoCount = countEltsOfClassNotInImageContainer(
+        // Bloom canvases are never nested!
+        const selectedTemplatePictureCount = templatePageDiv.getElementsByClassName(
+            kBloomCanvasClass
+        ).length;
+        const selectedTemplateVideoCount = countEltsOfClassNotInBloomCanvas(
             templatePageDiv,
             "bloom-videoContainer"
         );
-        const selectedTemplateWidgetCount = countEltsOfClassNotInImageContainer(
+        const selectedTemplateWidgetCount = countEltsOfClassNotInBloomCanvas(
             templatePageDiv,
             "bloom-widgetContainer"
         );
@@ -486,20 +490,19 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         const currentTranslationGroupCount = countTranslationGroupsForChangeLayout(
             current
         );
-        const currentPictureCount = countEltsOfClassNotInImageContainer(
-            current,
-            "bloom-imageContainer"
-        );
+        const currentPictureCount = current.getElementsByClassName(
+            kBloomCanvasClass
+        ).length;
         // ".bloom-videoContainer:not(.bloom-noVideoSelected)" is not working reliably as a selector.
         // It's also insufficient if we allow the user to change multiple pages at once to look at
         // only the current page for content.  Not checking for actual video content matches what is
         // done for text and pictures, and means that the check is equally valid for any number of
         // pages with the same layout.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6921.
-        const currentVideoCount = countEltsOfClassNotInImageContainer(
+        const currentVideoCount = countEltsOfClassNotInBloomCanvas(
             current,
             "bloom-videoContainer"
         );
-        const currentWidgetCount = countEltsOfClassNotInImageContainer(
+        const currentWidgetCount = countEltsOfClassNotInBloomCanvas(
             current,
             "bloom-widgetContainer"
         );
@@ -714,8 +717,8 @@ export function getAttributeStringSafely(
     return value ? value : "";
 }
 
-// We want to count all the translationGroups that do not occur inside of a bloom-imageContainer div.
-// The reason for this is that images can have canvas element divs and imageDescription divs inside of them
+// We want to count all the translationGroups that do not occur inside of a bloom-canvas div.
+// The reason for this is that bloom-canvases can have canvas element divs and imageDescription divs inside of them
 // and these are completely independent of the template page. We need to count regular translationGroups and
 // also ensure that translationGroups inside of images get migrated correctly. If this algorithm changes, be
 // sure to also change 'GetTranslationGroupsInternal()' in HtmlDom.cs.
@@ -727,11 +730,11 @@ export function countTranslationGroupsForChangeLayout(
     );
     return Array.from(allTranslationGroups).filter(
         translationGroup =>
-            translationGroup.closest(".bloom-imageContainer") === null
+            translationGroup.closest(kBloomCanvasSelector) === null
     ).length;
 }
 
-export function countEltsOfClassNotInImageContainer(
+export function countEltsOfClassNotInBloomCanvas(
     currentPageDiv: HTMLElement,
     className: string
 ): number {
@@ -739,10 +742,9 @@ export function countEltsOfClassNotInImageContainer(
         (Array.from(
             currentPageDiv.getElementsByClassName(className)
         ) as HTMLElement[])
-            // filter out the ones inside an image container (but not ones that ARE image containers,
-            // since that might be the class we're looking for.)
+            // filter out the ones inside a bloom-canvas
             .filter(
-                e => e.parentElement?.closest(".bloom-imageContainer") === null
+                e => e.parentElement?.closest(kBloomCanvasSelector) === null
             ).length
     );
 }

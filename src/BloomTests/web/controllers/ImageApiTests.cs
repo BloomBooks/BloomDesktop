@@ -48,7 +48,7 @@ namespace BloomTests.web.controllers
 				<div class='bloom-editable' lang='fr'><p>french title</p></div>
 				<div class='bloom-editable' lang='en'><p>Test leveled reader</p></div>
 			</div>
-			<div class='bloom-imageContainer bloom-backgroundImage' style='background-image:url(""AOR_aa013m.png"")'/>
+			<div class='bloom-canvas bloom-backgroundImage' style='background-image:url(""AOR_aa013m.png"")'/>
 		</div>
 	</div>
 	<div class='bloom-page bloom-frontMatter' data-page-number=''>
@@ -86,21 +86,21 @@ namespace BloomTests.web.controllers
 		</div >
 		<div class='marginBox'>
 <!-- extra 'split-pane' div layers removed here and elsewhere -->
-			<div title='The Moon and The Cap_Page 041.jpg 105.32 KB 1500 x 1236 357 DPI (should be 300-600) Bit Depth: 24' class='bloom-imageContainer'>
+			<div title='The Moon and The Cap_Page 041.jpg 105.32 KB 1500 x 1236 357 DPI (should be 300-600) Bit Depth: 24' class='bloom-canvas'>
 				<img data-license='cc-by' data-creator='Angie and Upesh' data-copyright='Copyright © 2017, Pratham Books' src='The%20Moon%20and%20The%20Cap_Page%20041.jpg'/>
 			</div>
 			<div class='bloom-translationGroup'></div>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				<img src='placeHolder.png'/>
 			</div>
-			<div class='bloom-imageContainer bloom-backgroundImage' style='background-image:url(""AOR_aa017m.png"")'/>
+			<div class='bloom-canvas bloom-backgroundImage' style='background-image:url(""AOR_aa017m.png"")'/>
 			<div class='bloom-translationGroup'></div>
-			<div class='bloom-imageContainer bloom-backgroundImage' style='background-image:url(""AOR_aa013m.png"")'/>
+			<div class='bloom-canvas bloom-backgroundImage' style='background-image:url(""AOR_aa013m.png"")'/>
 		</div>
 	</div>
 	<div class='bloom-page numberedPage' lang='' data-page-number='3'>
 		<div class='marginBox'>
-			<div title='The Moon and The Cap_Page 041.jpg 105.32 KB 1500 x 1236 357 DPI (should be 300-600) Bit Depth: 24' class='bloom-imageContainer'>
+			<div title='The Moon and The Cap_Page 041.jpg 105.32 KB 1500 x 1236 357 DPI (should be 300-600) Bit Depth: 24' class='bloom-canvas'>
 				<img data-license='cc-by' data-creator='Angie and Upesh' data-copyright='Copyright © 2017, Pratham Books' src='The%20Moon%20and%20The%20Cap_Page%20041.jpg'/>
 			</div>
 			<div class='bloom-translationGroup'></div>
@@ -109,14 +109,14 @@ namespace BloomTests.web.controllers
 	<div class='bloom-page numberedPage' lang='' data-page-number='4'>
 		<div class='marginBox'>
 			<div class='bloom-translationGroup'></div>
-			<div title='AOR_EAG00864.png 18.55 KB 564 x 457 273 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer'>
+			<div title='AOR_EAG00864.png 18.55 KB 564 x 457 273 DPI (should be 300-600) Bit Depth: 32' class='bloom-canvas'>
 				<img data-license='cc-by-nd' data-creator='Roel Ottow' data-copyright='Copyright, SIL International 2009.' src='AOR_EAG00864.png'/>
 			</div>
-			<div title='AOR_abbb007.png 84.21 KB 1136 x 1500 543 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer'>
+			<div title='AOR_abbb007.png 84.21 KB 1136 x 1500 543 DPI (should be 300-600) Bit Depth: 32' class='bloom-canvas'>
 				<img data-license='cc-by-nd' data-creator='' data-copyright='Copyright, SIL International 2009.' src='AOR_abbb007.png'/>
 			</div>
 			<div class='bloom-translationGroup'></div>
-			<div title='AOR_EAG00864.png 18.55 KB 564 x 457 273 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer'>
+			<div title='AOR_EAG00864.png 18.55 KB 564 x 457 273 DPI (should be 300-600) Bit Depth: 32' class='bloom-canvas'>
 				<img data-license='cc-by-nd' data-creator='Roel Ottow' data-copyright='Copyright, SIL International 2009.' src='AOR_EAG00864.png'/>
 			</div>
 			<div class='bloom-translationGroup'></div>
@@ -125,10 +125,10 @@ namespace BloomTests.web.controllers
 	<div class='bloom-page numberedPage' lang='' data-page-number='5'>
 		<div class='marginBox'>
 			<div class='bloom-translationGroup'></div>
-			<div title='AOR_EAG00864.png 6.58 KB 341 x 335 209 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer'>
+			<div title='AOR_EAG00864.png 6.58 KB 341 x 335 209 DPI (should be 300-600) Bit Depth: 32' class='bloom-canvas'>
 				<img data-license='cc-by-nd' data-creator='Cathy Marlett' data-copyright='Copyright, SIL International 2009.' src='AOR_EAG00864.png'/>
 			</div>
-			<div title='AOR_ACC029M.png 83.35 KB 1500 x 806 382 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer'>
+			<div title='AOR_ACC029M.png 83.35 KB 1500 x 806 382 DPI (should be 300-600) Bit Depth: 32' class='bloom-canvas'>
 				<img data-license='cc-by-nd' data-creator='Cathy Marlett' data-copyright='Copyright, SIL International 2009.' src='AOR_ACC029M.png'/>
 			</div>
 			<div class='bloom-translationGroup'></div>
@@ -142,11 +142,11 @@ namespace BloomTests.web.controllers
 		</div >
 		<div class='marginBox'>
 			<div class='bloom-translationGroup'></div>
-			<div title='AOR_EAG00864.png 6.58 KB 341 x 335 209 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer'>
+			<div title='AOR_EAG00864.png 6.58 KB 341 x 335 209 DPI (should be 300-600) Bit Depth: 32' class='bloom-canvas'>
 				<img data-license='cc-by-nd' data-creator='Cathy Marlett' data-copyright='Copyright, SIL International 2009.' src='AOR_EAG00864.png'/>
 			</div>
 			<div class='bloom-translationGroup'></div>
-			<div class='bloom-imageContainer bloom-backgroundImage' style='background-image:url(""AOR_aa018.png"")'/>
+			<div class='bloom-canvas bloom-backgroundImage' style='background-image:url(""AOR_aa018.png"")'/>
 		</div>
 	</div>
 <!-- Is this what the page numbering system does with backMatter? No change in pagenum from here on out. -->
@@ -164,7 +164,7 @@ namespace BloomTests.web.controllers
 		</div >
 		<div class='marginBox'>
 			<div class='bloom-translationGroup'></div>
-			<div class='bloom-imageContainer bloom-backgroundImage' style='background-image:url(""AOR_aa018.png"")'/>
+			<div class='bloom-canvas bloom-backgroundImage' style='background-image:url(""AOR_aa018.png"")'/>
 			<div data-book='title-page-branding-bottom'>
 				<img src='back-cover-outside-wide.png'/>
 				<img src='back-cover-outside.svg' type='image/svg'/>
@@ -251,7 +251,7 @@ namespace BloomTests.web.controllers
 		</div >
 		<div class=""marginBox"">
 			<div class=""bloom-translationGroup bookTitle""></div>
-			<div class=""bloom-imageContainer bloom-backgroundImage"" style=""background-image:url('AOR_aa013m.png')""/>
+			<div class=""bloom-canvas bloom-backgroundImage"" style=""background-image:url('AOR_aa013m.png')""/>
 		</div>
 	</div>
 	<div class=""bloom-page numberedPage"" lang="""" data-page-number=""১"">
@@ -260,14 +260,14 @@ namespace BloomTests.web.controllers
 		</div >
 		<div class=""marginBox"">
 <!-- extra 'split-pane' div layers removed here and elsewhere -->
-			<div title=""The Moon and The Cap_Page 041.jpg 105.32 KB 1500 x 1236 357 DPI (should be 300-600) Bit Depth: 24"" class=""bloom-imageContainer"">
+			<div title=""The Moon and The Cap_Page 041.jpg 105.32 KB 1500 x 1236 357 DPI (should be 300-600) Bit Depth: 24"" class=""bloom-canvas"">
 				<img data-license=""cc-by"" data-creator=""Angie and Upesh"" data-copyright=""Copyright © 2017, Pratham Books"" src=""The%20Moon%20and%20The%20Cap_Page%20041.jpg""/>
 			</div>
 			<div class=""bloom-translationGroup""></div>
-			<div class=""bloom-imageContainer"">
+			<div class=""bloom-canvas"">
 				<img src=""placeHolder.png""/>
 			</div>
-			<div class=""bloom-imageContainer bloom-backgroundImage"" style=""background-image:url('AOR_aa017m.png')""/>
+			<div class=""bloom-canvas bloom-backgroundImage"" style=""background-image:url('AOR_aa017m.png')""/>
 			<div class=""bloom-translationGroup""></div>
 		</div>
 	</div>
@@ -276,7 +276,7 @@ namespace BloomTests.web.controllers
 			Basic Text &amp; Picture
 		</div >
 		<div class=""marginBox"">
-			<div title=""The Moon and The Cap_Page 041.jpg 105.32 KB 1500 x 1236 357 DPI (should be 300-600) Bit Depth: 24"" class=""bloom-imageContainer"">
+			<div title=""The Moon and The Cap_Page 041.jpg 105.32 KB 1500 x 1236 357 DPI (should be 300-600) Bit Depth: 24"" class=""bloom-canvas"">
 				<img data-license=""cc-by"" data-creator=""Angie and Upesh"" data-copyright=""Copyright © 2017, Pratham Books"" src=""The%20Moon%20and%20The%20Cap_Page%20041.jpg""/>
 			</div>
 			<div class=""bloom-translationGroup""></div>
@@ -288,14 +288,14 @@ namespace BloomTests.web.controllers
 		</div >
 		<div class=""marginBox"">
 			<div class=""bloom-translationGroup""></div>
-			<div title=""AOR_EAG00864.png 18.55 KB 564 x 457 273 DPI (should be 300-600) Bit Depth: 32"" class=""bloom-imageContainer"">
+			<div title=""AOR_EAG00864.png 18.55 KB 564 x 457 273 DPI (should be 300-600) Bit Depth: 32"" class=""bloom-canvas"">
 				<img data-license=""cc-by-nd"" data-creator=""Roel Ottow"" data-copyright=""Copyright, SIL International 2009."" src=""AOR_EAG00864.png""/>
 			</div>
-			<div title=""AOR_abbb007.png 84.21 KB 1136 x 1500 543 DPI (should be 300-600) Bit Depth: 32"" class=""bloom-imageContainer"">
+			<div title=""AOR_abbb007.png 84.21 KB 1136 x 1500 543 DPI (should be 300-600) Bit Depth: 32"" class=""bloom-canvas"">
 				<img data-license=""cc-by-nd"" data-creator="""" data-copyright=""Copyright, SIL International 2009."" src=""AOR_abbb007.png""/>
 			</div>
 			<div class=""bloom-translationGroup""></div>
-			<div title=""AOR_EAG00864.png 18.55 KB 564 x 457 273 DPI (should be 300-600) Bit Depth: 32"" class=""bloom-imageContainer"">
+			<div title=""AOR_EAG00864.png 18.55 KB 564 x 457 273 DPI (should be 300-600) Bit Depth: 32"" class=""bloom-canvas"">
 				<img data-license=""cc-by-nd"" data-creator=""Roel Ottow"" data-copyright=""Copyright, SIL International 2009."" src=""AOR_EAG00864.png""/>
 			</div>
 			<div class=""bloom-translationGroup""></div>
@@ -307,10 +307,10 @@ namespace BloomTests.web.controllers
 		</div >
 		<div class=""marginBox"">
 			<div class=""bloom-translationGroup""></div>
-			<div title=""AOR_EAG00864.png 6.58 KB 341 x 335 209 DPI (should be 300-600) Bit Depth: 32"" class=""bloom-imageContainer"">
+			<div title=""AOR_EAG00864.png 6.58 KB 341 x 335 209 DPI (should be 300-600) Bit Depth: 32"" class=""bloom-canvas"">
 				<img data-license=""cc-by-nd"" data-creator=""Cathy Marlett"" data-copyright=""Copyright, SIL International 2009."" src=""AOR_EAG00864.png""/>
 			</div>
-			<div title=""AOR_ACC029M.png 83.35 KB 1500 x 806 382 DPI (should be 300-600) Bit Depth: 32"" class=""bloom-imageContainer"">
+			<div title=""AOR_ACC029M.png 83.35 KB 1500 x 806 382 DPI (should be 300-600) Bit Depth: 32"" class=""bloom-canvas"">
 				<img data-license=""cc-by-nd"" data-creator=""Cathy Marlett"" data-copyright=""Copyright, SIL International 2009."" src=""AOR_ACC029M.png""/>
 			</div>
 			<div class=""bloom-translationGroup""></div>
@@ -335,7 +335,7 @@ namespace BloomTests.web.controllers
 			<div class=""bloom-translationGroup"">
 				<div class=""bloom-editable bloom-content1"" lang=""en""></div>
 			</div>
-			<div class=""bloom-imageContainer bloom-backgroundImage"" style=""background-image:url('AOR_aa010.png')""/>
+			<div class=""bloom-canvas bloom-backgroundImage"" style=""background-image:url('AOR_aa010.png')""/>
 			<div data-book='title-page-branding-bottom'>
 				<img src=""back-cover-outside-wide.png?optional=true""/>
 				<img src=""back-cover-outside.svg?optional=true"" type=""image/svg""/>

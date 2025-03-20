@@ -11,7 +11,7 @@
 .Device16x9Landscape .marginBox img {
     max-width: 177.777778mm;
 }
-.Device16x9Landscape.fullScreen .bloom-imageContainer.bloom-backgroundImage {
+.Device16x9Landscape.fullScreen .bloom-canvas.bloom-backgroundImage {
     /* Get past ios "background-size:cover" bug. See BL-7458 */
     width: 177.777778mm;
 }
@@ -21,7 +21,7 @@
 .Device16x9Portrait .marginBox img {
     max-width: 100mm;
 }
-.Device16x9Portrait.fullScreen .bloom-imageContainer.bloom-backgroundImage {
+.Device16x9Portrait.fullScreen .bloom-canvas.bloom-backgroundImage {
     /* Get past ios "background-size:cover" bug. See BL-7458 */
     width: 100mm;
 }

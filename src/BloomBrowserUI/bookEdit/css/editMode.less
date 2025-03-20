@@ -21,7 +21,7 @@ body {
     --selectedEdit-color: rgba(128, 128, 128, 0.9);
 }
 // This mixin simply encapsulates the logic of how we add a border on top
-// of the edge of an image container instead of adding a regular border
+// of the edge of a bloom-canvas instead of adding a regular border
 // which modifies the size of the container. See BL-10268.
 .borderOnTopOfElement(@color) {
     &:after {
@@ -194,12 +194,12 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
         pointer-events: none;
         outline: 1px solid white;
     }
-    div.bloom-imageContainer {
+    div.bloom-canvas {
         // Allow book templates to define a custom borderColor, otherwise fallback to the default color
         .borderOnTopOfElement(var(--page-structure-color));
         // todo: remove?                 --bloom-editMode-custom-image-border-color,
 
-        // This shows the focus border on the root (bloom-has-canvas-element) image container
+        // This shows the focus border on the bloom-canvas
         // when it has been clicked on to show its editing buttons (:not(.bloom-hideImageButtons)).
         // Currently, something else typically actually has focus and may also show
         // this border. But at least it gives some extra feedback that something happened
@@ -208,7 +208,7 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
             .borderOnTopOfElement(@focusBorderColor);
         }
     }
-    .coverColor div.bloom-imageContainer {
+    .coverColor div.bloom-canvas {
         .borderOnTopOfElement(rgba(1, 1, 1, 0.2));
     }
     #formatButton {
@@ -273,11 +273,11 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
 }
 
 // The editing buttons are hidden when this class is added (currently by motion and comic tools)
-// (An earlier version required them to be a direct child of the image container, so as not to
+// (An earlier version required them to be a direct child of the bloom-canvas, so as not to
 // disable them for canvas element images. But now these buttons only occur on background images, which
 // ARE child canvas elements. So we want the disabling there. We use important because the rule that makes
 // them visible ever is very complex and has high specificity.
-.bloom-imageContainer.bloom-hideImageButtons {
+.bloom-canvas.bloom-hideImageButtons {
     .imageButton,
     .miniButton {
         display: none !important;
@@ -368,15 +368,15 @@ div.readOnlyInTranslationMode {
 // Since 'basePage.less' has a rule that puts the video placeholder in as a background image,
 // '.customPage' is needed to add enough specificity here to override that rule.
 body:not(.origami-drag) .customPage .bloom-videoContainer.hoverUp,
-body:not(.origami-drag) .bloom-imageContainer.hoverUp {
+body:not(.origami-drag) .bloom-canvas.hoverUp {
     background-color: @ImageAndVideoHoverOverlay;
 }
 
-// The hovered image container background is just distracting when the whole page is an image
-// container. One group of such cases is bloom games. We may want to suppress it for pages
+// The hovered bloom-canvas background is just distracting when the whole page is a bloom-canvas.
+// One group of such cases is bloom games. We may want to suppress it for pages
 // designed to have a full-bleed background for a comic, and perhaps others. I went for a
 // minimal change for now.
-.bloom-page[data-tool-id="game"] .bloom-imageContainer.hoverUp {
+.bloom-page[data-tool-id="game"] .bloom-canvas.hoverUp {
     background-color: transparent;
 }
 
@@ -446,7 +446,7 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     //     background-color: @bloom-blue;
     //     background-image: url("/bloom/bookEdit/img/ImageDescriptionImageOverlayButton.svg");
     //     // sorry, this background-size is kinda arbitrary, and "49px 40px" works at full size, but if we ever make these
-    //     //buttons shrink as the image container shrinks, this will still work.
+    //     //buttons shrink as the bloom-canvas shrinks, this will still work.
     //     background-size: 63%;
     // }
     &.chooseWidgetButton {
@@ -512,7 +512,7 @@ body.bloom-fullBleed {
 }
 
 .bloom-showImageDescriptions {
-    // Don't want to deal with resizing the image container while this tool is active,
+    // Don't want to deal with resizing the bloom-canvas while this tool is active,
     // nor with the size changes associated with picking a different image.
     // The extra layer of scaling does weird things I haven't fully understood
     // to the code that tries to keep the background image and canvas elements aligned.
@@ -522,7 +522,7 @@ body.bloom-fullBleed {
         display: none !important;
     }
 
-    .bloom-imageContainer {
+    .bloom-canvas {
         .bloom-imageDescription {
             // Note: this rule has basically the same specificity as one in basePage.less
             // that sets top to zero. I think this one only wins because it comes later.
@@ -536,12 +536,9 @@ body.bloom-fullBleed {
 
 @imageDescriptionBorderWidth: 3px;
 
-.bloom-showImageDescriptions
-    .bloom-page
-    .bloom-imageContainer:not(.bloom-imageContainer .bloom-imageContainer) {
+.bloom-showImageDescriptions .bloom-page .bloom-canvas {
     // This produces the thin border on the left, bottom, and right of each image when the
-    // image description tool is active. The :not above prevents also getting this on
-    // nested image containers (inside canvas elements).
+    // image description tool is active.
     border-style: solid;
     border-color: @accordion-active-element;
     border-width: 0 @imageDescriptionBorderWidth @imageDescriptionBorderWidth
@@ -561,12 +558,12 @@ body.bloom-fullBleed {
         background-image: url("/bloom/bookEdit/toolbox/imageDescription/ImageDescriptionToolIcon.svg");
     }
 }
-// a wrapper div we add around the contents of an image container except the image description,
+// a wrapper div we add around the contents of a bloom-canvas except the image description,
 // when we are showing image descriptions. Shrinks the image to the center of the left half
 // of the container.
-// We need this because if we scale the image container itself, the description gets scaled as well.
+// We need this because if we scale the bloom-canvas itself, the description gets scaled as well.
 // Even if we tried to apply a reverse transformation to the description, the place we want it is
-// outside the scaled image container, and we're hiding overflow on image containers (and need to,
+// outside the scaled bloom-canvas, and we're hiding overflow on bloom-canvases (and need to,
 // both for cropping images and in case canvas elements extend beyond the container).
 // Conversely, I don't believe CSS provides a way to transform children relative to an anchor
 // on each parent. We could conceivably compute a different transform for each child, but this is more
@@ -610,7 +607,7 @@ body.bloom-fullBleed {
 // If not, it's probably less disturbing if they just stay where they are
 // until the origami drag is finished.
 .origami-drag {
-    .bloom-imageContainer:has(.bloom-backgroundImage) {
+    .bloom-canvas:has(.bloom-backgroundImage) {
         .bloom-canvas-element:not(.bloom-backgroundImage),
         .comical-generated {
             display: none !important;
@@ -630,10 +627,10 @@ body.bloom-fullBleed {
     display: block;
 }
 
-// in a hovered outer image container, show the buttons if the background image is active,
+// in a hovered bloom-canvas, show the buttons if the background image is active,
 // or if there are no other canvas elements. Also, show the metadata button if there's a
 // problem.
-.bloom-imageContainer:not(.bloom-imageContainer .bloom-imageContainer):hover {
+.bloom-canvas:hover {
     &:not(:has(.bloom-canvas-element:not(.bloom-backgroundImage))),
     .bloom-backgroundImage[data-bloom-active="true"] {
         .editMetadataButton,
@@ -646,9 +643,9 @@ body.bloom-fullBleed {
     }
 }
 
-// In an image container that has canvas elements other than the background image, we want to
+// In a bloom-canvas that has canvas elements other than the background image, we want to
 // hide the placeholder except when the background image is active.
-.bloom-imageContainer:has(.bloom-canvas-element:not(.bloom-backgroundImage)) {
+.bloom-canvas:has(.bloom-canvas-element:not(.bloom-backgroundImage)) {
     .bloom-backgroundImage:not([data-bloom-active="true"]) {
         img[src^="placeHolder.png"] {
             display: none;
@@ -1116,7 +1113,7 @@ div.long-press-popup {
 // seen in http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=0F77B0242324523646B4C8F5A0BDDA52?doi=10.1.1.656.6430&rep=rep1&type=pdf,
 // particularly Figure 1, "Visual acuity chart showing the blurring and color effects of a disabling brunescent cataract with a visual acuity of 20/200"
 body.simulateCataracts {
-    .bloom-imageContainer {
+    .bloom-canvas {
         background-color: yellow;
 
         img,
@@ -1135,7 +1132,7 @@ body.simulateCataracts {
 // the Canvas gets merged with what is behind it. We want that to be just
 // the yellow background, not the image.
 body.simulateColorBlindness {
-    .bloom-imageContainer {
+    .bloom-canvas {
         img {
             visibility: hidden;
         }
@@ -1210,7 +1207,7 @@ body {
 
 // Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image
 // (This and several following rules were moved from content/bookLayout/overlayTool.less)
-.bloom-imageContainer:not(.hoverUp) .bloom-canvas-element {
+.bloom-canvas:not(.hoverUp) .bloom-canvas-element {
     .bloom-editable {
         border: none;
 
@@ -1246,7 +1243,7 @@ body {
 @ComicAffordanceFilter: invert(48%) sepia(14%) saturate(1147%)
     hue-rotate(257deg) brightness(90%) contrast(84%);
 
-.bloom-imageContainer {
+.bloom-canvas {
     .bloom-canvas-element {
         .bloom-translationGroup {
             #formatButton {

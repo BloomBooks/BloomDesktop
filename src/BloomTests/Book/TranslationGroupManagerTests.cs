@@ -207,7 +207,7 @@ namespace BloomTests.Book
                 @"<html><body><div class='bloom-page numberedPage A5Portrait bloom-monolingual'
 							id='f4a22289-1755-4b79-afc1-5d20eaa892fe'>
 <div class='marginBox'>
-  <div class='bloom-imageContainer'>
+  <div class='bloom-canvas'>
 	<img alt='' src='test.png' height='20' width='20'/>
   </div>
   <div class='bloom-translationGroup normal-style'>
@@ -903,6 +903,8 @@ namespace BloomTests.Book
         [Test]
         public void UpdateContentLanguageClasses_PrototypeElementHasImageContainer_ImageContainerCopiedToNewSibling()
         {
+            // Not sure what the image container is doing here; there shouldn't be either an image container or a
+            // bloom-canvas inside a bloom-editable. It passes as-is, so I decided to leave it.
             const string contents =
                 @"<html><body><div class='bloom-page'>
 										<div class='bloom-translationGroup normal-style'>
@@ -940,7 +942,7 @@ namespace BloomTests.Book
                     "//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]",
                     0
                 );
-            //the added french should have all the structure including a copy of the image container div, but none of the text except from the bloom-cloneToOtherLanguages paragraph
+            //the added french should have all the structure including a copy of the bloom-canvas div, but none of the text except from the bloom-cloneToOtherLanguages paragraph
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(

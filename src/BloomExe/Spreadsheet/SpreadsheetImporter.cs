@@ -44,7 +44,7 @@ namespace Bloom.Spreadsheet
         const int blockTypeCount = 4;
 
         // lists of translation groups (other than image descriptions),
-        // image containers, video containers, and widget containers.
+        // bloom-canvases, video containers, and widget containers.
         List<SafeXmlElement>[] _blocksOnPage = new List<SafeXmlElement>[blockTypeCount];
         public const int translationGroupIndex = 0;
         public const int imageContainerIndex = 1;
@@ -845,7 +845,7 @@ namespace Bloom.Spreadsheet
             // so best to get rid of it.
             imgElement?.RemoveAttribute("height");
             imgElement?.RemoveAttribute("width");
-            // image containers often have a generated title attribute that gives the file name and
+            // bloom-canvases often have a generated title attribute that gives the file name and
             // notes about its resolution, etc. We think it will be regenerated as needed, but certainly
             // the one from a previous image is no use.
             currentImageContainer.RemoveAttribute("title");
@@ -1280,7 +1280,7 @@ namespace Bloom.Spreadsheet
                 }
             }
 
-            var imageContainers = GetImageContainers(page);
+            var imageContainers = GetBloomCanvases(page);
             foreach (var c in imageContainers)
             {
                 var img = GetImgFromContainer(c);
@@ -1630,10 +1630,10 @@ namespace Bloom.Spreadsheet
         private int CurrentRowIndexForMessages =>
             _sheet.GetIndexOfRow(_inputRows[_currentRowIndex]) + 1;
 
-        private List<SafeXmlElement> GetImageContainers(SafeXmlElement ancestor)
+        private List<SafeXmlElement> GetBloomCanvases(SafeXmlElement ancestor)
         {
             return ancestor
-                .SafeSelectNodes(".//div[contains(@class, 'bloom-imageContainer')]")
+                .SafeSelectNodes(".//div[contains(@class, 'bloom-canvas')]")
                 .Cast<SafeXmlElement>()
                 .ToList();
         }
@@ -1664,7 +1664,7 @@ namespace Bloom.Spreadsheet
             List<SafeXmlElement>[] blocksOnPageCollector
         )
         {
-            blocksOnPageCollector[imageContainerIndex] = GetImageContainers(currentPage);
+            blocksOnPageCollector[imageContainerIndex] = GetBloomCanvases(currentPage);
             // We don't want image description slots as possible destinations for text.
             // They are handled by special extra rows inserted after the row that has the image.
             var allGroups = TranslationGroupManager.SortedGroupsOnPage(currentPage, true);

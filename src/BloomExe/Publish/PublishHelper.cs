@@ -876,7 +876,7 @@ namespace Bloom.Publish
             ReallyCropImages(modifiedBook.RawDom, modifiedBook.FolderPath, modifiedBook.FolderPath);
             // Must come after ReallyCropImages, because any cropping for background images is
             // destroyed by SimplifyBackgroundImages.
-            SimplifyBackgroundImages(modifiedBook);
+            SimplifyBackgroundImages(modifiedBook.RawDom);
             modifiedBook.Save();
             modifiedBook.UpdateSupportFiles();
             return modifiedBook;
@@ -885,12 +885,12 @@ namespace Bloom.Publish
         /// <summary>
         /// Once we have really cropped any images that need it, we no longer need the "canvas element-like"
         /// HTML structure that supports cropping background images. So we get rid of the extra structure
-        /// and leave the export with just an img that properly fills the image container (using CSS
+        /// and leave the export with just an img that properly fills the bloom-canvas (using CSS
         /// content-fit). The great advantage of this is that we need code to adjust the size of the
         /// canvas element, but the img size is automatic with content-fit. While editing, we adjust the
-        /// size and position of things in an image container, including the background canvas element, any time
-        /// we open a page and notice that the image container's size has changed (or when it changes while
-        /// the page is open). But various things can change the image container size for all images
+        /// size and position of things in a bloom-canvas, including the background canvas element, any time
+        /// we open a page and notice that the bloom-canvas's size has changed (or when it changes while
+        /// the page is open). But various things can change the bloom-canvas size for all images
         /// in a document, and the user shouldn't have to cycle through all the pages to get the
         /// images adjusted. (We decided to accept that they must do so for ordinary canvas elements). If we didn't do
         /// this trick, we'd have to somehow adjust any background image canvas element (basically any image
@@ -902,25 +902,27 @@ namespace Bloom.Publish
         /// rendering of the page. One day, we'd like to do all the publishing transformations in JS
         /// (https://www.notion.so/hattonjohn/Infrastructure-publishing-transformations-1514bb19df128007a15ffd4cafff28de?pvs=4)
         /// but for now this saves a lot of work. It essentially converts the background image
-        /// represented as an canvas element to our pre-6.2 approach where it was a direct child of the image
-        /// container. The canvas element div is removed, and the hidden placeHolder.png image in the parent
-        /// is changed to point to the actual background image.
+        /// represented as a canvas element to our pre-6.2 approach where it was a direct child of the bloom canvas.
+        /// The canvas element div is removed, and an img in the parent
+        /// is made to point to the actual background image.
+        /// We also do this when publishing to BloomLibrary; this saves the harvester needing to worry about
+        /// the background image canvas elements.
         /// </summary>
-        /// <param name="book"></param>
-        public static void SimplifyBackgroundImages(Book.Book book)
+        public static void SimplifyBackgroundImages(SafeXmlDocument dom)
         {
-            var backgroundImageCanvasElements = book.RawDom
-                .SafeSelectNodes("//div[contains(@class, 'bloom-backgroundImage')]")
+            var backgroundImageCanvasElements = dom.SafeSelectNodes(
+                    "//div[contains(@class, 'bloom-backgroundImage')]"
+                )
                 .Cast<SafeXmlElement>()
                 .ToArray();
             foreach (var canvasElement in backgroundImageCanvasElements)
             {
                 // All these early returns are paranoia. If we find a div with class bloom-backgroundImage,
                 // it WILL contain an image container that contains an img, and WILL be a child of
-                // another image container that contains an img. So the xpath above targets exactly
+                // a bloom-canvas. So the xpath above targets exactly
                 // the elements that need this transformation. The backgroundImage elements ("background
-                // canvas elements") are removed, and the hidden placeHolder.png image in the parent image container
-                // is changed to point to the image that was in the canvas element.
+                // canvas elements") are removed, and the bloom-canvas is given a direct img child
+                // to replace them.
                 var imgContainer =
                     canvasElement.ChildNodes.FirstOrDefault(
                         c => c is SafeXmlElement ce && ce.LocalName == "div"
@@ -936,23 +938,37 @@ namespace Bloom.Publish
                 var src = img.GetAttribute("src");
                 if (string.IsNullOrEmpty(src))
                     return;
-                var parentContainer = canvasElement.ParentNode as SafeXmlElement;
-                if (parentContainer == null || !parentContainer.HasClass("bloom-imageContainer"))
+                var bloomCanvas = canvasElement.ParentNode as SafeXmlElement;
+                if (bloomCanvas == null || !bloomCanvas.HasClass("bloom-canvas"))
                     return;
-                var oldImg =
-                    parentContainer.ChildNodes.FirstOrDefault(
+                var bcImg =
+                    bloomCanvas.ChildNodes.FirstOrDefault(
                         c => c is SafeXmlElement ce && ce.LocalName == "img"
                     ) as SafeXmlElement;
-                if (oldImg == null || oldImg.GetAttribute("src") != "placeHolder.png")
-                    return;
-                oldImg.SetAttribute("src", src);
+                if (bcImg != null && bcImg.GetAttribute("src") != "placeHolder.png")
+                    return; // paranoia
+                if (bcImg != null)
+                {
+                    bloomCanvas.RemoveChild(bcImg);
+                }
+                var svg =
+                    bloomCanvas.ChildNodes.FirstOrDefault(
+                        c => c is SafeXmlElement ce && ce.LocalName == "svg"
+                    ) as SafeXmlElement;
+                var insertBefore = svg != null ? svg.NextSibling : bloomCanvas.FirstChild;
+                bloomCanvas.InsertBefore(img, insertBefore);
                 // Preserve links if they exist (BL-14318)
                 if (imgContainer.AttributeNames.Contains("data-href"))
-                    parentContainer.SetAttribute(
-                        "data-href",
-                        imgContainer.GetAttribute("data-href")
-                    );
+                    bloomCanvas.SetAttribute("data-href", imgContainer.GetAttribute("data-href"));
                 canvasElement.ParentNode.RemoveChild(canvasElement);
+                if (
+                    !bloomCanvas.ChildNodes.Any(
+                        c => c is SafeXmlElement ce && ce.HasClass("bloom-canvas-element")
+                    )
+                )
+                {
+                    bloomCanvas.RemoveClass("bloom-has-canvas-element");
+                }
             }
         }
 

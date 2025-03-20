@@ -15,7 +15,7 @@
         // When an image is the prompt, it looks bad if a closely-cropped image is right up against the colored background of the page.
         // When an image is the answer, there is a white border but it still looks better with some padding. These don't necessarily
         // need to be the same padding, but at the moment they are.
-        // Careful where this is put. Padding on the imageContainer or the img, for example, doesn't work when cropping.
+        // Careful where this is put. Padding on the bloom-canvas or the img, for example, doesn't work when cropping.
         // Note: the rule to do this actually didn't work in 6.1 for the case where the image is the prompt, but in the course
         // of fixing the 6.1 rule for 6.2, I made it actually work there.
         .bloom-backgroundImage {
@@ -89,19 +89,12 @@
     &[class*="Landscape"] {
         .imageThenChoices {
             flex-direction: row;
-            align-items: center; // nb: messes up the img size unless the image container has a explicit height
+            align-items: center; // nb: messes up the img size unless the bloom canvas has a explicit height
 
-            div.bloom-imageContainer {
+            div.bloom-canvas {
                 margin-right: 10px;
                 width: 50%;
                 height: 80%; // undesirable but see note above about align-items:center on the parent, imageAndChoices
-                .bloom-canvas-element .bloom-imageContainer {
-                    // fix: won't be needed when the outer rule is bloom-canvas. For now, we need to revert
-                    // to the usual settings for overlay image containers
-                    width: 100%;
-                    height: 100%;
-                    margin: 0;
-                }
             }
 
             .choices {
@@ -123,16 +116,9 @@
         .imageThenChoices {
             flex-direction: column;
 
-            div.bloom-imageContainer {
+            div.bloom-canvas {
                 height: 40% !important;
                 margin-bottom: 10px;
-                .bloom-imageContainer {
-                    // prevent the rule above applying to canvas elements,
-                    // especially the background one.
-                    height: 100% !important;
-                    width: 100% !important;
-                    margin: 0;
-                }
             }
             .choices .player-button {
                 width: 85%;
@@ -145,7 +131,7 @@
         .imageThenChoices {
             flex-direction: column;
 
-            div.bloom-imageContainer {
+            div.bloom-canvas {
                 height: 70% !important;
                 margin-bottom: 10px;
             }
@@ -203,9 +189,9 @@
 
             .player-button {
                 margin: 1rem;
-                .bloom-imageContainer {
+                .bloom-canvas {
                     // NB: a transparent background is fine in edit, where there is an <img>, but in bloomPUB (for some reason?) the image is places as a background-image
-                    // on the bloom-imageContainer, and so a transparent background actually makes it disappear.
+                    // on the bloom-canvas, and so a transparent background actually makes it disappear.
                     // background: transparent;
                     height: 100%;
                     margin-left: auto;
@@ -221,7 +207,7 @@
 
     &[class*="Landscape"] {
         .marginBox .wordThenChoices {
-            align-items: center; // nb: messes up the img size unless the image container has a explicit height
+            align-items: center; // nb: messes up the img size unless the bloom canvas has a explicit height
 
             .choices {
                 height: 100%;
@@ -332,7 +318,7 @@
     }
 
     .imageThenChoices {
-        .bloom-imageContainer {
+        .bloom-canvas {
             background-color: transparent;
             border-radius: 8px;
         }
@@ -343,7 +329,7 @@
             color: var(--page-foreground-color);
         }
 
-        .bloom-imageContainer {
+        .bloom-canvas {
             background-color: white;
         }
     }

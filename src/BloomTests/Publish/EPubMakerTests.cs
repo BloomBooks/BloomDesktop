@@ -100,7 +100,7 @@ namespace BloomTests.Publish
                 $@"<html><body>
 	<div class='bloom-page' data-page-number='5'>
 		<div class='marginBox'>
-			<div class='bloom-imageContainer' aria-hidden='true'>
+			<div class='bloom-canvas' aria-hidden='true'>
 				{inputImageHtml}
 				<div class='bloom-translationGroup bloom-imageDescription bloom-content1'>
 					<div class='bloom-editable bloom-visibility-code-on' lang='en'></div>
@@ -130,7 +130,7 @@ namespace BloomTests.Publish
                 $@"<html><body>
 	<div class='bloom-page' data-page-number='5'>
 		<div class='marginBox'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				{inputImageHtml}
 				<div class='bloom-translationGroup bloom-imageDescription'>
 					<div class='bloom-editable bloom-visibility-code-on bloom-content1' lang='en'>
@@ -163,7 +163,7 @@ namespace BloomTests.Publish
                 $@"<html><body>
 	<div class='bloom-page' data-page-number='5'>
 		<div class='marginBox'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				{inputImageHtml}
 				<div class='bloom-translationGroup bloom-imageDescription'>
 					<div class='bloom-editable bloom-visibility-code-on bloom-content1' lang='en'>
@@ -183,7 +183,7 @@ namespace BloomTests.Publish
             Assert.That(divList.Length, Is.EqualTo(2));
 
             var divImage = divList[0] as SafeXmlElement;
-            Assert.That(divImage.GetAttribute("class"), Is.EqualTo("bloom-imageContainer"));
+            Assert.That(divImage.GetAttribute("class"), Is.EqualTo("bloom-canvas"));
             var imgNodes = divImage.SafeSelectNodes("./*");
             Assert.That(imgNodes, Is.Not.Null);
             Assert.That(imgNodes.Length, Is.EqualTo(1));
@@ -215,7 +215,7 @@ namespace BloomTests.Publish
                 $@"<html><body>
 	<div class='bloom-page' data-page-number='5'>
 		<div class='marginBox'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				{inputImageHtml}
 				<div class='bloom-translationGroup bloom-imageDescription'>
 					<div class='bloom-editable bloom-visibility-code-on bloom-content1' lang='en'>
@@ -234,7 +234,7 @@ namespace BloomTests.Publish
             Assert.That(divList, Is.Not.Null);
             Assert.That(divList.Length, Is.EqualTo(1));
             var divImage = divList[0] as SafeXmlElement;
-            Assert.That(divImage.GetAttribute("class"), Is.EqualTo("bloom-imageContainer"));
+            Assert.That(divImage.GetAttribute("class"), Is.EqualTo("bloom-canvas"));
             var imgNodes = divImage.SafeSelectNodes("./*");
             Assert.That(imgNodes, Is.Not.Null);
             Assert.That(imgNodes.Length, Is.EqualTo(2));

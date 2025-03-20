@@ -34,7 +34,7 @@ namespace BloomTests
 					</div>
 					<div class='bloom-page bloom-frontMatter'>
 						<div class='marginBox'>
-							<div class='bloom-imageContainer' data-book='coverImage'>
+							<div class='bloom-canvas' data-book='coverImage'>
 							</div>
 						</div>
 					</div>"

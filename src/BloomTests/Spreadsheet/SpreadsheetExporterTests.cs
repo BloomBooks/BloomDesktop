@@ -43,7 +43,7 @@ namespace BloomTests.Spreadsheet
             <div class=""split-pane horizontal-percent"" style=""min-height: 40px;"">
                 <div class=""split-pane-component position-top"" style=""bottom: 54%;"">
                     <div class=""split-pane-component-inner"">
-                        <div class=""bloom-imageContainer bloom-leadingElement"" data-title=""Name: aor_CMB712.png Size: 42.95 kb Dots: 1500 x 950 For the current paper size: • The image container is 358 x 286 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 402 DPI. • An image with 1119 x 894 dots would fill this container at 300 DPI."" data-imgsizebasedon=""358,286"" title=""""><img src=""aor_CMB712.png"" alt="""" data-copyright=""Copyright SIL International 2009"" data-creator="""" data-license=""cc-by-sa""></img></div>
+                        <div class=""bloom-canvas bloom-leadingElement"" data-title=""Name: aor_CMB712.png Size: 42.95 kb Dots: 1500 x 950 For the current paper size: • The image container is 358 x 286 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 402 DPI. • An image with 1119 x 894 dots would fill this container at 300 DPI."" data-imgsizebasedon=""358,286"" title=""""><img src=""aor_CMB712.png"" alt="""" data-copyright=""Copyright SIL International 2009"" data-creator="""" data-license=""cc-by-sa""></img></div>
                     </div>
                 </div>
                 <div class=""split-pane-divider horizontal-divider"" style=""bottom: 54%;"" title=""CTRL for precision. Double click to match previous page."" data-splitter-label=""46%""></div>

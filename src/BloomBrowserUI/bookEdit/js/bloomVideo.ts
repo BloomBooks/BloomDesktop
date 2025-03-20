@@ -188,16 +188,15 @@ function getVideoEndSeconds(videoElt: HTMLVideoElement): number {
     return parseFloat(urlTimingObj.end);
 }
 
-// Returns true if the element is a child-or-self of an image container
-// (e.g. video-over-picture, text-over-picture)
-function isOverPicture(element: Element): boolean {
-    return !!element.closest(".bloom-imageContainer");
+// Returns true if the element is inside a canvas element
+function isInCanvasElement(element: Element): boolean {
+    return !!element.closest(kCanvasElementSelector);
 }
 
-function SetupClickToShowSignLanguageTool(containerDiv: Element) {
+function SetupClickToShowSignLanguageTool(videoContainerDiv: Element) {
     // if the user clicks on the video placeholder (or the video for that matter--see BL-6149),
     // bring up the sign language tool
-    $(containerDiv).click(ev => {
+    $(videoContainerDiv).click(ev => {
         if ((ev.currentTarget as HTMLElement).closest(".drag-activity-play")) {
             return;
         }
@@ -211,7 +210,7 @@ function SetupClickToShowSignLanguageTool(containerDiv: Element) {
             toolbox?.toolboxIsShowing() &&
             (currentToolId === kOverlayToolId ||
                 currentToolId === kGameToolId) &&
-            isOverPicture(containerDiv)
+            isInCanvasElement(videoContainerDiv)
         ) {
             // Looks like a video-over-picture, and we're showing the canvas element or game tool. Don't switch to SL tool.
             return;

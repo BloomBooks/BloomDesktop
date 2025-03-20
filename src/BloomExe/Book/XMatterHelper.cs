@@ -364,7 +364,7 @@ namespace Bloom.Book
                 var newPageSource = xmatterPage;
 
                 // If we are using an image for the front cover, replace the typical front cover with
-                // a special one which has a full-page image container.
+                // a special one which has a full-page bloom-canvas.
                 if (coverIsImage && IsOutsideFrontCoverPage(xmatterPage))
                 {
                     var directoryPath = GetXMatterDirectory(
