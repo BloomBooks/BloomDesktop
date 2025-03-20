@@ -106,7 +106,7 @@ export class ToolBox {
                 return;
             }
             const toolbox = document.getElementById("toolbox") as HTMLElement;
-
+            let toolsAdjusted = false;
             for (let i = 0; i < masterToolList.length; i++) {
                 if (masterToolList[i].requiresToolId()) {
                     // We may need to add or remove the specified tool
@@ -131,8 +131,14 @@ export class ToolBox {
                             ToolBox.addToolToString(masterToolList[i].id()),
                             wantTool
                         );
+                        toolsAdjusted = wantTool;
                     }
                 }
+            }
+            // We haven't called showOrHideTool, so the active tool hasn't changed.
+            // See the later comments on BL-14434 (after the first PR link).
+            if (requiredToolId && !toolsAdjusted) {
+                setCurrentTool(requiredToolId);
             }
         };
         doAdjustment();
@@ -731,8 +737,8 @@ function switchTool(newToolName: string): void {
         // More... to the same tool doesn't activate that tool.
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-6720.
         currentTool = newTool ? newTool : undefined;
-        newToolId = undefined;
     }
+    newToolId = undefined;
 }
 
 function activateTool(newTool: ITool) {
@@ -794,6 +800,7 @@ async function activateToolInternalAsync(
  * of "currentTool" (the last tool displayed).
  */
 function setCurrentTool(toolID: string) {
+    console.trace(`DEBUG setCurrentTool("${toolID}")`);
     // NOTE: tools without a "data-toolId" attribute (such as the More tool) cannot be the "currentTool."
     let idx = 0;
     const toolbox = $("#toolbox");
