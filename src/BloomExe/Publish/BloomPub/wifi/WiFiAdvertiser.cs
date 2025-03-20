@@ -184,9 +184,6 @@ namespace Bloom.Publish.BloomPub.wifi
         //      EndFor
         //   4. Convert broadcast address byte array to IP address string and return it
         //
-        // The local IP and subnet mask inputs are not explicitly checked. Any issues they may
-        // have will become apparent by the catch block firing. 
-        //
         private string BuildBroadcastAddress(string ipIn, string maskIn)
         {
             try
@@ -196,9 +193,11 @@ namespace Bloom.Publish.BloomPub.wifi
                 IPAddress subnetMask = IPAddress.Parse(maskIn);
                 byte[] ipBytes = ipAddress.GetAddressBytes();
                 byte[] subnetBytes = subnetMask.GetAddressBytes();
-                if (ipBytes.Length != subnetBytes.Length)
+
+                if ((ipBytes.Length != 4) || (subnetBytes.Length != 4))
                 {
-                    throw new ArgumentException("IP address and subnet mask length mismatch.");
+                    Debug.WriteLine("Error, broadcast address: address and/or subnet mask length is not 4.");
+                    return "";
                 }
 
                 // Step 2
@@ -207,23 +206,16 @@ namespace Bloom.Publish.BloomPub.wifi
                 // Step 3
                 for (int i = 0; i < ipBytes.Length; i++)
                 {
-                    //Debug.WriteLine("  ipBytes[{0}]={1}, subnetBytes[{2}]={3}, subnetBytes[{4}]^255={5}",
-                    //                     i, ipBytes[i], i, subnetBytes[i], i, subnetBytes[i]^255);
-
                     bcastBytes[i] = (byte)(ipBytes[i] | (subnetBytes[i] ^ 255));
-
-                    // TEMPORARY DEBUG; either way works
-                    //Debug.WriteLine("  result = {0}.{1}.{2}.{3}", (byte)bcastBytes[0], (byte)bcastBytes[1],
-                    //                                                (byte)bcastBytes[2], (byte)bcastBytes[3]);
-                    Debug.WriteLine("  result = " + String.Join(" ", bcastBytes));
                 }
 
                 // Step 4
                 return new IPAddress(bcastBytes).ToString();
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return "Invalid IP address or subnet mask";
+                Debug.WriteLine("Error, broadcast address: exception ", e);
+                return "";
             }
         }
 
