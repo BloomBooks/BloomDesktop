@@ -106,11 +106,12 @@ namespace Bloom.Publish.BloomPub.wifi
                 return;
             }
 
-            // The typical broadcast address (255.255.255.255) doesn't work with a raw socket:
-            //      "System.Net.Sockets.SocketException (0x80004005): An attempt was made
-            //      to access a socket in a way forbidden by its access permissions"
-            // Rather, the broadcast address must be calculated from the local IP address and
-            // the subnet mask.
+            // Using 255.255.255.255 as UDP broadcast address doesn't work for a couple reasons:
+            //   - A raw socket, which now replaces UdpClient, raises an exception:
+            //     "System.Net.Sockets.SocketException (0x80004005): An attempt was made
+            //     to access a socket in a way forbidden by its access permissions"
+            //   - The broadcast address must be computed from sender's local IP address and
+            //     subnet mask
             _remoteIp = BuildBroadcastAddress(_localIp, _subnetMask);
             if (_remoteIp.Length == 0)
             {
@@ -161,63 +162,69 @@ namespace Bloom.Publish.BloomPub.wifi
         }
 
         // Function: for a given local IP address and subnet mask, construct the
-        //           broadcast address *that stays within the subnet*.
-        //           All octet values in the subnet mask are handled.
+        //           appropriate broadcast address.
+        //
+        // Philosophy: the subnet mask indicates how to handle the IP address bits --
+        //   - '1' mask bits indicate the "network address" portion of the IP address.
+        //     The broadcast address aims at the same network so just copy the IP address
+        //     bits into the same positions of the broadcast address. 'XORing' these '1'
+        //     mask bits with '1' flips them to '0'. Then 'ORing' those now-'0' bits with
+        //     the IP bits keeps the IP bits unchanged.
+        //   - '0' mask bits indicate the "host ID" portion of the IP address. We must fill
+        //     this portion of the broadcast address with '1's so all hosts on the network
+        //     will see the transmission. The same bit operations work here too: 'XORing'
+        //     the '0' mask bits with '1' flips them to '1', which when 'ORed' with anything
+        //     gives '1', which is what we want for the host bits.
+        //
         // Algorithm:
-        //    1. For all '255' octets (they will be to the left of the 1-0 boundary),
-        //       copy the corresponding local IP octets into the broadcast address
-        //    2. For all '0' octets (they will be to the right of the 1-0 boundary),
-        //       put '255' into the corresponding broadcast address octets
-        //    3. For 0 < octet < 255, octet value starts at 255 and is decremented for
-        //       each 1-bit seen, according to the following:
-        //          scan the octet left to right (most-to-least significant)
-        //          if MSb is '1' subtract 2^7; if next is '1' subtract 2^6; etc
-        // Assumptions:
-        //    - The local IP and mask inputs are valid and do not need to be checked
+        //   1. Convert IP address and corresponding subnet mask to byte arrays
+        //   2. Create a byte array to hold broadcast address result
+        //   3. For each IP address octet and corresponding mask octet, starting with most significant
+        //         Compute broadcast address octet per "Philosophy" above
+        //      EndFor
+        //   4. Convert broadcast address byte array to IP address string and return it
+        //
+        // The local IP and subnet mask inputs are not explicitly checked. Any issues they may
+        // have will become apparent by the catch block firing. 
         //
         private string BuildBroadcastAddress(string ipIn, string maskIn)
         {
-            // Isolate the octets for both local IP and subnet mask.
-            string[] octetsIp = ipIn.Split('.');
-            string[] octetsMask = maskIn.Split('.');
-
-            // Steps 1-3: examine the 4 octets in turn, starting with the most
-            // significant one. Based on their value, build up the broadcast
-            // address string.
-            string bcastAddress = "";
-            for (int i = 0; i < 4; i++)
+            try
             {
-                if (octetsMask[i] == "255")
+                // Step 1
+                IPAddress ipAddress = IPAddress.Parse(ipIn);
+                IPAddress subnetMask = IPAddress.Parse(maskIn);
+                byte[] ipBytes = ipAddress.GetAddressBytes();
+                byte[] subnetBytes = subnetMask.GetAddressBytes();
+                if (ipBytes.Length != subnetBytes.Length)
                 {
-                    bcastAddress += octetsIp[i]; // Step 1
+                    throw new ArgumentException("IP address and subnet mask length mismatch.");
                 }
-                else if (octetsMask[i] == "0")
-                {
-                    bcastAddress += "255";       // Step 2
-                }
-                else
-                {
-                    int octetVal = 255;          // Step 3, begin
 
-                    // Convert the mask octet to a numeric so each bit can be handled.
-                    byte maskVal = System.Convert.ToByte(octetsMask[i]);
+                // Step 2
+                byte[] bcastBytes = new byte[ipBytes.Length];
 
-                    for (int j = 0; j < 8; j++)
-                    {
-                        int comp = maskVal & (1 << (7 - j));
-                        if (comp == (1 << (7 - j)))
-                        {
-                            octetVal -= (1 << (7 - j));
-                        }
-                    }
-                    bcastAddress += octetVal.ToString();
-                }
-                if (i < 3)   // no dot after the final byte
+                // Step 3
+                for (int i = 0; i < ipBytes.Length; i++)
                 {
-                    bcastAddress += ".";
+                    //Debug.WriteLine("  ipBytes[{0}]={1}, subnetBytes[{2}]={3}, subnetBytes[{4}]^255={5}",
+                    //                     i, ipBytes[i], i, subnetBytes[i], i, subnetBytes[i]^255);
+
+                    bcastBytes[i] = (byte)(ipBytes[i] | (subnetBytes[i] ^ 255));
+
+                    // TEMPORARY DEBUG; either way works
+                    //Debug.WriteLine("  result = {0}.{1}.{2}.{3}", (byte)bcastBytes[0], (byte)bcastBytes[1],
+                    //                                                (byte)bcastBytes[2], (byte)bcastBytes[3]);
+                    Debug.WriteLine("  result = " + String.Join(" ", bcastBytes));
                 }
+
+                // Step 4
+                return new IPAddress(bcastBytes).ToString();
             }
-            return bcastAddress;
+            catch (Exception)
+            {
+                return "Invalid IP address or subnet mask";
+            }
         }
 
         // Helper function to gather info on all network interfaces of this machine.
