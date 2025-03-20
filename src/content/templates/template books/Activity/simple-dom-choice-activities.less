@@ -15,13 +15,18 @@
         // When an image is the prompt, it looks bad if a closely-cropped image is right up against the colored background of the page.
         // When an image is the answer, there is a white border but it still looks better with some padding. These don't necessarily
         // need to be the same padding, but at the moment they are.
-        .bloom-imageContainer img {
+        // Careful where this is put. Padding on the imageContainer or the img, for example, doesn't work when cropping.
+        // Note: the rule to do this actually didn't work in 6.1 for the case where the image is the prompt, but in the course
+        // of fixing the 6.1 rule for 6.2, I made it actually work there.
+        .bloom-backgroundImage {
             padding: 5px;
             box-sizing: border-box;
+            background-color: white;
+            border-radius: 8px;
         }
 
         .Prompt-style {
-            // not that .Prompt-style is also a user-modifiable style in the .htm file
+            // note that .Prompt-style is also a user-modifiable style in the .htm file
             margin-bottom: 10px;
         }
 

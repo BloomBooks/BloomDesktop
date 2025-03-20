@@ -2562,11 +2562,21 @@ export class CanvasElementManager {
             // when the style is already absolutely controlling style.left. It's easier to just tweak
             // it here.
             const extraPadding = hasText ? 3 : 0;
+            // using pxToNumber here because the position and size of the canvas element are often fractional.
+            // OTOH, clientWidth etc are whole numbers. If we allow that rounding in to affect where to
+            // place the control frame, we can end up with a 1 pixel gap between the canvas element and
+            // the control frame, which looks bad.
             controlFrame.style.width =
-                this.activeElement.clientWidth + 2 * extraPadding + "px";
+                CanvasElementManager.pxToNumber(
+                    this.activeElement.style.width
+                ) +
+                2 * extraPadding +
+                "px";
             controlFrame.style.height = this.activeElement.style.height;
             controlFrame.style.left =
-                this.activeElement.offsetLeft - extraPadding + "px";
+                CanvasElementManager.pxToNumber(this.activeElement.style.left) -
+                extraPadding +
+                "px";
             controlFrame.style.top = this.activeElement.style.top;
             const tails = Bubble.getBubbleSpec(this.activeElement).tails;
             if (tails.length > 0) {
