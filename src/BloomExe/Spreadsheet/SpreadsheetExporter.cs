@@ -157,7 +157,7 @@ namespace Bloom.Spreadsheet
             Color colorForPage
         )
         {
-            var imageContainers = GetImageContainers(page);
+            var imageContainers = GetBloomCanvases(page);
             var allGroups = TranslationGroupManager.SortedGroupsOnPage(page, true);
             var groups = allGroups
                 .Where(x => !x.GetAttribute("class").Contains("bloom-imageDescription"))
@@ -559,16 +559,16 @@ namespace Bloom.Spreadsheet
                 .First();
         }
 
-        private List<SafeXmlElement> GetImageContainers(SafeXmlElement elementOrDom)
+        private List<SafeXmlElement> GetBloomCanvases(SafeXmlElement elementOrDom)
         {
             return SafeXmlElement
-                .GetAllDivsWithClass(elementOrDom, "bloom-imageContainer")
-                // an image container that has a background image can just be omitted. The background image
-                // will end up in the same place in the list of image containers, and its own image is
+                .GetAllDivsWithClass(elementOrDom, "bloom-canvas")
+                // a bloom-canvas that has a background image can just be omitted. The background image
+                // will end up in the same place in the list of image containers, and its own image (if any) is
                 // just a placeholder. (On import, we'll currently convert back to an old-style background
                 // that is the direct child of the container. It will look right since we cropped it if
                 // necessary while doing the export. Next edit of the page will convert to BG image overlay again.
-                .Where(imgContainer => !HtmlDom.HasBackgroundImage(imgContainer))
+                .Where(bloomCanvas => !HtmlDom.HasBackgroundImage(bloomCanvas))
                 .ToList();
         }
 

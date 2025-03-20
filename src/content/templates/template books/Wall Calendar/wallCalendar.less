@@ -8,7 +8,7 @@ ENDLAYOUTS
 @A5PageHeight: 14.8cm;
 @A5PageWidth: 21cm;
 
-.calendarMonthTop .bloom-imageContainer {
+.calendarMonthTop .bloom-canvas {
     height: @base-image-height;
 }
 
@@ -99,7 +99,6 @@ ENDLAYOUTS
 	We also need a smaller margin for these particular pages.
 */
 .A5Landscape {
-
     &.calendarMonthBottom,
     &.calendarMonthTop {
         --page-margin-top: @Border;
@@ -110,18 +109,18 @@ ENDLAYOUTS
             margin-left: 0;
         }
 
-        .bloom-imageContainer img {
+        .bloom-canvas img {
             max-width: 100% !important;
         }
     }
 }
 
 /* bilingual */
-.calendarMonthTop.bloom-bilingual .bloom-imageContainer {
+.calendarMonthTop.bloom-bilingual .bloom-canvas {
     height: @base-image-height - 45;
 }
 
 /* trilingual */
-.calendarMonthTop.bloom-trilingual .bloom-imageContainer {
+.calendarMonthTop.bloom-trilingual .bloom-canvas {
     height: @base-image-height - 85;
 }

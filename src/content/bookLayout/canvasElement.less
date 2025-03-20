@@ -5,7 +5,7 @@
 @DefaultTextBoxHeight: @MinTextBoxHeight;
 @DragHandleBackgroundColor: transparent;
 
-.bloom-imageContainer.ui-ctrlDown .bloom-canvas-element .ui-resizable-handle {
+.bloom-canvas.ui-ctrlDown .bloom-canvas-element .ui-resizable-handle {
     display: none !important;
 }
 
@@ -16,11 +16,11 @@
 // a stacking context, and then its child buttons cannot be 'above' the comicaljs canvas,
 // and then those buttons can't be clicked! Instead, we make sure canvas element images come after
 // the main img and so are on top of it for that reason.
-.bloom-imageContainer .bloom-imageContainer {
+.bloom-canvas .bloom-imageContainer {
     z-index: auto !important;
 }
 
-.bloom-imageContainer {
+.bloom-canvas {
     &.grabbable:not(.ui-jquery-resizing-in-progress) {
         &,
         .bloom-canvas-element
@@ -149,7 +149,7 @@
 }
 
 // Code to handle borders
-.bloom-imageContainer {
+.bloom-canvas {
     // Over picture elements with speech bubbles
     //
     // a canvas element that contains a data-bubble attribute and does NOT contain the substring
@@ -217,7 +217,7 @@
 // in the appearance of an existing book. Doing it when switching to full bleed
 // seems acceptable, since layout will need to be checked anyway.
 .bloom-fullBleed
-    .bloom-imageContainer
+    .bloom-canvas
     .bloom-canvas-element[data-bubble*="`style`:`none`"] {
     display: flex;
     flex-direction: column;
@@ -225,7 +225,7 @@
 
 // Set vertical alignment to center
 // Working prototype using flexboxes.
-.bloom-imageContainer {
+.bloom-canvas {
     // We exclude "Just Text" bubbles with no background color because
     // 1) Visually there's not a lot of profit to it
     // 2) So for existing books there won't be a subtle movement in the text position
@@ -297,11 +297,13 @@
 // We have some special rules that give image containers margin in various places
 // (e.g., traditional xmatter cover). But we don't want it inherited by canvas element
 // image containers, because we expect them to exactly match the canvas elements.
-.bloom-imageContainer .bloom-canvas-element .bloom-imageContainer {
+// (Not sure if this is true any more...the rules mentioned above are probably all
+// for bloom-canvas elements, now distinct from bloom-imageContainer.
+.bloom-canvas .bloom-canvas-element .bloom-imageContainer {
     margin: 0;
 }
 
-// This is usually covered by a rule in basePage that makes image containers
+// This is usually covered by a rule in basePage that makes bloom canvases
 // fill their origami split (.customPage) but an IC in an canvas element in a motion book
 // animation is not inside the page. At this point canvas element ICs should always fill
 // the canvas element (this is how we clip cropped images).

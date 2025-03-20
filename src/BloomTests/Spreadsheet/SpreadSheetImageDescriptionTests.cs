@@ -62,7 +62,7 @@ namespace BloomTests.Spreadsheet
                     <p></p>
                 </div>
             </div>
-			<div class=""bloom-imageContainer"">
+			<div class=""bloom-canvas"">
 				<img src=""placeHolder.png""></img>
 				<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"">
                     <div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" contenteditable=""true"" lang=""akl"" data-languagetipcontent=""Aklanon"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-audiorecordingmode=""Sentence"">
@@ -84,7 +84,7 @@ namespace BloomTests.Spreadsheet
         <div class=""pageDescription"" lang=""en""></div>
 
         <div class=""split-pane-component marginBox"" style="""">
-			<div class=""bloom-imageContainer"">
+			<div class=""bloom-canvas"">
 				<img src=""placeHolder.png""></img>
 				<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"">
                     <div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" contenteditable=""true"" lang=""akl"" data-languagetipcontent=""Aklanon"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-audiorecordingmode=""Sentence"">
@@ -178,7 +178,7 @@ namespace BloomTests.Spreadsheet
         //[Test]
         //public void CoverImageDescription_PutOnCover()
         //{
-        //	AssertThatNodeContainsText(_coverPage, ".//div[@class='bloom-imageContainer']/div[contains(@class, 'bloom-imageDescription')]", "An airplane on a lake");
+        //	AssertThatNodeContainsText(_coverPage, ".//div[@class='bloom-canvas']/div[contains(@class, 'bloom-imageDescription')]", "An airplane on a lake");
         //}
 
         [Test]
@@ -186,7 +186,7 @@ namespace BloomTests.Spreadsheet
         {
             AssertThatNodeContainsText(
                 _contentPages[0],
-                ".//div[contains(@class, 'bloom-imageContainer')]/div[contains(@class, 'bloom-imageDescription')]",
+                ".//div[contains(@class, 'bloom-canvas')]/div[contains(@class, 'bloom-imageDescription')]",
                 "A fish jumping above a lake"
             );
         }
@@ -199,7 +199,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[0])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    ".//div[contains(@class, 'bloom-imageContainer')]/div[contains(@class, 'bloom-imageDescription')]",
+                    ".//div[contains(@class, 'bloom-canvas')]/div[contains(@class, 'bloom-imageDescription')]",
                     1
                 );
         }
@@ -211,7 +211,7 @@ namespace BloomTests.Spreadsheet
             // is an image-and-picture, the importer will have to insert a page, and create the image description div.
             AssertThatNodeContainsText(
                 _contentPages[1],
-                ".//div[contains(@class, 'bloom-imageContainer')]/div[contains(@class, 'bloom-imageDescription')]",
+                ".//div[contains(@class, 'bloom-canvas')]/div[contains(@class, 'bloom-imageDescription')]",
                 "Another image description"
             );
         }

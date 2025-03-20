@@ -356,7 +356,7 @@ namespace BloomTests.Publish
             <div style='min-height: 42px;' class='split-pane horizontal-percent'>
                 <div class='split-pane-component position-top' style='bottom: 50%'>
                     <div class='split-pane-component-inner'>
-                        <div title='aor_BRD11.png 41.36 KB 1500 x 581 716 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer bloom-leadingElement'
+                        <div title='aor_BRD11.png 41.36 KB 1500 x 581 716 DPI (should be 300-600) Bit Depth: 32' class='bloom-canvas bloom-leadingElement'
 							data-initialrect='0.0024509803921568627 0.002967359050445104 0.75 0.7507418397626113' data-finalrect='0.37745098039215685 0.12759643916913946 0.5 0.5014836795252225'>
 							< img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' src='aor_BRD11.png' alt='Two birds on a branch with beak tips touching'></img>
 
@@ -476,10 +476,10 @@ namespace BloomTests.Publish
 										<body>
 											<div class='bloom-page' id='blah'>
 												<div class='marginBox'>
-													<div class='bloom-imageContainer bloom-leadingElement'>"
+													<div class='bloom-canvas bloom-leadingElement'>"
                 + "	<img src=\"HL00'14 1.svg\"/>"
                 + @"</div>
-													<div class='bloom-imageContainer bloom-leadingElement'>"
+													<div class='bloom-canvas bloom-leadingElement'>"
                 + "<img src=\"HL00'14 1.svg\"/>"
                 + @"</div>
 											</div>
@@ -496,26 +496,24 @@ namespace BloomTests.Publish
                 assertionsOnResultingHtmlString: changedHtml =>
                 {
                     // The imgs should be replaced with something like this:
-                    //		"<div class='bloom-imageContainer bloom-leadingElement bloom-backgroundImage' style='background-image:url('HL00%2714%201.svg.svg')'</div>
+                    //		"<div class='bloom-canvas bloom-leadingElement bloom-backgroundImage' style='background-image:url('HL00%2714%201.svg.svg')'</div>
                     //	Note that normally there would also be data-creator, data-license, etc. If we put those in the html, they will be stripped because
                     // the code will actually look at our fake image and, finding now metadata will remove these. This is not a problem for our
                     // testing here, because we're not trying to test the functioning of that function here. The bit we can test, that the image became a
                     // background image, is sufficient to know the function was run.
 
-                    // Oct 2017 jh: I added this bloom-imageContainer/ because the code that does the conversion is limited to these,
+                    // Oct 2017 jh: I added this bloom-canvas/ because the code that does the conversion is limited to these,
                     // presumably because that is the only img's that were giving us problems (ones that need to be sized at display time).
                     // But Xmatter has other img's, for license & branding.
                     var changedDom = XmlHtmlConverter.GetXmlDomFromHtml(changedHtml);
-                    AssertThatXmlIn
-                        .Dom(changedDom)
-                        .HasNoMatchForXpath("//bloom-imageContainer/img"); // should be merged into parent
+                    AssertThatXmlIn.Dom(changedDom).HasNoMatchForXpath("//bloom-canvas/img"); // should be merged into parent
 
                     //Note: things like  @data-creator='Anis', @data-license='cc-by' and @data-copyright='1996 SIL PNG' are not going to be there by now,
                     //because they aren't actually supported by the image file, so they get stripped.
                     AssertThatXmlIn
                         .Dom(changedDom)
                         .HasSpecifiedNumberOfMatchesForXpath(
-                            "//div[@class='bloom-imageContainer bloom-leadingElement bloom-backgroundImage' and @style=\"background-image:url('HL00%2714%201.svg')\"]",
+                            "//div[@class='bloom-canvas bloom-leadingElement bloom-backgroundImage' and @style=\"background-image:url('HL00%2714%201.svg')\"]",
                             2
                         );
                 }

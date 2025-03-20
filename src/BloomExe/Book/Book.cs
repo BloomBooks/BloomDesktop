@@ -1746,19 +1746,6 @@ namespace Bloom.Book
                 OurHtmlDom.RawDom.RemoveClassFromBody("template");
             }
 
-            // Following code (roughly) was in the main BBUD but we were doing it when the book gets selected.
-            // We've now simplified to only three states, so it makes most sense to do everything we can
-            // that doesn't involve writing files here.
-            progress.WriteStatus("Updating pages...");
-            foreach (
-                SafeXmlElement pageDiv in OurHtmlDom.SafeSelectNodes(
-                    "//body/div[contains(@class, 'bloom-page')]"
-                )
-            )
-            {
-                BringPageUpToDate(pageDiv);
-            }
-
             // Most of this probably only needs doing if we're actually about to edit it.
             // But earlier versions did it whenever we did BBUD on a book in the editable collection,
             // and I'm not game to change it.
@@ -1788,8 +1775,23 @@ namespace Bloom.Book
             Storage.MigrateToLevel4UseAppearanceSystem();
             Storage.MigrateToLevel5CanvasElement();
             Storage.MigrateToLevel6LegacyActivities();
+            Storage.MigrateToLevel7BloomCanvas();
 
             Storage.DoBackMigrations();
+
+            // Following code (roughly) was in the main BBUD but we were doing it when the book gets selected.
+            // We've now simplified to only three states, so it makes most sense to do everything we can
+            // that doesn't involve writing files here.
+            // Needs to be after the bloom-canvas migration.
+            progress.WriteStatus("Updating pages...");
+            foreach (
+                SafeXmlElement pageDiv in OurHtmlDom.SafeSelectNodes(
+                    "//body/div[contains(@class, 'bloom-page')]"
+                )
+            )
+            {
+                BringPageUpToDate(pageDiv);
+            }
 
             RemoveObsoleteImageAttributes(OurHtmlDom);
 
@@ -3387,13 +3389,13 @@ namespace Bloom.Book
         /// </summary>
         private static void RemoveImageResolutionMessageAndAddMissingImageMessage(HtmlDom dom)
         {
-            var imageContainerList = dom.Body.SafeSelectNodes(
-                "//div[contains(@class,'bloom-imageContainer')]"
+            var bloomCanvasList = dom.Body.SafeSelectNodes(
+                "//div[contains(@class,'bloom-canvas')]"
             );
-            foreach (SafeXmlElement imageContainer in imageContainerList)
+            foreach (SafeXmlElement bloomCanvas in bloomCanvasList)
             {
-                imageContainer.RemoveAttribute("title");
-                foreach (SafeXmlElement img in imageContainer.SafeSelectNodes("img"))
+                bloomCanvas.RemoveAttribute("title");
+                foreach (SafeXmlElement img in bloomCanvas.SafeSelectNodes("img"))
                 {
                     var src = img.GetAttribute("src");
                     var alt = img.GetAttribute("alt");
@@ -4783,8 +4785,10 @@ namespace Bloom.Book
         {
             foreach (
                 var img in htmlDom.RawDom
+                    // a normal fully up-to-date book shouldn't have imgs directly in bloom-canvas,
+                    // but books we're migrating might.
                     .SafeSelectNodes(
-                        "//div[contains(@class,'bloom-imageContainer')]/img[@style|@width|@height]"
+                        "//div[contains(@class,'bloom-imageContainer') or contains(@class, 'bloom-canvas')]/img[@style|@width|@height]"
                     )
                     .Cast<SafeXmlElement>()
             )
@@ -5131,7 +5135,7 @@ namespace Bloom.Book
         /// <summary>
         /// The primary focus of this method is removing pages we don't want in bloompub files,
         /// particularly xmatter pages that often don't have content but just might.
-        /// It will detect pages with img elements or bloom-imageContainer elements with
+        /// It will detect pages with img elements or bloom-canvas elements with
         /// background images, and as long as the image isn't our placeholder, such pages
         /// are non-blank. For text, it is looking for divs that have the bloom-visibility-code-on
         /// class (and some non-white content). This means that it's looking for content that is
@@ -5243,7 +5247,7 @@ namespace Bloom.Book
             }
             foreach (
                 SafeXmlElement div in page.SafeSelectNodes(
-                    ".//div[contains(@class, 'bloom-imageContainer')]"
+                    ".//div[contains(@class, 'bloom-imageContainer') or contains(@class, 'bloom-canvas')]"
                 )
             )
             {
@@ -5274,12 +5278,12 @@ namespace Bloom.Book
                 )
             )
             {
-                // For now we only apply this to the first image container.
-                var imgContainer =
+                // For now we only apply this to the first bloom-canvas.
+                var bloomCanvas =
                     page.SelectSingleNode(
-                        ".//div[contains(@class, 'bloom-imageContainer') and @data-initialrect]"
+                        ".//div[contains(@class, 'bloom-canvas') and @data-initialrect]"
                     ) as SafeXmlElement;
-                if (imgContainer == null)
+                if (bloomCanvas == null)
                     continue;
                 double duration = 0.0;
                 foreach (
@@ -5305,7 +5309,7 @@ namespace Bloom.Book
                 }
                 if (duration == 0.0)
                     duration = 4.0; // per BL-5393, if we don't have voice durations use 4 seconds.
-                imgContainer.SetAttribute(
+                bloomCanvas.SetAttribute(
                     "data-duration",
                     duration.ToString(CultureInfo.InvariantCulture)
                 );

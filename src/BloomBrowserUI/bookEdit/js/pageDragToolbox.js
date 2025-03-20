@@ -27,7 +27,7 @@ function AddToolbox(container) {
                             $x.attr("class", $x.data("classesafterdrop"));
                             $x.removeAttr("classesafterdrop");
 
-                            if ($x.hasClass("bloom-imageContainer")) {
+                            if ($x.hasClass("bloom-canvas")) {
                                 SetupImageContainer($x);
                             }
 
@@ -61,9 +61,9 @@ function AddToolbox(container) {
                 '<div class="widgetInPageDragToolbox" data-classesafterdrop="bloom-translationGroup bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' +
                 lang1Tag +
                 '"> A block of normal text.</div></div>';
-            // old one: var imageWidget = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable widgetInPageDragToolbox"><img src="placeHolder.png"></div>';
+            // old one: var imageWidget = '<div class="bloom-canvas bloom-resizable bloom-draggable  bloom-deletable widgetInPageDragToolbox"><img src="placeHolder.png"></div>';
             var imageWidget =
-                '<div class="widgetInPageDragToolbox " data-classesafterdrop="bloom-imageContainer  bloom-resizable bloom-draggable  bloom-deletable"><img src="placeHolder.png"></div>';
+                '<div class="widgetInPageDragToolbox " data-classesafterdrop="bloom-canvas  bloom-resizable bloom-draggable  bloom-deletable"><img src="placeHolder.png"></div>';
 
             var toolbox = $(this)
                 .parent()

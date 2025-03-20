@@ -240,6 +240,9 @@ namespace Bloom.SafeXml
             parent.RemoveChild(this);
         }
 
+        public SafeXmlElement FirstElementChild =>
+            ChildNodes.FirstOrDefault(n => n is SafeXmlElement) as SafeXmlElement;
+
         /// <summary>
         /// Use this only for tests!
         /// </summary>

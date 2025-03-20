@@ -178,7 +178,7 @@ div.ui-tooltip-content {
     // A min-height of zero somehow fixes that without interfering with cropping. So that's what we're doing for now.
     min-height: 0;
     border-radius: var(--image-border-radius);
-    // image containers are ordered by document order so they can NOT be a stacking context,
+    // bloom canvases are ordered by document order so they can NOT be a stacking context,
     // allowing their child buttons to be over the comicaljs canvas
     //z-index: 100;
 }
@@ -286,7 +286,7 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
 // .Common-SeparateMultilingualEditables(@StandardMultilingualEditBoxSeparation);
 
 .bloom-imageContainer {
-    // NO z-index for image containers! They are ordered by document order.
+    // NO z-index for bloom canvases! They are ordered by document order.
     // (This allows them NOT to be a stacking context, so their child buttons can
     // be above the comicaljs canvas.)
     // z-index: @baseZIndexForContainers;
@@ -297,7 +297,7 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
     overflow: hidden;
 }
 .customPage {
-    .bloom-imageContainer {
+    .bloom-canvas {
         width: 100%;
         height: 100%;
         box-sizing: border-box; // need any borders inside that 100% sizing (otherwise they tend to be clipped on at least one side)
@@ -452,9 +452,9 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
 // in the left half and show the translation group in the right half.
 // This rule would like to live in basePage-sharedRules, but we need display:flex in Bloom and display:block
 // in epubs.
-.bloom-showImageDescriptions .bloom-imageContainer .bloom-imageDescription {
+.bloom-showImageDescriptions .bloom-canvas .bloom-imageDescription {
     // We really just want to turn off the display:none that usually applies to image descriptions
-    // inside image containers, but we have to set something. Fortunately, translation groups
+    // inside bloom canvases, but we have to set something. Fortunately, translation groups
     // are always display:flex (when not hidden) in Bloom itself.
     display: flex;
 }
@@ -465,7 +465,7 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
 // NB: this rule was in basePage-sharedRules, but epubcheck objects to the "position: absolute;".
 // "position: absolute;" is required for the text to display in the proper location.  If we ever want to
 // display like this in ePUBs (picture and description side by side), some other approach will be needed.
-.bloom-showImageDescriptions .bloom-imageContainer {
+.bloom-showImageDescriptions .bloom-canvas {
     .bloom-imageDescription {
         // the 3px is @imageDescriptionBorderWidth in editMode.less. It's easy to subtract this
         // here, but difficult to transform the image to 50% - 3px, since scale doesn't support calc.
@@ -482,7 +482,7 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
         box-sizing: border-box;
         border-left: solid lightgray 1px;
         // We also want to turn off the display:none that usually applies to translation groups
-        // inside image containers (above), but we want display:flex in Bloom, and display:block
+        // inside bloom canvases (above), but we want display:flex in Bloom, and display:block
         // in epubs. So that rule is elsewhere.
     }
 }
@@ -590,8 +590,8 @@ div[data-book*="branding"] {
 // We only want the padding on an immediate child of .split-pane-component.position-bottom.
 // Note: an earlier version of this rule put the padding on any div that was a direct child of
 // the .split-pane-component-inner. I don't know why. It messed up the border drawing on
-// bloom-imageContainer, because the padding between it and a previous text block was
-// being put on the image container, and thus inside the border.
+// bloom-canvas, because the padding between it and a previous text block was
+// being put on the bloom canvas, and thus inside the border.
 .split-pane.horizontal-percent
     .split-pane-component.position-top
     > .split-pane-component-inner {

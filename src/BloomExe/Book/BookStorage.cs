@@ -107,6 +107,7 @@ namespace Bloom.Book
         void MigrateToLevel4UseAppearanceSystem();
         void MigrateToLevel5CanvasElement();
         void MigrateToLevel6LegacyActivities();
+        void MigrateToLevel7BloomCanvas();
 
         void DoBackMigrations();
 
@@ -158,7 +159,7 @@ namespace Bloom.Book
         /// History of kMaintenanceLevel:
         ///   Bloom 4.9: 1 = Ensure that all images are opaque and no larger than our desired maximum size.
         ///              2 = Remove any 'comical-generated' svgs that are transparent.
-        ///				 3 = Ensure main img comes first in image container
+        ///				 3 = Ensure main img comes first in image container (now bloom-canvas)
         ///   (Bloom 6.0 added kMediaMaintenanceLevel so we could distinguish migrations that affect
         ///   other files (typically images or media) in the book folder from ones that only affect
         ///   the DOM and can safely be done in memory. (Later in 6.0 we stopped doing incomplete
@@ -166,13 +167,16 @@ namespace Bloom.Book
         ///   Bloom 6.0  4 = Switched to using a theme (or explicitly using legacy)
         ///   Bloom 6.2  5 = bloom-textOverPicture became bloom-canvas-element
         ///   Bloom 6.2  6 = Legacy activities were updated to have data-tool-id="game", class
-        ///     game-theme-legacy, and to give .simple-comprehension-quiz a data-activity.
+        ///     game-theme-legacy, and to give simple-comprehension-quiz a data-activity.
+        ///   Bloom 6.2  7 = Changed name of element that contains canvas elements to bloom-canvas
+        ///     (Previously was bloom-imageContainer, which conflicted with the use inside canvas
+        ///     elements, and was inaccurate because it could contain many other things.)
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 6;
+        public const int kMaintenanceLevel = 7;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -1102,6 +1106,17 @@ namespace Bloom.Book
                 BloomDesktopMinVersion = "6.2",
                 BloomReaderMinVersion = "3.3",
                 XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
+            },
+            new Feature()
+            {
+                FeatureId = "bloomCanvas",
+                FeaturePhrase = "6.2 use of bloom-canvas",
+                // Plan is to make a special exception to this for late releases of 6.1 and 6.0,
+                // which will know how to reverse the migration.
+                BloomDesktopMinVersion = "6.2",
+                BloomReaderMinVersion = "3.3",
+                // This is used for all images so will nearly always succeed fast.
+                XPath = $"//div[contains(@class,'bloom-canvas') ]"
             }
         };
 
@@ -3641,14 +3656,14 @@ namespace Bloom.Book
             var elementsToSave = new HashSet<SafeXmlElement>();
             foreach (var svgElement in comicalSvgs)
             {
-                var container = svgElement.ParentNode; // bloom-imageContainer div (not gonna be null)
-                var textOverPictureDivs = container.SafeSelectNodes(
+                var bloomCanvas = svgElement.ParentNode; // bloom-canvas div (not gonna be null)
+                var canvasElementDivs = bloomCanvas.SafeSelectNodes(
                     "div[contains(@class, '" + HtmlDom.kCanvasElementClass + "')]"
                 );
-                if (textOverPictureDivs == null) // unlikely, but maybe possible
+                if (canvasElementDivs == null) // unlikely, but maybe possible
                     continue;
 
-                foreach (var textOverPictureDiv in textOverPictureDivs)
+                foreach (var textOverPictureDiv in canvasElementDivs)
                 {
                     var bubbleData = textOverPictureDiv.GetAttribute("data-bubble");
                     if (string.IsNullOrEmpty(bubbleData))
@@ -3694,9 +3709,9 @@ namespace Bloom.Book
             if (GetMaintenanceLevel() >= 3)
                 return;
 
-            // Make sure that in every image container, the first element is the img.
+            // Make sure that in every bloom-canvas (at level 3 still an image container), the first element is the img.
             // This is important because, since 5.4, we don't use a z-index to put canvas elements above the base image
-            // (so the canvas element image container does not become a stacking context, so we can use
+            // (so the bloom-canvas does not become a stacking context, so we can use
             // z-index on its children to put them above the comicaljs canvas),
             // which means we depend on the img being first to make sure the canvas elements are on top of it.
             // (I'm not sure we ever created situations where the img was not first, but now it's vital,
@@ -3988,6 +4003,32 @@ namespace Bloom.Book
             MigrateList(quizzes, "game-theme-red-on-white");
             MigrateList(choices, "game-theme-white-on-blue");
             Dom.UpdateMetaElement("maintenanceLevel", "6");
+        }
+
+        public void MigrateToLevel7BloomCanvas()
+        {
+            if (GetMaintenanceLevel() >= 7)
+                return;
+            var bloomCanvases = Dom.SafeSelectNodes("//*[contains(@class, 'bloom-imageContainer')]")
+                .Cast<SafeXmlElement>()
+                // Don't make assumptions about whether the parent has already been converted.
+                .Where(
+                    (ic) =>
+                        ic.ParentWithClass("bloom-imageContainer") == null
+                        && ic.ParentWithClass("bloom-canvas") == null
+                );
+            foreach (SafeXmlElement bloomCanvas in bloomCanvases)
+            {
+                bloomCanvas.RemoveClass("bloom-imageContainer");
+                bloomCanvas.AddClass("bloom-canvas");
+                // Note: more changes happen around this time...but they are done in Javascript as pages open.
+                // Child img becomes background canvas element, and where rev 6 leaves a dummy placeholder img
+                // behind, the JS migration now removes it. It would be nice to do this in migration, but very
+                // difficult, since we need to set the position and size of the new canvas element based on the
+                // computed size of the container. But we want at least the bloom-canvas to be consistent.
+            }
+
+            Dom.UpdateMetaElement("maintenanceLevel", "7");
         }
 
         /// <summary>

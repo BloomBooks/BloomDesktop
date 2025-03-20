@@ -20,10 +20,20 @@ export function reportError(message: string, stack: string | undefined) {
     console.log("Posting to common/error " + message + " " + stackStr);
     // we don't want to use the error handling bloomapi wrapper here...
     // else we will recursively report errors about attempts to report errors
-    Axios.post("/bloom/api/common/error", {
-        message: message,
-        stack: stackStr
-    }).catch(e => {
+    Axios.post(
+        "/bloom/api/common/error",
+        // I think we should just be able to pass the object here, and it would automatically
+        // be stringified and marked as JSON. But the server doesn't get the data.
+        JSON.stringify({
+            message: message,
+            stack: stackStr
+        }),
+        {
+            headers: {
+                "Content-Type": "application/json; charset=utf-8" // JSON normally uses UTF-8. Need to explicitly set it because UTF-8 is not the default.
+            }
+        }
+    ).catch(e => {
         console.log("*****Got error trying report error");
     });
 }
@@ -44,10 +54,20 @@ export function reportPreliminaryError(
     // we don't want to use the error handling bloomapi wrapper here...
     // else we will recursively report errors about attempts to report errors
     //    postData("common/preliminaryError", {
-    Axios.post("/bloom/api/common/preliminaryError", {
-        message: message,
-        stack: stack || ""
-    }).catch(e => {
+    Axios.post(
+        "/bloom/api/common/preliminaryError",
+        // I think we should just be able to pass the object here, and it would automatically
+        // be stringified and marked as JSON. But the server doesn't get the data.
+        JSON.stringify({
+            message: message,
+            stack: stack || ""
+        }),
+        {
+            headers: {
+                "Content-Type": "application/json; charset=utf-8" // JSON normally uses UTF-8. Need to explicitly set it because UTF-8 is not the default.
+            }
+        }
+    ).catch(e => {
         console.log("*****Got error trying report preliminaryError");
     });
 }

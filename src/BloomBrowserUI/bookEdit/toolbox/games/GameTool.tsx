@@ -50,6 +50,7 @@ import {
 } from "../../js/CanvasElementManager";
 import { getCanvasElementManager } from "../overlay/canvasElementUtils";
 import { ThemeChooser } from "./ThemeChooser";
+import { kImageContainerClass } from "../../js/bloomImages";
 
 // This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -220,7 +221,7 @@ export const adjustTarget = (
             page.querySelectorAll("[data-draggable-id]")
         );
         draggables.forEach(x => {
-            if (x.getElementsByClassName("bloom-imageContainer").length !== 0) {
+            if (x.getElementsByClassName(kImageContainerClass).length !== 0) {
                 draggableImages.push(x as HTMLElement);
             } else if (x !== draggable) {
                 otherDraggables.push(x as HTMLElement);
@@ -1103,7 +1104,7 @@ const DragActivityControls: React.FunctionComponent<{
             // actually make a difference to image targets that previously matched the largest
             // draggable in each dimension.
             page.querySelectorAll(
-                "[data-target-of] .bloom-imageContainer"
+                "[data-target-of] " + kImageContainerClass
             ).forEach((ic: HTMLElement) => {
                 const target = ic.closest("[data-target-of]") as HTMLElement;
                 target.style.width = ic.style.width;

@@ -727,8 +727,9 @@ namespace Bloom.Publish.BloomPub
         }
 
         /// <summary>
-        /// Find every place in the html file where an img element is nested inside a div with class bloom-imageContainer.
-        /// Convert the img into a background image of the image container div.
+        /// Find every place in the html file where an img element is nested inside a div with class bloom-imageContainer
+        /// or bloom-canvas.
+        /// Convert the img into a background image of the bloom-canvas div.
         /// Specifically, make the following changes:
         /// - Copy any data-x attributes from the img element to the div
         /// - Convert the src attribute of the img to style="background-image:url('...')" (with the same source) on the div
@@ -743,7 +744,7 @@ namespace Bloom.Publish.BloomPub
         {
             foreach (
                 var imgContainer in dom.SafeSelectNodes(
-                        "//div[contains(@class, 'bloom-imageContainer')]"
+                        "//div[contains(@class, 'bloom-imageContainer') or contains(@class, 'bloom-canvas')]"
                     )
                     .Cast<SafeXmlElement>()
                     .ToArray()

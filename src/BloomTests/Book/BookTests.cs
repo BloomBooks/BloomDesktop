@@ -215,7 +215,7 @@ namespace BloomTests.Book
 					</div>
 					<div class='bloom-page bloom-frontMatter'>
 						<div class='marginBox'>
-							<div class='bloom-imageContainer' data-book='coverImage'>
+							<div class='bloom-canvas' data-book='coverImage'>
 								"
                     + imgTag
                     + @"
@@ -231,7 +231,7 @@ namespace BloomTests.Book
             );
             Assert.AreEqual("myImage.png", dataBookImage.InnerText);
             var pageImage = dom.SelectSingleNodeHonoringDefaultNS(
-                "//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage']"
+                "//div[contains(@class,'bloom-canvas')]/img[@data-book='coverImage']"
             );
             Assert.IsTrue(pageImage.GetAttribute("src").Equals("myImage.png"));
         }
@@ -276,7 +276,7 @@ namespace BloomTests.Book
 					</div>
 					<div class='bloom-page bloom-frontMatter'>
 						<div class='marginBox'>
-							<div class='bloom-imageContainer' data-book='coverImage'>
+							<div class='bloom-canvas' data-book='coverImage'>
 							</div>
 						</div>
 					</div>"
@@ -290,12 +290,12 @@ namespace BloomTests.Book
             if (dataBookImage != null) // used to just set the src of the img, but removing the dataDiv element altogether is better still.
                 Assert.AreEqual(placeHolderFile, dataBookImage.InnerText);
             var pageImage = dom.SelectSingleNodeHonoringDefaultNS(
-                "//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage']"
+                "//div[contains(@class,'bloom-canvas')]/img[@data-book='coverImage']"
             );
             Assert.IsTrue(pageImage.GetAttribute("src").Equals(placeHolderFile));
         }
 
-        // Unless it's part of an image container that has an image description, an image
+        // Unless it's part of a bloom-canvas that has an image description, an image
         // should have an alt attr that is exactly an empty string.
         [Test]
         public void BringBookUpToDate_AltNotImageDescription_SetEmpty()
@@ -319,7 +319,7 @@ namespace BloomTests.Book
 							<img src='junk' alt = 'more junk'></img>
 							<img src='rubbish'></img>
 							<div style='min-height: 42px;' class='split-pane horizontal-percent'>
-								<div title='aor_1B-E1.png' data-hasqtip='true' class='bloom-imageContainer bloom-leadingElement'>
+								<div title='aor_1B-E1.png' data-hasqtip='true' class='bloom-canvas bloom-leadingElement'>
 									 <img data-license='cc-by-sa' data-creator='Susan Rose' data-copyright='Copyright SIL International 2009' src='aor_1B-E1.png' alt='This picture, aor_1B-E1.png, is missing or was loading too slowly.'></img>
 								</div>
 							</div>
@@ -352,7 +352,7 @@ namespace BloomTests.Book
 					<div class='bloom-page numberedPage customPage A5Portrait'>
 						<div class='marginBox'>
 							<div style='min-height: 42px;' class='split-pane horizontal-percent'>
-								<div title='aor_1B-E1.png' data-hasqtip='true' class='bloom-imageContainer'>
+								<div title='aor_1B-E1.png' data-hasqtip='true' class='bloom-canvas'>
 									 <img data-license='cc-by-sa' data-creator='Susan Rose' data-copyright='Copyright SIL International 2009' src='aor_1B-E1.png' alt='This picture, aor_1B-E1.png, is missing or was loading too slowly.'></img>
 									<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement normal-style'>
 										<div class='bloom-editable normal-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
@@ -368,7 +368,7 @@ namespace BloomTests.Book
             var dom = book.RawDom;
             book.BringBookUpToDate(new NullProgress());
             var img = dom.SelectSingleNode(
-                "//div[@class='bloom-imageContainer']/img[@src='aor_1B-E1.png']"
+                "//div[@class='bloom-canvas']/img[@src='aor_1B-E1.png']"
             );
             Assert.That(img.GetAttribute("alt"), Is.EqualTo("Bird with wings stretched wide"));
         }
@@ -467,7 +467,7 @@ namespace BloomTests.Book
 					</div>
 					<div class='bloom-page bloom-frontMatter'>
 						<div class='marginBox'>
-							<div class='bloom-imageContainer' data-book='coverImage'>
+							<div class='bloom-canvas' data-book='coverImage'>
 							</div>
 						</div>
 					</div>"
@@ -480,7 +480,7 @@ namespace BloomTests.Book
             );
             Assert.AreEqual(imageFilename, dataBookImage.InnerText);
             var pageImage = dom.SelectSingleNodeHonoringDefaultNS(
-                "//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage']"
+                "//div[contains(@class,'bloom-canvas')]/img[@data-book='coverImage']"
             );
             Assert.IsTrue(pageImage.GetAttribute("src").Equals(noPlusEncodedName));
 
@@ -514,13 +514,13 @@ namespace BloomTests.Book
             SetDom(
                 @"<div class='bloom-page numberedPage' data-page='' id='0bc78841-6372-4e47-bacf-d11038d538d2' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398382;87768516-08f4-41db-a33e-767322137e5a' lang='' data-page-number='1'>
   <div class='something-or-other'>
-    <div title='The Moon and The Cap_Page 021.jpg' class='bloom-imageContainer bloom-leadingElement'>
+    <div title='The Moon and The Cap_Page 021.jpg' class='bloom-canvas bloom-leadingElement'>
       <img style='width: 404px; height: 334px; margin-left: 1px; margin-top: 0px;' data-license='cc-by' data-creator='Angie and Upesh' data-copyright='Copyright © 2007, Pratham Books' src='The%20Moon%20and%20The%20Cap_Page%20021.jpg' alt='' height='334' width='404' />
     </div>
-    <div title='The Moon and The Cap_Page 021.jpg' class='bloom-imageContainer bloom-trailingElement'>
+    <div title='The Moon and The Cap_Page 021.jpg' class='bloom-canvas bloom-trailingElement'>
       <img data-license='cc-by' data-creator='Angie and Upesh' data-copyright='Copyright © 2007, Pratham Books' src='The%20Moon%20and%20The%20Cap_Page%20021.jpg' alt='' height='334' width='404' />
     </div>
-    <div title='The Moon and The Cap_Page 021.jpg' class='bloom-imageContainer bloom-leadingElement'>
+    <div title='The Moon and The Cap_Page 021.jpg' class='bloom-canvas bloom-leadingElement'>
       <img style='width: 404px; height: 334px; padding: 3px; margin-left: 1px; margin-top: 0px;' data-license='cc-by' data-creator='Angie and Upesh' data-copyright='Copyright © 2007, Pratham Books' src='The%20Moon%20and%20The%20Cap_Page%20021.jpg' alt='' height='334' width='404' />
     </div>
     <div class='branding-Test'>
@@ -533,13 +533,13 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.RawDom;
             var imgsBefore = dom.SafeSelectNodes(
-                    "//div[contains(@class,'bloom-imageContainer')]/img[@style|@width|@height]"
+                    "//div[contains(@class,'bloom-canvas')]/img[@style|@width|@height]"
                 )
                 .Cast<SafeXmlElement>();
             Assert.AreEqual(
                 3,
                 imgsBefore.Count(),
-                "3 bloom-imageContainer images had style/size attributes"
+                "3 bloom-canvas images had style/size attributes"
             );
             imgsBefore = dom.SafeSelectNodes("//img[@style]").Cast<SafeXmlElement>();
             Assert.AreEqual(3, imgsBefore.Count(), "3 images had style attributes");
@@ -547,13 +547,13 @@ namespace BloomTests.Book
             book.BringBookUpToDate(new NullProgress());
 
             var imgsAfter = dom.SafeSelectNodes(
-                    "//div[contains(@class,'bloom-imageContainer')]/img[@style|@width|@height]"
+                    "//div[contains(@class,'bloom-canvas')]/img[@style|@width|@height]"
                 )
                 .Cast<SafeXmlElement>();
             Assert.AreEqual(
                 1,
                 imgsAfter.Count(),
-                "1 bloom-imageContainer image has style/size attributes after updating"
+                "1 bloom-canvas image has style/size attributes after updating"
             );
             var img = imgsAfter.First<SafeXmlElement>();
             var updatedStyle = img.GetOptionalStringAttribute("style", null);
@@ -2526,7 +2526,7 @@ namespace BloomTests.Book
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage' and @src='theCover.png']",
+                    "//div[contains(@class,'bloom-canvas')]/img[@data-book='coverImage' and @src='theCover.png']",
                     1
                 );
         }
@@ -2541,7 +2541,7 @@ namespace BloomTests.Book
 					<body>
 					   <div class='bloom-page'>
 							<div class='marginBox'>
-								<div class='bloom-imageContainer'>
+								<div class='bloom-canvas'>
 								  <img src='test.png'/>
 								</div>
 							</div>
@@ -3987,7 +3987,7 @@ namespace BloomTests.Book
 				</head>
 				<body>
 					<div class='bloom-page' id='guid3'>
-						<div class='bloom-imageContainer'>
+						<div class='bloom-canvas'>
 							<svg id='comicalItem' class='comical-generated' />
 						</div>
 						<div class='bloom-translationGroup bloom-trailingElement'>
@@ -4751,10 +4751,10 @@ namespace BloomTests.Book
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>
 						</div>
 						<div class='bloom-editable bloom-content1' contenteditable='true'>This is hidden.</div>
-						<div class='bloom-imageContainer'>
+						<div class='bloom-canvas'>
 							<img src='placeHolder.png'></img>
 						</div>
-						<div class='bloom-imageContainer bloom-backgroundImage' style="
+						<div class='bloom-canvas bloom-backgroundImage' style="
                     + "\"background-image:url('placeHolder.png')\""
                     + @" ></div>
 					</div>
@@ -4803,7 +4803,7 @@ namespace BloomTests.Book
 					</div>
 					<div class='bloom-page' id='guid2'>
 						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
-						<div class='bloom-imageContainer bloom-backgroundImage' style="
+						<div class='bloom-canvas bloom-backgroundImage' style="
                     + "\"background-image:url('someImage.png')\""
                     + @" ></div>
 					</div>
@@ -4876,7 +4876,7 @@ namespace BloomTests.Book
                 $@"
 				<html><head></head><body>
 					<div class='bloom-page numberedPage' id='guid1' data-page-number='1'>
-						<div class='bloom-imageContainer some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
+						<div class='bloom-canvas some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'><{elementName} class='audio-sentence' data-duration='1.200'>some real text!</{elementName}> <{elementName} class='audio-sentence' data-duration='0.400'>another sentence!</{elementName}></div>
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'><{elementName} class='audio-sentence' data-duration='1.500'>some more text!</{elementName}></div>
 						<div class='bloom-editable bloom-visibility-code-on' contenteditable='true'><{elementName} class='audio-sentence' data-duration='1.800'>text not in content1, duration does not count</{elementName}></div>
@@ -4884,11 +4884,11 @@ namespace BloomTests.Book
 					<div class='bloom-page numberedPage' id='guid2' data-page-number='2'>
 					</div>
 					<div class='bloom-page numberedPage' id='guid3' data-page-number='3'>
-						<div class='bloom-imageContainer some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
+						<div class='bloom-canvas some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
 					</div>
 					<div class='bloom-page numberedPage' id='guid4' data-page-number='4'>
-						<div class='bloom-imageContainer some other classes'></div>
+						<div class='bloom-canvas some other classes'></div>
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
 					</div>
 				</body></html>"
@@ -4900,9 +4900,7 @@ namespace BloomTests.Book
                 3.1,
                 double.Parse(
                     book.RawDom
-                        .SelectSingleNode(
-                            "//div[@id='guid1']/div[contains(@class,'bloom-imageContainer')]"
-                        )
+                        .SelectSingleNode("//div[@id='guid1']/div[contains(@class,'bloom-canvas')]")
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -4913,9 +4911,7 @@ namespace BloomTests.Book
                 4,
                 double.Parse(
                     book.RawDom
-                        .SelectSingleNode(
-                            "//div[@id='guid3']/div[contains(@class,'bloom-imageContainer')]"
-                        )
+                        .SelectSingleNode("//div[@id='guid3']/div[contains(@class,'bloom-canvas')]")
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -4925,7 +4921,7 @@ namespace BloomTests.Book
             AssertThatXmlIn
                 .Dom(book.RawDom)
                 .HasNoMatchForXpath(
-                    @"//div[@id='guid4']/div[contains(@class,'bloom-imageContainer') and @data-duration]"
+                    @"//div[@id='guid4']/div[contains(@class,'bloom-canvas') and @data-duration]"
                 );
         }
 
@@ -4938,7 +4934,7 @@ namespace BloomTests.Book
                 $@"
 				<html><head></head><body>
 					<div class='bloom-page numberedPage' id='guid1' data-page-number='1'>
-						<div class='bloom-imageContainer some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
+						<div class='bloom-canvas some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on audio-sentence' contenteditable='true' id='1' data-duration='1.600'>some real text! another sentence!</div>
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on audio-sentence' contenteditable='true' id='2' data-duration='1.500'>some more text!</div>
 						<div class='bloom-editable bloom-visibility-code-on audio-sentence' contenteditable='true' data-duration='1.800'>text not in content1, duration does not count</div>
@@ -4946,15 +4942,15 @@ namespace BloomTests.Book
 					<div class='bloom-page numberedPage' id='guid2' data-page-number='2'>
 					</div>
 					<div class='bloom-page numberedPage' id='guid3' data-page-number='3'>
-						<div class='bloom-imageContainer some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
+						<div class='bloom-canvas some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
 					</div>
 					<div class='bloom-page numberedPage' id='guid4' data-page-number='4'>
-						<div class='bloom-imageContainer some other classes'></div>
+						<div class='bloom-canvas some other classes'></div>
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
 					</div>
 					<div class='bloom-page numberedPage' id='guid5' data-page-number='1'>
-						<div class='bloom-imageContainer some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
+						<div class='bloom-canvas some other classes' data-initialrect='0.0,0.0,0.5,0.5' data-finalrect='0.5,0.5,0.5,0.5'></div>
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'><span class='audio-sentence' data-duration='1.200'>some real text!</span> <span class='audio-sentence' data-duration='0.400'>another sentence!</span></div>
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on audio-sentence' contenteditable='true' id='2' data-duration='1.500'>some more text!</div>
 						<div class='bloom-editable bloom-visibility-code-on audio-sentence' contenteditable='true' data-duration='1.800'>text not in content1, duration does not count</div>
@@ -4969,9 +4965,7 @@ namespace BloomTests.Book
                 3.1,
                 double.Parse(
                     book.RawDom
-                        .SelectSingleNode(
-                            "//div[@id='guid1']/div[contains(@class,'bloom-imageContainer')]"
-                        )
+                        .SelectSingleNode("//div[@id='guid1']/div[contains(@class,'bloom-canvas')]")
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -4982,9 +4976,7 @@ namespace BloomTests.Book
                 4,
                 double.Parse(
                     book.RawDom
-                        .SelectSingleNode(
-                            "//div[@id='guid3']/div[contains(@class,'bloom-imageContainer')]"
-                        )
+                        .SelectSingleNode("//div[@id='guid3']/div[contains(@class,'bloom-canvas')]")
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -4995,9 +4987,7 @@ namespace BloomTests.Book
                 3.1,
                 double.Parse(
                     book.RawDom
-                        .SelectSingleNode(
-                            "//div[@id='guid5']/div[contains(@class,'bloom-imageContainer')]"
-                        )
+                        .SelectSingleNode("//div[@id='guid5']/div[contains(@class,'bloom-canvas')]")
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -5007,7 +4997,7 @@ namespace BloomTests.Book
             AssertThatXmlIn
                 .Dom(book.RawDom)
                 .HasNoMatchForXpath(
-                    @"//div[@id='guid4']/div[contains(@class,'bloom-imageContainer') and @data-duration]"
+                    @"//div[@id='guid4']/div[contains(@class,'bloom-canvas') and @data-duration]"
                 );
         }
 
@@ -5020,7 +5010,7 @@ namespace BloomTests.Book
                 $@"
 <div class='bloom-page'>
 	<div id='somewrapper'>
-		<div class='bloom-imageContainer'>
+		<div class='bloom-canvas'>
 			<div class='bloom-imageDescription bloom-translationGroup'>
 				<div class='bloom-editable' lang='en'>
 					A Picture
@@ -5252,7 +5242,7 @@ namespace BloomTests.Book
 <html>
 	<body>
 		<div class='bloom-page'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 			</div>
 		</div>
 	</body>
@@ -5284,7 +5274,7 @@ namespace BloomTests.Book
 <html>
 	<body>
 		<div class='bloom-page'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				<svg class='comical-generated'>
 					<!-- Stuff goes here -->
 				</svg>
@@ -5318,7 +5308,7 @@ namespace BloomTests.Book
 	<body>
 		 <div class='bloom-page numberedPage'>
 			<div class='marginBox'>
-				<div class='bloom-imageContainer'>
+				<div class='bloom-canvas'>
 					<img src='aor_CMB001.png'></img>
 				</div>
 				<div class='bloom-translationGroup'>
@@ -5352,7 +5342,7 @@ namespace BloomTests.Book
 	<body>
 		 <div class='bloom-page numberedPage'>
 			<div class='marginBox'>
-				<div class='bloom-imageContainer' data-initialrect='0 0 1 1' data-finalrect='0.3 0.3 0.5 0.5'>
+				<div class='bloom-canvas' data-initialrect='0 0 1 1' data-finalrect='0.3 0.3 0.5 0.5'>
 					<img src='aor_CMB001.png'></img>
 				</div>
 				<div class='bloom-translationGroup'>
@@ -5410,7 +5400,7 @@ namespace BloomTests.Book
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
 					</div>
 					<div class='bloom-page numberedPage screen-only' id='guid4' data-page-number='4'>
-						<div class='bloom-imageContainer some other classes'></div>
+						<div class='bloom-canvas some other classes'></div>
 						<div class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true'>This is visible!</div>
 					</div>
 				</body></html>"
@@ -6246,7 +6236,7 @@ namespace BloomTests.Book
             <div style='min-height: 42px;' class='split-pane horizontal-percent'>
                 <div class='split-pane-component position-top' style='bottom: 50%'>
                     <div class='split-pane-component-inner'>
-                        <div class='bloom-imageContainer bloom-leadingElement'>
+                        <div class='bloom-canvas bloom-leadingElement'>
                             <img data-license='cc-by-sa' data-copyright='Copyright SIL International 2009' src='aor_Cat3.png' alt='cat lying down looking at you'></img>
                             <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement'>
                                 <div data-audiorecordingmode='Sentence' role='textbox' class='bloom-editable ImageDescriptionEdit-style' lang='en'>
@@ -6365,7 +6355,7 @@ namespace BloomTests.Book
             <div style='min-height: 42px;' class='split-pane horizontal-percent'>
                 <div class='split-pane-component position-top' style='bottom: 50%'>
                     <div class='split-pane-component-inner'>
-                        <div title='aor_Cat3.png 44.36 KB 1500 x 1248 355 DPI (should be 300-600) Bit Depth: 1' class='bloom-imageContainer bloom-leadingElement'>
+                        <div title='aor_Cat3.png 44.36 KB 1500 x 1248 355 DPI (should be 300-600) Bit Depth: 1' class='bloom-canvas bloom-leadingElement'>
                             <img data-license='cc-by-sa' data-copyright='Copyright SIL International 2009' src='aor_Cat3.png' alt='cat lying down looking at the reader'></img>
                             <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement'>
                                 <div data-audiorecordingendtimes='3.36' data-duration='3.436167' id='i961d5cf7-f77c-4256-8f19-28afff4dc716' data-audiorecordingmode='TextBox'

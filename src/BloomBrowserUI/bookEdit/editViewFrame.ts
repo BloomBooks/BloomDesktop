@@ -54,7 +54,6 @@ import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/Copyr
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import * as ReactDOM from "react-dom";
 import { FunctionComponentElement } from "react";
-export { getImageUrlFromImageButton } from "./js/bloomImages";
 
 import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
 export { showAdjustTimingsDialog as showAdjustTimingsDialogFromEditViewFrame };

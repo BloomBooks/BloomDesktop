@@ -134,7 +134,7 @@ namespace BloomTests.Book
       <div class=""pageDescription"" lang=""en""></div>
       <div class=""marginBox"">
         <div class=""split-pane-component-inner"">
-          <div class=""bloom-imageContainer""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
+          <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
           </div>
         </div>
       </div>
@@ -145,7 +145,7 @@ namespace BloomTests.Book
 	  <div>
 		  <div class=""marginBox"">
 		    <div class=""split-pane-component-inner"">
-		      <div class=""bloom-imageContainer""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
+		      <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
 		      </div>
 		    </div>
 		  </div>
@@ -1656,7 +1656,7 @@ namespace BloomTests.Book
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
 				<div data-audiorecordingmode='TextBox'/>
-				<div class='bloom-imageContainer'>
+				<div class='bloom-canvas'>
 					<svg class='comical-generated' />
 				</div>
 			</div></body></html>"
@@ -1685,7 +1685,7 @@ namespace BloomTests.Book
             var storage = GetInitialStorageWithCustomHtml(
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
-				<div class='bloom-imageContainer'>
+				<div class='bloom-canvas'>
 					<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
@@ -1707,7 +1707,7 @@ namespace BloomTests.Book
             var storage = GetInitialStorageWithCustomHtml(
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 				<body><div class='bloom-page'>
-					<div class='bloom-imageContainer'>
+					<div class='bloom-canvas'>
 						<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
@@ -1743,7 +1743,7 @@ namespace BloomTests.Book
             var storage = GetInitialStorageWithCustomHtml(
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
-				<div class='bloom-imageContainer'>
+				<div class='bloom-canvas'>
 					<div class='bloom-canvas-element ui-resizable' data-bubble='"
                     + ellipseBubble
                     + @"'/>
@@ -1784,7 +1784,7 @@ namespace BloomTests.Book
 </head>
 <body>
 	<div class='bloom-page'>
-		<div class='bloom-imageContainer'>
+		<div class='bloom-canvas'>
 			<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
@@ -1865,8 +1865,48 @@ These are similar but already have game-theme classes
         }
 
         [Test]
+        public void PerformNecessaryMaintenanceOnBook_UpdatesToBloomCanvas()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='6'></meta>
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-imageContainer'>
+			<div class='bloom-canvas-element' data-bubble='"
+                    + MinimalDataBubbleValue
+                    + @"'>
+                <div class= 'bloom-imageContainer'>
+                    <img src='rubbish' />
+                </div>
+            </div>
+			<svg class='comical-generated' />
+		</div>
+	</div>
+</body></html>"
+            );
+
+            //SUT
+            storage.MigrateToLevel7BloomCanvas();
+
+            //Verification
+            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("7"));
+            AssertThatXmlIn
+                .Dom(storage.Dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='bloom-page']/div[@class='bloom-canvas']/div[@class='bloom-canvas-element']/div[@class='bloom-imageContainer']/img[@src='rubbish']",
+                    1
+                );
+        }
+
+        [Test]
         public void PerformNecessaryMaintenanceOnBook_EnsuresImgAtStartOfImageContainer()
         {
+            // Since the migration starts before level 7, we use imageContainer instead of bloom-canvas
             var storage = GetInitialStorageWithCustomHtml(
                 @"
 <html><head>
@@ -1891,10 +1931,11 @@ These are similar but already have game-theme classes
 
             //Verification
             var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
-            var container = storage.Dom.SelectSingleNode("//*[@class='bloom-imageContainer']");
-            Assert.That(container, Is.Not.Null);
+            // Since we only migrated as far as 3, the bloom-canvas is still bloom-imageContainer.
+            var bloomCanvas = storage.Dom.SelectSingleNode("//*[@class='bloom-imageContainer']");
+            Assert.That(bloomCanvas, Is.Not.Null);
             var firstChild =
-                container.ChildNodes.FirstOrDefault(x => x is SafeXmlElement) as SafeXmlElement;
+                bloomCanvas.ChildNodes.FirstOrDefault(x => x is SafeXmlElement) as SafeXmlElement;
             Assert.That(firstChild.GetAttribute("id"), Is.EqualTo("moveMe"));
             Assert.That(maintLevel, Is.GreaterThanOrEqualTo("3"));
         }
@@ -1910,7 +1951,7 @@ These are similar but already have game-theme classes
 </head>
 <body>
 	<div class='bloom-page'>
-		<div class='bloom-imageContainer'>
+		<div class='bloom-canvas'>
 			<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
@@ -1946,7 +1987,7 @@ These are similar but already have game-theme classes
 </head>
 <body>
 	<div class='bloom-page'>
-		<div class='bloom-imageContainer'>
+		<div class='bloom-canvas'>
 			<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
@@ -1955,7 +1996,7 @@ These are similar but already have game-theme classes
                     + MinimalDataBubbleValue
                     + @"'/>
 		</div>
-		<div class='bloom-imageContainer'>
+		<div class='bloom-canvas'>
 			<svg class='comical-generated'/>
 			<div class='bloom-canvas-element' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
 			<div class='bloom-canvas-element' data-bubble='"
@@ -1991,7 +2032,7 @@ These are similar but already have game-theme classes
 </head>
 <body>
 	<div class='bloom-page'>
-		<div class='bloom-imageContainer'>
+		<div class='bloom-canvas'>
 			<div class='bloom-canvas-element' data-bubble='{`version`:`1.0`,`level`:1,`style`:`none`,`backgroundColors`:[`#e09494`],`tails`:[]}'/>
 			<svg class='comical-generated' />
 		</div>
@@ -2185,7 +2226,7 @@ These are similar but already have game-theme classes
 </head>
 <body>
 	<div class='bloom-page'>
-		<div class='bloom-imageContainer hasOverlay'>
+		<div class='bloom-canvas hasOverlay'>
 			<div class='bloom-textOverPicture bloom-backgroundImage' data-bubble-id='q9p48jh7' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
@@ -2225,9 +2266,9 @@ These are similar but already have game-theme classes
                 1
             );
 
-            assertThatDom.HasNoMatchForXpath("//div[@class='bloom-imageContainer hasOverlay']");
+            assertThatDom.HasNoMatchForXpath("//div[@class='bloom-canvas hasOverlay']");
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[@class='bloom-imageContainer bloom-has-canvas-element']",
+                "//div[@class='bloom-canvas bloom-has-canvas-element']",
                 1
             );
 
