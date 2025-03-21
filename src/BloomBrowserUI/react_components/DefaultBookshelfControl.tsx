@@ -9,7 +9,7 @@ import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { MenuItem, Select, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import { useGetEnterpriseBookshelves } from "../collection/useGetEnterpriseBookshelves";
-import { BloomEnterpriseIcon } from "./requiresBloomEnterprise";
+import { BloomEnterpriseIcon } from "./requiresSubscription";
 import { useL10n } from "./l10nHooks";
 
 // This component is the chooser for a default bookshelf, currently in the bottom right corner

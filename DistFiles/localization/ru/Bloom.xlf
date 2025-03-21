@@ -4842,10 +4842,10 @@
         <target xml:lang="ru" state="final">Публикация</target>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
+      <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage">
         <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
         <target xml:lang="ru" state="needs-translation">Page {0} is the first page that uses Overlay elements.</target>
-        <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
+        <note>ID: PublishTab.PublishRequiresSubscription.FirstOverlayPage</note>
       </trans-unit>
       <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
         <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
@@ -5672,15 +5672,15 @@
       <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true">
         <source xml:lang="en">Average per **Page**</source>
         <target xml:lang="ru" state="translated">
-          
+
 Среднее по <g id="mawpp-1" ctype="x-html-strong">Странице</g></target>
         <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">Average per **Page**</source>
         <target xml:lang="ru" state="translated">
-          
-Среднее по <g id="maspp-1" ctype="x-html-strong">странице</g>        
+
+Среднее по <g id="maspp-1" ctype="x-html-strong">странице</g>
         </target>
         <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
       </trans-unit>
@@ -5692,8 +5692,8 @@
       <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">Per **Page**</source>
         <target xml:lang="ru" state="translated">
-          
-За<g id="mspp-1" ctype="x-html-strong">страницу</g>        
+
+За<g id="mspp-1" ctype="x-html-strong">страницу</g>
         </target>
         <note>ID: ReaderSetup.MaxSentencesPerPage</note>
       </trans-unit>
@@ -6157,10 +6157,10 @@
         <target xml:lang="ru" state="translated">Подробнее</target>
         <note>ID: Settings.Enterprise.LearnMore</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.NeedsCode" sil:dynamic="true">
+      <trans-unit id="Settings.Subscription.NeedsCode" sil:dynamic="true">
         <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
         <target xml:lang="ru" state="needs-translation">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</target>
-        <note>ID: Settings.Enterprise.NeedsCode</note>
+        <note>ID: Settings.Subscription.NeedsCode</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None" sil:dynamic="true">
         <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
@@ -6182,10 +6182,10 @@
         <target xml:lang="ru" state="translated">Корпоративная подписка</target>
         <note>ID: Settings.Enterprise.Subscription</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.SubscriptionCode" sil:dynamic="true">
+      <trans-unit id="Settings.Subscription.SubscriptionCodeLabel" sil:dynamic="true">
         <source xml:lang="en">Subscription Code:</source>
         <target xml:lang="ru" state="translated">Код подписки:</target>
-        <note>ID: Settings.Enterprise.SubscriptionCode</note>
+        <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
       </trans-unit>
       <trans-unit id="TeamCollection.TeamCollection">
         <source xml:lang="en">Team Collection</source>

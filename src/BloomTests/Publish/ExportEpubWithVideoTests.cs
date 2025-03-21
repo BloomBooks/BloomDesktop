@@ -229,8 +229,7 @@ namespace BloomTests.Publish
                 "output",
                 "ExportEpubWithVideo",
                 book,
-                BookInfo.HowToPublishImageDescriptions.OnPage,
-                branding
+                BookInfo.HowToPublishImageDescriptions.OnPage
             );
             GetPageOneData();
             _ns = GetNamespaceManager();

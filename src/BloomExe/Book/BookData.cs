@@ -2322,6 +2322,20 @@ namespace Bloom.Book
                                 CollectionSettings.DefaultBookshelf
                             );
                     }
+
+                    // if the CollectionSettings has a BrandingPersonalization, replace any instances of {personalization} with the value
+                    if (
+                        !string.IsNullOrWhiteSpace(
+                            this.CollectionSettings.Subscription.Personalization
+                        )
+                    )
+                    {
+                        content = content.Replace(
+                            "{personalization}",
+                            this.CollectionSettings.Subscription.Personalization
+                        );
+                    }
+
                     Set(item.DataBook, XmlString.FromXml(content), item.Lang);
                 }
             }

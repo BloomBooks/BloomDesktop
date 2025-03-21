@@ -311,9 +311,8 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Remove any SubscriptionCode element content and replace any BrandingProjectName element
-        /// content with the text "Default".  We don't want to publish Bloom Enterprise subscription
-        /// codes after all!
+        /// Remove any SubscriptionCode element content and replace any SubscriptionDescriptor element
+        /// content with the text "Default".
         /// </summary>
         /// <remarks>
         /// See https://issues.bloomlibrary.org/youtrack/issue/BL-6938.
@@ -323,22 +322,15 @@ namespace Bloom.Book
             var dom = SafeXmlDocument.Create();
             dom.PreserveWhitespace = true;
             dom.Load(filePath);
+
+            // we don't pass subscription info to templates
             foreach (
-                var node in dom.SafeSelectNodes("//SubscriptionCode")
+                var node in dom.SafeSelectNodes("//SubscriptionCode|//BrandProjectName")
                     .Cast<SafeXmlElement>()
                     .ToArray()
             )
             {
                 node.RemoveAll(); // should happen at most once
-            }
-            foreach (
-                var node in dom.SafeSelectNodes("//BrandingProjectName")
-                    .Cast<SafeXmlElement>()
-                    .ToArray()
-            )
-            {
-                node.RemoveAll(); // should happen at most once
-                node.AppendChild(dom.CreateTextNode("Default"));
             }
             return dom.OuterXml;
         }

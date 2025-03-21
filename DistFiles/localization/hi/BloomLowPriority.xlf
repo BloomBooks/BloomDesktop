@@ -116,10 +116,10 @@
         <target xml:lang="hi" state="translated">कुछ भी नहीं। ब्लूम एंटरप्राइज फीचर नहीं दिखाएगा।</target>
         <note>ID: Settings.Enterprise.None</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.NeedsCode" approved="yes">
+      <trans-unit id="Settings.Subscription.NeedsCode" approved="yes">
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. </source>
         <target xml:lang="hi" state="final">ब्लूम के एक पुराने संस्करण में, इस प्रोजेक्ट में **%0** का उपयोग हुआ है। इसका उपयोग जारी रखने के लिए आपको वर्तमान सदस्यता कोड डालना होगा। SIL ब्रांडिंग के लिए कोड [here](%1) यहां प्राप्त होगा। अन्य सदस्यता के लिए, अपने प्रोजेक्ट प्रबंधक से संपर्क करें।</target>
-        <note>ID: Settings.Enterprise.NeedsCode</note>
+        <note>ID: Settings.Subscription.NeedsCode</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NotValid" approved="yes">
         <source xml:lang="en">That code appears to be incorrect.</source>
@@ -136,10 +136,10 @@
         <target xml:lang="hi" state="final">एंटरप्राइज सदस्यता</target>
         <note>ID: Settings.Enterprise.Subscription</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.SubscriptionCode" approved="yes">
+      <trans-unit id="Settings.Subscription.SubscriptionCodeLabel" approved="yes">
         <source xml:lang="en">Subscription Code:</source>
         <target xml:lang="hi" state="final">सदस्यता कोड:</target>
-        <note>ID: Settings.Enterprise.SubscriptionCode</note>
+        <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.UnknownCode" approved="yes">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>

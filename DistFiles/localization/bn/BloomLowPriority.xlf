@@ -116,10 +116,10 @@
         <target xml:lang="bn" state="final">কোনোটিও নয়। ব্লুম এন্টারপ্রাইজ বৈশিষ্টগুলো উপলব্ধ হবে না।</target>
         <note>ID: Settings.Enterprise.None</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.NeedsCode" approved="yes">
+      <trans-unit id="Settings.Subscription.NeedsCode" approved="yes">
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. </source>
         <target xml:lang="bn" state="final">ব্লুমের একটি পুরোনো সংস্করণে, এই প্রকল্পটি **%0** ব্যবহার করেছিল। এর ব্যবহার অবিরত রাখতে আপনাকে একটি বর্তমান সদস্যতার কোড দিতে হবে। SIL ব্র্যান্ডিংয়ের কোড [here](%1) পাওয়া যাবে। অন্যান্য সদস্যতার জন্য, আপনার প্রকল্প প্রশাসকের সাথে যোগাযোগ করুন।</target>
-        <note>ID: Settings.Enterprise.NeedsCode</note>
+        <note>ID: Settings.Subscription.NeedsCode</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NotValid" approved="yes">
         <source xml:lang="en">That code appears to be incorrect.</source>
@@ -136,10 +136,10 @@
         <target xml:lang="bn" state="final">এন্টারপ্রাইজ সদস্যতা</target>
         <note>ID: Settings.Enterprise.Subscription</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.SubscriptionCode" approved="yes">
+      <trans-unit id="Settings.Subscription.SubscriptionCodeLabel" approved="yes">
         <source xml:lang="en">Subscription Code:</source>
         <target xml:lang="bn" state="final">সদস্যতা কোড:</target>
-        <note>ID: Settings.Enterprise.SubscriptionCode</note>
+        <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.UnknownCode" approved="yes">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>

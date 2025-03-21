@@ -401,9 +401,9 @@
         <note>ID: PublishTab.Feature.Activities.None</note>
         <note>This is a tooltip.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Activities.RequiresEnterprise">
-        <source xml:lang="en">This is disabled because publishing interactive activities is a Bloom Enterprise feature.</source>
-        <note>ID: PublishTab.Feature.Activities.RequiresEnterprise</note>
+      <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
+        <source xml:lang="en">This is disabled because publishing interactive activities requires a subcription.</source>
+        <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
         <note>This is a tooltip.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None">

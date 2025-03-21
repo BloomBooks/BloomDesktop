@@ -18,7 +18,7 @@ import { Box, SvgIconPropsSizeOverrides } from "@mui/material";
 import { OverridableStringUnion } from "@mui/types";
 
 export const kErrorBoxColor = "#eb3941";
-const kLightBlueBackground = "#F0FDFE";
+const kLightBlueBackground = "#faffff";
 
 export const BoxWithIconAndText: React.FunctionComponent<{
     hasBorder?: boolean;
@@ -26,6 +26,7 @@ export const BoxWithIconAndText: React.FunctionComponent<{
     borderColor?: string;
     backgroundColor?: string;
     icon?: JSX.Element;
+    bottomRightButton?: JSX.Element;
 }> = props => {
     let border = css``;
     if (props.hasBorder) {
@@ -39,6 +40,7 @@ export const BoxWithIconAndText: React.FunctionComponent<{
         borderColor,
         backgroundColor,
         icon,
+        bottomRightButton,
         ...propsToPass
     } = props;
     const cssForIcon = css`
@@ -58,6 +60,7 @@ export const BoxWithIconAndText: React.FunctionComponent<{
             sx={{ boxShadow: 1 }}
             css={css`
                 display: flex;
+                flex-direction: column;
                 background-color: ${props.backgroundColor ||
                     kLightBlueBackground};
                 border-radius: ${kBorderRadiusForSpecialBlocks};
@@ -70,15 +73,42 @@ export const BoxWithIconAndText: React.FunctionComponent<{
                 a {
                     color: ${props.color || kBloomBlue};
                 }
+                position: relative; // For positioning of the button
             `}
             {...propsToPass} // allows defining more css rules from container
         >
-            {props.icon ? (
-                cloneElement(props.icon, { css: cssForIcon })
-            ) : (
-                <InfoIcon color="primary" css={cssForIcon} />
+            <div
+                css={css`
+                    display: flex;
+                    flex-direction: row;
+                `}
+            >
+                {props.icon ? (
+                    cloneElement(props.icon, { css: cssForIcon })
+                ) : (
+                    <InfoIcon color="primary" css={cssForIcon} />
+                )}
+                <div
+                    css={css`
+                        flex-grow: 1;
+                    `}
+                >
+                    {props.children}
+                </div>
+            </div>
+
+            {props.bottomRightButton && (
+                <div
+                    css={css`
+                        margin-top: 10px;
+                        align-self: flex-end;
+                        display: flex;
+                        align-items: center;
+                    `}
+                >
+                    {props.bottomRightButton}
+                </div>
             )}
-            {props.children}
         </Box>
     );
 };
@@ -95,6 +125,7 @@ interface IBoxProps {
         "inherit" | "large" | "medium" | "small",
         SvgIconPropsSizeOverrides
     >;
+    bottomRightButton?: JSX.Element;
 }
 export const NoteBox: React.FunctionComponent<IBoxProps> = props => {
     const localizedMessage = useL10n(props.l10Msg || "", props.l10nKey || null);
@@ -102,6 +133,7 @@ export const NoteBox: React.FunctionComponent<IBoxProps> = props => {
         <BoxWithIconAndText
             hasBorder={true}
             icon={<InfoIcon fontSize={props.iconSize} />}
+            bottomRightButton={props.bottomRightButton}
             {...props}
         >
             {localizedMessage || props.children}
@@ -116,6 +148,7 @@ export const WaitBox: React.FunctionComponent<IBoxProps> = props => {
             color="white"
             backgroundColor="#96668F"
             icon={<WaitIcon fontSize={props.iconSize} />}
+            bottomRightButton={props.bottomRightButton}
             {...props}
         >
             {localizedMessage || props.children}
@@ -130,9 +163,7 @@ export const WarningBox: React.FunctionComponent<IBoxProps> = props => {
             color={kBloomDarkTextOverWarning}
             backgroundColor={kBloomWarning}
             icon={<WarningIcon fontSize={props.iconSize} />}
-            css={css`
-                font-weight: 500;
-            `}
+            bottomRightButton={props.bottomRightButton}
             {...props}
         >
             {localizedMessage || props.children}
@@ -147,6 +178,7 @@ export const ErrorBox: React.FunctionComponent<IBoxProps> = props => {
             color="white"
             backgroundColor={kErrorBoxColor}
             icon={<ErrorIcon fontSize={props.iconSize} />}
+            bottomRightButton={props.bottomRightButton}
             {...props}
         >
             {localizedMessage || props.children}

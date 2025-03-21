@@ -38,8 +38,8 @@ export function useGetEnterpriseBookshelves(): {
     // First query: get the values of the two states above.
     useEffect(() => {
         get("settings/bookShelfData", data => {
-            const pn = data.data.brandingProjectName;
-            setProject(pn === "Default" ? "" : pn);
+            const descriptor = data.data.subscriptionDescriptor;
+            setProject(descriptor === "Default" ? "" : descriptor);
             setDefaultBookshelfUrlKey(
                 data.data.defaultBookshelfUrlKey || "none"
             );

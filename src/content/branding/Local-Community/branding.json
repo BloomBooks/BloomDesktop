@@ -9,7 +9,7 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='back-cover-local.svg'/>",
+            "content": "<img class='branding' src='back-cover-local.svg'/>{personalization}",
             "condition": "always"
         }
     ]

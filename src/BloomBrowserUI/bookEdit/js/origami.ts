@@ -12,7 +12,7 @@ $(() => {
 });
 
 export function setupOrigami() {
-    get("settings/enterpriseEnabled", result2 => {
+    get("settings/subscriptionEnabled", result2 => {
         const isEnterpriseEnabled: boolean = result2.data;
         const customPages = document.getElementsByClassName("customPage");
         if (customPages.length > 0) {

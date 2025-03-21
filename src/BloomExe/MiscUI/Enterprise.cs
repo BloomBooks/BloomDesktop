@@ -20,7 +20,7 @@ namespace Bloom.MiscUI
             int height = 235
         )
         {
-            using (var dlg = new ReactDialog("requiresBloomEnterpriseBundle", null, title))
+            using (var dlg = new ReactDialog("requiresSubscriptionBundle", null, title))
             {
                 dlg.Width = width;
                 dlg.Height = height;

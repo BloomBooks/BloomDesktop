@@ -116,10 +116,10 @@
         <target xml:lang="es-ES" state="final">Ninguno. No se mostrarán las funciones Empresariales.</target>
         <note>ID: Settings.Enterprise.None</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.NeedsCode" approved="yes">
+      <trans-unit id="Settings.Subscription.NeedsCode" approved="yes">
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. </source>
         <target xml:lang="es-ES" state="final">En una versión anterior de Bloom, este proyecto usó **%0**. Para continuar usándolo tendrá que ingresar su código de suscripción actual. Los códigos para las marcas de SIL pueden ser encontrados en [here](%1). Para otras suscripciones, debe contactar su administrador de proyecto.</target>
-        <note>ID: Settings.Enterprise.NeedsCode</note>
+        <note>ID: Settings.Subscription.NeedsCode</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NotValid" approved="yes">
         <source xml:lang="en">That code appears to be incorrect.</source>
@@ -136,10 +136,10 @@
         <target xml:lang="es-ES" state="final">Suscripción Empresarial</target>
         <note>ID: Settings.Enterprise.Subscription</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.SubscriptionCode" approved="yes">
+      <trans-unit id="Settings.Subscription.SubscriptionCodeLabel" approved="yes">
         <source xml:lang="en">Subscription Code:</source>
         <target xml:lang="es-ES" state="final">Código de suscripción:</target>
-        <note>ID: Settings.Enterprise.SubscriptionCode</note>
+        <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.UnknownCode" approved="yes">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>

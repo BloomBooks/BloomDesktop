@@ -809,7 +809,7 @@ namespace Bloom.Publish.BloomLibrary
             var updatedDate = updatedDateTime.ToString("d", CultureInfo.CurrentCulture);
             var existingThumbUrl = GetBloomLibraryThumbnailUrl(existingBookInfo);
 
-            var oldBranding = existingBookInfo.brandingProjectName?.ToString();
+            var oldBranding = existingBookInfo.descriptor?.ToString();
 
             // Must match IUploadCollisionDlgProps in uploadCollisionDlg.tsx.
             return new
@@ -826,7 +826,7 @@ namespace Bloom.Publish.BloomLibrary
                 existingUpdatedDate = updatedDate,
                 existingBookUrl,
                 existingThumbUrl,
-                newBranding = Book.BookInfo.BrandingProjectKey,
+                newBranding = Book.BookInfo.SubscriptionDescriptor,
                 oldBranding,
                 uploader = existingBookInfo.uploader.email,
                 count = existingBookInfo.count,

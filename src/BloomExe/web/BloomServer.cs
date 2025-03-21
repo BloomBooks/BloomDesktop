@@ -445,8 +445,10 @@ namespace Bloom.Api
                 );
                 return true;
             }
+            // NB: I (JH) am just migrating this here, I don't know what it's about. See commit d15088342a12a97fd5deb16032a456e4a74d82d1
             //enhance: something feeds back these branding logos with a weird URL, that shouldn't be.
-            if (ApiHandler.IsInvalidApiCall(localPath))
+            // this 20 is just arbitrary... the point is, if it doesn't start with api/branding, it is bogus.
+            if (localPath.IndexOf("api/branding", StringComparison.InvariantCulture) > 20)
                 return false;
 
             // this alias is used by the javascript preview pane

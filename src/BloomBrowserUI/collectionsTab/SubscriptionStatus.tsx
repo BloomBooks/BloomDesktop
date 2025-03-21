@@ -1,6 +1,5 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
-
 import { useApiString } from "../utils/bloomApi";
 import * as React from "react";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -10,77 +9,73 @@ import { BoxWithIconAndText } from "../react_components/boxes";
 import { useL10n } from "../react_components/l10nHooks";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { Markdown } from "../react_components/markdown";
+import { getSafeLocalizedDate } from "../collection/subscriptionCodeControl";
+import { useSubscriptionInfo } from "../collection/useSubscriptionInfo";
+
 export const SubscriptionStatus: React.FunctionComponent<{
-    overrideSubscriptionExpiration?: string;
     minimalUI?: boolean;
 }> = props => {
     const deprecatedBrandingsExpiryDateAsYYYYMMDD = useApiString(
         "settings/deprecatedBrandingsExpiryDate",
         "dbed-pending"
     );
+    const {
+        subscriptionCodeIntegrity,
+        expiryDateStringAsYYYYMMDD,
+        subscriptionDescriptor,
+        haveData
+    } = useSubscriptionInfo();
 
-    let expiryDateStringAsYYYYMMDD = useApiString(
-        "settings/subscriptionExpiration",
-        "pending"
-    );
-    if (props.overrideSubscriptionExpiration !== undefined) {
-        expiryDateStringAsYYYYMMDD = props.overrideSubscriptionExpiration;
-    }
-    let brandingProjectKey = useApiString(
-        "settings/brandingProjectKey",
-        "notyet"
-    );
-    if (props.minimalUI) brandingProjectKey = ""; // in the Settings Dialog context, the backend doesn't yet know what the user is clicking on, so it will give the wrong branding
+    let descriptorToShow = subscriptionDescriptor;
+
+    if (props.minimalUI) descriptorToShow = ""; // in the Settings Dialog context, the backend doesn't yet know what the user is clicking on, so it will give the wrong branding
 
     // a "deprecated" subscription is one that used to be eternal but is now being phased out
     const haveDeprecatedSubscription = expiryDateStringAsYYYYMMDD.startsWith(
         deprecatedBrandingsExpiryDateAsYYYYMMDD
-    );
+    ); // just the year-month-day, ignore the time the time that follows it
 
-    // We have to fight javascript if we don't want timezones to
-    // interfere.
-    const dateParts = expiryDateStringAsYYYYMMDD.split("-");
-    const localizedDateString = new Date(
-        Number(dateParts[0]),
-        Number(dateParts[1]) - 1,
-        Number(dateParts[2])
-    ).toLocaleDateString();
+    const localizedExpiryDate = expiryDateStringAsYYYYMMDD
+        ? getSafeLocalizedDate(expiryDateStringAsYYYYMMDD)
+        : "";
 
     const expiringSoonMessage = useL10n(
         "Your {0} subscription expires on {1}.",
         "SubscriptionStatus.ExpiringSoonMessage",
         "",
-        brandingProjectKey,
-        localizedDateString
+        descriptorToShow,
+        localizedExpiryDate
     ).replace("  ", " "); // remove extra space
     const expiredMessage = useL10n(
         "Your {0} subscription expired on {1}.",
         "SubscriptionStatus.ExpiredMessage",
         "",
-        brandingProjectKey,
-        localizedDateString
+        descriptorToShow,
+        localizedExpiryDate
     );
     const defaultStatusMessage = useL10n(
         "Using subscription: {0}. Expires {1}",
         "SubscriptionStatus.DefaultMessage",
         "",
-        brandingProjectKey,
-        localizedDateString
+        descriptorToShow,
+        localizedExpiryDate
     );
+    if (!haveData) {
+        return null;
+    }
+    if (subscriptionCodeIntegrity !== "ok") return null;
 
     // don't show anything until we have this info
     if (expiryDateStringAsYYYYMMDD === "") return null;
-
+    const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
     // if the license is deprecated, we want to show the warning right away. Otherwise,
     // we only want to show it if the expiration is within 2 months (approximately 60 days).
     const kDaysBeforeWarningForNormalExpiration = 60;
 
-    const nowAsYYYYMMDD = new Date().toISOString().slice(0, 10);
-
     // no subscription
     if (expiryDateStringAsYYYYMMDD === "incomplete") return null;
     // else if it's already expired
-    else if (nowAsYYYYMMDD >= expiryDateStringAsYYYYMMDD) {
+    if (expiryDateStringAsYYYYMMDD < todayAsYYYYMMDD) {
         return (
             <ExpiringSubscriptionStatus
                 expired
@@ -92,7 +87,7 @@ export const SubscriptionStatus: React.FunctionComponent<{
         haveDeprecatedSubscription ||
         // or if it's expiring soon
         (expiryDateStringAsYYYYMMDD &&
-            getDaysDifference(nowAsYYYYMMDD, expiryDateStringAsYYYYMMDD) <=
+            getDaysDifference(todayAsYYYYMMDD, expiryDateStringAsYYYYMMDD) <=
                 kDaysBeforeWarningForNormalExpiration)
     ) {
         return (
@@ -133,18 +128,30 @@ const ExpiringSubscriptionStatus: React.FunctionComponent<{
             hasBorder={true}
             icon={props.expired ? <CancelIcon /> : <WarningIcon />}
         >
-            <div>
+            <div
+                css={css`
+                    /* Prevent links in this warning box from getting tab focus */
+                    a {
+                        tabindex: -1;
+                        /* Remove outline when focused via mouse/click */
+                        &:focus {
+                            outline: none;
+                        }
+                        color: black !important;
+                    }
+                `}
+            >
                 {props.message}
                 <Markdown
                     l10nKey="SubscriptionStatus.RenewalMessage"
-                    l10nParam0={"mailto://subscriptions@bloomlibrary.org"}
+                    l10nParam0={"mailto:subscriptions@bloomlibrary.org"}
                     css={css`
                         p {
                             margin: 0; // markdown wraps everything in a p tag which adds a big margin we don't need
                         }
                     `}
                 >
-                    Please [contact us](%1) to renew.
+                    Please [contact us](%0) to renew.
                 </Markdown>
             </div>
         </BoxWithIconAndText>
