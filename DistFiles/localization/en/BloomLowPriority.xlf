@@ -66,7 +66,7 @@
                 <note>ID: PublishTab.Upload.BookshelfError</note>
             </trans-unit>
                   <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true">
-        <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same Subscription setting as when it was last uploaded.</source>
+        <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>
         <note>ID: Settings.Subscription.DownloadForEdit</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.NeedsCode" sil:dynamic="true">

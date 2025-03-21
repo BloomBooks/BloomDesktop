@@ -9,8 +9,8 @@ using Newtonsoft.Json;
 namespace Bloom.web.controllers
 {
     /// <summary>
-    /// Used by the settings dialog (currently just the EnterpriseSettings tab) and various places that need to know
-    /// if Enterprise is enabled or not.
+    /// Used by the settings dialog and various places that need to know
+    /// if our subscription status.
     /// </summary>
     public class SubscriptionSettingsEditorApi
     {
@@ -29,7 +29,7 @@ namespace Bloom.web.controllers
         {
             // Combined endpoint that returns all subscription data
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "Subscription",
+                kApiUrlPart + "subscription",
                 request =>
                 {
                     if (request.HttpMethod == HttpMethods.Get)
@@ -44,7 +44,7 @@ namespace Bloom.web.controllers
                                 CultureInfo.InvariantCulture
                             ),
                             CodeIntegrity = _subscription.GetIntegrityLabel(),
-                            BrandingProjectName = _subscription.Descriptor,
+                            SubscriptionDescriptor = _subscription.Descriptor,
                             HaveBrandingFiles = (
                                 string.IsNullOrWhiteSpace(_subscription.Descriptor)
                                 || _subscription.BrandingKey == "Default"
@@ -96,7 +96,7 @@ namespace Bloom.web.controllers
 
         private static string GetSummaryHtml(string descriptor)
         {
-            BrandingSettings.ParseBrandingKey(
+            BrandingSettings.ParseSubscriptionDescriptor(
                 descriptor,
                 out var baseKey,
                 out var flavor,

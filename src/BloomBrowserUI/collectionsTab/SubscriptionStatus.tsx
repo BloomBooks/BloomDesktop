@@ -26,11 +26,6 @@ export const SubscriptionStatus: React.FunctionComponent<{
         haveData
     } = useSubscriptionInfo();
 
-    // If component has a prop override, use that instead of API value
-    // if (props.overrideSubscriptionExpirationYYYYMMDD !== undefined) {
-    //     expiryDateString = props.overrideSubscriptionExpirationYYYYMMDD;
-    // }
-
     let descriptorToShow = subscriptionDescriptor;
 
     if (props.minimalUI) descriptorToShow = ""; // in the Settings Dialog context, the backend doesn't yet know what the user is clicking on, so it will give the wrong branding

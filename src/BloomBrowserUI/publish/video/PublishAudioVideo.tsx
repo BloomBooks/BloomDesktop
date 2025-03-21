@@ -32,7 +32,7 @@ import {
 } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
 import { Link } from "../../react_components/link";
-import { RequiresBloomEnterpriseDialog } from "../../react_components/requiresSubscription";
+import { RequiresSubscriptionDialog } from "../../react_components/requiresSubscription";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
@@ -618,7 +618,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                 height: 100%;
             `}
         >
-            <RequiresBloomEnterpriseDialog />
+            <RequiresSubscriptionDialog />
             <PublishScreenTemplate
                 bannerTitleEnglish="Publish as Audio or Video"
                 bannerTitleL10nId="PublishTab.RecordVideo.BannerTitle"

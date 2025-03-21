@@ -202,7 +202,7 @@ namespace Bloom.Collection
 
         public void SetDesiredTab(string tab)
         {
-            if (tab == "enterprise")
+            if (tab == "subscription")
                 _tab.SelectedTab = _subscriptionTab;
         }
 

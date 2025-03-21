@@ -36,32 +36,28 @@ const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 const subscriptionTiers = ["None", "Community", "Enterprise"] as const;
 type SubscriptionTier = typeof subscriptionTiers[number];
 
-/**
- * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
- * @returns A boolean, which is true if Bloom Enterprise is enabled and false otherwise
- */
-export function useSubscriptionAvailable() {
-    const [enterpriseAvailable, setEnterpriseAvailable] = useState(true);
+export function useHaveSubscription() {
+    const [haveSubscription, setHaveSubscription] = useState(true);
 
     useEffect(() => {
         get("settings/subscriptionEnabled", response => {
-            setEnterpriseAvailable(response.data);
+            setHaveSubscription(response.data);
         });
     }, []);
 
-    return enterpriseAvailable;
+    return haveSubscription;
 }
 
-export function useGetSubscriptionStatus(): SubscriptionTier {
-    const [status, setEnterpriseStatus] = useState<SubscriptionTier>("None");
+export function useGetSubscriptionTier(): SubscriptionTier {
+    const [status, setSubscriptionTier] = useState<SubscriptionTier>("None");
 
     useEffect(() => {
         get("settings/subscriptionTier", result => {
-            setEnterpriseStatus(result.data);
+            setSubscriptionTier(result.data);
         });
     }, []);
     if (!(subscriptionTiers as readonly string[]).includes(status)) {
-        throw new Error(`Invalid subscription status: ${status}`);
+        throw new Error(`Invalid subscription tier: ${status}`);
     }
     return status;
 }
@@ -73,34 +69,25 @@ interface IDisableable {
     disabled: boolean;
 }
 
-/**
- * Checks the Bloom Enterprise settings and appends a Bloom Enterprise icon after the children if enterprise is off.
- * The children and the icon (if applicable) will be displayed as a flex row.
- * @param props.iconStyles: Optional. If specified, provides additional CSS styles for the Bloom Enterprise icon. Omit to use just the default styles.
- * Note that you can override a style in the default styles by specifying it in iconStyles (because the last one wins)
- * @param props.children: The ReactElements that should be wrapped.
- */
-export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
+export const RequiresSubscriptionAdjacentIconWrapper = (props: {
     iconStyles?: string;
     children:
         | React.ReactElement<IDisableable>
         | Array<React.ReactElement<IDisableable>>;
 }) => {
-    const enterpriseAvailable = useSubscriptionAvailable();
+    const haveSubscription = useHaveSubscription();
 
     // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
     const tooltip = useL10n(
-        enterpriseAvailable
-            ? "This Bloom Enterprise feature is enabled for you."
-            : "To use this feature, you'll need a Bloom Subscription.",
+        haveSubscription
+            ? "Your subscription includes this feature."
+            : "To use this feature, you'll need a Bloom subscription.",
         "EditTab." +
-            (enterpriseAvailable
-                ? "SubscriptionEnabled"
-                : "RequiresSubscription")
+            (haveSubscription ? "SubscriptionEnabled" : "RequiresSubscription")
     );
 
     // // Set the disabled property on all the children
-    const children = enterpriseAvailable
+    const children = haveSubscription
         ? props.children
         : React.Children.map(props.children, child =>
               React.cloneElement(child, {
@@ -117,8 +104,8 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
             src={badgeUrl}
             title={tooltip}
             onClick={() => {
-                if (!enterpriseAvailable) {
-                    showRequiresBloomEnterpriseDialog();
+                if (!haveSubscription) {
+                    showRequiresSubscriptionDialog();
                 }
             }}
         />
@@ -134,15 +121,13 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
         >
             <div
                 css={css`
-                    opacity: ${enterpriseAvailable
-                        ? 1.0
-                        : kBloomDisabledOpacity};
+                    opacity: ${haveSubscription ? 1.0 : kBloomDisabledOpacity};
                 `}
                 ref={node =>
                     node &&
                     // later version of react reportedly do support `inert`, but this version doesn't,
                     // so we are using this `ref` way to get it into the DOM.
-                    (enterpriseAvailable || node.setAttribute("inert", ""))
+                    (haveSubscription || node.setAttribute("inert", ""))
                 }
             >
                 {children}
@@ -153,20 +138,20 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
 };
 
 export const BloomEnterpriseIcon = props => {
-    const needEnterpriseTooltip = useL10n(
-        "To use this feature, you'll need a Bloom Subscription.",
+    const needSubscriptionTooltip = useL10n(
+        "To use this feature, you'll need a Bloom subscription.",
         "EditTab.RequiresSubscription"
     );
-    const enterpriseFeatureTooltip = useL10n(
-        "Bloom Enterprise Feature",
+    const subscriptionFeatureTooltip = useL10n(
+        "Bloom Subscription Feature",
         "Common.BloomSubscriptionFeature"
     );
-    const enterpriseAvailable = useSubscriptionAvailable();
+    const haveSubscription = useHaveSubscription();
 
     // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
-    const tooltip = enterpriseAvailable
-        ? enterpriseFeatureTooltip
-        : needEnterpriseTooltip;
+    const tooltip = haveSubscription
+        ? subscriptionFeatureTooltip
+        : needSubscriptionTooltip;
 
     return (
         <img
@@ -181,11 +166,8 @@ export const BloomEnterpriseIcon = props => {
     );
 };
 
-/**
- * Checks the Bloom Enterprise settings and overlays a RequiresBloomEnterprise notice over the children if enterprise is off.
- */
 export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = props => {
-    const enterpriseAvailable = useSubscriptionAvailable();
+    const haveSubscription = useHaveSubscription();
     return (
         <div
             css={css`
@@ -200,7 +182,7 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
             >
                 {props.children}
             </div>
-            {enterpriseAvailable || (
+            {haveSubscription || (
                 <div
                     css={css`
                         position: absolute;
@@ -220,7 +202,7 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
                             margin-right: auto;
                         `}
                     >
-                        <RequiresBloomEnterpriseNotice darkTheme={true} />
+                        <RequiresSubscriptionNotice darkTheme={true} />
                     </div>
                 </div>
             )}
@@ -228,23 +210,10 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
     );
 };
 
-export interface IRequiresEnterpriseNoticeProps {
+export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
     darkTheme?: boolean;
     inSeparateDialog?: boolean;
-}
-
-// This element displays a notice saying that a certain feature requires a Bloom Enterprise subscription,
-// if a bloom enterprise project has not been selected; if one has, it displays nothing at all.
-// Typically, it is displayed along with a div that shows all the controls requiring the subscription,
-// which is visible when this is not, that is, when subscriptionEnabled(), a function in this
-// module, returns true. Currently this is detected by looking for the class subscription-yes being set
-// on the content page body.
-// Often it will be convenient to use this by embedding the controls to be hidden in a
-// RequiresBloomEnterpriseWrapper, also defined in this file.
-export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequiresEnterpriseNoticeProps> = ({
-    darkTheme,
-    inSeparateDialog
-}) => {
+}> = ({ darkTheme, inSeparateDialog }) => {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
@@ -253,15 +222,15 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
         });
     }, []);
 
-    const kBloomEnterpriseNoticePadding = "15px;";
+    const kBloomSubscriptionNoticePadding = "15px;";
     const kButtonRadius = "4px;";
-    const kBloomEnterpriseNoticeWidth = "250px;";
-    const kBloomEnterpriseNoticeHeight = "120px;";
-    const kBloomEnterpriseButtonWidth = "150px;";
+    const kBloomSubscriptionNoticeWidth = "250px;";
+    const kBloomSubscriptionNoticeHeight = "120px;";
+    const kBloomSubscriptionButtonWidth = "150px;";
 
     const noticeCommonCss = css`
         color: black;
-        height: ${kBloomEnterpriseNoticeHeight};
+        height: ${kBloomSubscriptionNoticeHeight};
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -319,9 +288,9 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
                                       `
                                     : css`
                                           text-align: center;
-                                          padding: ${kBloomEnterpriseNoticePadding};
+                                          padding: ${kBloomSubscriptionNoticePadding};
                                           padding-bottom: 20px;
-                                          max-width: ${kBloomEnterpriseNoticeWidth};
+                                          max-width: ${kBloomSubscriptionNoticeWidth};
                                           ${noticeCommonCss}
                                           ${darkTheme
                                               ? noticeDarkCss
@@ -330,7 +299,7 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
                                                     background-color: ${kFormBackground};
                                                 `}
                                           // this is needed to overcome having MuiButton override the settings
-                                          .requiresEnterpriseButton {
+                                          .requiresSubscriptionButton {
                                               ${buttonCommonCss}
                                           }
                                       `
@@ -351,13 +320,13 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
                                 }
                             />
                             <Button
-                                className="requiresEnterpriseButton"
+                                className="requiresSubscriptionButton"
                                 variant={"contained"}
-                                onClick={openBloomEnterpriseSettings}
+                                onClick={openBloomSubscriptionSettings}
                                 css={
                                     inSeparateDialog
                                         ? css`
-                                              max-width: ${kBloomEnterpriseButtonWidth};
+                                              max-width: ${kBloomSubscriptionButtonWidth};
                                               align-self: normal;
                                               ${buttonCommonCss}
                                               border-radius: ${kButtonRadius};
@@ -366,7 +335,7 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
                                               border-style: solid;
                                           `
                                         : css`
-                                              max-width: ${kBloomEnterpriseButtonWidth};
+                                              max-width: ${kBloomSubscriptionButtonWidth};
                                               align-self: center;
                                               ${buttonCommonCss}
                                           `
@@ -385,10 +354,7 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
     );
 };
 
-/**
- * Brings up the Requires Bloom Enterprise notice as a MaterialUI dialog
- */
-export const RequiresBloomEnterpriseNoticeDialog: React.VoidFunctionComponent = () => {
+export const RequiresSubscriptionNoticeDialog: React.VoidFunctionComponent = () => {
     // Designed to be invoked from WinForms land.
     const {
         showDialog,
@@ -422,7 +388,7 @@ export const RequiresBloomEnterpriseNoticeDialog: React.VoidFunctionComponent = 
                         background-color: ${kFormBackground};
                     `}
                 >
-                    <RequiresBloomEnterpriseNotice darkTheme={false} />
+                    <RequiresSubscriptionNotice darkTheme={false} />
                 </DialogContent>
                 <DialogActions>
                     <BloomButton
@@ -437,11 +403,11 @@ export const RequiresBloomEnterpriseNoticeDialog: React.VoidFunctionComponent = 
     );
 };
 
-export let showRequiresBloomEnterpriseDialog: () => void = () => {
-    window.alert("showRequiresBloomEnterpriseDialog is not set up yet.");
+export let showRequiresSubscriptionDialog: () => void = () => {
+    window.alert("showRequiresSubscriptionDialog is not set up yet.");
 };
 
-export const RequiresBloomEnterpriseDialog: React.FunctionComponent<{
+export const RequiresSubscriptionDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
     // Designed to be invoked natively from TypeScript land.
@@ -450,10 +416,10 @@ export const RequiresBloomEnterpriseDialog: React.FunctionComponent<{
         closeDialog,
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
-    showRequiresBloomEnterpriseDialog = showDialog;
+    showRequiresSubscriptionDialog = showDialog;
 
     const dialogTitle = useL10n(
-        "Bloom Enterprise Feature",
+        "Bloom Subscription Feature",
         "Common.BloomSubscriptionFeature"
     );
 
@@ -471,7 +437,7 @@ export const RequiresBloomEnterpriseDialog: React.FunctionComponent<{
                     `}
                 />
                 <DialogMiddle>
-                    <RequiresBloomEnterpriseNotice
+                    <RequiresSubscriptionNotice
                         darkTheme={false}
                         inSeparateDialog={true}
                     />
@@ -493,23 +459,21 @@ export const RequiresBloomEnterpriseDialog: React.FunctionComponent<{
     );
 };
 
-function openBloomEnterpriseSettings() {
-    post("common/showSettingsDialog?tab=enterprise");
+function openBloomSubscriptionSettings() {
+    post("common/showSettingsDialog?tab=subscription");
 }
 
 // Still used in imageDescription.tsx and talkingBook.ts
-export function checkIfEnterpriseAvailable(): EnterpriseEnabledPromise {
-    return new EnterpriseEnabledPromise();
+export function checkIfEnterpriseAvailable(): HaveSubscriptionPromise {
+    return new HaveSubscriptionPromise();
 }
 
-// A very minimal implementation of Promise which supports only then() taking a boolean function.
-// The function will be called with argument true if enterprise features are enabled, false otherwise.
-class EnterpriseEnabledPromise {
-    public then(resolve: (enterpriseAvailable: boolean) => void) {
+class HaveSubscriptionPromise {
+    public then(resolve: (haveSubscription: boolean) => void) {
         get("settings/subscriptionEnabled", response => {
             resolve(response.data);
         });
     }
 }
 
-WireUpForWinforms(RequiresBloomEnterpriseNoticeDialog);
+WireUpForWinforms(RequiresSubscriptionNoticeDialog);

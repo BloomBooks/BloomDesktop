@@ -167,13 +167,6 @@ namespace BloomTests.Publish
             bool unpaginated = true
         )
         {
-            // I don't understand why we have these branding parameters that get passed down. I would think that we just use the
-            // subscription that is in the book.
-            //book.CollectionSettings.Subscription = Subscription.FromSettingsXml(
-            //    book.CollectionSettings.Subscription.Code,
-            //    branding
-            //);
-
             // BringBookUpToDate is done on entering the Publish tab, outside the scope of these tests.
             // But note that it must be done AFTER setting the branding (which in Bloom will happen well before
             // entering the Publish tab).

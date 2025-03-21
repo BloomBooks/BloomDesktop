@@ -2281,6 +2281,9 @@ namespace BloomTests.Book
 				</div>
 			 </body></html>"
             );
+            var data = new BookData(bookDom, _collectionSettings, null);
+            Assert.AreEqual("health", data.GetVariableOrNull("topic", "en").Xml);
+            Assert.IsNull(data.GetVariableOrNull("topic", "tpi").Xml);
         }
 
         private BookData CreateBookDom(

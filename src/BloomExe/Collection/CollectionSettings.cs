@@ -854,7 +854,7 @@ namespace Bloom.Collection
 
         public string GetBrandingFlavor()
         {
-            BrandingSettings.ParseBrandingKey(
+            BrandingSettings.ParseSubscriptionDescriptor(
                 Subscription.Descriptor,
                 out var baseKey,
                 out var flavor,
@@ -865,7 +865,7 @@ namespace Bloom.Collection
 
         public string GetBrandingFolderName()
         {
-            BrandingSettings.ParseBrandingKey(
+            BrandingSettings.ParseSubscriptionDescriptor(
                 Subscription.Descriptor,
                 out var folderName,
                 out var flavor,

@@ -305,7 +305,7 @@
         <note>ID: Browser.ProblemSaving</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
-        <source xml:lang="en">About the Bloom Subscriptions</source>
+        <source xml:lang="en">About Bloom Subscriptions</source>
         <note>ID: CollectionSettingsDialog.AboutBloomSubscriptions</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
@@ -1434,7 +1434,7 @@
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
       </trans-unit>
       <trans-unit id="EditTab.SubscriptionEnabled" sil:dynamic="true">
-        <source xml:lang="en">This Bloom Subscription feature is enabled for you.</source>
+        <source xml:lang="en">Your subscription includes this feature.</source>
         <note>ID: EditTab.SubscriptionEnabled</note>
         <note>Appears in a tooltip on the Subscription button when the user DOES have a subcription (cf EditTab.RequiresSubscription).</note>
       </trans-unit>

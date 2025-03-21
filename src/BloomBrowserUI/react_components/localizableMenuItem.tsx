@@ -18,8 +18,8 @@ import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import { getBoolean, post, postBoolean } from "../utils/bloomApi";
 import {
-    useSubscriptionAvailable,
-    useGetSubscriptionStatus
+    useHaveSubscription,
+    useGetSubscriptionTier
 } from "./requiresSubscription";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
 import { kUiFontStack } from "../bloomMaterialUITheme";
@@ -47,10 +47,10 @@ export interface ILocalizableMenuItemProps
     onClick: React.MouseEventHandler;
     icon?: ReactNode;
     addEllipsis?: boolean;
-    requiresAnyEnterprise?: boolean;
-    requiresEnterpriseSubscription?: boolean;
+    requiresAnySubscription?: boolean;
+    requiresEnterpriseTier?: boolean;
     dontGiveAffordanceForCheckbox?: boolean;
-    enterpriseTooltipOverride?: string;
+    subscriptionTooltipOverride?: string;
 }
 
 interface ILocalizableCheckboxMenuItemProps
@@ -76,25 +76,20 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
         variant: variant
     };
     const label = useL10n(props.english, props.l10nId);
-    // BL-10638 In the case of an expired subscription code, 'useEnterpriseAvailable()` returns false,
-    // but `useGetEnterpriseStatus()` returns "Subscription". That state of things is useful for the
-    // CollectionSettingsDialog, but not here in menu items. The absence of enterpriseAvailable needs to
-    // take precedence. But by rules of hooks we still need to run the hook and then modify the value.
-    const enterpriseAvailable = useSubscriptionAvailable();
-    let subscriptionStatus = useGetSubscriptionStatus();
-    if (!enterpriseAvailable) {
+
+    const subscriptionAvailable = useHaveSubscription();
+    let subscriptionStatus = useGetSubscriptionTier();
+    if (!subscriptionAvailable) {
         subscriptionStatus = "None"; // (years later) I don't know why we don't trust the useGetSubscriptionStatus() to return this
     }
 
-    let meetsEnterpriseRequirement = true; // Default to true (no enterprise requirement)
+    let meetsSubscriptionRequirement = true;
 
     // If requires subscription, check for "Subscription" status
-    if (props.requiresEnterpriseSubscription) {
-        meetsEnterpriseRequirement = subscriptionStatus !== "None";
-    }
-    // If requires any enterprise, check if enterprise is available
-    else if (props.requiresAnyEnterprise) {
-        meetsEnterpriseRequirement = enterpriseAvailable;
+    if (props.requiresEnterpriseTier) {
+        meetsSubscriptionRequirement = subscriptionStatus !== "None";
+    } else if (props.requiresAnySubscription) {
+        meetsSubscriptionRequirement = subscriptionAvailable;
     }
     // Otherwise, keep the default true value
 
@@ -107,7 +102,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                 // We can't use the disabled prop because it prevents the click from opening settings.
                 // So we just make it look disabled (using the same setting as Mui-disabled).
                 // And we only do it on the icon and text --not on the menu item-- so the enterprise icon doesn't look disabled.
-                opacity: ${meetsEnterpriseRequirement
+                opacity: ${meetsSubscriptionRequirement
                     ? undefined
                     : kBloomDisabledOpacity};
             `}
@@ -126,13 +121,13 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
 
     const ellipsis = props.addEllipsis ? "..." : "";
 
-    const requiresEnterpriseTooltip = useL10n(
+    const requiresSubscriptionTooltip = useL10n(
         "To use this feature, you'll need a Bloom Subscription.",
         "CollectionSettingsDialog.RequiresSubscription_ToolTip_"
     );
 
-    const enterpriseElement =
-        props.requiresAnyEnterprise || props.requiresEnterpriseSubscription ? (
+    const subscriptionElement =
+        props.requiresAnySubscription || props.requiresEnterpriseTier ? (
             <img
                 css={css`
                     width: ${kEnterpriseStickerAffordance}px !important;
@@ -140,10 +135,10 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                 `}
                 src="/bloom/images/bloom-enterprise-badge.svg"
                 title={
-                    meetsEnterpriseRequirement
+                    meetsSubscriptionRequirement
                         ? undefined
-                        : props.enterpriseTooltipOverride ||
-                          requiresEnterpriseTooltip
+                        : props.subscriptionTooltipOverride ||
+                          requiresSubscriptionTooltip
                 }
             />
         ) : (
@@ -156,9 +151,9 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
 
     const sublabel = useL10n("", props.subLabelL10nId ?? null);
     const openCollectionSettings = () =>
-        post("common/showSettingsDialog?tab=enterprise");
+        post("common/showSettingsDialog?tab=subscription");
 
-    const menuClickHandler = meetsEnterpriseRequirement
+    const menuClickHandler = meetsSubscriptionRequirement
         ? props.onClick
         : openCollectionSettings;
 
@@ -187,7 +182,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                                 // We can't use the disabled prop because it prevents the click from opening settings and
                                 // prevents the tooltip. So we just make it look disabled (using the same setting as Mui-disabled).
                                 // And we only do it on the icon and text so the enterprise icon doesn't look disabled.
-                                opacity: ${meetsEnterpriseRequirement
+                                opacity: ${meetsSubscriptionRequirement
                                     ? undefined
                                     : kBloomDisabledOpacity};
                             }
@@ -196,7 +191,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                         primary={label + ellipsis}
                         secondary={sublabel !== "" ? sublabel : null} // null is needed to not leave an empty row
                     ></ListItemText>
-                    {enterpriseElement}
+                    {subscriptionElement}
                 </React.Fragment>
             </MenuItem>
         </div>

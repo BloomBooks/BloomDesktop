@@ -18,7 +18,7 @@ import Button from "@mui/material/Button";
 import { get, post, useApiBoolean } from "../../utils/bloomApi";
 import { ProgressDialog } from "../../react_components/Progress/ProgressDialog";
 import HelpLink from "../../react_components/helpLink";
-import { RequiresBloomEnterpriseDialog } from "../../react_components/requiresSubscription";
+import { RequiresSubscriptionDialog } from "../../react_components/requiresSubscription";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import CloseIcon from "@mui/icons-material/Close";
@@ -290,7 +290,7 @@ export const PDFPrintPublishScreen = () => {
                     setIsProgressDialogOpen(false);
                 }}
             />
-            <RequiresBloomEnterpriseDialog />
+            <RequiresSubscriptionDialog />
         </React.Fragment>
     );
 };

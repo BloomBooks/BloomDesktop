@@ -22,7 +22,7 @@ namespace Bloom.Collection
 
         public static bool HaveFilesForBranding(string fullBrandKey)
         {
-            BrandingSettings.ParseBrandingKey(
+            BrandingSettings.ParseSubscriptionDescriptor(
                 fullBrandKey,
                 out var baseKey,
                 out var flavor,

@@ -290,10 +290,7 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
         );
 
         setSubscriptionCode(event.target.value);
-        const changeEvent = new Event("subscriptionCodeChanged");
-        // Log the subscription code change event
-        // Replace this with a proper logging mechanism if needed
-        document.dispatchEvent(changeEvent);
+        document.dispatchEvent(new Event("subscriptionCodeChanged"));
     };
 
     return (

@@ -49,7 +49,7 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
                 <>
                     <NoteBox l10nKey="Settings.Subscription.DownloadForEdit">
                         This collection is in "Download for Edit" mode. The book
-                        has the same Subscription Settings as when it was last
+                        has the same subscription settings as when it was last
                         uploaded.
                     </NoteBox>
                     {subscriptionDescriptor}
@@ -62,7 +62,7 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
                         l10nKey="Settings.Subscription.IntroText"
                         l10nParam0={
                             // TODO: make a more permanent url?
-                            "https://bloomlibrary.org/page/resources/page/feature-matrix"
+                            "https://bloomlibrary.org/page/resources/feature-matrix"
                         }
                     >
                         To help cover a portion of the costs associated with

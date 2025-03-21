@@ -109,18 +109,18 @@ namespace Bloom.Api
         /// <summary>
         /// extract the various parts of a Subscription Descriptor
         /// </summary>
-        /// <param name="fullBrandingsubscriptionDescriptor">the part of the subcription code before the numbers start</param>
+        /// <param name="subscriptionDescriptor">the part of the subcription code before the numbers start</param>
         /// <param name="folderName">the name before any branding; this will match the folder holding all the files.</param>
         /// <param name="flavor">a name or empty string</param>
         /// <param name="subUnitName">a name (normally a country) or empty string</param>
-        public static void ParseBrandingKey(
-            String fullBrandingsubscriptionDescriptor,
+        public static void ParseSubscriptionDescriptor(
+            String subscriptionDescriptor,
             out String folderName,
             out String flavor,
             out String subUnitName
         )
         {
-            if (fullBrandingsubscriptionDescriptor.Contains("-LC"))
+            if (subscriptionDescriptor.Contains("-LC"))
             {
                 folderName = "Local-Community";
                 flavor = null;
@@ -132,7 +132,7 @@ namespace Bloom.Api
             // a language name. This is used to select different logo files without having to create
             // a completely separate branding folder (complete with summary, stylesheets, etc) for each
             // language in a project that is publishing in a situation with multiple major languages.
-            var parts = fullBrandingsubscriptionDescriptor.Split('[');
+            var parts = subscriptionDescriptor.Split('[');
             folderName = parts[0];
             flavor = parts.Length > 1 ? parts[1].Replace("]", "") : "";
 
@@ -184,7 +184,7 @@ namespace Bloom.Api
                 {
                     // If it's a directory path, look for branding.json directly in that folder
                     settingsPath = Path.Combine(brandingNameOrFolderPath, "branding.json");
-                    if (!File.Exists(settingsPath))
+                    if (!RobustFile.Exists(settingsPath))
                     {
                         settingsPath = null;
                     }
@@ -192,7 +192,7 @@ namespace Bloom.Api
                 else
                 {
                     // Regular case: treat it as a branding name/key
-                    ParseBrandingKey(
+                    ParseSubscriptionDescriptor(
                         brandingNameOrFolderPath,
                         out brandingFolderName,
                         out flavor,
