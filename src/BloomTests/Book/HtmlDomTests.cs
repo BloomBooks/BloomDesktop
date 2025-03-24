@@ -1753,9 +1753,13 @@ p {
         {
             const string htmlContent =
                 @"<html>
-<head>" + kHtmlHeadContent + @"
+<head>"
+                + kHtmlHeadContent
+                + @"
 </head>
-<body>"+ kBodyContentWithoutClasses + @"
+<body>"
+                + kBodyContentWithoutClasses
+                + @"
 <div class=""Title-On-Cover-style"" lang=""en"">Test 5</div>
 <div class=""small-style"" lang=""en"">Test 6</div>
 <div class=""Inside-Back-Cover-style"" lang=""jmx"">Test 7</div>
@@ -1798,16 +1802,24 @@ p {
         {
             const string htmlContent =
                 @"<html>
-<head>" + kHtmlHeadContent + @"
+<head>"
+                + kHtmlHeadContent
+                + @"
 </head>
-<body>" + kBodyContentWithoutClasses + @"
+<body>"
+                + kBodyContentWithoutClasses
+                + @"
 <div class=""Title-On-Cover-style"" lang=""en"">Test 5</div>
 </body>
 </html>";
 
             var fonts = new HashSet<string>();
             HtmlDom.FindFontsUsedInCss(htmlContent, fonts, true);
-            Assert.AreEqual(4, fonts.Count, "Four fonts are actually used in the test html/css data");
+            Assert.AreEqual(
+                4,
+                fonts.Count,
+                "Four fonts are actually used in the test html/css data"
+            );
             Assert.IsTrue(
                 fonts.Contains("NikoshBAN"),
                 "The text/css data refers to NikoshBAN as a font."
@@ -2571,7 +2583,7 @@ p {
 		</style>
 	</head>
 	<body>
-		<div class='A5Portrait bloom-page simple-comprehension-quiz bloom-interactive-page enterprise-only numberedPage bloom-monolingual' id='F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D' data-page='extra' data-analyticscategories='comprehension' data-reader-version='2'>
+		<div class='A5Portrait bloom-page simple-comprehension-quiz bloom-interactive-page numberedPage bloom-monolingual' id='F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D' data-feature='games' data-page='extra' data-analyticscategories='comprehension' data-reader-version='2'>
 			<div class='marginBox'>
 				<div class='quiz'>
 					<div class='bloom-translationGroup QuizHeader-style ' data-default-languages='auto'>

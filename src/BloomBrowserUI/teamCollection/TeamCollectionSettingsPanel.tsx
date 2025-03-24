@@ -10,7 +10,7 @@ import {
     useApiStringState
 } from "../utils/bloomApi";
 import { P } from "../react_components/l10nComponents";
-import { RequiresBloomEnterpriseOverlayWrapper } from "../react_components/requiresSubscription";
+import { RequiresSubscriptionOverlayWrapper } from "../react_components/requiresSubscription";
 import "./TeamCollectionSettingsPanel.less";
 import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
@@ -186,14 +186,14 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                             ${tabMargins.bottom};
                     `}
                 >
-                    <RequiresBloomEnterpriseOverlayWrapper>
+                    <RequiresSubscriptionOverlayWrapper subscriptionFeature="TeamCollection">
                         <React.Fragment>
                             {intro}
                             {repoFolderPath
                                 ? isTeamCollection
                                 : isNotTeamCollection}
                         </React.Fragment>
-                    </RequiresBloomEnterpriseOverlayWrapper>
+                    </RequiresSubscriptionOverlayWrapper>
                 </div>
             </ThemeProvider>
         </StyledEngineProvider>

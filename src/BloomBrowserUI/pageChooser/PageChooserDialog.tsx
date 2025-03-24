@@ -18,6 +18,7 @@ import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
 import { useHaveSubscription } from "../react_components/requiresSubscription";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
+import { useGetFeatureStatus } from "../react_components/subcriptionFeature";
 
 interface IPageChooserDialogProps {
     forChooseLayout: boolean;
@@ -227,10 +228,11 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         selectedPageDiv: HTMLDivElement
     ): void => {
         // N.B. The double click handler in the inner component does the single-click actions first.
-        const pageIsEnterpriseOnly = selectedPageDiv.classList.contains(
-            "enterprise-only"
+        const requiresSubscription = selectedPageDiv.hasAttribute(
+            "data-feature"
         );
-        if (pageIsEnterpriseOnly && !isEnterpriseAvailable) {
+
+        if (requiresSubscription && !isEnterpriseAvailable) {
             return;
         }
         const convertAnywayCheckbox = document.getElementById(

@@ -28,7 +28,7 @@ import {
     RequiresSubscriptionDialog,
     RequiresSubscriptionNotice,
     RequiresSubscriptionNoticeDialog,
-    RequiresBloomEnterpriseOverlayWrapper
+    RequiresSubscriptionOverlayWrapper
 } from "./requiresSubscription";
 import {
     StorybookDialogWrapper,
@@ -142,7 +142,7 @@ storiesOf("Localizable Widgets", module)
                     {
                         english: "Option 1",
                         l10nId: "already-localized",
-                        requiresAnySubscription: true,
+                        subscriptionFeature: "foobar",
                         onClick: () => {
                             alert("Option 1 clicked");
                         }
@@ -263,7 +263,7 @@ const normalMenuItemWithEllipsisAndEnterprise = React.createElement(() => (
         english="Open or Create Another Collection"
         l10nId="CollectionTab.OpenCreateCollectionMenuItem"
         addEllipsis={true}
-        requiresAnySubscription={true}
+        subscriptionFeature="foobar"
         onClick={() => {}}
     />
 ));
@@ -272,7 +272,7 @@ const requiresEnterpriseSubscriptionWithIcon = React.createElement(() => (
     <LocalizableMenuItem
         english="BE subscription required, has disabled icon"
         l10nId="already-localized"
-        requiresEnterpriseTier={true}
+        subscriptionFeature="foobar"
         icon={<DeleteIcon />}
         onClick={() => {}}
     />
@@ -659,20 +659,22 @@ storiesOf("BookInformationCards", module)
 // These components perform api calls. You'll need Bloom running
 // with a collection which doesn't have enterprise enabled if you
 // want things to show up as expected.
-storiesOf("RequiresBloomEnterprise", module)
-    .add("RequiresBloomEnterpriseNoticeDialog", () =>
+storiesOf("RequiresSubscription", module)
+    .add("RequiresSubscriptionNoticeDialog", () =>
         React.createElement(() => <RequiresSubscriptionNoticeDialog />)
     )
-    .add("RequiresBloomEnterpriseDialog", () =>
+    .add("RequiresSubscriptionDialog", () =>
         React.createElement(() => (
             <RequiresSubscriptionDialog
                 dialogEnvironment={normalDialogEnvironmentForStorybook}
             />
         ))
     )
-    .add("RequiresBloomEnterpriseNotice", () =>
+    .add("RequiresSubscriptionNotice", () =>
         React.createElement(() => <RequiresSubscriptionNotice />)
     )
-    .add("RequiresBloomEnterpriseOverlayWrapper", () =>
-        React.createElement(() => <RequiresBloomEnterpriseOverlayWrapper />)
+    .add("RequiresSubscriptionOverlayWrapper", () =>
+        React.createElement(() => (
+            <RequiresSubscriptionOverlayWrapper subscriptionFeature="foobar" />
+        ))
     );

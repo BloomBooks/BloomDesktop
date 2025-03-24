@@ -5539,9 +5539,9 @@ namespace Bloom.Book
         public static bool IsPageBloomSubscriptionOnly(SafeXmlElement page)
         {
             var classAttrib = page.GetAttribute("class");
-            return classAttrib.Contains("enterprise-only")
+            return page.HasAttribute("data-feature")
                 ||
-                // legacy quiz pages don't have 'enterprise-only'
+                // legacy quiz pages don't have 'data-feature'
                 classAttrib.Contains("questions")
                 || page.SafeSelectNodes(".//div[contains(@class,'bloom-widgetContainer')]").Length
                     > 0;
