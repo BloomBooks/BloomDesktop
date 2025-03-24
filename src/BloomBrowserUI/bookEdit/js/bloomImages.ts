@@ -110,20 +110,22 @@ export function SetupImage(image) {
         image.removeAttribute("width");
         image.removeAttribute("height");
     }
-    var hndlr = image.getAttribute("onerror");
-    if (!hndlr) {
-        // Cover images get a handler assigned in C# code because assigning it here
-        // doesn't work for the initial load on cover pages.  (The image resource load
-        // fails before this bootstrap code is called in document.ready(), but only
-        // for the cover image for some reason.)  The C# code also doesn't preserve
-        // the bloom-imageLoadError class from earlier editing sessons.
-        // The onerror handler can be null if this is not a cover image and the error
-        // handler has not yet been assigned.  In that case, we want to initialize the
-        // error handler and class.  See BL-14241.
-        // Note that the error handler assigned this way will not be persisted as an
-        // attribute in the image element in the HTML.
-        image.classList.remove("bloom-imageLoadError");
-        image.onerror = HandleImageError;
+    if (image.getAttribute) {
+        const hndlr = image.getAttribute("onerror");
+        if (!hndlr) {
+            // Cover images get a handler assigned in C# code because assigning it here
+            // doesn't work for the initial load on cover pages.  (The image resource load
+            // fails before this bootstrap code is called in document.ready(), but only
+            // for the cover image for some reason.)  The C# code also doesn't preserve
+            // the bloom-imageLoadError class from earlier editing sessons.
+            // The onerror handler can be null if this is not a cover image and the error
+            // handler has not yet been assigned.  In that case, we want to initialize the
+            // error handler and class.  See BL-14241.
+            // Note that the error handler assigned this way will not be persisted as an
+            // attribute in the image element in the HTML.
+            image.classList.remove("bloom-imageLoadError");
+            image.onerror = HandleImageError;
+        }
     }
 }
 
