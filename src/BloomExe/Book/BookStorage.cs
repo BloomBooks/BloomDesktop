@@ -166,7 +166,7 @@ namespace Bloom.Book
         ///   Bloom 6.0  4 = Switched to using a theme (or explicitly using legacy)
         ///   Bloom 6.2  5 = bloom-textOverPicture became bloom-canvas-element
         ///   Bloom 6.2  6 = Legacy activities were updated to have data-tool-id="game", class
-        ///     game-theme-legacy, and to give simple-comprehension-quiz a data-activity.
+        ///     game-theme-legacy, and to give .simple-comprehension-quiz a data-activity.
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
@@ -3964,7 +3964,9 @@ namespace Bloom.Book
             );
             foreach (SafeXmlElement quiz in quizzes)
             {
-                quiz.SetAttribute("data-activity", "simple-comprehension-quiz");
+                // Yes, the data-activity is different from the class name.  See BL-14450.
+                // bloom-player uses "simple-checkbox-quiz" as its id for this game/activity.
+                quiz.SetAttribute("data-activity", "simple-checkbox-quiz");
             }
             var choices = Dom.SafeSelectNodes("//div[@data-activity = 'simple-dom-choice']");
 
