@@ -3963,9 +3963,10 @@ namespace Bloom.Book
         {
             "branding.css",
             "defaultLangStyles.css",
-            "customCollectionStyles.css",
+			"appearance.css",
+            // Allow custom settings to override the defaults in appearance.css.  See BL-14467.
+			"customCollectionStyles.css",
             "../customCollectionStyles.css",
-            "appearance.css",
             // We don't usually have both of these, and I don't have a clear idea why one should come before
             // the other. But the order should be consistent, and if both are there, typically customBookStyles2.css
             // came from our system, while the other was added by the user. So allow the user one to win.
