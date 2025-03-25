@@ -269,9 +269,9 @@
         <target xml:lang="fr" state="needs-translation">Theme</target>
         <note>ID: EditTab.Toolbox.Games.Theme</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.blue-on-white" translate="no">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.blue-on-white" translate="no" approved="yes">
         <source xml:lang="en">Blue on white</source>
-        <target xml:lang="fr" state="needs-translation">Blue on white</target>
+        <target xml:lang="fr" state="final">Bleu sur blanc</target>
         <note>ID: EditTab.Toolbox.Games.Themes.blue-on-white</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.default" translate="no">
@@ -279,9 +279,9 @@
         <target xml:lang="fr" state="needs-translation">Default</target>
         <note>ID: EditTab.Toolbox.Games.Themes.default</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.white-on-blue" translate="no">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.white-on-blue" translate="no" approved="yes">
         <source xml:lang="en">White on blue</source>
-        <target xml:lang="fr" state="needs-translation">White on blue</target>
+        <target xml:lang="fr" state="final">Blanc sur bleu</target>
         <note>ID: EditTab.Toolbox.Games.Themes.white-on-blue</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.monochrome-PDF" translate="no">
@@ -289,9 +289,9 @@
         <target xml:lang="fr" state="needs-translation">Monochrome PDF</target>
         <note>ID: EditTab.Toolbox.Games.Themes.monochrome-PDF</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.red-on-white" translate="no">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.red-on-white" translate="no" approved="yes">
         <source xml:lang="en">Red on white</source>
-        <target xml:lang="fr" state="needs-translation">Red on white</target>
+        <target xml:lang="fr" state="final">Rouge sur blanc</target>
         <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool">
