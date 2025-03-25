@@ -279,10 +279,10 @@ namespace Bloom.Book
             set { MetaData.FormatVersion = value; }
         }
 
-        public string SubscriptionDescriptor
+        public string BrandingKey
         {
-            get { return MetaData.SubscriptionDescriptor; }
-            set { MetaData.SubscriptionDescriptor = value; }
+            get { return MetaData.BrandingKey; }
+            set { MetaData.BrandingKey = value; }
         }
 
         // When license is 'custom' this contains the license information. For other types in may contain additional permissions
@@ -1223,8 +1223,8 @@ namespace Bloom.Book
                 );
         }
 
-        [JsonProperty("subscriptionDescriptor")]
-        public string SubscriptionDescriptor { get; set; }
+        [JsonProperty("brandingProjectName")] // NB: don't change this to "BrandingKey", it must match what is in json and the Parse database
+        public string BrandingKey { get; set; }
 
         /// <summary>
         /// True if the user explicitly set a name (name is not automatically derived

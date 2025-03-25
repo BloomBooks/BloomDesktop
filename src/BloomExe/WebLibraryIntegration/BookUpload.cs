@@ -582,11 +582,11 @@ namespace Bloom.WebLibraryIntegration
                 var sub = new Subscription(subscriptionNode.InnerText);
                 subscriptionNode.InnerText = sub.GetRedactedCode();
             }
-            // we don't publish the "BrandingName" anymore, since we're using a recacted code instead
-            var brandingNameNode = doc.SelectSingleNode("/Collection/BrandingName");
-            if (brandingNameNode != null)
+            // we don't publish the "BrandingProjectName" anymore, since we're using a redacted code instead
+            var brandingProjectNameNode = doc.SelectSingleNode("/Collection/BrandingProjectName");
+            if (brandingProjectNameNode != null)
             {
-                brandingNameNode.ParentNode.RemoveChild(brandingNameNode);
+                brandingProjectNameNode.ParentNode.RemoveChild(brandingProjectNameNode);
             }
 
             // Remove traces of AI generated data from the collection settings.

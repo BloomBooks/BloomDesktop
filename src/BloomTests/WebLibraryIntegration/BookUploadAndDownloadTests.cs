@@ -795,7 +795,7 @@ namespace BloomTests.WebLibraryIntegration
                 var subscriptionNode = doc.SelectSingleNode("/Collection/SubscriptionCode");
                 Assert.That(subscriptionNode.InnerText, Is.EqualTo("foo-bar-***-***"));
 
-                // also, don't include the unused "BrandingName" anymore
+                // also, don't include the unused "BrandingProjectName" anymore
                 var brandingNode = doc.SelectSingleNode("/Collection/BrandingProjectName");
                 Assert.That(
                     brandingNode,
