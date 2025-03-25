@@ -1841,9 +1841,7 @@ These are similar but already have game-theme classes
             //Verification
             var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
             Assert.That(maintLevel, Is.EqualTo("6"));
-            var quiz = storage.Dom.SelectSingleNode(
-                "//*[@data-activity='simple-comprehension-quiz']"
-            );
+            var quiz = storage.Dom.SelectSingleNode("//*[@data-activity='simple-checkbox-quiz']");
             Assert.That(quiz, Is.Not.Null, "data-activity was not added to quiz");
             Assert.That(quiz.GetAttribute("data-tool-id"), Is.EqualTo("game"));
             Assert.That(quiz.HasClass("game-theme-red-on-white"));
