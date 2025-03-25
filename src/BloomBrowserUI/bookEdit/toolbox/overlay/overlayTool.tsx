@@ -26,7 +26,7 @@ import { IColorPickerDialogProps } from "../../../react_components/color-picking
 import * as tinycolor from "tinycolor2";
 import { showSignLanguageTool } from "../../js/bloomVideo";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
-import { RequiresBloomEnterpriseOverlayWrapper } from "../../../react_components/requiresSubscription";
+import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
 import { kOverlayToolId } from "../toolIds";
 import {
     BloomPalette,
@@ -640,7 +640,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
 
     return (
         <div id="overlayToolControls">
-            <RequiresBloomEnterpriseOverlayWrapper>
+            <RequiresSubscriptionOverlayWrapper>
                 {// Using most kinds of comic bubbles is problematic in various ways in Bloom games, so we don't allow it.
                 // We may eventually want to allow some controls to be used, but for now we just disable the whole thing.
                 // If we don't change our minds this string should get localized.
@@ -755,7 +755,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                         </div>
                     </div>
                 )}
-            </RequiresBloomEnterpriseOverlayWrapper>
+            </RequiresSubscriptionOverlayWrapper>
         </div>
     );
 };

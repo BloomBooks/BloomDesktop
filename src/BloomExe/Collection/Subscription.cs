@@ -20,7 +20,12 @@ public class Subscription
     public string Descriptor { get; private set; }
 
     public DateTime ExpirationDate { get; private set; }
+
+    // The editingBlorgBook flag is used to indicate that we are editing a book that was uploaded to BloomLibrary.org.
+    // In that case, we want to use the same branding as when it was uploaded, even if the code is expired.
     public bool EditingBlorgBook { get; private set; } = false;
+
+    // The subscription code is a string like "PNG-RISE-123456-1234"
     public readonly string Code;
 
     public SubscriptionTier Tier { get; private set; }
@@ -33,7 +38,7 @@ public class Subscription
         Tier = CalculateTier();
     }
 
-    // Factor Method
+    // Factory Method
     // We would really like to say look it's only the code, from that we can get everything else.
     // However there are two cases where that is not enough:
     // 1. Legacy collections will have no code, but only a branding of "Local-Community".
@@ -94,7 +99,7 @@ public class Subscription
         }
     }
 
-    public bool GetChecksumCorrect()
+    public bool IsChecksumCorrect()
     {
         if (Code == null)
             return false;
@@ -182,7 +187,7 @@ public class Subscription
         if (checksumPart.Length < 4)
             return "incomplete";
 
-        if (!GetChecksumCorrect())
+        if (!IsChecksumCorrect())
         {
             return "invalid";
         }
@@ -215,36 +220,6 @@ public class Subscription
     public bool HaveActiveSubscription =>
         Tier == Subscription.SubscriptionTier.Enterprise
         || Tier == Subscription.SubscriptionTier.Community;
-
-    // Since normally all info comes from the code, this allows us to ignore the code and just set what we need.
-    // If a unit test breaks because of an expired subscription, consider fixing it by using this method or one like it.
-    public static Subscription ForUnitTestWithOverrideTierOrDescriptor(
-        SubscriptionTier tier,
-        string descriptor
-    )
-    {
-        var subscription = new Subscription("");
-
-        // Directly set the internal fields for testing
-        subscription.Descriptor = descriptor;
-        subscription.Tier = tier;
-        subscription.ExpirationDate = DateTime.Now.AddDays(1);
-
-        return subscription;
-    }
-
-    // Since normally all info comes from the code, this allows us to ignore the code and just set what we need.
-    // If a unit test breaks because of an expired subscription, consider fixing it by using this method or one like it.
-    public static Subscription ForUnitTestWithOverrideDescriptor(string descriptor)
-    {
-        var subscription = new Subscription("");
-
-        // Directly set the descriptor and expiration date for testing
-        subscription.Descriptor = descriptor;
-        subscription.ExpirationDate = DateTime.Now.AddDays(1);
-
-        return subscription;
-    }
 
     // From the subscription code extract everything up to the second-last hyphen.
     // Pays no attention to the validity of the code, just returns the part before the numbers.
@@ -368,6 +343,36 @@ public class Subscription
 
         // Directly set the tier for testing
         subscription.Tier = tier;
+
+        return subscription;
+    }
+
+    // Since normally all info comes from the code, this allows us to ignore the code and just set what we need.
+    // If a unit test breaks because of an expired subscription, consider fixing it by using this method or one like it.
+    internal static Subscription ForUnitTestWithOverrideTierOrDescriptor(
+        SubscriptionTier tier,
+        string descriptor
+    )
+    {
+        var subscription = new Subscription("");
+
+        // Directly set the internal fields for testing
+        subscription.Descriptor = descriptor;
+        subscription.Tier = tier;
+        subscription.ExpirationDate = DateTime.Now.AddDays(1);
+
+        return subscription;
+    }
+
+    // Since normally all info comes from the code, this allows us to ignore the code and just set what we need.
+    // If a unit test breaks because of an expired subscription, consider fixing it by using this method or one like it.
+    internal static Subscription ForUnitTestWithOverrideDescriptor(string descriptor)
+    {
+        var subscription = new Subscription("");
+
+        // Directly set the descriptor and expiration date for testing
+        subscription.Descriptor = descriptor;
+        subscription.ExpirationDate = DateTime.Now.AddDays(1);
 
         return subscription;
     }

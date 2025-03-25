@@ -21,6 +21,7 @@ namespace BloomTests.Collection
         [TestCase("Foo-Bar-Blah", "Foo-Bar-Blah")]
         [TestCase("Test-Expired-Code-005658-9576", "Test-Expired-Code")]
         [TestCase("การทดสอบ-LC-005908-3073", "การทดสอบ-LC")]
+        [TestCase("Fake[Western]-006273-6382", "Fake[Western]")]
         public void Descriptor_ReturnsCorrectValue(string code, string expectedBranding)
         {
             var subscription = new Subscription(code);
@@ -35,24 +36,12 @@ namespace BloomTests.Collection
         [TestCase("Test-Expired-005691-4935", "Default")] //  expired, thus "Default"
         [TestCase("Test-Invalid-111-1111", "Default")] //  invalid, thus "Default"
         [TestCase("Foobar-***-***", "Default")] //  invalid, thus "Default". To use a redacted code, you have to use a factory method
+        [TestCase("Fake[Western]-006273-6382", "Fake[Western]")]
         public void BrandingKey_ReturnsCorrectValue(string code, string expectedBranding)
         {
             var subscription = new Subscription(code);
             Assert.AreEqual(expectedBranding, subscription.BrandingKey);
         }
-
-        // [TestCase(null, "Default")]
-        // [TestCase("", "Default")]
-        // [TestCase("Test-Expired-005691-4935", "")] // if expired, it's "Default"
-        // [TestCase("Foo-Bar-***-**", "Foo-Bar")]
-        // public void BrandingKeyEvenIfRedacted_ReturnsCorrectValue(
-        //     string code,
-        //     string expectedBranding
-        // )
-        // {
-        //     var subscription = new Subscription(code);
-        //     Assert.AreEqual(expectedBranding, subscription.BrandingKeyEvenIfRedacted);
-        // }
 
         [TestCase("", "", "")]
         [TestCase(null, null, null)]

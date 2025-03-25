@@ -28,7 +28,7 @@ import {
     RequiresSubscriptionDialog,
     RequiresSubscriptionNotice,
     RequiresSubscriptionNoticeDialog,
-    RequiresBloomEnterpriseOverlayWrapper
+    RequiresSubscriptionOverlayWrapper
 } from "./requiresSubscription";
 import {
     StorybookDialogWrapper,
@@ -674,5 +674,5 @@ storiesOf("RequiresBloomEnterprise", module)
         React.createElement(() => <RequiresSubscriptionNotice />)
     )
     .add("RequiresBloomEnterpriseOverlayWrapper", () =>
-        React.createElement(() => <RequiresBloomEnterpriseOverlayWrapper />)
+        React.createElement(() => <RequiresSubscriptionOverlayWrapper />)
     );

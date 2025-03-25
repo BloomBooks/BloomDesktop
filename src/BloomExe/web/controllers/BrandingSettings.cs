@@ -273,13 +273,13 @@ namespace Bloom.Api
                         return null;
                     }
 
-                    if (settings.Presets != null && flavor != null)
+                    if (settings.Presets != null && !string.IsNullOrEmpty(flavor))
                     {
                         settings.Presets.ForEach(p =>
                         {
                             if (p.Content != null)
                             {
-                                if (string.IsNullOrEmpty(flavor) && p.Content.Contains("{flavor"))
+                                if (p.Content.Contains("{flavor"))
                                 {
                                     throw new ApplicationException(
                                         "The branding had variable {flavor} but the branding key did not specify one: "

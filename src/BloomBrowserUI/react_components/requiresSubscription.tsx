@@ -36,6 +36,7 @@ const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 const subscriptionTiers = ["None", "Community", "Enterprise"] as const;
 type SubscriptionTier = typeof subscriptionTiers[number];
 
+// Tells you wether the user has an active subscription or not.
 export function useHaveSubscription() {
     const [haveSubscription, setHaveSubscription] = useState(true);
 
@@ -166,7 +167,8 @@ export const BloomEnterpriseIcon = props => {
     );
 };
 
-export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = props => {
+// put this around a component that requires a subscription to use, and it will disable the children and show a notice if you don't have one.
+export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent = props => {
     const haveSubscription = useHaveSubscription();
     return (
         <div
@@ -210,6 +212,7 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
     );
 };
 
+// Shown in the add page dialog when you select a page that requires a subscription, but don't have one.
 export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
     darkTheme?: boolean;
     inSeparateDialog?: boolean;

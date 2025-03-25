@@ -584,7 +584,7 @@ namespace BloomTests.WebLibraryIntegration
                     Language1Tag = "dmx", // Dema language of Mozambique (arbitrary choice)
                     Language2Tag = "en",
                     Language3Tag = "fr",
-                    Subscription = new Subscription("การทดสอบ-LC-005908-3073")
+                    Subscription = new Subscription("Test-Expired-005691-4935") // expired 2/3/2025
                 }
             );
             var bookObjectId = _uploader.UploadBook_ForUnitTest(
