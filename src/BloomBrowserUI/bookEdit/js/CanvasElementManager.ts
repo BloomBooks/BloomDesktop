@@ -161,8 +161,10 @@ export class CanvasElementManager {
             return false;
         }
 
-        wrapperBox.style.height = newHeight + "px"; // next line will change to percent
-        CanvasElementManager.convertTextboxPositionToAbsolute(
+        wrapperBox.style.height = newHeight + "px";
+        // The next method call will change from % positioning to px if needed.  Bloom originally
+        // used % values to position canvas elements before we realized that was a bad idea.
+        CanvasElementManager.convertCanvasElementPositionToAbsolute(
             wrapperBox,
             container
         );
@@ -254,11 +256,6 @@ export class CanvasElementManager {
                 wrapperBox.style.top = oldTop - delta + "px";
                 const oldLeft = this.pxToNumber(wrapperBox.style.left);
                 wrapperBox.style.left = oldLeft - delta + "px";
-
-                CanvasElementManager.convertTextboxPositionToAbsolute(
-                    wrapperBox,
-                    this.getTopLevelImageContainerElement(wrapperBox)!
-                );
             }
         });
     }
@@ -5294,25 +5291,40 @@ export class CanvasElementManager {
         }
     }
 
-    // Converts a text box's position to absolute in pixels (using CSS styling)
+    // Converts a canvas element's position to absolute in pixels (using CSS styling)
     // (Used to be a percentage of parent size. See comments on setTextboxPosition.)
-    // textBox: The thing we want to position
-    // container: Optional. The image container the text box is in. If this parameter is not defined, the function will automatically determine it.
-    private static convertTextboxPositionToAbsolute(
-        textBox: Element,
+    // canvasElement: The thing we want to position
+    // container: Optional. The image container the convas element is in. If this parameter is not defined, the function will automatically determine it.
+    private static convertCanvasElementPositionToAbsolute(
+        canvasElement: HTMLElement,
         container?: Element | null | undefined
     ): void {
         let unscaledRelativeLeft: number;
         let unscaledRelativeTop: number;
 
+        const left = canvasElement.style.left;
+        const top = canvasElement.style.top;
+        if (left.endsWith("px") && top.endsWith("px")) {
+            // We're already in absolute pixel position.
+            return;
+        }
+
+        // Note: if the convasElement is scaled by a transform applied to an ancestor
+        // element, then the following calculations will be woefully off.  See BL-14312.
+        // We think all such cases will be caught by the check above for already being
+        // in absolute pixel position.  But this is still something worth considering
+        // if canvas elements show up in strange positions.  (Showing image descriptions
+        // was the original case where we discovered this problem, and led to realizing
+        // that most calls to this method are not really needed.)
+
         if (!container) {
             container = CanvasElementManager.getTopLevelImageContainerElement(
-                textBox
+                canvasElement
             );
         }
 
         if (container) {
-            const positionInfo = textBox.getBoundingClientRect();
+            const positionInfo = canvasElement.getBoundingClientRect();
             const wrapperBoxPos = new Point(
                 positionInfo.left,
                 positionInfo.top,
@@ -5335,13 +5347,12 @@ export class CanvasElementManager {
             // (This algorithm does not properly account for the border of the imageContainer when zoomed,
             //  so the results may be slightly off by perhaps up to 2 pixels)
             const scale = EditableDivUtils.getPageScale();
-            const pos = $(textBox).position();
+            const pos = $(canvasElement).position();
             unscaledRelativeLeft = pos.left / scale;
             unscaledRelativeTop = pos.top / scale;
         }
-
         this.setTextboxPosition(
-            $(textBox),
+            $(canvasElement),
             unscaledRelativeLeft,
             unscaledRelativeTop
         );
