@@ -535,8 +535,9 @@ namespace Bloom.Book
 
             // For 6.1 and 6.0 only; don't merge into 6.2
             if (
-                breakingFeatureRequirements.Count() == 1
-                && breakingFeatureRequirements.First().FeatureId == "canvasElement"
+                breakingFeatureRequirements.All(
+                    fr => fr.FeatureId == "canvasElement" || fr.FeatureId == "bloomCanvas"
+                )
             )
                 return "";
 
@@ -3819,18 +3820,17 @@ namespace Bloom.Book
             if (GetMaintenanceLevel() <= kMaintenanceLevel)
                 return;
             var breakingFeatureRequirements = GetBreakingFeatureRequirements();
-            // Building a general mechanism here, but this is the only one 6.1 currently
-            // knows how to do. (Note that this method doesn't get called at all if there
-            // are breaking feature requirements we don't know how to deal with.)
-            foreach (var requirement in breakingFeatureRequirements)
+            // Handle the back migrations 6.2 knows about, in the proper reverse order.
+            // This should not be merged to 6.2.
+            // If you add a new back migration, you must also modify GetHtmlMessageIfFeatureIncompatibility
+            // to not complain if the only breaking changes are ones we can back-migrate.
+            if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "bloomCanvas"))
             {
-                // These two lines should be removed merging to master, since not wanted in
-                // 6.2 and beyond. That will leave this method doing nothing until we have some
-                // new reason for a back migration, but I think it's worth keeping.
-                if (requirement.FeatureId == "canvasElement")
-                    MigrateBackFromLevel5CanvasElement();
-                // If you add a new back migration, you must also modify GetHtmlMessageIfFeatureIncompatibility
-                // to not complain if the only breaking changes are ones we can back-migrate.
+                MigrateBackFromLevel7BloomCanvas();
+            }
+            if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "canvasElement"))
+            {
+                MigrateBackFromLevel5CanvasElement();
             }
         }
 
@@ -3860,6 +3860,39 @@ namespace Bloom.Book
                 );
             }
             Dom.UpdateMetaElement("maintenanceLevel", "4");
+        }
+
+        /// <summary>
+        /// Only for 6.1 and 6.0! Do not merge to 6.2.
+        /// </summary>
+        public void MigrateBackFromLevel7BloomCanvas()
+        {
+            Guard.Against(
+                !BookInfo.IsSaveable,
+                "We should not even think about migrating a book that is not Saveable"
+            );
+            if (GetMaintenanceLevel() <= 6)
+                return;
+            var legacyCanvasElements = Dom.SafeSelectNodes("//*[contains(@class, 'bloom-canvas')]")
+                .Cast<SafeXmlElement>()
+                // the crude xpath above will also match bloom-canvas-element, which we don't want to change
+                .Where(e => e.HasClass("bloom-canvas"))
+                .ToList();
+            foreach (var element in legacyCanvasElements)
+            {
+                element.RemoveClass("bloom-canvas");
+                element.AddClass("bloom-imageContainer");
+                var bgImage = element.ChildNodes.FirstOrDefault(
+                    x => x is SafeXmlElement elt && elt.Name == "img" && elt.HasAttribute("src")
+                );
+                if (bgImage == null)
+                {
+                    bgImage = element.OwnerDocument.CreateElement("img");
+                    bgImage.SetAttribute("src", "placeHolder.png");
+                    element.InsertBefore(bgImage, element.FirstChild);
+                }
+            }
+            Dom.UpdateMetaElement("maintenanceLevel", "6");
         }
 
         /// <summary>
@@ -3963,9 +3996,9 @@ namespace Bloom.Book
         {
             "branding.css",
             "defaultLangStyles.css",
-			"appearance.css",
+            "appearance.css",
             // Allow custom settings to override the defaults in appearance.css.  See BL-14467.
-			"customCollectionStyles.css",
+            "customCollectionStyles.css",
             "../customCollectionStyles.css",
             // We don't usually have both of these, and I don't have a clear idea why one should come before
             // the other. But the order should be consistent, and if both are there, typically customBookStyles2.css
