@@ -181,8 +181,6 @@ namespace BloomTests.Publish
             var metadata = book.BookInfo.MetaData;
             metadata.Hazards = "flashingHazard,noMotionSimulationHazard";
             metadata.A11yFeatures = "signLanguage";
-            // Without a branding, Bloom Enterprise-only features are removed
-            string branding = "Local-Community";
             // Currently, only in OnPage mode does the image description turn into an aside that can be linked to the image.
             // May need to try more than once on Linux to make the epub without an exception for failing to complete loading the document.
             MakeEpubWithRetries(

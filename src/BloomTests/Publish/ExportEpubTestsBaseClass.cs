@@ -468,7 +468,7 @@ namespace BloomTests.Publish
             book.CollectionSettings.Subscription =
                 Subscription.ForUnitTestWithOverrideTierOrDescriptor(
                     Subscription.SubscriptionTier.Community,
-                    "Local-Community"
+                    "Foobar-LC"
                 );
 
             return book;

@@ -2323,22 +2323,41 @@ namespace Bloom.Book
                             );
                     }
 
-                    // if the CollectionSettings has a BrandingPersonalization, replace any instances of {personalization} with the value
-                    if (
-                        !string.IsNullOrWhiteSpace(
-                            this.CollectionSettings.Subscription.Personalization
-                        )
-                    )
-                    {
-                        content = content.Replace(
-                            "{personalization}",
-                            this.CollectionSettings.Subscription.Personalization
-                        );
-                    }
+                    content = MergeInPersonalization(content);
 
                     Set(item.DataBook, XmlString.FromXml(content), item.Lang);
                 }
             }
+        }
+
+        /// <summary>
+        /// If we have "personalization" in the subscription and the HTML from the DOM,
+        //  fill in the personalization.
+        private string MergeInPersonalization(string content)
+        {
+            // Throw if we have a "{personalization}" in the content but no personalization.
+            // Note that we don't want the converse of this becuase even if, e.g., the back page
+            // has a slot for personalization, this method will be called for other pages as well.
+            if (
+                content.Contains("{personalization}")
+                && string.IsNullOrWhiteSpace(this.CollectionSettings.Subscription.Personalization)
+            )
+            {
+                throw new ApplicationException(
+                    "Branding personalization is not set, but the branding template contains {personalization}."
+                );
+            }
+
+            // if the CollectionSettings has a BrandingPersonalization, replace any instances of {personalization} with the value
+            if (!string.IsNullOrWhiteSpace(this.CollectionSettings.Subscription.Personalization))
+            {
+                content = content.Replace(
+                    "{personalization}",
+                    this.CollectionSettings.Subscription.Personalization
+                );
+            }
+
+            return content;
         }
 
         /// <summary>
