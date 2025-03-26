@@ -1,4 +1,4 @@
-Note: The Overlay Tool requires that you have <a href="" onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom Enterprise</a> enabled. However, you can localize a shellbook that contain overlay elements into your own language without a Bloom subscription.
+Note: The Overlay Tool requires that you have a valid <a href="" onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</a>. However, you can localize a shellbook that contain overlay elements into your own language without a Bloom subscription.
 
 Use this template as a starting point for comics designed for use on screens.
 

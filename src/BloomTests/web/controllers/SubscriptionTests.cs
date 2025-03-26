@@ -117,12 +117,14 @@ namespace BloomTests.Collection
             Assert.AreEqual(expectedLabel, subscription.GetIntegrityLabel());
         }
 
-        [TestCase(null, false)]
-        [TestCase("", false)]
-        [TestCase("Different", true)]
-        public void IsDifferent_DetectsChanges(string newCode, bool expectedResult)
+        [TestCase(null, null, false)]
+        [TestCase(null, "", false)]
+        [TestCase("", null, false)]
+        [TestCase("a", "a", false)]
+        [TestCase("a", "A", true)]
+        public void IsDifferent_DetectsChanges(string oldCode, string newCode, bool expectedResult)
         {
-            var subscription = new Subscription(null);
+            var subscription = new Subscription(oldCode);
             Assert.AreEqual(expectedResult, subscription.IsDifferent(newCode));
         }
 
