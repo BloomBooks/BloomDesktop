@@ -140,7 +140,7 @@ namespace Bloom.Collection
                 this._tab.Controls.Remove(this._teamCollectionTab);
             }
 
-            if (_collectionSettings.LockedToOneDownloadedBook)
+            if (_collectionSettings.EditingABlorgBook)
             {
                 // Don't give the slightest encouragement to making a download-for-edit collection into a team collection.
                 _tab.Controls.Remove(this._teamCollectionTab);

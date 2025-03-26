@@ -22,10 +22,10 @@ namespace BloomTests.Collection
         [TestCase("Test-Expired-Code-005658-9576", "Test-Expired-Code")]
         [TestCase("การทดสอบ-LC-005908-3073", "การทดสอบ-LC")]
         [TestCase("Fake[Western]-006273-6382", "Fake[Western]")]
-        public void Descriptor_ReturnsCorrectValue(string code, string expectedBranding)
+        public void Descriptor_ReturnsCorrectValue(string code, string expectedDescriptor)
         {
             var subscription = new Subscription(code);
-            Assert.AreEqual(expectedBranding, subscription.Descriptor);
+            Assert.AreEqual(expectedDescriptor, subscription.Descriptor);
         }
 
         [TestCase(null, "Default")]
@@ -52,6 +52,7 @@ namespace BloomTests.Collection
             "Local-Community",
             "Test-Expiring-Soon-005779-1460"
         )] // ignore branding if we have a code
+        [TestCase("foobar-***-***", "Default", "foobar-***-***")] // if the subscription and the branding are both provided and different, use the subscription
         public void FromSettingsXml_ReturnsCorrectValue(
             string code,
             string branding,

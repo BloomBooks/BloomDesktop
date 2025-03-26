@@ -161,9 +161,13 @@ namespace Bloom.Collection
         /// <summary>
         /// can be used whether the Collection exists already, or not
         /// </summary>
-        public CollectionSettings(string desiredOrExistingSettingsFilePath)
+        public CollectionSettings(
+            string desiredOrExistingSettingsFilePath,
+            bool editingABlorgBook = false
+        )
             : this()
         {
+            EditingABlorgBook = editingABlorgBook;
             SettingsFilePath = desiredOrExistingSettingsFilePath;
             CollectionName = Path.GetFileNameWithoutExtension(desiredOrExistingSettingsFilePath);
             var collectionDirectory = Path.GetDirectoryName(desiredOrExistingSettingsFilePath);
@@ -421,35 +425,6 @@ namespace Bloom.Collection
             }
         }
 
-        /// <summary>
-        /// Get the descriptor that the settings file specifies, without checking the subscription code
-        /// as we would do if creating a settings object from the settings file.
-        /// We use it to record the original subscription desriptor for a book downloaded using
-        /// the "Download for editing" button on Blorg, since books on Bloom library keep their branding
-        /// but either with a <BrandingProjectName> (old) or a redacted <SubscriptionCode> (current), though we make an exception for that
-        /// one book.)
-        /// </summary>
-        public static string ReadDescriptorFromPublishedCollectionFile(string pathToCollectionFile)
-        {
-            try
-            {
-                var settingsContent = RobustFile.ReadAllText(pathToCollectionFile, Encoding.UTF8);
-                var xml = XElement.Parse(settingsContent);
-                var code = ReadString(xml, "SubscriptionCode", null);
-                if (code != null)
-                {
-                    return new Subscription(code).Descriptor;
-                }
-                // look for an older approach
-                return ReadString(xml, "BrandingProjectName", "");
-            }
-            catch (Exception ex)
-            {
-                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
-                return "";
-            }
-        }
-
         /// ------------------------------------------------------------------------------------
         public void Load()
         {
@@ -508,25 +483,30 @@ namespace Bloom.Collection
                     : "Decimal";
                 OneTimeCheckVersionNumber = ReadInteger(xml, "OneTimeCheckVersionNumber", 0);
 
-                var downloadEditPath = Path.Combine(
+                var pathToFileAboutABlorgBookWeHaveDownloadedForEditing = Path.Combine(
                     FolderPath,
-                    BloomLibraryPublishModel.kNameOfDownloadForEditFile
+                    BloomLibraryPublishModel.kNameOfFileAboutABlorgBookWeHaveDownloadedForEditing
                 );
                 var bloomProblemBookJsonPath = Path.Combine(
                     FolderPath,
                     ProblemReportApi.kProblemBookJsonName
                 );
 
-                // Various things are disabled if this collection was made by downloading a book for editing.
-                LockedToOneDownloadedBook = RobustFile.Exists(downloadEditPath);
+                // This may be set during construction if we're actually doing the download.
+                // In later runs, we know because the first run leaves a special json file.
+                EditingABlorgBook |= RobustFile.Exists(
+                    pathToFileAboutABlorgBookWeHaveDownloadedForEditing
+                );
 
                 // There are cases where we want to keep the branding, even if it's expired.
                 // 1) they got this book using blorg's "download for editing" feature which is restricted to
                 // user logins that are marked as editors of the collection. We want to allow them to re-upload it with fixes
                 // even if the subscription has expired.
                 // 2) this is a developer looking into a Bloom Problem Report.
-                var downloadInfoPath = RobustFile.Exists(downloadEditPath)
-                    ? downloadEditPath
+                var downloadInfoPath = RobustFile.Exists(
+                    pathToFileAboutABlorgBookWeHaveDownloadedForEditing
+                )
+                    ? pathToFileAboutABlorgBookWeHaveDownloadedForEditing
                     : RobustFile.Exists(bloomProblemBookJsonPath)
                         ? bloomProblemBookJsonPath
                         : null;
@@ -545,7 +525,7 @@ namespace Bloom.Collection
                 Subscription = Subscription.FromCollectionSettingsInfo(
                     ReadString(xml, "SubscriptionCode", null),
                     ReadString(xml, "BrandingProjectName", "Default"),
-                    LockedToOneDownloadedBook
+                    EditingABlorgBook
                 );
 
                 Country = ReadString(xml, "Country", "");
@@ -693,7 +673,10 @@ namespace Bloom.Collection
             return true;
         }
 
-        public bool LockedToOneDownloadedBook;
+        // when you click "Download into Bloom for Editing" on blorg, we download the book and go into
+        // a mode that restricts you to this one book in your collection but also allows you to retain
+        // whatever you branding was at the time, even it has expired.
+        public bool EditingABlorgBook;
         public bool IgnoreExpiration;
 
         private void DoOneTimeCheck()

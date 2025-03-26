@@ -16,7 +16,6 @@ public class Subscription
     // The "descriptor" is the part of the subscription code before the numbers start. It can tell us the branding,
     // the tier, flavors, and individual subscriber account.
     // If the subscription is invalid or expired, and nothing overrode this, the descriptor will be empty.
-    // Use RawDescriptor to get the original value from the code even if the code is invalid or expired.
     public string Descriptor { get; private set; }
 
     public DateTime ExpirationDate { get; private set; }
@@ -50,6 +49,14 @@ public class Subscription
         bool editingABlorgBook = false
     )
     {
+        // If the collection has <SubscriptionCode>foobar-***-***</SubscriptionCode> but <BrandingName>Default</BrandingName>,
+        // then we have a conflict (which is why we're phasing out the use of <BrandingName>). In that case, go with what
+        // is given in the code by clearing the descriptor.
+        if (editingABlorgBook && descriptor == "Default" && code.Contains(kRedactedCodeSuffix))
+        {
+            // set the descriptor by parsing the code
+            ParseCode(code, out descriptor, out _, out _);
+        }
         if (
             string.IsNullOrWhiteSpace(code)
             && (descriptor == "Local-Community" || descriptor == "Local Community")
@@ -63,7 +70,14 @@ public class Subscription
         // branding as when it was uploaded, even if it is expired.
         if (editingABlorgBook)
         {
-            var sub = new Subscription(code);
+            Subscription sub;
+            if (string.IsNullOrEmpty(code))
+            {
+                sub = new Subscription(descriptor + kRedactedCodeSuffix);
+            }
+            else
+                sub = new Subscription(code);
+
             sub.EditingBlorgBook = editingABlorgBook;
 
             sub.Descriptor = descriptor;
@@ -107,7 +121,7 @@ public class Subscription
         string descriptor;
         int datePart;
         int combinedChecksum;
-        ParseCode(out descriptor, out datePart, out combinedChecksum);
+        ParseCode(Code, out descriptor, out datePart, out combinedChecksum);
 
         // Early exit for invalid code formats
         if (string.IsNullOrEmpty(descriptor) || datePart == 0 || combinedChecksum == 0)
@@ -225,11 +239,18 @@ public class Subscription
     // Pays no attention to the validity of the code, just returns the part before the numbers.
     private string CalculateDescriptor()
     {
-        ParseCode(out var descriptor, out var datePart, out var combinedChecksum);
+        ParseCode(Code, out var descriptor, out var datePart, out var combinedChecksum);
         return descriptor;
     }
 
-    private void ParseCode(out string descriptor, out int datePortion, out int checksum)
+    private const string kRedactedCodeSuffix = "-***-***";
+
+    private static void ParseCode(
+        string code,
+        out string descriptor,
+        out int datePortion,
+        out int checksum
+    )
     {
         // valid codes are
         // (empty) = "", 0, 0
@@ -237,26 +258,26 @@ public class Subscription
         // foo-bar  = "foo-bar", 0, 0
         // foo-blah-bar = "foo-blah-bar", 0, 0
         // foo-bar-123456-7890 = "foo-bar", 123456, 7890
-        // foo-bar-*****-****  = "foo-bar", 0, 0
+        // foo-bar-***-***  = "foo-bar", 0, 0
         datePortion = 0;
         checksum = 0;
         descriptor = "";
 
-        if (string.IsNullOrEmpty(Code))
+        if (string.IsNullOrEmpty(code))
             return;
         // see if the last part has "***-***" like a redacted date and checksum. If so, the descriptor is what precedes it.
-        if (Code.EndsWith("-***-***"))
+        if (code.EndsWith(kRedactedCodeSuffix))
         {
-            descriptor = Code.Replace("-***-***", "");
+            descriptor = code.Replace(kRedactedCodeSuffix, "");
             return;
         }
-        var parts = Code.Split('-').ToList();
+        var parts = code.Split('-').ToList();
         // if the last two parts are digits, remove them and parse them as numbers.
         if (parts.Count < 3)
         {
             datePortion = 0;
             checksum = 0;
-            descriptor = Code;
+            descriptor = code;
             return;
         }
         if (parts.Last().Length == 4 && parts[parts.Count - 2].Length == 6)
@@ -283,7 +304,7 @@ public class Subscription
         if (Code == "Local-Community")
             return DateTime.Parse(kExpiryDateForDeprecatedCodes);
 
-        ParseCode(out var descriptor, out var datePart, out var combinedChecksum);
+        ParseCode(Code, out var descriptor, out var datePart, out var combinedChecksum);
 
         // Early exit for invalid code formats
         if (string.IsNullOrEmpty(descriptor) || datePart == 0 || combinedChecksum == 0)
@@ -327,7 +348,20 @@ public class Subscription
         // In the future we may redact parts of the descriptor; the parts we need to retain will
         // be the tier and any actual branding name, region and "flavor"
         // needed to get the right files, styling, and defaults.
-        return Descriptor + "-***-***";
+        return Descriptor + kRedactedCodeSuffix;
+    }
+
+    public static Subscription FromLegacyBranding(string branding)
+    {
+        if (string.IsNullOrEmpty(branding))
+            return new Subscription("");
+
+        // Local-Community is the only one that has a legacy branding name.
+        if (branding == "Local-Community" || branding == "Local Community")
+            return new Subscription("Local-Community");
+
+        // All other legacy branding names are considered expired.
+        return new Subscription("");
     }
 
     internal bool IsDifferent(string code)

@@ -370,7 +370,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     );
     const bookshelfErrorBox = bookshelfHasProblem && (
         <ErrorBox
-            l10Msg="The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription."
+            l10Msg="The collection's bookshelf was not on the list of bookshelves for this Bloom subscription."
             l10nKey="PublishTab.Upload.BookshelfError"
         />
     );

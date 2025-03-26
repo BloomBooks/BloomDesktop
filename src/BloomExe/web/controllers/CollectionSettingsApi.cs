@@ -44,7 +44,7 @@ namespace Bloom.web.controllers
 
         private bool IsSubscriptionEnabled(bool failIfLockedToOneBook)
         {
-            if (failIfLockedToOneBook && _collectionSettings.LockedToOneDownloadedBook)
+            if (failIfLockedToOneBook && _collectionSettings.EditingABlorgBook)
                 return false;
             return _collectionSettings.Subscription.HaveActiveSubscription;
         }
@@ -69,7 +69,7 @@ namespace Bloom.web.controllers
             );
             apiHandler.RegisterBooleanEndpointHandler(
                 kApiUrlPart + "lockedToOneDownloadedBook",
-                request => _collectionSettings.LockedToOneDownloadedBook,
+                request => _collectionSettings.EditingABlorgBook,
                 null,
                 false
             );
