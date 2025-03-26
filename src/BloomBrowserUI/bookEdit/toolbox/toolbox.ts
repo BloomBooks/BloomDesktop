@@ -800,7 +800,6 @@ async function activateToolInternalAsync(
  * of "currentTool" (the last tool displayed).
  */
 function setCurrentTool(toolID: string) {
-    console.trace(`DEBUG setCurrentTool("${toolID}")`);
     // NOTE: tools without a "data-toolId" attribute (such as the More tool) cannot be the "currentTool."
     let idx = 0;
     const toolbox = $("#toolbox");
