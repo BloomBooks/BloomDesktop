@@ -1083,6 +1083,8 @@ export class CanvasElementManager {
     // Set up the control frame for the active canvas element. This includes creating it if it
     // doesn't exist, and positioning it correctly.
     setupControlFrame() {
+        // If the active element isn't visible, it isn't really active.  See BL-14439.
+        this.checkActiveElementIsVisible();
         const eltToPutControlsOn = this.activeElement;
         let controlFrame = document.getElementById(
             "canvas-element-control-frame"
