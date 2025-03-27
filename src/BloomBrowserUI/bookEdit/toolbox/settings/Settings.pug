@@ -18,13 +18,13 @@ html
 				.checkbox-label(data-i18n='EditTab.Toolbox.LeveledReaderTool') Leveled Reader Tool
 			.checkbox-and-label
 				.checkbox.clear#motionCheck(data-tool='motionTool', onclick='toolboxBundle.showOrHideTool_click(this);')
-				.checkbox-label(data-i18n='EditTab.Toolbox.MotionTool') Motion Tool
+				.checkbox-label(data-feature='motion' data-i18n='EditTab.Toolbox.MotionTool') Motion Tool
 			.checkbox-and-label
 				.checkbox.clear#musicCheck(data-tool='musicTool', onclick='toolboxBundle.showOrHideTool_click(this);')
-				.checkbox-label(data-i18n='EditTab.Toolbox.MusicTool') Music Tool
+				.checkbox-label(data-feature='music' data-i18n='EditTab.Toolbox.MusicTool') Music Tool
 			.checkbox-and-label
 				.checkbox.clear#overlayCheck(data-tool='overlayTool', onclick='toolboxBundle.showOrHideTool_click(this);')
-				.checkbox-label.enterprise-only-flag(data-i18n='EditTab.Toolbox.OverlayTool') Overlay Tool
+				.checkbox-label( data-feature='overlay' data-i18n='EditTab.Toolbox.OverlayTool') Overlay Tool
 			.checkbox-and-label
 				.checkbox.clear#signLanguageCheck(data-tool='signLanguageTool', onclick='toolboxBundle.showOrHideTool_click(this);')
 				.checkbox-label(data-i18n='EditTab.Toolbox.SignLanguageTool') Sign Language Tool

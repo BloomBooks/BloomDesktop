@@ -5,6 +5,7 @@ using Bloom.Api;
 using Bloom.Collection;
 using SIL.IO;
 using Newtonsoft.Json;
+using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.web.controllers
 {
@@ -50,12 +51,10 @@ namespace Bloom.web.controllers
                             ),
                             CodeIntegrity = _subscription.GetIntegrityLabel(),
                             SubscriptionDescriptor = _subscription.Descriptor,
-                            HaveBrandingFiles = (
-                                string.IsNullOrWhiteSpace(_subscription.Descriptor)
-                                || _subscription.BrandingKey == "Default"
-                            )
-                                ? true
-                                : BrandingProject.HaveFilesForBranding(_subscription.BrandingKey),
+                            MissingBrandingFiles = (
+                                _subscription.Tier == SubscriptionTier.Enterprise
+                                && !BrandingProject.HaveFilesForBranding(_subscription.BrandingKey)
+                            ),
                             EditingBlorgBook = _subscription.EditingBlorgBook,
                         };
 

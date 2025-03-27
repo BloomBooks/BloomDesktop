@@ -1,21 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.Publish.PDF;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using BloomTemp;
@@ -26,7 +15,13 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using SIL.Xml;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace Bloom.Publish
 {
@@ -247,40 +242,22 @@ namespace Bloom.Publish
         }
 
         /// <summary>
-        /// Answer true if the publish tab should show a message indicating that we can't publish
-        /// the current book without Enterprise features enabled. (Actually the current message is
-        /// pretty detailed about the use of Comical on a particular page.)
+        /// f the publish tab should show a message indicating that we can't publish
+        /// the current book with the current subscription tier, returns the code of the first
+        /// feature we find that is a problem, else "".
         /// </summary>
-        /// <note>This was previously cached, and possibly should be if it is called often, as it
-        /// is fairly expensive to compute. Currently, however, it is only called once each time
-        /// the preview tab is shown. </note>
-        public bool CannotPublishWithoutEnterprise
+        public FeatureStatus GetFeaturePreventingPublishingOrNull()
         {
-            get
-            {
-                // At this point (5.1), we have an enterprise-related publishing problem if :
-                // - User is not in Enterprise mode AND
-                // - Book contains canvas element elements AND
-                // - Book is not a translated shell
+            if (BookSelection == null || BookSelection.CurrentSelection == null)
+                return null;
+            if (BookSelection.CurrentSelection.BookData?.BookIsDerivative() ?? false)
+                return null;
 
-                // As of Bloom 6.2, all pictures in a book that have been edited with 6.2
-                // involve bloom-canvas-element somehow. What used to be simple imageContainers are now
-                // bloom-canvases containing a bloom-canvas-element that also has bloom-backgroundImage.
-                // That shouldn't prevent publishing. We want to count only overlay
-                // elements that are not also marked as background images.  See BL-14245.
-                var overlayElementNodes = BookSelection?.CurrentSelection?.RawDom.SafeSelectNodes(
-                    "//div[contains(@class, '"
-                        + HtmlDom.kCanvasElementClass
-                        + "') and not(contains(@class, 'bloom-backgroundImage'))]"
-                );
-                var bookContainsOverlayElements = (overlayElementNodes?.Length ?? 0) > 0;
-
-                var bookIsTranslatedFromShell =
-                    BookSelection?.CurrentSelection?.BookData?.BookIsDerivative() ?? false;
-                return !_collectionSettings.Subscription.HaveActiveSubscription
-                    && bookContainsOverlayElements
-                    && !bookIsTranslatedFromShell;
-            }
+            return FeatureStatus.GetFirstFeatureThatIsInvalidForNewBooks(
+                // subscription of current collection
+                _collectionSettings.Subscription,
+                BookSelection.CurrentSelection.RawDom
+            );
         }
 
         /// <summary>

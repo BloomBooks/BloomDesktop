@@ -186,7 +186,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                             ${tabMargins.bottom};
                     `}
                 >
-                    <RequiresSubscriptionOverlayWrapper>
+                    <RequiresSubscriptionOverlayWrapper featureName="TeamCollection">
                         <React.Fragment>
                             {intro}
                             {repoFolderPath

@@ -155,7 +155,7 @@ export const BookButton: React.FunctionComponent<{
             label: "Export to Spreadsheet...",
             l10nId: "CollectionTab.BookMenu.ExportToSpreadsheet",
             command: "bookCommand/exportToSpreadsheet",
-            requiresEnterprise: true,
+            featureName: "Spreadsheet",
             hide: () => !props.collection.isEditableCollection
         },
         {
@@ -163,7 +163,7 @@ export const BookButton: React.FunctionComponent<{
             l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
             command: "bookCommand/importSpreadsheetContent",
             requiresSavePermission: true,
-            requiresEnterprise: true,
+            featureName: "Spreadsheet",
             hide: () => !props.collection.isEditableCollection
         },
         { label: "-", hide: () => !props.collection.isEditableCollection },

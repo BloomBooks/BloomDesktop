@@ -188,9 +188,8 @@ div.checkbox-and-label {
     background-image: url("/bloom/images/microphone-white.svg") !important;
 }
 
-// Add Bloom Enterprise badges to appropriate tools
-.ui-accordion .requiresEnterprise {
-    // Add Bloom Enterprise badge to tool header
+.ui-accordion [data-feature] {
+    // Add Bloom Subscription badge to tool header
     &:after {
         content: " ";
         background: no-repeat center/80%

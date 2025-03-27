@@ -147,7 +147,7 @@ namespace Bloom.Publish.BloomLibrary
             // So if we are working with a book that had that, then just convert it to the new model.
             if (!result.ContainsKey("subscriptionCode") && result.ContainsKey("branding"))
             {
-                result["subscriptionCode"] = Subscription
+                result["subscriptionCode"] = SubscriptionAndFeatures.Subscription
                     .FromLegacyBranding(result["branding"].ToString())
                     .Code;
             }
