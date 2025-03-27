@@ -110,6 +110,7 @@ namespace Bloom.Collection
 
         public CollectionSettings()
         {
+            Subscription = new Subscription(null);
             //Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
             //See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
             Func<string> getTagOfDefaultLanguageForNaming = () => Language2.Tag;
@@ -118,8 +119,6 @@ namespace Bloom.Collection
             AllLanguages.Add(new WritingSystem(getTagOfDefaultLanguageForNaming));
 
             SignLanguage = new WritingSystem(getTagOfDefaultLanguageForNaming);
-
-            BrandingProjectKey = "Default";
             PageNumberStyle = "Decimal";
             XMatterPackName = kDefaultXmatterName;
             Language2Tag = "en";
@@ -151,14 +150,7 @@ namespace Bloom.Collection
             IsSourceCollection = collectionInfo.IsSourceCollection;
             XMatterPackName = collectionInfo.XMatterPackName;
             PageNumberStyle = collectionInfo.PageNumberStyle;
-            BrandingProjectKey = collectionInfo.BrandingProjectKey;
-            SubscriptionCode = collectionInfo.SubscriptionCode;
-            if (BrandingProjectKey == "Local Community")
-            {
-                // migrate for 4.4
-                BrandingProjectKey = "Local-Community";
-            }
-
+            Subscription = collectionInfo.Subscription;
             AudioRecordingMode = collectionInfo.AudioRecordingMode;
             AudioRecordingTrimEndMilliseconds = collectionInfo.AudioRecordingTrimEndMilliseconds;
             BooksOnWebGoal = collectionInfo.BooksOnWebGoal;
@@ -169,9 +161,13 @@ namespace Bloom.Collection
         /// <summary>
         /// can be used whether the Collection exists already, or not
         /// </summary>
-        public CollectionSettings(string desiredOrExistingSettingsFilePath)
+        public CollectionSettings(
+            string desiredOrExistingSettingsFilePath,
+            bool editingABlorgBook = false
+        )
             : this()
         {
+            EditingABlorgBook = editingABlorgBook;
             SettingsFilePath = desiredOrExistingSettingsFilePath;
             CollectionName = Path.GetFileNameWithoutExtension(desiredOrExistingSettingsFilePath);
             var collectionDirectory = Path.GetDirectoryName(desiredOrExistingSettingsFilePath);
@@ -306,8 +302,11 @@ namespace Bloom.Collection
             xml.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
             xml.Add(new XElement("XMatterPack", XMatterPackName));
             xml.Add(new XElement("PageNumberStyle", PageNumberStyle));
-            xml.Add(new XElement("BrandingProjectName", BrandingProjectKey));
-            xml.Add(new XElement("SubscriptionCode", SubscriptionCode));
+
+            // Version before Bloom 6.1 read this in. Starting with Bloom 6.1, we ignore this and just parse the SubscriptionCode.
+            // For now we are still saving this for backwards compatibility.
+            xml.Add(new XElement("BrandingProjectName", Subscription.BrandingKey));
+            xml.Add(new XElement("SubscriptionCode", Subscription.Code));
             xml.Add(new XElement("Country", Country));
             xml.Add(new XElement("Province", Province));
             xml.Add(new XElement("District", District));
@@ -426,30 +425,6 @@ namespace Bloom.Collection
             }
         }
 
-        /// <summary>
-        /// Get the branding that the settings file specifies, without checking the subscription code
-        /// as we would do if creating a settings object from the settings file. (This is useful when
-        /// displaying the Branding dialog, to remind the user which branding they might want to find
-        /// a code for. We also use it to record the original branding for a book downloaded using
-        /// the "Download for editing" button on Blorg, since books on Bloom library keep their branding
-        /// but not the code that normally allows it to be used, though we make an exception for that
-        /// one book.)
-        /// </summary>
-        public static string ReadBrandingNameFromCollectionFile(string pathToCollectionFile)
-        {
-            try
-            {
-                var settingsContent = RobustFile.ReadAllText(pathToCollectionFile, Encoding.UTF8);
-                var xml = XElement.Parse(settingsContent);
-                return ReadString(xml, "BrandingProjectName", "");
-            }
-            catch (Exception ex)
-            {
-                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
-                return "";
-            }
-        }
-
         /// ------------------------------------------------------------------------------------
         public void Load()
         {
@@ -508,70 +483,51 @@ namespace Bloom.Collection
                     : "Decimal";
                 OneTimeCheckVersionNumber = ReadInteger(xml, "OneTimeCheckVersionNumber", 0);
 
-                var downloadEditPath = Path.Combine(
+                var pathToFileAboutABlorgBookWeHaveDownloadedForEditing = Path.Combine(
                     FolderPath,
-                    BloomLibraryPublishModel.kNameOfDownloadForEditFile
+                    BloomLibraryPublishModel.kNameOfFileAboutABlorgBookWeHaveDownloadedForEditing
                 );
                 var bloomProblemBookJsonPath = Path.Combine(
                     FolderPath,
                     ProblemReportApi.kProblemBookJsonName
                 );
 
-                // Various things are disabled if this collection was made by downloading a book for editing.
-                LockedToOneDownloadedBook = RobustFile.Exists(downloadEditPath);
+                // This may be set during construction if we're actually doing the download.
+                // In later runs, we know because the first run leaves a special json file.
+                EditingABlorgBook |= RobustFile.Exists(
+                    pathToFileAboutABlorgBookWeHaveDownloadedForEditing
+                );
 
-                BrandingProjectKey = ReadString(xml, "BrandingProjectName", "Default");
-                SubscriptionCode = ReadString(xml, "SubscriptionCode", null);
-                if (BrandingProjectKey != "Default" && !Program.RunningHarvesterMode)
+                // There are cases where we want to keep the branding, even if it's expired.
+                // 1) they got this book using blorg's "download for editing" feature which is restricted to
+                // user logins that are marked as editors of the collection. We want to allow them to re-upload it with fixes
+                // even if the subscription has expired.
+                // 2) this is a developer looking into a Bloom Problem Report.
+                var downloadInfoPath = RobustFile.Exists(
+                    pathToFileAboutABlorgBookWeHaveDownloadedForEditing
+                )
+                    ? pathToFileAboutABlorgBookWeHaveDownloadedForEditing
+                    : RobustFile.Exists(bloomProblemBookJsonPath)
+                        ? bloomProblemBookJsonPath
+                        : null;
+                if (downloadInfoPath != null)
                 {
-                    // Validate branding, so things can't be circumvented by just typing something random into settings
-                    var expirationDate = CollectionSettingsApi.GetExpirationDate(
-                        BrandingProjectKey == "Local-Community"
-                            ? "Local-Community"
-                            : SubscriptionCode
-                    );
-                    if (expirationDate < DateTime.Now) // no longer require branding files to exist yet
-                    {
-                        InvalidBranding = BrandingProjectKey;
+                    IgnoreExpiration = true;
+                    var editSettings = JObject.Parse(RobustFile.ReadAllText(downloadInfoPath));
 
-                        // There are cases where we want to keep the branding, even if it's expired.
-                        // 1) they got this book using blorg's "download for editing" feature which is restricted to
-                        // user logins that are marked as editors of the collection. We want to allow them to re-upload it with fixes
-                        // even if the subscription has expired.
-                        // 2) this is a developer looking into a Bloom Problem Report.
-                        var downloadInfoPath = RobustFile.Exists(downloadEditPath)
-                            ? downloadEditPath
-                            : RobustFile.Exists(bloomProblemBookJsonPath)
-                                ? bloomProblemBookJsonPath
-                                : null;
-                        if (downloadInfoPath != null)
-                        {
-                            IgnoreExpiration = true;
-                            var editSettings = JObject.Parse(
-                                RobustFile.ReadAllText(downloadInfoPath)
-                            );
-                            if (
-                                editSettings.TryGetValue("branding", out JToken branding)
-                                && branding.Value<string>() == InvalidBranding
-                            )
-                            {
-                                _brandingProjectKeyOverrideForDownloadForEditing =
-                                    BrandingProjectKey = InvalidBranding;
-                            }
-                            // BloomProblemReport.json's have an issueID that will be better for us to use as a collection name
-                            if (editSettings.TryGetValue("issueID", out JToken issueID))
-                            {
-                                CollectionName = issueID.Value<string>();
-                            }
-                        }
-                        else
-                        {
-                            // We've stored the original code in InvalidBranding for the purpose of showing it to the user.
-                            // But because it is expired, we're going to revert to using "default" branding.
-                            BrandingProjectKey = "Default";
-                        }
+                    // BloomProblemReport.json's have an issueID that will be better for us to use as a collection name
+                    if (editSettings.TryGetValue("issueID", out JToken issueID))
+                    {
+                        CollectionName = issueID.Value<string>();
                     }
                 }
+
+                Subscription = Subscription.FromCollectionSettingsInfo(
+                    ReadString(xml, "SubscriptionCode", null),
+                    ReadString(xml, "BrandingProjectName", "Default"),
+                    EditingABlorgBook
+                );
+
                 Country = ReadString(xml, "Country", "");
                 Province = ReadString(xml, "Province", "");
                 District = ReadString(xml, "District", "");
@@ -599,12 +555,11 @@ namespace Bloom.Collection
                     .FirstOrDefault();
                 DefaultBookshelf =
                     (
-                        defaultBookshelfTag == null
-                        || BrandingProjectKey == "Default"
-                        || BrandingProjectKey == "Local-Community"
+                        defaultBookshelfTag != null
+                        && Subscription.Tier == Subscription.SubscriptionTier.Enterprise
                     )
-                        ? ""
-                        : defaultBookshelfTag.Substring("bookshelf:".Length);
+                        ? defaultBookshelfTag.Substring("bookshelf:".Length)
+                        : "";
 
                 var bulkPublishSettingsFromXml = BulkBloomPubPublishSettings.LoadFromXElement(xml);
                 if (bulkPublishSettingsFromXml != null)
@@ -718,7 +673,10 @@ namespace Bloom.Collection
             return true;
         }
 
-        public bool LockedToOneDownloadedBook;
+        // when you click "Download into Bloom for Editing" on blorg, we download the book and go into
+        // a mode that restricts you to this one book in your collection but also allows you to retain
+        // whatever you branding was at the time, even it has expired.
+        public bool EditingABlorgBook;
         public bool IgnoreExpiration;
 
         private void DoOneTimeCheck()
@@ -746,7 +704,7 @@ namespace Bloom.Collection
             return i;
         }
 
-        internal static string ReadString(XElement document, string id, string defaultValue)
+        public static string ReadString(XElement document, string id, string defaultValue)
         {
             var nodes = document.Descendants(id);
             if (nodes != null && nodes.Count() > 0)
@@ -832,10 +790,10 @@ namespace Bloom.Collection
 
         public string GetXMatterPackNameSpecifiedByBrandingOrNull()
         {
-            if (!string.IsNullOrEmpty(BrandingProjectKey))
+            if (!string.IsNullOrEmpty(Subscription.Descriptor))
             {
                 var xmatterToUse = BrandingSettings
-                    .GetSettingsOrNull(this.BrandingProjectKey)
+                    .GetSettingsOrNull(Subscription.Descriptor)
                     ?.GetXmatterToUse();
                 if (xmatterToUse != null)
                 {
@@ -877,23 +835,10 @@ namespace Bloom.Collection
             return langTags;
         }
 
-        // e.g. "ABC2020" or "Kyrgyzstan2020[English]"
-        public string BrandingProjectKey
-        {
-            get => _brandingProjectKeyOverrideForDownloadForEditing ?? _brandingProjectKey;
-            set
-            {
-                _brandingProjectKey = value;
-                _brandingProjectKeyOverrideForDownloadForEditing = null;
-            }
-        }
-
-        private string _brandingProjectKeyOverrideForDownloadForEditing;
-
         public string GetBrandingFlavor()
         {
-            BrandingSettings.ParseBrandingKey(
-                BrandingProjectKey,
+            BrandingSettings.ParseSubscriptionDescriptor(
+                Subscription.Descriptor,
                 out var baseKey,
                 out var flavor,
                 out var subUnitName
@@ -903,8 +848,8 @@ namespace Bloom.Collection
 
         public string GetBrandingFolderName()
         {
-            BrandingSettings.ParseBrandingKey(
-                BrandingProjectKey,
+            BrandingSettings.ParseSubscriptionDescriptor(
+                Subscription.Descriptor,
                 out var folderName,
                 out var flavor,
                 out var subUnitName
@@ -912,7 +857,7 @@ namespace Bloom.Collection
             return folderName;
         }
 
-        public string SubscriptionCode { get; set; }
+        public Subscription Subscription;
 
         public int OneTimeCheckVersionNumber { get; set; }
 
@@ -1071,15 +1016,8 @@ namespace Bloom.Collection
             }
         }
 
-        public bool HaveEnterpriseFeatures =>
-            !String.IsNullOrEmpty(BrandingProjectKey) && BrandingProjectKey != "Default";
-        public bool HaveEnterpriseSubscription =>
-            HaveEnterpriseFeatures && BrandingProjectKey != "Local-Community";
-
         internal readonly Dictionary<string, string> ColorPalettes =
             new Dictionary<string, string>();
-
-        private string _brandingProjectKey;
 
         public string GetColorPaletteAsJson(string paletteTag)
         {
@@ -1200,7 +1138,7 @@ namespace Bloom.Collection
             Analytics.SetApplicationProperty("Language3Iso639Code", Language3Tag ?? "---");
             Analytics.SetApplicationProperty("SignLanguageIso639Code", SignLanguageTag ?? "---");
             Analytics.SetApplicationProperty("Language1Iso639Name", Language1.Name);
-            Analytics.SetApplicationProperty("BrandingProjectName", BrandingProjectKey);
+            Analytics.SetApplicationProperty("BrandingProjectName", Subscription.Descriptor);
         }
 
         public string GetWritingSystemDisplayForUICss()
@@ -1301,34 +1239,6 @@ namespace Bloom.Collection
                     + " ("
                     + collectionSettingsLanguageName
                     + ")";
-        }
-
-        /// <summary>
-        /// Return true if the part of the subscription code that identifies the branding is one we know about.
-        /// Either the branding files must exist or the expiration date must be set, even if expired.
-        /// This allows new, not yet implemented, subscriptions/brandings to be recognized as valid, and expired
-        /// subscriptions to be flagged as such but not treated as totally invalid.
-        /// </summary>
-        public bool IsSubscriptionCodeKnown()
-        {
-            return BrandingProject.HaveFilesForBranding(BrandingProjectKey)
-                || CollectionSettingsApi.GetExpirationDate(SubscriptionCode) != DateTime.MinValue;
-        }
-
-        public CollectionSettingsApi.EnterpriseStatus GetEnterpriseStatus(
-            bool forFixSubscriptionCode
-        )
-        {
-            if (forFixSubscriptionCode)
-            {
-                // We're displaying the dialog to fix a branding code...select that option
-                return CollectionSettingsApi.EnterpriseStatus.Subscription;
-            }
-            if (BrandingProjectKey == "Default")
-                return CollectionSettingsApi.EnterpriseStatus.None;
-            else if (BrandingProjectKey == "Local-Community")
-                return CollectionSettingsApi.EnterpriseStatus.Community;
-            return CollectionSettingsApi.EnterpriseStatus.Subscription;
         }
 
         public static string[] ParseAdministratorString(string newAdminString)

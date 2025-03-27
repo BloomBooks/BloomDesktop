@@ -48,7 +48,7 @@ module.exports = merge(core, {
         accessibilityCheckBundle: globule.find([
             "./publish/accessibilityCheck/**/*.tsx"
         ]),
-        enterpriseSettingsBundle: "./collection/enterpriseSettings.tsx",
+        subscriptionSettingsBundle: "./collection/subscriptionSettingsTab.tsx",
 
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
         appBundle: "./app/App.tsx",
@@ -68,8 +68,8 @@ module.exports = merge(core, {
         messageBoxBundle: "./utils/BloomMessageBox.tsx",
         bookMakingSettingsBundle: "./collection/bookMakingSettingsControl.tsx",
         progressDialogBundle: "./react_components/Progress/ProgressDialog.tsx",
-        requiresBloomEnterpriseBundle:
-            "./react_components/requiresBloomEnterprise.tsx",
+        requiresSubscriptionBundle:
+            "./react_components/requiresSubscription.tsx",
         createTeamCollectionDialogBundle:
             "./teamCollection/CreateTeamCollection.tsx",
         teamCollectionSettingsBundle:

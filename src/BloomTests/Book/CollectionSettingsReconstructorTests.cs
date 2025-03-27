@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Xml.Linq;
 using Bloom.Book;
@@ -377,22 +376,19 @@ namespace BloomTests.Book
         [Test]
         public void Branding_Specified()
         {
-            Assert.That(_silleadBrandingAnalyzer.Branding, Is.EqualTo("SIL-LEAD"));
+            Assert.That(_silleadBrandingAnalyzer.SubscriptionCode, Is.EqualTo("SIL-LEAD-***-***"));
         }
 
         [Test]
         public void Branding_Empty()
         {
-            Assert.That(_emptyBrandingAnalyzer.Branding, Is.EqualTo(""));
+            Assert.That(_emptyBrandingAnalyzer.SubscriptionCode, Is.Null);
         }
 
         [Test]
         public void Branding_Missing_SetToDefault()
         {
-            Assert.That(
-                _monolingualBookInBilingualCollectionAnalyzer.Branding,
-                Is.EqualTo("Default")
-            );
+            Assert.That(_monolingualBookInBilingualCollectionAnalyzer.SubscriptionCode, Is.Null);
         }
 
         [Test]
@@ -464,8 +460,8 @@ namespace BloomTests.Book
         public void BookCollection_HasBranding()
         {
             Assert.That(
-                _silleadCollection.Element("BrandingProjectName")?.Value,
-                Is.EqualTo("SIL-LEAD")
+                _silleadCollection.Element("SubscriptionCode")?.Value,
+                Is.EqualTo("SIL-LEAD-***-***")
             );
         }
 

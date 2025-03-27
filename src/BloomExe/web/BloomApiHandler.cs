@@ -215,12 +215,6 @@ namespace Bloom.Api
             );
         }
 
-        public bool IsInvalidApiCall(string localPath)
-        {
-            // this 20 is just arbitrary... the point is, if it doesn't start with api/branding, it is bogus
-            return localPath.IndexOf("api/branding", StringComparison.InvariantCulture) > 20;
-        }
-
         public const string ApiPrefix = "api/";
 
         // Every path should return false or send a response.

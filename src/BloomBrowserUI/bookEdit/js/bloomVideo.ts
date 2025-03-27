@@ -19,7 +19,7 @@ import { getReplayIcon } from "../img/replayIcon";
 import { kTextOverPictureSelector } from "./bubbleManager";
 
 export function SetupVideoEditing(container) {
-    get("settings/enterpriseEnabled", result => {
+    get("settings/subscriptionEnabled", result => {
         const isEnterpriseEnabled: boolean = result.data;
         $(container)
             .find(".bloom-videoContainer")

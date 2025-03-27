@@ -2205,6 +2205,73 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void MergeBrandingSettings_WithPersonalizationTemplate_ReplacesTemplateWithSubscriptionPersonalization()
+        {
+            // Create a temporary branding folder with proper structure
+            var tempFolder = new TemporaryFolder("MergeBrandingSettingsTest");
+
+            // Create a merge-test directory inside the temp folder
+            var mergeTestDir = Path.Combine(tempFolder.Path, "merge-test");
+            Directory.CreateDirectory(mergeTestDir);
+
+            // Create branding file inside the merge-test directory
+            var brandingFilePath = Path.Combine(mergeTestDir, "branding.json");
+
+            // Create branding JSON content with personalization template in creditBranding field
+            var testPersonalization = "Test Organization";
+            var brandingJson =
+                @"{
+              ""presets"": [
+                {
+            ""data-book"": ""outside-back-cover-branding-bottom-html"",
+            ""lang"": ""*"",
+            ""content"": ""<img class='branding' src='back-cover-local.svg'/>{personalization}"",
+            ""condition"": ""always""
+                }
+              ]
+            }";
+
+            // Write the branding JSON to the file
+            File.WriteAllText(brandingFilePath, brandingJson);
+
+            try
+            {
+                // Create collection settings with personalization
+                var htmlDom = new HtmlDom();
+                var settings = CreateCollection(
+                    Language1LangTag: "en",
+                    Language1Name: "English",
+                    Language2Tag: "fr",
+                    Language2Name: "French"
+                );
+
+                settings.Subscription = new Subscription(testPersonalization + "-LC-***-***");
+
+                // Create BookData and process the branding file
+                var bookData = new BookData(htmlDom, settings, null);
+
+                // Pass the directory path to MergeBrandingSettings, not the file path
+                bookData.MergeBrandingSettings(mergeTestDir);
+
+                // Check that the personalization template was replaced
+                var result = bookData
+                    .GetVariableOrNull("outside-back-cover-branding-bottom-html", "*")
+                    .Xml;
+                Assert.That(
+                    result,
+                    Is.EqualTo(
+                        $"<img class='branding' src='back-cover-local.svg'/>{testPersonalization}"
+                    )
+                );
+            }
+            finally
+            {
+                // Clean up
+                tempFolder.Dispose();
+            }
+        }
+
+        [Test]
         public void MigrateData_TopicInTokPisinButNotEnglish_ChangesLangToEnglish()
         {
             var bookDom = new HtmlDom(
@@ -2214,7 +2281,6 @@ namespace BloomTests.Book
 				</div>
 			 </body></html>"
             );
-
             var data = new BookData(bookDom, _collectionSettings, null);
             Assert.AreEqual("health", data.GetVariableOrNull("topic", "en").Xml);
             Assert.IsNull(data.GetVariableOrNull("topic", "tpi").Xml);

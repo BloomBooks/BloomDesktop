@@ -347,11 +347,11 @@ namespace Bloom.WebLibraryIntegration
                 );
                 if (link.ForEdit && link.DatabaseId != null && LastBookDownloadedPath != null)
                 {
-                    // Write a collection-level file that is used when re-uploading the book
+                    // Write a collection-level json file that we will read again when we reupload the book
                     // so we know exactly which book this collection was made for.
                     var pathToForEditDataFile = Path.Combine(
                         Path.GetDirectoryName(LastBookDownloadedPath), // collection folder
-                        BloomLibraryPublishModel.kNameOfDownloadForEditFile
+                        BloomLibraryPublishModel.kNameOfFileAboutABlorgBookWeHaveDownloadedForEditing
                     );
                     var id = BookMetaData.FromFolder(LastBookDownloadedPath).Id;
                     var editData = new ExpandoObject() as IDictionary<string, object>;
@@ -359,11 +359,11 @@ namespace Bloom.WebLibraryIntegration
                     editData["databaseId"] = link.DatabaseId;
                     editData["instanceId"] = id;
                     editData["bookFolder"] = LastBookDownloadedPath.Replace("\\", "/");
-                    // We can't create an instance and read the branding, because load will wipe it out when it sees no code.
-                    var branding = CollectionSettings.ReadBrandingNameFromCollectionFile(
-                        CollectionCreatedForLastDownload
+                    var collection = new CollectionSettings(
+                        PathToCollectionCreatedForLastDownload,
+                        true
                     );
-                    editData["branding"] = branding;
+                    editData["subscriptionCode"] = collection.Subscription.Code; // probably we're getting redacted code, that's fine.
                     RobustFile.WriteAllText(
                         pathToForEditDataFile,
                         Newtonsoft.Json.JsonConvert.SerializeObject(editData)
@@ -386,7 +386,7 @@ namespace Bloom.WebLibraryIntegration
             return argument.ToLowerInvariant().StartsWith(BloomLinkArgs.kBloomUrlPrefix);
         }
 
-        public string CollectionCreatedForLastDownload { get; private set; }
+        public string PathToCollectionCreatedForLastDownload { get; private set; }
 
         // Internal for testing
         internal string DownloadBook(
@@ -478,7 +478,7 @@ namespace Bloom.WebLibraryIntegration
                         ),
                         collectionFilePath
                     );
-                    CollectionCreatedForLastDownload = collectionFilePath;
+                    PathToCollectionCreatedForLastDownload = collectionFilePath;
 
                     RobustIO.DeleteDirectory(Path.Combine(bookFolder, "collectionFiles"));
 
@@ -487,7 +487,7 @@ namespace Bloom.WebLibraryIntegration
             }
             else
             {
-                CollectionCreatedForLastDownload = null;
+                PathToCollectionCreatedForLastDownload = null;
                 destinationPath = _s3Client.DownloadBook(
                     bucket,
                     storageKeyOfBookFolderParentOnS3,

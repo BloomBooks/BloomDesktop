@@ -25,11 +25,11 @@ import SmallNumberPicker from "./smallNumberPicker";
 import { BloomAvatar } from "./bloomAvatar";
 import { BookInfoCard } from "./bookInfoCard";
 import {
-    RequiresBloomEnterpriseDialog,
-    RequiresBloomEnterpriseNotice,
-    RequiresBloomEnterpriseNoticeDialog,
-    RequiresBloomEnterpriseOverlayWrapper
-} from "./requiresBloomEnterprise";
+    RequiresSubscriptionDialog,
+    RequiresSubscriptionNotice,
+    RequiresSubscriptionNoticeDialog,
+    RequiresSubscriptionOverlayWrapper
+} from "./requiresSubscription";
 import {
     StorybookDialogWrapper,
     normalDialogEnvironmentForStorybook
@@ -142,7 +142,7 @@ storiesOf("Localizable Widgets", module)
                     {
                         english: "Option 1",
                         l10nId: "already-localized",
-                        requiresAnyEnterprise: true,
+                        requiresAnySubscription: true,
                         onClick: () => {
                             alert("Option 1 clicked");
                         }
@@ -263,7 +263,7 @@ const normalMenuItemWithEllipsisAndEnterprise = React.createElement(() => (
         english="Open or Create Another Collection"
         l10nId="CollectionTab.OpenCreateCollectionMenuItem"
         addEllipsis={true}
-        requiresAnyEnterprise={true}
+        requiresAnySubscription={true}
         onClick={() => {}}
     />
 ));
@@ -272,7 +272,7 @@ const requiresEnterpriseSubscriptionWithIcon = React.createElement(() => (
     <LocalizableMenuItem
         english="BE subscription required, has disabled icon"
         l10nId="already-localized"
-        requiresEnterpriseSubscription={true}
+        requiresEnterpriseTier={true}
         icon={<DeleteIcon />}
         onClick={() => {}}
     />
@@ -661,18 +661,18 @@ storiesOf("BookInformationCards", module)
 // want things to show up as expected.
 storiesOf("RequiresBloomEnterprise", module)
     .add("RequiresBloomEnterpriseNoticeDialog", () =>
-        React.createElement(() => <RequiresBloomEnterpriseNoticeDialog />)
+        React.createElement(() => <RequiresSubscriptionNoticeDialog />)
     )
     .add("RequiresBloomEnterpriseDialog", () =>
         React.createElement(() => (
-            <RequiresBloomEnterpriseDialog
+            <RequiresSubscriptionDialog
                 dialogEnvironment={normalDialogEnvironmentForStorybook}
             />
         ))
     )
     .add("RequiresBloomEnterpriseNotice", () =>
-        React.createElement(() => <RequiresBloomEnterpriseNotice />)
+        React.createElement(() => <RequiresSubscriptionNotice />)
     )
     .add("RequiresBloomEnterpriseOverlayWrapper", () =>
-        React.createElement(() => <RequiresBloomEnterpriseOverlayWrapper />)
+        React.createElement(() => <RequiresSubscriptionOverlayWrapper />)
     );
