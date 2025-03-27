@@ -530,10 +530,10 @@
         <target xml:lang="ne-NP" state="needs-translation">This book has interactive activities.</target>
         <note>ID: PublishTab.Feature.Activities.None</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Activities.RequiresEnterprise">
-        <source xml:lang="en">This is disabled because publishing interactive activities is a Bloom Enterprise feature.</source>
-        <target xml:lang="ne-NP" state="needs-translation">This is disabled because publishing interactive activities is a Bloom Enterprise feature.</target>
-        <note>ID: PublishTab.Feature.Activities.RequiresEnterprise</note>
+      <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
+        <source xml:lang="en">This is disabled because publishing interactive activities requires a subcription.</source>
+        <target xml:lang="ne-NP" state="needs-translation">This is disabled because publishing interactive activities requires a subcription.</target>
+        <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None">
         <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
