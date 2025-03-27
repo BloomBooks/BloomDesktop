@@ -36,5 +36,7 @@ export const RequiresSubscriptionNoticeStory: Story = {
 
 export const RequiresSubscriptionOverlayWrapperStory: Story = {
     name: "RequiresSubscriptionOverlayWrapper",
-    render: () => <RequiresSubscriptionOverlayWrapper />
+    render: () => (
+        <RequiresSubscriptionOverlayWrapper subscriptionFeature={"foobar"} />
+    )
 };
