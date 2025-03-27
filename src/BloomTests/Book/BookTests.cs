@@ -21,6 +21,7 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Windows.Forms.ClearShare;
+using Bloom.SubscriptionAndFeatures;
 
 namespace BloomTests.Book
 {
@@ -5140,7 +5141,7 @@ namespace BloomTests.Book
 
             var book = CreateBook();
             book.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
-                Subscription.SubscriptionTier.Enterprise
+                SubscriptionTier.Enterprise
             ); // Needed so Enterprise Features is considered enabled which is needed for quizzes
 
             book.UpdateMetadataFeatures(false, false, null);
@@ -5169,7 +5170,7 @@ namespace BloomTests.Book
 
             var book = CreateBook();
             book.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
-                Subscription.SubscriptionTier.Enterprise
+                SubscriptionTier.Enterprise
             ); // Needed so Enterprise Features is considered enabled which is needed for quizzes
 
             book.UpdateMetadataFeatures(false, false, null);
@@ -6149,86 +6150,94 @@ namespace BloomTests.Book
                 );
         }
 
-        [Test]
-        public void IsPageBloomEnterpriseOnly_HasEnterpriseOnlyClass_True()
-        {
-            var xml =
-                "<div class='bloom-page simple-comprehension-quiz enterprise-only bloom-interactive-page side-right A5Portrait bloom-monolingual'></div>";
+        // Retiring this: checking pages for the now more complex subscription compliance is now part of the FeatureStatus class
+        // note, this may not always be what we want... just having a feature tag doesn't have to mean subscription-only,
+        // if we start using it for things like showing experimental features
+        //[Test]
+        //public void IsPageBloomSubscriptionOnly_FeatureAttrHasPro_Feature_True()
+        //{
+        //    var xml = "<div data-feature='overlay' class='bloom-page'></div>";
 
-            var doc = SafeXmlDocument.Create();
-            doc.LoadXml(xml);
-            var page = doc.DocumentElement;
-            Assert.True(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
-        }
+        //    var doc = SafeXmlDocument.Create();
+        //    doc.LoadXml(xml);
+        //    var page = doc.DocumentElement;
+        //    Assert.True(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
+        //}
+
 
         // Originally, video was enterprise-only, so the logic was reversed.
         // Now we want to be sure that video does not trigger a page as enterprise-only.
-        [Test]
-        public void IsPageBloomEnterpriseOnly_HasVideo_False()
-        {
-            string xml =
-                @"
-	<div class=""bloom-page numberedPage customPage side-left A5Portrait bloom-monolingual"" data-page="""" id=""4854bc4a-0046-426e-9e19-596773582d23"" data-pagelineage=""8bedcdf8-3ad6-4967-b027-6c186436572f"" data-page-number=""2"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Just Video"" lang=""en"">
-            Just Video
-        </div>
 
-        <div class=""pageDescription"" lang=""en""></div>
 
-        <div class=""marginBox"">
-            <div class=""split-pane-component-inner"">
-                <div class=""box-header-off bloom-translationGroup"">
-                    Processing
+        // Retiring this: checking pages for the now more complex subscription complians is now part of the FeatureStatus class
+        //       [Test]
+        //       public void IsPageBloomEnterpriseOnly_HasVideo_False()
+        //       {
+        //           string xml =
+        //               @"
+        //<div class=""bloom-page numberedPage customPage side-left A5Portrait bloom-monolingual"" data-page="""" id=""4854bc4a-0046-426e-9e19-596773582d23"" data-pagelineage=""8bedcdf8-3ad6-4967-b027-6c186436572f"" data-page-number=""2"" lang="""">
+        //       <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Just Video"" lang=""en"">
+        //           Just Video
+        //       </div>
 
-                    <div data-languagetipcontent=""English"" class=""bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" contenteditable=""true"" lang=""en"">
-                        <p></p>
-                    </div>
-                </div>
+        //       <div class=""pageDescription"" lang=""en""></div>
 
-                <div class=""bloom-videoContainer bloom-noVideoSelected bloom-leadingElement bloom-selected"">
-                    <video>
-                    <source src=""video/8e7297fd-8ecf-41a9-b82a-e7020a1314ca.mp4#t=0.0,1.6""></source></video>
-                </div>
-            </div>
-        </div>
-    </div>";
+        //       <div class=""marginBox"">
+        //           <div class=""split-pane-component-inner"">
+        //               <div class=""box-header-off bloom-translationGroup"">
+        //                   Processing
 
-            var doc = SafeXmlDocument.Create();
-            doc.LoadXml(xml);
-            var page = doc.DocumentElement;
-            Assert.False(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
-        }
+        //                   <div data-languagetipcontent=""English"" class=""bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" contenteditable=""true"" lang=""en"">
+        //                       <p></p>
+        //                   </div>
+        //               </div>
 
-        [Test]
-        public void IsPageBloomEnterpriseOnly_NoEnterpriseOnlyItems_False()
-        {
-            string xml =
-                @"
-	<div class=""bloom-page numberedPage customPage side-left A5Portrait bloom-monolingual"" data-page="""" id=""4854bc4a-0046-426e-9e19-596773582d23"" data-pagelineage=""8bedcdf8-3ad6-4967-b027-6c186436572f"" data-page-number=""2"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Just Video"" lang=""en"">
-            Just Video
-        </div>
+        //               <div class=""bloom-videoContainer bloom-noVideoSelected bloom-leadingElement bloom-selected"">
+        //                   <video>
+        //                   <source src=""video/8e7297fd-8ecf-41a9-b82a-e7020a1314ca.mp4#t=0.0,1.6""></source></video>
+        //               </div>
+        //           </div>
+        //       </div>
+        //   </div>";
 
-        <div class=""pageDescription"" lang=""en""></div>
+        //           var doc = SafeXmlDocument.Create();
+        //           doc.LoadXml(xml);
+        //           var page = doc.DocumentElement;
+        //           Assert.False(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
+        //       }
 
-        <div class=""marginBox"">
-            <div class=""split-pane-component-inner"">
-                <div class=""box-header-off bloom-translationGroup"">
-                    Processing
+        // Retiring this: checking pages for the now more complex subscription complians is now part of the FeatureStatus class
 
-                    <div data-languagetipcontent=""English"" class=""bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" contenteditable=""true"" lang=""en"">
-                        <p></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>";
+        //       [Test]
+        //       public void IsPageBloomEnterpriseOnly_NoEnterpriseOnlyItems_False()
+        //       {
+        //           string xml =
+        //               @"
+        //<div class=""bloom-page numberedPage customPage side-left A5Portrait bloom-monolingual"" data-page="""" id=""4854bc4a-0046-426e-9e19-596773582d23"" data-pagelineage=""8bedcdf8-3ad6-4967-b027-6c186436572f"" data-page-number=""2"" lang="""">
+        //       <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Just Video"" lang=""en"">
+        //           Just Video
+        //       </div>
 
-            var doc = SafeXmlDocument.Create();
-            doc.LoadXml(xml);
-            var page = doc.DocumentElement;
-            Assert.False(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
-        }
+        //       <div class=""pageDescription"" lang=""en""></div>
+
+        //       <div class=""marginBox"">
+        //           <div class=""split-pane-component-inner"">
+        //               <div class=""box-header-off bloom-translationGroup"">
+        //                   Processing
+
+        //                   <div data-languagetipcontent=""English"" class=""bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" contenteditable=""true"" lang=""en"">
+        //                       <p></p>
+        //                   </div>
+        //               </div>
+        //           </div>
+        //       </div>
+        //   </div>";
+
+        //           var doc = SafeXmlDocument.Create();
+        //           doc.LoadXml(xml);
+        //           var page = doc.DocumentElement;
+        //           Assert.False(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
+        //       }
 
         private const string kSentenceModeRecordingHtml =
             @"<!DOCTYPE html [ <!ENTITY nbsp '&#160;'> ]>

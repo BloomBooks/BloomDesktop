@@ -227,16 +227,25 @@ export function useCanModifyCurrentBook(): boolean {
     return canModifyCurrentBook;
 }
 
-export function useApiObject<T>(urlSuffix: string, defaultValue: T): T {
+export function useApiObject<T>(
+    urlSuffix: string,
+    defaultValue: T,
+    // when you don't really want to do the call but can't violate the rule of hooks
+    // Note that you cannot use undefined here, but you can use null.
+    justReturnValue?: T
+): T {
     const [value, setValue] = useState<T>(defaultValue);
     useEffect(() => {
-        get(urlSuffix, c => {
-            if (typeof c.data === "string") {
-                setValue(JSON.parse(c.data as string));
-            } else setValue(c.data);
-        });
-    }, [urlSuffix]);
-    return value;
+        if (justReturnValue !== undefined) {
+            setValue(justReturnValue);
+        } else
+            get(urlSuffix, c => {
+                if (typeof c.data === "string") {
+                    setValue(JSON.parse(c.data as string));
+                } else setValue(c.data);
+            });
+    }, [urlSuffix, justReturnValue]);
+    return justReturnValue !== undefined ? justReturnValue : value;
 }
 
 export function useApiData<T>(urlSuffix: string, defaultValue: T): T {

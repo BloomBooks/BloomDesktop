@@ -1117,6 +1117,8 @@ namespace Bloom.Api
                 // local path starts with this prefix.
                 path = info.LocalPathWithoutQuery.Substring(kBloomPrefix.Length);
             }
+
+            // TODO BL-14565: this is clearly out of date but also something of mystery so I'm not sure how to clean it up
             // We no longer copy this file to the book folder.  For Bloom Desktop, we get it from browser/templates/...
             // For Bloom Reader, bloom-player has its own copy.
             if (
@@ -1124,6 +1126,7 @@ namespace Bloom.Api
                 && Path.GetFileName(path) == PublishHelper.kSimpleComprehensionQuizJs
             )
             {
+                // TODO: this is probably out of date; any such file should be part of Bloom Player shared code.
                 path = Path.Combine(
                     BloomFileLocator.FactoryTemplateBookDirectory,
                     "Activity",

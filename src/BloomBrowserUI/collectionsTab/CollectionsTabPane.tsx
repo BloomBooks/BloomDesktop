@@ -586,8 +586,7 @@ export interface MenuItemSpec {
     icon?: React.ReactNode;
     // if true, menu item is rendered as an ApiCheckbox with the command as its api.
     checkbox?: boolean;
-    // if true, menu item is rendered with a Bloom Enterprise icon on the right
-    requiresEnterprise?: boolean;
+    featureName?: string;
     addEllipsis?: boolean;
 }
 
@@ -687,7 +686,7 @@ export const makeMenuItems = (
                     onClick={clickAction}
                     icon={spec.icon}
                     addEllipsis={spec.addEllipsis}
-                    requiresAnySubscription={spec.requiresEnterprise}
+                    featureName={spec.featureName}
                     disabled={disabled}
                     tooltipIfDisabled={tooltipIfCannotSaveBook}
                 ></LocalizableMenuItem>

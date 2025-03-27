@@ -423,26 +423,22 @@ namespace Bloom.web.controllers
                 _publishModel
             );
             Logger.WriteEvent("Entered Publish Tab");
-            request.ReplyWithJson(
-                JsonConvert.SerializeObject(
-                    new
-                    {
-                        canUpload = _publishModel
-                            .BookSelection
-                            .CurrentSelection
-                            .BookInfo
-                            .AllowUploading,
-                        cannotPublishWithoutEnterprise = _publishModel.CannotPublishWithoutEnterprise,
-                        cannotPublishWithoutCheckout = _publishModel.CannotPublishWithoutCheckout,
-                        canDownloadPDF = _publishModel.PdfGenerationSucceeded, // To be used for the context menu
-                        titleForDisplay = _publishModel
-                            .BookSelection
-                            .CurrentSelection
-                            .TitleBestForUserDisplay,
-                        numberOfFirstPageWithCanvasElement = _publishModel.BookSelection.CurrentSelection.GetNumberOfFirstPageWithCanvasElement(),
-                    }
-                )
-            );
+            var featureStatus = _publishModel.GetFeaturePreventingPublishingOrNull();
+            var featureStatusForSerialization = featureStatus?.ForSerialization();
+            var resultObject = new
+            {
+                canUpload = _publishModel.BookSelection.CurrentSelection.BookInfo.AllowUploading,
+                cannotPublishWithoutCheckout = _publishModel.CannotPublishWithoutCheckout,
+                canDownloadPDF = _publishModel.PdfGenerationSucceeded, // To be used for the context menu
+                titleForDisplay = _publishModel
+                    .BookSelection
+                    .CurrentSelection
+                    .TitleBestForUserDisplay,
+                featurePreventingPublishing = featureStatusForSerialization
+            };
+
+            var result = JsonConvert.SerializeObject(resultObject);
+            request.ReplyWithJson(result);
         }
 
         private void HandleChooseSignLanguage(ApiRequest request)
