@@ -475,9 +475,9 @@ namespace BloomTests.Book
         public void AppearanceCss_HasDefaultSettings()
         {
             // One that is not overridden in zero-margin-ebook
-            Assert.That(
+            AssertContainsButIgnoreWhitespace(
                 _generatedAppearanceCss,
-                Does.Contain("--cover-margin-top: var(--page-margin);")
+                "--cover-margin-top: var(--page-margin);"
             );
         }
 
@@ -525,38 +525,30 @@ namespace BloomTests.Book
         public void CssOfDefaultTheme_HasExpectedMargins()
         {
             // we expect the default settings before the theme ones
-            Assert.That(_cssOfDefaultTheme, Does.Contain("--page-margin: 12mm;"));
-            Assert.That(
+            AssertContainsButIgnoreWhitespace(_cssOfDefaultTheme, "--page-margin: 12mm;");
+            AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
-                Does.Contain("--cover-margin-top: var(--page-margin);")
+                "--cover-margin-top: var(--page-margin);"
             );
-            Assert.That(
+            AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
-                Does.Contain(
-                    @".LegalLandscape {
+                @".LegalLandscape {
     --page-margin: 15mm;"
-                )
             );
-            Assert.That(
+            AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
-                Does.Contain(
-                    @".A6Landscape {
+                @".A6Landscape {
     --page-margin: 10mm;"
-                )
             );
-            Assert.That(
+            AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
-                Does.Contain(
-                    @".bloom-page[class*=""Device""] {
+                @".bloom-page[class*=""Device""] {
     --page-margin: 10px;"
-                )
             );
-            Assert.That(
+            AssertContainsButIgnoreWhitespace(
                 _cssOfDefaultTheme,
-                Does.Contain(
-                    @".Cm13Landscape {
+                @".Cm13Landscape {
     --page-margin: 5mm;"
-                )
             );
         }
 
@@ -594,6 +586,23 @@ namespace BloomTests.Book
             Assert.That(
                 _cssOfSettingsObject,
                 Does.Contain("--boolean-test-L2-show: doShow-css-will-ignore-this-and-use-default")
+            );
+        }
+
+        /// <summary>
+        /// Helper method to remove all whitespace from CSS strings for consistent comparison
+        /// </summary>
+        private void AssertContainsButIgnoreWhitespace(string css, string mustContain)
+        {
+            var cssWithoutWhitespace = css?.Replace(" ", "").Replace("\n", "").Replace("\r", "");
+            var mustContainWithoutWhitespace = mustContain
+                ?.Replace(" ", "")
+                .Replace("\n", "")
+                .Replace("\r", "");
+            Assert.That(
+                cssWithoutWhitespace,
+                Does.Contain(mustContainWithoutWhitespace),
+                "Expected to find {0} in {1}"
             );
         }
     }
