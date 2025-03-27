@@ -102,19 +102,6 @@ export const SubscriptionSettings: React.FunctionComponent = () => {
                                     qualify for a free [Bloom Community
                                     Subscription](https://bloomlibrary.org/subscriptions).
                                 </Markdown>
-                                <br />
-                                <Markdown
-                                    l10nKey="Settings.Subscription.RequestSubscription"
-                                    l10nParam0={
-                                        "subscriptions@bloomlibrary.org"
-                                    }
-                                    l10nParam1={
-                                        "mailto:subscriptions@bloomlibrary.org"
-                                    }
-                                >
-                                    Please contact [%1](%2) to request your
-                                    license.
-                                </Markdown>
                             </div>
                         </NoteBox>
                     )}
