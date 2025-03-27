@@ -4855,7 +4855,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage">
         <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
-        <target xml:lang="es-ES" state="needs-translation">Page {0} is the first page that uses Overlay elements.</target>
+        <target xml:lang="es-ES" state="translated">La página {0} es la primera página que utiliza los elementos de Superposición.</target>
         <note>ID: PublishTab.PublishRequiresSubscription.FirstOverlayPage</note>
       </trans-unit>
       <trans-unit id="PublishTab.PublishRequiresSubscription.Options">
