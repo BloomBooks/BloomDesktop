@@ -30,6 +30,7 @@ import {
     useSetupBloomDialog
 } from "./BloomDialog/BloomDialogPlumbing";
 import { getBloomApiPrefix } from "../utils/bloomApi";
+import { useGetFeatureStatus } from "./subcriptionFeature";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 //  From the enum values in CollectionSettingsApi.cs.
@@ -167,9 +168,11 @@ export const BloomEnterpriseIcon = props => {
     );
 };
 
-// put this around a component that requires a subscription to use, and it will disable the children and show a notice if you don't have one.
-export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent = props => {
-    const haveSubscription = useHaveSubscription();
+export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
+    subscriptionFeature: string;
+}> = props => {
+    const { enabled } = useGetFeatureStatus(props.subscriptionFeature);
+
     return (
         <div
             css={css`
@@ -184,7 +187,7 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent = props
             >
                 {props.children}
             </div>
-            {haveSubscription || (
+            {enabled || (
                 <div
                     css={css`
                         position: absolute;
