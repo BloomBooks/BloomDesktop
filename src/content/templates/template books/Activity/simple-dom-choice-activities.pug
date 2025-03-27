@@ -14,7 +14,7 @@ mixin correctAnswerBubble
 	label.bubble(data-i18n="SimpleChoiceActivity.CorrectAnswerIndicator") Put the correct answer in this button. Bloom will shuffle the order later.
 
 mixin chooseWordFromPicture
-	+page("Choose Word from Picture", "An interactive page with an image and some text buttons.").bloom-ignoreForReaderStats.bloom-interactive-page.enterprise-only.numberedPage#3325A8B6-EA15-4FB7-9F8D-271D7B3C8D33(data-page='extra' data-analyticscategories="simple-dom-choice" data-activity="simple-dom-choice" data-tool-id="game")
+	+page("Choose Word from Picture", "An interactive page with an image and some text buttons.").bloom-ignoreForReaderStats.bloom-interactive-page.numberedPage#3325A8B6-EA15-4FB7-9F8D-271D7B3C8D33(data-page='extra' data-feature='game' data-analyticscategories="simple-dom-choice" data-activity="simple-dom-choice")
 		+field-withEnglishText("L1").Prompt-style.disableHighlight
 			| Choose the matching word
 		.imageThenChoices
@@ -27,7 +27,7 @@ mixin chooseWordFromPicture
 					+textButtonChoice(data-activityRole="wrong-answer")
 
 mixin choosePictureFromWord
-	+page("Choose Picture from Word", "An interactive page with a text and some picture buttons.").bloom-ignoreForReaderStats.bloom-interactive-page.enterprise-only.numberedPage#fe7acd9d-c05c-449b-9f99-841d54856924(data-page='extra' data-analyticscategories="simple-dom-choice" data-activity="simple-dom-choice" data-tool-id="game")
+	+page("Choose Picture from Word", "An interactive page with a text and some picture buttons.").bloom-ignoreForReaderStats.bloom-interactive-page.numberedPage#fe7acd9d-c05c-449b-9f99-841d54856924(data-page='extra'  data-feature='game' data-analyticscategories="simple-dom-choice" data-activity="simple-dom-choice")
 		+field-withEnglishText("L1").Prompt-style.disableHighlight
 			| Choose the matching picture
 		.wordThenChoices

@@ -30,12 +30,15 @@ import {
     useSetupBloomDialog
 } from "./BloomDialog/BloomDialogPlumbing";
 import { getBloomApiPrefix } from "../utils/bloomApi";
+import {
+    openBloomSubscriptionSettings,
+    useGetFeatureStatus,
+    useGetFeatureAvailabilityMessage
+} from "./featureStatus";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
-//  From the enum values in CollectionSettingsApi.cs.
-const subscriptionTiers = ["None", "Community", "Enterprise"] as const;
-type SubscriptionTier = typeof subscriptionTiers[number];
 
+// TODO: REMOVE THIS. Everything should be using useGetFeatureStatus() instead of this.
 // Tells you wether the user has an active subscription or not.
 export function useHaveSubscription() {
     const [haveSubscription, setHaveSubscription] = useState(true);
@@ -49,20 +52,6 @@ export function useHaveSubscription() {
     return haveSubscription;
 }
 
-export function useGetSubscriptionTier(): SubscriptionTier {
-    const [status, setSubscriptionTier] = useState<SubscriptionTier>("None");
-
-    useEffect(() => {
-        get("settings/subscriptionTier", result => {
-            setSubscriptionTier(result.data);
-        });
-    }, []);
-    if (!(subscriptionTiers as readonly string[]).includes(status)) {
-        throw new Error(`Invalid subscription tier: ${status}`);
-    }
-    return status;
-}
-
 /**
  * A component's props that include a "disabled" property
  */
@@ -72,23 +61,19 @@ interface IDisableable {
 
 export const RequiresSubscriptionAdjacentIconWrapper = (props: {
     iconStyles?: string;
+    featureName: string;
     children:
         | React.ReactElement<IDisableable>
         | Array<React.ReactElement<IDisableable>>;
 }) => {
-    const haveSubscription = useHaveSubscription();
+    const memoizedFeatureName = React.useMemo(() => props.featureName, [
+        props.featureName
+    ]);
+    const featureStatus = useGetFeatureStatus(memoizedFeatureName);
+    const tierMessage = useGetFeatureAvailabilityMessage(featureStatus);
 
-    // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
-    const tooltip = useL10n(
-        haveSubscription
-            ? "Your subscription includes this feature."
-            : "To use this feature, you'll need a Bloom subscription.",
-        "EditTab." +
-            (haveSubscription ? "SubscriptionEnabled" : "RequiresSubscription")
-    );
-
-    // // Set the disabled property on all the children
-    const children = haveSubscription
+    // Set the disabled property on all the children
+    const children = featureStatus?.enabled
         ? props.children
         : React.Children.map(props.children, child =>
               React.cloneElement(child, {
@@ -103,9 +88,9 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
                     (props.iconStyles ?? "")}
             `}
             src={badgeUrl}
-            title={tooltip}
+            title={tierMessage}
             onClick={() => {
-                if (!haveSubscription) {
+                if (!featureStatus?.enabled) {
                     showRequiresSubscriptionDialog();
                 }
             }}
@@ -122,13 +107,15 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
         >
             <div
                 css={css`
-                    opacity: ${haveSubscription ? 1.0 : kBloomDisabledOpacity};
+                    opacity: ${featureStatus?.enabled
+                        ? 1.0
+                        : kBloomDisabledOpacity};
                 `}
                 ref={node =>
                     node &&
                     // later version of react reportedly do support `inert`, but this version doesn't,
                     // so we are using this `ref` way to get it into the DOM.
-                    (haveSubscription || node.setAttribute("inert", ""))
+                    (featureStatus?.enabled || node.setAttribute("inert", ""))
                 }
             >
                 {children}
@@ -137,22 +124,11 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
         </div>
     );
 };
-
-export const BloomEnterpriseIcon = props => {
-    const needSubscriptionTooltip = useL10n(
-        "To use this feature, you'll need a Bloom subscription.",
-        "EditTab.RequiresSubscription"
-    );
-    const subscriptionFeatureTooltip = useL10n(
-        "Bloom Subscription Feature",
-        "Common.BloomSubscriptionFeature"
-    );
-    const haveSubscription = useHaveSubscription();
-
-    // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
-    const tooltip = haveSubscription
-        ? subscriptionFeatureTooltip
-        : needSubscriptionTooltip;
+export const BloomEnterpriseIconWithTooltip: React.FunctionComponent<{
+    featureName: string;
+}> = props => {
+    const featureStatus = useGetFeatureStatus(props.featureName);
+    const featureMessage = useGetFeatureAvailabilityMessage(featureStatus);
 
     return (
         <img
@@ -162,14 +138,19 @@ export const BloomEnterpriseIcon = props => {
             `}
             {...props} // let caller override the size and whatever
             src={badgeUrl}
-            title={tooltip}
+            title={featureMessage}
         />
     );
 };
 
-// put this around a component that requires a subscription to use, and it will disable the children and show a notice if you don't have one.
-export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent = props => {
-    const haveSubscription = useHaveSubscription();
+export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
+    featureName: string;
+}> = props => {
+    const memoizedFeatureName = React.useMemo(() => props.featureName, [
+        props.featureName
+    ]);
+    const featureStatus = useGetFeatureStatus(memoizedFeatureName);
+
     return (
         <div
             css={css`
@@ -184,7 +165,7 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent = props
             >
                 {props.children}
             </div>
-            {haveSubscription || (
+            {featureStatus?.enabled || (
                 <div
                     css={css`
                         position: absolute;
@@ -204,7 +185,10 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent = props
                             margin-right: auto;
                         `}
                     >
-                        <RequiresSubscriptionNotice darkTheme={true} />
+                        <RequiresSubscriptionNotice
+                            featureName={memoizedFeatureName}
+                            darkTheme={true}
+                        />
                     </div>
                 </div>
             )}
@@ -216,14 +200,11 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent = props
 export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
     darkTheme?: boolean;
     inSeparateDialog?: boolean;
-}> = ({ darkTheme, inSeparateDialog }) => {
-    const [visible, setVisible] = useState(false);
-
-    useEffect(() => {
-        get("settings/subscriptionEnabled", response => {
-            setVisible(!response.data);
-        });
-    }, []);
+    featureName?: string;
+}> = ({ darkTheme, inSeparateDialog, featureName }) => {
+    const memoizedFeatureName = React.useMemo(() => featureName, [featureName]);
+    const featureStatus = useGetFeatureStatus(memoizedFeatureName); // Use the memoized value
+    const subscriptionMessage = useGetFeatureAvailabilityMessage(featureStatus);
 
     const kBloomSubscriptionNoticePadding = "15px;";
     const kButtonRadius = "4px;";
@@ -260,7 +241,7 @@ export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
             <ThemeProvider theme={lightTheme}>
                 <div
                     css={
-                        !visible
+                        featureStatus?.enabled
                             ? css`
                                   display: none;
                               `
@@ -308,8 +289,7 @@ export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
                                       `
                             }
                         >
-                            <Div
-                                l10nKey="EditTab.RequiresSubscription"
+                            <div
                                 css={
                                     inSeparateDialog
                                         ? css`
@@ -321,7 +301,9 @@ export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
                                               font-size: small;
                                           `
                                 }
-                            />
+                            >
+                                {subscriptionMessage}
+                            </div>
                             <Button
                                 className="requiresSubscriptionButton"
                                 variant={"contained"}
@@ -496,29 +478,12 @@ export const BloomSubscriptionIndicatorIconAndText: React.FunctionComponent<{
                     Available with your Bloom Subscription
                 </Span>
             ) : (
-                <Span l10nKey={"Common.SubscriptionRequired"}>
-                    Subscription Required
+                <Span l10nKey={"Common.HigherSubscriptionTierRequired"}>
+                    Feature Requires Higher Subscription Tier
                 </Span>
             )}
         </div>
     );
 };
-
-function openBloomSubscriptionSettings() {
-    post("common/showSettingsDialog?tab=subscription");
-}
-
-// Still used in imageDescription.tsx and talkingBook.ts
-export function checkIfEnterpriseAvailable(): HaveSubscriptionPromise {
-    return new HaveSubscriptionPromise();
-}
-
-class HaveSubscriptionPromise {
-    public then(resolve: (haveSubscription: boolean) => void) {
-        get("settings/subscriptionEnabled", response => {
-            resolve(response.data);
-        });
-    }
-}
 
 WireUpForWinforms(RequiresSubscriptionNoticeDialog);

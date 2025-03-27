@@ -9,7 +9,7 @@ import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { MenuItem, Select, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import { useGetEnterpriseBookshelves } from "../collection/useGetEnterpriseBookshelves";
-import { BloomEnterpriseIcon } from "./requiresSubscription";
+import { BloomEnterpriseIconWithTooltip } from "./requiresSubscription";
 import { useL10n } from "./l10nHooks";
 
 // This component is the chooser for a default bookshelf, currently in the bottom right corner
@@ -128,7 +128,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
                         >
                             {BLBookshelfLabel}
                         </Typography>
-                        <BloomEnterpriseIcon />
+                        <BloomEnterpriseIconWithTooltip featureName="bookshelf" />
                     </div>
                     <Select
                         // Using a MaterialUI Select here, though we have to fight it fairly hard

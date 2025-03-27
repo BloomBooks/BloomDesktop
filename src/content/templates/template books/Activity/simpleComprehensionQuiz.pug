@@ -20,7 +20,7 @@ mixin choice
 		.placeToPutVariableCircle
 
 mixin quizPage
-	+page("Quiz Page", "An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.").simple-comprehension-quiz.bloom-ignoreForReaderStats.bloom-interactive-page.enterprise-only.numberedPage.game-theme-blue-on-white#F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D(data-page='extra' data-analyticsCategories="comprehension" data-activity="simple-checkbox-quiz" data-reader-version="2" data-tool-id="game")
+	+page("Quiz Page", "An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.").simple-comprehension-quiz.bloom-ignoreForReaderStats.bloom-interactive-page.numberedPage.game-theme-blue-on-white#F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D(data-page='extra'  data-feature='game'  data-analyticsCategories="comprehension"  data-activity="simple-checkbox-quiz" data-reader-version="2" data-tool-id="game")
 		.quiz
 			.bloom-translationGroup.QuizHeader-style.bloom-ignoreChildrenForBookLanguageList(data-default-languages="auto")&attributes(attributes)
 				//- data-collection doesn't actually work across the collection currently,

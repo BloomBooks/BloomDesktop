@@ -141,7 +141,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                 )}
             >
                 <FormGroup>
-                    <RequiresSubscriptionAdjacentIconWrapper>
+                    <RequiresSubscriptionAdjacentIconWrapper featureName="PrintshopReady">
                         <BloomTooltip
                             showDisabled={!allowFullBleed}
                             // This is a lame explanation... at least it tells us that the problem is not the enterprise status?
@@ -168,7 +168,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                             />
                         </BloomTooltip>
                     </RequiresSubscriptionAdjacentIconWrapper>
-                    <RequiresSubscriptionAdjacentIconWrapper>
+                    <RequiresSubscriptionAdjacentIconWrapper featureName="PrintshopReady">
                         <div
                             css={css`
                                 display: flex;

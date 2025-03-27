@@ -18,6 +18,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.Progress;
+using Bloom.SubscriptionAndFeatures;
 
 namespace BloomTests.Publish
 {
@@ -466,7 +467,7 @@ namespace BloomTests.Publish
 
             book.CollectionSettings.Subscription =
                 Subscription.ForUnitTestWithOverrideTierOrDescriptor(
-                    Subscription.SubscriptionTier.Community,
+                    SubscriptionTier.LocalCommunity,
                     "Foobar-LC"
                 );
 
