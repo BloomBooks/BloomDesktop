@@ -357,10 +357,10 @@
         <target xml:lang="qaa-x-test" state="needs-translation">There was a problem while saving. Please return to the previous page and make sure it looks correct.</target>
         <note>ID: Browser.ProblemSaving</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AboutBloomEnterprise">
-        <source xml:lang="en">About the Bloom Enterprise Service</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">About the Bloom Enterprise Service</target>
-        <note>ID: CollectionSettingsDialog.AboutBloomEnterprise</note>
+      <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
+        <source xml:lang="en">About Bloom Subscriptions</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">About Bloom Subscriptions</target>
+        <note>ID: CollectionSettingsDialog.AboutBloomSubscriptions</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
         <source xml:lang="en">Advanced Program Settings</source>
@@ -645,11 +645,6 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Bloom Collection Name</target>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject">
-        <source xml:lang="en">Bloom Enterprise Project</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Bloom Enterprise Project</target>
-        <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject</note>
-      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country">
         <source xml:lang="en">Country</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Country</target>
@@ -670,10 +665,10 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Province</target>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.RequiresEnterprise_ToolTip_" sil:dynamic="true">
-        <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">To use this feature, you'll need to enable Bloom Enterprise.</target>
-        <note>ID: CollectionSettingsDialog.RequiresEnterprise_ToolTip_</note>
+      <trans-unit id="CollectionSettingsDialog.RequiresSubscription_ToolTip_" sil:dynamic="true">
+        <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">To use this feature, you'll need a Bloom Subscription.</target>
+        <note>ID: CollectionSettingsDialog.RequiresSubscription_ToolTip_</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart">
         <source xml:lang="en">Restart</source>
@@ -1035,10 +1030,10 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Back</target>
         <note>ID: Common.BackButton</note>
       </trans-unit>
-      <trans-unit id="Common.BloomEnterpriseFeature">
-        <source xml:lang="en">Bloom Enterprise Feature</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Bloom Enterprise Feature</target>
-        <note>ID: Common.BloomEnterpriseFeature</note>
+      <trans-unit id="Common.BloomSubscriptionFeature">
+        <source xml:lang="en">Bloom Subscription Feature</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Bloom Subscription Feature</target>
+        <note>ID: Common.BloomSubscriptionFeature</note>
       </trans-unit>
       <trans-unit id="Common.Cancel">
         <source xml:lang="en">Cancel</source>
@@ -1109,10 +1104,10 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Done</target>
         <note>ID: Common.Done</note>
       </trans-unit>
-      <trans-unit id="Common.EnterpriseRequired">
-        <source xml:lang="en">Enterprise Required</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Enterprise Required</target>
-        <note>ID: Common.EnterpriseRequired</note>
+      <trans-unit id="Common.SubscriptionRequired">
+        <source xml:lang="en">Subscription Required</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Subscription Required</target>
+        <note>ID: Common.SubscriptionRequired</note>
       </trans-unit>
       <trans-unit id="Common.Error">
         <source xml:lang="en">Error</source>
@@ -1659,15 +1654,15 @@
         <target xml:lang="qaa-x-test" state="needs-translation">This sentence is too long for this level.</target>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
       </trans-unit>
-      <trans-unit id="EditTab.EnterpriseEnabled" sil:dynamic="true">
-        <source xml:lang="en">This Bloom Enterprise feature is enabled for you.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">This Bloom Enterprise feature is enabled for you.</target>
-        <note>ID: EditTab.EnterpriseEnabled</note>
+      <trans-unit id="EditTab.SubscriptionEnabled" sil:dynamic="true">
+        <source xml:lang="en">Your subscription includes this feature.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Your subscription includes this feature.</target>
+        <note>ID: EditTab.SubscriptionEnabled</note>
       </trans-unit>
-      <trans-unit id="EditTab.EnterpriseSettingsButton" sil:dynamic="true">
-        <source xml:lang="en">Bloom Enterprise Settings</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Bloom Enterprise Settings</target>
-        <note>ID: EditTab.EnterpriseSettingsButton</note>
+      <trans-unit id="EditTab.SubscriptionSettingsButton" sil:dynamic="true">
+        <source xml:lang="en">Bloom Subscription Settings</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Bloom Subscription Settings</target>
+        <note>ID: EditTab.SubscriptionSettingsButton</note>
       </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
@@ -2269,10 +2264,10 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Paste Page</target>
         <note>ID: EditTab.PastePage</note>
       </trans-unit>
-      <trans-unit id="EditTab.RequiresEnterprise" sil:dynamic="true">
-        <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">To use this feature, you'll need to enable Bloom Enterprise.</target>
-        <note>ID: EditTab.RequiresEnterprise</note>
+      <trans-unit id="EditTab.RequiresSubscription" sil:dynamic="true">
+        <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">To use this feature, you'll need a Bloom Subscription.</target>
+        <note>ID: EditTab.RequiresSubscription</note>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
@@ -4858,20 +4853,20 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Publish</target>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
+      <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage">
         <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Page {0} is the first page that uses Overlay elements.</target>
-        <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
+        <note>ID: PublishTab.PublishRequiresSubscription.FirstOverlayPage</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
-        <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</target>
-        <note>ID: PublishTab.PublishRequiresEnterprise.Options</note>
+      <trans-unit id="PublishTab.PublishRequiresSubscription.Options">
+        <source xml:lang="en">In order to publish your book, you need to either have an active Bloom Subscription, or remove the Overlay elements from your book.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">In order to publish your book, you need to either have an active Bloom Subscription, or remove the Overlay elements from your book.</target>
+        <note>ID: PublishTab.PublishRequiresSubscription.Options</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.ProblemExplanation">
-        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</target>
-        <note>ID: PublishTab.PublishRequiresEnterprise.ProblemExplanation</note>
+      <trans-unit id="PublishTab.PublishRequiresSubscription.ProblemExplanation">
+        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Subscription feature.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Subscription feature.</target>
+        <note>ID: PublishTab.PublishRequiresSubscription.ProblemExplanation</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute">
         <source xml:lang="en">less than one minute</source>
@@ -6148,50 +6143,32 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Use special line spacing</target>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Community" sil:dynamic="true">
-        <source xml:lang="en">Funded by the local community only</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Funded by the local community only</target>
-        <note>ID: Settings.Enterprise.Community</note>
+      <trans-unit id="Common.BloomSubscription">
+        <source xml:lang="en">Bloom Subscription</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Bloom Subscription</target>
+        <note>ID: Common.BloomSubscription</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.DownloadForEdit" sil:dynamic="true">
-        <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same Bloom Enterprise branding as when it was last uploaded.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">This collection is in "Download for Edit" mode. The book has the same Bloom Enterprise branding as when it was last uploaded.</target>
-        <note>ID: Settings.Enterprise.DownloadForEdit</note>
+      <!-- Most subscription labels are in the BloomLowPriority. What we want here
+is mostly status, which shows on the Collection Tab -->
+      <trans-unit id="SubscriptionStatus.RenewalMessage">
+        <source xml:lang="en">Please [contact us](%0) to renew.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Please [contact us](%0) to renew.</target>
+        <note>ID: SubscriptionStatus.RenewalMessage</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.LearnMore" sil:dynamic="true">
-        <source xml:lang="en">Learn More</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Learn More</target>
-        <note>ID: Settings.Enterprise.LearnMore</note>
+      <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
+        <source xml:lang="en">Your {0} subscription expires on {1}.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Your {0} subscription expires on {1}.</target>
+        <note>ID: SubscriptionStatus.ExpiringSoonMessage</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.NeedsCode" sil:dynamic="true">
-        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
-        <target xml:lang="qaa-x-test" state="needs-translation">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </target>
-        <note>ID: Settings.Enterprise.NeedsCode</note>
+      <trans-unit id="SubscriptionStatus.ExpiredMessage">
+        <source xml:lang="en">Your {0} subscription expired on {1}.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Your {0} subscription expired on {1}.</target>
+        <note>ID: SubscriptionStatus.ExpiredMessage</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.None" sil:dynamic="true">
-        <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">None. Bloom will not show Enterprise features.</target>
-        <note>ID: Settings.Enterprise.None</note>
-      </trans-unit>
-      <trans-unit id="Settings.Enterprise.Overview" sil:dynamic="true">
-        <source xml:lang="en">Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.</target>
-        <note>ID: Settings.Enterprise.Overview</note>
-      </trans-unit>
-      <trans-unit id="Settings.Enterprise.Status" sil:dynamic="true">
-        <source xml:lang="en">Bloom Enterprise Status</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Bloom Enterprise Status</target>
-        <note>ID: Settings.Enterprise.Status</note>
-      </trans-unit>
-      <trans-unit id="Settings.Enterprise.Subscription" sil:dynamic="true">
-        <source xml:lang="en">Enterprise Subscription</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Enterprise Subscription</target>
-        <note>ID: Settings.Enterprise.Subscription</note>
-      </trans-unit>
-      <trans-unit id="Settings.Enterprise.SubscriptionCode" sil:dynamic="true">
-        <source xml:lang="en">Subscription Code:</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Subscription Code:</target>
-        <note>ID: Settings.Enterprise.SubscriptionCode</note>
+      <trans-unit id="SubscriptionStatus.DefaultMessage">
+        <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Using subscription: {0}. Expires {1}</target>
+        <note>ID: SubscriptionStatus.DefaultMessage</note>
       </trans-unit>
       <trans-unit id="TeamCollection.TeamCollection">
         <source xml:lang="en">Team Collection</source>
@@ -6974,26 +6951,6 @@
         <source xml:lang="en">Setup</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Setup</target>
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
-      </trans-unit>
-      <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
-        <source xml:lang="en">Your {0} subscription expires on {1}.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Your {0} subscription expires on {1}.</target>
-        <note>ID: SubscriptionStatus.ExpiringSoonMessage</note>
-      </trans-unit>
-      <trans-unit id="SubscriptionStatus.ExpiredMessage">
-        <source xml:lang="en">Your {0} subscription expired on {1}.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Your {0} subscription expired on {1}.</target>
-        <note>ID: SubscriptionStatus.ExpiredMessage</note>
-      </trans-unit>
-      <trans-unit id="SubscriptionStatus.DefaultMessage">
-        <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Using subscription: {0}. Expires {1}</target>
-        <note>ID: SubscriptionStatus.DefaultMessage</note>
-      </trans-unit>
-      <trans-unit id="SubscriptionStatus.RenewalMessage">
-        <source xml:lang="en">Please [contact us](%0) to renew.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Please [contact us](%0) to renew.</target>
-        <note>ID: SubscriptionStatus.RenewalMessage</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true">
         <source xml:lang="en">Put a possible answer here. Check it if it is correct.</source>
