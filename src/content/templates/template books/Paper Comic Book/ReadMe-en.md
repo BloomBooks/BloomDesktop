@@ -1,10 +1,10 @@
-Note: The Overlay Tool requires that you have <a href="" onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom Enterprise</a> enabled. However, you can localize a shellbook that contain overlay elements into your own language without a Bloom subscription.
+Note: The Overlay Tool requires that you have a <a href="" onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom Subscription</a>. However, you can localize a shellbook that contain overlay elements into your own language without a Bloom subscription.
 
 Use this template as a starting point for comics designed for print. The size will be set to "US Comic, which is 6.625″ x 10.25″ (16.826 cm X 26.04 cm).
 
 ## About Full Bleed
 
-This template tells Bloom that this book is a candidate for "[full bleed](https://dw-wp.com/resources/cartooning-quickguides/layout-quickguides/quickguides-bleeds/)" printing by a printshop. This feature is available in Enterprise Mode. If this feature is enabled, then in the Edit tab, you will see semi-opaque borders. The outer one is the "bleed"; this is area that will probably be cut off by a printshop. The inner border is an area that _might_ be cut off, so you should avoid putting things in there that would look really bad if they were cut off. To actually get a PDF that is ready for this commercial printing, please see the "PDF Options" under the Publish Tab.
+This template tells Bloom that this book is a candidate for "[full bleed](https://dw-wp.com/resources/cartooning-quickguides/layout-quickguides/quickguides-bleeds/)" printing by a printshop. This feature is available in with a Bloom subscription. If this feature is enabled, then in the Edit tab, you will see semi-opaque borders. The outer one is the "bleed"; this is area that will probably be cut off by a printshop. The inner border is an area that _might_ be cut off, so you should avoid putting things in there that would look really bad if they were cut off. To actually get a PDF that is ready for this commercial printing, please see the "PDF Options" under the Publish Tab.
 
 ## Limitations of Bloom’s current comic book support
 
