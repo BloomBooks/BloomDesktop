@@ -31,7 +31,7 @@
     --pageNumber-font-size: 11pt;
     /* Either --pageNumber-top or --pageNumber-bottom should be set to a value, but not both. */
     /* bottom: value in .numberedPage:after to display the page number */
-    --pageNumber-bottom: 10px;
+    --pageNumber-bottom: 15px; /* Based on experiment with 5mm unprintable area for desktop printers (tested using boxes in Acrobat).
     /* top: value in .numberedPage:after to display the page number */
     --pageNumber-top: unset;
     /* used for both height: and width: values in .numberedPage:after to display the page number.
@@ -84,11 +84,17 @@
     --page-margin: 12mm;
 
     /* padding-top: value in .bloom-page.outsideFrontCover and .bloom-page.outsideBackCover */
-    --cover-margin-top: var(--page-margin); /* same default value as --page-margin-top, but used for outside cover pages */
+    --cover-margin-top: var(
+        --page-margin
+    ); /* same default value as --page-margin-top, but used for outside cover pages */
     /* padding-bottom: value in .bloom-page.outsideFrontCover and .bloom-page.outsideBackCover */
-    --cover-margin-bottom: var(--page-margin); /* same default value as --page-margin-bottom, but used for outside cover pages */
+    --cover-margin-bottom: var(
+        --page-margin
+    ); /* same default value as --page-margin-bottom, but used for outside cover pages */
     /* padding-left: and padding-right: value in .bloom-page.outsideFrontCover and .bloom-page.outsideBackCover */
-    --cover-margin-side: var(--page-margin); /* same default value as --page-margin-left and --page-margin-right, but used for outside cover pages */
+    --cover-margin-side: var(
+        --page-margin
+    ); /* same default value as --page-margin-left and --page-margin-right, but used for outside cover pages */
     /* display: value in .coverBottomBookTopic */
     --cover-topic-show: doShow-css-will-ignore-this-and-use-default; /* default is topic displaying (the value is a self-documenting trick) */
     /* display: value in .coverBottomLangName */
@@ -125,15 +131,15 @@
 /* Beware of making these rules more specific. We want them to be able to be overridden by .bloom-page rules
  * that come from other themes (and hence later in the generated appearance.css file).
  */
- .A3Landscape,
- .A3Portrait,
- .A4Landscape,
- .A4Portrait,
- .B5Portrait,
- .LetterLandscape,
- .LetterPortrait,
- .LegalLandscape,
- .LegalLandscape {
+.A3Landscape,
+.A3Portrait,
+.A4Landscape,
+.A4Portrait,
+.B5Portrait,
+.LetterLandscape,
+.LetterPortrait,
+.LegalLandscape,
+.LegalLandscape {
     --page-margin: 15mm;
     --page-gutter: 10mm;
 }
@@ -169,13 +175,11 @@
     --pageNumber-always-left-margin: 0px;
 }
 
-.numberedPage[class*="Device"]
-{
+.numberedPage[class*="Device"] {
     /* These page sizes have small margins, so we need extra height on numbered ones.
     (Note that this disappears if page numbers are turned off, because --pageNumber-show-multiplicand is 0.) */
     --pageNumber-extra-height: 8mm !important;
 }
-
 
 /* We need a small margin (above) for xmatter pages (e.g., Robots Mali credits page,
  * especially in landscape, comment in BL-13002).
@@ -203,7 +207,8 @@
 /*****************************************************************************
  * These variables / rules are for xmatter pages.
  */
-.bloom-frontMatter, .bloom-backMatter {
+.bloom-frontMatter,
+.bloom-backMatter {
     --MarginBetweenXMatterBlocks: 2em;
     --MarginBetweenXMatterMinorItems: 5px;
     --DefaultCoverTitle1FontSize: 25pt;
