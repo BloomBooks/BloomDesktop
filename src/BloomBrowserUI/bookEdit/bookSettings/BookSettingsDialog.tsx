@@ -51,9 +51,9 @@ import { PWithLink } from "../../react_components/pWithLink";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 import { StyleAndFontTable } from "./StyleAndFontTable";
 import {
-    BloomEnterpriseIndicatorIconAndText,
-    useEnterpriseAvailable
-} from "../../react_components/requiresBloomEnterprise";
+    BloomSubscriptionIndicatorIconAndText,
+    useHaveSubscription
+} from "../../react_components/requiresSubscription";
 
 let isOpenAlready = false;
 
@@ -320,7 +320,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
         setMigratedTheme("");
     };
 
-    const enterpriseAvailable = useEnterpriseAvailable();
+    const haveSubscription = useHaveSubscription();
 
     function saveSettingsAndCloseDialog() {
         if (settingsToReturnLater) {
@@ -423,7 +423,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         )}
                                         disabled={
                                             appearanceDisabled ||
-                                            !enterpriseAvailable
+                                            !haveSubscription
                                         }
                                     />
                                     <div
@@ -434,7 +434,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                             font-weight: bold;
                                         `}
                                     >
-                                        <BloomEnterpriseIndicatorIconAndText
+                                        <BloomSubscriptionIndicatorIconAndText
                                             css={css`
                                                 margin-left: auto;
                                             `}

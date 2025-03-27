@@ -104,7 +104,7 @@ export const BloomSplitButtonStory: Story = {
                     {
                         english: "Option 1",
                         l10nId: "already-localized",
-                        requiresAnyEnterprise: true,
+                        requiresAnySubscription: true,
                         onClick: () => {
                             alert("Option 1 clicked");
                         }

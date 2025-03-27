@@ -847,10 +847,10 @@ namespace Bloom
                 var downloader = new BookDownload(ProjectContext.CreateBloomS3Client());
                 downloader.HandleBloomBookOrder(bookOrderUrl);
                 PathToBookDownloadedAtStartup = downloader.LastBookDownloadedPath;
-                if (downloader.CollectionCreatedForLastDownload != null)
+                if (downloader.PathToCollectionCreatedForLastDownload != null)
                 {
                     Settings.Default.MruProjects.AddNewPath(
-                        downloader.CollectionCreatedForLastDownload
+                        downloader.PathToCollectionCreatedForLastDownload
                     );
                     Settings.Default.Save();
                     forEdit = true;

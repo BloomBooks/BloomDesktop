@@ -370,7 +370,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     );
     const bookshelfErrorBox = bookshelfHasProblem && (
         <ErrorBox
-            l10Msg="The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription."
+            l10Msg="The collection's bookshelf was not on the list of bookshelves for this Bloom subscription."
             l10nKey="PublishTab.Upload.BookshelfError"
         />
     );
@@ -402,8 +402,8 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 {
                     english: localizedUploadCollection,
                     l10nId: "already-localized",
-                    requiresEnterpriseSubscription: true,
-                    enterpriseTooltipOverride: localizedEnterpriseTooltip,
+                    requiresEnterpriseTier: true,
+                    subscriptionTooltipOverride: localizedEnterpriseTooltip,
                     onClick: () => {
                         progressBoxRef.current?.clear();
                         bulkUploadCollection();
@@ -412,8 +412,8 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 {
                     english: localizedUploadFolder,
                     l10nId: "already-localized",
-                    requiresEnterpriseSubscription: true,
-                    enterpriseTooltipOverride: localizedEnterpriseTooltip,
+                    requiresEnterpriseTier: true,
+                    subscriptionTooltipOverride: localizedEnterpriseTooltip,
                     onClick: () => {
                         progressBoxRef.current?.clear();
                         bulkUploadFolderOfCollections();

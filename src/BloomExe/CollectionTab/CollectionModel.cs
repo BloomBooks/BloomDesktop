@@ -300,7 +300,7 @@ namespace Bloom.CollectionTab
             _currentEditableCollectionSelection.SelectCollection(editableCollection);
             yield return editableCollection;
             // If we're locked to one downloaded book, we don't need to show the source collections, or even to load them.
-            if (!_collectionSettings.LockedToOneDownloadedBook)
+            if (!_collectionSettings.EditingABlorgBook)
             {
                 foreach (var bookCollection in _sourceCollectionsList.GetSourceCollectionsFolders())
                 {

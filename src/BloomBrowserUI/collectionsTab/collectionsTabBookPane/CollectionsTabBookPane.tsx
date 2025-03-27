@@ -12,7 +12,7 @@ import { useMonitorBookSelection } from "../../app/selectedBook";
 import BloomButton from "../../react_components/bloomButton";
 import { kDarkestBackground } from "../../bloomMaterialUITheme";
 import { useSubscribeToWebSocketForEvent } from "../../utils/WebSocketManager";
-import { useEnterpriseAvailable } from "../../react_components/requiresBloomEnterprise";
+import { useHaveSubscription } from "../../react_components/requiresSubscription";
 import { Tab, TabList, TabPanel } from "react-tabs";
 import { LocalizedString } from "../../react_components/l10nComponents";
 import { CollectionHistoryTable } from "../../teamCollection/CollectionHistoryTable";
@@ -41,7 +41,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     );
     const [reload, setReload] = useState(0);
     const [reloadStatus, setReloadStatus] = useState(0);
-    const enterpriseAvailable = useEnterpriseAvailable();
+    const enterpriseAvailable = useHaveSubscription();
     // Force a reload when told the book changed, even if it's the same book [id]
     useSubscribeToWebSocketForEvent("bookContent", "reload", () =>
         setReload(old => old + 1)

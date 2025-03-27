@@ -13,7 +13,7 @@ import { get, getString } from "../../utils/bloomApi";
 
 // Initialization function, sets up all the editing functions we support for these elements.
 export function SetupWidgetEditing(container: HTMLElement): void {
-    get("settings/enterpriseEnabled", result => {
+    get("settings/subscriptionEnabled", result => {
         const isEnterpriseEnabled: boolean = result.data;
         if (isEnterpriseEnabled) {
             const widgets = Array.from(

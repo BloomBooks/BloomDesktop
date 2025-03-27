@@ -2251,7 +2251,7 @@ namespace Bloom.Publish.Epub
         //				var file = parsedQuery["id"];
         //				if (!String.IsNullOrEmpty(file))
         //				{
-        //					var path = Bloom.Api.BrandingApi.FindBrandingImageFileIfPossible(Book.CollectionSettings.BrandingProjectKey, file, Book.GetLayout());
+        //					var path = Bloom.Api.BrandingApi.FindBrandingImageFileIfPossible(Book.CollectionSettings.Subscription.descriptor, file, Book.GetLayout());
         //					if (!String.IsNullOrEmpty(path) && RobustFile.Exists(path))
         //						return path;
         //				}

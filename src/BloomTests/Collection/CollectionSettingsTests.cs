@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Xml.Linq;
 using Bloom.Book;
 using Bloom.Collection;
-using FFMpegCore.Arguments;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
@@ -202,13 +201,12 @@ namespace BloomTests.Collection
         }
 
         [Test]
-        public void DefaultBookshelf_ReadWrite()
+        public void Reading_InvalidSubscription_ClearsDefaultBookshelf()
         {
             var bloomCollectionFileContents =
                 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <Collection version=""0.2"">
-	<BrandingProjectName>Kygyzstan2020</BrandingProjectName>
-	<SubscriptionCode>FakeCode</SubscriptionCode>
+	<SubscriptionCode>Foobar-123456-1234</SubscriptionCode>
 	<DefaultBookTags>bookshelf:kygyzstan2020-ky-grade1-term1</DefaultBookTags>
 </Collection>";
             const string collectionName = "test";
@@ -219,31 +217,36 @@ namespace BloomTests.Collection
             Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
             RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
             var settings = CreateCollectionSettings(_folder.Path, collectionName);
-            // If there isn't a valid project name/code pair, then the project goes to Default and the bookshelf to none.
-            // We don't want to expose a valid name/code pair in the source code so this test is all we have.
+            // If there isn't a valid subscription, then the project goes to Default and the bookshelf to none.
+            // We don't want to expose a valid subscription in the source code so this test is all we have. (JH: couldn't we use an expired one?)
             Assert.That(settings.DefaultBookshelf, Is.EqualTo(""));
-            Assert.That(settings.BrandingProjectKey, Is.EqualTo("Default"));
-            Assert.That(settings.SubscriptionCode, Is.EqualTo("FakeCode"));
+            Assert.That(settings.Subscription.Descriptor, Is.EqualTo("Foobar"));
+            Assert.That(settings.Subscription.Code, Is.EqualTo("Foobar-123456-1234"));
+        }
+
+        // I'm not clear why this needs a test, but I split it off from another test to clarify the intent.
+        [Test]
+        public void Writing_InvalidSubscription_StillWritesBookshelf()
+        {
+            const string collectionName = "test";
+            var collectionPath = CollectionSettings.GetPathForNewSettings(
+                _folder.Path,
+                collectionName
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
+
+            var settings = new CollectionSettings(collectionPath);
             // We don't protect writing the same way as reading, since users aren't able to select a bookshelf unless
             // they've established a valid project which has one or more bookshelves.
-            settings.DefaultBookshelf = "some-other-shelf";
+            settings.DefaultBookshelf = "foobar";
             settings.Save();
             var newContents = RobustFile.ReadAllText(collectionPath);
             AssertThatXmlIn
                 .String(newContents)
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    "//DefaultBookTags[text()='bookshelf:some-other-shelf']",
+                    "//DefaultBookTags[text()='bookshelf:foobar']",
                     1
                 );
-            var settings2 = CreateCollectionSettings(
-                Path.GetDirectoryName(collectionPath),
-                collectionName
-            );
-            // And the assigned bookshelf will disappear on loading into the CollectionSettings object.
-            // The fake SubscriptionCode has disappeared because the Default project doesn't need a subscription code so it isn't saved.
-            Assert.That(settings2.DefaultBookshelf, Is.EqualTo(""));
-            Assert.That(settings2.BrandingProjectKey, Is.EqualTo("Default"));
-            Assert.That(settings2.SubscriptionCode, Is.Null);
         }
 
         [TestCase(null, null, null, new[] { "en" })]

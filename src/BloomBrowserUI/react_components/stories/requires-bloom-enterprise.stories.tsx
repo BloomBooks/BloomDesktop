@@ -1,40 +1,40 @@
 import {
-    RequiresBloomEnterpriseDialog,
-    RequiresBloomEnterpriseNotice,
-    RequiresBloomEnterpriseNoticeDialog,
-    RequiresBloomEnterpriseOverlayWrapper
-} from "../requiresBloomEnterprise";
+    RequiresSubscriptionDialog,
+    RequiresSubscriptionNotice,
+    RequiresSubscriptionNoticeDialog,
+    RequiresSubscriptionOverlayWrapper
+} from "../requiresSubscription";
 import { normalDialogEnvironmentForStorybook } from "../BloomDialog/BloomDialogPlumbing";
 
 import { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta = {
-    title: "RequiresBloomEnterprise"
+    title: "RequiresSubscription"
 };
 
 export default meta;
 type Story = StoryObj;
 
-export const RequiresBloomEnterpriseNoticeDialogStory: Story = {
-    name: "RequiresBloomEnterpriseNoticeDialog",
-    render: () => <RequiresBloomEnterpriseNoticeDialog />
+export const RequiresSubscriptionNoticeDialogStory: Story = {
+    name: "RequiresSubscriptionNoticeDialog",
+    render: () => <RequiresSubscriptionNoticeDialog />
 };
 
-export const RequiresBloomEnterpriseDialogStory: Story = {
-    name: "RequiresBloomEnterpriseDialog",
+export const RequiresSubscriptionDialogStory: Story = {
+    name: "RequiresSubscriptionDialog",
     render: () => (
-        <RequiresBloomEnterpriseDialog
+        <RequiresSubscriptionDialog
             dialogEnvironment={normalDialogEnvironmentForStorybook}
         />
     )
 };
 
-export const RequiresBloomEnterpriseNoticeStory: Story = {
-    name: "RequiresBloomEnterpriseNotice",
-    render: () => <RequiresBloomEnterpriseNotice />
+export const RequiresSubscriptionNoticeStory: Story = {
+    name: "RequiresSubscriptionNotice",
+    render: () => <RequiresSubscriptionNotice />
 };
 
-export const RequiresBloomEnterpriseOverlayWrapperStory: Story = {
-    name: "RequiresBloomEnterpriseOverlayWrapper",
-    render: () => <RequiresBloomEnterpriseOverlayWrapper />
+export const RequiresSubscriptionOverlayWrapperStory: Story = {
+    name: "RequiresSubscriptionOverlayWrapper",
+    render: () => <RequiresSubscriptionOverlayWrapper />
 };

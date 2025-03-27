@@ -162,13 +162,10 @@ namespace BloomTests.Publish
             Bloom.Book.Book book,
             BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions =
                 BookInfo.HowToPublishImageDescriptions.None,
-            string branding = "Default",
             Action<EpubMaker> extraInit = null,
             bool unpaginated = true
         )
         {
-            book.CollectionSettings.BrandingProjectKey = branding;
-
             // BringBookUpToDate is done on entering the Publish tab, outside the scope of these tests.
             // But note that it must be done AFTER setting the branding (which in Bloom will happen well before
             // entering the Publish tab).
@@ -216,7 +213,6 @@ namespace BloomTests.Publish
             Bloom.Book.Book book,
             BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions =
                 BookInfo.HowToPublishImageDescriptions.None,
-            string branding = "Default",
             Action<EpubMaker> extraInit = null
         )
         {
@@ -230,7 +226,6 @@ namespace BloomTests.Publish
                         folderName,
                         book,
                         howToPublishImageDescriptions,
-                        branding,
                         extraInit
                     );
                     if (i > 1)
@@ -468,6 +463,12 @@ namespace BloomTests.Publish
             book.UpdateEditableAreasOfElement(book.OurHtmlDom);
 
             book.CollectionSettings.XMatterPackName = "Device"; // give us predictable xmatter with content on page 2
+
+            book.CollectionSettings.Subscription =
+                Subscription.ForUnitTestWithOverrideTierOrDescriptor(
+                    Subscription.SubscriptionTier.Community,
+                    "Foobar-LC"
+                );
 
             return book;
         }

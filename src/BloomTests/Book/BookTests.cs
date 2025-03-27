@@ -5149,7 +5149,9 @@ namespace BloomTests.Book
             );
 
             var book = CreateBook();
-            book.CollectionSettings.BrandingProjectKey = "MyCustomBrand"; // Needed so Enterprise Features is considered enabled which is needed for quizzes
+            book.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
+                Subscription.SubscriptionTier.Enterprise
+            ); // Needed so Enterprise Features is considered enabled which is needed for quizzes
 
             book.UpdateMetadataFeatures(false, false, null);
 
@@ -5176,7 +5178,9 @@ namespace BloomTests.Book
             );
 
             var book = CreateBook();
-            book.CollectionSettings.BrandingProjectKey = "MyCustomBrand"; // Needed so Enterprise Features is considered enabled which is needed for quizzes
+            book.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
+                Subscription.SubscriptionTier.Enterprise
+            ); // Needed so Enterprise Features is considered enabled which is needed for quizzes
 
             book.UpdateMetadataFeatures(false, false, null);
 
@@ -6164,7 +6168,7 @@ namespace BloomTests.Book
             var doc = SafeXmlDocument.Create();
             doc.LoadXml(xml);
             var page = doc.DocumentElement;
-            Assert.True(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
+            Assert.True(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
         }
 
         // Originally, video was enterprise-only, so the logic was reversed.
@@ -6202,7 +6206,7 @@ namespace BloomTests.Book
             var doc = SafeXmlDocument.Create();
             doc.LoadXml(xml);
             var page = doc.DocumentElement;
-            Assert.False(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
+            Assert.False(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
         }
 
         [Test]
@@ -6233,7 +6237,7 @@ namespace BloomTests.Book
             var doc = SafeXmlDocument.Create();
             doc.LoadXml(xml);
             var page = doc.DocumentElement;
-            Assert.False(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
+            Assert.False(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
         }
 
         private const string kSentenceModeRecordingHtml =

@@ -16,7 +16,7 @@ import { getBloomApiPrefix } from "../utils/bloomApi";
 import { getToolboxBundleExports } from "../bookEdit/js/bloomFrames";
 import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
-import { useEnterpriseAvailable } from "../react_components/requiresBloomEnterprise";
+import { useHaveSubscription } from "../react_components/requiresSubscription";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 import axios from "axios";
 
@@ -120,7 +120,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         HTMLDivElement | undefined
     >(undefined);
 
-    const isEnterpriseAvailable = useEnterpriseAvailable();
+    const isEnterpriseAvailable = useHaveSubscription();
 
     // Tell edit tab to disable everything when the dialog is up.
     // (Without this, the page list is not disabled since the modal
