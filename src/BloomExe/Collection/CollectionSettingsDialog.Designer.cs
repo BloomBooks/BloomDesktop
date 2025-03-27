@@ -70,8 +70,6 @@ namespace Bloom.Collection
 			this._showExperimentalBookSources = new System.Windows.Forms.CheckBox();
 			this._enterpriseRequiredForTeamCollection = new System.Windows.Forms.Label();
 			this._allowTeamCollection = new System.Windows.Forms.CheckBox();
-			this._enterpriseRequiredForSpreadsheetImportExport = new System.Windows.Forms.Label();
-			this._allowSpreadsheetImportExport = new System.Windows.Forms.CheckBox();
 			this._okButton = new System.Windows.Forms.Button();
 			this._restartReminder = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
@@ -556,8 +554,6 @@ namespace Bloom.Collection
             this.tabPage4.Controls.Add(this._showExperimentalBookSources);
 			this.tabPage4.Controls.Add(this._enterpriseRequiredForTeamCollection);
 			this.tabPage4.Controls.Add(this._allowTeamCollection);
-			this.tabPage4.Controls.Add(this._enterpriseRequiredForSpreadsheetImportExport);
-			this.tabPage4.Controls.Add(this._allowSpreadsheetImportExport);
 			this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizingId(this.tabPage4, "CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel");
@@ -636,32 +632,6 @@ namespace Bloom.Collection
 			this._allowTeamCollection.Text = "Team Collections";
 			this._allowTeamCollection.UseVisualStyleBackColor = false;
 			this._allowTeamCollection.CheckedChanged += new System.EventHandler(this._allowTeamCollection_CheckedChanged);
-			//
-			// _enterpriseRequiredForSpreadsheetImportExport
-			//
-			this._enterpriseRequiredForSpreadsheetImportExport.Image = global::Bloom.Properties.Resources.enterpriseBadge;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForSpreadsheetImportExport, "To use this feature, you\'ll need a Bloom Subscription.");
-			this._L10NSharpExtender.SetLocalizationComment(this._enterpriseRequiredForSpreadsheetImportExport, null);
-			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForSpreadsheetImportExport, "CollectionSettingsDialog.RequiresSubscription");
-			this._enterpriseRequiredForSpreadsheetImportExport.Location = new System.Drawing.Point(0, 158);
-			this._enterpriseRequiredForSpreadsheetImportExport.Name = "_enterpriseRequiredForSpreadsheetImportExport";
-			this._enterpriseRequiredForSpreadsheetImportExport.Size = new System.Drawing.Size(23, 23);
-			this._enterpriseRequiredForSpreadsheetImportExport.TabIndex = 10;
-			//
-			// _allowSpreadsheetImportExport
-			//
-			this._allowSpreadsheetImportExport.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._allowSpreadsheetImportExport, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._allowSpreadsheetImportExport, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._allowSpreadsheetImportExport, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._allowSpreadsheetImportExport, "CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport");
-			this._allowSpreadsheetImportExport.Location = new System.Drawing.Point(27, 158);
-			this._allowSpreadsheetImportExport.Name = "_allowSpreadsheetImportExport";
-			this._allowSpreadsheetImportExport.Size = new System.Drawing.Size(193, 23);
-			this._allowSpreadsheetImportExport.TabIndex = 11;
-			this._allowSpreadsheetImportExport.Text = "Spreadsheet Import/Export";
-			this._allowSpreadsheetImportExport.UseVisualStyleBackColor = false;
-			this._allowSpreadsheetImportExport.CheckedChanged += new System.EventHandler(this._allowSpreadsheetImportExport_CheckedChanged);
 			//
 			// _okButton
 			//
@@ -830,8 +800,6 @@ namespace Bloom.Collection
 		private System.Windows.Forms.CheckBox _showExperimentalBookSources;
 		private Label _enterpriseRequiredForTeamCollection;
 		private CheckBox _allowTeamCollection;
-		private Label _enterpriseRequiredForSpreadsheetImportExport;
-		private CheckBox _allowSpreadsheetImportExport;
 		private Button _helpButton;
 		private TabPage _subscriptionTab;
 		private web.ReactControl _subscriptionSettingsControl;

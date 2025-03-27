@@ -37,7 +37,6 @@ export const BooksOfCollection: React.FunctionComponent<{
     collectionId: string;
     isEditableCollection: boolean;
     manager: BookSelectionManager;
-    isSpreadsheetFeatureActive: boolean;
     // If true, the collection will be wrapped in a LazyLoad so that most of its rendering
     // isn't done until it is visible on screen.
     lazyLoadCollection?: boolean;
@@ -166,9 +165,6 @@ export const BooksOfCollection: React.FunctionComponent<{
                                         book={book}
                                         collection={collection}
                                         manager={props.manager}
-                                        isSpreadsheetFeatureActive={
-                                            props.isSpreadsheetFeatureActive
-                                        }
                                         lockedToOneDownloadedBook={
                                             props.lockedToOneDownloadedBook
                                         }

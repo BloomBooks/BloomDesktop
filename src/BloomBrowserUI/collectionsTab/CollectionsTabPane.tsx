@@ -151,10 +151,6 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
     });
 
     const [draggingSplitter, setDraggingSplitter] = useState(false);
-    const [
-        isSpreadsheetFeatureActive,
-        setIsSpreadsheetFeatureActive
-    ] = useState(false);
 
     // Initially (when Bloom first starts, until we persist splitter settings) the vertical
     // splitter between the editable collection and the others is set to give them equal space.
@@ -177,16 +173,6 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         const manager = new BookSelectionManager();
         manager.initialize();
         return manager;
-    }, []);
-
-    useEffect(() => {
-        get("app/enabledExperimentalFeatures", result => {
-            const features: string = result.data; // This is a string containing the experimental feature names
-            const featureIsActive = Boolean(
-                features.includes("spreadsheet-import-export")
-            );
-            setIsSpreadsheetFeatureActive(featureIsActive);
-        });
     }, []);
 
     const [contextMousePoint, setContextMousePoint] = React.useState<
@@ -323,9 +309,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         // the collection menu commands don't actually use the ID of
         // a particular book
         "",
-        collections[0].id,
-        // Shouldn't be any at this level, but it works better to include this here too.
-        isSpreadsheetFeatureActive
+        collections[0].id
     );
 
     if (newCollection) {
@@ -356,7 +340,6 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                 isLink={c.isLink}
                 isRemovableFolder={c.isRemovableFolder}
                 manager={manager}
-                isSpreadsheetFeatureActive={isSpreadsheetFeatureActive}
                 onRemoveSourceCollection={removeSourceCollection}
                 onRemoveSourceFolder={removeSourceFolder}
                 filter={c.filter}
@@ -499,9 +482,6 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                             isEditableCollection={true}
                             manager={manager}
                             lazyLoadCollection={false}
-                            isSpreadsheetFeatureActive={
-                                isSpreadsheetFeatureActive
-                            }
                             lockedToOneDownloadedBook={
                                 lockedToOneDownloadedBook
                             }
@@ -626,7 +606,6 @@ export const makeMenuItems = (
     close: () => void,
     bookId: string,
     collectionId: string,
-    includeSpreadsheetItems: boolean,
     tooltipIfCannotSaveBook?: string
 ) => {
     const menuItemsT = menuItemsSpecs
@@ -642,7 +621,6 @@ export const makeMenuItems = (
                     close,
                     bookId,
                     collectionId,
-                    includeSpreadsheetItems,
                     tooltipIfCannotSaveBook
                 );
                 return submenuItems.length ? (
@@ -697,11 +675,6 @@ export const makeMenuItems = (
             if (spec.onClick) {
                 clickAction = spec.onClick;
             }
-            if (
-                !includeSpreadsheetItems &&
-                Boolean(spec.l10nId!.includes("Spreadsheet"))
-            )
-                return undefined;
             return (
                 <LocalizableMenuItem
                     key={spec.l10nId}
@@ -741,7 +714,6 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
     isLink: boolean;
     isRemovableFolder: boolean;
     manager: BookSelectionManager;
-    isSpreadsheetFeatureActive: boolean;
     onRemoveSourceCollection: (id: string) => void;
     onRemoveSourceFolder: (id: string) => void;
     filter?: (book: IBookInfo) => boolean;
@@ -783,7 +755,6 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
                 isEditableCollection={false}
                 manager={props.manager}
                 lazyLoadCollection={true}
-                isSpreadsheetFeatureActive={props.isSpreadsheetFeatureActive}
                 lockedToOneDownloadedBook={false}
                 filter={props.filter}
             />

@@ -129,9 +129,6 @@ namespace Bloom.Collection
             _allowTeamCollection.Checked = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kTeamCollections
             );
-            _allowSpreadsheetImportExport.Checked = ExperimentalFeatures.IsFeatureEnabled(
-                ExperimentalFeatures.kSpreadsheetImportExport
-            );
 
             if (
                 !ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
@@ -414,7 +411,6 @@ namespace Bloom.Collection
                 _automaticallyUpdate.Checked && Environment.OSVersion.Version.Major >= 10;
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
-            UpdateSpreadsheetImportExportAllowed();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -723,19 +719,6 @@ namespace Bloom.Collection
             ExperimentalFeatures.SetValue(
                 ExperimentalFeatures.kTeamCollections,
                 _allowTeamCollection.Checked
-            );
-        }
-
-        private void _allowSpreadsheetImportExport_CheckedChanged(object sender, EventArgs e)
-        {
-            ChangeThatRequiresRestart();
-        }
-
-        private void UpdateSpreadsheetImportExportAllowed()
-        {
-            ExperimentalFeatures.SetValue(
-                ExperimentalFeatures.kSpreadsheetImportExport,
-                _allowSpreadsheetImportExport.Checked
             );
         }
 
