@@ -99,27 +99,27 @@
       </trans-unit>
       <trans-unit id="Settings.Subscription.SubscriptionCodeLabel">
         <source xml:lang="en">Subscription Code:</source>
-        <target xml:lang="es-ES" state="needs-translation">Subscription Code:</target>
+        <target xml:lang="es-ES" state="translated">Código de suscripción:</target>
         <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.CheckUpdates">
         <source xml:lang="en">Check for updates</source>
-        <target xml:lang="es-ES" state="needs-translation">Check for updates</target>
+        <target xml:lang="es-ES" state="translated">Buscar actualizaciones</target>
         <note>ID: Settings.Subscription.CheckUpdates</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.Expiration">
         <source xml:lang="en">Expires:</source>
-        <target xml:lang="es-ES" state="needs-translation">Expires:</target>
+        <target xml:lang="es-ES" state="translated">Expira:</target>
         <note>ID: Settings.Subscription.Expiration</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.Expired">
         <source xml:lang="en">That code has expired.</source>
-        <target xml:lang="es-ES" state="needs-translation">That code has expired.</target>
+        <target xml:lang="es-ES" state="translated">Ese código ya expiró.</target>
         <note>ID: Settings.Subscription.Expired</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.Incomplete">
         <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
-        <target xml:lang="es-ES" state="needs-translation"> The code should look like SOMENAME-123456-7890</target>
+        <target xml:lang="es-ES" state="translated"> El código debe tener el formato NOMBRE-123456-7890</target>
         <note>ID: Settings.Subscription.Incomplete</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.Overview">
@@ -143,17 +143,17 @@
       </trans-unit>
       <trans-unit id="Settings.Subscription.NotValid">
         <source xml:lang="en">That code appears to be incorrect.</source>
-        <target xml:lang="es-ES" state="needs-translation">That code appears to be incorrect.</target>
+        <target xml:lang="es-ES" state="translated">Ese código parece estar incorrecto.</target>
         <note>ID: Settings.Subscription.NotValid</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.UnknownCode">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
-        <target xml:lang="es-ES" state="needs-translation">This version of Bloom does not have the artwork that goes with that subscription.</target>
+        <target xml:lang="es-ES" state="translated">Esta versión de Bloom no contiene las ilustraciones que van con su suscripción.</target>
         <note>ID: Settings.Subscription.UnknownCode</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.WhatsThis">
         <source xml:lang="en">What's This?</source>
-        <target xml:lang="es-ES" state="needs-translation">What's This?</target>
+        <target xml:lang="es-ES" state="translated">¿Qué es esto?</target>
         <note>ID: Settings.Subscription.WhatsThis</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.DataDivConflictWarning" approved="yes">
