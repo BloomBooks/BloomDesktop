@@ -10,7 +10,7 @@ import {
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 import {
-    kbackgroundImageClass,
+    kBackgroundImageClass,
     updateCanvasElementClass
 } from "./CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
@@ -427,7 +427,7 @@ export function getBackgroundCanvasElementFromContainer(
     imageContainer: HTMLElement
 ): HTMLElement | null {
     return imageContainer.getElementsByClassName(
-        kbackgroundImageClass
+        kBackgroundImageClass
     )[0] as HTMLElement;
 }
 
@@ -762,11 +762,11 @@ export function SetImageElementUrl(imgOrDivWithBackgroundImage, url) {
 export function SetupMetadataButton(parent: HTMLElement) {
     // This method is called from bloomEditing.ts / SetupElements with the body element.
     let bgImageCanvasElements: HTMLElement[] = [];
-    if (parent.classList.contains(kbackgroundImageClass)) {
+    if (parent.classList.contains(kBackgroundImageClass)) {
         bgImageCanvasElements.push(parent);
     } else {
         bgImageCanvasElements = Array.from(
-            parent.getElementsByClassName(kbackgroundImageClass)
+            parent.getElementsByClassName(kBackgroundImageClass)
         ) as HTMLElement[];
     }
     for (const bgImageCanvasElement of bgImageCanvasElements) {

@@ -13,7 +13,7 @@ import {
     getPageIframeBody
 } from "../../utils/shared";
 import { EditableDivUtils } from "../js/editableDivUtils";
-import { DragActivityTool } from "./games/GameTool";
+import { GameTool } from "./games/GameTool";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
@@ -218,8 +218,8 @@ export class ToolBox {
         }
     }
 
-    public getTheOneDragActivityTool(): DragActivityTool | undefined {
-        return DragActivityTool.theOneDragActivityTool;
+    public getTheOneDragActivityTool(): GameTool | undefined {
+        return GameTool.theOneDragActivityTool;
     }
 
     // Append "Tool" to the tool name if it's not already there.
