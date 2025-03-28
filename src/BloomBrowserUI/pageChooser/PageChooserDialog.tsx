@@ -23,7 +23,7 @@ import {
     kBloomCanvasClass,
     kBloomCanvasSelector
 } from "../bookEdit/js/bloomImages";
-import { useGetFeatureStatus } from "../react_components/subcriptionFeature";
+import { useGetFeatureStatus } from "../react_components/featureStatus";
 
 interface IPageChooserDialogProps {
     forChooseLayout: boolean;

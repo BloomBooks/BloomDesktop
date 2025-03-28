@@ -5601,33 +5601,6 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Used by the publish tab to tell the user they can't publish a book with canvas elements w/o Enterprise.
-        /// </summary>
-        /// <returns></returns>
-        public string GetNumberOfFirstPageWithCanvasElement()
-        {
-            var pageNodes = RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
-            if (pageNodes.Length == 0) // Unexpected!
-                return "";
-            foreach (var pageNode in pageNodes)
-            {
-                var resultNode = pageNode.SelectSingleNode(
-                    ".//div[contains(@class,'" + HtmlDom.kCanvasElementClass + "')]"
-                );
-                if (resultNode == null)
-                    continue;
-                var pageNumberAttribute = pageNode.GetAttribute("data-page-number");
-                if (!string.IsNullOrEmpty(pageNumberAttribute))
-                {
-                    return pageNumberAttribute;
-                }
-                // If at some point we allow canvas element elements on xmatter,
-                // we will need to find and return the 'data-xmatter-page' attribute.
-            }
-            return ""; // Also unexpected!
-        }
-
-        /// <summary>
         /// Given a choice, what language should we use to display text on the page (not in the UI, which is controlled by the UI Language)
         /// </summary>
         /// <returns>A prioritized enumerable of language codes</returns>

@@ -24,7 +24,7 @@ import {
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
 import { kUiFontStack } from "../bloomMaterialUITheme";
 import { Variant } from "@mui/material/styles/createTypography";
-import { useGetFeatureStatus } from "./subcriptionFeature";
+import { useGetFeatureStatus } from "./featureStatus";
 
 interface IBaseLocalizableMenuItemProps {
     english: string;
@@ -86,11 +86,8 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
         variant: variant
     };
     const label = useL10n(props.english, props.l10nId);
-    const { enabled, requiresSubscription } = useGetFeatureStatus(
-        props.subscriptionFeature
-    );
-
-    // Otherwise, keep the default true value
+    const featureStatus = useGetFeatureStatus(props.subscriptionFeature);
+    const enabled = featureStatus?.Enabled;
 
     const iconElement = props.icon ? (
         <ListItemIcon
@@ -123,7 +120,8 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
         "CollectionSettingsDialog.RequiresSubscription_ToolTip_"
     );
 
-    const subscriptionElement = requiresSubscription ? (
+    // TODO we'll need more than this enteprprise sticker for the new subscription model.
+    const subscriptionElement = enabled ? (
         <img
             css={css`
                 width: ${kEnterpriseStickerAffordance}px !important;

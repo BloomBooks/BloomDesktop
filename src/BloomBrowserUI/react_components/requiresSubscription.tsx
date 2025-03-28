@@ -30,7 +30,7 @@ import {
     useSetupBloomDialog
 } from "./BloomDialog/BloomDialogPlumbing";
 import { getBloomApiPrefix } from "../utils/bloomApi";
-import { useGetFeatureStatus } from "./subcriptionFeature";
+import { useGetFeatureStatus } from "./featureStatus";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 //  From the enum values in CollectionSettingsApi.cs.
@@ -171,7 +171,7 @@ export const BloomEnterpriseIcon = props => {
 export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
     subscriptionFeature: string;
 }> = props => {
-    const { enabled } = useGetFeatureStatus(props.subscriptionFeature);
+    const featureStatus = useGetFeatureStatus(props.subscriptionFeature);
 
     return (
         <div
@@ -187,7 +187,7 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
             >
                 {props.children}
             </div>
-            {enabled || (
+            {featureStatus?.Enabled || (
                 <div
                     css={css`
                         position: absolute;

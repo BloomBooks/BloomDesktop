@@ -432,14 +432,13 @@ namespace Bloom.web.controllers
                             .CurrentSelection
                             .BookInfo
                             .AllowUploading,
-                        cannotPublishWithoutEnterprise = _publishModel.CannotPublishWithoutEnterprise,
                         cannotPublishWithoutCheckout = _publishModel.CannotPublishWithoutCheckout,
                         canDownloadPDF = _publishModel.PdfGenerationSucceeded, // To be used for the context menu
                         titleForDisplay = _publishModel
                             .BookSelection
                             .CurrentSelection
                             .TitleBestForUserDisplay,
-                        numberOfFirstPageWithCanvasElement = _publishModel.BookSelection.CurrentSelection.GetNumberOfFirstPageWithCanvasElement(),
+                        featurePreventingPublishing = _publishModel.GetFeaturePreventingPublishingOrNull(),
                     }
                 )
             );
