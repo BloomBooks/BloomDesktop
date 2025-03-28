@@ -18,7 +18,7 @@ import { SignLanguageTool } from "./signLanguage/signLanguageTool";
 import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 import "errorHandler";
 import { OverlayTool } from "./overlay/overlayTool";
-import { DragActivityTool, setActiveDragActivityTab } from "./games/GameTool";
+import { GameTool, setActiveDragActivityTab } from "./games/GameTool";
 import { IAudioRecorder } from "./talkingBook/IAudioRecorder";
 import { theOneAudioRecorder } from "./talkingBook/audioRecording";
 
@@ -107,4 +107,4 @@ ToolBox.registerTool(new TalkingBookTool());
 ToolBox.registerTool(new SignLanguageTool());
 ToolBox.registerTool(new ImageDescriptionAdapter());
 ToolBox.registerTool(new OverlayTool());
-ToolBox.registerTool(new DragActivityTool());
+ToolBox.registerTool(new GameTool());

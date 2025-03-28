@@ -48,7 +48,7 @@ import { Divider } from "@mui/material";
 import { DuplicateIcon } from "./DuplicateIcon";
 import {
     CanvasElementManager,
-    kbackgroundImageClass,
+    kBackgroundImageClass,
     theOneCanvasElementManager
 } from "./CanvasElementManager";
 import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
@@ -160,7 +160,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         setImageSound(props.canvasElement.getAttribute("data-sound") ?? "none");
     }, [props.canvasElement]);
     const isBackgroundImage = props.canvasElement.classList.contains(
-        kbackgroundImageClass
+        kBackgroundImageClass
     );
     const canExpandBackgroundImage = theOneCanvasElementManager?.canExpandToFillSpace();
 
