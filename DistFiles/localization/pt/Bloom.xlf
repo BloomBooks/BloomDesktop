@@ -357,9 +357,9 @@
         <target xml:lang="pt-PT" state="final">Houve um problema ao salvar. Por favor, retorne à página anterior e certifique-se de que a aparência esteja correta.</target>
         <note>ID: Browser.ProblemSaving</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
+      <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions" approved="yes">
         <source xml:lang="en">About Bloom Subscriptions</source>
-        <target xml:lang="pt-PT" state="needs-translation">About Bloom Subscriptions</target>
+        <target xml:lang="pt-PT" state="final">Sobre as assinaturas Bloom</target>
         <note>ID: CollectionSettingsDialog.AboutBloomSubscriptions</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
@@ -665,9 +665,9 @@
         <target xml:lang="pt-PT" state="final">Província</target>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.RequiresSubscription_ToolTip_" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.RequiresSubscription_ToolTip_" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
-        <target xml:lang="pt-PT" state="needs-translation">To use this feature, you'll need a Bloom Subscription.</target>
+        <target xml:lang="pt-PT" state="final">Para usar esse recurso, precisará de uma Assinatura de Bloom.</target>
         <note>ID: CollectionSettingsDialog.RequiresSubscription_ToolTip_</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart" approved="yes">
@@ -1030,9 +1030,9 @@
         <target xml:lang="pt-PT" state="final">Voltar</target>
         <note>ID: Common.BackButton</note>
       </trans-unit>
-      <trans-unit id="Common.BloomSubscriptionFeature">
+      <trans-unit id="Common.BloomSubscriptionFeature" approved="yes">
         <source xml:lang="en">Bloom Subscription Feature</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom Subscription Feature</target>
+        <target xml:lang="pt-PT" state="final">Recurso de Assinatura Bloom</target>
         <note>ID: Common.BloomSubscriptionFeature</note>
       </trans-unit>
       <trans-unit id="Common.Cancel" approved="yes">
@@ -1104,9 +1104,9 @@
         <target xml:lang="pt-PT" state="final">Concluído</target>
         <note>ID: Common.Done</note>
       </trans-unit>
-      <trans-unit id="Common.SubscriptionRequired">
+      <trans-unit id="Common.SubscriptionRequired" approved="yes">
         <source xml:lang="en">Subscription Required</source>
-        <target xml:lang="pt-PT" state="needs-translation">Subscription Required</target>
+        <target xml:lang="pt-PT" state="final">Assinatura necessária</target>
         <note>ID: Common.SubscriptionRequired</note>
       </trans-unit>
       <trans-unit id="Common.Error" approved="yes">
@@ -1654,14 +1654,14 @@
         <target xml:lang="pt-PT" state="final">Esta frase é muito longa para este nível.</target>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
       </trans-unit>
-      <trans-unit id="EditTab.SubscriptionEnabled" sil:dynamic="true">
+      <trans-unit id="EditTab.SubscriptionEnabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Your subscription includes this feature.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Your subscription includes this feature.</target>
+        <target xml:lang="pt-PT" state="final">Sua assinatura inclui este recurso.</target>
         <note>ID: EditTab.SubscriptionEnabled</note>
       </trans-unit>
-      <trans-unit id="EditTab.SubscriptionSettingsButton" sil:dynamic="true">
+      <trans-unit id="EditTab.SubscriptionSettingsButton" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom Subscription Settings</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom Subscription Settings</target>
+        <target xml:lang="pt-PT" state="final">Recurso de Assinatura Bloom</target>
         <note>ID: EditTab.SubscriptionSettingsButton</note>
       </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true" approved="yes">
