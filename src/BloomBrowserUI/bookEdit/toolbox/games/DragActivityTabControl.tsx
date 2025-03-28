@@ -1,10 +1,9 @@
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import { ThemeProvider } from "@mui/material/styles";
 import * as React from "react";
 import {
     kBloomBlue,
     kDarkestBackground,
-    kUiFontStack,
     toolboxTheme
 } from "../../../bloomMaterialUITheme";
 import * as ReactDOM from "react-dom";
@@ -12,6 +11,7 @@ import { getToolboxBundleExports } from "../../js/bloomFrames";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { default as PencilIcon } from "@mui/icons-material/Edit";
 import { showGamePromptDialog } from "../games/GameTool";
+import BloomButton from "../../../react_components/bloomButton";
 
 // This component is responsible for the Game Setup mode tabs in the Game tool.
 // Although the code seems to belong in this folder with the other Game code, it is actually
@@ -48,42 +48,33 @@ export const DragActivityTabControl: React.FunctionComponent<{
             <div
                 css={css`
                     display: flex;
+                    align-items: baseline;
                     // The mockup seems to have this a little dimmer than white, but I haven't found an existing constant
                     // that seems appropriate. This will do for a first approximation.
                     color: lightgray;
                     font-family: ${toolboxTheme.typography.fontFamily};
                     font-size: ${toolboxTheme.typography.fontSize}px;
                     margin-top: 2px;
+                    padding: 8px 0px;
                 `}
             >
                 {promptButtonContent && (
-                    // This button is only visible in start mode. I'd prefer to control that here but it's
-                    // difficult. See the comment on the promptButton rule in Games.less.
-                    <div
-                        id="promptButton"
-                        css={css`
-                            display: flex;
-                        `}
-                        onClick={() => showGamePromptDialog(false)}
-                    >
-                        <PencilIcon
-                            color="primary"
-                            css={css`
-                                margin-top: auto;
-                                font-size: 14px;
-                                margin-bottom: 2px;
-                                margin-right: 2px;
-                            `}
+                    <div>
+                        {/* // This button is only visible in start mode. I'd prefer
+                        to control that here but it's difficult. visibility
+                        is controlled with #promptButton rules in editMode.less. */}
+                        <BloomButton
+                            id="promptButton"
+                            onClick={() => showGamePromptDialog(false)}
+                            enabled={true}
+                            l10nKey={
+                                prompt?.getAttribute(
+                                    "data-prompt-button-l10nid"
+                                ) || ""
+                            }
+                            iconBeforeText={<PencilIcon />}
+                            css={buttonCss}
                         />
-                        <div
-                            css={css`
-                                margin-top: auto;
-                                text-transform: uppercase;
-                                color: ${kBloomBlue};
-                            `}
-                        >
-                            {promptButtonContent}
-                        </div>
                     </div>
                 )}
                 <div
@@ -94,7 +85,6 @@ export const DragActivityTabControl: React.FunctionComponent<{
                 ></div>
                 <div
                     css={css`
-                        margin-top: 8px;
                         margin-right: 20px;
                     `}
                 >
@@ -109,6 +99,23 @@ export const DragActivityTabControl: React.FunctionComponent<{
         </ThemeProvider>
     );
 };
+
+const buttonCss = css`
+    color: white;
+    width: auto; // override MUI's 100%
+    min-width: 32px; // override MUI's 64px
+    font-weight: 400;
+    padding: 0px 6px;
+    & .MuiButton-startIcon {
+        top: -1px;
+        margin-right: 3px;
+        margin-left: 1px;
+        color: white;
+        svg {
+            font-size: 0.85rem;
+        }
+    }
+`;
 
 // This is the function that the editable page iframe exports so that the toolbox can call it
 // to render the Start/Correct/Wrong/Play control.
@@ -141,30 +148,31 @@ export const Tabs: React.FunctionComponent<{
             css={css`
                 display: flex;
                 background-color: ${kDarkestBackground};
-                padding: 8px 8px 7px 0px;
             `}
             className={props.className}
         >
             {props.labels.map((label, index) => {
                 const selected = index === props.value;
                 return (
-                    <button
+                    <BloomButton
                         key={label}
                         onClick={() => changeHandler(index)}
-                        css={css`
-                            font-family: ${kUiFontStack};
-                            color: ${selected ? "white" : "lightgray"};
-                            background-color: ${selected
-                                ? kBloomBlue
-                                : kDarkestBackground};
-                            border: none;
-                            padding: 2px 6px;
-                            margin-left: 4px;
-                            border-radius: 3px;
-                        `}
+                        css={[
+                            buttonCss,
+                            css`
+                                color: ${selected ? "white" : "lightgray"};
+                                background-color: ${selected
+                                    ? kBloomBlue
+                                    : kDarkestBackground};
+                                margin-left: 4px;
+                            `
+                        ]}
+                        enabled={true}
+                        l10nKey=""
+                        alreadyLocalized={true}
                     >
                         {label}
-                    </button>
+                    </BloomButton>
                 );
             })}
         </div>
