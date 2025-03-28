@@ -279,13 +279,6 @@ namespace Bloom.Api
                         {
                             if (p.Content != null)
                             {
-                                if (p.Content.Contains("{flavor"))
-                                {
-                                    throw new ApplicationException(
-                                        "The branding had variable {flavor} but the branding key did not specify one: "
-                                            + (brandingFolderName ?? brandingNameOrFolderPath)
-                                    );
-                                }
                                 p.Content = p.Content.Replace("{flavor}", flavor);
                             }
                         });
