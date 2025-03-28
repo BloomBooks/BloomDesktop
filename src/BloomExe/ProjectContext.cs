@@ -162,6 +162,7 @@ namespace Bloom
                                     typeof(AccessibilityCheckApi),
                                     typeof(CollectionSettingsApi),
                                     typeof(SubscriptionSettingsEditorApi),
+                                    typeof(FeatureStatusApi),
                                     typeof(CollectionApi),
                                     typeof(PageControlsApi),
                                     typeof(ReadersApi),
@@ -415,6 +416,7 @@ namespace Bloom
             _scope
                 .Resolve<SubscriptionSettingsEditorApi>()
                 .RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<FeatureStatusApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<BookCommandsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<SpreadsheetApi>().RegisterWithApiHandler(server.ApiHandler);

@@ -18,7 +18,7 @@ import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
 import { useHaveSubscription } from "../react_components/requiresSubscription";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
-import { useGetFeatureStatus } from "../react_components/subcriptionFeature";
+import { useGetFeatureStatus } from "../react_components/featureStatus";
 import axios from "axios";
 
 interface IPageChooserDialogProps {

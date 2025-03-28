@@ -950,7 +950,7 @@
         <note>Shown in a list of messages when Bloom has completed a task.</note>
       </trans-unit>
       <trans-unit id="Common.SubscriptionRequired">
-        <source xml:lang="en">Subscription Required</source>
+        <source xml:lang="en">Feature Requires Higher Subscription Tier</source>
         <note>ID: Common.SubscriptionRequired</note>
       </trans-unit>
       <trans-unit id="Common.Error">
@@ -4268,18 +4268,18 @@
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage">
-        <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
-        <note>ID: PublishTab.PublishRequiresSubscription.FirstOverlayPage</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage">
+        <source xml:lang="en">Page {0} is the first page that uses this feature.</source>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage</note>
         <note>The {0} will be replaced by a page number.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.Options">
-        <source xml:lang="en">In order to publish your book, you need to either have an active Bloom Subscription, or remove the Overlay elements from your book.</source>
-        <note>ID: PublishTab.PublishRequiresSubscription.Options</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.Options">
+        <source xml:lang="en">In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.</source>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.Options</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.ProblemExplanation">
-        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Subscription feature.</source>
-        <note>ID: PublishTab.PublishRequiresSubscription.ProblemExplanation</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation">
+        <source xml:lang="en">The book titled '{0}' adds features that require a higher subscription tier.</source>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation</note>
         <note>{0} will be replaced with the book's title.</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute">

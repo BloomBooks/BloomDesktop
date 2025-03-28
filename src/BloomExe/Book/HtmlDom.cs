@@ -2845,6 +2845,20 @@ namespace Bloom.Book
                 != null;
         }
 
+        public bool UsesOverlayFeature()
+        {
+            // As of Bloom 6.2, all pictures in a book have the basic canvas element class (bloom-canvas-element).
+            // Top-level pictures also have the class bloom-backgroundImage.  We want to count only overlay
+            // elements that are not also marked as background images.  See BL-14245.
+            var overlayElementNodes = RawDom.SafeSelectNodes(
+                "//div[contains(@class, '"
+                    + HtmlDom.kCanvasElementClass
+                    + "') and not(contains(@class, 'bloom-backgroundImage'))]"
+            );
+
+            return (overlayElementNodes?.Length ?? 0) > 0;
+        }
+
         public bool HasImageDescriptions =>
             _dom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]")
                 .Cast<SafeXmlElement>()
