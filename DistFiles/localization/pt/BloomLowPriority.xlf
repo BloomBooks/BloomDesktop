@@ -57,9 +57,9 @@
         <target xml:lang="pt-PT" state="final">Cor da estante</target>
         <note>ID: PublishTab.Android.BulkBookshelfColor</note>
       </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
+      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo" approved="yes">
         <source xml:lang="en">Currently, Bloom does not support including audio from embedded videos in video output.</source>
-        <target xml:lang="pt-PT" state="translated">Atualmente, Bloom não suporta incluir áudio de vídeos de linguagem de gesto na saída de vídeo.</target>
+        <target xml:lang="pt-PT" state="final">Atualmente, Bloom não suporta inclusão do áudio nos vídeos de linguagem de gesto na saída de vídeo.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed" approved="yes">
@@ -67,93 +67,93 @@
         <target xml:lang="pt-PT" state="final">Bloom precisa verificar seu e-mail, mas nossa tentativa de reenviar a solicitação falhou, possivelmente porque você fez muitos solicitações muito próximas uma da outra. Por favor, verifique seu e-mail e se você não conseguir encontrar a mensagem, tente novamente mais tarde.</target>
         <note>ID: PublishTab.Upload.CheckEmailFailed</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BookshelfError">
+      <trans-unit id="PublishTab.Upload.BookshelfError" approved="yes">
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</source>
-        <target xml:lang="pt-PT" state="translated">A estante da coleção não constava da lista de estantes para esta assinatura empresarial.</target>
+        <target xml:lang="pt-PT" state="final">A estante da coleção não constava da lista de estantes para esta assinatura Bloom.</target>
         <note>ID: PublishTab.Upload.BookshelfError</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true">
+      <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</target>
+        <target xml:lang="pt-PT" state="final">Esta coleção está no modo "Baixar para Editar". O livro tem a mesma configuração de assinatura de quando foi carregado pela última vez.</target>
         <note>ID: Settings.Subscription.DownloadForEdit</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.NeedsCode" sil:dynamic="true">
+      <trans-unit id="Settings.Subscription.NeedsCode" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
-        <target xml:lang="pt-PT" state="needs-translation">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </target>
+        <target xml:lang="pt-PT" state="final">Este projeto usou anteriormente **%0**. Para continuar a usar isto, você precisará inserir um código de assinatura atual. </target>
         <note>ID: Settings.Subscription.NeedsCode</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.IntroText">
+      <trans-unit id="Settings.Subscription.IntroText" approved="yes">
         <source xml:lang="en">To help cover a portion of the costs associated with providing Bloom, we offer [advanced features](%0) and customizations as a subscription service.</source>
-        <target xml:lang="pt-PT" state="needs-translation">To help cover a portion of the costs associated with providing Bloom, we offer [advanced features](%0) and customizations as a subscription service.</target>
+        <target xml:lang="pt-PT" state="final">Para ajudar a cobrir uma parte dos custos associados ao fornecimento do Bloom, nós oferecemos [recursos avançados](%0) e personalizações como um serviço de assinatura.</target>
         <note>ID: Settings.Subscription.IntroText</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.RequestSubscription">
+      <trans-unit id="Settings.Subscription.RequestSubscription" approved="yes">
         <source xml:lang="en">Please contact [%0](%1) to purchase your subscription code.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Please contact [%0](%1) to purchase your subscription code.</target>
+        <target xml:lang="pt-PT" state="final">Entre em contato com [%0](%1) para comprar seu código de assinatura.</target>
         <note>ID: Settings.Subscription.RequestSubscription</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.Community.Invitation">
+      <trans-unit id="Settings.Subscription.Community.Invitation" approved="yes">
         <source xml:lang="en">If your project is fully funded and managed by your local language community, you may qualify for a free [Bloom Community Subscription](https://bloomlibrary.org/subscriptions).</source>
-        <target xml:lang="pt-PT" state="needs-translation">If your project is fully funded and managed by your local language community, you may qualify for a free [Bloom Community Subscription](https://bloomlibrary.org/subscriptions).</target>
+        <target xml:lang="pt-PT" state="final">Se o seu projeto for totalmente financiado e gerido por sua comunidade de idiomas local, pode se qualificar para uma [Assinatura da Comunidade do Bloom](https://bloomlibrary.org/subscriptions).</target>
         <note>ID: Settings.Subscription.Community.Invitation</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.SubscriptionCodeLabel">
+      <trans-unit id="Settings.Subscription.SubscriptionCodeLabel" approved="yes">
         <source xml:lang="en">Subscription Code:</source>
-        <target xml:lang="pt-PT" state="needs-translation">Subscription Code:</target>
+        <target xml:lang="pt-PT" state="final">Código de assinatura:</target>
         <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.CheckUpdates">
+      <trans-unit id="Settings.Subscription.CheckUpdates" approved="yes">
         <source xml:lang="en">Check for updates</source>
-        <target xml:lang="pt-PT" state="needs-translation">Check for updates</target>
+        <target xml:lang="pt-PT" state="final">Procurar actualizações</target>
         <note>ID: Settings.Subscription.CheckUpdates</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.Expiration">
+      <trans-unit id="Settings.Subscription.Expiration" approved="yes">
         <source xml:lang="en">Expires:</source>
-        <target xml:lang="pt-PT" state="needs-translation">Expires:</target>
+        <target xml:lang="pt-PT" state="final">Expiração:</target>
         <note>ID: Settings.Subscription.Expiration</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.Expired">
+      <trans-unit id="Settings.Subscription.Expired" approved="yes">
         <source xml:lang="en">That code has expired.</source>
-        <target xml:lang="pt-PT" state="needs-translation">That code has expired.</target>
+        <target xml:lang="pt-PT" state="final">Este código expirou.</target>
         <note>ID: Settings.Subscription.Expired</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.Incomplete">
+      <trans-unit id="Settings.Subscription.Incomplete" approved="yes">
         <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
-        <target xml:lang="pt-PT" state="needs-translation"> The code should look like SOMENAME-123456-7890</target>
+        <target xml:lang="pt-PT" state="final"> O código deve se parecer com ALGUMNOME-123456-7890</target>
         <note>ID: Settings.Subscription.Incomplete</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.Overview">
+      <trans-unit id="Settings.Subscription.Overview" approved="yes">
         <source xml:lang="en">
             Bloom Settings.Subscription adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-            Bloom Settings.Subscription adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
+        <target xml:lang="pt-PT" state="final">
+            Bloom Enterprise adiciona recursos e serviços importantes para os editores, governos e organizações internacionais. Esta assinatura paga atende às suas necessidades exclusivas enquanto apoia o desenvolvimento e o apoio ao utilizador do Bloom para a comunidade em geral.
         </target>
         <note>ID: Settings.Subscription.Overview</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.None">
+      <trans-unit id="Settings.Subscription.None" approved="yes">
         <source xml:lang="en">None. Settings.Subscription features will be unavailable.</source>
-        <target xml:lang="pt-PT" state="needs-translation">None. Settings.Subscription features will be unavailable.</target>
+        <target xml:lang="pt-PT" state="final">Nenhuma. Os recursos do Bloom Enterprise não estarão disponíveis.</target>
         <note>ID: Settings.Subscription.None</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.NeedsCode">
+      <trans-unit id="Settings.Subscription.NeedsCode" approved="yes">
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </target>
+        <target xml:lang="pt-PT" state="final">Este projeto usou anteriormente **%0**. Para continuar a usar isto, você precisará inserir um código de assinatura atual. </target>
         <note>ID: Settings.Subscription.NeedsCode</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.NotValid">
+      <trans-unit id="Settings.Subscription.NotValid" approved="yes">
         <source xml:lang="en">That code appears to be incorrect.</source>
-        <target xml:lang="pt-PT" state="needs-translation">That code appears to be incorrect.</target>
+        <target xml:lang="pt-PT" state="final">Esse código parece estar incorreto.</target>
         <note>ID: Settings.Subscription.NotValid</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.UnknownCode">
+      <trans-unit id="Settings.Subscription.UnknownCode" approved="yes">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This version of Bloom does not have the artwork that goes with that subscription.</target>
+        <target xml:lang="pt-PT" state="final">Esta versão do Bloom não tem as imagens relacionadas com essa assinatura.</target>
         <note>ID: Settings.Subscription.UnknownCode</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.WhatsThis">
+      <trans-unit id="Settings.Subscription.WhatsThis" approved="yes">
         <source xml:lang="en">What's This?</source>
-        <target xml:lang="pt-PT" state="needs-translation">What's This?</target>
+        <target xml:lang="pt-PT" state="final">O que é isto?</target>
         <note>ID: Settings.Subscription.WhatsThis</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.DataDivConflictWarning" approved="yes">
