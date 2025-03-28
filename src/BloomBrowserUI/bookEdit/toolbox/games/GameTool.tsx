@@ -29,7 +29,7 @@ import {
     playInitialElements,
     prepareActivity,
     undoPrepareActivity
-} from "../../shared/dragActivityRuntime";
+} from "bloom-player";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { getWithPromise, postData, postJson } from "../../../utils/bloomApi";
 import {
@@ -40,7 +40,7 @@ import { MenuItem, Select } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { BubbleSpec } from "comicaljs";
-import { setPlayerUrlPrefixFromWindowLocationHref } from "../../shared/narration";
+import { setPlayerUrlPrefixFromWindowLocationHref } from "bloom-player";
 import { renderGamePromptDialog } from "./GamePromptDialog";
 import {
     CanvasElementManager,
