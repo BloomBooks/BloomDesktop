@@ -497,7 +497,7 @@ namespace BloomTests.Publish
                 assertionsOnResultingHtmlString: changedHtml =>
                 {
                     // The imgs should be replaced with something like this:
-                    //		"<div class='bloom-canvas bloom-leadingElement bloom-backgroundImage' style='background-image:url('HL00%2714%201.svg.svg')'</div>
+                    //		"<div class='bloom-canvas bloom-leadingElement bloom-background-image-in-style' style='background-image:url('HL00%2714%201.svg.svg')'</div>
                     //	Note that normally there would also be data-creator, data-license, etc. If we put those in the html, they will be stripped because
                     // the code will actually look at our fake image and, finding now metadata will remove these. This is not a problem for our
                     // testing here, because we're not trying to test the functioning of that function here. The bit we can test, that the image became a
@@ -514,7 +514,7 @@ namespace BloomTests.Publish
                     AssertThatXmlIn
                         .Dom(changedDom)
                         .HasSpecifiedNumberOfMatchesForXpath(
-                            "//div[@class='bloom-canvas bloom-leadingElement bloom-backgroundImage' and @style=\"background-image:url('HL00%2714%201.svg')\"]",
+                            "//div[@class='bloom-canvas bloom-leadingElement bloom-background-image-in-style' and @style=\"background-image:url('HL00%2714%201.svg')\"]",
                             2
                         );
                 }
@@ -1019,7 +1019,7 @@ namespace BloomTests.Publish
 									</div>
 									<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
 										<div class='marginBox'>"
-                + "<div class=\"bloom-imageContainer bloom-backgroundImage\" data-book=\"coverImage\" style=\"background-image:url('Listen%20to%20My%20Body_Cover.png')\"></div>"
+                + "<div class=\"bloom-imageContainer bloom-background-image-in-style\" data-book=\"coverImage\" style=\"background-image:url('Listen%20to%20My%20Body_Cover.png')\"></div>"
                 + @"</div>
 									</div>
 								</body>

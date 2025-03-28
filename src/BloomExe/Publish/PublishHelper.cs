@@ -903,10 +903,11 @@ namespace Bloom.Publish
         /// (https://www.notion.so/hattonjohn/Infrastructure-publishing-transformations-1514bb19df128007a15ffd4cafff28de?pvs=4)
         /// but for now this saves a lot of work. It essentially converts the background image
         /// represented as a canvas element to our pre-6.2 approach where it was a direct child of the bloom canvas.
-        /// The canvas element div is removed, and an img in the parent
-        /// is made to point to the actual background image.
+        /// The canvas element div is removed, and the img that was in it is moved to an appropriate position
+        /// as a direct child of the bloom-canvas.
         /// We also do this when publishing to BloomLibrary; this saves the harvester needing to worry about
-        /// the background image canvas elements.
+        /// the background image canvas elements, and also saves our future code having to worry about blorg
+        /// books that have a mixture of old and new background images.
         /// </summary>
         public static void SimplifyBackgroundImages(SafeXmlDocument dom)
         {
@@ -921,8 +922,7 @@ namespace Bloom.Publish
                 // it WILL contain an image container that contains an img, and WILL be a child of
                 // a bloom-canvas. So the xpath above targets exactly
                 // the elements that need this transformation. The backgroundImage elements ("background
-                // canvas elements") are removed, and the bloom-canvas is given a direct img child
-                // to replace them.
+                // canvas elements") are removed, and the img is moved to the bloom-canvas.
                 var imgContainer =
                     canvasElement.ChildNodes.FirstOrDefault(
                         c => c is SafeXmlElement ce && ce.LocalName == "div"
@@ -939,7 +939,7 @@ namespace Bloom.Publish
                 if (string.IsNullOrEmpty(src))
                     return;
                 var bloomCanvas = canvasElement.ParentNode as SafeXmlElement;
-                if (bloomCanvas == null || !bloomCanvas.HasClass("bloom-canvas"))
+                if (bloomCanvas == null || !bloomCanvas.HasClass(HtmlDom.kBloomCanvasClass))
                     return;
                 var bcImg =
                     bloomCanvas.ChildNodes.FirstOrDefault(

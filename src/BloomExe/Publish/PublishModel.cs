@@ -263,8 +263,10 @@ namespace Bloom.Publish
                 // - Book contains canvas element elements AND
                 // - Book is not a translated shell
 
-                // As of Bloom 6.2, all pictures in a book have the basic canvas element class (bloom-canvas-element).
-                // Top-level pictures also have the class bloom-backgroundImage.  We want to count only overlay
+                // As of Bloom 6.2, all pictures in a book that have been edited with 6.2
+                // involve bloom-canvas-element somehow. What used to be simple imageContainers are now
+                // bloom-canvases containing a bloom-canvas-element that also has bloom-backgroundImage.
+                // That shouldn't prevent publishing. We want to count only overlay
                 // elements that are not also marked as background images.  See BL-14245.
                 var overlayElementNodes = BookSelection?.CurrentSelection?.RawDom.SafeSelectNodes(
                     "//div[contains(@class, '"

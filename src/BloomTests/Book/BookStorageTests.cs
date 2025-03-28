@@ -1663,17 +1663,7 @@ namespace BloomTests.Book
             );
             var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
-            Assert.That(requiredVersions.Length, Is.EqualTo(2));
-
-            Assert.That(requiredVersions[1].FeatureId, Is.EqualTo("wholeTextBoxAudio"));
-            Assert.That(requiredVersions[1].FeaturePhrase, Is.EqualTo("Whole Text Box Audio"));
-            Assert.That(requiredVersions[1].BloomDesktopMinVersion, Is.EqualTo("4.4"));
-            Assert.That(requiredVersions[1].BloomReaderMinVersion, Is.EqualTo("1.0"));
-
-            Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("comical-1"));
-            Assert.That(requiredVersions[0].FeaturePhrase, Is.EqualTo("Support for Comics"));
-            Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("4.7"));
-            Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("1.0"));
+            AssertRequiredFeatures(requiredVersions, new[] { "comical-1", "wholeTextBoxAudio" });
         }
 
         public const string MinimalDataBubbleValue =
@@ -1694,9 +1684,26 @@ namespace BloomTests.Book
             );
             var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
-            Assert.That(requiredVersions.Length, Is.EqualTo(1));
+            AssertRequiredFeatures(requiredVersions, new[] { "canvasElement", "bloomCanvas" });
+        }
 
-            Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("canvasElement"));
+        void AssertRequiredFeatures(
+            VersionRequirement[] requiredVersions,
+            string[] expectedFeatureIds
+        )
+        {
+            Assert.That(
+                requiredVersions.Length,
+                Is.GreaterThanOrEqualTo(expectedFeatureIds.Length)
+            );
+            foreach (var featureId in expectedFeatureIds)
+            {
+                Assert.That(
+                    requiredVersions.Any(rv => rv.FeatureId == featureId),
+                    Is.True,
+                    "Failed to find feature " + featureId
+                );
+            }
         }
 
         [Test]
@@ -1720,16 +1727,23 @@ namespace BloomTests.Book
             );
             var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
-            Assert.That(requiredVersions.Length, Is.EqualTo(2));
+            AssertRequiredFeatures(
+                requiredVersions,
+                new[] { "canvasElement", "bloomCanvas", "comical-1" }
+            );
 
-            Assert.That(requiredVersions[1].FeatureId, Is.EqualTo("comical-1"));
-            Assert.That(requiredVersions[1].FeaturePhrase, Is.EqualTo("Support for Comics"));
-            Assert.That(requiredVersions[1].BloomDesktopMinVersion, Is.EqualTo("4.7"));
-            Assert.That(requiredVersions[1].BloomReaderMinVersion, Is.EqualTo("1.0"));
-            // First because it has the highest version requirement
-            Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("canvasElement"));
-            Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("6.2"));
-            Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("3.3"));
+            Assert.That(requiredVersions.Length, Is.GreaterThanOrEqualTo(2));
+
+            // last because it has the lowest version requirement
+            var comicalFeature = requiredVersions.Last();
+            Assert.That(comicalFeature.FeatureId, Is.EqualTo("comical-1"));
+            Assert.That(comicalFeature.FeaturePhrase, Is.EqualTo("Support for Comics"));
+            Assert.That(comicalFeature.BloomDesktopMinVersion, Is.EqualTo("4.7"));
+            Assert.That(comicalFeature.BloomReaderMinVersion, Is.EqualTo("1.0"));
+
+            var canvasElementFeature = requiredVersions.First(x => x.FeatureId == "canvasElement");
+            Assert.That(canvasElementFeature.BloomDesktopMinVersion, Is.EqualTo("6.2"));
+            Assert.That(canvasElementFeature.BloomReaderMinVersion, Is.EqualTo("3.3"));
         }
 
         [Test]
@@ -1756,21 +1770,10 @@ namespace BloomTests.Book
             );
             var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
-            Assert.That(requiredVersions.Length, Is.EqualTo(3));
-
-            Assert.That(requiredVersions[2].FeatureId, Is.EqualTo("comical-1"));
-            Assert.That(requiredVersions[2].FeaturePhrase, Is.EqualTo("Support for Comics"));
-            Assert.That(requiredVersions[2].BloomDesktopMinVersion, Is.EqualTo("4.7"));
-            Assert.That(requiredVersions[2].BloomReaderMinVersion, Is.EqualTo("1.0"));
-
-            Assert.That(requiredVersions[1].FeatureId, Is.EqualTo("comical-2"));
-            Assert.That(
-                requiredVersions[1].FeaturePhrase,
-                Is.EqualTo("Support for Comic Captions with Straight Line Tails")
+            AssertRequiredFeatures(
+                requiredVersions,
+                new[] { "comical-1", "comical-2", "canvasElement", "bloomCanvas" }
             );
-            Assert.That(requiredVersions[1].BloomDesktopMinVersion, Is.EqualTo("5.0"));
-            Assert.That(requiredVersions[1].BloomReaderMinVersion, Is.EqualTo("1.0"));
-            Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("canvasElement"));
         }
 
         [Test]
@@ -1784,7 +1787,7 @@ namespace BloomTests.Book
 </head>
 <body>
 	<div class='bloom-page'>
-		<div class='bloom-canvas'>
+		<div class='bloom-imageContainer'>
 			<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>

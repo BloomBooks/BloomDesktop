@@ -131,6 +131,87 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void SetImageAltAttrsFromDescriptions_BgImage_AltGetsSetOnRightElements()
+        {
+            var dom = new HtmlDom(
+                @"
+<html><body>
+    <div class='bloom-page'>
+        <div class='bloom-canvas'>
+            <div class='bloom-canvas-element bloom-backgroundImage'>
+                <div class='bloom-imageContainer'>
+                    <img src='something.jpg'/>
+                </div>
+            </div>
+            <div class='bloom-canvas-element'>
+                <div class='bloom-imageContainer'>
+                    <img src='something1.jpg' alt='delete me'/>
+                </div>
+            </div>
+            <div class='bloom-canvas-element'>
+                <div class='bloom-imageContainer'>
+                    <img src='something2.jpg'/>
+                </div>
+            </div>
+            <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement ImageDescriptionEdit-style' style='font-size: 16px;'>
+                <div class='bloom-editable bloom-visibility-code-on bloom-content1 bloom-contentNational1 ImageDescriptionEdit-style cke_editable cke_editable_inline cke_contents_ltr' contenteditable='true' lang='fr'>
+                    <p>French text</p>
+                </div>
+                <div class='bloom-editable bloom-contentNational2 ImageDescriptionEdit-style cke_editable cke_editable_inline cke_contents_ltr' contenteditable='true' lang='de'>
+                    <p>German text</p>
+                </div>
+            </div>
+        </div>
+        <img src='something3.jpg' alt='delete me'/>
+        <img src='something4.jpg'/>
+        <img src='something5.jpg' class='branding' alt='leave me alone'/>
+    </div>
+</body></html>"
+            );
+            dom.SetImageAltAttrsFromDescriptions("de");
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='bloom-canvas-element bloom-backgroundImage']/div/img[@alt='German text']",
+                    1
+                );
+            // the non-BG images should have their alt set explicitly to the empty string
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//img[@alt='']", 4);
+            // except for the branding one, which should be left alone
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//img[@alt='leave me alone' and @class='branding']",
+                    1
+                );
+        }
+
+        [Test]
+        public void SetImageAltAttrsFromDescriptions_BgImage_NoDescription_AltEmpty()
+        {
+            var dom = new HtmlDom(
+                @"
+<html><body>
+    <div class='bloom-page'>
+        <div class='bloom-canvas'>
+            <div class='bloom-canvas-element bloom-backgroundImage'>
+                <div class='bloom-imageContainer'>
+                    <img src='something.jpg'/>
+                </div>
+            </div>
+        </div>
+    </div>
+</body></html>"
+            );
+            dom.SetImageAltAttrsFromDescriptions("en");
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//img[@alt='']", 1);
+        }
+
+        [Test]
         public void AddClass_AlreadyThere_LeavesAlone()
         {
             var dom = SafeXmlDocument.Create();

@@ -12,7 +12,7 @@ namespace BloomTests.Publish
     public class PublishHelperStaticTests
     {
         [Test]
-        public void SimplifyBackgroundImages_CreatesImgAndRemovesBackgroundCE_RemovesHasCEClass()
+        public void SimplifyBackgroundImages_MovesImgAndRemovesBackgroundCE_RemovesHasCEClass()
         {
             var dom = SafeXmlDocument.Create();
             dom.LoadXml(
@@ -32,9 +32,9 @@ namespace BloomTests.Publish
             PublishHelper.SimplifyBackgroundImages(dom);
 
             var assertThatDom = AssertThatXmlIn.Element(dom.DocumentElement);
+            // I think this is sufficient verification that the background canvas element structure was removed.
             assertThatDom.HasNoMatchForXpath("//div[@class='bloom-backgroundImage']");
-            // verifies that the img was created in the right place (or moved) and (at least several) attributes were kept.
-            // Also that we removed bloom-has-canvas-element
+            // verifies that the img was moved to the right place and (at least several) attributes were kept.
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
                 "//div[@class='bloom-canvas']/img[@data-book='coverImage' and @src=\"Duck-billed_platypus.jpg\" and @data-creator=\"Charles J Sharp\"]",
                 1

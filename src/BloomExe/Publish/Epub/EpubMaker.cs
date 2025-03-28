@@ -2512,7 +2512,7 @@ namespace Bloom.Publish.Epub
             {
                 if (img.HasClass("licenseImage") || img.HasClass("branding"))
                     continue;
-                div = img.ParentWithClass("bloom-canvas");
+                div = img.ParentWithClass(HtmlDom.kBloomCanvasClass);
                 // Typically by this point we've converted the image descriptions into asides whose container is the next
                 // sibling of the bloom-canvas. Set Aria Accessibility stuff for them.
                 var asideContainer = div?.NextSibling as SafeXmlElement;

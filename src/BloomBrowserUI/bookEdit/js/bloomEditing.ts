@@ -896,7 +896,7 @@ export function SetupElements(
 
     // make any added over-picture elements draggable and clickable
     if (theOneCanvasElementManager) {
-        theOneCanvasElementManager.initializeOverPictureEditing();
+        theOneCanvasElementManager.initializeCanvasElementEditing();
     }
 
     // focus on the first editable field

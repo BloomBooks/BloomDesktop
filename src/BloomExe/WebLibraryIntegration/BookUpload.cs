@@ -7,8 +7,6 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Forms;
-using System.Windows.Shell;
-using System.Xml;
 using Amazon.Runtime;
 using Amazon.S3;
 using Bloom.Api;
@@ -27,7 +25,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace Bloom.WebLibraryIntegration
 {

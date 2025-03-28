@@ -16,15 +16,15 @@
     filter: opacity(100%);
 }
 /* This is used when the book is in bloompub form, where the img has been converted to a background image. */
-.fullScreen .bloom-canvas.bloom-backgroundImage {
+.fullScreen .bloom-canvas.bloom-background-image-in-style {
     background-size: cover;
     position: fixed;
 }
-.Device16x9Landscape.fullScreen .bloom-canvas.bloom-backgroundImage {
+.Device16x9Landscape.fullScreen .bloom-canvas.bloom-background-image-in-style {
     /* Get past ios "background-size:cover" bug. See BL-7458 */
     width: @Device16x9Landscape-Width;
 }
-.Device16x9Portrait.fullScreen .bloom-canvas.bloom-backgroundImage {
+.Device16x9Portrait.fullScreen .bloom-canvas.bloom-background-image-in-style {
     /* Get past ios "background-size:cover" bug. See BL-7458 */
     width: @Device16x9Portrait-Width;
 }

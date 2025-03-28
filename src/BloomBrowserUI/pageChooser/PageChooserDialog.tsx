@@ -465,7 +465,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
             templatePageDiv
         );
         // Bloom canvases are never nested!
-        const selectedTemplatePictureCount = templatePageDiv.getElementsByClassName(
+        const selectedTemplateBloomCanvasCount = templatePageDiv.getElementsByClassName(
             kBloomCanvasClass
         ).length;
         const selectedTemplateVideoCount = countEltsOfClassNotInBloomCanvas(
@@ -490,7 +490,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         const currentTranslationGroupCount = countTranslationGroupsForChangeLayout(
             current
         );
-        const currentPictureCount = current.getElementsByClassName(
+        const currentBloomCanvasCount = current.getElementsByClassName(
             kBloomCanvasClass
         ).length;
         // ".bloom-videoContainer:not(.bloom-noVideoSelected)" is not working reliably as a selector.
@@ -510,7 +510,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         return (
             selectedTemplateTranslationGroupCount <
                 currentTranslationGroupCount ||
-            selectedTemplatePictureCount < currentPictureCount ||
+            selectedTemplateBloomCanvasCount < currentBloomCanvasCount ||
             selectedTemplateVideoCount < currentVideoCount ||
             selectedTemplateWidgetCount < currentWidgetCount
         );
@@ -720,8 +720,8 @@ export function getAttributeStringSafely(
 // We want to count all the translationGroups that do not occur inside of a bloom-canvas div.
 // The reason for this is that bloom-canvases can have canvas element divs and imageDescription divs inside of them
 // and these are completely independent of the template page. We need to count regular translationGroups and
-// also ensure that translationGroups inside of images get migrated correctly. If this algorithm changes, be
-// sure to also change 'GetTranslationGroupsInternal()' in HtmlDom.cs.
+// also ensure that translationGroups inside of bloom canvases get migrated correctly. If this algorithm changes,
+// consider also changin 'GetEltsWithClassNotInBloomCanvasInternal()' in HtmlDom.cs.
 export function countTranslationGroupsForChangeLayout(
     pageDiv: HTMLElement
 ): number {

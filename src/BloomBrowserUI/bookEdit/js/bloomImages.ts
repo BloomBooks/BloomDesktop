@@ -11,6 +11,7 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 
 import {
     kbackgroundImageClass,
+    theOneCanvasElementManager,
     updateCanvasElementClass
 } from "./CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
@@ -21,6 +22,7 @@ import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import { getCanvasElementManager } from "../toolbox/overlay/canvasElementUtils";
+import { get } from "jquery";
 
 // This appears to be constant even on higher dpi screens.
 // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
@@ -31,12 +33,13 @@ export const kBloomCanvasClass = "bloom-canvas";
 export const kBloomCanvasSelector = `.${kBloomCanvasClass}`;
 
 export function cleanupImages() {
-    $(".bloom-canvas").css("opacity", ""); //comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing
-    $(".bloom-canvas").css("overflow", ""); //review: also comes form myimgscale; is it a problem?
-    // I'm not clear about the source of the problem we're trying to fix here, so it MIGHT happen
-    // on bloom-canvas elements, or imagecontainers, or both.  So let's just remove it from all of them.
     $(".bloom-imageContainer").css("opacity", ""); //comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing
-    $(".bloom-imageContainer").css("overflow", "");
+    $(".bloom-imageContainer").css("overflow", ""); //review: also comes form myimgscale; is it a problem?
+    // I'm not clear about the source of the problem we're trying to fix here, so it MIGHT happen
+    // on bloom-canvas elements (could they get migrated before some bloom did the fix above?).  So let's keep the old code above and
+    // also fix if we see these on bloom-canvas.
+    $(kBloomCanvasSelector).css("opacity", "");
+    $(kBloomCanvasSelector).css("overflow", "");
 }
 
 export function SetupImagesInContainer(container) {
@@ -54,7 +57,7 @@ export function SetupImagesInContainer(container) {
         });
 
     $(container)
-        .find(".bloom-canvas")
+        .find(kBloomCanvasSelector)
         .each((index, element) => {
             // For now, bookButtons aren't editable
             if (!element.closest(".bloom-bookButton")) {
@@ -212,28 +215,28 @@ export function doImageCommand(
     });
 }
 
-export function addImageEditingButtons(containerDiv: HTMLElement): void {
+export function addImageEditingButtons(bloomCanvas: HTMLElement): void {
     if (
-        !containerDiv || // huh? so why did we call this?
-        containerDiv.classList.contains("hoverUp") // should already have them if wanted
+        !bloomCanvas || // huh? so why did we call this?
+        bloomCanvas.classList.contains("hoverUp") // should already have them if wanted
     ) {
         return;
     }
-    if (playingBloomGame(containerDiv)) {
+    if (playingBloomGame(bloomCanvas)) {
         // I wish this knowledge was not here, but I don't see a better way to prevent image editing
         // and hover effects when in test mode.
         return;
     }
-    const img = getBackgroundImageFromContainer(containerDiv);
-    containerDiv.classList.add("hoverUp"); // maybe one day refactor to use :hover?
+    const img = getBackgroundImageFromBloomCanvas(bloomCanvas);
+    bloomCanvas.classList.add("hoverUp"); // maybe one day refactor to use :hover?
 
     if (!img) {
         return;
     }
-    SetImageTooltip(containerDiv);
+    SetImageTooltip(bloomCanvas);
 
     if (
-        containerDiv.getElementsByClassName(kPlaybackOrderContainerClass)
+        bloomCanvas.getElementsByClassName(kPlaybackOrderContainerClass)
             .length > 0
     ) {
         return; // Playback order controls are active, deactivate bloom-canvas stuff.
@@ -426,7 +429,7 @@ export function getImageFromCanvasElement(
 // (It also has bloom-backgroundImage).
 // There are enough common behaviors to make it useful to use the same structure, and I
 // (JohnT) at least find it useful to think of it as a background canvas element.
-export function getBackgroundCanvasElementFromContainer(
+export function getBackgroundCanvasElementFromBloomCanvas(
     bloomCanvas: HTMLElement
 ): HTMLElement | null {
     return bloomCanvas.getElementsByClassName(
@@ -437,10 +440,10 @@ export function getBackgroundCanvasElementFromContainer(
 // Shortcut to get the img element from the background canvas element (if any) of a bloom-canvas.
 // This, rather than the obsolete img that is a direct child and is always placeHolder.png,
 // is the background image that is actually displayed.
-export function getBackgroundImageFromContainer(
+export function getBackgroundImageFromBloomCanvas(
     bloomCanvas: HTMLElement
 ): HTMLElement | null {
-    const bgCanvasElement = getBackgroundCanvasElementFromContainer(
+    const bgCanvasElement = getBackgroundCanvasElementFromBloomCanvas(
         bloomCanvas
     );
     if (!bgCanvasElement) {
@@ -521,15 +524,15 @@ export function UpdateImageTooltipVisibility(
     }
 }
 
-async function SetImageTooltip(container: HTMLElement) {
-    const title = await DetermineImageTooltipAsync(container);
+async function SetImageTooltip(bloomCanvas: HTMLElement) {
+    const title = await DetermineImageTooltipAsync(bloomCanvas);
 
     // We use data-title to store what the tooltip should be, regardless of whether the tooltip should actually be currently visible
     // Use the real title attribute to show the tooltip only when desired
     // (e.g. show when no canvas element selected but hide when a canvas element is selected)
-    container.setAttribute("data-title", title);
+    bloomCanvas.setAttribute("data-title", title);
 
-    UpdateImageTooltipVisibility(container);
+    UpdateImageTooltipVisibility(bloomCanvas);
 }
 
 // Corresponds with ImageApi.cs::HandleImageInfo
@@ -542,10 +545,9 @@ interface IImageInfoResponse {
 }
 
 async function DetermineImageTooltipAsync(
-    container: HTMLElement
+    bloomCanvas: HTMLElement
 ): Promise<string> {
-    const containerJQ = $(container);
-    const imgElement = getBackgroundImageFromContainer(container);
+    const imgElement = getBackgroundImageFromBloomCanvas(bloomCanvas);
 
     if (!imgElement) {
         return "";
@@ -557,6 +559,7 @@ async function DetermineImageTooltipAsync(
         return "";
     }
 
+    const containerJQ = $(bloomCanvas);
     const targetDpiWidth = Math.ceil((300 * containerJQ.width()) / kBrowserDpi);
     const targetDpiHeight = Math.ceil(
         (300 * containerJQ.height()) / kBrowserDpi
@@ -581,7 +584,7 @@ async function DetermineImageTooltipAsync(
         linesAboutThisFile = `${imageFileInfo.name} not found\n`;
     } else {
         const dpi = getDpi(
-            container,
+            bloomCanvas,
             imageFileInfo.width,
             imageFileInfo.height
         );
@@ -597,17 +600,17 @@ async function DetermineImageTooltipAsync(
         }
     }
 
-    // This really talking about the bloom-canvas, but for UI we'll stick with image container.
+    // This is really talking about the bloom-canvas, but for UI we'll stick with image container.
     const linesAboutThisContext =
         `For the current paper size:\n` +
-        `  • The image-container is ${containerJQ.width()} x ${containerJQ.height()} dots.\n` +
+        `  • The image container is ${containerJQ.width()} x ${containerJQ.height()} dots.\n` +
         `  • For print publications, you want between 300-600 DPI (Dots Per Inch).\n` +
         dpiLine +
         `  • An image with ${targetDpiWidth} x ${targetDpiHeight} dots would fill this container at 300 DPI.`;
 
     // if there is a data-href, start with that url
     let hyperlinkInfo = "";
-    const hyperlink = container.getAttribute("data-href");
+    const hyperlink = bloomCanvas.getAttribute("data-href");
     if (hyperlink) {
         // Enhance: we should eventually give book names and page numbers, but perhaps that will
         // require clicking something to see all that instead of doing that lookup just in case
@@ -853,6 +856,8 @@ function SetAlternateTextOnImages(element) {
     }
 }
 
+// Handle elements like the wordAndPicture container in the Picture Dictionary which have the class bloom-resizable.
+// This method uses jQuery UI resizable to make it so.
 export function SetupResizableElement(element) {
     $(element)
         .mouseenter(function() {
@@ -861,42 +866,53 @@ export function SetupResizableElement(element) {
         .mouseleave(function() {
             $(this).removeClass("ui-mouseOver");
         });
-    // I'm not 100% sure whether this should apply to bloom-canvas or bloom-imageContainer.
-    // it's called on elements with class bloom-resizable, which currently only occurs in
-    // some unused experimental code in pageDragToolbox.js
-    const bloomCanvas = $(element).find(".bloom-canvas");
+    // When the outer container is resized, the inner bloom-canvas is resized with it.
+    const bloomCanvas = $(element).find(kBloomCanvasSelector);
     // A Picture Dictionary Word-And-Image
     if ($(bloomCanvas).length > 0) {
-        /* The case here is that the thing with this class actually has an
-         inner image, as is the case for the Picture Dictionary.
-         The key, non-obvious, difficult requirement is keeping the text below
-         a picture dictionary item centered underneath the image.  I'd be
-         surprised if this wasn't possible in CSS, but I'm not expert enough.
-         So, I switched from having the image-container be resizable, to having the
-         whole div (image+headwords) be resizable, then use the "alsoResize"
-         parameter to make the imageContainer resize.  Then, in order to make
-         the image resize in real-time as you're dragging, I use the "resize"
-         event to scale the image up proportionally (and centered) inside the
-         newly resized container.
-         */
+        // This method gets called on elements that have class bloom-resizable, which at the moment
+        // is only the wordAndPicture container in the Picture Dictionary. It contains a bloom-canvas,
+        // typically just with a picture, but nothing prevents adding canvas elements to it.
+        // The idea is to use jquery resizable on the outer element (the argument to this function)
+        // which is expected to contain one bloom-canvas and typically some other text.
+        // The bloom-canvas is resized by the same amount as the outer element (using jquery's
+        // alsoResize). As with an orgami splitter move, we need some magic to make the main
+        // image inside the canvas resize in real time, and any other bloom-canvas elements
+        // adjust when the drag ends.
+        // A previous comment talked about the reason for this strategy being to keep the
+        // caption centered, but currently we are NOT centering it. However, it makes sense
+        // to resize the picture and its captions together anyway. We at least want the text
+        // boxes to stay the same size as the bloom-canvas.)
         const img = $(bloomCanvas).find("img");
         $(element).resizable({
             handles: "nw, ne, sw, se",
             containment: "parent",
-            alsoResize: bloomCanvas
+            alsoResize: bloomCanvas,
+            start(e, ui) {
+                theOneCanvasElementManager.suspendComicEditing(
+                    "forJqueryResize"
+                );
+            },
+            stop(e, ui) {
+                theOneCanvasElementManager.resumeComicEditing();
+            }
         });
     }
     // It actually IS a bloom-canvas. This old code expects it to directly contain
     // an img and does not account for canvas elements. With no wasy way to test, I'm not
     // going to attempt a full fix.
-    else if ($(element).hasClass("bloom-canvas")) {
+    else if ($(element).hasClass(kBloomCanvasClass)) {
+        alert(
+            "applying bloom-resizable to a bloom-canvas may not work. Code in bloomImages.SetupResizableElement needs updating"
+        );
         const img = $(element).find("img");
         $(element).resizable({
             handles: "nw, ne, sw, se",
             containment: "parent"
         });
     }
-    // some other kind of resizable
+    // some other kind of resizable. (JT Mar 2025: I don't think anything currently uses this,
+    // so it has not been tested with any changes we've made in the last few years)
     else {
         $(element).resizable({
             handles: "nw, ne, sw, se",

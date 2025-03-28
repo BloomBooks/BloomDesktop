@@ -188,11 +188,6 @@ function getVideoEndSeconds(videoElt: HTMLVideoElement): number {
     return parseFloat(urlTimingObj.end);
 }
 
-// Returns true if the element is inside a canvas element
-function isInCanvasElement(element: Element): boolean {
-    return !!element.closest(kCanvasElementSelector);
-}
-
 function SetupClickToShowSignLanguageTool(videoContainerDiv: Element) {
     // if the user clicks on the video placeholder (or the video for that matter--see BL-6149),
     // bring up the sign language tool
@@ -210,7 +205,7 @@ function SetupClickToShowSignLanguageTool(videoContainerDiv: Element) {
             toolbox?.toolboxIsShowing() &&
             (currentToolId === kOverlayToolId ||
                 currentToolId === kGameToolId) &&
-            isInCanvasElement(videoContainerDiv)
+            videoContainerDiv.closest(kCanvasElementSelector) // only ones actually in a canvas element
         ) {
             // Looks like a video-over-picture, and we're showing the canvas element or game tool. Don't switch to SL tool.
             return;

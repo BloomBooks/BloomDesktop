@@ -717,7 +717,7 @@ namespace BloomTests.Spreadsheet
                 </div>
                 <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Cover-style"" lang=""*"" contenteditable=""true"" data-book=""bookTitle""></div>
             </div>
-            <div class=""bloom-canvas bloom-backgroundImage"" data-book=""coverImage"" style=""background-image:url('Othello 199.jpg')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd"">
+            <div class=""bloom-canvas bloom-background-image-in-style"" data-book=""coverImage"" style=""background-image:url('Othello 199.jpg')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd"">
 				<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"" data-default-languages=""auto"">
 					<div class=""bloom-editable ImageDescriptionEdit-style"" lang=""z"" contenteditable=""true"" data-book=""coverImageDescription""></div>
 				</div>

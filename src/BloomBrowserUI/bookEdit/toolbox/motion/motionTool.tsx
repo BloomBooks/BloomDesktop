@@ -13,8 +13,9 @@ import "./motion.less";
 import {
     DisableImageEditing,
     EnableImageEditing,
-    getBackgroundImageFromContainer,
-    getBackgroundCanvasElementFromContainer
+    getBackgroundImageFromBloomCanvas,
+    getBackgroundCanvasElementFromBloomCanvas,
+    kBloomCanvasClass
 } from "../../js/bloomImages";
 import { css } from "@emotion/react";
 
@@ -83,9 +84,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const page = this.getPage();
         if (!page) return; // paranoid
         // enhance: if more than one image...do what??
-        const firstBloomCanvas = this.getFirstBloomCanvas();
-        if (!firstBloomCanvas) return; // paranoid
-        DisableImageEditing(firstBloomCanvas);
+        const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
+        if (!bloomCanvasToAnimate) return; // paranoid
+        DisableImageEditing(bloomCanvasToAnimate);
         this.removeElt(page.getElementById("animationStart"));
         this.removeElt(page.getElementById("animationEnd"));
         const scale = EditableDivUtils.getPageScale();
@@ -107,7 +108,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 height,
                 needToSaveThisRectangle
             ] = this.getActualRectFromAttrValue(
-                firstBloomCanvas,
+                bloomCanvasToAnimate,
                 defLeft,
                 defTop,
                 defWidth,
@@ -182,11 +183,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 drag: (event, ui) => {
                     const xpos = Math.min(
                         Math.max(0, ui.position.left / scale),
-                        firstBloomCanvas.clientWidth - ui.helper.width()
+                        bloomCanvasToAnimate.clientWidth - ui.helper.width()
                     );
                     const ypos = Math.min(
                         Math.max(0, ui.position.top / scale),
-                        firstBloomCanvas.clientHeight - ui.helper.height()
+                        bloomCanvasToAnimate.clientHeight - ui.helper.height()
                     );
                     ui.position.top = ypos;
                     ui.position.left = xpos;
@@ -208,7 +209,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             // the dragging and resizing just don't work.
             return getEditablePageBundleExports()!.makeElement(
                 htmlForDraggable,
-                $(firstBloomCanvas),
+                $(bloomCanvasToAnimate),
                 argsForResizable,
                 argsForDraggable
             );
@@ -259,11 +260,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             this.removeElt(page.getElementById("animationEnd"));
         }
         // enhance: if more than one image...do what??
-        const firstImageContainer = this.getFirstBloomCanvas();
-        if (!firstImageContainer) {
+        const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
+        if (!bloomCanvasToAnimate) {
             return;
         }
-        EnableImageEditing(firstImageContainer);
+        EnableImageEditing(bloomCanvasToAnimate);
         this.removeCurrentAudioMarkup();
         if (this.observer) {
             this.observer.disconnect();
@@ -286,9 +287,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         return "motion";
     }
 
-    private getFirstBloomCanvas(): HTMLElement | null {
+    private getBloomCanvasToAnimate(): HTMLElement | null {
         const page = this.getPage();
-        return page?.getElementsByClassName("bloom-canvas")[0] as HTMLElement;
+        return page?.getElementsByClassName(
+            kBloomCanvasClass
+        )[0] as HTMLElement;
     }
 
     // Given one of the start/end rectangle objects, produce the string we want to save in
@@ -300,11 +303,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const rectLeft = htmlRect.offsetLeft;
         const rectWidth = this.getWidth(htmlRect);
         const rectHeight = this.getHeight(htmlRect);
-        const firstImageContainer = this.getFirstBloomCanvas();
-        if (!firstImageContainer) return ""; // paranoid
+        const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
+        if (!bloomCanvasToAnimate) return ""; // paranoid
 
-        const imageHeight = this.getHeight(firstImageContainer);
-        const imageWidth = this.getWidth(firstImageContainer);
+        const imageHeight = this.getHeight(bloomCanvasToAnimate);
+        const imageWidth = this.getWidth(bloomCanvasToAnimate);
 
         const top = rectTop / imageHeight;
         const left = rectLeft / imageWidth;
@@ -318,7 +321,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     // Performs the reverse of the above transformation.
     // Todo zoom: this needs to get the right actual widths.
     private getActualRectFromAttrValue(
-        firstBloomCanvas: HTMLElement,
+        bloomCanvasToAnimate: HTMLElement,
         defLeft: number,
         defTop: number,
         defWidth: number,
@@ -330,7 +333,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             width = defWidth,
             height = defHeight;
         let needToSaveRectangle = true;
-        const savedState = firstBloomCanvas.getAttribute(initAttr);
+        const savedState = bloomCanvasToAnimate.getAttribute(initAttr);
         if (savedState) {
             try {
                 const parts = savedState.split(" ");
@@ -353,8 +356,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 height = defHeight;
             }
         }
-        const imageHeight = this.getHeight(firstBloomCanvas);
-        const imageWidth = this.getWidth(firstBloomCanvas);
+        const imageHeight = this.getHeight(bloomCanvasToAnimate);
+        const imageWidth = this.getWidth(bloomCanvasToAnimate);
         let actualTop = top * imageHeight;
         let actualLeft = left * imageWidth;
         let actualWidth = width * imageWidth;
@@ -364,8 +367,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // - we may have changed the shape of the bloom-canvas by origami
         // - we may have changed the shape of the bloom-canvas by choosing a different page layout
         // (We may decide to go stronger than this and make sure it's within the actual image.)
-        const bloomCanvasWidth = this.getWidth(firstBloomCanvas);
-        const bloomCanvasHeight = this.getHeight(firstBloomCanvas);
+        const bloomCanvasWidth = this.getWidth(bloomCanvasToAnimate);
+        const bloomCanvasHeight = this.getHeight(bloomCanvasToAnimate);
         if (actualWidth > bloomCanvasWidth) {
             actualWidth = bloomCanvasWidth;
         }
@@ -429,35 +432,35 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private motionChanged(checked: boolean) {
-        const firstImageContainer = this.getFirstBloomCanvas();
-        if (!firstImageContainer) {
+        const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
+        if (!bloomCanvasToAnimate) {
             return;
         }
         if (checked) {
-            if (!firstImageContainer.getAttribute("data-initialrect")) {
+            if (!bloomCanvasToAnimate.getAttribute("data-initialrect")) {
                 // see if we can restore a backup state
-                firstImageContainer.setAttribute(
+                bloomCanvasToAnimate.setAttribute(
                     "data-initialrect",
-                    firstImageContainer.getAttribute(
+                    bloomCanvasToAnimate.getAttribute(
                         "data-disabled-initialrect"
                     ) as string
                 );
-                firstImageContainer.removeAttribute(
+                bloomCanvasToAnimate.removeAttribute(
                     "data-disabled-initialrect"
                 );
                 this.makeRectsVisible(); // ensures start/stop rectangles visible
             }
         } else {
-            if (firstImageContainer.getAttribute("data-initialrect")) {
+            if (bloomCanvasToAnimate.getAttribute("data-initialrect")) {
                 // always?
                 // save old state, thus recording that we're in the off state, not just uninitialized.
-                firstImageContainer.setAttribute(
+                bloomCanvasToAnimate.setAttribute(
                     "data-disabled-initialrect",
-                    firstImageContainer.getAttribute(
+                    bloomCanvasToAnimate.getAttribute(
                         "data-initialrect"
                     ) as string
                 );
-                firstImageContainer.removeAttribute("data-initialrect");
+                bloomCanvasToAnimate.removeAttribute("data-initialrect");
             }
             this.detachFromPage();
         }
@@ -505,12 +508,12 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private getImages(): Array<HTMLImageElement> {
-        const firstImageContainer = this.getFirstBloomCanvas();
-        if (!firstImageContainer) return []; // paranoid
+        const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
+        if (!bloomCanvasToAnimate) return []; // paranoid
         // not interested in images inside the resize rectangles.
         return Array.prototype.slice
-            .call(firstImageContainer.getElementsByTagName("img"))
-            .filter(v => v.parentElement === firstImageContainer);
+            .call(bloomCanvasToAnimate.getElementsByTagName("img"))
+            .filter(v => v.parentElement === bloomCanvasToAnimate);
     }
 
     private setupResizeObserver(): void {
@@ -549,9 +552,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // The specific thing we want to observe is the src attr of the img element embedded
         // in the background image of the first bloom-canvas. We want to update our UI if this changes from
         // placeholder to a 'real' image.
-        const firstBloomCanvas = this.getFirstBloomCanvas();
-        if (firstBloomCanvas) {
-            const bgImage = getBackgroundImageFromContainer(firstBloomCanvas);
+        const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
+        if (bloomCanvasToAnimate) {
+            const bgImage = getBackgroundImageFromBloomCanvas(
+                bloomCanvasToAnimate
+            );
             if (bgImage) {
                 const images = bgImage.getElementsByTagName("img");
                 // I'm not sure how images can be an empty list...possibly while the page is shutting down??
@@ -652,7 +657,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     // Review: Man this is a long method! It used to be almost 300 lines. I've refactored to bring it down
     // some to just over 200 lines.
     private toggleMotionPreviewPlaying() {
-        const bloomCanvasToAnimate = this.getFirstBloomCanvas();
+        const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
         if (
             !bloomCanvasToAnimate ||
             !(document.getElementById("motion") as HTMLInputElement).checked ||
@@ -714,7 +719,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
         // Make a div that determines the shape and position of the animation.
         // It wraps a div that will move (by being scaled larger and translated) and be clipped (to animationWrapDiv)
-        // which in turn wraps a modified clone of firstImageContainer, the content that gets panned and zoomed.
+        // which in turn wraps a modified clone of bloomCanvasToAnimate, the content that gets panned and zoomed.
         // Enhance: when we change the signature of makeElement, we can get rid of the vestiges of JQuery here and above.
         this.animationWrapDiv = getEditablePageBundleExports()!.makeElement(
             "<div class='" +
@@ -795,7 +800,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             // (normally the only one) that holds the main (background) image.
             // Enhance: handle a cropped image. (Would not have to change Bloom Player,
             // since the image will be really cropped during export.)
-            const backgroundCanvasElement = getBackgroundCanvasElementFromContainer(
+            const backgroundCanvasElement = getBackgroundCanvasElementFromBloomCanvas(
                 picToAnimate
             ) as HTMLElement;
 
@@ -1039,10 +1044,12 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
     private getStateFromHtml(): IMotionHtmlState {
         // enhance: if more than one image...do what??
-        const firstBloomCanvas = this.getFirstBloomCanvas();
+        const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
         let src = "";
-        if (firstBloomCanvas) {
-            const bgImage = getBackgroundImageFromContainer(firstBloomCanvas);
+        if (bloomCanvasToAnimate) {
+            const bgImage = getBackgroundImageFromBloomCanvas(
+                bloomCanvasToAnimate
+            );
             src = bgImage?.getAttribute("src") || "";
         }
 
@@ -1050,7 +1057,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
         let motionChecked = true;
         let motionPossible = !doNotHaveAPicture;
-        if (!firstBloomCanvas || ToolboxToolReactAdaptor.isXmatter()) {
+        if (!bloomCanvasToAnimate || ToolboxToolReactAdaptor.isXmatter()) {
             // if there's no place to put an image, we can't be enabled.
             // And we don't support Motion in xmatter (BL-5427),
             // in part because we use background-image there and haven't fully supported
@@ -1060,7 +1067,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             motionChecked = false;
             motionPossible = false;
         } else {
-            if (firstBloomCanvas.getAttribute("data-disabled-initialrect")) {
+            if (
+                bloomCanvasToAnimate.getAttribute("data-disabled-initialrect")
+            ) {
                 // At some point on this page the check box has been explicitly turned off
                 motionChecked = false;
             }

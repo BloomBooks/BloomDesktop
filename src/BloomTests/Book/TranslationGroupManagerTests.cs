@@ -942,7 +942,7 @@ namespace BloomTests.Book
                     "//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]",
                     0
                 );
-            //the added french should have all the structure including a copy of the bloom-canvas div, but none of the text except from the bloom-cloneToOtherLanguages paragraph
+            //the added french should have all the structure including a copy of the image container div, but none of the text except from the bloom-cloneToOtherLanguages paragraph
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(

@@ -12,7 +12,7 @@
     max-width: 177.777778mm;
 }
 
-.Device16x9Landscape.fullScreen .bloom-canvas.bloom-backgroundImage {
+.Device16x9Landscape.fullScreen .bloom-canvas.bloom-background-image-in-style {
     /* Get past ios "background-size:cover" bug. See BL-7458 */
     width: 177.77777778mm;
 }
@@ -23,7 +23,7 @@
     max-width: 100mm;
 }
 
-.Device16x9Portrait.fullScreen .bloom-canvas.bloom-backgroundImage {
+.Device16x9Portrait.fullScreen .bloom-canvas.bloom-background-image-in-style {
     /* Get past ios "background-size:cover" bug. See BL-7458 */
     width: 100mm;
 }

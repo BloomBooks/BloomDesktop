@@ -35,7 +35,7 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.RawDom;
             var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
-            book.BringPageUpToDate(page);
+            book.ConvertPreOrigamiPages(page);
 
             var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
 
@@ -94,7 +94,7 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.RawDom;
             var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
-            book.BringPageUpToDate(page);
+            book.ConvertPreOrigamiPages(page);
 
             var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
 
@@ -167,7 +167,7 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.RawDom;
             var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
-            book.BringPageUpToDate(page);
+            book.ConvertPreOrigamiPages(page);
 
             var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
 
@@ -222,7 +222,7 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.RawDom;
             var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
-            book.BringPageUpToDate(page);
+            book.ConvertPreOrigamiPages(page);
 
             var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
 
@@ -262,7 +262,7 @@ namespace BloomTests.Book
             var dom = book.RawDom;
             var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             var oldContent = page.OuterXml;
-            book.BringPageUpToDate(page);
+            book.ConvertPreOrigamiPages(page);
 
             var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             Assert.That(newPage.OuterXml, Is.EqualTo(oldContent), "should not have modified page");
@@ -289,7 +289,7 @@ namespace BloomTests.Book
             var dom = book.RawDom;
             var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             var oldContent = page.OuterXml;
-            book.BringPageUpToDate(page);
+            book.ConvertPreOrigamiPages(page);
 
             var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             Assert.That(newPage.OuterXml, Is.EqualTo(oldContent), "should not have modified page");
@@ -365,7 +365,7 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.RawDom;
             var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
-            book.BringPageUpToDate(page);
+            book.ConvertPreOrigamiPages(page);
 
             var updatedPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             Assert.IsTrue(
@@ -392,7 +392,7 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.RawDom;
             var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
-            book.BringPageUpToDate(page);
+            book.ConvertPreOrigamiPages(page);
 
             var updatedPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             Assert.IsTrue(
@@ -415,7 +415,7 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.RawDom;
             var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
-            book.BringPageUpToDate(page);
+            book.ConvertPreOrigamiPages(page);
 
             var updatedPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             Assert.IsTrue(
@@ -438,7 +438,7 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.RawDom;
             var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
-            book.BringPageUpToDate(page);
+            book.ConvertPreOrigamiPages(page);
 
             var updatedPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
             Assert.IsFalse(
@@ -466,7 +466,7 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.RawDom;
             var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
-            book.BringPageUpToDate(page);
+            book.ConvertPreOrigamiPages(page);
             //The source template page has data-page='extra', but the migrated page *must not* have this.
             AssertThatXmlIn
                 .Dom(dom)
@@ -493,7 +493,7 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.RawDom;
             var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
-            book.BringPageUpToDate(page);
+            book.ConvertPreOrigamiPages(page);
             //The source template page has data-page='extra', but the migrated page *must not* have this.
             AssertThatXmlIn
                 .Dom(dom)
@@ -525,7 +525,7 @@ namespace BloomTests.Book
                 modifyHead((SafeXmlElement)dom.DocumentElement.ChildNodes[0]);
             }
             var page = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
-            book.BringPageUpToDate(page);
+            book.ConvertPreOrigamiPages(page);
 
             var newPage = (SafeXmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
 

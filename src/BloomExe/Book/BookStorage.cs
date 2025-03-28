@@ -3660,9 +3660,9 @@ namespace Bloom.Book
                 if (canvasElementDivs == null) // unlikely, but maybe possible
                     continue;
 
-                foreach (var textOverPictureDiv in canvasElementDivs)
+                foreach (var canvasElement in canvasElementDivs)
                 {
-                    var bubbleData = textOverPictureDiv.GetAttribute("data-bubble");
+                    var bubbleData = canvasElement.GetAttribute("data-bubble");
                     if (string.IsNullOrEmpty(bubbleData))
                         continue;
                     var jsonObject = HtmlDom.GetJsonObjectFromDataBubble(bubbleData);
@@ -3706,9 +3706,10 @@ namespace Bloom.Book
             if (GetMaintenanceLevel() >= 3)
                 return;
 
-            // Make sure that in every bloom-canvas (at level 3 still an image container), the first element is the img.
+            // Make sure that in every image container (at level 3 this includes what we now call bloom canvases;
+            // that migration is level 7), the first element is the img.
             // This is important because, since 5.4, we don't use a z-index to put canvas elements above the base image
-            // (so the bloom-canvas does not become a stacking context, so we can use
+            // (so the outer image container (since level 7 bloom-canvas) does not become a stacking context, so we can use
             // z-index on its children to put them above the comicaljs canvas),
             // which means we depend on the img being first to make sure the canvas elements are on top of it.
             // (I'm not sure we ever created situations where the img was not first, but now it's vital,
@@ -4012,14 +4013,14 @@ namespace Bloom.Book
                 .Where(
                     (ic) =>
                         ic.ParentWithClass("bloom-imageContainer") == null
-                        && ic.ParentWithClass("bloom-canvas") == null
+                        && ic.ParentWithClass(HtmlDom.kBloomCanvasClass) == null
                 );
             foreach (SafeXmlElement bloomCanvas in bloomCanvases)
             {
                 bloomCanvas.RemoveClass("bloom-imageContainer");
-                bloomCanvas.AddClass("bloom-canvas");
+                bloomCanvas.AddClass(HtmlDom.kBloomCanvasClass);
                 // Note: more changes happen around this time...but they are done in Javascript as pages open.
-                // Child img becomes background canvas element, and where rev 6 leaves a dummy placeholder img
+                // Child img becomes background canvas element, and where level 6 leaves a dummy placeholder img
                 // behind, the JS migration now removes it. It would be nice to do this in migration, but very
                 // difficult, since we need to set the position and size of the new canvas element based on the
                 // computed size of the container. But we want at least the bloom-canvas to be consistent.
@@ -4129,9 +4130,9 @@ namespace Bloom.Book
         {
             "branding.css",
             "defaultLangStyles.css",
-			"appearance.css",
+            "appearance.css",
             // Allow custom settings to override the defaults in appearance.css.  See BL-14467.
-			"customCollectionStyles.css",
+            "customCollectionStyles.css",
             "../customCollectionStyles.css",
             // We don't usually have both of these, and I don't have a clear idea why one should come before
             // the other. But the order should be consistent, and if both are there, typically customBookStyles2.css

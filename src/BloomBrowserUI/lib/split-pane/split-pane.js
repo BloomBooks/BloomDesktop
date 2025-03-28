@@ -786,7 +786,7 @@ import { kBloomCanvasClass } from "../../bookEdit/js/bloomImages";
         ) {
             return -1;
         }
-        // If there is a bloom-backgroundImage use that to get the aspect ratio we want
+        // If there is a bloom-backgroundImage, use that to get the aspect ratio we want
         const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
             "bloom-backgroundImage"
         )[0];

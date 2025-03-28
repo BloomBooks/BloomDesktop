@@ -26,7 +26,7 @@ import {
     kImageContainerSelector,
     getImageFromContainer,
     kImageContainerClass,
-    getBackgroundImageFromContainer,
+    getBackgroundImageFromBloomCanvas,
     SetupMetadataButton,
     UpdateImageTooltipVisibility,
     HandleImageError,
@@ -54,9 +54,6 @@ export interface ITextColorInfo {
 }
 
 const kComicalGeneratedClass: string = "comical-generated";
-// We could rename this class to "bloom-overPictureElement", but that would involve a migration.
-// For now we're keeping this name for backwards-compatibility, even though now the element could be
-// a video or even another picture.
 // In the process of moving these two definitions to overlayUtils.ts, but duplicating here for now.
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 export const kbackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
@@ -65,7 +62,7 @@ type ResizeDirection = "ne" | "nw" | "sw" | "se";
 
 // Canvas elements are the movable items that can be placed over images (or empty image containers).
 // Some of them are associated with ComicalJs bubbles. Earlier in Bloom's history, they were variously
-// called TextOverPicture boxes, TOPs, Overlays, and Bubbles. We have attempted to clean up all such
+// called TextOverPicture boxes, TOPs, Overlays, OverPictures, and Bubbles. We have attempted to clean up all such
 // names, but it is difficult, as "top" is a common CSS property, many other things are called overlays,
 // and "bubble" is used in reference to ComicalJs, Source Bubbles, Hint Bubbles, and other qtips.
 // Some may have been missed. (It's even conceivable that some references to the other things were
@@ -135,7 +132,7 @@ export class CanvasElementManager {
         // in OverflowChecker.getSelfOverflowAmounts, which I don't want to mess with
         // as a lot of work went into getting overflow reporting right. We seem to
         // need a bit of extra space to make sure the last line of text fits.
-        // The 27 is the minimumSize that CSS imposes on OverPicture elements; it may cause
+        // The 27 is the minimumSize that CSS imposes on canvas elements; it may cause
         // Comical some problems if we try to set the actual size smaller.
         // (I think I saw background gradients behaving strangely, for example.)
         let newHeight = Math.max(box.clientHeight + overflowY + 4, 27);
@@ -268,12 +265,8 @@ export class CanvasElementManager {
 
     // A visible, editable div is generally focusable, but sometimes (e.g. in Bloom games),
     // we may disable it by turning off pointer events. So we filter those ones out.
-    private getAllVisibleFocusableDivs(
-        overPictureContainerElement: HTMLElement
-    ): Element[] {
-        return this.getAllVisibileEditableDivs(
-            overPictureContainerElement
-        ).filter(
+    private getAllVisibleFocusableDivs(bloomCanvas: HTMLElement): Element[] {
+        return this.getAllVisibileEditableDivs(bloomCanvas).filter(
             focusElement =>
                 window.getComputedStyle(focusElement).pointerEvents !== "none"
         );
@@ -706,11 +699,11 @@ export class CanvasElementManager {
         // necessary if we added the very first canvas element, and Comical was not previously initialized
         Comical.setUserInterfaceProperties({ tailHandleColor: kBloomBlue });
         if (bubble) {
-            const newTextOverPictureElement = bubble.content;
+            const newCanvasElement = bubble.content;
             if (activateCanvasElement) {
                 Comical.activateBubble(bubble);
             }
-            this.updateComicalForSelectedElement(newTextOverPictureElement);
+            this.updateComicalForSelectedElement(newCanvasElement);
 
             // SetupElements (below) will do most of what we need, but when it gets to
             // 'turnOnCanvasElementEditing()', it's already on, so the method will get skipped.
@@ -725,7 +718,7 @@ export class CanvasElementManager {
             // canvas element, and expects the focus event handler to get called.
             if (attachEventsToEditables) {
                 this.addEventsToFocusableElements(
-                    newTextOverPictureElement,
+                    newCanvasElement,
                     attachEventsToEditables
                 );
             }
@@ -753,7 +746,7 @@ export class CanvasElementManager {
                 const bubbleSpec = Bubble.getDefaultBubbleSpec(top, "none");
                 new Bubble(top).setBubbleSpec(bubbleSpec);
                 // it would be nice to do this only once, but there MIGHT
-                // be canvas element elements in more than one bloom canvas...too complicated,
+                // be canvas elements in more than one bloom canvas...too complicated,
                 // and this only happens once per canvas element.
                 Comical.update(CanvasElementManager.getBloomCanvas(top)!);
             }
@@ -2641,7 +2634,7 @@ export class CanvasElementManager {
         this.thingsToNotifyOfCanvasElementChange.forEach(f => f.handler(spec));
     }
 
-    // Set the color of the text in all of the active canvas element family's TextOverPicture boxes.
+    // Set the color of the text in all of the active canvas element family's canvas elements.
     // If hexOrRgbColor is empty string, we are setting the canvas element to use the style default.
     public setTextColor(hexOrRgbColor: string) {
         const activeEl = theOneCanvasElementManager.getActiveElement();
@@ -2732,7 +2725,7 @@ export class CanvasElementManager {
         return ancestors.length > 0 ? ancestors[0] : tempBubble;
     }
 
-    // Set the color of the background in all of the active canvas element family's TextOverPicture boxes.
+    // Set the color of the background in all of the active canvas element family's canvas elements.
     public setBackgroundColor(colors: string[], opacity: number | undefined) {
         if (!this.activeElement) {
             return;
@@ -3284,7 +3277,7 @@ export class CanvasElementManager {
             // The hovered canvas element is not selected. If it's an image, the user might
             // want to drag a tail tip there, which is hard to do with a grab cursor,
             // so don't switch.
-            if (this.isPictureOverPictureElement(hoveredBubble.content)) {
+            if (this.isPictureCanvasElement(hoveredBubble.content)) {
                 hoveredBubble = null;
             }
         }
@@ -4140,13 +4133,13 @@ export class CanvasElementManager {
         const parentBoundingRect = parentElement.getBoundingClientRect();
 
         // // Ensure newX and newY is within the bounds of the container.
-        const container = CanvasElementManager.getBloomCanvas(parentElement);
-        if (!container) {
+        const bloomCanvas = CanvasElementManager.getBloomCanvas(parentElement);
+        if (!bloomCanvas) {
             //toastr.warning("Failed to create child or duplicate element.");
             return undefined;
         }
-        return this.adjustRectToImageContainer(
-            container,
+        return this.adjustRectToBloomCanvas(
+            bloomCanvas,
             parentBoundingRect.left + proposedOffsetX,
             parentBoundingRect.top + proposedOffsetY,
             parentElement.clientWidth,
@@ -4154,7 +4147,7 @@ export class CanvasElementManager {
         );
     }
 
-    private adjustRectToImageContainer(
+    private adjustRectToBloomCanvas(
         bloomCanvas: Element,
         x: number,
         y: number,
@@ -4257,28 +4250,31 @@ export class CanvasElementManager {
             "Scaled Viewport coordinates"
         );
         // Detect if the original is a picture over picture or video over picture element.
-        if (this.isPictureOverPictureElement(originalElement)) {
-            return this.addPictureOverPicture(
+        if (this.isPictureCanvasElement(originalElement)) {
+            return this.addPictureCanvasElement(
                 positionInViewport,
                 $(bloomCanvas)
             );
         }
-        if (this.isVideoOverPictureElement(originalElement)) {
-            return this.addVideoOverPicture(positionInViewport, $(bloomCanvas));
+        if (this.isVideoCanvasElement(originalElement)) {
+            return this.addVideoCanvasElement(
+                positionInViewport,
+                $(bloomCanvas)
+            );
         }
-        return this.addTextOverPicture(
+        return this.addCanvasElementCore(
             positionInViewport,
             $(bloomCanvas),
             style
         );
     }
 
-    private isOverPictureElementWithClass(
-        overPictureElement: HTMLElement,
+    private isCanvasElementWithClass(
+        canvasElement: HTMLElement,
         className: string
     ): boolean {
-        for (let i = 0; i < overPictureElement.childElementCount; i++) {
-            const child = overPictureElement.children[i] as HTMLElement;
+        for (let i = 0; i < canvasElement.childElementCount; i++) {
+            const child = canvasElement.children[i] as HTMLElement;
             if (child && child.classList.contains(className)) {
                 return true;
             }
@@ -4286,36 +4282,32 @@ export class CanvasElementManager {
         return false;
     }
 
-    public isActiveElementPictureOverPicture(): boolean {
+    public isActiveElementPictureCanvasElement(): boolean {
         if (!this.activeElement) {
             return false;
         }
-        return this.isPictureOverPictureElement(this.activeElement);
+        return this.isPictureCanvasElement(this.activeElement);
     }
 
-    private isPictureOverPictureElement(
-        overPictureElement: HTMLElement
-    ): boolean {
-        return this.isOverPictureElementWithClass(
-            overPictureElement,
+    private isPictureCanvasElement(canvasElement: HTMLElement): boolean {
+        return this.isCanvasElementWithClass(
+            canvasElement,
             kImageContainerClass
         );
     }
 
-    private isVideoOverPictureElement(
-        overPictureElement: HTMLElement
-    ): boolean {
-        return this.isOverPictureElementWithClass(
-            overPictureElement,
+    private isVideoCanvasElement(canvasElement: HTMLElement): boolean {
+        return this.isCanvasElementWithClass(
+            canvasElement,
             kVideoContainerClass
         );
     }
 
-    public isActiveElementVideoOverPicture(): boolean {
+    public isActiveElementVideoCanvasElement(): boolean {
         if (!this.activeElement) {
             return false;
         }
-        return this.isVideoOverPictureElement(this.activeElement);
+        return this.isVideoCanvasElement(this.activeElement);
     }
 
     // This method is called when the user "drops" an element from the comicTool onto an image.
@@ -4340,20 +4332,20 @@ export class CanvasElementManager {
             "Scaled Viewport coordinates"
         );
         if (style === "video") {
-            return this.addVideoOverPicture(
+            return this.addVideoCanvasElement(
                 positionInViewport,
                 bloomCanvas,
                 rightTopOffset
             );
         }
         if (style === "image") {
-            return this.addPictureOverPicture(
+            return this.addPictureCanvasElement(
                 positionInViewport,
                 bloomCanvas,
                 rightTopOffset
             );
         }
-        return this.addTextOverPicture(
+        return this.addCanvasElementCore(
             positionInViewport,
             bloomCanvas,
             style,
@@ -4362,7 +4354,7 @@ export class CanvasElementManager {
         );
     }
 
-    private addTextOverPicture(
+    private addCanvasElementCore(
         location: Point,
         bloomCanvasJQuery: JQuery,
         style?: string,
@@ -4388,7 +4380,7 @@ export class CanvasElementManager {
             editableDivHtml +
             "</div>";
 
-        return this.finishAddingOverPictureElement(
+        return this.finishAddingCanvasElement(
             bloomCanvasJQuery,
             transGroupHtml,
             location,
@@ -4398,7 +4390,7 @@ export class CanvasElementManager {
         );
     }
 
-    private addVideoOverPicture(
+    private addVideoCanvasElement(
         location: Point,
         imageContainerJQuery: JQuery,
         rightTopOffset?: string
@@ -4408,7 +4400,7 @@ export class CanvasElementManager {
             " bloom-noVideoSelected bloom-leadingElement";
         const videoContainerHtml =
             "<div class='" + standardVideoClasses + "' tabindex='0'></div>";
-        return this.finishAddingOverPictureElement(
+        return this.finishAddingCanvasElement(
             imageContainerJQuery,
             videoContainerHtml,
             location,
@@ -4418,7 +4410,7 @@ export class CanvasElementManager {
         );
     }
 
-    private addPictureOverPicture(
+    private addPictureCanvasElement(
         location: Point,
         imageContainerJQuery: JQuery,
         rightTopOffset?: string
@@ -4433,7 +4425,7 @@ export class CanvasElementManager {
             "'>" +
             imagePlaceHolderHtml +
             "</div>";
-        return this.finishAddingOverPictureElement(
+        return this.finishAddingCanvasElement(
             imageContainerJQuery,
             imageContainerHtml,
             location,
@@ -4443,7 +4435,7 @@ export class CanvasElementManager {
         );
     }
 
-    private finishAddingOverPictureElement(
+    private finishAddingCanvasElement(
         bloomCanvasJQuery: JQuery,
         internalHtml: string,
         location: Point,
@@ -4545,7 +4537,7 @@ export class CanvasElementManager {
     // Note: I wish we could just make this adjustment in the dragEnd event handler
     // which receives both the point and the rightTopOffset data, but it does not
     // have acess to the element being created to get its width. We could push it up
-    // one level into finishAddingOverPictureElement, but it's simpler here where we're
+    // one level into finishAddingCanvasElement, but it's simpler here where we're
     // already extracting and adjusting the offsets from positionInViewport
     private placeElementAtPosition(
         wrapperBox: JQuery,
@@ -4686,7 +4678,7 @@ export class CanvasElementManager {
             // family is created, and then the over picture editing needs to be initialized again.
             // See BL-13617.
             this.removeJQueryResizableWidget();
-            this.initializeOverPictureEditing();
+            this.initializeCanvasElementEditing();
             return result;
         }
         return undefined;
@@ -4698,7 +4690,7 @@ export class CanvasElementManager {
     // although this one canvas element may be all there is.
     // The content of 'patriarchSourceBubble' is now the active element.
     // The 'bubbleSpecToDuplicate' param is the bubbleSpec for the patriarch source canvas element.
-    // The function returns the patriarch textOverPicture element of the new
+    // The function returns the patriarch canvas element of the new
     // duplicated canvas element family.
     // This method handles all needed refreshing of the duplicate canvas elements.
     private duplicateCanvasElementFamily(
@@ -4971,6 +4963,7 @@ export class CanvasElementManager {
         | "none"
         | "forDrag"
         | "forTool"
+        | "forJqueryResize"
         | "forGamePlayMode" = "none";
 
     private splitterResizeObservers: ResizeObserver[] = [];
@@ -5033,7 +5026,7 @@ export class CanvasElementManager {
     }
 
     public suspendComicEditing(
-        forWhat: "forDrag" | "forTool" | "forGamePlayMode"
+        forWhat: "forDrag" | "forTool" | "forGamePlayMode" | "forJqueryResize"
     ) {
         if (!this.isCanvasElementEditingOn) {
             // Note that this prevents us from getting into one of the suspended states
@@ -5042,18 +5035,18 @@ export class CanvasElementManager {
             return;
         }
         this.turnOffCanvasElementEditing();
-        if (forWhat === "forDrag") {
+        if (forWhat === "forDrag" || forWhat === "forJqueryResize") {
             this.startDraggingSplitter();
         }
 
         if (forWhat === "forGamePlayMode") {
-            const allOverPictureElements = Array.from(
+            const allCanvasElements = Array.from(
                 document.getElementsByClassName(kCanvasElementClass)
             );
             // We don't want the user to be able to edit the text in the canvas elements while playing a game.
             // This doesn't need to be in the game prepareActivity because we remove contenteditable
             // from all elements when publishing a book.
-            allOverPictureElements.forEach(element => {
+            allCanvasElements.forEach(element => {
                 const editables = Array.from(
                     element.getElementsByClassName("bloom-editable")
                 );
@@ -5084,7 +5077,10 @@ export class CanvasElementManager {
             // call when comic editing wasn't on to begin with.
             return;
         }
-        if (this.comicEditingSuspendedState === "forDrag") {
+        if (
+            this.comicEditingSuspendedState === "forDrag" ||
+            this.comicEditingSuspendedState === "forJqueryResize"
+        ) {
             this.endDraggingSplitter();
         }
         if (this.comicEditingSuspendedState === "forTool") {
@@ -5092,10 +5088,10 @@ export class CanvasElementManager {
             this.setupSplitterEventHandling();
         }
         if (this.comicEditingSuspendedState === "forGamePlayMode") {
-            const allOverPictureElements = Array.from(
+            const allCanvasElements = Array.from(
                 document.getElementsByClassName(kCanvasElementClass)
             );
-            allOverPictureElements.forEach(element => {
+            allCanvasElements.forEach(element => {
                 const editables = Array.from(
                     element.getElementsByClassName("bloom-editable")
                 );
@@ -5180,7 +5176,7 @@ export class CanvasElementManager {
         }
     };
 
-    public initializeOverPictureEditing(): void {
+    public initializeCanvasElementEditing(): void {
         // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
         // load, so that canvas element editing works even when the Canvas element tool is not active. So it definitely
         // needs to be called there when we're calling SetupElements during page load. It's possible
@@ -5198,7 +5194,7 @@ export class CanvasElementManager {
         // We want to clean these up sooner rather than later so that there's less chance of accidentally blowing away
         // a UI element that we'll actually need now
         // (e.g. the ui-resizable-handles or the format gear, which both have .bloom-ui applied to them)
-        this.cleanupOverPictureElements();
+        this.cleanupCanvasElements();
 
         this.setupSplitterEventHandling();
 
@@ -5231,33 +5227,31 @@ export class CanvasElementManager {
         });
     }
 
-    public cleanupOverPictureElements() {
-        const allOverPictureElements = $("body").find(kCanvasElementSelector);
-        allOverPictureElements.each((index, element) => {
-            const thisOverPictureElement = $(element);
+    public cleanupCanvasElements() {
+        const allCanvasElements = $("body").find(kCanvasElementSelector);
+        allCanvasElements.each((index, element) => {
+            const thisCanvasElement = $(element);
 
             // Not sure about keeping this. Apparently at one point there could be some left-over controls.
             // But we clean out everything bloom-ui when we save a page, so they couldn't persist long.
             // And now I've added these video controls, which get added before we call this, so it was
             // destroying stuff we want. For now I'm just filtering out the new controls and NOT removing them.
-            thisOverPictureElement
+            thisCanvasElement
                 .find(".bloom-ui")
                 .filter(
                     (_, x) =>
                         !x.classList.contains("bloom-videoControlContainer")
                 )
                 .remove();
-            thisOverPictureElement.find(".bloom-dragHandleTOP").remove(); // BL-7903 remove any left over drag handles (this was the class used in 4.7 alpha)
+            thisCanvasElement.find(".bloom-dragHandleTOP").remove(); // BL-7903 remove any left over drag handles (this was the class used in 4.7 alpha)
         });
     }
 
     private removeJQueryResizableWidget() {
         try {
-            const allOverPictureElements = $("body").find(
-                kCanvasElementSelector
-            );
+            const allCanvasElements = $("body").find(kCanvasElementSelector);
             // Removes the resizable functionality completely. This will return the element back to its pre-init state.
-            allOverPictureElements.resizable("destroy");
+            allCanvasElements.resizable("destroy");
         } catch (e) {
             //console.log(`Error removing resizable widget: ${e}`);
         }
@@ -5400,14 +5394,7 @@ export class CanvasElementManager {
             // It's also certainly not inside a bloom-canvas, so null is a safe result.
             return null;
         }
-        const firstTry = element.closest(kBloomCanvasSelector);
-        if (!firstTry) {
-            return null; // 'element' is not in a bloom-canvas at all
-        }
-        const secondTry = firstTry.parentElement?.closest(kBloomCanvasSelector);
-        return secondTry
-            ? (secondTry as HTMLElement) // element was inside of a image over image
-            : (firstTry as HTMLElement); // element was just inside of a bloom-canvas
+        return element.closest(kBloomCanvasSelector);
     }
 
     // When showing a tail for a canvas element style that doesn't have one by default, we get one here.
@@ -5654,7 +5641,7 @@ export class CanvasElementManager {
                 bloomCanvas.insertBefore(bgCanvasElement, canvas.nextSibling);
             }
         }
-        const bgImage = getBackgroundImageFromContainer(
+        const bgImage = getBackgroundImageFromBloomCanvas(
             bloomCanvas
         ) as HTMLElement; // must exist by now
         // Whether it's a new bgImage or not, copy its src from the old-style img

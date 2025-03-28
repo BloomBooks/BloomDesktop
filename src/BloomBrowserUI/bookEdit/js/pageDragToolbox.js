@@ -28,7 +28,7 @@ function AddToolbox(container) {
                             $x.removeAttr("classesafterdrop");
 
                             if ($x.hasClass("bloom-canvas")) {
-                                SetupImageContainer($x);
+                                SetupBloomCanvas($x);
                             }
 
                             //review: this find() implies that the draggable thing isn't necesarily the widgetInPageDragToolbox. Why not?

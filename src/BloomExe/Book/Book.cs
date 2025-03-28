@@ -1584,11 +1584,13 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Bring the page up to date. Currently this is used to switch various old page types to new versions
-        /// based on Custom Page (so they can actually be customized).
+        /// Update some very old page types to new versions
+        /// based on Custom Page (so they can be customized using origami).
+        /// Assumes the pages have already been updated to use bloom-canvas rather than bloom-imageContainer,
+        /// although pages that old certainly would not have before migration started.
         /// </summary>
         /// <param name="page"></param>
-        public void BringPageUpToDate(SafeXmlElement page)
+        public void ConvertPreOrigamiPages(SafeXmlElement page)
         {
             var lineage = page.GetAttribute("data-pagelineage");
             if (string.IsNullOrEmpty(lineage))
@@ -1792,7 +1794,7 @@ namespace Bloom.Book
                 )
             )
             {
-                BringPageUpToDate(pageDiv);
+                ConvertPreOrigamiPages(pageDiv);
             }
 
             RemoveObsoleteImageAttributes(OurHtmlDom);

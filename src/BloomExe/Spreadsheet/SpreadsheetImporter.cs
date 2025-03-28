@@ -47,7 +47,7 @@ namespace Bloom.Spreadsheet
         // bloom-canvases, video containers, and widget containers.
         List<SafeXmlElement>[] _blocksOnPage = new List<SafeXmlElement>[blockTypeCount];
         public const int translationGroupIndex = 0;
-        public const int imageContainerIndex = 1;
+        public const int bloomCanvasIndex = 1;
         public const int videoContainerIndex = 2;
         public const int widgetContainerIndex = 3;
 
@@ -273,7 +273,7 @@ namespace Bloom.Spreadsheet
             _currentRowIndex = 0;
             _currentPageIndex = -1;
             _blocksOnPage[translationGroupIndex] = new List<SafeXmlElement>();
-            _blocksOnPage[imageContainerIndex] = new List<SafeXmlElement>();
+            _blocksOnPage[bloomCanvasIndex] = new List<SafeXmlElement>();
             _destLayout = Layout.FromDom(_destinationDom, Layout.A5Portrait);
             var pageTypeIndex = sheet.GetColumnForTag(InternalSpreadsheet.PageTypeColumnLabel);
             while (_currentRowIndex < _inputRows.Count)
@@ -331,8 +331,8 @@ namespace Bloom.Spreadsheet
                             await PutRowInImageAsync(
                                 currentRow,
                                 descriptionRow,
-                                _blocksOnPage[imageContainerIndex][
-                                    _blockOnPageIndexes[imageContainerIndex]
+                                _blocksOnPage[bloomCanvasIndex][
+                                    _blockOnPageIndexes[bloomCanvasIndex]
                                 ]
                             );
                         }
@@ -799,7 +799,7 @@ namespace Bloom.Spreadsheet
         private async Task PutRowInImageAsync(
             ContentRow currentRow,
             ContentRow descriptionRow,
-            SafeXmlElement currentImageContainer
+            SafeXmlElement currentBloomCanvas
         )
         {
             var spreadsheetImgPath = currentRow
@@ -834,7 +834,7 @@ namespace Bloom.Spreadsheet
                 }
             }
 
-            var imgElement = GetImgFromContainer(currentImageContainer);
+            var imgElement = GetImgFromContainer(currentBloomCanvas);
             // Enhance: warn if null?
             imgElement?.SetAttribute(
                 "src",
@@ -847,8 +847,8 @@ namespace Bloom.Spreadsheet
             imgElement?.RemoveAttribute("width");
             // bloom-canvases often have a generated title attribute that gives the file name and
             // notes about its resolution, etc. We think it will be regenerated as needed, but certainly
-            // the one from a previous image is no use.
-            currentImageContainer.RemoveAttribute("title");
+            // the one from a previous background image is no use.
+            currentBloomCanvas.RemoveAttribute("title");
             if (_pathToSpreadsheetFolder != null) //currently will only be null in tests
             {
                 if (spreadsheetImgPath == "placeHolder.png")
@@ -867,19 +867,19 @@ namespace Bloom.Spreadsheet
 
             if (descriptionRow != null)
             {
-                var group = currentImageContainer
+                var group = currentBloomCanvas
                     .GetElementsByTagName("div")
                     .FirstOrDefault(
                         e => e.GetAttribute("class").Contains("bloom-imageDescription")
                     );
                 if (group == null)
                 {
-                    group = currentImageContainer.OwnerDocument.CreateElement("div");
+                    group = currentBloomCanvas.OwnerDocument.CreateElement("div");
                     group.SetAttribute(
                         "class",
                         "bloom-translationGroup bloom-imageDescription bloom-trailingElement"
                     );
-                    currentImageContainer.AppendChild(group);
+                    currentBloomCanvas.AppendChild(group);
                 }
                 await PutRowInGroupAsync(descriptionRow, group);
             }
@@ -1280,8 +1280,8 @@ namespace Bloom.Spreadsheet
                 }
             }
 
-            var imageContainers = GetBloomCanvases(page);
-            foreach (var c in imageContainers)
+            var bloomCanvases = GetBloomCanvases(page);
+            foreach (var c in bloomCanvases)
             {
                 var img = GetImgFromContainer(c);
                 img?.SetAttribute("src", "placeHolder.png");
@@ -1664,7 +1664,7 @@ namespace Bloom.Spreadsheet
             List<SafeXmlElement>[] blocksOnPageCollector
         )
         {
-            blocksOnPageCollector[imageContainerIndex] = GetBloomCanvases(currentPage);
+            blocksOnPageCollector[bloomCanvasIndex] = GetBloomCanvases(currentPage);
             // We don't want image description slots as possible destinations for text.
             // They are handled by special extra rows inserted after the row that has the image.
             var allGroups = TranslationGroupManager.SortedGroupsOnPage(currentPage, true);
@@ -1679,7 +1679,7 @@ namespace Bloom.Spreadsheet
         // that is present in the enumeration. For each bit that is set in 'types',
         // the action is invoked, passing the index of the bit and the type.
         // For example, if types is Image | Video, the action will be invoked twice,
-        // first with 1 (imageContainerIndex) and BlockTypes.Image, then with
+        // first with 1 (bloomCanvasIndex) and BlockTypes.Image, then with
         // 2 (videoContainerIndex) and BlockTypes.Video.
         void ForEachIndexInTypes(BlockTypes types, Action<int, BlockTypes> action)
         {
@@ -2310,7 +2310,7 @@ namespace Bloom.Spreadsheet
 
         // The bitshifts make sure these stay in sync
         Text = 1 << SpreadsheetImporter.translationGroupIndex,
-        Image = 1 << SpreadsheetImporter.imageContainerIndex,
+        Image = 1 << SpreadsheetImporter.bloomCanvasIndex,
         Video = 1 << SpreadsheetImporter.videoContainerIndex,
         Widget = 1 << SpreadsheetImporter.widgetContainerIndex,
         All = 15, // deliberately not including landscape!
