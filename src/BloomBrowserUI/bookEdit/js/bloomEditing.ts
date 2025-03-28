@@ -71,7 +71,7 @@ import WebSocketManager, {
 } from "../../utils/WebSocketManager";
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
-import { addScrollbarsToPage, cleanupNiceScroll } from "../shared/scrolling";
+import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { showLinkGridSetupsDialog } from "../bookLinkSetup/LinkGridSetupDialog";
 import { Link } from "../bookLinkSetup/BookLinkTypes";
 

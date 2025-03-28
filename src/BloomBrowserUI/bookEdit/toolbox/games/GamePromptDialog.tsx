@@ -15,7 +15,7 @@ import {
     copyContentToTarget,
     getTarget,
     shuffle
-} from "../../shared/dragActivityRuntime";
+} from "bloom-player";
 import { setGeneratedDraggableId } from "../overlay/CanvasElementItem";
 import {
     adjustTarget,

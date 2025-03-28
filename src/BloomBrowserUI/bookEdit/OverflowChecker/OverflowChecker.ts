@@ -10,7 +10,7 @@ import {
     theOneCanvasElementManager
 } from "../js/CanvasElementManager";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
-import { addScrollbarsToPage, cleanupNiceScroll } from "../shared/scrolling";
+import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
