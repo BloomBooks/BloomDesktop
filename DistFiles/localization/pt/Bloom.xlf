@@ -2149,9 +2149,9 @@
         <target xml:lang="pt-PT" state="final">Colar imagem</target>
         <note>ID: EditTab.Image.PasteImage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.Reset" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.Reset" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reset image</source>
-        <target xml:lang="pt-PT" state="needs-translation">Reset image</target>
+        <target xml:lang="pt-PT" state="final">Restaurar a imagem</target>
         <note>ID: EditTab.Image.Reset</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true" approved="yes">
