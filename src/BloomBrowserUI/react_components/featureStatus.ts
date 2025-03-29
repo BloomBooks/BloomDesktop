@@ -5,31 +5,31 @@ import {
     useGetSubscriptionTier
 } from "./requiresSubscription";
 
-import { useApiObject } from "../utils/bloomApi";
+import { post, useApiObject } from "../utils/bloomApi";
 
 // Equivalent to C# SubscriptionTier enum
-export enum SubscriptionTier {
-    Basic = "Basic",
-    LocalCommunity = "Local Community",
-    Pro = "Pro",
-    Enterprise = "Enterprise"
-}
+// export enum SubscriptionTier {
+//     Basic = "Basic",
+//     LocalCommunity = "Local Community",
+//     Pro = "Pro",
+//     Enterprise = "Enterprise"
+// }
 
 // Equivalent to C# FeatureNames enum
-export enum FeatureNames {
+export enum FeatureName {
     Overlay = "Overlay",
     Game = "Game",
     Spreadsheet = "Spreadsheet",
     TeamCollection = "TeamCollection"
 }
 
-// Must match C# FeatureStatus class, including the uppercase property names
+// Must match what the api sends us
 export interface FeatureStatus {
-    Feature: FeatureNames;
-    SubscriptionTier: SubscriptionTier;
-    Enabled: boolean;
-    Visible: boolean;
-    FirstPageNumber?: string;
+    localizedFeature: string;
+    localizedTier: string;
+    enabled: boolean;
+    visible: boolean;
+    firstPageNumber?: string;
 }
 
 export function useGetFeatureStatus(
@@ -41,4 +41,8 @@ export function useGetFeatureStatus(
     );
 
     return featureStatus;
+}
+
+export function openBloomSubscriptionSettings() {
+    post("common/showSettingsDialog?tab=subscription");
 }

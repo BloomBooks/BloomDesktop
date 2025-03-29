@@ -30,7 +30,10 @@ import {
     useSetupBloomDialog
 } from "./BloomDialog/BloomDialogPlumbing";
 import { getBloomApiPrefix } from "../utils/bloomApi";
-import { useGetFeatureStatus } from "./featureStatus";
+import {
+    openBloomSubscriptionSettings,
+    useGetFeatureStatus
+} from "./featureStatus";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 //  From the enum values in CollectionSettingsApi.cs.
@@ -187,7 +190,7 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
             >
                 {props.children}
             </div>
-            {featureStatus?.Enabled || (
+            {featureStatus?.enabled || (
                 <div
                     css={css`
                         position: absolute;
@@ -506,10 +509,6 @@ export const BloomSubscriptionIndicatorIconAndText: React.FunctionComponent<{
         </div>
     );
 };
-
-function openBloomSubscriptionSettings() {
-    post("common/showSettingsDialog?tab=subscription");
-}
 
 // Still used in imageDescription.tsx and talkingBook.ts
 export function checkIfEnterpriseAvailable(): HaveSubscriptionPromise {

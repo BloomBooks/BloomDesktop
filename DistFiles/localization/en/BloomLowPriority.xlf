@@ -136,6 +136,50 @@
         <note>ID: Settings.Subscription.WhatsThis</note>
         <note>A link offering more information about the Funded Local Community Only option</note>
       </trans-unit>
+      <!-- Tiers -->
+      <trans-unit id="Subscription.Tier.Basic">
+        <source xml:lang="en">Basic</source>
+        <note>ID: Subscription.Tier.Basic</note>
+        <note>Basic subscription tier</note>
+        <note>Available for users with the lowest level of subscription.</note>
+      </trans-unit>
+      <trans-unit id="Subscription.Tier.LocalCommunity">
+        <source xml:lang="en">Local Community</source>
+        <note>ID: Subscription.Tier.LocalCommunity</note>
+        <note>Local Community subscription tier.</note>
+        <note>Available for projects that do not receive external funding.</note>
+      </trans-unit>
+        <trans-unit id="Subscription.Tier.Pro">
+        <source xml:lang="en">Pro</source>
+        <note>ID: Subscription.Tier.Pro</note>
+        <note>"Pro" is short for "Professional" in English. This is a subscription tier.</note>
+      </trans-unit>
+      <trans-unit id="Subscription.Tier.Enterprise">
+        <source xml:lang="en">Enterprise</source>
+        <note>ID: Subscription.Tier.Enterprise</note>
+        <note>Enterprise subscription tier</note>
+        <note>This is the highest level of subscription, serving projects that need publisher and sponsor logos, teams, etc.</note>
+      </trans-unit>
+      <!-- Other -->
+
+        <trans-unit id="Subscription.OpenSettings">
+        <source xml:lang="en">Subscription Settings</source>
+        <note>ID: Subscription.OpenSettings</note>
+      </trans-unit>
+      <!-- Features -->
+      <!-- TODO connect with/normalize other places that refer to these things -->
+      <trans-unit id="Feature.Overlay">
+        <source xml:lang="en">Overlay</source>
+        <note>ID: Feature.Overlay</note>
+        <note>This is the name of a feature in BLoom</note>
+      </trans-unit>
+      <trans-unit id="Feature.Spreadsheet">
+        <source xml:lang="en">Spreadsheet Import/Export</source>
+        <note>ID: Feature.Spreadsheet</note>
+        <note>This is the name of a feature in BLoom</note>
+      </trans-unit>
+      <!-- TODO: add other features -->
+
       <trans-unit id="Spreadsheet.DataDivConflictWarning">
         <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
         <note>ID: Spreadsheet.DataDivConflictWarning</note>

@@ -87,7 +87,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
     };
     const label = useL10n(props.english, props.l10nId);
     const featureStatus = useGetFeatureStatus(props.subscriptionFeature);
-    const enabled = featureStatus?.Enabled;
+    const enabled = featureStatus?.enabled;
 
     const iconElement = props.icon ? (
         <ListItemIcon

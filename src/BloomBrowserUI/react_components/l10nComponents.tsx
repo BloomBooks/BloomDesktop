@@ -39,8 +39,9 @@ export interface ILocalizationProps extends IUILanguageAwareProps {
     l10nTipEnglishEnabled?: string;
     l10nTipEnglishDisabled?: string;
     alreadyLocalized?: boolean; // true if translated by C#-land
-    l10nParam0?: string;
-    l10nParam1?: string;
+    l10nParams?: string[]; // Array of parameters to use in format strings
+    l10nParam0?: string; // Legacy parameter 0 (for backward compatibility)
+    l10nParam1?: string; // Legacy parameter 1 (for backward compatibility)
     onClick?: () => void; // not yet implemented by String subclass and maybe others outside this file
     id?: string; // not yet implented by all
 
@@ -128,9 +129,16 @@ export class LocalizableElement<
     }
 
     public componentDidUpdate() {
+        // Create a parameters array, prioritizing the l10nParams array if provided
+        // Otherwise, fall back to the individual l10nParam0 and l10nParam1 properties
+        const params = this.props.l10nParams || [
+            this.props.l10nParam0,
+            this.props.l10nParam1
+        ];
+
         const newText = theOneLocalizationManager.simpleFormat(
             this.state.retrievedTranslation ?? this.getOriginalStringContent(),
-            [this.props.l10nParam0, this.props.l10nParam1]
+            params
         );
         if (newText != this.state.translation) {
             this.setState({

@@ -4278,7 +4278,7 @@
         <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.Options</note>
       </trans-unit>
       <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation">
-        <source xml:lang="en">The book titled '{0}' adds features that require a higher subscription tier.</source>
+        <source xml:lang="en">The book titled "{0}" uses the "{1}" feature. This feature requires a Bloom subscription of at least tier "{2}".</source>
         <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation</note>
         <note>{0} will be replaced with the book's title.</note>
       </trans-unit>
@@ -5398,11 +5398,7 @@ Do you want to go ahead?</note>
 <!-- Most subscription labels are in the BloomLowPriority. What we want here
 is mostly status, which shows on the Collection Tab -->
 
-      <trans-unit id="SubscriptionStatus.RenewalMessage">
-        <source xml:lang="en">Please [contact us](%0) to renew.</source>
-        <note>ID: SubscriptionStatus.RenewalMessage</note>
-        <note>%0 will be replaced with a contact email link</note>
-      </trans-unit>
+
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
         <source xml:lang="en">Your {0} subscription expires on {1}.</source>
         <note>ID: SubscriptionStatus.ExpiringSoonMessage</note>
@@ -5418,10 +5414,6 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: SubscriptionStatus.DefaultMessage</note>
         <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
       </trans-unit>
-
-
-
-
       <trans-unit id="TeamCollection.TeamCollection">
         <source xml:lang="en">Team Collection</source>
         <note>ID: TeamCollection.TeamCollection</note>

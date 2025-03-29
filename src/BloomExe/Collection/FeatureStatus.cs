@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Bloom.Book;
 using Bloom.SafeXml;
+using L10NSharp;
 
 // tiers are ordered, so if you have a higher tier, you can use the features of the lower tiers.
 public enum SubscriptionTier
@@ -87,6 +88,25 @@ public class FeatureStatus
             Enabled = (int)tier >= (int)feature.SubscriptionTier,
             Visible = true // for now, we have not hooked up the advanced/experimental flags yet.
         };
+    }
+
+    /// <summary>
+    /// return a json string of the FeatureStatus, using strings instead of enums
+    /// </summary>
+    public string ToJson()
+    {
+        // localize (and in the process, convert from camel case to spaces)
+        var localizedTier = LocalizationManager.GetDynamicString(
+            appId: "Bloom",
+            id: "Subscription.Tier." + SubscriptionTier.ToString(),
+            englishText: SubscriptionTier.ToString().Replace("LocalCommunity", "Local Community") // show that we want a space
+        );
+        var localizedFeature = LocalizationManager.GetDynamicString(
+            appId: "Bloom",
+            id: "Feature." + Feature.ToString(),
+            englishText: Feature.ToString()
+        );
+        return $"{{\"localizedFeature\":\"{localizedFeature}\",\"localizedTier\":\"{localizedTier}\",\"enabled\":{Enabled.ToString().ToLower()},\"visible\":{Visible.ToString().ToLower()},\"firstPageNumber\":\"{FirstPageNumber}\"}}";
     }
 
     /// <summary>
