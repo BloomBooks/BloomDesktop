@@ -1,10 +1,8 @@
-/** @jsx jsx **/
-import { jsx, css, ThemeProvider } from "@emotion/react";
+import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { kGameToolId } from "../toolIds";
-//import Tabs from "@mui/material/Tabs";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import {
     kBloomBlue,
@@ -46,10 +44,12 @@ import { setPlayerUrlPrefixFromWindowLocationHref } from "../../shared/narration
 import { renderGamePromptDialog } from "./GamePromptDialog";
 import {
     CanvasElementManager,
-    kbackgroundImageClass
+    kBackgroundImageClass
 } from "../../js/CanvasElementManager";
 import { getCanvasElementManager } from "../overlay/canvasElementUtils";
 import { ThemeChooser } from "./ThemeChooser";
+import GameIntroText, { Instructions } from "./GameIntroText";
+import { getGameType, isPageBloomGame } from "./GameInfo";
 
 // This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -304,11 +304,10 @@ const makeArrowShape = (
             "svg"
         );
         arrow.setAttribute("id", "target-arrow");
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         draggable.parentElement!.appendChild(arrow);
     }
 
-    // But we actually want to start the arrow from the border of the draggabl.
+    // But we actually want to start the arrow from the border of the draggable.
     // If the line runs through the top or bottom border:
     const yMultiplier = startY < endY ? 1 : -1;
     const deltaYTB = (draggable.offsetHeight / 2) * yMultiplier;
@@ -461,7 +460,6 @@ const startDraggingTarget = (e: MouseEvent) => {
     targetClickOffsetTop = e.clientY / scale - target.offsetTop;
     page.addEventListener("mouseup", stopDraggingTarget);
     page.addEventListener("mousemove", dragTarget);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     getCanvasElementManager()!.setActiveElement(draggableOfTarget(target));
     dragTarget(e); // some side effects like drawing the arrow we want even if no movement happens.
 };
@@ -560,7 +558,7 @@ const draggableOfTarget = (
     ) as HTMLElement;
 };
 
-const stopDraggingTarget = (e: MouseEvent) => {
+const stopDraggingTarget = (_: MouseEvent) => {
     const page = targetBeingDragged.closest(".bloom-page") as HTMLElement;
     if (snappedToExisting) {
         // Move things around so we end up with an evenly spaced row again.
@@ -599,40 +597,6 @@ const stopDraggingTarget = (e: MouseEvent) => {
 
     page.removeEventListener("mouseup", stopDraggingTarget);
     page.removeEventListener("mousemove", dragTarget);
-};
-
-// An earlier version used TriangleCollapse to display a triangle and optionally a title next to it,
-// where the triangle can be clicked to collapse or expand the main content.
-// If a different title is not supplied, it used a localized form of "Instructions".
-// Later we decided to show the instructions all the time, without the heading.
-const Instructions: React.FunctionComponent<{
-    l10nKey: string;
-    l10nTitleKey?: string;
-}> = props => {
-    return (
-        <Div
-            css={css`
-                margin-top: 5px;
-                font-style: italic;
-            `}
-            l10nKey={"EditTab.Toolbox.DragActivity." + props.l10nKey}
-        ></Div>
-        // <TriangleCollapse
-        //     css={css`
-        //         padding-left: 5px;
-        //     `}
-        //     initiallyOpen={true}
-        //     labelL10nKey={
-        //         props.l10nTitleKey ??
-        //         "EditTab.Toolbox.DragActivity.Instructions"
-        //     }
-        //     indented={true}
-        // >
-        //     <Div
-        //         l10nKey={"EditTab.Toolbox.DragActivity." + props.l10nKey}
-        //     ></Div>
-        // </TriangleCollapse>
-    );
 };
 
 const startTabIndex = 0;
@@ -812,13 +776,12 @@ const DragActivityControls: React.FunctionComponent<{
         ""
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const canvasElementManager = getCanvasElementManager()!;
     let currentCanvasElement = canvasElementManager?.getActiveElement();
     // Currently we mainly use this to decide whether to show the delete and duplicate buttons.
     // Maybe those are obsolete now we have the new toolbox?
     // In any case, we don't want to duplicate or delete a background image, so it doesn't count.
-    if (currentCanvasElement?.classList.contains(kbackgroundImageClass)) {
+    if (currentCanvasElement?.classList.contains(kBackgroundImageClass)) {
         currentCanvasElement = undefined;
     }
     const currentCanvasElementTargetId = currentCanvasElement?.getAttribute(
@@ -964,7 +927,7 @@ const DragActivityControls: React.FunctionComponent<{
     // There's a lot of async stuff here, and a lot of arguments passed. Some of the argument-passing
     // could be avoided by making getSoundFilesAsync and/or getSoundOptionsAsync local functions.
     // My goal in breaking things up like this was that we clearly only need to do the server queries
-    // (to localize None and Choose and get the lists of files) once each, while makeing it very clear
+    // (to localize None and Choose and get the lists of files) once each, while making it very clear
     // when the list of options must be recomputed.
     const [correctFiles, setCorrectFiles] = useState<string[]>([]);
     const [wrongFiles, setWrongFiles] = useState<string[]>([]);
@@ -1053,35 +1016,12 @@ const DragActivityControls: React.FunctionComponent<{
         }
     };
 
-    let startTabInstructionsData = { instructionsKey: "", headingKey: "" };
-    switch (activityType) {
-        case "drag-letter-to-target":
-            startTabInstructionsData = {
-                instructionsKey: "DragLetterInstructions",
-                headingKey: "DragLetterHeading"
-            };
-            break;
-        case "drag-sort-sentence":
-            startTabInstructionsData = {
-                instructionsKey: "OrderSentenceInstructions",
-                headingKey: "OrderSentenceHeading"
-            };
-            break;
-        case "drag-image-to-target":
-            startTabInstructionsData = {
-                instructionsKey: "DragImageInstructions",
-                headingKey: "DragImageHeading"
-            };
-            break;
-    }
-
     const toggleAllSameSize = () => {
         const newAllSameSize = !allItemsSameSize;
         setAllItemsSameSize(newAllSameSize);
         const page = getPage();
         page.setAttribute("data-same-size", newAllSameSize ? "true" : "false");
         if (newAllSameSize) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             let someDraggable = getCanvasElementManager()!.getActiveElement(); // prefer the selected one
             if (
                 !someDraggable ||
@@ -1309,24 +1249,9 @@ const DragActivityControls: React.FunctionComponent<{
                         margin-left: 10px;
                     `}
                 >
-                    {startTabInstructionsData.headingKey && (
-                        <Div
-                            css={css`
-                                margin-top: 10px;
-                                font-weight: bold;
-                                font-size: larger;
-                            `}
-                            l10nKey={
-                                "EditTab.Toolbox.DragActivity." +
-                                startTabInstructionsData.headingKey
-                            }
-                        ></Div>
-                    )}
-                    {startTabInstructionsData.instructionsKey && (
-                        <Instructions
-                            l10nKey={startTabInstructionsData.instructionsKey}
-                        />
-                    )}
+                    <GameIntroText
+                        gameType={getGameType(activityType, getPage())}
+                    />
                     <Div
                         css={css`
                             margin-top: 10px;
@@ -1408,7 +1333,7 @@ const DragActivityControls: React.FunctionComponent<{
             {props.activeTab === correctTabIndex && (
                 <CorrectWrongControls
                     soundType="correct"
-                    instructionsSubKey="CorrectInstructions"
+                    instructionsL10nKey="EditTab.Toolbox.DragActivity.CorrectInstructions"
                     whenTheAnswerIsSubKey="WhenCorrect"
                     classToAddToItems="drag-item-correct"
                     soundOptions={correctSoundOptions}
@@ -1422,7 +1347,7 @@ const DragActivityControls: React.FunctionComponent<{
             props.activeTab === wrongTabIndex && (
                 <CorrectWrongControls
                     soundType="wrong"
-                    instructionsSubKey="WrongInstructions"
+                    instructionsL10nKey="EditTab.Toolbox.DragActivity.WrongInstructions"
                     whenTheAnswerIsSubKey="WhenWrong"
                     classToAddToItems="drag-item-wrong"
                     soundOptions={wrongSoundOptions}
@@ -1462,7 +1387,7 @@ const playAudioCss = css`
 
 const CorrectWrongControls: React.FunctionComponent<{
     soundType: SoundType;
-    instructionsSubKey: string;
+    instructionsL10nKey: string;
     whenTheAnswerIsSubKey: string;
     classToAddToItems: string;
     soundOptions: { label: string; id: string; divider: boolean }[];
@@ -1501,7 +1426,13 @@ const CorrectWrongControls: React.FunctionComponent<{
                     />
                 </CanvasElementItemRow>
             </CanvasElementItemRegion>
-            <Instructions l10nKey={props.instructionsSubKey} />
+            <div
+                css={css`
+                    margin: 0px 10px;
+                `}
+            >
+                <Instructions l10nKey={props.instructionsL10nKey} />
+            </div>
             <div css={playAudioCss}>
                 <Div
                     l10nKey={
@@ -1664,15 +1595,15 @@ img {
 }
 }`;
 
-export class DragActivityTool extends ToolboxToolReactAdaptor {
-    public static theOneDragActivityTool: DragActivityTool | undefined;
+export class GameTool extends ToolboxToolReactAdaptor {
+    public static theOneDragActivityTool: GameTool | undefined;
 
     public callOnNewPageReady: () => void | undefined;
 
     public constructor() {
         super();
 
-        DragActivityTool.theOneDragActivityTool = this;
+        GameTool.theOneDragActivityTool = this;
     }
 
     public setActiveTab(tab: number) {
@@ -1728,7 +1659,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
         return true; // Todo: implement this more fully, probably using RequiresBloomEnterprise
     }
 
-    public beginRestoreSettings(settings: string): JQueryPromise<void> {
+    public beginRestoreSettings(_settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         const result = $.Deferred<void>();
         result.resolve();
@@ -1738,7 +1669,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
     private lastPageId = "";
 
     public newPageReady() {
-        const page = DragActivityTool.getBloomPage();
+        const page = GameTool.getBloomPage();
         const pageFrameExports = getEditablePageBundleExports();
         if (!getCanvasElementManager() || !page || !pageFrameExports) {
             // probably the toolbox just finished loading before the page.
@@ -1761,7 +1692,6 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
         } else {
             this.lastPageId = pageId;
             // useful during development, MAY not need in production.
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const canvasElementManager = getCanvasElementManager()!;
             canvasElementManager.removeDetachedTargets();
             canvasElementManager.adjustCanvasElementOrdering();
@@ -1800,7 +1730,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
             if (!editable) continue; // we actually seem to get some disconnected nodes, I don't know why
             editable = (editable as HTMLElement).closest(".bloom-editable");
             if (editable) {
-                DragActivityTool.setBlankClass(editable as HTMLElement);
+                GameTool.setBlankClass(editable as HTMLElement);
                 return;
             }
         }
@@ -1816,7 +1746,7 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
     // an element marked as being in another language. Apart from the ugliness of that, we couldn't
     // dim it or make it go away as soon as something is typed.
     private observeElementsWhereBlankMatters() {
-        const page = DragActivityTool.getBloomPage();
+        const page = GameTool.getBloomPage();
         if (!page) {
             return;
         }
@@ -1836,12 +1766,12 @@ export class DragActivityTool extends ToolboxToolReactAdaptor {
                 subtree: true,
                 characterData: true
             });
-            DragActivityTool.setBlankClass(l1editable as HTMLElement);
+            GameTool.setBlankClass(l1editable as HTMLElement);
         }
     }
 
     public detachFromPage() {
-        const page = DragActivityTool.getBloomPage();
+        const page = GameTool.getBloomPage();
         if (page) {
             undoPrepareActivity(page);
             // May as well save a little space in the stored version.
@@ -1895,19 +1825,6 @@ export function playSound(newSoundId: string, page: HTMLElement) {
 //     }
 // }
 
-const dragActivityTypes = [
-    // these two are not currently enabled
-    "drag-word-chooser-slider",
-    "drag-to-destination",
-
-    "drag-sort-sentence",
-    "drag-letter-to-target",
-    "drag-image-to-target",
-    // not really dragActivities, but we're now using this toolbox for them.
-    "simple-dom-choice",
-    "simple-comprehension-quiz"
-];
-
 // After careful thought, I think the right source of truth for which tab is active is a variable on the
 // top level window object.
 // For a long time it was an attribute of the parent element of the bloom-page. This makes it difficult to
@@ -1930,7 +1847,7 @@ export function getActiveDragActivityTab(): number {
 // (Start, Correct, Wrong, Play).
 export function setActiveDragActivityTab(tab: number) {
     window.top!["dragActivityPage"] = tab;
-    const page = DragActivityTool.getBloomPage();
+    const page = GameTool.getBloomPage();
     const pageFrameExports = getEditablePageBundleExports();
     if (!page || !pageFrameExports) {
         // just loading page??
@@ -1964,11 +1881,12 @@ export function setActiveDragActivityTab(tab: number) {
 
     const canvasElementManager = getCanvasElementManager();
     if (tab === playTabIndex) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         canvasElementManager!.suspendComicEditing("forGamePlayMode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
-        prepareActivity(page, _next => {});
+        prepareActivity(page, _next => {
+            /* nothing to do */
+        });
         playInitialElements(page, true);
         //Slider: wrapper?.removeEventListener("click", designTimeClickOnSlider);
     } else {
@@ -1991,27 +1909,14 @@ export function setActiveDragActivityTab(tab: number) {
     }
 }
 
-export function isPageBloomGame(): boolean {
-    const page = DragActivityTool.getBloomPage();
-    if (!page) {
-        return false; // huh??
-    }
-    return isPageBloomGameInternal(page);
-}
-
-export function isPageBloomGameInternal(page: HTMLElement): boolean {
-    const activityType = page.getAttribute("data-activity") ?? "";
-    return dragActivityTypes.indexOf(activityType) >= 0;
-}
-
 // Replace the origami control with the Game tab control if the page is a game.
 export function setupDragActivityTabControl() {
-    const page = DragActivityTool.getBloomPage();
+    const page = GameTool.getBloomPage();
     if (!page) {
         return;
     }
 
-    if (!isPageBloomGameInternal(page)) {
+    if (!isPageBloomGame(page)) {
         return;
     }
     const tabControl = page.ownerDocument.createElement("div");
@@ -2056,11 +1961,9 @@ export const makeTargetForDraggable = (
     const height = pxToNumber(canvasElement.style.height);
     let newLeft = left + 20;
     let newTop = top + height + 30;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (newTop + height > canvasElement.parentElement!.clientHeight) {
         newTop = Math.max(0, top - height - 30);
     }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (newLeft + width > canvasElement.parentElement!.clientWidth) {
         newLeft = Math.max(0, left - width - 30);
     }
@@ -2073,7 +1976,6 @@ export const makeTargetForDraggable = (
     // This allows it to get focus, which allows it to get the shadow effect we want when
     // clicked. But is that really right? We can't actually type there.
     target.setAttribute("tabindex", "0");
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     canvasElement.parentElement!.appendChild(target);
     enableDraggingTargets(target);
     adjustTarget(canvasElement, target);

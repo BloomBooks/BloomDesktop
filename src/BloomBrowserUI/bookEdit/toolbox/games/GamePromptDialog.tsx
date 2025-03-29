@@ -19,7 +19,7 @@ import {
 import { setGeneratedDraggableId } from "../overlay/CanvasElementItem";
 import {
     adjustTarget,
-    DragActivityTool,
+    GameTool,
     makeTargetForDraggable
 } from "../games/GameTool";
 import * as ReactDOM from "react-dom";
@@ -348,7 +348,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         // current language. This is usually handled by a mutation observer, but
         // it doesn't get attached to extra letters we create here. Their content
         // mainly gets changed by this method, so I think this is good enough.
-        DragActivityTool.setBlankClass(ed);
+        GameTool.setBlankClass(ed);
     };
     // Set up an observer to keep the draggables in sync with the prompt during typing.
     const promptObserver = new MutationObserver(() => {
@@ -394,9 +394,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 );
                 paras.forEach(p => {
                     p.textContent = "";
-                    DragActivityTool.setBlankClass(
-                        p.parentElement as HTMLElement
-                    );
+                    GameTool.setBlankClass(p.parentElement as HTMLElement);
                 });
                 lastDraggable.parentElement?.appendChild(newDraggable);
                 makeTargetForDraggable(newDraggable);

@@ -46,7 +46,6 @@ import {
     CanvasElementItemRow,
     CanvasElementTextItem
 } from "./CanvasElementItem";
-import { isPageBloomGame } from "../games/GameTool";
 import { getCanvasElementManager } from "./canvasElementUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
@@ -680,7 +679,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                 // limited to activities, we might introduce a new kind of page type attribute. Also, we may just
                 // want a single message like "This tool is not available on this page type" or something more specific
                 // like the one here.
-                isPageBloomGame() ? (
+                OverlayTool.isCurrentPageABloomGame() ? (
                     <Typography
                         css={css`
                             // "!important" is needed to keep .MuiTypography-root from overriding
