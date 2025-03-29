@@ -404,7 +404,7 @@ namespace BloomTests.Publish
                     imageDescription = imageDescriptions[imgIndex];
                 }
 
-                imageDivs += MakeImageContainer(
+                imageDivs += MakeBloomCanvas(
                     image,
                     imageDescription: imageDescription,
                     descriptionLang: lang
@@ -473,9 +473,11 @@ namespace BloomTests.Publish
             return book;
         }
 
-        // Make a standard image container div with the specified source. If a description and language are
+        // Make a standard bloom-canvas div with the specified source. If a description and language are
         // provided, include a standard image description with content in that language.
-        protected static string MakeImageContainer(
+        // (For now, rather than updating a lot of old tests, it's making it with the new bloom-canvas class,
+        // but the old structure where the background image is a direct img child of the bloom-canvas.)
+        protected static string MakeBloomCanvas(
             string src,
             string imageDescription = null,
             string descriptionLang = null
@@ -494,13 +496,13 @@ namespace BloomTests.Publish
                     + "</div>";
             }
 
-            var imageContainer =
-                "<div class='bloom-imageContainer'><img src='"
+            var bloomCanvas =
+                "<div class='bloom-canvas'><img src='"
                 + src
                 + ".png'></img>"
                 + imgDesc
                 + "</div>\n";
-            return imageContainer;
+            return bloomCanvas;
         }
 
         // Set up some typical CSS files we DO want to include, even in 'unpaginated' mode

@@ -1,17 +1,14 @@
 /*Cover Page*/
-.A4Landscape.bloom-frontMatter DIV.marginBox
-{
+.A4Landscape.bloom-frontMatter div.marginBox {
     /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
     height: 188.2mm;
     position: absolute; /* see https://jira.sil.org/browse/BL-561; Without this we get an extra page in the PDF. */
 }
-.Title-On-Cover-style
-{
+.Title-On-Cover-style {
     text-align: center;
     height: 3.5em !important;
 }
-DIV.coverBottomLangName
-{
+div.coverBottomLangName {
     /*[disabled]height:58px;*/
     /*[disabled]overflow:hidden;*/
     /*[disabled]text-align:left;*/
@@ -23,8 +20,7 @@ DIV.coverBottomLangName
     /*[disabled]padding-bottom:0px;*/
     /*[disabled]line-height:1;*/
 }
-.A4Landscape.cover .bookTitle.bloom-content1
-{
+.A4Landscape.cover .bookTitle.bloom-content1 {
     font-size: 72pt;
     display: block;
     /*[disabled]line-height:1.2;*/
@@ -33,156 +29,125 @@ DIV.coverBottomLangName
     min-height: 4.2cm;
     margin-top: 28px;
 }
-.A4Landscape.cover .bookTitle.bloom-contentNational1
-{
+.A4Landscape.cover .bookTitle.bloom-contentNational1 {
     display: inherit;
     margin-top: 28px;
 }
-.A4Landscape.cover .bookTitle.coverTitleNationalLanguage1-style
-{
+.A4Landscape.cover .bookTitle.coverTitleNationalLanguage1-style {
     font-size: 18pt;
     text-align: center;
     min-height: 1cm;
 }
 /*These parentheses would be nice, but a bug in Firefox leaves a <br/> that you can't remove without switching pages*/
-.A4Landscape.cover .bookTitle.coverTitleNationalLanguage1-style:before
-{
+.A4Landscape.cover .bookTitle.coverTitleNationalLanguage1-style:before {
     /*[disabled]content:'(';*/
 }
-.A4Landscape.cover .bookTitle.coverTitleNationalLanguage1-style:after
-{
+.A4Landscape.cover .bookTitle.coverTitleNationalLanguage1-style:after {
     /*[disabled]content:')';*/
 }
-.A4Landscape.cover DIV.bloom-imageContainer
-{
+.A4Landscape.cover div.bloom-canvas {
     height: 50%;
 }
 /*Instructions Page*/
-.bigbookxmatterInstructions H1
-{
+.bigbookxmatterInstructions h1 {
     text-align: center;
     color: #000000;
     font-size: 14pt;
 }
-.bigbookxmatterInstructions .bloom-editable
-{
+.bigbookxmatterInstructions .bloom-editable {
     overflow: visible;
     font-size: 11pt;
 }
-.bigbookxmatterInstructions P
-{
+.bigbookxmatterInstructions p {
     margin-left: 0px;
     margin-top: 18px;
 }
-.bigbookxmatterInstructions UL
-{
+.bigbookxmatterInstructions ul {
     list-style-type: disc;
     list-style-position: inside;
     width: 100%;
     margin-left: 0px;
     margin-top: 0px;
 }
-.bigbookxmatterInstructions LI
-{
+.bigbookxmatterInstructions li {
     display: list-item;
     font-size: 12pt;
 }
 /*Metadata/Information Page*/
-.A4Landscape.metadataPage [data-book='originalAcknowledgments'], .A4Landscape.metadataPage [data-book='versionAcknowledgments']
-{
+.A4Landscape.metadataPage [data-book="originalAcknowledgments"],
+.A4Landscape.metadataPage [data-book="versionAcknowledgments"] {
     min-height: 1.5cm;
 }
-.A4Landscape.metadataPage .bloom-editable
-{
+.A4Landscape.metadataPage .bloom-editable {
     /*Dont' go full width. In part because it would be really hard to read such a wide column, but also because it would push the help bubbles off the screen*/
     width: 15cm;
 }
-.A4Landscape.metadataPage *:not(.pageLabel)
-{
+.A4Landscape.metadataPage *:not(.pageLabel) {
     font-size: 14pt;
 }
-.A4Landscape.bigBookBackmatter *:not(.pageLabel)
-{
+.A4Landscape.bigBookBackmatter *:not(.pageLabel) {
     font-size: 16pt;
 }
-.A4Landscape.bloom-metaData
-{
+.A4Landscape.bloom-metaData {
     margin-top: 29px;
 }
-.A4Landscape #versoLicenseAndCopyright
-{
+.A4Landscape #versoLicenseAndCopyright {
 }
-.metadataPage .bloom-contentNational1
-{
+.metadataPage .bloom-contentNational1 {
     display: block !important;
 }
-.metadataPage .vernacularTitle[data-book='bookTitle']:before
-{
-    content: 'Title: ';
+.metadataPage .vernacularTitle[data-book="bookTitle"]:before {
+    content: "Title: ";
 }
-.metadataPage .nationalLanguage1Title[data-book='bookTitle']:before
-{
-    content: '( ';
+.metadataPage .nationalLanguage1Title[data-book="bookTitle"]:before {
+    content: "( ";
 }
-.metadataPage .nationalLanguage1Title[data-book='bookTitle']:after
-{
-    content: ' )' !important;
+.metadataPage .nationalLanguage1Title[data-book="bookTitle"]:after {
+    content: " )" !important;
     /* now we have to override everything that would normall use the :after for a language tag */
     position: relative !important;
-    color: black  !important;
-    font-size: inherit  !important;
+    color: black !important;
+    font-size: inherit !important;
 }
-.metadataPage .funding
-{
+.metadataPage .funding {
     margin-top: 15px;
     min-height: 1.5cm;
 }
-.metadataPage .licenseBlock
-{
+.metadataPage .licenseBlock {
     margin-bottom: 14px;
 }
-.metadataPage .bloom-metaData
-{
+.metadataPage .bloom-metaData {
     width: 15cm;
 }
-.metadataPage .licenseUrl:before
-{
-    content: 'License: ';
+.metadataPage .licenseUrl:before {
+    content: "License: ";
     /*[disabled]margin-left:-0.5cm;*/
 }
-.metadataPage .languageLine:before
-{
-    content: 'Language: ';
+.metadataPage .languageLine:before {
+    content: "Language: ";
 }
-.metadataPage .languageName:not(:empty):after
-{
-    content: ', ';
+.metadataPage .languageName:not(:empty):after {
+    content: ", ";
 }
-.metadataPage .languageDialect:not(:empty):after
-{
-    content: ', ';
+.metadataPage .languageDialect:not(:empty):after {
+    content: ", ";
 }
-.metadataPage .languageLine *
-{
+.metadataPage .languageLine * {
     display: inline-block;
 }
-.metadataPage .licenseNotes
-{
+.metadataPage .licenseNotes {
     width: 100%;
 }
-.metadataPage .copyright
-{
+.metadataPage .copyright {
     width: 100%;
     margin-top: 8px;
 }
-.metadataPage .versionAcknowledgments
-{
+.metadataPage .versionAcknowledgments {
     min-height: 1cm;
     width: 100%;
     margin-top: 13px;
 }
-#inLicenseBlockLicenseImage
-{
+#inLicenseBlockLicenseImage {
     /*[disabled]display:none;*/
     /*+placement:float-right 98px -23px;*/
     float: right;
@@ -190,8 +155,7 @@ DIV.coverBottomLangName
     left: 98px;
     top: -23px;
 }
-#bottomLicenseImage
-{
+#bottomLicenseImage {
     /*+placement:anchor-bottom-left 0px 0px;*/
     position: absolute;
     left: 0px;
@@ -199,13 +163,11 @@ DIV.coverBottomLangName
     display: none;
 }
 /*Inside Back Cover*/
-.insideBackCover .bloom-editable
-{
+.insideBackCover .bloom-editable {
     height: 100%;
 }
 /*Outside Back Cover*/
-.outsideBackCover .bloom-editable
-{
+.outsideBackCover .bloom-editable {
     height: 100%;
     text-align: center;
 }

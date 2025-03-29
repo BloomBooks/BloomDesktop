@@ -1,3 +1,4 @@
+import { kBloomCanvasClass } from "../../js/bloomImages";
 import {
     hideImageDescriptions,
     showImageDescriptions
@@ -178,12 +179,11 @@ export default class TalkingBookTool implements ITool {
         if (!this.isImageDescriptionToolActive()) {
             return;
         }
-        const imageContainers = page.getElementsByClassName(
-            "bloom-imageContainer"
-        );
-        for (let i = 0; i < imageContainers.length; i++) {
-            const container = imageContainers[i];
-            const imageDescriptions = container.getElementsByClassName(
+        const bloomCanvases = page.getElementsByClassName(kBloomCanvasClass);
+
+        for (let i = 0; i < bloomCanvases.length; i++) {
+            const bloomCanvas = bloomCanvases[i];
+            const imageDescriptions = bloomCanvas.getElementsByClassName(
                 "bloom-imageDescription"
             );
             for (let j = 0; j < imageDescriptions.length; j++) {

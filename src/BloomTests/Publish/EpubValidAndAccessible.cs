@@ -54,7 +54,7 @@ namespace BloomTests.Publish
 </div>
 ",
                 extraContentOutsideTranslationGroup: @"
-<div class=""bloom-imageContainer"">
+<div class=""bloom-canvas"">
 	<img data-book=""coverImage"" src=""DevilsSlide.png"" data-copyright=""Copyright © 2015, Stephen McConnel"" data-creator=""Stephen McConnel"" data-license=""cc-by-sa""></img>
 	<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement normal-style"" data-default-languages=""auto"" data-book=""coverImageDescription"">
 		<div data-languagetipcontent=""English"" aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" style=""min-height: 64.01px;"" class=""bloom-editable cke_editable cke_editable_inline cke_contents_ltr thisOverflowingParent bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""xyz"" contenteditable=""true"">
@@ -69,7 +69,7 @@ namespace BloomTests.Publish
 		<div style=""min-height: 42px;"" class=""split-pane horizontal-percent"">
 			<div class=""split-pane-component position-top"" style=""bottom: 50%;"">
 				<div class=""split-pane-component-inner"">
-					<div title=""SteveAtMalad.png 91.92 KB 1024 x 768 489 DPI (should be 300-600) Bit Depth: 24"" class=""bloom-imageContainer bloom-leadingElement"">
+					<div title=""SteveAtMalad.png 91.92 KB 1024 x 768 489 DPI (should be 300-600) Bit Depth: 24"" class=""bloom-canvas bloom-leadingElement"">
 						<img style="""" data-license=""cc-by-sa"" data-creator=""Stephen McConnel"" data-copyright=""Copyright © 2012, Stephen McConnel"" src=""SteveAtMalad.png"" alt=""This picture, SteveAtMalad.png, is missing or was loading too slowly."" height=""481"" width=""642""></img>
 						<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement normal-style"">
 							<div aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" class=""bloom-editable cke_editable cke_editable_inline cke_contents_ltr cke_focus normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""xyz"" contenteditable=""true"">

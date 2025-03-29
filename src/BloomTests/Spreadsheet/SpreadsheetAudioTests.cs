@@ -202,7 +202,7 @@ namespace BloomTests.Spreadsheet
             <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
                 <div class=""split-pane-component position-top"" style=""bottom: 50%"">
                     <div class=""split-pane-component-inner"">
-                        <div class=""bloom-imageContainer bloom-leadingElement"" title=""Name: aor_PMF30.png Size: 30.43 kb Dots: 1500 x 1441 For the current paper size: • The image container is 408 x 337 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 410 DPI. • An image with 1275 x 1054 dots would fill this container at 300 DPI.""><img src=""aor_PMF30.png"" alt="""" data-copyright=""Copyright SIL International 2009"" data-creator="""" data-license=""cc-by-sa""></img></div>
+                        <div class=""bloom-canvas bloom-leadingElement"" title=""Name: aor_PMF30.png Size: 30.43 kb Dots: 1500 x 1441 For the current paper size: • The image container is 408 x 337 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 410 DPI. • An image with 1275 x 1054 dots would fill this container at 300 DPI.""><img src=""aor_PMF30.png"" alt="""" data-copyright=""Copyright SIL International 2009"" data-creator="""" data-license=""cc-by-sa""></img></div>
                     </div>
                 </div>
 
@@ -333,7 +333,7 @@ namespace BloomTests.Spreadsheet
             <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
                 <div class=""split-pane-component position-top"" style=""bottom: 50%"">
                     <div class=""split-pane-component-inner"">
-                        <div class=""bloom-imageContainer bloom-leadingElement"" title=""Name: aor_CMB362.png Size: 13.51 kb Dots: 706 x 525 For the current paper size: • The image container is 408 x 337 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 166 DPI. • An image with 1275 x 1054 dots would fill this container at 300 DPI.""><img src=""aor_CMB362.png"" alt="""" data-copyright=""Copyright SIL International 2009"" data-creator="""" data-license=""cc-by-sa""></img></div>
+                        <div class=""bloom-canvas bloom-leadingElement"" title=""Name: aor_CMB362.png Size: 13.51 kb Dots: 706 x 525 For the current paper size: • The image container is 408 x 337 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 166 DPI. • An image with 1275 x 1054 dots would fill this container at 300 DPI.""><img src=""aor_CMB362.png"" alt="""" data-copyright=""Copyright SIL International 2009"" data-creator="""" data-license=""cc-by-sa""></img></div>
                     </div>
                 </div>
 
@@ -445,7 +445,7 @@ namespace BloomTests.Spreadsheet
             <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
                 <div class=""split-pane-component position-top"" style=""bottom: 50%"">
                     <div class=""split-pane-component-inner"">
-                        <div class=""bloom-imageContainer bloom-leadingElement"" title=""Name: aor_HHG-9.png Size: 25.28 kb Dots: 619 x 772 For the current paper size: • The image container is 408 x 337 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 220 DPI. • An image with 1275 x 1054 dots would fill this container at 300 DPI.""><img src=""aor_HHG-9.png"" alt="""" data-copyright=""Copyright SIL International 2009"" data-creator="""" data-license=""cc-by-sa""></img></div>
+                        <div class=""bloom-canvas bloom-leadingElement"" title=""Name: aor_HHG-9.png Size: 25.28 kb Dots: 619 x 772 For the current paper size: • The image container is 408 x 337 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 220 DPI. • An image with 1275 x 1054 dots would fill this container at 300 DPI.""><img src=""aor_HHG-9.png"" alt="""" data-copyright=""Copyright SIL International 2009"" data-creator="""" data-license=""cc-by-sa""></img></div>
                     </div>
                 </div>
 

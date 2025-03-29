@@ -387,7 +387,7 @@ namespace BloomTests.Book
             return $@"<div class='bloom-page' data-page-number='{pageNumber ?? ""}'>
 		<div class='pageLabel'>{pageLabel}</div>
 		<div class='marginBox'>
-				<div class='bloom-imageContainer'>
+				<div class='bloom-canvas'>
 					<img src='flower.png'></img>
 					{translationGroupText}
 				</div>
@@ -404,7 +404,7 @@ namespace BloomTests.Book
             return $@"<div class='bloom-page' data-page-number='{pageNumber ?? ""}'>
 		<div class='pageLabel'>{pageLabel}</div>
 		<div class='marginBox'>
-				<div class='bloom-imageContainer' aria-hidden='true'>
+				<div class='bloom-canvas' aria-hidden='true'>
 					<img src='flower.png'></img>
 					{translationGroupText}
 				</div>

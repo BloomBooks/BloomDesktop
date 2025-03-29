@@ -11,6 +11,7 @@ import { RadioGroup, Radio } from "../../../react_components/radio";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import { kHasCanvasElementClass } from "../overlay/canvasElementUtils";
+import { kImageContainerClass } from "../../js/bloomImages";
 
 interface IState {
     kindOfColorBlindness: string;
@@ -143,7 +144,7 @@ export class ImpairmentVisualizerControls extends React.Component<
             // on the img being the first thing in its parent and the parent
             // being positioned, which we can't count on for other images.
             const containers = page.getElementsByClassName(
-                "bloom-imageContainer"
+                kImageContainerClass
             );
             for (let i = 0; i < containers.length; i++) {
                 const immediateChildren = containers[i].children;
@@ -224,7 +225,7 @@ export class ImpairmentVisualizerControls extends React.Component<
         }
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
-        // Make the canvas fill the image container, like the img.
+        // Make the canvas fill the image-container, like the img.
         // This allows object-fit and object-position to put it where we want.
         canvas.style.position = "absolute";
         canvas.style.left = "0";

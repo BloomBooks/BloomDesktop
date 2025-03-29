@@ -330,7 +330,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-imageContainer') and @data-test-id='ic{tag}']/img[@src='{src ?? fileName}']",
+                    $".//div[contains(@class, 'bloom-canvas') and @data-test-id='ic{tag}']/img[@src='{src ?? fileName}']",
                     1
                 );
             Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
@@ -344,16 +344,14 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{fileName}']",
+                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{fileName}']",
                     1
                 );
             Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
             // We always put a data-test-id on test template pages, so this acts as a check that we inserted a default.
             AssertThatXmlIn
                 .Element(_contentPages[n])
-                .HasNoMatchForXpath(
-                    ".//div[contains(@class, 'bloom-imageContainer') and @data-test-id]"
-                );
+                .HasNoMatchForXpath(".//div[contains(@class, 'bloom-canvas') and @data-test-id]");
         }
 
         [TestCase("fakeVideo.mp4")]

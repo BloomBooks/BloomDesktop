@@ -29,7 +29,9 @@ import {
     getBackgroundImageFromContainer,
     SetupMetadataButton,
     UpdateImageTooltipVisibility,
-    HandleImageError
+    HandleImageError,
+    kBloomCanvasSelector,
+    kBloomCanvasClass
 } from "./bloomImages";
 import { adjustTarget } from "../toolbox/games/GameTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
@@ -100,14 +102,14 @@ export class CanvasElementManager {
     }
 
     // Given the box has been determined to be overflowing vertically by
-    // 'overflowY' pixels, if it's inside an OverPicture element that does not have the class
-    // bloom-noAutoSize, adjust the size of the OverPicture element
+    // 'overflowY' pixels, if it's inside a canvas element that does not have the class
+    // bloom-noAutoSize, adjust the size of the canvas element
     // to fit it.
     // (Caller may wish to do box.scrollTop = 0 to make sure the whole content shows now there
     // is room for it all.)
     // Returns true if successful; it will currently fail if box is not
-    // inside a valid OverPicture element or if the OverPicture element can't grow this much while
-    // remaining inside the image container. If it returns false, it makes no changes at all.
+    // inside a valid canvas element or if the canvas element can't grow this much while
+    // remaining inside the bloom-canvas. If it returns false, it makes no changes at all.
     public growOverflowingBox(
         box: HTMLElement,
         overflowY: number,
@@ -124,11 +126,9 @@ export class CanvasElementManager {
             return false; // we don't want to change the box's size
         }
 
-        const container = CanvasElementManager.getTopLevelImageContainerElement(
-            wrapperBox
-        );
+        const container = CanvasElementManager.getBloomCanvas(wrapperBox);
         if (!container) {
-            return false; // paranoia; OverPicture element should always be in image container
+            return false; // paranoia; canvas element should always be in bloom-canvas
         }
 
         // The +4 is based on experiment. It may relate to a couple of 'fudge factors'
@@ -146,9 +146,9 @@ export class CanvasElementManager {
             return false; // near enough, avoid jitter making it a tiny bit smaller.
         }
 
-        // If a lot of text is pasted, the container will scroll down.
-        //    (This can happen even if the text doesn't necessarily go out the bottom of the image container).
-        // The children of the container (e.g. img and canvas elements) will be offset above the image container.
+        // If a lot of text is pasted, the bloom-canvas will scroll down.
+        // (This can happen even if the text doesn't necessarily go out the bottom of the bloom-canvas).
+        // The children of the bloom-canvas (e.g. img and canvas elements) will be offset above the bloom-canvas.
         // This is an annoying situation, both visually for the image and in terms of computing the correct position for JQuery draggables.
         // So instead, we force the container to scroll back to the top.
         container.scrollTop = 0;
@@ -242,7 +242,7 @@ export class CanvasElementManager {
                     // This will typically not move it, but will force it to the new system of placement
                     // by pixel. Don't want to do this if we don't have to, because there could be rounding
                     // errors that would move it very slightly.
-                    this.setTextboxPosition(
+                    this.setCanvasElementPosition(
                         $(wrapperBox as HTMLElement),
                         wrapperBox.offsetLeft - container.offsetLeft,
                         wrapperBox.offsetTop - container.offsetTop
@@ -279,16 +279,14 @@ export class CanvasElementManager {
         );
     }
 
-    private getAllVisibileEditableDivs(
-        overPictureContainerElement: HTMLElement
-    ): Element[] {
+    private getAllVisibileEditableDivs(bloomCanvas: HTMLElement): Element[] {
         // If the Over Picture element has visible bloom-editables, we want them.
         // Otherwise, look for video and image elements. At this point, an over picture element
         // can only have one of three types of content and each are mutually exclusive.
         // bloom-editable or bloom-videoContainer or bloom-imageContainer. It doesn't even really
         // matter which order we look for them.
         const editables = Array.from(
-            overPictureContainerElement.getElementsByClassName(
+            bloomCanvas.getElementsByClassName(
                 "bloom-editable bloom-visibility-code-on"
             )
         );
@@ -306,19 +304,12 @@ export class CanvasElementManager {
         );
         if (focusableDivs.length === 0) {
             focusableDivs = Array.from(
-                overPictureContainerElement.getElementsByClassName(
-                    kVideoContainerClass
-                )
+                bloomCanvas.getElementsByClassName(kVideoContainerClass)
             ).filter(x => !EditableDivUtils.isInHiddenLanguageBlock(x));
         }
         if (focusableDivs.length === 0) {
-            // This could be a bit tricky, since the whole canvas is in a 'bloom-imageContainer'.
-            // But 'overPictureContainerElement' here is a canvas element,
-            // so if we find any imageContainers inside of that, they are picture over picture elements.
             focusableDivs = Array.from(
-                overPictureContainerElement.getElementsByClassName(
-                    kImageContainerClass
-                )
+                bloomCanvas.getElementsByClassName(kImageContainerClass)
             ).filter(x => !EditableDivUtils.isInHiddenLanguageBlock(x));
         }
         return focusableDivs;
@@ -346,17 +337,17 @@ export class CanvasElementManager {
         this.isCanvasElementEditingOn = true;
         this.handleResizeAdjustments();
 
-        const imageContainers: HTMLElement[] = this.getAllPrimaryImageContainersOnPage();
+        const bloomCanvases: HTMLElement[] = this.getAllBloomCanvasesOnPage();
 
-        imageContainers.forEach(container => {
-            this.adjustCanvasElementsForCurrentLanguage(container);
-            this.ensureCanvasElementsIntersectParent(container);
+        bloomCanvases.forEach(bloomCanvas => {
+            this.adjustCanvasElementsForCurrentLanguage(bloomCanvas);
+            this.ensureCanvasElementsIntersectParent(bloomCanvas);
             // image containers are already set by CSS to overflow:hidden, so they
             // SHOULD never scroll. But there's also a rule that when something is
             // focused, it has to be scrolled to. If we set focus to a canvas element that's
             // sufficiently (almost entirely?) off-screen, the browser decides that
             // it MUST scroll to show it. For a reason I haven't determined, the
-            // element it picks to scroll seems to be the image container. This puts
+            // element it picks to scroll seems to be the bloom-canvas. This puts
             // the display in a confusing state where the text that should be hidden
             // is visible, though the canvas has moved over and most of the canvas element
             // is still hidden (BL-11646).
@@ -367,34 +358,34 @@ export class CanvasElementManager {
             // is supposed to be hidden. This drastic approach prevents both.
             // We're basically saying, if this element scrolls its content for
             // any reason, undo it.
-            container.addEventListener("scroll", () => {
-                container.scrollLeft = 0;
-                container.scrollTop = 0;
+            bloomCanvas.addEventListener("scroll", () => {
+                bloomCanvas.scrollLeft = 0;
+                bloomCanvas.scrollTop = 0;
             });
         });
 
         // todo: select the right one...in particular, currently we just select the last one.
-        // This is reasonable when just coming to the page, and when we add a new OverPicture element,
-        // we make the new one the last in its parent, so with only one image container
+        // This is reasonable when just coming to the page, and when we add a new canvas element,
+        // we make the new one the last in its parent, so with only one bloom-canvas
         // the new one gets selected after we refresh. However, once we have more than one
-        // image container, I don't think the new OverPicture element will get selected if it's not on
-        // the first image.
+        // bloom-canvas, I don't think the new canvas element will get selected if it's not on
+        // the first bloom-canvas.
         // todo: make sure comical is turned on for the right parent, in case there's more than one
-        // image on the page?
-        const overPictureElements = Array.from(
+        // bloom-canvas on the page?
+        const canvasElements = Array.from(
             document.getElementsByClassName(kCanvasElementClass)
         ).filter(
             x => !EditableDivUtils.isInHiddenLanguageBlock(x)
         ) as HTMLElement[];
-        if (overPictureElements.length > 0) {
+        if (canvasElements.length > 0) {
             // If we have no activeElement, or it's not in the list...deleted or belongs to
             // another page, perhaps...pick an arbitrary one.
             if (
                 !this.activeElement ||
-                overPictureElements.indexOf(this.activeElement) === -1
+                canvasElements.indexOf(this.activeElement) === -1
             ) {
-                this.activeElement = overPictureElements[
-                    overPictureElements.length - 1
+                this.activeElement = canvasElements[
+                    canvasElements.length - 1
                 ] as HTMLElement;
             }
             // This focus call doesn't seem to work, at least in a lasting fashion.
@@ -405,10 +396,10 @@ export class CanvasElementManager {
             // it's possible the above comment is no longer accurate)
             //this.focusFirstVisibleFocusable(this.activeElement);
             Comical.setUserInterfaceProperties({ tailHandleColor: kBloomBlue });
-            Comical.startEditing(imageContainers);
-            this.migrateOldCanvasElements(overPictureElements);
+            Comical.startEditing(bloomCanvases);
+            this.migrateOldCanvasElements(canvasElements);
             Comical.activateElement(this.activeElement);
-            overPictureElements.forEach(container => {
+            canvasElements.forEach(container => {
                 this.addEventsToFocusableElements(container, false);
             });
             document.addEventListener(
@@ -418,7 +409,7 @@ export class CanvasElementManager {
             // If we have sign language video over picture elements that are so far only placeholders,
             // they are not focusable by default and so won't get the blue border that elements
             // are supposed to have when selected. So we add tabindex="0" so they become focusable.
-            overPictureElements.forEach(element => {
+            canvasElements.forEach(element => {
                 const videoContainers = Array.from(
                     element.getElementsByClassName(kVideoContainerClass)
                 );
@@ -443,9 +434,9 @@ export class CanvasElementManager {
         }
 
         // turn on various behaviors for each image
-        Array.from(this.getAllPrimaryImageContainersOnPage()).forEach(
-            (container: HTMLElement) => {
-                container.addEventListener("click", event => {
+        Array.from(this.getAllBloomCanvasesOnPage()).forEach(
+            (bloomCanvas: HTMLElement) => {
+                bloomCanvas.addEventListener("click", event => {
                     // The goal here is that if the user clicks outside any comical canvas element,
                     // we want none of the canvas elements selected, so that
                     // (after moving the mouse away to get rid of hover effects)
@@ -472,18 +463,18 @@ export class CanvasElementManager {
                         // on a Comical object.
                         const x = event.offsetX;
                         const y = event.offsetY;
-                        if (!Comical.somethingHit(container, x, y)) {
-                            // If we click on the background of the image container, we
+                        if (!Comical.somethingHit(bloomCanvas, x, y)) {
+                            // If we click on the background of the bloom-canvas, we
                             // don't want anything to have focus. This prevents any source
-                            // bubbles interfering with seeing the full content of the image
-                            // container. BL-14295.
+                            // bubbles interfering with seeing the full content of the
+                            // bloom-canvas. BL-14295.
                             this.removeFocus();
                         }
                     }
                 });
 
-                this.setDragAndDropHandlers(container);
-                this.setMouseDragHandlers(container);
+                this.setDragAndDropHandlers(bloomCanvas);
+                this.setMouseDragHandlers(bloomCanvas);
             }
         );
     }
@@ -696,27 +687,22 @@ export class CanvasElementManager {
         CanvasElementManager.onFocusSetActiveElement(ev);
     }
 
-    // This should not return any .bloom-imageContainers that have imageContainer ancestors.
-    public getAllPrimaryImageContainersOnPage() {
-        const unfilteredContainers = document.getElementsByClassName(
-            kImageContainerClass
-        );
-        return Array.from(unfilteredContainers).filter(
-            (el: Element) =>
-                el.parentElement!.closest(kImageContainerSelector) === null
-        ) as HTMLElement[];
+    public getAllBloomCanvasesOnPage() {
+        return Array.from(
+            document.getElementsByClassName(kBloomCanvasClass)
+        ) as Array<HTMLElement>;
     }
 
     // Use this one when adding/duplicating a canvas element to avoid re-navigating the page.
     // If we are passing "undefined" as the canvas element, it's because we just deleted a canvas element
     // and we want Bloom to determine what to select next (it might not be a canvas element at all).
     public refreshCanvasElementEditing(
-        imageContainer: HTMLElement,
+        bloomCanvas: HTMLElement,
         bubble: Bubble | undefined,
         attachEventsToEditables: boolean,
         activateCanvasElement: boolean
     ): void {
-        Comical.startEditing([imageContainer]);
+        Comical.startEditing([bloomCanvas]);
         // necessary if we added the very first canvas element, and Comical was not previously initialized
         Comical.setUserInterfaceProperties({ tailHandleColor: kBloomBlue });
         if (bubble) {
@@ -744,20 +730,20 @@ export class CanvasElementManager {
                 );
             }
             SetupElements(
-                imageContainer,
+                bloomCanvas,
                 activateCanvasElement ? bubble.content : "none"
             );
 
             // Since we may have just added an element, check if the container has at least one
             // canvas element and add the 'bloom-has-canvas-element' class.
-            updateCanvasElementClass(imageContainer);
+            updateCanvasElementClass(bloomCanvas);
         } else {
             // deleted a canvas element. Don't try to focus anything.
             this.removeControlFrame(); // but don't leave this behind.
 
             // Also, since we just deleted an element, check if the original container no longer
             // has any canvas elements and remove the 'bloom-has-canvas-element' class.
-            updateCanvasElementClass(imageContainer);
+            updateCanvasElementClass(bloomCanvas);
         }
     }
 
@@ -767,11 +753,9 @@ export class CanvasElementManager {
                 const bubbleSpec = Bubble.getDefaultBubbleSpec(top, "none");
                 new Bubble(top).setBubbleSpec(bubbleSpec);
                 // it would be nice to do this only once, but there MIGHT
-                // be canvas element elements in more than one image container...too complicated,
+                // be canvas element elements in more than one bloom canvas...too complicated,
                 // and this only happens once per canvas element.
-                Comical.update(
-                    CanvasElementManager.getTopLevelImageContainerElement(top)!
-                );
+                Comical.update(CanvasElementManager.getBloomCanvas(top)!);
             }
         });
     }
@@ -866,16 +850,14 @@ export class CanvasElementManager {
         const clickedElement = event.target as Element; // most local thing clicked on
         if (!clickedElement.closest) {
             // About the only other possibility is that it's the top-level document.
-            // If that's the target, we didn't click in an image container or button.
+            // If that's the target, we didn't click in a bloom-canvas or button.
             return;
         }
         if (clickedElement.classList.contains("MuiBackdrop-root")) {
             return; // we clicked outside a popup menu to close it. Don't mess with focus.
         }
         if (
-            CanvasElementManager.getTopLevelImageContainerElement(
-                clickedElement
-            ) ||
+            CanvasElementManager.getBloomCanvas(clickedElement) ||
             clickedElement.closest(".source-copy-button")
         ) {
             // We have other code to handle setting and clearing Comical handles
@@ -1031,7 +1013,7 @@ export class CanvasElementManager {
             }
         }
         UpdateImageTooltipVisibility(
-            this.activeElement?.closest(".bloom-imageContainer")
+            this.activeElement?.closest(kBloomCanvasSelector)
         );
     }
 
@@ -1201,7 +1183,7 @@ export class CanvasElementManager {
         this.startMoveCropX = event.clientX;
         this.startMoveCropY = event.clientY;
         const imgC = this.activeElement.getElementsByClassName(
-            "bloom-imageContainer"
+            kImageContainerClass
         )[0];
         const img = imgC?.getElementsByTagName("img")[0];
         if (!img) return;
@@ -1240,7 +1222,7 @@ export class CanvasElementManager {
         const deltaX = event.clientX - this.startMoveCropX;
         const deltaY = event.clientY - this.startMoveCropY;
         const imgC = this.activeElement.getElementsByClassName(
-            "bloom-imageContainer"
+            kImageContainerClass
         )[0];
         const img = imgC?.getElementsByTagName("img")[0];
         if (!img) return;
@@ -1318,7 +1300,7 @@ export class CanvasElementManager {
         // It will have one or the other or neither, but not both, so it doesn't much matter
         // which we search for first. But images are probably more common.
         const imgC = this.activeElement?.getElementsByClassName(
-            "bloom-imageContainer"
+            kImageContainerClass
         )[0];
         const img = imgC?.getElementsByTagName("img")[0];
         if (img) return img;
@@ -1627,7 +1609,7 @@ export class CanvasElementManager {
         this.currentDragControl?.classList.remove("active-control");
         if (this.activeElement?.classList.contains(kbackgroundImageClass)) {
             this.adjustBackgroundImageSize(
-                this.activeElement.closest(kImageContainerSelector)!,
+                this.activeElement.closest(kBloomCanvasSelector)!,
                 this.activeElement,
                 false
             );
@@ -1771,11 +1753,11 @@ export class CanvasElementManager {
             this.activeElement.classList.contains(kbackgroundImageClass) &&
             !event.ctrlKey
         ) {
-            const container = this.activeElement.closest(
-                kImageContainerSelector
+            const bloomCanvas = this.activeElement.closest(
+                kBloomCanvasSelector
             ) as HTMLElement;
             const containerAspectRatio =
-                container.clientWidth / container.clientHeight;
+                bloomCanvas.clientWidth / bloomCanvas.clientHeight;
             const canvasElementAspectRatio = this.oldWidth / this.oldHeight;
             switch (this.currentDragSide) {
                 case "n":
@@ -2265,13 +2247,13 @@ export class CanvasElementManager {
             !this.activeElement.classList.contains(kbackgroundImageClass)
         )
             return false;
-        const container = this.activeElement.closest(
-            kImageContainerSelector
+        const bloomCanvas = this.activeElement.closest(
+            kBloomCanvasSelector
         ) as HTMLElement;
-        if (!container) return false;
+        if (!bloomCanvas) return false;
         return (
-            container.clientWidth !== this.activeElement.clientWidth ||
-            container.clientHeight !== this.activeElement.clientHeight
+            bloomCanvas.clientWidth !== this.activeElement.clientWidth ||
+            bloomCanvas.clientHeight !== this.activeElement.clientHeight
         );
     }
 
@@ -2283,34 +2265,34 @@ export class CanvasElementManager {
             return;
         const img = getImageFromCanvasElement(this.activeElement);
         if (!img) return;
-        const container = this.activeElement.closest(
-            kImageContainerSelector
+        const bloomCanvas = this.activeElement.closest(
+            kBloomCanvasSelector
         ) as HTMLElement;
-        if (!container) return;
+        if (!bloomCanvas) return;
         // Remove any existing cropping
         this.resetCropping(false);
         const imgAspectRatio = img.naturalWidth / img.naturalHeight;
         const containerAspectRatio =
-            container.clientWidth / container.clientHeight;
-        this.activeElement.style.width = `${container.clientWidth}px`;
-        this.activeElement.style.height = `${container.clientHeight}px`;
+            bloomCanvas.clientWidth / bloomCanvas.clientHeight;
+        this.activeElement.style.width = `${bloomCanvas.clientWidth}px`;
+        this.activeElement.style.height = `${bloomCanvas.clientHeight}px`;
         if (imgAspectRatio < containerAspectRatio) {
             // When the image fills the width of the container, it will be too tall,
             // and will need cropping top and bottom.
             const imgHeightForFullWidth =
-                container.clientWidth / imgAspectRatio;
-            const delta = imgHeightForFullWidth - container.clientHeight;
+                bloomCanvas.clientWidth / imgAspectRatio;
+            const delta = imgHeightForFullWidth - bloomCanvas.clientHeight;
             if (delta >= 1) {
                 // let's not switch into cropped mode if it's this close already
-                img.style.width = `${container.clientWidth}px`;
+                img.style.width = `${bloomCanvas.clientWidth}px`;
                 img.style.top = `${-delta / 2}px`;
             }
         } else {
             // When the image fills the height of the container, it will be too wide,
             // and will need cropping left and right.
             const imgWidthForFullHeight =
-                container.clientHeight * imgAspectRatio;
-            const delta = imgWidthForFullHeight - container.clientWidth;
+                bloomCanvas.clientHeight * imgAspectRatio;
+            const delta = imgWidthForFullHeight - bloomCanvas.clientWidth;
             if (delta >= 1) {
                 img.style.width = `${imgWidthForFullHeight}px`;
                 img.style.left = `${-delta / 2}px`;
@@ -2318,7 +2300,7 @@ export class CanvasElementManager {
         }
         // I think this is redundant, but it may (now or one day) do something that needs doing
         // when the background image changes size.
-        this.adjustBackgroundImageSize(container, this.activeElement, false);
+        this.adjustBackgroundImageSize(bloomCanvas, this.activeElement, false);
         // We will have changed the state of the fill space button, but the React code
         // doesn't know this unless we force a render.
         renderCanvasElementContextControls(this.activeElement, false);
@@ -2344,7 +2326,7 @@ export class CanvasElementManager {
         }
         if (canvasElement.classList.contains(kbackgroundImageClass)) {
             this.adjustBackgroundImageSize(
-                canvasElement.closest(kImageContainerSelector)!,
+                canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
                 useSizeOfNewImage
             );
@@ -2475,7 +2457,7 @@ export class CanvasElementManager {
         // Get the aspect ratio right (aligns control frame)
         if (canvasElement.classList.contains(kbackgroundImageClass)) {
             this.adjustBackgroundImageSize(
-                canvasElement.closest(kImageContainerSelector)!,
+                canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
                 true
             );
@@ -2851,34 +2833,34 @@ export class CanvasElementManager {
     }
 
     // Setup event handlers that allow the canvas element to be moved around or resized.
-    private setMouseDragHandlers(container: HTMLElement): void {
+    private setMouseDragHandlers(bloomCanvas: HTMLElement): void {
         // An earlier version of this code set onmousedown to this.onMouseDown, etc.
         // We need to use addEventListener so we can capture.
         // It's unlikely, but I can't rule it out, that a deliberate side effect
         // was to remove some other onmousedown handler. Just in case, clear the fields.
         // I don't think setting these has any effect on handlers done with addEventListener,
         // but just in case, I'm doing this first.
-        container.onmousedown = null;
-        container.onmousemove = null;
-        container.onmouseup = null;
+        bloomCanvas.onmousedown = null;
+        bloomCanvas.onmousemove = null;
+        bloomCanvas.onmouseup = null;
 
-        // We use mousemove effects instead of drag due to concerns that drag effects would make the entire image container appear to drag.
+        // We use mousemove effects instead of drag due to concerns that drag effects would make the entire bloom-canvas appear to drag.
         // Instead, with mousemove, we can make only the specific canvas element move around
         // Grabbing these (particularly the move event) in the capture phase allows us to suppress
         // effects of ctrl and alt clicks on the text.
-        container.addEventListener("mousedown", this.onMouseDown, {
+        bloomCanvas.addEventListener("mousedown", this.onMouseDown, {
             capture: true
         });
 
         // I would prefer to add this to document in onMouseDown, but not yet satisfied that all
         // the things it does while hovering are no longer needed.
-        container.addEventListener("mousemove", this.onMouseMove, {
+        bloomCanvas.addEventListener("mousemove", this.onMouseMove, {
             capture: true
         });
 
         // mouse up handler is added to document in onMouseDown
 
-        container.onkeypress = (event: Event) => {
+        bloomCanvas.onkeypress = (event: Event) => {
             // If the user is typing in a canvas element, make sure automatic shrinking is off.
             // Automatic shrinking while typing might be useful when originally authoring a comic,
             // but it's a nuisance when translating one, as the canvas element is initially empty
@@ -2927,14 +2909,14 @@ export class CanvasElementManager {
     // Make sure the handles of the tail(s) of the canvas element are within the container.
     // Return true if any tail was changed (or if changed was already true)
     private ensureTailsInsideParent(
-        imageContainer: HTMLElement,
+        bloomCanvas: HTMLElement,
         canvasElement: HTMLElement,
         changed: boolean
     ) {
         const originalTailSpecs = Bubble.getBubbleSpec(canvasElement).tails;
         const newTails = originalTailSpecs.map(spec => {
-            const tipPoint = this.adjustRelativePointToImageContainer(
-                imageContainer,
+            const tipPoint = this.adjustRelativePointToBloomCanvas(
+                bloomCanvas,
                 new Point(
                     spec.tipX,
                     spec.tipY,
@@ -2942,8 +2924,8 @@ export class CanvasElementManager {
                     "ensureTailsInsideParent.tip"
                 )
             );
-            const midPoint = this.adjustRelativePointToImageContainer(
-                imageContainer,
+            const midPoint = this.adjustRelativePointToBloomCanvas(
+                bloomCanvas,
                 new Point(
                     spec.midpointX,
                     spec.midpointY,
@@ -3095,7 +3077,7 @@ export class CanvasElementManager {
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseDown = (event: MouseEvent) => {
         this.activeElementAtMouseDown = this.activeElement;
-        const container = event.currentTarget as HTMLElement;
+        const bloomCanvas = event.currentTarget as HTMLElement;
         // Let standard clicks on the bloom editable or other UI elements only be processed by that element
         if (this.isMouseEventAlreadyHandled(event)) {
             return;
@@ -3104,7 +3086,7 @@ export class CanvasElementManager {
         this.mouseIsDown = true;
         this.clientXAtMouseDown = event.clientX;
         this.clientYAtMouseDown = event.clientY;
-        this.mouseDownContainer = container;
+        this.mouseDownContainer = bloomCanvas;
         // Adding this to document rather than the container makes it much less likely that we'll miss
         // the mouse up. Also, we only add it at all if the mouse down happened on an appropriate target.
         // Mouse up also wants to be limited to appropriate targets, but when dragging (especially
@@ -3117,15 +3099,15 @@ export class CanvasElementManager {
             capture: true
         });
 
-        // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
-        const coordinates = this.getPointRelativeToCanvas(event, container);
+        // These coordinates need to be relative to the canvas (which is the same as relative to the bloomCanvas).
+        const coordinates = this.getPointRelativeToCanvas(event, bloomCanvas);
 
         if (!coordinates) {
             return;
         }
 
         const bubble = Comical.getBubbleHit(
-            container,
+            bloomCanvas,
             coordinates.getUnscaledX(),
             coordinates.getUnscaledY(),
             true // only consider canvas elements with pointer events allowed.
@@ -3150,7 +3132,7 @@ export class CanvasElementManager {
 
         if (
             Comical.isDraggableNear(
-                container,
+                bloomCanvas,
                 coordinates.getUnscaledX(),
                 coordinates.getUnscaledY()
             )
@@ -3348,11 +3330,11 @@ export class CanvasElementManager {
         }
         if (this.activeElement) {
             const r = this.activeElement.getBoundingClientRect();
-            const activeContainer = this.activeElement.parentElement?.closest(
-                kImageContainerSelector
+            const bloomCanvas = this.activeElement.parentElement?.closest(
+                kBloomCanvasSelector
             );
-            if (activeContainer) {
-                const canvas = this.getFirstCanvasForContainer(activeContainer);
+            if (bloomCanvas) {
+                const canvas = this.getFirstCanvasForContainer(bloomCanvas);
                 if (canvas)
                     canvas.classList.toggle(
                         "moving",
@@ -3838,7 +3820,7 @@ export class CanvasElementManager {
         return new Point(
             element.scrollLeft,
             element.scrollTop,
-            PointScaling.Unscaled, // I think that imageContainer returns an unscaled amount, but not 100% sure.
+            PointScaling.Unscaled,
             "Element ScrollLeft/Top (Unscaled)"
         );
     }
@@ -3921,9 +3903,9 @@ export class CanvasElementManager {
 
         Comical.setActiveBubbleListener(undefined);
         Comical.stopEditing();
-        this.getAllPrimaryImageContainersOnPage().forEach(container =>
+        this.getAllBloomCanvasesOnPage().forEach(bloomCanvas =>
             this.saveCurrentCanvasElementStateAsCurrentLangAlternate(
-                container as HTMLElement
+                bloomCanvas as HTMLElement
             )
         );
 
@@ -4033,10 +4015,10 @@ export class CanvasElementManager {
     // since the former controls which one is treated as being clicked when there is overlap,
     // while the latter determines which is on top.
     public adjustCanvasElementOrdering = () => {
-        const parents = this.getAllPrimaryImageContainersOnPage();
-        parents.forEach(imageContainer => {
+        const bloomCanvases = this.getAllBloomCanvasesOnPage();
+        bloomCanvases.forEach(bloomCanvas => {
             const canvasElements = Array.from(
-                imageContainer.getElementsByClassName(kCanvasElementClass)
+                bloomCanvas.getElementsByClassName(kCanvasElementClass)
             );
             let maxLevel = Math.max(
                 ...canvasElements.map(
@@ -4065,10 +4047,7 @@ export class CanvasElementManager {
                 bubble.persistBubbleSpec();
                 maxLevel++;
             });
-            const parentContainer = draggables[0].closest(
-                ".bloom-imageContainer"
-            );
-            Comical.update(parentContainer as HTMLElement);
+            Comical.update(bloomCanvas);
         });
     };
 
@@ -4093,17 +4072,15 @@ export class CanvasElementManager {
         if (!element) {
             return;
         }
-        const imageContainer = CanvasElementManager.getTopLevelImageContainerElement(
-            element
-        );
-        if (!imageContainer) {
+        const bloomCanvas = CanvasElementManager.getBloomCanvas(element);
+        if (!bloomCanvas) {
             return; // shouldn't happen...
         }
-        const comicalGenerated = imageContainer.getElementsByClassName(
+        const comicalGenerated = bloomCanvas.getElementsByClassName(
             kComicalGeneratedClass
         );
         if (comicalGenerated.length > 0) {
-            Comical.update(imageContainer);
+            Comical.update(bloomCanvas);
         }
     }
 
@@ -4146,9 +4123,7 @@ export class CanvasElementManager {
         // refresh. We still want to refresh, but not attach to ckeditor, etc., so we pass
         // attachEventsToEditables as false.
         this.refreshCanvasElementEditing(
-            CanvasElementManager.getTopLevelImageContainerElement(
-                parentElement
-            )!,
+            CanvasElementManager.getBloomCanvas(parentElement)!,
             new Bubble(childElement),
             false,
             true
@@ -4165,9 +4140,7 @@ export class CanvasElementManager {
         const parentBoundingRect = parentElement.getBoundingClientRect();
 
         // // Ensure newX and newY is within the bounds of the container.
-        const container = CanvasElementManager.getTopLevelImageContainerElement(
-            parentElement
-        );
+        const container = CanvasElementManager.getBloomCanvas(parentElement);
         if (!container) {
             //toastr.warning("Failed to create child or duplicate element.");
             return undefined;
@@ -4182,13 +4155,13 @@ export class CanvasElementManager {
     }
 
     private adjustRectToImageContainer(
-        imageContainer: Element,
+        bloomCanvas: Element,
         x: number,
         y: number,
         width: number,
         height: number
     ): Point {
-        const containerBoundingRect = imageContainer.getBoundingClientRect();
+        const containerBoundingRect = bloomCanvas.getBoundingClientRect();
         let newX = x;
         let newY = y;
 
@@ -4217,13 +4190,13 @@ export class CanvasElementManager {
     }
 
     // This method looks very similar to 'adjustRectToImageContainer' above, but the tailspec coordinates
-    // here are already relative to the imageContainer's coordinates, which introduces some differences.
-    private adjustRelativePointToImageContainer(
-        imageContainer: Element,
+    // here are already relative to the bloom-canvas's coordinates, which introduces some differences.
+    private adjustRelativePointToBloomCanvas(
+        bloomCanvas: Element,
         point: Point
     ): Point {
-        const maxWidth = (imageContainer as HTMLElement).offsetWidth;
-        const maxHeight = (imageContainer as HTMLElement).offsetHeight;
+        const maxWidth = (bloomCanvas as HTMLElement).offsetWidth;
+        const maxHeight = (bloomCanvas as HTMLElement).offsetHeight;
         let newX = point.getUnscaledX();
         let newY = point.getUnscaledY();
 
@@ -4271,10 +4244,10 @@ export class CanvasElementManager {
         originalElement: HTMLElement,
         style?: string
     ): HTMLElement | undefined {
-        const imageContainer = CanvasElementManager.getTopLevelImageContainerElement(
+        const bloomCanvas = CanvasElementManager.getBloomCanvas(
             originalElement
         );
-        if (!imageContainer) {
+        if (!bloomCanvas) {
             return undefined;
         }
         const positionInViewport = new Point(
@@ -4287,18 +4260,15 @@ export class CanvasElementManager {
         if (this.isPictureOverPictureElement(originalElement)) {
             return this.addPictureOverPicture(
                 positionInViewport,
-                $(imageContainer)
+                $(bloomCanvas)
             );
         }
         if (this.isVideoOverPictureElement(originalElement)) {
-            return this.addVideoOverPicture(
-                positionInViewport,
-                $(imageContainer)
-            );
+            return this.addVideoOverPicture(positionInViewport, $(bloomCanvas));
         }
         return this.addTextOverPicture(
             positionInViewport,
-            $(imageContainer),
+            $(bloomCanvas),
             style
         );
     }
@@ -4357,9 +4327,9 @@ export class CanvasElementManager {
         userDefinedStyleName?: string,
         rightTopOffset?: string
     ): HTMLElement | undefined {
-        const imageContainer = this.getImageContainerFromMouse(mouseX, mouseY);
-        if (!imageContainer || imageContainer.length === 0) {
-            // Don't add an OverPicture element if we can't find the containing imageContainer.
+        const bloomCanvas = this.getBloomCanvasFromMouse(mouseX, mouseY);
+        if (!bloomCanvas || bloomCanvas.length === 0) {
+            // Don't add a canvas element if we can't find the containing bloom-canvas.
             return undefined;
         }
         // initial mouseX, mouseY coordinates are relative to viewport
@@ -4372,20 +4342,20 @@ export class CanvasElementManager {
         if (style === "video") {
             return this.addVideoOverPicture(
                 positionInViewport,
-                imageContainer,
+                bloomCanvas,
                 rightTopOffset
             );
         }
         if (style === "image") {
             return this.addPictureOverPicture(
                 positionInViewport,
-                imageContainer,
+                bloomCanvas,
                 rightTopOffset
             );
         }
         return this.addTextOverPicture(
             positionInViewport,
-            imageContainer,
+            bloomCanvas,
             style,
             userDefinedStyleName,
             rightTopOffset
@@ -4394,7 +4364,7 @@ export class CanvasElementManager {
 
     private addTextOverPicture(
         location: Point,
-        imageContainerJQuery: JQuery,
+        bloomCanvasJQuery: JQuery,
         style?: string,
         userDefinedStyleName?: string,
         rightTopOffset?: string
@@ -4419,7 +4389,7 @@ export class CanvasElementManager {
             "</div>";
 
         return this.finishAddingOverPictureElement(
-            imageContainerJQuery,
+            bloomCanvasJQuery,
             transGroupHtml,
             location,
             style,
@@ -4474,15 +4444,15 @@ export class CanvasElementManager {
     }
 
     private finishAddingOverPictureElement(
-        imageContainerJQuery: JQuery,
+        bloomCanvasJQuery: JQuery,
         internalHtml: string,
         location: Point,
         style?: string,
         setElementActive?: boolean,
         rightTopOffset?: string
     ): HTMLElement {
-        // add OverPicture element as last child of .bloom-imageContainer (BL-7883)
-        const lastContainerChild = imageContainerJQuery.children().last();
+        // add canvas element as last child of .bloom-canvas (BL-7883)
+        const lastContainerChild = bloomCanvasJQuery.children().last();
         const wrapperHtml =
             "<div class='" +
             kCanvasElementClass +
@@ -4491,14 +4461,14 @@ export class CanvasElementManager {
             "</div>";
         // It's especially important that the new canvas element comes AFTER the main image,
         // since that's all that keeps it on top of the image. We're deliberately not
-        // using z-index so that the image-container is not a stacking context so we
+        // using z-index so that the bloom-canvas is not a stacking context so we
         // can use z-index on the buttons inside it to put them above the comicaljs canvas.
         const wrapperJQuery = $(wrapperHtml).insertAfter(lastContainerChild);
         this.setDefaultWrapperBoxHeight(wrapperJQuery);
         const contentElement = wrapperJQuery.get(0);
         this.placeElementAtPosition(
             wrapperJQuery,
-            imageContainerJQuery.get(0),
+            bloomCanvasJQuery.get(0),
             location,
             rightTopOffset
         );
@@ -4523,11 +4493,11 @@ export class CanvasElementManager {
             style || "speech"
         );
         bubble.setBubbleSpec(bubbleSpec);
-        const imageContainer = imageContainerJQuery.get(0);
-        // background image in parent imageContainer may need to become canvas element
+        const bloomCanvas = bloomCanvasJQuery.get(0);
+        // background image in parent bloom-canvas may need to become canvas element
         // (before we refreshBubbleEditing, since we may change some canvas elements here.)
         this.handleResizeAdjustments();
-        this.refreshCanvasElementEditing(imageContainer, bubble, true, true);
+        this.refreshCanvasElementEditing(bloomCanvas, bubble, true, true);
         const editable = contentElement.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on"
         )[0] as HTMLElement;
@@ -4554,12 +4524,10 @@ export class CanvasElementManager {
     // mouseX and mouseY are the location in the viewport of the mouse
     // The desired element might be covered by a .MuiModal-backdrop, so we may
     // need to check multiple elements at that location.
-    private getImageContainerFromMouse(mouseX: number, mouseY: number): JQuery {
+    private getBloomCanvasFromMouse(mouseX: number, mouseY: number): JQuery {
         const elements = document.elementsFromPoint(mouseX, mouseY);
         for (let i = 0; i < elements.length; i++) {
-            const trial = CanvasElementManager.getTopLevelImageContainerElement(
-                elements[i]
-            );
+            const trial = CanvasElementManager.getBloomCanvas(elements[i]);
             if (trial) {
                 return $(trial);
             }
@@ -4610,7 +4578,11 @@ export class CanvasElementManager {
         wrapperBox.css("left", xOffset); // assumes numbers are in pixels
         wrapperBox.css("top", yOffset); // assumes numbers are in pixels
 
-        CanvasElementManager.setTextboxPosition(wrapperBox, xOffset, yOffset);
+        CanvasElementManager.setCanvasElementPosition(
+            wrapperBox,
+            xOffset,
+            yOffset
+        );
 
         this.adjustTarget(wrapperBox.get(0));
     }
@@ -4682,13 +4654,13 @@ export class CanvasElementManager {
         if (!textElement || !textElement.parentElement) {
             return undefined;
         }
-        const imageContainer = textElement.parentElement;
+        const bloomCanvas = textElement.parentElement;
         // Make sure comical is up-to-date before we clone things.
         if (
-            imageContainer.getElementsByClassName(kComicalGeneratedClass)
-                .length > 0
+            bloomCanvas.getElementsByClassName(kComicalGeneratedClass).length >
+            0
         ) {
-            Comical.update(imageContainer);
+            Comical.update(bloomCanvas);
         }
         // Get the patriarch canvas element of this comical family. Can only be undefined if no active element.
         const patriarchBubble = this.getPatriarchBubbleOfActiveElement();
@@ -4773,7 +4745,7 @@ export class CanvasElementManager {
 
         this.setActiveElement(patriarchDuplicateElement);
         this.matchSizeOfSource(sourceElement, patriarchDuplicateElement);
-        const container = CanvasElementManager.getTopLevelImageContainerElement(
+        const container = CanvasElementManager.getBloomCanvas(
             patriarchDuplicateElement
         );
         if (!container) {
@@ -4829,7 +4801,7 @@ export class CanvasElementManager {
     }
 
     private getAdjustedTailSpec(
-        imageContainer: Element,
+        bloomCanvas: Element,
         originalTailSpecs: TailSpec[],
         sourceElement: HTMLElement,
         duplicateElement: HTMLElement
@@ -4842,8 +4814,8 @@ export class CanvasElementManager {
             duplicateElement
         );
         return originalTailSpecs.map(spec => {
-            const tipPoint = this.adjustRelativePointToImageContainer(
-                imageContainer,
+            const tipPoint = this.adjustRelativePointToBloomCanvas(
+                bloomCanvas,
                 new Point(
                     spec.tipX + offSetFromSource.getUnscaledX(),
                     spec.tipY + offSetFromSource.getUnscaledY(),
@@ -4851,8 +4823,8 @@ export class CanvasElementManager {
                     "getAdjustedTailSpec.tip"
                 )
             );
-            const midPoint = this.adjustRelativePointToImageContainer(
-                imageContainer,
+            const midPoint = this.adjustRelativePointToBloomCanvas(
+                bloomCanvas,
                 new Point(
                     spec.midpointX + offSetFromSource.getUnscaledX(),
                     spec.midpointY + offSetFromSource.getUnscaledY(),
@@ -4919,9 +4891,7 @@ export class CanvasElementManager {
         // refresh triggered by 'addChildInternal'. So we send the newly modified child through again,
         // with 'attachEventsToEditables' set to 'true'.
         this.refreshCanvasElementEditing(
-            CanvasElementManager.getTopLevelImageContainerElement(
-                parentElement
-            )!,
+            CanvasElementManager.getBloomCanvas(parentElement)!,
             new Bubble(newChildElement),
             true,
             true
@@ -5005,8 +4975,8 @@ export class CanvasElementManager {
 
     private splitterResizeObservers: ResizeObserver[] = [];
     public startDraggingSplitter() {
-        this.getAllPrimaryImageContainersOnPage().forEach(container => {
-            const backgroundCanvasElement = container.getElementsByClassName(
+        this.getAllBloomCanvasesOnPage().forEach(bloomCanvas => {
+            const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
                 kbackgroundImageClass
             )[0] as HTMLElement;
             if (backgroundCanvasElement) {
@@ -5025,20 +4995,20 @@ export class CanvasElementManager {
                 );
                 const resizeObserver = new ResizeObserver(() => {
                     this.adjustBackgroundImageSize(
-                        container,
+                        bloomCanvas,
                         backgroundCanvasElement,
                         false
                     );
                 });
-                resizeObserver.observe(container);
+                resizeObserver.observe(bloomCanvas);
                 this.splitterResizeObservers.push(resizeObserver);
             }
         });
     }
 
     public endDraggingSplitter() {
-        this.getAllPrimaryImageContainersOnPage().forEach(container => {
-            const backgroundCanvasElement = container.getElementsByClassName(
+        this.getAllBloomCanvasesOnPage().forEach(bloomCanvas => {
+            const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
                 kbackgroundImageClass
             )[0] as HTMLElement;
             // We need to remove the results of the continuous adjustments so that we can make the change again,
@@ -5204,8 +5174,8 @@ export class CanvasElementManager {
             // in the way resume normally does
             this.draggingSplitter = false;
             this.endDraggingSplitter();
-            for (const container of this.getAllPrimaryImageContainersOnPage()) {
-                this.AdjustChildrenIfSizeChanged(container);
+            for (const bloomCanvas of this.getAllBloomCanvasesOnPage()) {
+                this.AdjustChildrenIfSizeChanged(bloomCanvas);
             }
         }
     };
@@ -5242,7 +5212,7 @@ export class CanvasElementManager {
     // The comical canvas does not change size as the slider moves, and things may end
     // up in strange states with canvas elements cut off where the boundary used to be.
     // It's possible that we could do better by forcing the canvas to stay the same
-    // size as the image container, but I'm very unsure how resizing an active canvas
+    // size as the bloom-canvas, but I'm very unsure how resizing an active canvas
     // containing objects will affect ComicalJs and the underlying PaperJs.
     // It should be pretty rare to resize an image after adding canvas elements, so I think it's
     // better to go with this, which at least gives a predictable result.
@@ -5296,10 +5266,10 @@ export class CanvasElementManager {
     // Converts a canvas element's position to absolute in pixels (using CSS styling)
     // (Used to be a percentage of parent size. See comments on setTextboxPosition.)
     // canvasElement: The thing we want to position
-    // container: Optional. The image container the convas element is in. If this parameter is not defined, the function will automatically determine it.
+    // bloomCanvas: Optional. The bloom-canvas the canvas element is in. If this parameter is not defined, the function will automatically determine it.
     private static convertCanvasElementPositionToAbsolute(
         canvasElement: HTMLElement,
-        container?: Element | null | undefined
+        bloomCanvas?: Element | null | undefined
     ): void {
         let unscaledRelativeLeft: number;
         let unscaledRelativeTop: number;
@@ -5319,13 +5289,11 @@ export class CanvasElementManager {
         // was the original case where we discovered this problem, and led to realizing
         // that most calls to this method are not really needed.)
 
-        if (!container) {
-            container = CanvasElementManager.getTopLevelImageContainerElement(
-                canvasElement
-            );
+        if (!bloomCanvas) {
+            bloomCanvas = CanvasElementManager.getBloomCanvas(canvasElement);
         }
 
-        if (container) {
+        if (bloomCanvas) {
             const positionInfo = canvasElement.getBoundingClientRect();
             const wrapperBoxPos = new Point(
                 positionInfo.left,
@@ -5335,7 +5303,7 @@ export class CanvasElementManager {
             );
             const reframedPoint = this.convertPointFromViewportToElementFrame(
                 wrapperBoxPos,
-                container
+                bloomCanvas
             );
             unscaledRelativeLeft = reframedPoint.getUnscaledX();
             unscaledRelativeTop = reframedPoint.getUnscaledY();
@@ -5346,14 +5314,14 @@ export class CanvasElementManager {
             );
 
             // If can't find the container for some reason, fallback to the old, deprecated calculation.
-            // (This algorithm does not properly account for the border of the imageContainer when zoomed,
+            // (This algorithm does not properly account for the border of the bloom-canvas when zoomed,
             //  so the results may be slightly off by perhaps up to 2 pixels)
             const scale = EditableDivUtils.getPageScale();
             const pos = $(canvasElement).position();
             unscaledRelativeLeft = pos.left / scale;
             unscaledRelativeTop = pos.top / scale;
         }
-        this.setTextboxPosition(
+        this.setCanvasElementPosition(
             $(canvasElement),
             unscaledRelativeLeft,
             unscaledRelativeTop
@@ -5362,32 +5330,32 @@ export class CanvasElementManager {
 
     // Sets a text box's position permanently to where it is now.
     // (Not sure if this ever changes anything, except when migrating. Earlier versions of Bloom
-    // stored the canvas element position and size as a percentage of the image container size.
+    // stored the canvas element position and size as a percentage of the bloom-canvas size.
     // The reasons for that are lost in history; probably we thought that it would better
     // preserve the user's intent to keep in the same shape and position.
     // But in practice it didn't work well, especially since everything was relative to the
-    // image container, and the image moves around in that as determined by content:fit etc
+    // bloom-canvas, and the image moves around in that as determined by content:fit etc
     // to keep its aspect ratio. The reasons to prefer an absolute position and
     // size are in BL-11667. Basically, we don't want the canvas element to change its size or position
     // relative to its own tail when the image is resized, either because the page size changed
     // or because of dragging a splitter. It would usually be even better if everything kept
     // its position relative to the image itself, but that is much harder to do since the canvas element
     // isn't (can't be) a child of the img.)
-    private static setTextboxPosition(
-        textBox: JQuery,
+    private static setCanvasElementPosition(
+        canvasElement: JQuery,
         unscaledRelativeLeft: number,
         unscaledRelativeTop: number
     ) {
-        textBox
+        canvasElement
             .css("left", unscaledRelativeLeft + "px")
             .css("top", unscaledRelativeTop + "px")
             // FYI: The textBox width/height is rounded to the nearest whole pixel. Ideally we might like its more precise value...
             // But it's a huge performance hit to get its getBoundingClientRect()
             // It seems that getBoundingClientRect() may be internally cached under the hood,
-            // since getting the bounding rect of the image container once per mousemove event or even 100x per mousemove event caused no ill effect,
+            // since getting the bounding rect of the bloom-canvas once per mousemove event or even 100x per mousemove event caused no ill effect,
             // but getting this one is quite taxing on the CPU
-            .css("width", textBox.width() + "px")
-            .css("height", textBox.height() + "px");
+            .css("width", canvasElement.width() + "px")
+            .css("height", canvasElement.height() + "px");
 
         //Slider: if (textBox.get(0).getAttribute("data-txt-img")) {
         //     // Only one of these is ever visible; move them together.
@@ -5422,29 +5390,24 @@ export class CanvasElementManager {
         return interior;
     }
 
-    // Lots of places we need to find the bloom-imageContainer that a particular element resides in.
+    // Lots of places we need to find the bloom-canvas that a particular element resides in.
     // Method is static because several of the callers are static.
-    // BL-9976: now that we can have images on top of images, we need to ensure that we don't return
-    // a "sub-imageContainer". But we do want to return null if we aren't in an imageContainer at all.
-    private static getTopLevelImageContainerElement(
-        element: Element
-    ): HTMLElement | null {
+    // Return null if element isn't in a bloom-canvas at all.
+    private static getBloomCanvas(element: Element): HTMLElement | null {
         if (!element?.closest) {
             // It's possible for the target to be the root document object. If so, it doesn't
             // have a 'closest' function, so we'd better not try to call it.
-            // It's also certainly not inside an image container, so null is a safe result.
+            // It's also certainly not inside a bloom-canvas, so null is a safe result.
             return null;
         }
-        const firstTry = element.closest(kImageContainerSelector);
+        const firstTry = element.closest(kBloomCanvasSelector);
         if (!firstTry) {
-            return null; // 'element' is not in an imageContainer at all
+            return null; // 'element' is not in a bloom-canvas at all
         }
-        const secondTry = firstTry.parentElement?.closest(
-            kImageContainerSelector
-        );
+        const secondTry = firstTry.parentElement?.closest(kBloomCanvasSelector);
         return secondTry
             ? (secondTry as HTMLElement) // element was inside of a image over image
-            : (firstTry as HTMLElement); // element was just inside of a top level imageContainer
+            : (firstTry as HTMLElement); // element was just inside of a bloom-canvas
     }
 
     // When showing a tail for a canvas element style that doesn't have one by default, we get one here.
@@ -5588,14 +5551,14 @@ export class CanvasElementManager {
     }
 
     private handleResizeAdjustments() {
-        const primaryImageContainers = this.getAllPrimaryImageContainersOnPage();
-        primaryImageContainers.forEach(imageContainer => {
-            this.switchBackgroundToCanvasElementIfNeeded(imageContainer);
-            this.AdjustChildrenIfSizeChanged(imageContainer);
+        const bloomCanvases = this.getAllBloomCanvasesOnPage();
+        bloomCanvases.forEach(bloomCanvas => {
+            this.switchBackgroundToCanvasElementIfNeeded(bloomCanvas);
+            this.AdjustChildrenIfSizeChanged(bloomCanvas);
         });
     }
 
-    // If an image container has a non-placeholder background image, we switch the
+    // If a bloom-canvas has a non-placeholder background image, we switch the
     // background image to an image canvas element. This allows it to be manipuluated more easily.
     // More importantly, it prevents the difficult-to-account-for movement of the
     // background image when the container is resized. Once it is a canvas element,
@@ -5603,10 +5566,8 @@ export class CanvasElementManager {
     // is resized. A further benefit is that it is somewhat backwards compatible:
     // older code will not mess with canvas element positioning like it would tend to
     // if we put position and size attributes on the background image directly.
-    private switchBackgroundToCanvasElementIfNeeded(
-        imageContainer: HTMLElement
-    ) {
-        const bgCanvasElement = imageContainer.getElementsByClassName(
+    private switchBackgroundToCanvasElementIfNeeded(bloomCanvas: HTMLElement) {
+        const bgCanvasElement = bloomCanvas.getElementsByClassName(
             kbackgroundImageClass
         )[0] as HTMLElement;
         if (bgCanvasElement) {
@@ -5615,36 +5576,46 @@ export class CanvasElementManager {
             bgCanvasElement.classList.remove(kHasCanvasElementClass);
             return; // already have one.
         }
-        this.switchBackgroundToCanvasElement(imageContainer);
+        this.switchBackgroundToCanvasElement(bloomCanvas);
     }
 
-    private switchBackgroundToCanvasElement(imageContainer: HTMLElement) {
-        const img = getImageFromContainer(imageContainer);
-        if (!img) return; // should not happen
-        let bgCanvasElement = imageContainer.getElementsByClassName(
+    private switchBackgroundToCanvasElement(bloomCanvas: HTMLElement) {
+        const oldBgImage = getImageFromContainer(bloomCanvas);
+        let bgCanvasElement = bloomCanvas.getElementsByClassName(
             kbackgroundImageClass
         )[0] as HTMLElement;
         if (!bgCanvasElement) {
             // various legacy behavior, such as hiding the old-style background placeholder.
-            imageContainer.classList.add(kHasCanvasElementClass);
+            bloomCanvas.classList.add(kHasCanvasElementClass);
             bgCanvasElement = document.createElement("div");
             bgCanvasElement.classList.add(kCanvasElementClass);
             bgCanvasElement.classList.add(kbackgroundImageClass);
 
-            // Make a new image container to hold just the background image, inside the new canvas element.
+            // Make a new image-container to hold just the background image, inside the new canvas element.
             // We don't want a deep clone...that will copy all the canvas elements, too.
-            const newImgContainer = imageContainer.cloneNode(
-                false
-            ) as HTMLElement;
+            // I'm not sure how much good it does to clone rather than making a new one, now the classes are
+            // not the same.
+            const newImgContainer = bloomCanvas.cloneNode(false) as HTMLElement;
+            newImgContainer.classList.add(kImageContainerClass);
+            newImgContainer.classList.remove(kBloomCanvasClass);
             newImgContainer.classList.remove(kHasCanvasElementClass);
             bgCanvasElement.appendChild(newImgContainer);
-            const newImg = img.cloneNode(false) as HTMLImageElement;
+            let newImg: HTMLElement;
+            if (oldBgImage) {
+                // If we have an image, we want to clone it and put it in the new image-container.
+                // (Could just move it, but that complicates the code for inserting the canvas element.)
+                newImg = oldBgImage.cloneNode(false) as HTMLElement;
+            } else {
+                // Otherwise, we'll make a placeholder image. Src may get set below.
+                newImg = document.createElement("img");
+                newImg.setAttribute("src", "placeHolder.png");
+            }
             newImg.classList.remove("bloom-imageLoadError");
             newImgContainer.appendChild(newImg);
 
             // Set level so Comical will consider the new canvas element to be under the existing ones.
             const canvasElementElements = Array.from(
-                imageContainer.getElementsByClassName(kCanvasElementClass)
+                bloomCanvas.getElementsByClassName(kCanvasElementClass)
             );
             let minLevel = Math.min(
                 ...canvasElementElements.map(
@@ -5671,48 +5642,51 @@ export class CanvasElementManager {
             bgCanvasElement.style.visibility = "none"; // hide it until we adjust its shape and position
             // consistent with level, we want it in front of the (new, placeholder) background image
             // and behind the other canvas elements.
-            imageContainer.insertBefore(bgCanvasElement, img.nextSibling);
+            if (oldBgImage) {
+                bloomCanvas.insertBefore(
+                    bgCanvasElement,
+                    oldBgImage.nextSibling
+                );
+            } else {
+                var canvas = bloomCanvas.getElementsByTagName(
+                    "canvas"
+                )[0] as HTMLElement;
+                bloomCanvas.insertBefore(bgCanvasElement, canvas.nextSibling);
+            }
         }
         const bgImage = getBackgroundImageFromContainer(
-            imageContainer
+            bloomCanvas
         ) as HTMLElement; // must exist by now
         // Whether it's a new bgImage or not, copy its src from the old-style img
         bgImage.classList.remove("bloom-imageLoadError");
         bgImage.onerror = HandleImageError;
-        bgImage.setAttribute("src", img.getAttribute("src") ?? "");
-        this.adjustBackgroundImageSize(imageContainer, bgCanvasElement, true);
+        bgImage.setAttribute(
+            "src",
+            oldBgImage?.getAttribute("src") ?? "placeHolder.png"
+        );
+        this.adjustBackgroundImageSize(bloomCanvas, bgCanvasElement, true);
         bgCanvasElement.style.visibility = ""; // now we can show it, if it was new and hidden
-        SetupMetadataButton(imageContainer);
-
-        // remove all attributes from img and set src to make it a plain vanilla placeholder.
-        // set "src" first since this will make it disappear, hopefully reducing flicker.
-        // This image will never be seen again, but a lot of code expects an image container
-        // to have a direct child that is an img, and it makes things easier for older versions
-        // of Bloom that may open this book, so for now we'll keep it.
-        img.setAttribute("src", "placeHolder.png");
-        for (let i = img.attributes.length - 1; i >= 0; i--) {
-            const name = img.attributes[i].name;
-            if (name !== "src") {
-                img.removeAttribute(name);
-            }
+        SetupMetadataButton(bloomCanvas);
+        if (oldBgImage) {
+            oldBgImage.remove();
         }
     }
 
     private adjustBackgroundImageSize(
-        imageContainer: HTMLElement,
+        bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean
     ) {
         return this.adjustBackgroundImageSizeToFit(
-            imageContainer,
+            bloomCanvas,
             bgCanvasElement,
             useSizeOfNewImage,
             0
         );
     }
 
-    // Given a bg canvas element, which is always a canvas element having the bloom-backgroundImage
-    // class, and the height and width of the parent imageContainer, this method attempts to
+    // Given a bg canvas element, which is a canvas element having the bloom-backgroundImage
+    // class, and the height and width of the parent bloom-canvas, this method attempts to
     // make the bgCanvasElement the right size and position to fill as much as possible of the parent,
     // rather like object-fit:contain. It is used in two main scenarios: the user may have
     // selected a different image, which means we must adjust to suit a different image aspect
@@ -5727,7 +5701,7 @@ export class CanvasElementManager {
     // dimensions. In this case, we expand the bgCanvasElement to the full size of the container so
     // all the space is available to display the error icon and message.
     private adjustBackgroundImageSizeToFit(
-        imageContainer: HTMLElement,
+        bloomCanvas: HTMLElement,
         // The canvas element div that contains the background image.
         // (Since this is the background that we overlay things on, it is itself a
         // canvas element only in the sense that it has the same HTML structure in order to
@@ -5749,8 +5723,8 @@ export class CanvasElementManager {
         if (timeoutHandler) {
             clearTimeout(timeoutHandler);
         }
-        const containerWidth = imageContainer.clientWidth;
-        const containerHeight = imageContainer.clientHeight;
+        const bloomCanvasWidth = bloomCanvas.clientWidth;
+        const bloomCanvasHeight = bloomCanvas.clientHeight;
         let imgAspectRatio =
             bgCanvasElement.clientWidth / bgCanvasElement.clientHeight;
         const img = getImageFromCanvasElement(bgCanvasElement);
@@ -5774,7 +5748,7 @@ export class CanvasElementManager {
             if (failedImage) {
                 // If the image failed to load, just use the container aspect ratio to fill up
                 // the container with the error message (alt attribute string).
-                imgAspectRatio = containerWidth / containerHeight;
+                imgAspectRatio = bloomCanvasWidth / bloomCanvasHeight;
             } else if (
                 img.naturalHeight === 0 ||
                 img.naturalWidth === 0 ||
@@ -5786,7 +5760,7 @@ export class CanvasElementManager {
                 const handle = (setTimeout(
                     () =>
                         this.adjustBackgroundImageSizeToFit(
-                            imageContainer,
+                            bloomCanvas,
                             bgCanvasElement,
                             // after the timeout we don't consider that we MUST wait if we have dimensions
                             false,
@@ -5804,7 +5778,7 @@ export class CanvasElementManager {
                     "load",
                     () =>
                         this.adjustBackgroundImageSizeToFit(
-                            imageContainer,
+                            bloomCanvas,
                             bgCanvasElement,
                             false, // when this call happens we have the new dimensions.
                             handle // if this callback happens we can cancel the timeout.
@@ -5829,21 +5803,22 @@ export class CanvasElementManager {
         }
 
         const oldWidth = bgCanvasElement.clientWidth;
-        const containerAspectRatio = containerWidth / containerHeight;
+        const containerAspectRatio = bloomCanvasWidth / bloomCanvasHeight;
         if (imgAspectRatio > containerAspectRatio) {
             // size of image is width-limited
-            bgCanvasElement.style.width = containerWidth + "px";
+            bgCanvasElement.style.width = bloomCanvasWidth + "px";
             bgCanvasElement.style.left = "0px";
-            const imgHeight = containerWidth / imgAspectRatio;
+            const imgHeight = bloomCanvasWidth / imgAspectRatio;
             bgCanvasElement.style.top =
-                (containerHeight - imgHeight) / 2 + "px";
+                (bloomCanvasHeight - imgHeight) / 2 + "px";
             bgCanvasElement.style.height = imgHeight + "px";
         } else {
-            const imgWidth = containerHeight * imgAspectRatio;
+            const imgWidth = bloomCanvasHeight * imgAspectRatio;
             bgCanvasElement.style.width = imgWidth + "px";
             bgCanvasElement.style.top = "0px";
-            bgCanvasElement.style.left = (containerWidth - imgWidth) / 2 + "px";
-            bgCanvasElement.style.height = containerHeight + "px";
+            bgCanvasElement.style.left =
+                (bloomCanvasWidth - imgWidth) / 2 + "px";
+            bgCanvasElement.style.height = bloomCanvasHeight + "px";
         }
         if (!useSizeOfNewImage && img?.style.width) {
             // need to adjust image settings to preserve cropping
@@ -5881,28 +5856,29 @@ export class CanvasElementManager {
         this.alignControlFrameWithActiveElement();
     }
 
-    // Store away the current size of the image container. At any later time if we notice that
+    // Store away the current size of the bloom-canvas. At any later time if we notice that
     // this does not match the current size, we adjust everything according to how the size has changed.
-    private updateImgSizeData(container: HTMLElement) {
-        container.setAttribute(
+    private updateBloomCanvasSizeData(bloomCanvas: HTMLElement) {
+        bloomCanvas.setAttribute(
             // originally data-imgSizeBasedOn, but that is technically invalid
             // since data-* attributes must be lowercase. JS converts it to
             // data-imgsizebasedon as we write, so that's what's in files.
             // I'd prefer it to be data-img-size-based-on, but that would require data-migration.
             "data-imgsizebasedon",
-            `${container.clientWidth},${container.clientHeight}`
+            `${bloomCanvas.clientWidth},${bloomCanvas.clientHeight}`
         );
     }
 
-    public AdjustChildrenIfSizeChanged(container: HTMLElement): void {
-        const oldSizeData = container.getAttribute("data-imgsizebasedon");
+    public AdjustChildrenIfSizeChanged(bloomCanvas: HTMLElement): void {
+        const oldSizeData = bloomCanvas.getAttribute("data-imgsizebasedon");
         if (!oldSizeData) {
             // Can't make a useful adjustment now, with no previous size to work from.
             // But if this is an image with canvas elements, we'll want to remember the size for next time.
             if (
-                container.getElementsByClassName(kCanvasElementClass).length > 0
+                bloomCanvas.getElementsByClassName(kCanvasElementClass).length >
+                0
             ) {
-                this.updateImgSizeData(container);
+                this.updateBloomCanvasSizeData(bloomCanvas);
             }
             return; // not using this system for sizing
         }
@@ -5911,12 +5887,12 @@ export class CanvasElementManager {
         let oldWidth = parseInt(oldSizeDataArray[0]);
         let oldHeight = parseInt(oldSizeDataArray[1]);
 
-        const newWidth = container.clientWidth;
-        const newHeight = container.clientHeight;
+        const newWidth = bloomCanvas.clientWidth;
+        const newHeight = bloomCanvas.clientHeight;
         if (oldWidth === newWidth && oldHeight === newHeight) return; // allow small discrepancy?
         // Leave out of this calculation the canvas and any image descriptions or controls.
         const children = (Array.from(
-            container.children
+            bloomCanvas.children
         ) as HTMLElement[]).filter(
             c =>
                 c.style.left !== "" &&
@@ -6133,7 +6109,7 @@ export class CanvasElementManager {
                 }
             }
         });
-        this.updateImgSizeData(container);
+        this.updateBloomCanvasSizeData(bloomCanvas);
     }
 
     public static adjustCanvasElementAlternates(
@@ -6260,11 +6236,11 @@ export class CanvasElementManager {
 }
 
 // For use by bloomImages.ts, so that newly opened books get this class updated for their images.
-export function updateCanvasElementClass(imageContainer: HTMLElement) {
-    if (imageContainer.getElementsByClassName(kCanvasElementClass).length > 0) {
-        imageContainer.classList.add(kHasCanvasElementClass);
+export function updateCanvasElementClass(bloomCanvas: HTMLElement) {
+    if (bloomCanvas.getElementsByClassName(kCanvasElementClass).length > 0) {
+        bloomCanvas.classList.add(kHasCanvasElementClass);
     } else {
-        imageContainer.classList.remove(kHasCanvasElementClass);
+        bloomCanvas.classList.remove(kHasCanvasElementClass);
     }
 }
 
@@ -6297,9 +6273,7 @@ export function canvasElementDescription(
     }
     const result =
         "canvas element at (" + elt.style.left + ", " + elt.style.top + ") ";
-    const imageContainer = elt.getElementsByClassName(
-        "bloom-imageContainer"
-    )[0];
+    const imageContainer = elt.getElementsByClassName(kImageContainerClass)[0];
     if (imageContainer) {
         const img = imageContainer.getElementsByTagName("img")[0];
         if (img) {

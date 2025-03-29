@@ -33,7 +33,7 @@
 
 /* The below statement controls the space between the image and the title on the frontcover. */
 
-[class*="Device16x9"].frontCover .bloom-imageContainer {
+[class*="Device16x9"].frontCover .bloom-canvas {
     order: 1;
     flex: 1 1 auto;
     margin-top: 1px !important;

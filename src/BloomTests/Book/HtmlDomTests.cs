@@ -1679,7 +1679,7 @@ namespace BloomTests.Book
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'>Contents</div>
 							</div>
-							<div class='bloom-imageContainer' data-imgsizebasedon='703, 313'>
+							<div class='bloom-canvas' data-imgsizebasedon='703, 313'>
 								<img src='something.jpg' />
 							</div>
 						</div>
@@ -1690,7 +1690,7 @@ namespace BloomTests.Book
                 @"<html><head></head><body>
 					<div class='bloom-page' id='templateGuid'>
 						<div class='split-pane-component-inner'>
-							<div class='bloom-imageContainer' />
+							<div class='bloom-canvas' />
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'></div>
 							</div>
@@ -1908,7 +1908,7 @@ p {
                 @"<html><head></head><body>
 					<div class='bloom-page' id='pageGuid'>
 						<div class='split-pane-component-inner'>
-							<div class='bloom-imageContainer'>
+							<div class='bloom-canvas'>
 								<div class='bloom-canvas-element'>
 									<div class='bloom-translationGroup'>
 										<div class='bloom-editable'>
@@ -1951,7 +1951,7 @@ p {
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'>Second text contents</div>
 							</div>
-							<div class='bloom-imageContainer'>
+							<div class='bloom-canvas'>
 								<img src='myImageFile2.png'></img>
 							</div>
 						</div>
@@ -1972,7 +1972,7 @@ p {
 							</div>
 						</div>
 						<div class='split-pane-component-inner'>
-							<div id='canvasElementSlot' title='placeHolder.png' class='bloom-imageContainer'>
+							<div id='canvasElementSlot' title='placeHolder.png' class='bloom-canvas'>
 								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
@@ -1980,7 +1980,7 @@ p {
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'></div>
 							</div>
-							<div id='imageSlot2' title='placeHolder.png' class='bloom-imageContainer'>
+							<div id='imageSlot2' title='placeHolder.png' class='bloom-canvas'>
 								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
@@ -2013,9 +2013,9 @@ p {
             var secondTextXpath =
                 "//div[contains(@class,'bloom-editable') and text()='Second text contents']";
             var topTextXpath =
-                "//div[contains(@class,'bloom-imageContainer')]//div[contains(@class,'bloom-editable')]/p[text()='Text over picture text']";
+                "//div[contains(@class,'bloom-canvas')]//div[contains(@class,'bloom-editable')]/p[text()='Text over picture text']";
             var imageDescXpath =
-                "//div[contains(@class,'bloom-imageContainer')]/div[contains(@class,'bloom-imageDescription')]//p[text()='Image description text']";
+                "//div[contains(@class,'bloom-canvas')]/div[contains(@class,'bloom-imageDescription')]//p[text()='Image description text']";
             assertThatOutput.HasNoMatchForXpath("//div[@id='templateGuid']");
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath("//div[@id='pageGuid']", 1);
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(firstTextXpath, 1);
@@ -2061,7 +2061,7 @@ p {
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable normal-style' contenteditable='true' lang='en'>First text contents</div>
 							</div>
-							<div class='bloom-imageContainer'>
+							<div class='bloom-canvas'>
 								<img src='myImageFile.png'></img>
 							</div>
 						</div>
@@ -2090,7 +2090,7 @@ p {
 							</div>
 						</div>
 						<div class='split-pane-component-inner'>
-							<div title='placeHolder.png' class='bloom-imageContainer'>
+							<div title='placeHolder.png' class='bloom-canvas'>
 								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
@@ -2406,7 +2406,7 @@ p {
                 @"<html>
 	<body>
 		<div class='bloom-page bloom-frontMatter'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				<img src='coverImage.jpg'></img>
 				<div class='bloom-translationGroup bloom-imageDescription'>
 					<div id='badFrontXmatter' class='bloom-editable' lang='en'>
@@ -2416,7 +2416,7 @@ p {
 			</div>
 		</div>
 		<div class='bloom-page'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				<img src='page1Image.jpg'></img>
 				<div class='bloom-translationGroup bloom-imageDescription'>
 					<div id='good1' class='bloom-editable' lang='es'>
@@ -2445,7 +2445,7 @@ p {
 			</div>
 		</div>
 		<div class='bloom-page bloom-backMatter'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				<img src='backCoverImage.jpg'></img>
 				<div class='bloom-translationGroup bloom-imageDescription'>
 					<div id='badBackXmatter' class='bloom-editable' lang='fr'>
@@ -2546,7 +2546,7 @@ p {
 						<div class='bloom-translationGroup'>
 							<div class='bloom-editable'>First text contents</div>
 						</div>
-						<div class='bloom-imageContainer'>
+						<div class='bloom-canvas'>
 							<div class='bloom-canvas-element' style='left: 8.50603%; "
                     + textColorLoc1
                     + @"'
@@ -2560,7 +2560,7 @@ p {
 								</div>
 							</div>
 						</div>
-						<div class='bloom-imageContainer'>
+						<div class='bloom-canvas'>
 							<div class='bloom-canvas-element' style='left: 8.50603%; "
                     + textColorLoc2
                     + @"'
@@ -2578,7 +2578,7 @@ p {
 				</div>
 				<div class='bloom-page' id='pageGuid2'>
 					<div class='split-pane-component-inner'>
-						<div class='bloom-imageContainer'>
+						<div class='bloom-canvas'>
 							<div class='bloom-canvas-element' style='left: 8.50603%; "
                     + textColorLoc3
                     + @"'

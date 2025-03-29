@@ -825,11 +825,12 @@ namespace Bloom.Book
         ) GetEditableDataCounts(SafeXmlElement page)
         {
             return (
-                // See comment on GetEltsWithClassNotInImageContainerInternal() below.
+                // See comment on GetEltsWithClassNotInBloomCanvasInternal() below.
                 GetTranslationGroupNotInImageContainerCount(page),
-                GetEltsWithClassNotInImageContainer(page, "bloom-imageContainer").Count,
-                GetEltsWithClassNotInImageContainer(page, "bloom-videoContainer").Count,
-                GetEltsWithClassNotInImageContainer(page, "bloom-widgetContainer").Count
+                // never nested, but still an easy way to get them.
+                GetEltsWithClassNotInBloomCanvas(page, "bloom-canvas").Count,
+                GetEltsWithClassNotInBloomCanvas(page, "bloom-videoContainer").Count,
+                GetEltsWithClassNotInBloomCanvas(page, "bloom-widgetContainer").Count
             );
         }
 
@@ -921,8 +922,8 @@ namespace Bloom.Book
                 GetTranslationGroupsNotInImageContainer(page),
                 GetTranslationGroupsNotInImageContainer(newPage)
             );
-            // migrate images
-            MigrateChildrenWithCommonClass(page, "bloom-imageContainer", newPage);
+            // migrate bloom-canvas elements
+            MigrateChildrenWithCommonClass(page, "bloom-canvas", newPage);
             // migrate videos
             MigrateChildrenWithCommonClass(page, "bloom-videoContainer", newPage);
             // migrate HTML widgets
@@ -944,21 +945,21 @@ namespace Bloom.Book
             SafeXmlElement pageElement
         )
         {
-            return GetEltsWithClassNotInImageContainer(pageElement, "bloom-translationGroup");
+            return GetEltsWithClassNotInBloomCanvas(pageElement, "bloom-translationGroup");
         }
 
-        private static List<SafeXmlElement> GetEltsWithClassNotInImageContainer(
+        private static List<SafeXmlElement> GetEltsWithClassNotInBloomCanvas(
             SafeXmlElement pageElement,
             string targetClass
         )
         {
             var result = new List<SafeXmlElement>();
-            GetEltsWithClassNotInImageContainerInternal(pageElement, ref result, targetClass);
+            GetEltsWithClassNotInBloomCanvasInternal(pageElement, ref result, targetClass);
 
             return result;
         }
 
-        // We want to count all the translationGroups that do not occur inside of a bloom-imageContainer div.
+        // We want to count all the translationGroups that do not occur inside of a bloom-canvas div.
         // The reason for this is that images can have canvas element divs and imageDescription divs inside of them
         // and these are completely independent of the template page. We need to count regular translationGroups and
         // also ensure that translationGroups inside of images get migrated correctly. If this algorithm changes, be
@@ -966,7 +967,7 @@ namespace Bloom.Book
         // We could just do this with an xpath if canvas element divs and bloom-imageDescription divs had
         // the same structure internally, but a text canvas element CONTAINS a translationGroup,
         // whereas image description IS a translationGroup.
-        private static void GetEltsWithClassNotInImageContainerInternal(
+        private static void GetEltsWithClassNotInBloomCanvasInternal(
             SafeXmlElement currentElement,
             ref List<SafeXmlElement> result,
             string targetClass
@@ -985,8 +986,8 @@ namespace Bloom.Book
                     }
                     return; // don't drill down further
                 }
-                // Test this AFTER looking for targetClass; we do want to find the TOP bloom-imageContainers.
-                if (classes.Contains("bloom-imageContainer"))
+                // Test this AFTER looking for targetClass; we do want to find the bloom-canvases.
+                if (classes.Contains("bloom-canvas"))
                     return; // don't drill down inside of this one
             }
 
@@ -998,7 +999,7 @@ namespace Bloom.Book
                 if (childElement == null) // if the node is not castable to XmlElement
                     continue;
 
-                GetEltsWithClassNotInImageContainerInternal(childElement, ref result, targetClass);
+                GetEltsWithClassNotInBloomCanvasInternal(childElement, ref result, targetClass);
             }
         }
 
@@ -1266,10 +1267,10 @@ namespace Bloom.Book
         )
         {
             var oldParents = new List<SafeXmlElement>(
-                GetEltsWithClassNotInImageContainer(page, className)
+                GetEltsWithClassNotInBloomCanvas(page, className)
             );
             var newParents = new List<SafeXmlElement>(
-                GetEltsWithClassNotInImageContainer(newPage, className)
+                GetEltsWithClassNotInBloomCanvas(newPage, className)
             );
             MigrateChildren(oldParents, newParents);
         }
@@ -1282,7 +1283,7 @@ namespace Bloom.Book
             IReadOnlyList<SafeXmlElement> templateParentElements
         )
         {
-            // 'xParentElements' are either 'bloom-translationGroup', 'bloom-imageContainer', 'bloom-widgetContainer', or 'bloom-videoContainer'
+            // 'xParentElements' are either 'bloom-translationGroup', 'bloom-canvas', 'bloom-widgetContainer', or 'bloom-videoContainer'
             // The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one
             // thing to copy or where the numbers are not equal. It's just a precaution.
             for (
@@ -1329,8 +1330,8 @@ namespace Bloom.Book
                     AddKnownStyleIfMissing(oldContainerChild);
                 }
 
-                // At least this attribute must be copied for image containers, or we don't get the right adjustments
-                // for the probably changed size of the container.
+                // At least this attribute must be copied for bloom-canvases, or we don't get the right adjustments
+                // for the probably changed size of the bloom-canvas.
                 // Tempting to copy them all, but some might be specific to the old layout.
                 var oldSize = oldParent.GetAttribute("data-imgsizebasedon");
                 if (!string.IsNullOrEmpty(oldSize))
@@ -3219,10 +3220,20 @@ namespace Bloom.Book
             string descriptionLang
         )
         {
-            var parent = img.ParentNode as SafeXmlElement;
-            if (parent.HasClass("bloom-imageContainer"))
+            var bloomCanvas = img.ParentNode as SafeXmlElement;
+            if (bloomCanvas != null && !bloomCanvas.HasClass("bloom-canvas"))
             {
-                var description = parent.ChildNodes.FirstOrDefault(
+                // Currently an image is only a direct child of a bloom-canvas if we've migrated back
+                // to that for publication. It's also relevant to put the image description as the alt
+                // of a background canvas element. OTOH, other image overlays should have empty alt.
+                if (bloomCanvas.HasClass("bloom-backgroundImage"))
+                {
+                    bloomCanvas = bloomCanvas.ParentOrSelfWithClass("bloom-canvas");
+                }
+            }
+            if (bloomCanvas != null && bloomCanvas.HasClass("bloom-canvas"))
+            {
+                var description = bloomCanvas.ChildNodes.FirstOrDefault(
                     n =>
                         n is SafeXmlElement
                         && ((SafeXmlElement)n).HasClass("bloom-imageDescription")

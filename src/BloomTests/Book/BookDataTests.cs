@@ -2949,7 +2949,7 @@ namespace BloomTests.Book
 					<div  data-book='coverImage' src='new.png' style='width: 233.719px; height:100%;'>new.png</div>
 				</div>
 				<div class='bloom-page'>
-					 <div class='bloom-imageContainer {containerClass}'>
+					 <div class='bloom-canvas {containerClass}'>
 						<img data-book='coverImage' src='placeholder.png' ></img>
 					</div>
 				</div>
@@ -2982,7 +2982,7 @@ namespace BloomTests.Book
 					<div  data-book='coverImage' src='old.png'>old.png</div>
 				</div>
 				<div class='bloom-page'>
-					 <div class='bloom-imageContainer {containerClass}'>
+					 <div class='bloom-canvas {containerClass}'>
 						<img data-book='coverImage' src='old.png'></img>
 					</div>
 				</div>
@@ -2993,7 +2993,7 @@ namespace BloomTests.Book
             var editedPageDom = new HtmlDom(
                 $@"<html ><head></head><body>
 				<div class='bloom-page'>
-					 <div class='bloom-imageContainer {containerClass}'>
+					 <div class='bloom-canvas {containerClass}'>
 						<img data-book='coverImage' src='new.png' style='width: 233.719px; height:100%;'></img>
 					</div>
 				</div>

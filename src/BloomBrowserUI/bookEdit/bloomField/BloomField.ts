@@ -650,7 +650,7 @@ export default class BloomField {
     }
 
     private static EnsureEndsWithParagraphElement(field: HTMLElement) {
-        //Enhance: move any errant paragraphs to after the imageContainer
+        //Enhance: move any errant paragraphs to after the bloom-canvas
         if (
             $(field).children().length > 0 &&
             $(field)

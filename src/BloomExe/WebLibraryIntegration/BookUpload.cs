@@ -7,6 +7,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Forms;
+using System.Windows.Shell;
 using System.Xml;
 using Amazon.Runtime;
 using Amazon.S3;
@@ -26,6 +27,7 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
+using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -526,6 +528,21 @@ namespace Bloom.WebLibraryIntegration
                 );
 
             PublishHelper.ReportInvalidFonts(stagingDirectory, progress);
+
+            // Really crop images, which allows us to simplify the representation of background images,
+            // so the new structure with the background canvas elements doesn't get uploaded.
+            // We think it's better if Blorg books don't have this structure until we can migrate all pages
+            // to it.
+            // Since this is a temp directory and a book that's already up-to-date, I think it's safe to
+            // just load a DOM from the file, modify it, and write it out again, without all the
+            // overhead of creating a book object.
+            var htmlFile = BookStorage.FindBookHtmlInFolder(stagingDirectory);
+            var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
+
+            PublishHelper.ReallyCropImages(xmlDomFromHtmlFile, stagingDirectory, stagingDirectory);
+            PublishHelper.SimplifyBackgroundImages(xmlDomFromHtmlFile); // after really cropping
+
+            XmlHtmlConverter.SaveDOMAsHtml5(xmlDomFromHtmlFile, htmlFile);
         }
 
         private void ProcessVideosInTempDirectory(string destDirName)

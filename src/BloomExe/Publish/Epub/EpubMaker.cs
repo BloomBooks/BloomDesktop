@@ -2000,8 +2000,8 @@ namespace Bloom.Publish.Epub
                     if (activeDescriptions.Length == 0)
                         continue;
                     // Now that we need multiple asides (BL-6314), I'm putting them in a separate div.
-                    // Insert the div after the image container, thus not interfering with the
-                    // reader's placement of the image itself.
+                    // Insert the div after the bloom-canvas, thus not interfering with the
+                    // reader's placement of the contents of the canvas itself.
                     var asideContainer = description.OwnerDocument.CreateElement("div");
                     asideContainer.SetAttribute("class", "asideContainer");
                     description.ParentNode.ParentNode.InsertAfter(
@@ -2512,12 +2512,9 @@ namespace Bloom.Publish.Epub
             {
                 if (img.HasClass("licenseImage") || img.HasClass("branding"))
                     continue;
-                div =
-                    img.SelectSingleNode(
-                        "parent::div[contains(concat(' ',@class,' '),' bloom-imageContainer ')]"
-                    ) as SafeXmlElement;
+                div = img.ParentWithClass("bloom-canvas");
                 // Typically by this point we've converted the image descriptions into asides whose container is the next
-                // sibling of the image container. Set Aria Accessibility stuff for them.
+                // sibling of the bloom-canvas. Set Aria Accessibility stuff for them.
                 var asideContainer = div?.NextSibling as SafeXmlElement;
                 if (
                     asideContainer != null

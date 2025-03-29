@@ -257,7 +257,7 @@ namespace BloomTests.Publish
 				<div class='bloom-editable Title-On-Cover-style' lang='es' contenteditable='true' data-book='bookTitle'><p>Contando</p></div>
 				<div class='bloom-editable Title-On-Cover-style' lang='fr' contenteditable='true' data-book='bookTitle'><p>Compte</p></div>
 			</div>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				<img data-book='coverImage' src='aor_ara008.png' data-copyright='Copyright SIL International 2009' data-creator='' data-license='cc-by-sa' alt=''></img>
 				<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement' data-default-languages='auto' data-book='coverImageDescription'>
 					<div data-languagetipcontent='English' role='textbox' class='bloom-editable bloom-content1 bloom-visibility-code-on ImageDescriptionEdit-style' contenteditable='true' lang='en'><p></p></div>

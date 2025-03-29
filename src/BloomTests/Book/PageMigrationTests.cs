@@ -73,7 +73,7 @@ namespace BloomTests.Book
             SetDom(
                 @"<div class='bloom-page' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398382;426e78a9-34d3-47f1-8355-ae737470bb6e' id='thePage'>
 			   <div class='marginBox'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
 					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
 						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable normal-style bloom-content1' contenteditable='true' lang='en'>
 							There was an old man called Bilanga who was very tall and also not yet married.
@@ -146,7 +146,7 @@ namespace BloomTests.Book
 							Tok Pisin in first block
 						</div>
 					</div>
-					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
 					<div class='bloom-translationGroup bloom-trailingElement normal-style'>
 						<div class='bloom-editable normal-style' contenteditable='true' lang='en'>
 							There was an old man called Bilanga who was very tall and also not yet married.
@@ -214,7 +214,7 @@ namespace BloomTests.Book
             SetDom(
                 @"<div class='bloom-page' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398385' id='thePage'>
 			   <div class='marginBox'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
 				</div>
 			</div>
 			"
@@ -248,7 +248,7 @@ namespace BloomTests.Book
             SetDom(
                 @"<div class='bloom-page' data-pagelineage='5dcd48df-e9ab-4b07-afd4-6a24d0398382' id='thePage'>
 			   <div class='marginBox'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
 					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
 						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable normal-style bloom-content1' contenteditable='true' lang='en'>
 							There was an old man called Bilanga who was very tall and also not yet married.
@@ -275,7 +275,7 @@ namespace BloomTests.Book
             SetDom(
                 @"<div class='bloom-page' id='thePage'>
 			   <div class='marginBox'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
 					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
 						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable normal-style bloom-content1' contenteditable='true' lang='en'>
 							There was an old man called Bilanga who was very tall and also not yet married.
@@ -357,7 +357,7 @@ namespace BloomTests.Book
             SetDom(
                 @"<div class='bloom-page A4Landscape' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398385' id='thePage'>
 			   <div class='marginBox'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
 				</div>
 			</div>
 			"
@@ -384,7 +384,7 @@ namespace BloomTests.Book
             SetDom(
                 @"<div class='bloom-page A4Landscape foobar' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398385' id='thePage'>
 			   <div class='marginBox'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
 				</div>
 			</div>
 			"
@@ -407,7 +407,7 @@ namespace BloomTests.Book
             SetDom(
                 @"<div class='foobar' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398385' id='thePage'>
 			   <div class='marginBox'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
 				</div>
 			</div>
 			"
@@ -430,7 +430,7 @@ namespace BloomTests.Book
             SetDom(
                 @"<div class='foobar imageOnTop' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398385' id='thePage'>
 			   <div class='marginBox'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
 				</div>
 			</div>
 			"
@@ -458,7 +458,7 @@ namespace BloomTests.Book
             SetDom(
                 @"<div class='imageOnTop'  data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='thePage'>
 			   <div class='marginBox'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
 				</div>
 			</div>
 			"
@@ -485,7 +485,7 @@ namespace BloomTests.Book
             SetDom(
                 @"<div class='imageOnTop'  data-page='' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='thePage'>
 			   <div class='marginBox'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
 				</div>
 			</div>
 			"
@@ -508,7 +508,7 @@ namespace BloomTests.Book
             SetDom(
                 @"<div class='bloom-page' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='thePage'>
 			   <div class='marginBox'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
 					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
 						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable BigWords-style bloom-content1' contenteditable='true' lang='en'>
 							There was an old man called Bilanga who was very tall and also not yet married.
@@ -540,7 +540,7 @@ namespace BloomTests.Book
             SetDom(
                 @"<div class='bloom-page DeviceLandscape' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='prevPage'>
 			   <div class='marginBox'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img data-license='cc-by-nc' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
 					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
 						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable BigWords-style bloom-content1' contenteditable='true' lang='en'>
 							Different text in first para.
@@ -550,7 +550,7 @@ namespace BloomTests.Book
 			</div>
 <div class='DeviceLandscape bloom-page side-left' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='thePage'>
 			   <div class='marginBox'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
+					<div class='bloom-canvas bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
 					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
 						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable BigWords-style bloom-content1' contenteditable='true' lang='en'>
 							There was an old man called Bilanga who was very tall and also not yet married.
@@ -589,7 +589,7 @@ namespace BloomTests.Book
 			  <div class='split-pane horizontal-percent'>
 				<div style='bottom: 30%' class='split-pane-component position-top'>
 				  <div class='split-pane-component-inner'>
-					<div class='bloom-imageContainer bloom-leadingElement'><img src='placeHolder.png' alt='Could not load the picture'/>
+					<div class='bloom-canvas bloom-leadingElement'><img src='placeHolder.png' alt='Could not load the picture'/>
 					</div>
 				  </div>
 				</div>
@@ -713,10 +713,7 @@ namespace BloomTests.Book
                 );
             AssertThatXmlIn
                 .Dom(book.RawDom)
-                .HasSpecifiedNumberOfMatchesForXpath(
-                    ".//div[contains(@class, 'bloom-imageContainer')]",
-                    2
-                );
+                .HasSpecifiedNumberOfMatchesForXpath(".//div[contains(@class, 'bloom-canvas')]", 2);
             AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(".//img", 2);
             VerifyImage(book, 0, "blah.png", 423, 567); // Review: I'm a bit surprised it keeps the old sizes
             VerifyImage(book, 1, "something.png", 95, 107);
@@ -818,14 +815,14 @@ namespace BloomTests.Book
             int height
         )
         {
-            var div = book.RawDom.SafeSelectNodes(
-                ".//div[contains(@class, 'bloom-imageContainer')]"
-            )[index];
+            var div = book.RawDom.SafeSelectNodes(".//div[contains(@class, 'bloom-canvas')]")[
+                index
+            ];
             var images = div.SafeSelectNodes("img");
             Assert.That(
                 images,
                 Has.Length.EqualTo(1),
-                "should only be one image in an image container"
+                "should only be one image in a bloom-canvas"
             );
             var img = (SafeXmlElement)images[0];
             Assert.That(img.GetAttribute("src"), Is.EqualTo(imageName));
@@ -848,7 +845,7 @@ namespace BloomTests.Book
 
         string MakeBloomImageGroup(string name, int width, int height)
         {
-            return @"<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: "
+            return @"<div class='bloom-canvas bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: "
                 + width
                 + @"px; height: "
                 + height
@@ -937,7 +934,7 @@ namespace BloomTests.Book
             return book;
         }
 
-        // Enhance: if there are ever cases where there are multiple image containers to migrate, test this.
+        // Enhance: if there are ever cases where there are multiple bloom-canvases to migrate, test this.
         // Enhance: if there are ever cases where it is possible not to have exactly corresponding parent elements (e.g., migrating a page with
         // one translation group to one with two), test this.
         // The current intended behavior is to copy the corresponding ones, leave additional destination elements unchanged, and discard

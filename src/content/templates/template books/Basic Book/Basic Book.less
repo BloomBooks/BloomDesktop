@@ -22,7 +22,7 @@ generic*/
         left: 0;
     }
 
-    .bloom-imageContainer {
+    .bloom-canvas {
         .SetHeightWithPercentMinusConstant(
             45%,
             var(--multilingual-editable-vertical-gap)
@@ -44,7 +44,7 @@ generic*/
     }
     .bloom-bilingual& {
         @ImageHeight: 32%;
-        .bloom-imageContainer {
+        .bloom-canvas {
             top: 33%;
             height: @ImageHeight;
             margin-top: 5px;
@@ -64,7 +64,7 @@ generic*/
 
     .bloom-trilingual& {
         @ImageHeight: 24%;
-        .bloom-imageContainer {
+        .bloom-canvas {
             top: calc(~"13px + @{ImageHeight}");
             height: @ImageHeight;
         }
@@ -83,7 +83,7 @@ generic*/
 }
 
 .nospecidalmovement_imageOnTop {
-    .bloom-imageContainer {
+    .bloom-canvas {
         .SetHeightWithPercentMinusConstant(
             45%,
             var(--multilingual-editable-vertical-gap)
@@ -125,7 +125,7 @@ generic*/
     //REVIEW .Common-SeparateMultilingualEditables(0);
 
     // ----- IMAGE ------
-    .bloom-imageContainer {
+    .bloom-canvas {
         width: 100%;
         height: 30%;
         position: absolute;
@@ -179,7 +179,7 @@ generic*/
 }
 
 .imageOnBottom {
-    .bloom-imageContainer {
+    .bloom-canvas {
         .SetHeightWithPercentMinusConstant(
             49%,
             var(--multilingual-editable-vertical-gap)
@@ -217,7 +217,7 @@ generic*/
     }
 }
 .imageWholePage {
-    .bloom-imageContainer {
+    .bloom-canvas {
         width: 100%;
         height: 100%;
     }
@@ -241,7 +241,7 @@ in javascript. Search for 'bloom-centerContentVertically'.
         .bloom-translationGroup {
             height: 100% - (@PercentForImage + 3%);
         }
-        .bloom-imageContainer {
+        .bloom-canvas {
             height: @PercentForImage;
         }
         .bloom-content1 {

@@ -42,6 +42,7 @@ import {
 } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { splitIntoGraphemes } from "../../../utils/textUtils";
 import { kCanvasElementClass } from "../overlay/canvasElementUtils";
+import { kBloomCanvasSelector } from "../../js/bloomImages";
 
 export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> = props => {
     const promptL10nId = props.prompt?.getAttribute("data-caption-l10nid");
@@ -447,7 +448,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         // get lost.
         newBubbles.forEach((newDraggable: HTMLElement) => {
             theOneCanvasElementManager!.refreshCanvasElementEditing(
-                newDraggable.closest(".bloom-imageContainer") as HTMLElement,
+                newDraggable.closest(kBloomCanvasSelector) as HTMLElement,
                 new Bubble(newDraggable),
                 true, // attach events
                 false // don't make it active.

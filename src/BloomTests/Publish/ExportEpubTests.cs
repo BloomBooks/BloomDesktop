@@ -189,7 +189,7 @@ namespace BloomTests.Publish
         )
         {
             string extraContentOutsideTranslationGroup =
-                @"<div title='image1.png' class='bloom-imageContainer'>
+                @"<div title='image1.png' class='bloom-canvas'>
 					<img src='image1.png' />
 					<div class='bloom-translationGroup bloom-imageDescription'>
 						<div class='bloom-editable bloom-contentNational2 bloom-visibility-code-on' lang='fr'>
@@ -209,7 +209,7 @@ namespace BloomTests.Publish
             if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
             {
                 extraContentOutsideTranslationGroup =
-                    @"<div title='image1.png' class='bloom-imageContainer'>
+                    @"<div title='image1.png' class='bloom-canvas'>
 					<img src='image1.png' />
 					<div class='bloom-translationGroup bloom-imageDescription'>
 						<div class='bloom-editable bloom-contentNational2 bloom-visibility-code-on audio-sentence' id='frdescguid'  lang='fr'>
@@ -2779,7 +2779,7 @@ namespace BloomTests.Publish
         {
             var book = SetupBookLong(
                 $@"<div class='split-pane-component-inner'>
-  <div data-initialrect='0.0449438202247191 0.1414790996784566 0.6825842696629213 0.6816720257234726' style='' data-finalrect='0.3455056179775281 0.21221864951768488 0.49719101123595505 0.4983922829581994' class='bloom-imageContainer bloom-leadingElement'>
+  <div data-initialrect='0.0449438202247191 0.1414790996784566 0.6825842696629213 0.6816720257234726' style='' data-finalrect='0.3455056179775281 0.21221864951768488 0.49719101123595505 0.4983922829581994' class='bloom-canvas bloom-leadingElement'>
   <img data-license='cc-by-nc-nd' data-creator='Sue Newland' data-copyright='Copyright © 2018, Sue Newland' src='DSC08193.png' alt='An eagle taking off.' height='238' width='357' id='bookfig1' aria-describedby='figdesc1' />
   </div>
   <aside class='imageDescription' id='figdesc1'>

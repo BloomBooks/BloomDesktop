@@ -51,7 +51,9 @@ textarea,
 
 // Centers the img in the container making it as large as possible while preserving aspect ratio
 // (for all current pages, which currently have a child img element)
-.bloom-imageContainer img {
+// We don't need this for bloom-canvas in edit mode, but might still in publishing
+.bloom-imageContainer img,
+.bloom-canvas img {
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -59,13 +61,13 @@ textarea,
         object-fit: cover; // if we don't have the proportions exactly right, object-fit:"contain" will make black borders
     }
 }
-.bloom-imageContainer.bloom-imageObjectFit-cover {
+.bloom-canvas.bloom-imageObjectFit-cover {
     background-size: cover;
 }
 
 // A rule elsewhere says that images in image containers should be object-fit:contain
 // and height:100%. That's necessary for images that haven't been converted to 6.1 mode,
-// where the imageContainer is the size of the image, so the browser will put it where
+// where the image container is the size of the image, so the browser will put it where
 // older bloom's intended.
 // On the other hand we must prevent it for cropped images, where we explicitly position
 // the image to produce the cropping.
@@ -82,13 +84,13 @@ textarea,
 }
 
 // Now that we have canvas element elements, we don't want to show the placeholder flower underneath them.
-.bloom-imageContainer.bloom-has-canvas-element > img[src="placeHolder.png"] {
+.bloom-canvas.bloom-has-canvas-element > img[src="placeHolder.png"] {
     display: none;
 }
 
 // overridden if it is also nested in bloom-showImageDescriptions, but this can't be shared,
 // because we can't use display:flex in epubs.
-.bloom-imageContainer .bloom-imageDescription {
+.bloom-canvas .bloom-imageDescription {
     display: none;
 }
 

@@ -19,7 +19,11 @@ import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward"
 // MUI thinks of this icon as "Texture", but we're using it for commands that affect the background image.
 import { default as BackgroundIcon } from "@mui/icons-material/Texture";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
-import { doImageCommand, getImageUrlFromImageContainer } from "./bloomImages";
+import {
+    doImageCommand,
+    getImageUrlFromImageContainer,
+    kImageContainerClass
+} from "./bloomImages";
 import {
     doVideoCommand,
     findNextVideoContainer,
@@ -81,7 +85,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     menuAnchorPosition?: { left: number; top: number };
 }> = props => {
     const imgContainer = props.canvasElement.getElementsByClassName(
-        "bloom-imageContainer"
+        kImageContainerClass
     )[0];
     const hasImage = !!imgContainer;
     const img = imgContainer?.getElementsByTagName("img")[0];
@@ -315,7 +319,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                     onClick={_ => {
                                         if (!props.canvasElement) return;
                                         const imgContainer = props.canvasElement.getElementsByClassName(
-                                            "bloom-imageContainer"
+                                            kImageContainerClass
                                         )[0] as HTMLElement;
                                         if (!imgContainer) return;
                                         doImageCommand(
@@ -335,7 +339,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                     onClick={_ => {
                                         if (!props.canvasElement) return;
                                         const imgContainer = props.canvasElement.getElementsByClassName(
-                                            "bloom-imageContainer"
+                                            kImageContainerClass
                                         )[0] as HTMLElement;
                                         if (!imgContainer) return;
                                         doImageCommand(
@@ -710,7 +714,7 @@ function addImageMenuOptions(
     setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
 ) {
     const imgContainer = canvasElement.getElementsByClassName(
-        "bloom-imageContainer"
+        kImageContainerClass
     )[0] as HTMLElement;
 
     const isCropped = !!img.style.width;
@@ -790,7 +794,7 @@ function addImageMenuOptions(
 }
 function pasteLink(canvasElement: HTMLElement) {
     const imgContainer = canvasElement.getElementsByClassName(
-        "bloom-imageContainer"
+        kImageContainerClass
     )[0];
 
     getHyperlinkFromClipboard(url => {

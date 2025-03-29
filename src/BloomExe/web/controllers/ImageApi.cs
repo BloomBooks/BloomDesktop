@@ -372,7 +372,7 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Get a json of stats about the image. It is used to populate a tooltip when you hover over an image container
+        /// Get a json of stats about the image. It is used to populate a tooltip when you hover over a bloom-canvas
         /// </summary>
         private void HandleImageInfo(ApiRequest request)
         {

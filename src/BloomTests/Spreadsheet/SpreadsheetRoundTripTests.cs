@@ -118,7 +118,7 @@ namespace BloomTests.Spreadsheet
             <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
                 <div class=""split-pane-component position-top"">
                     <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                        <div class=""bloom-imageContainer bloom-leadingElement"" title=""Name: brain1.jpg Size: 68.62 kb Dots: 1100 x 880 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 260 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI.""><img src=""brain1.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                        <div class=""bloom-canvas bloom-leadingElement"" title=""Name: brain1.jpg Size: 68.62 kb Dots: 1100 x 880 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 260 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI.""><img src=""brain1.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
                     </div>
                 </div>
 
@@ -172,7 +172,7 @@ namespace BloomTests.Spreadsheet
                     <p></p>
                 </div>
             </div>
-			<div class=""bloom-imageContainer""><img src=""placeHolder.png""></img></div>
+			<div class=""bloom-canvas""><img src=""placeHolder.png""></img></div>
 			<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"" data-test-id=""tg2"">
                 <div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""español"" lang=""es"" contenteditable=""true"">
                     <p>This should round trip to the second group.</p>
