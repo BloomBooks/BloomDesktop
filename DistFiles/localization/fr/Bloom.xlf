@@ -357,9 +357,9 @@
         <target xml:lang="fr" state="final">Il y a eu un problème lors de la sauvegarde. Veuillez retourner à la page précédente et assurez-vous que ce soit correct.</target>
         <note>ID: Browser.ProblemSaving</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
+      <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions" approved="yes">
         <source xml:lang="en">About Bloom Subscriptions</source>
-        <target xml:lang="fr" state="translated">À propos des abonnements Bloom</target>
+        <target xml:lang="fr" state="final">À propos des abonnements Bloom</target>
         <note>ID: CollectionSettingsDialog.AboutBloomSubscriptions</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
@@ -665,9 +665,9 @@
         <target xml:lang="fr" state="final">Province</target>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.RequiresSubscription_ToolTip_" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.RequiresSubscription_ToolTip_" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
-        <target xml:lang="fr" state="translated">Pour utiliser cette fonctionnalité, il vous faudra un abonnement Bloom.</target>
+        <target xml:lang="fr" state="final">Pour utiliser cette fonctionnalité, il vous faudra un abonnement Bloom.</target>
         <note>ID: CollectionSettingsDialog.RequiresSubscription_ToolTip_</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart" approved="yes">
@@ -1030,9 +1030,9 @@
         <target xml:lang="fr" state="final">Retour</target>
         <note>ID: Common.BackButton</note>
       </trans-unit>
-      <trans-unit id="Common.BloomSubscriptionFeature">
+      <trans-unit id="Common.BloomSubscriptionFeature" approved="yes">
         <source xml:lang="en">Bloom Subscription Feature</source>
-        <target xml:lang="fr" state="translated">Fonctionnalité avec Abonnement Bloom</target>
+        <target xml:lang="fr" state="final">Fonctionnalité avec Abonnement Bloom</target>
         <note>ID: Common.BloomSubscriptionFeature</note>
       </trans-unit>
       <trans-unit id="Common.Cancel" approved="yes">
@@ -1104,9 +1104,9 @@
         <target xml:lang="fr" state="final">Terminé</target>
         <note>ID: Common.Done</note>
       </trans-unit>
-      <trans-unit id="Common.SubscriptionRequired">
+      <trans-unit id="Common.SubscriptionRequired" approved="yes">
         <source xml:lang="en">Subscription Required</source>
-        <target xml:lang="fr" state="translated">Abonnement Requis</target>
+        <target xml:lang="fr" state="final">Abonnement Requis</target>
         <note>ID: Common.SubscriptionRequired</note>
       </trans-unit>
       <trans-unit id="Common.Error" approved="yes">
@@ -1654,14 +1654,14 @@
         <target xml:lang="fr" state="final">Cette phrase est trop longue pour ce niveau.</target>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
       </trans-unit>
-      <trans-unit id="EditTab.SubscriptionEnabled" sil:dynamic="true">
+      <trans-unit id="EditTab.SubscriptionEnabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Your subscription includes this feature.</source>
-        <target xml:lang="fr" state="translated">Votre abonnement comprend cette fonctionnalité.</target>
+        <target xml:lang="fr" state="final">Votre abonnement comprend cette fonctionnalité.</target>
         <note>ID: EditTab.SubscriptionEnabled</note>
       </trans-unit>
-      <trans-unit id="EditTab.SubscriptionSettingsButton" sil:dynamic="true">
+      <trans-unit id="EditTab.SubscriptionSettingsButton" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom Subscription Settings</source>
-        <target xml:lang="fr" state="translated">Paramètres pour Abonnement Bloom</target>
+        <target xml:lang="fr" state="final">Paramètres pour Abonnement Bloom</target>
         <note>ID: EditTab.SubscriptionSettingsButton</note>
       </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true" approved="yes">
@@ -2264,9 +2264,9 @@
         <target xml:lang="fr" state="final">Coller une page</target>
         <note>ID: EditTab.PastePage</note>
       </trans-unit>
-      <trans-unit id="EditTab.RequiresSubscription" sil:dynamic="true">
+      <trans-unit id="EditTab.RequiresSubscription" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
-        <target xml:lang="fr" state="translated">Pour utiliser cette fonctionnalité, il vous faudra un abonnement Bloom.</target>
+        <target xml:lang="fr" state="final">Pour utiliser cette fonctionnalité, il vous faudra un abonnement Bloom.</target>
         <note>ID: EditTab.RequiresSubscription</note>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true" approved="yes">
@@ -4853,19 +4853,19 @@
         <target xml:lang="fr" state="final">Publier</target>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage">
+      <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage" approved="yes">
         <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
-        <target xml:lang="fr" state="translated">La page {0} est la première page qui utilise des éléments de Superposition.</target>
+        <target xml:lang="fr" state="final">La page {0} est la première page qui utilise des éléments de Superposition.</target>
         <note>ID: PublishTab.PublishRequiresSubscription.FirstOverlayPage</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.Options">
+      <trans-unit id="PublishTab.PublishRequiresSubscription.Options" approved="yes">
         <source xml:lang="en">In order to publish your book, you need to either have an active Bloom Subscription, or remove the Overlay elements from your book.</source>
-        <target xml:lang="fr" state="translated">Afin de publier votre livre, il faut avoir un Abonnement Bloom Enterprise ou bien supprimer les éléments de Superposition de votre livre.</target>
+        <target xml:lang="fr" state="final">Afin de publier votre livre, il faut avoir un Abonnement Bloom Enterprise ou bien supprimer les éléments de Superposition de votre livre.</target>
         <note>ID: PublishTab.PublishRequiresSubscription.Options</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.ProblemExplanation">
+      <trans-unit id="PublishTab.PublishRequiresSubscription.ProblemExplanation" approved="yes">
         <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Subscription feature.</source>
-        <target xml:lang="fr" state="translated">Le livre qui porte le titre '{0}' ajoute de nouveaux éléments superposés. Ces éléments superposés sont une fonctionnalité seulement avec Bloom Entreprise.</target>
+        <target xml:lang="fr" state="final">Le livre qui porte le titre '{0}' ajoute de nouveaux éléments superposés. Ces éléments superposés sont une fonctionnalité seulement avec Bloom Entreprise.</target>
         <note>ID: PublishTab.PublishRequiresSubscription.ProblemExplanation</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute" approved="yes">
@@ -6143,9 +6143,9 @@
         <target xml:lang="fr" state="final">Cette écriture a besoin d’un interligne particulier</target>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
       </trans-unit>
-      <trans-unit id="Common.BloomSubscription">
+      <trans-unit id="Common.BloomSubscription" approved="yes">
         <source xml:lang="en">Bloom Subscription</source>
-        <target xml:lang="fr" state="translated">Abonnement Bloom</target>
+        <target xml:lang="fr" state="final">Abonnement Bloom</target>
         <note>ID: Common.BloomSubscription</note>
       </trans-unit>
       <!-- Most subscription labels are in the BloomLowPriority. What we want here
