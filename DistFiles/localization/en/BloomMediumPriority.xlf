@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DragImageInstructions">
         <source xml:lang="en">Place the images anywhere on the scene, and the targets where the student should put them.</source>
-        <note>ID: EditTab.Toolbox.DragActivity.DragImagesnstructions</note>
+        <note>ID: EditTab.Toolbox.DragActivity.DragImageInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTarget">
         <source xml:lang="en">Draggable Target</source>
@@ -74,7 +74,7 @@
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.EditWordToSpell" translate="no">
-        <source xml:lang="en">Edit word to spell</source>
+        <source xml:lang="en">Edit Word to Spell</source>
         <note>ID: EditTab.Toolbox.DragActivity.EditWordToSpell</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Instructions">
