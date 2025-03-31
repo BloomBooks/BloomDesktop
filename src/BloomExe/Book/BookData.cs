@@ -2094,8 +2094,6 @@ namespace Bloom.Book
                     sb.Append("{");
                     foreach (var langForm in title.TextAlternatives.Forms)
                     {
-                        if (PublishHelper.IsUnpublishableLanguage(langForm.WritingSystemId))
-                            continue; // skip unpublishable titles (BL-14339)
                         if (sb.Length > 1)
                             sb.Append(",");
                         sb.Append("\"");
