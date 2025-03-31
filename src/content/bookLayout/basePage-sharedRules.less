@@ -51,15 +51,19 @@ textarea,
 
 // Centers the img in the container making it as large as possible while preserving aspect ratio
 // (for all current pages, which currently have a child img element)
-// We don't need this for bloom-canvas in edit mode, but might still in publishing
-.bloom-imageContainer img,
-.bloom-canvas img {
+// We don't need this for bloom-canvas in edit mode, but might still in publishing or preview,
+// where background images are not necessarily inside background canvas elements, but
+// are (or may be) direct children of the bloom-canvas.
+// I don't think we need the child restrictions here, since we currently want the rule to apply
+// to all images (and image containers live inside bloom-canvases), but the intent
+// is to target the direct children of both bloom-canvases and bloom-imageContainers,
+// so I think it's better to make that  explicit.
+// (Note that the height rule is overridden elsewhere for images that are cropped.)
+.bloom-imageContainer > img,
+.bloom-canvas > img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    &.bloom-imageObjectFit-cover {
-        object-fit: cover; // if we don't have the proportions exactly right, object-fit:"contain" will make black borders
-    }
 }
 .bloom-canvas.bloom-imageObjectFit-cover {
     background-size: cover;

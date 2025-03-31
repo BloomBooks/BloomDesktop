@@ -85,7 +85,7 @@ function setupLayoutMode() {
     });
     // Text should not be editable in layout mode
     $(".bloom-editable[contentEditable=true]").removeAttr("contentEditable");
-    // Images cannot be changed (other than growing/shrinking with container) in layout mode
+    // Images cannot be changed (other than growing/shrinking with their containing bloom-canvas) in layout mode
     // I think this targets the mouseenter/leave events that add and remove the "hoverUp" class and
     // the change image button whose visibility that controls. We don't want that button to show
     // while we are in layout mode.

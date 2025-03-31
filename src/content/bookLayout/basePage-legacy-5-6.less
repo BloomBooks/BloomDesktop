@@ -43,13 +43,17 @@ textarea,
     background-repeat: no-repeat;
     background-position: center;
 }
-// needed in publication, and for pages not yet migrated to background-canvas-image
-.bloom-canvas img {
+// the bloom-canvas case is new (not from legacy), but needed now that we're migrating
+// outer ICs to bloom-canvas, both in publication, and for pages not yet migrated to background-canvas-image
+// The IC rule is limited to direct children in our current stylesheet, but keeping this one as much like
+// legacy as I can. I don't think ICs ever have other child img elements, so it shouldn't make a difference.
+.bloom-canvas > img,
+.bloom-imageContainer img {
     width: 100%;
     height: 100%;
     object-fit: contain;
 }
-.bloom-canvas img.bloom-imageObjectFit-cover {
+.bloom-canvas.bloom-imageObjectFit-cover > img {
     object-fit: cover;
 }
 .bloom-canvas.bloom-imageObjectFit-cover {

@@ -1116,7 +1116,7 @@ namespace Bloom.Book
                 BloomDesktopMinVersion = "6.2",
                 BloomReaderMinVersion = "3.3",
                 // This is used for all images so will nearly always succeed fast.
-                XPath = $"//div[contains(@class,'bloom-canvas') ]"
+                XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
             }
         };
 
@@ -3654,8 +3654,10 @@ namespace Bloom.Book
             foreach (var svgElement in comicalSvgs)
             {
                 var bloomCanvas = svgElement.ParentNode; // bloom-canvas div (not gonna be null)
+                // Since this migration comes before the canvas-element migration, we have to look for the
+                // old class here. Not using any constant, because this should never change, however we later rename things.
                 var canvasElementDivs = bloomCanvas.SafeSelectNodes(
-                    "div[contains(@class, '" + HtmlDom.kCanvasElementClass + "')]"
+                    "div[contains(@class, 'bloom-textOverPicture')]"
                 );
                 if (canvasElementDivs == null) // unlikely, but maybe possible
                     continue;

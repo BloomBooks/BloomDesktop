@@ -155,6 +155,9 @@ mixin standard-cover-contents
 //- so that the contents will survive changes to xmatter (and updates in bringBookUpToDate)
 mixin standard-cover-image
 	.bloom-canvas
+		//- We're using the old structure with the img a direct child of the bloom-canvas,
+		//- because we can't set the right size of the new background-image structure until
+		//- we've loaded the page into a browser.
 		img(data-book="coverImage", src="placeHolder.png")&attributes(attributes)
 		+field-cover-image("auto").bloom-imageDescription.bloom-trailingElement
 
