@@ -77,9 +77,10 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
             return;
         } else {
             if (
-                project !== "" &&
+                project &&
                 project !== "local-community" &&
-                defaultBookshelfUrlKey !== ""
+                defaultBookshelfUrlKey &&
+                defaultBookshelfUrlKey !== "none"
             ) {
                 setBookshelfHasProblem(
                     validBookshelves.filter(

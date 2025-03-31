@@ -112,9 +112,12 @@ namespace Bloom.web.controllers
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
-                        var descriptor = _collectionSettings.Subscription.Descriptor;
+                        var subscriptionDescriptor = _collectionSettings.Subscription.Descriptor;
                         var defaultBookshelfUrlKey = _collectionSettings.DefaultBookshelf;
-                        request.ReplyWithJson(new { descriptor, defaultBookshelfUrlKey });
+                        // Note that these variable names flow through as the object keys and must match the names expected by the client.
+                        request.ReplyWithJson(
+                            new { subscriptionDescriptor, defaultBookshelfUrlKey }
+                        );
                     }
                     else
                     {
