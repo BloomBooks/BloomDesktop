@@ -136,6 +136,33 @@ export class CanvasElementManager {
         // Comical some problems if we try to set the actual size smaller.
         // (I think I saw background gradients behaving strangely, for example.)
         let newHeight = Math.max(box.clientHeight + overflowY + 4, 27);
+        // Get any siblings of our argument that are also visible. (Typically siblings are the
+        // other bloom-editables in the same bloom-translationGroup, and are all display:none.)
+        const visibleSiblings = Array.from(box.parentElement!.children).filter(
+            child => {
+                if (child === box) return false; // skip the box itself
+                const computedStyle = window.getComputedStyle(child);
+                return (
+                    computedStyle.display !== "none" &&
+                    computedStyle.visibility !== "hidden"
+                );
+            }
+        );
+        if (visibleSiblings.length > 0) {
+            // This is very rare. As of March 2025, the only known case is in Games, where we sometimes
+            // make the English of a prompt visible until the desired langauge is typed. When it happens,
+            // we'll make sure the canvas element is at least high enough to show the tallest sibling, but without
+            // using the precision we do for just one child.
+            // More care might be needed if the parent might show a format cog or language label (even as :after)...
+            // anything bottom-aligned will interfere with shrinking. Currently we don't do anything like that
+            // in canvas elements.
+            newHeight = Math.max(
+                newHeight,
+                ...visibleSiblings.map(
+                    child => child.clientTop + child.clientHeight
+                )
+            );
+        }
         if (
             newHeight < wrapperBox.clientHeight &&
             newHeight > wrapperBox.clientHeight - 4
