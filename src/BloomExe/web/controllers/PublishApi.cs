@@ -315,7 +315,8 @@ namespace Bloom.web.controllers
                                 thumbnail.Path,
                                 256,
                                 256,
-                                _thumbnailBackgroundColor
+                                _thumbnailBackgroundColor,
+                                padImageToRequestedSize: false
                             );
                             request.ReplyWithImage(thumbnail.Path);
                         }
@@ -438,7 +439,7 @@ namespace Bloom.web.controllers
                             .BookSelection
                             .CurrentSelection
                             .TitleBestForUserDisplay,
-                        numberOfFirstPageWithOverlay = _publishModel.BookSelection.CurrentSelection.GetNumberOfFirstPageWithOverlay(),
+                        numberOfFirstPageWithCanvasElement = _publishModel.BookSelection.CurrentSelection.GetNumberOfFirstPageWithCanvasElement(),
                     }
                 )
             );

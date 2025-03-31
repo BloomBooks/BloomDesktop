@@ -4,7 +4,13 @@
 }*/
 @import "../branding-base.less";
 
-.outsideBackCover img.branding {
-    margin-top: 4px;
-    width: 10cm;
+[data-book="outside-back-cover-branding-bottom-html"] {
+    display: flex;
+    align-items: center;
+    gap: 10px; // space between the logo and the {personalization} text
+
+    img.branding {
+        margin-top: 4px;
+        width: 10cm;
+    }
 }

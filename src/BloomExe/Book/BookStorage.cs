@@ -10,8 +10,6 @@ using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
-using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
@@ -107,6 +105,10 @@ namespace Bloom.Book
         void MigrateToLevel3PutImgFirst();
 
         void MigrateToLevel4UseAppearanceSystem();
+        void MigrateToLevel5CanvasElement();
+        void MigrateToLevel6LegacyActivities();
+
+        void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
 
@@ -150,7 +152,7 @@ namespace Bloom.Book
         internal const string kMaxBloomFormatVersionToRead = "2.1";
 
         /// <summary>
-        /// These constants are not currently actually used in code, but indicate the largest
+        /// These constants indicate the largest
         /// number currently used for some DOM metadata elements that keep track of how much
         /// a book has been migrated.
         /// History of kMaintenanceLevel:
@@ -162,12 +164,15 @@ namespace Bloom.Book
         ///   the DOM and can safely be done in memory. (Later in 6.0 we stopped doing incomplete
         ///   book updates in memory, so this distinction may no longer be helpful.))
         ///   Bloom 6.0  4 = Switched to using a theme (or explicitly using legacy)
+        ///   Bloom 6.2  5 = bloom-textOverPicture became bloom-canvas-element
+        ///   Bloom 6.2  6 = Legacy activities were updated to have data-tool-id="game", class
+        ///     game-theme-legacy, and to give .simple-comprehension-quiz a data-activity.
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 4;
+        public const int kMaintenanceLevel = 6;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -258,7 +263,7 @@ namespace Bloom.Book
             if (useInstalledBranding && relativePath == "branding.css")
             {
                 return BloomFileLocator.GetOptionalBrandingFile(
-                    _collectionSettings.BrandingProjectKey,
+                    _collectionSettings.Subscription.Descriptor,
                     "branding.css"
                 );
             }
@@ -469,6 +474,52 @@ namespace Bloom.Book
             return null;
         }
 
+        private VersionRequirement[] GetBreakingFeatureRequirements()
+        {
+            var featureVersionRequirementJson = Dom.GetMetaValue("FeatureRequirement", "");
+            if (string.IsNullOrEmpty(featureVersionRequirementJson))
+            {
+                return Array.Empty<VersionRequirement>();
+            }
+
+            VersionRequirement[] featureVersionRequirementList = (VersionRequirement[])
+                JsonConvert.DeserializeObject(
+                    featureVersionRequirementJson,
+                    typeof(VersionRequirement[])
+                );
+
+            if (featureVersionRequirementList != null && featureVersionRequirementList.Length >= 1)
+            {
+                return featureVersionRequirementList
+                    .Where(
+                        x => CurrentBloomDesktopVersion() < new Version(x.BloomDesktopMinVersion)
+                    )
+                    .ToArray();
+            }
+
+            return Array.Empty<VersionRequirement>();
+        }
+
+        private static Version CurrentBloomDesktopVersion()
+        {
+            var assemblyVersion = typeof(BookStorage).Assembly?.GetName()?.Version;
+            Version currentBloomDesktopVersion;
+            if (assemblyVersion == null)
+            {
+                currentBloomDesktopVersion = new Version(1, 0);
+            }
+            else
+            {
+                // Make it so that it only compares Major/Minor and doesn't care about different or missing Build or Revision numbers.
+                currentBloomDesktopVersion = new Version(
+                    assemblyVersion.Major,
+                    assemblyVersion.Minor
+                );
+            }
+
+            return currentBloomDesktopVersion;
+        }
+
         /// <summary>
         /// Returns HTML with error message for any features that this book contains which cannot be opened
         /// by this version of Bloom.
@@ -484,108 +535,74 @@ namespace Bloom.Book
         public string GetHtmlMessageIfFeatureIncompatibility()
         {
             // Check if there are any features in this file format (which is readable), but which won't be supported (and have effects bad enough to warrant blocking opening) in this version.
-            var featureVersionRequirementJson = Dom.GetMetaValue("FeatureRequirement", "");
-            if (string.IsNullOrEmpty(featureVersionRequirementJson))
+            var breakingFeatureRequirements = GetBreakingFeatureRequirements();
+
+            // Note: even though versionRequirements is guaranteed non-empty by now, the ones that actually break our current version of Bloom DESKTOP could be empty.
+            if (breakingFeatureRequirements.Any())
             {
-                return "";
-            }
-            VersionRequirement[] featureVersionRequirementList = (VersionRequirement[])
-                JsonConvert.DeserializeObject(
-                    featureVersionRequirementJson,
-                    typeof(VersionRequirement[])
+                string messageNewVersionNeededHeader = LocalizationManager.GetString(
+                    "Errors.NewVersionNeededHeader",
+                    "This book needs a new version of Bloom."
+                );
+                string messageCurrentRunningVersion = String.Format(
+                    LocalizationManager.GetString(
+                        "Errors.CurrentRunningVersion",
+                        "You are running Bloom {0}"
+                    ),
+                    CurrentBloomDesktopVersion()
+                );
+                string messageDownloadLatestVersion = LocalizationManager.GetString(
+                    "Errors.DownloadLatestVersion",
+                    "Upgrade to the latest Bloom (requires Internet connection)"
                 );
 
-            if (featureVersionRequirementList != null && featureVersionRequirementList.Length >= 1)
-            {
-                var assemblyVersion = typeof(BookStorage).Assembly?.GetName()?.Version;
-
-                Version currentBloomDesktopVersion;
-                if (assemblyVersion == null)
+                string messageFeatureRequiresNewerVersion;
+                if (breakingFeatureRequirements.Count() == 1)
                 {
-                    currentBloomDesktopVersion = new Version(1, 0);
+                    var requirement = breakingFeatureRequirements.First();
+                    messageFeatureRequiresNewerVersion =
+                        String.Format(
+                            LocalizationManager.GetString(
+                                "Errors.FeatureRequiresNewerVersionSingular",
+                                "This book requires Bloom {0} or greater because it uses the feature \"{1}\"."
+                            ),
+                            requirement.BloomDesktopMinVersion,
+                            requirement.FeaturePhrase
+                        ) + "<br/>";
                 }
                 else
                 {
-                    // Make it so that it only compares Major/Minor and doesn't care about different or missing Build or Revision numbers.
-                    currentBloomDesktopVersion = new Version(
-                        assemblyVersion.Major,
-                        assemblyVersion.Minor
+                    var sortedRequirements = breakingFeatureRequirements.OrderByDescending(
+                        x => new Version(x.BloomDesktopMinVersion)
                     );
-                }
+                    var highestVersionRequired = sortedRequirements.First().BloomDesktopMinVersion;
 
-                var breakingFeatureRequirements = featureVersionRequirementList.Where(
-                    x => currentBloomDesktopVersion < new Version(x.BloomDesktopMinVersion)
-                );
-
-                // Note: even though versionRequirements is guaranteed non-empty by now, the ones that actually break our current version of Bloom DESKTOP could be empty.
-                if (breakingFeatureRequirements.Any())
-                {
-                    string messageNewVersionNeededHeader = LocalizationManager.GetString(
-                        "Errors.NewVersionNeededHeader",
-                        "This book needs a new version of Bloom."
-                    );
-                    string messageCurrentRunningVersion = String.Format(
+                    messageFeatureRequiresNewerVersion = String.Format(
                         LocalizationManager.GetString(
-                            "Errors.CurrentRunningVersion",
-                            "You are running Bloom {0}"
+                            "Errors.FeatureRequiresNewerVersionPlural",
+                            "This book requires Bloom {0} or greater because it uses the following features:"
                         ),
-                        currentBloomDesktopVersion
-                    );
-                    string messageDownloadLatestVersion = LocalizationManager.GetString(
-                        "Errors.DownloadLatestVersion",
-                        "Upgrade to the latest Bloom (requires Internet connection)"
+                        highestVersionRequired
                     );
 
-                    string messageFeatureRequiresNewerVersion;
-                    if (breakingFeatureRequirements.Count() == 1)
-                    {
-                        var requirement = breakingFeatureRequirements.First();
-                        messageFeatureRequiresNewerVersion =
-                            String.Format(
-                                LocalizationManager.GetString(
-                                    "Errors.FeatureRequiresNewerVersionSingular",
-                                    "This book requires Bloom {0} or greater because it uses the feature \"{1}\"."
-                                ),
-                                requirement.BloomDesktopMinVersion,
-                                requirement.FeaturePhrase
-                            ) + "<br/>";
-                    }
-                    else
-                    {
-                        var sortedRequirements = breakingFeatureRequirements.OrderByDescending(
-                            x => new Version(x.BloomDesktopMinVersion)
-                        );
-                        var highestVersionRequired = sortedRequirements
-                            .First()
-                            .BloomDesktopMinVersion;
-
-                        messageFeatureRequiresNewerVersion = String.Format(
-                            LocalizationManager.GetString(
-                                "Errors.FeatureRequiresNewerVersionPlural",
-                                "This book requires Bloom {0} or greater because it uses the following features:"
-                            ),
-                            highestVersionRequired
-                        );
-
-                        string listItemsHtml = String.Join(
-                            "",
-                            sortedRequirements.Select(x => $"<li>{x.FeaturePhrase}</li>")
-                        );
-                        messageFeatureRequiresNewerVersion += $"<ul>{listItemsHtml}</ul>";
-                    }
-
-                    string message =
-                        $"<strong>{messageNewVersionNeededHeader}</strong><br/><br/><br/>"
-                        + $"{messageCurrentRunningVersion}. {messageFeatureRequiresNewerVersion}<br/><br/>"
-                        +
-                        // If we just embed the URL, since we show this document in a plain browser without any
-                        // of our code loaded (in particular, our linkHandler code in typescript), the browser
-                        // control inside bloom will navigate there, which isn't what we want. The easiest
-                        // way around this is to have an api which does what we want.
-                        $"<a href='/bloom/api/app/showDownloadsPage'>{messageDownloadLatestVersion}</a>";
-
-                    return message;
+                    string listItemsHtml = String.Join(
+                        "",
+                        sortedRequirements.Select(x => $"<li>{x.FeaturePhrase}</li>")
+                    );
+                    messageFeatureRequiresNewerVersion += $"<ul>{listItemsHtml}</ul>";
                 }
+
+                string message =
+                    $"<strong>{messageNewVersionNeededHeader}</strong><br/><br/><br/>"
+                    + $"{messageCurrentRunningVersion}. {messageFeatureRequiresNewerVersion}<br/><br/>"
+                    +
+                    // If we just embed the URL, since we show this document in a plain browser without any
+                    // of our code loaded (in particular, our linkHandler code in typescript), the browser
+                    // control inside bloom will navigate there, which isn't what we want. The easiest
+                    // way around this is to have an api which does what we want.
+                    $"<a href='/bloom/api/app/showDownloadsPage'>{messageDownloadLatestVersion}</a>";
+
+                return message;
             }
 
             return "";
@@ -1042,9 +1059,11 @@ namespace Bloom.Book
                 BloomReaderMinVersion = "1.0",
                 // Bloom now allows comical Captions to have straight line tails, but if we open such a book
                 // in an older version of Bloom which nevertheless has comical, it will give it a normal bubble tail.
-                // This xpath finds a bubble with a "caption" style and a non-empty tail spec.
+                // This xpath finds a canvas element with a "caption" style and a non-empty tail spec.
                 XPath =
-                    "//div[contains(@class,'bloom-textOverPicture') and contains(@data-bubble, '`caption`') and contains(@data-bubble, '`tails`:[{`')]"
+                    "//div[contains(@class,'"
+                    + HtmlDom.kCanvasElementClass
+                    + "') and contains(@data-bubble, '`caption`') and contains(@data-bubble, '`tails`:[{`')]"
             },
             new Feature()
             {
@@ -1056,12 +1075,33 @@ namespace Bloom.Book
             },
             new Feature()
             {
+                FeatureId = "croppedImages",
+                FeaturePhrase = "Cropped images",
+                BloomDesktopMinVersion = "6.1",
+                BloomReaderMinVersion = "1.0",
+                XPath =
+                    "//div[contains(@class,'"
+                    + HtmlDom.kCanvasElementClass
+                    + "')]/div[contains(@class, 'bloom-imageContainer')]/img[contains(@style, 'width') and contains(@style, 'left') ]"
+            },
+            new Feature()
+            {
                 FeatureId = "bloomGames6.2",
                 FeaturePhrase = "Bloom Games added in 6.2",
                 BloomDesktopMinVersion = "6.2",
                 BloomReaderMinVersion = "3.3",
                 XPath =
                     "//div[@data-activity='drag-letter-to-target' or @data-activity='drag-image-to-target' or @data-activity='drag-sort-sentence' ]"
+            },
+            new Feature()
+            {
+                FeatureId = "canvasElement",
+                FeaturePhrase = "6.2 representation of canvas elements",
+                // Plan is to make a special exception to this for late releases of 6.1 and 6.0,
+                // which will know how to reverse the migration.
+                BloomDesktopMinVersion = "6.2",
+                BloomReaderMinVersion = "3.3",
+                XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
             }
         };
 
@@ -1354,7 +1394,9 @@ namespace Bloom.Book
             );
             usedAudioFileNames.AddRange(narrationAudioFileNames);
 
-            audioFilesToDeleteIfNotUsed.ExceptWith(usedAudioFileNames);
+            audioFilesToDeleteIfNotUsed.ExceptWith(
+                usedAudioFileNames.Select(path => GetNormalizedPathForOS(path))
+            );
 
             //Delete any files still in the list
             foreach (var fileName in audioFilesToDeleteIfNotUsed)
@@ -2607,18 +2649,22 @@ namespace Bloom.Book
         /// </summary>
         public void UpdateSupportFiles()
         {
-            Logger.WriteMinorEvent("DEBUG BL-14174 - Starting UpdateSupportFiles()");
-            Logger.WriteMinorEvent($"DEBUG BL-14174 - FolderPath = {FolderPath}");
-
             if (IsStaticContent(FolderPath))
                 return; // don't try to update our own templates, it's a waste and they might be locked.
-            if (IsPathReadonly(FolderPath))
+
+            // Windows doesn't actually care if the folder is readonly. It only cares about the file-level permissions.
+            // And if the files are readonly, we handle that elsewhere. See BloomUnauthorizedAccessException.
+            // Previously, we had an early return, including for Windows, and we ran into issues with
+            // book support files silently not being updated. See BL-14174.
+            // Instead, we now let the update continue on Windows, and we throw an exception
+            // for other environments (not yet used as of Jan 2025).
+            if (!Platform.IsWindows && IsPathReadonly(FolderPath))
             {
                 Logger.WriteEvent(
-                    "Not updating files in folder {0} because the directory is read-only.",
+                    "Can't update files in folder {0} because the directory is read-only.",
                     FolderPath
                 );
-                return;
+                throw new UnauthorizedAccessException();
             }
 
             // We want current shipping versions of these copied into the destination folder always.
@@ -2674,29 +2720,15 @@ namespace Bloom.Book
                     supportFilesToUpdate.Add(file);
             }
 
-            Logger.WriteMinorEvent(
-                $"DEBUG BL-14174 - supportFilesToUpdate = {supportFilesToUpdate}"
-            );
-
             // This will pull them into the book folder.
             foreach (var file in supportFilesToUpdate)
             {
                 var sourcePath = GetSupportingFile(file);
                 var destPath = Path.Combine(FolderPath, file);
                 if (sourcePath == destPath)
-                {
-                    Logger.WriteMinorEvent(
-                        $"DEBUG BL-14174 - skipping copy from {sourcePath} to {destPath}"
-                    );
                     continue; // don't copy from ourselves
-                }
                 if (!string.IsNullOrEmpty(sourcePath) && RobustFile.Exists(sourcePath))
-                {
-                    Logger.WriteMinorEvent(
-                        $"DEBUG BL-14174 - copying from {sourcePath} to {destPath}"
-                    );
                     RobustFile.Copy(sourcePath, destPath, true);
-                }
             }
 
             LoadCurrentBrandingFilesIntoBookFolder();
@@ -2729,7 +2761,7 @@ namespace Bloom.Book
 
         public ExpandoObject BrandingAppearanceSettings =>
             Api.BrandingSettings
-                .GetSettingsOrNull(CollectionSettings.BrandingProjectKey)
+                .GetSettingsOrNull(CollectionSettings.Subscription.Descriptor)
                 ?.Appearance;
 
         // Brandings come with logos and such... we want them in the book folder itself so that they work
@@ -2753,12 +2785,9 @@ namespace Bloom.Book
                     )
                 )
                     return;
-                var key = _collectionSettings.BrandingProjectKey;
-                // I think this is redundant: BrandingProjectKey will be set to 'Default' if we don't have some definite one.
-                // Keeping this for paranoia, in case there's some path I don't know about where that doesn't happen.
-                if (String.IsNullOrEmpty(key))
-                    key = "Default"; // The "default" Branding folder contains the branding-type stuff for non-enterprise books.
-                var brandingFolder = BloomFileLocator.GetBrandingFolder(key);
+                var brandingFolder = BloomFileLocator.GetBrandingFolder(
+                    _collectionSettings.Subscription.BrandingKey
+                );
                 if (String.IsNullOrEmpty(brandingFolder))
                 {
                     // This special "branding" contains a message about being patient until the branding ships.
@@ -2812,7 +2841,7 @@ namespace Bloom.Book
                     null,
                     err,
                     "There was a problem applying the branding: "
-                        + _collectionSettings.BrandingProjectKey,
+                        + _collectionSettings.Subscription.Descriptor,
                     "nonfatal"
                 );
             }
@@ -3299,16 +3328,23 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// if necessary, append a number to make the file name unique within the given folder
+        /// if necessary, append a number to make the file name unique within the given folder.
+        /// name must NOT include an extension. The supplied extension will be added rather than
+        /// replacing any existing extension. (This is to allow names that may contain periods,
+        /// without stripping off whatever follows the period.)
         /// </summary>
         internal static string GetUniqueFileName(string parentPath, string name, string ext)
         {
             int i = 0;
             string suffix = "";
             string result;
+            if (!ext.StartsWith("."))
+                ext = "." + ext;
             do
             {
-                result = Path.ChangeExtension(Path.Combine(parentPath, name + suffix), ext);
+                // Don't use Path.ChangeExtension here. If name happens to have a period, it will remove
+                // everything after it, including suffix, potentially resulting in an infinite loop.
+                result = Path.Combine(parentPath, name + suffix + ext);
                 ++i;
                 suffix = i.ToString(CultureInfo.InvariantCulture);
             } while (RobustFile.Exists(result));
@@ -3604,7 +3640,7 @@ namespace Bloom.Book
             {
                 var container = svgElement.ParentNode; // bloom-imageContainer div (not gonna be null)
                 var textOverPictureDivs = container.SafeSelectNodes(
-                    "div[contains(@class, 'bloom-textOverPicture')]"
+                    "div[contains(@class, '" + HtmlDom.kCanvasElementClass + "')]"
                 );
                 if (textOverPictureDivs == null) // unlikely, but maybe possible
                     continue;
@@ -3625,7 +3661,7 @@ namespace Bloom.Book
                 }
             }
 
-            // Now delete the SVGs that only have bubbles of style 'none'.
+            // Now delete the SVGs that only have canvas elements of style 'none'.
             var dirty = false;
             foreach (var svgElement in comicalSvgs.ToArray())
             {
@@ -3656,10 +3692,10 @@ namespace Bloom.Book
                 return;
 
             // Make sure that in every image container, the first element is the img.
-            // This is important because, since 5.4, we don't use a z-index to put overlays above the base image
-            // (so the overlay image container does not become a stacking context, so we can use
+            // This is important because, since 5.4, we don't use a z-index to put canvas elements above the base image
+            // (so the canvas element image container does not become a stacking context, so we can use
             // z-index on its children to put them above the comicaljs canvas),
-            // which means we depend on the img being first to make sure the overlays are on top of it.
+            // which means we depend on the img being first to make sure the canvas elements are on top of it.
             // (I'm not sure we ever created situations where the img was not first, but now it's vital,
             // so I added this maintenance to make sure of it.)
             var imageContainers = Dom.SafeSelectNodes(
@@ -3846,6 +3882,112 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// This method is a place to do any back migrations that are needed to make a newer
+        /// version of a Bloom book work with this one. Keeping the code that we used in 6.0
+        /// and 6.1, though we won't need it in 6.2 until there is some later version that
+        /// creates such a need.
+        /// If you implement a back-migration, you must also modify GetHtmlMessageIfFeatureIncompatibility
+        /// to not complain if the only breaking changes are ones we can back-migrate.
+        /// </summary>
+        public void DoBackMigrations()
+        {
+            //if (GetMaintenanceLevel() <= kMaintenanceLevel)
+            //    return;
+            //var breakingFeatureRequirements = GetBreakingFeatureRequirements();
+            //// Building a general mechanism here, but this is the only one 6.1 currently
+            //// knows how to do. (Note that this method doesn't get called at all if there
+            //// are breaking feature requirements we don't know how to deal with.)
+            //foreach (var requirement in breakingFeatureRequirements)
+            //{
+            //    // Something like this, with the ID of the feature to be back-migrated,
+            //    // and a function that knows how to do it. (Also fix GetHtmlMessageIfFeatureIncompatibility)
+            //    //if (requirement.FeatureId == "canvasElement")
+            //    //    MigrateBackFromLevel5CanvasElement();
+            //}
+        }
+
+        private void MigrateClassName(string oldClassName, string newClassName)
+        {
+            var elements = Dom.SafeSelectNodes($"//*[contains(@class, '{oldClassName}')]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            foreach (var element in elements)
+            {
+                element.SetAttribute(
+                    "class",
+                    element.GetAttribute("class").Replace(oldClassName, newClassName)
+                );
+            }
+        }
+
+        private void MigrateAttributeName(string oldAttrName, string newAttrName)
+        {
+            var elements = Dom.SafeSelectNodes($"//*[@{oldAttrName}]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            foreach (var element in elements)
+            {
+                element.SetAttribute(newAttrName, element.GetAttribute(oldAttrName));
+                element.RemoveAttribute(oldAttrName);
+            }
+        }
+
+        public void MigrateToLevel5CanvasElement()
+        {
+            if (GetMaintenanceLevel() >= 5)
+                return;
+            MigrateClassName("bloom-textOverPicture", HtmlDom.kCanvasElementClass);
+            MigrateClassName("hasOverlay", "bloom-has-canvas-element");
+            // Note: this is deliberately not inverted in the 6.1 back-migration, since it is
+            // only used in earlier 6.2's.
+            MigrateAttributeName("data-bubble-id", "data-draggable-id");
+            // When we change the ID used for the canvas element tool in the metadata
+            //var metaData = BookMetaData.FromFolder(FolderPath);
+            //var ceTool = metaData.ToolStates.FirstOrDefault(x => x.ToolId == "overlay");
+            //if (ceTool != null)
+            //    ceTool.ToolId = "canvasElement";
+            //if (metaData.CurrentTool == "overlayTool")
+            //    metaData.CurrentTool = "canvasElementTool";
+            //metaData.WriteToFolder(FolderPath);
+            Dom.UpdateMetaElement("maintenanceLevel", "5");
+        }
+
+        public void MigrateToLevel6LegacyActivities()
+        {
+            if (GetMaintenanceLevel() >= 6)
+                return;
+            var quizzes = Dom.SafeSelectNodes(
+                "//div[contains(@class, 'simple-comprehension-quiz')]"
+            );
+            foreach (SafeXmlElement quiz in quizzes)
+            {
+                // Yes, the data-activity is different from the class name.  See BL-14450.
+                // bloom-player uses "simple-checkbox-quiz" as its id for this game/activity.
+                quiz.SetAttribute("data-activity", "simple-checkbox-quiz");
+            }
+            var choices = Dom.SafeSelectNodes("//div[@data-activity = 'simple-dom-choice']");
+
+            void MigrateList(SafeXmlNode[] choices, string newClass)
+            {
+                foreach (SafeXmlElement elt in choices)
+                {
+                    elt.SetAttribute("data-tool-id", "game");
+                    // In case this runs on something that's already migrated, don't change an existing theme.
+                    if (!elt.GetClasses().Any(x => x.StartsWith("game-theme")))
+                    {
+                        // This is the theme (once called 'legacy') that looks most like the old version
+                        // of these games...in fact we tried hard to make it identical.
+                        elt.AddClass(newClass);
+                    }
+                }
+            }
+
+            MigrateList(quizzes, "game-theme-red-on-white");
+            MigrateList(choices, "game-theme-white-on-blue");
+            Dom.UpdateMetaElement("maintenanceLevel", "6");
+        }
+
+        /// <summary>
         /// Files that might contain rules that conflict with the new appearance model (currently, that is if they affect
         /// the size and position of the marginBox).
         /// In the resulting list, the first item is the file name, and the second is content.
@@ -3946,9 +4088,10 @@ namespace Bloom.Book
         {
             "branding.css",
             "defaultLangStyles.css",
-            "customCollectionStyles.css",
+			"appearance.css",
+            // Allow custom settings to override the defaults in appearance.css.  See BL-14467.
+			"customCollectionStyles.css",
             "../customCollectionStyles.css",
-            "appearance.css",
             // We don't usually have both of these, and I don't have a clear idea why one should come before
             // the other. But the order should be consistent, and if both are there, typically customBookStyles2.css
             // came from our system, while the other was added by the user. So allow the user one to win.

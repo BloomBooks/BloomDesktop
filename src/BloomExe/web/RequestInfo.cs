@@ -595,6 +595,8 @@ namespace Bloom.Api
             _actualContext.Response.StatusCode = permanent ? 301 : 302;
             var encodedUrl = Uri.EscapeUriString(url); // handle, e.g. http://localhost:8089/bloom/C:/foo/bar/ปก2.jpg
             _actualContext.Response.Headers.Add("Location", encodedUrl);
+            // This supports Bloom Player Storybook's "Live from Bloom Editor" feature, preventing CORS errors on the redirect.
+            _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
             _actualContext.Response.Close();
         }
     }

@@ -139,7 +139,6 @@ namespace Bloom
                                     typeof(BookSavedEvent),
                                     typeof(PageRefreshEvent),
                                     typeof(BookDownloadStartingEvent),
-                                    typeof(BookSelection),
                                     typeof(CurrentEditableCollectionSelection),
                                     typeof(RelocatePageEvent),
                                     typeof(QueueRenameOfCollection),
@@ -162,7 +161,7 @@ namespace Bloom
                                     typeof(PublishEpubApi),
                                     typeof(AccessibilityCheckApi),
                                     typeof(CollectionSettingsApi),
-                                    typeof(NewCollectionWizardApi),
+                                    typeof(SubscriptionSettingsEditorApi),
                                     typeof(CollectionApi),
                                     typeof(PageControlsApi),
                                     typeof(ReadersApi),
@@ -176,7 +175,6 @@ namespace Bloom
                                     typeof(PageListApi),
                                     typeof(TalkingBookApi),
                                     typeof(ToolboxApi),
-                                    typeof(CommonApi),
                                     typeof(TeamCollectionApi),
                                     typeof(BrandingSettings),
                                     typeof(AppApi),
@@ -207,9 +205,6 @@ namespace Bloom
                         // Otherwise compiling fails with "error CS0122: 'PolyfillExtensions.Contains(string, char)' is inaccessible due to its protection level".
                         .Where((arg) => commandTypes.Contains(arg))
                         .As<ICommand>();
-
-                    var bookRenameEvent = new BookRenamedEvent();
-                    builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
 
                     //This deserves some explanation:
                     //*every* collection has a "*.BloomCollection" settings file. But the one we make the most use of is the one editable collection
@@ -347,29 +342,6 @@ namespace Bloom
                         .InstancePerLifetimeScope();
 
                     builder.RegisterType<CreateFromSourceBookCommand>().InstancePerLifetimeScope();
-
-                    // See related comment below for BL-688
-                    //				string collectionDirectory = Path.GetDirectoryName(projectSettingsPath);
-                    //				if (Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
-                    //				{
-                    //					// REVIEW: This seems to be used only for testing purposes
-                    //					BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
-                    //					var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
-                    //					_httpServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
-                    //				}
-                    //				else
-                    //				{
-                    builder
-                        .Register<BloomServer>(
-                            c =>
-                                new BloomServer(
-                                    new RuntimeImageProcessor(bookRenameEvent),
-                                    c.Resolve<BookSelection>(),
-                                    c.Resolve<CollectionSettings>()
-                                )
-                        )
-                        .SingleInstance();
-
                     builder.Register<Func<WorkspaceView>>(
                         c =>
                             () =>
@@ -414,8 +386,15 @@ namespace Bloom
                 Application.Exit();
             }
 
-            var server = _scope.Resolve<BloomServer>();
-            server.StartListening();
+            var server = parentContainer.Resolve<BloomServer>();
+            server.SetCollectionSettingsDuringInitialization(_scope.Resolve<CollectionSettings>());
+            server.EnsureListening();
+
+            // The Api Handler is now at the application level and has a longer lifetime than
+            // the project context. We need to clear out any project-level handlers that may have
+            // been added by an earlier project context.
+            server.ApiHandler.ClearProjectLevelHandlers();
+            // A few APIs are now registered in the constructor of ApplicationContainer
             _scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
 
             _scope
@@ -433,7 +412,9 @@ namespace Bloom
             _scope.Resolve<PublishEpubApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<AccessibilityCheckApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
-            _scope.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope
+                .Resolve<SubscriptionSettingsEditorApi>()
+                .RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<BookCommandsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<SpreadsheetApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -449,7 +430,6 @@ namespace Bloom
             _scope.Resolve<PageListApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<TalkingBookApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ToolboxApi>().RegisterWithApiHandler(server.ApiHandler);
-            _scope.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<TeamCollectionApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<AppApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<SignLanguageApi>().RegisterWithApiHandler(server.ApiHandler);

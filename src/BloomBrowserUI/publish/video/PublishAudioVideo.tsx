@@ -13,7 +13,7 @@ import {
     HelpGroup,
     SettingsPanel
 } from "../commonPublish/PublishScreenBaseComponents";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import {
     darkTheme,
@@ -32,7 +32,7 @@ import {
 } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
 import { Link } from "../../react_components/link";
-import { RequiresBloomEnterpriseDialog } from "../../react_components/requiresBloomEnterprise";
+import { RequiresSubscriptionDialog } from "../../react_components/requiresSubscription";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
@@ -519,7 +519,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                         )}
                         <BloomButton
                             enabled={
-                                !recording && isLicenseOK && !isScalingActive
+                                !recording &&
+                                isLicenseOK &&
+                                !isScalingActive &&
+                                havePreviewForOrientation
                             }
                             l10nKey="PublishTab.RecordVideo.Record"
                             l10nComment="'Record' as in 'Record a video recording'"
@@ -658,7 +661,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                 height: 100%;
             `}
         >
-            <RequiresBloomEnterpriseDialog />
+            <RequiresSubscriptionDialog />
             <PublishScreenTemplate
                 bannerTitleEnglish="Publish as Audio or Video"
                 bannerTitleL10nId="PublishTab.RecordVideo.BannerTitle"

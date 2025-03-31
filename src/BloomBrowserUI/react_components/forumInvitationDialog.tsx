@@ -1,4 +1,4 @@
-import React = require("react");
+import * as React from "react";
 
 import {
     BloomDialog,
@@ -16,7 +16,7 @@ import { DialogCloseButton } from "./BloomDialog/commonDialogComponents";
 import { css } from "@emotion/react";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 
-export const ForumInvitationDialogLauncher: React.FunctionComponent<{}> = () => {
+export const ForumInvitationDialogLauncher: React.FunctionComponent = () => {
     const {
         showDialog,
         closeDialog,

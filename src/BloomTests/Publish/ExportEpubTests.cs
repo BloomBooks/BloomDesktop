@@ -16,6 +16,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.PlatformUtilities;
+using static Subscription;
 using BloomBook = Bloom.Book.Book;
 
 namespace BloomTests.Publish
@@ -132,7 +133,7 @@ namespace BloomTests.Publish
                 "output",
                 "ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsNone_AreNotRemoved",
                 book,
-                branding: "Test"
+                tier: SubscriptionTier.Enterprise
             );
             var page2Data = GetPageNData(2);
             AssertThatXmlIn
@@ -161,7 +162,7 @@ namespace BloomTests.Publish
                 "ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsOnPage_ConvertedToAsides",
                 book,
                 BookInfo.HowToPublishImageDescriptions.OnPage,
-                branding: "Test"
+                tier: SubscriptionTier.Enterprise
             );
             var page2Data = GetPageNData(2);
             var assertThatPageTwoData = AssertThatXmlIn.String(page2Data);
@@ -245,7 +246,7 @@ namespace BloomTests.Publish
                 $"ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered_{audioRecordingMode}",
                 book,
                 BookInfo.HowToPublishImageDescriptions.OnPage,
-                branding: "Test"
+                tier: SubscriptionTier.Enterprise
             );
             // MakeEpub (when using a physical file as we are) creates Device Xmatter, so usually page one is cover, page 2 is ours.
             // If we go to default theme, the cover will be empty and get deleted, and we'll need to test page 1.
@@ -443,10 +444,17 @@ namespace BloomTests.Publish
             BloomBook book,
             BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions =
                 BookInfo.HowToPublishImageDescriptions.None,
-            string branding = "Default",
+            SubscriptionTier? tier = null,
             Action<EpubMaker> extraInit = null
         )
         {
+            if (tier != null && book.CollectionSettings.Subscription.Tier != tier)
+            {
+                book.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
+                    tier.Value
+                );
+            }
+
             // May need to try more than once on Linux to make the epub without an exception for failing to complete loading the document.
             var result = MakeEpubWithRetries(
                 kMakeEpubTrials,
@@ -454,7 +462,6 @@ namespace BloomTests.Publish
                 folderName,
                 book,
                 howToPublishImageDescriptions,
-                branding,
                 extraInit
             );
             GetPageOneData();
@@ -2800,6 +2807,38 @@ namespace BloomTests.Publish
                 .String(page2Data)
                 .HasSpecifiedNumberOfMatchesForXpath($"//aside/p/{elementName}", 1);
             AssertThatXmlIn.String(page2Data).HasNoMatchForXpath("//aside/div");
+        }
+
+        [Test]
+        public void EpubOmitsAiGeneratedText()
+        {
+            var book = SetupBookLong(
+                "Is this really a cat?",
+                "en",
+                extraEditDivClasses: "bloom-visibility-code-on",
+                extraContent: @"<div class='bloom-editable bloom-visibility-code-on' lang='es-x-ai-google' contenteditable='true'>
+<p>¿Es esto realmente un gato?</p>
+</div>",
+                optionalDataDiv: @"<div id='bloomDataDiv'>
+					<div data-book='contentLanguage1' lang='*'>en</div>
+					<div data-book='contentLanguage2' lang='*'>es-x-ai-google</div>
+					<div data-book='bookTitle' lang='en'>My Book</div>
+                    <div data-book='bookTitle' lang='es-x-ai-google'>Mi Libro</div>
+				</div>"
+            );
+            MakeEpub("output", "OmitsAiGeneratedText", book);
+
+            GetPageOneData();
+            AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//div[@lang='en']");
+            Assert.That(_page1Data, Does.Contain("My Book"));
+            AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//div[@lang='es-x-ai-google']");
+            Assert.That(_page1Data, Does.Not.Contain("Mi Libro"));
+
+            var page2Data = GetPageNData(2);
+            AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//div[@lang='en']");
+            Assert.That(page2Data, Does.Contain("Is this really a cat?"));
+            AssertThatXmlIn.String(page2Data).HasNoMatchForXpath("//div[@lang='es-x-ai-google']");
+            Assert.That(page2Data, Does.Not.Contain("¿Es esto realmente un gato?"));
         }
     }
 

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing.Imaging;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -15,12 +14,11 @@ using Bloom.Publish.Epub;
 using Bloom.SafeXml;
 using Bloom.web;
 using Bloom.web.controllers;
-using Bloom.Workspace;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using SIL.Xml;
 
 namespace Bloom.Publish
 {
@@ -183,23 +181,27 @@ namespace Bloom.Publish
 
         public class FontInfo
         {
-            public string fontName;
+            public string fontFamily;
             public string fontStyle;
             public string fontWeight;
 
             public override string ToString()
             {
                 if (string.IsNullOrEmpty(fontStyle) && string.IsNullOrEmpty(fontWeight))
-                    return string.IsNullOrEmpty(fontName) ? "<uninitialized FontInfo>" : fontName;
+                    return string.IsNullOrEmpty(fontFamily)
+                        ? "<uninitialized FontInfo>"
+                        : fontFamily;
                 if (fontStyle == "normal" && fontWeight == "400")
-                    return string.IsNullOrEmpty(fontName) ? "<uninitialized FontInfo>" : fontName;
+                    return string.IsNullOrEmpty(fontFamily)
+                        ? "<uninitialized FontInfo>"
+                        : fontFamily;
                 if (fontStyle == "normal" && fontWeight == "700")
-                    return $"{fontName} Bold";
+                    return $"{fontFamily} Bold";
                 if (fontStyle == "italic" && fontWeight == "400")
-                    return $"{fontName} Italic";
+                    return $"{fontFamily} Italic";
                 if (fontStyle == "italic" && fontWeight == "700")
-                    return $"{fontName} Bold Italic";
-                return $"{fontName} weight=\"{fontWeight}\" style=\"{fontStyle}\"";
+                    return $"{fontFamily} Bold Italic";
+                return $"{fontFamily} weight=\"{fontWeight}\" style=\"{fontStyle}\"";
             }
 
             public override bool Equals(object obj)
@@ -207,14 +209,16 @@ namespace Bloom.Publish
                 var that = obj as FontInfo;
                 if (that == null)
                     return false;
-                return this.fontName == that.fontName
+                return this.fontFamily == that.fontFamily
                     && this.fontStyle == that.fontStyle
                     && this.fontWeight == that.fontWeight;
             }
 
             public override int GetHashCode()
             {
-                return fontName.GetHashCode() ^ fontStyle.GetHashCode() ^ fontWeight.GetHashCode();
+                return fontFamily.GetHashCode()
+                    ^ fontStyle.GetHashCode()
+                    ^ fontWeight.GetHashCode();
             }
 
             public static bool operator ==(FontInfo info1, FontInfo info2)
@@ -232,8 +236,9 @@ namespace Bloom.Publish
             }
         }
 
-        Dictionary<string, string> _mapIdToDisplay = new Dictionary<string, string>();
-        Dictionary<string, FontInfo> _mapIdToFontInfo = new Dictionary<string, FontInfo>();
+        protected Dictionary<string, string> _mapIdToDisplay = new Dictionary<string, string>();
+        protected Dictionary<string, FontInfo> _mapIdToFontInfo =
+            new Dictionary<string, FontInfo>();
 
         private void RemoveUnwantedContentInternal(
             HtmlDom dom,
@@ -359,6 +364,10 @@ namespace Bloom.Publish
             {
                 div.ParentNode.RemoveChild(div);
             }
+            // Remove any AI generated data that snuck in to the data div or book info. (BL-14339)
+            RemoveUnpublishableBookData(dom.RawDom);
+            if (epubMaker == null) // not needed/wanted for publishing epubs
+                RemoveUnpublishableBookInfo(book.BookInfo);
 
             // Finally we try to remove elements (except image descriptions) that aren't visible.
             // To accurately determine visibility, we point a real browser at the document.
@@ -433,7 +442,7 @@ namespace Bloom.Publish
                             FontsUsed.Add(
                                 new FontInfo
                                 {
-                                    fontName = font,
+                                    fontFamily = font,
                                     fontStyle = info.fontStyle,
                                     fontWeight = info.fontWeight
                                 }
@@ -444,7 +453,7 @@ namespace Bloom.Publish
                     _mapIdToDisplay[info.id] = info.display;
                     var fontInfo = new FontInfo
                     {
-                        fontName = info.fontFamily,
+                        fontFamily = info.fontFamily,
                         fontStyle = info.fontStyle,
                         fontWeight = info.fontWeight
                     };
@@ -482,12 +491,14 @@ namespace Bloom.Publish
                             toBeDeleted.Add(elt);
                         }
                     }
-
                     foreach (var elt in toBeDeleted)
                     {
                         elt.ParentNode.RemoveChild(elt);
                     }
+                    toBeDeleted.Clear();
                 }
+                // Remove any content that was generated by AI. (BL-14339)
+                RemoveUnpublishableContent(page);
                 // We need the font information for wanted text elements as well.  This is a side-effect but related to
                 // unwanted elements in that we don't need fonts that are used only by unwanted elements.  Note that
                 // elements don't need to be actually visible to provide computed style information such as font-family.
@@ -528,7 +539,7 @@ namespace Bloom.Publish
                 foreach (var label in omittedPages.Keys.OrderBy(x => x))
                     warningMessages.Add($"{omittedPages[label]} {label}");
             }
-            if (!book.CollectionSettings.HaveEnterpriseFeatures)
+            if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
                 RemoveEnterpriseOnlyAssets(book);
         }
 
@@ -544,12 +555,12 @@ namespace Bloom.Publish
         )
         {
             var omittedPages = new Dictionary<string, int>();
-            if (!bookData.CollectionSettings.HaveEnterpriseFeatures)
+            if (!bookData.CollectionSettings.Subscription.HaveActiveSubscription)
             {
                 var pageRemoved = false;
                 foreach (var page in pageElts.ToList())
                 {
-                    if (Book.Book.IsPageBloomEnterpriseOnly(page))
+                    if (Book.Book.IsPageBloomSubscriptionOnly(page))
                     {
                         CollectPageLabel(page, omittedPages);
                         page.ParentNode.RemoveChild(page);
@@ -615,19 +626,57 @@ namespace Bloom.Publish
         /// Elements that are made invisible by CSS still have their styles computed and can provide font information.
         /// See https://issues.bloomlibrary.org/youtrack/issue/BL-11108 for a misunderstanding of this.
         /// </remarks>
-        private void StoreFontUsed(SafeXmlElement elt)
+        protected void StoreFontUsed(SafeXmlElement elt)
         {
             var id = elt.GetAttribute("id");
+            // If it's not displayed, and there's nothing to display, ignore it.
+            // This may not be perfect, but it's a reasonable heuristic.  It may let fonts
+            // through that aren't actually used, but it's better than not recording fonts
+            // that are used in multilingual books where some languages are not currently
+            // displayed. (BL-14267)
+            if (
+                _mapIdToDisplay.TryGetValue(id, out var display)
+                && display == "none"
+                && elt.InnerText.Trim() == ""
+            )
+            {
+                return;
+            }
+            // Now that we know the element is displayed, or at least has text that can be
+            // displayed, get the font information for the element.
             if (!_mapIdToFontInfo.TryGetValue(id, out var fontInfo))
                 return; // Shouldn't happen, but ignore if it does.
-            var font = ExtractFontNameFromFontFamily(fontInfo.fontName);
-            //Debug.WriteLine(
-            //    $"DEBUG PublishHelper.StoreFontUsed(): font=\"{font}\", fontStyle={fontInfo.fontStyle}, fontWeight={fontInfo.fontWeight}"
-            //);
+
+            // If the fontInfo.fontFamily contains a list of fallback fonts, we want only the
+            // primary font.  Matters are already complex enough without worrying about whether
+            // a fallback font is actually used.
+            var font = ExtractFontNameFromFontFamily(fontInfo.fontFamily);
+            // The default font-family established in basePage-sharedRules.less starts off
+            // with our default font ("Andika") and then adds a bunch of fallback fonts.  We don't
+            // need to record that "Andika" is used in this case, at least not when it isn't used
+            // for actual text.  This helps to avoid embedding the default font in epubs where it
+            // isn't actually used. (BL-14267)
+            if (
+                font == DefaultFont
+                && font != fontInfo.fontFamily // we have fall-back fonts, likely the default set
+                && !IsRealTextDisplayedInDesiredFont(
+                    elt,
+                    new FontInfo // we don't care about the fall-back fonts, just the primary one
+                    {
+                        fontFamily = font,
+                        fontStyle = fontInfo.fontStyle,
+                        fontWeight = fontInfo.fontWeight
+                    }
+                )
+            )
+            {
+                return;
+            }
+
             FontsUsed.Add(
                 new FontInfo
                 {
-                    fontName = font,
+                    fontFamily = font,
                     fontStyle = fontInfo.fontStyle,
                     fontWeight = fontInfo.fontWeight
                 }
@@ -647,6 +696,79 @@ namespace Bloom.Publish
                 }
                 langsForFont.Add(lang);
             }
+        }
+
+        /// <summary>
+        /// Check whether actual text inside this element has been recorded as being in the desired font.
+        /// If the current font is not specified, it is assumed to be the desired font.
+        /// </summary>
+        protected bool IsRealTextDisplayedInDesiredFont(
+            SafeXmlElement element,
+            FontInfo desiredFont,
+            FontInfo currentFont = null
+        )
+        {
+            // If there's no non-whitespace text in the element, nothing is displayed in the font.
+            if (element.InnerText.Trim() == "")
+                return false;
+            // If the current font is not specified, assume that it's the desired font.
+            if (currentFont == null)
+                currentFont = desiredFont;
+            foreach (var node in element.ChildNodes)
+            {
+                var trimmedInnerText = node.InnerText.Trim();
+                if (trimmedInnerText == "")
+                    continue; // If there's no text to display, we don't need to check further.
+                if (node.NodeType == XmlNodeType.Text)
+                {
+                    // We have a text node that's not empty after trimming for whitespace.  Therefore
+                    // we have text displayed in the current font, which might be the desired font.
+                    if (currentFont == desiredFont)
+                        return true;
+                }
+                else if (node.NodeType == XmlNodeType.Element)
+                {
+                    var id = ((SafeXmlElement)node).GetAttribute("id");
+                    if (
+                        String.IsNullOrEmpty(id) // no id, assume same font
+                        || !_mapIdToFontInfo.TryGetValue(id, out var newCurrentFont)
+                    )
+                    {
+                        // If there's no new font information, assume the current font is still
+                        // in use and check the element recursively.
+                        if (
+                            IsRealTextDisplayedInDesiredFont(
+                                (SafeXmlElement)node,
+                                desiredFont,
+                                currentFont
+                            )
+                        )
+                            return true;
+                    }
+                    else
+                    {
+                        // Check the node recursively with the new font information.
+                        var font1 = ExtractFontNameFromFontFamily(newCurrentFont.fontFamily);
+                        // restrict to using only the first font in a list of fallback fonts
+                        if (font1 != newCurrentFont.fontFamily)
+                            newCurrentFont = new FontInfo
+                            {
+                                fontFamily = font1,
+                                fontStyle = newCurrentFont.fontStyle,
+                                fontWeight = newCurrentFont.fontWeight
+                            };
+                        if (
+                            IsRealTextDisplayedInDesiredFont(
+                                (SafeXmlElement)node,
+                                desiredFont,
+                                newCurrentFont
+                            )
+                        )
+                            return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private bool IsNonEmptyImageDescription(SafeXmlElement elt)
@@ -761,46 +883,46 @@ namespace Bloom.Publish
         }
 
         /// <summary>
-        /// Once we have really cropped any images that need it, we no longer need the "overlay-like"
+        /// Once we have really cropped any images that need it, we no longer need the "canvas element-like"
         /// HTML structure that supports cropping background images. So we get rid of the extra structure
         /// and leave the export with just an img that properly fills the image container (using CSS
         /// content-fit). The great advantage of this is that we need code to adjust the size of the
-        /// overlay, but the img size is automatic with content-fit. While editing, we adjust the
-        /// size and position of things in an image container, including the background overlay, any time
+        /// canvas element, but the img size is automatic with content-fit. While editing, we adjust the
+        /// size and position of things in an image container, including the background canvas element, any time
         /// we open a page and notice that the image container's size has changed (or when it changes while
         /// the page is open). But various things can change the image container size for all images
         /// in a document, and the user shouldn't have to cycle through all the pages to get the
-        /// images adjusted. (We decided to accept that they must do so for ordinary overlays). If we didn't do
-        /// this trick, we'd have to somehow adjust any background image overlay (basically any image
+        /// images adjusted. (We decided to accept that they must do so for ordinary canvas elements). If we didn't do
+        /// this trick, we'd have to somehow adjust any background image canvas element (basically any image
         /// that has migrated to the new system) to the correct size for the current size of its
         /// container, and enhance Bloom Player to do the same when it changes the page size, and not
-        /// to give books with only background overlays the special treatment that it gives books with
-        /// ordinary overlays, and to handle motion differently. And it would be difficult to make the
+        /// to give books with only background canvas elements the special treatment that it gives books with
+        /// ordinary canvas elements, and to handle motion differently. And it would be difficult to make the
         /// correct adjustment in C#; the resize code is all in JS and makes use of the browser's
         /// rendering of the page. One day, we'd like to do all the publishing transformations in JS
         /// (https://www.notion.so/hattonjohn/Infrastructure-publishing-transformations-1514bb19df128007a15ffd4cafff28de?pvs=4)
         /// but for now this saves a lot of work. It essentially converts the background image
-        /// represented as an overlay to our pre-6.2 approach where it was a direct child of the image
-        /// container. The overlay div is removed, and the hidden placeHolder.png image in the parent
+        /// represented as an canvas element to our pre-6.2 approach where it was a direct child of the image
+        /// container. The canvas element div is removed, and the hidden placeHolder.png image in the parent
         /// is changed to point to the actual background image.
         /// </summary>
         /// <param name="book"></param>
         public static void SimplifyBackgroundImages(Book.Book book)
         {
-            var backgroundImageOverlays = book.RawDom
+            var backgroundImageCanvasElements = book.RawDom
                 .SafeSelectNodes("//div[contains(@class, 'bloom-backgroundImage')]")
                 .Cast<SafeXmlElement>()
                 .ToArray();
-            foreach (var overlay in backgroundImageOverlays)
+            foreach (var canvasElement in backgroundImageCanvasElements)
             {
                 // All these early returns are paranoia. If we find a div with class bloom-backgroundImage,
                 // it WILL contain an image container that contains an img, and WILL be a child of
                 // another image container that contains an img. So the xpath above targets exactly
                 // the elements that need this transformation. The backgroundImage elements ("background
-                // overlays") are removed, and the hidden placeHolder.png image in the parent image container
-                // is changed to point to the image that was in the overlay.
+                // canvas elements") are removed, and the hidden placeHolder.png image in the parent image container
+                // is changed to point to the image that was in the canvas element.
                 var imgContainer =
-                    overlay.ChildNodes.FirstOrDefault(
+                    canvasElement.ChildNodes.FirstOrDefault(
                         c => c is SafeXmlElement ce && ce.LocalName == "div"
                     ) as SafeXmlElement;
                 if (imgContainer == null || !imgContainer.HasClass("bloom-imageContainer"))
@@ -814,7 +936,7 @@ namespace Bloom.Publish
                 var src = img.GetAttribute("src");
                 if (string.IsNullOrEmpty(src))
                     return;
-                var parentContainer = overlay.ParentNode as SafeXmlElement;
+                var parentContainer = canvasElement.ParentNode as SafeXmlElement;
                 if (parentContainer == null || !parentContainer.HasClass("bloom-imageContainer"))
                     return;
                 var oldImg =
@@ -824,7 +946,13 @@ namespace Bloom.Publish
                 if (oldImg == null || oldImg.GetAttribute("src") != "placeHolder.png")
                     return;
                 oldImg.SetAttribute("src", src);
-                overlay.ParentNode.RemoveChild(overlay);
+                // Preserve links if they exist (BL-14318)
+                if (imgContainer.AttributeNames.Contains("data-href"))
+                    parentContainer.SetAttribute(
+                        "data-href",
+                        imgContainer.GetAttribute("data-href")
+                    );
+                canvasElement.ParentNode.RemoveChild(canvasElement);
             }
         }
 
@@ -856,16 +984,16 @@ namespace Bloom.Publish
         )
         {
             var imgContainer = img.ParentNode as SafeXmlElement;
-            var overlay = imgContainer?.ParentNode as SafeXmlElement;
-            // Cropping is implemented using the interaction between an overlay (obsolete: bloom-textOverPicture)
+            var canvasElement = imgContainer?.ParentNode as SafeXmlElement;
+            // Cropping is implemented using the interaction between a canvas element
             // which specifies the visible area of the image by its height and width, and the img two levels
-            // down which may have adjusted width, left, and top to position part of itself in the overlay.
+            // down which may have adjusted width, left, and top to position part of itself in the canvas element.
             // An image can only be cropped, and we can only know what part of it to remove, if it occurs in
             // this structure. Other images (e.g., branding) are left alone. (At the stage where this code is run,
-            // background images, including all normal page content images, are still represented as overlays.)
+            // background images, including all normal page content images, are still represented as canvas elements.)
             if (
-                overlay == null
-                || !overlay.HasClass("bloom-textOverPicture")
+                canvasElement == null
+                || !canvasElement.HasClass(HtmlDom.kCanvasElementClass)
                 || !imgContainer.HasClass("bloom-imageContainer")
             )
                 return;
@@ -879,18 +1007,18 @@ namespace Bloom.Publish
             var imgWidth = GetNumberFromPx("width", imgStyle);
             var imgLeft = GetNumberFromPx("left", imgStyle);
             var imgTop = GetNumberFromPx("top", imgStyle);
-            var overlayStyle = overlay.GetAttribute("style");
-            var overlayWidth = GetNumberFromPx("width", overlayStyle);
-            var overlayHeight = GetNumberFromPx("height", overlayStyle);
-            if (imgWidth == 0 || overlayWidth == 0)
+            var canvasElementStyle = canvasElement.GetAttribute("style");
+            var canvasElementWidth = GetNumberFromPx("width", canvasElementStyle);
+            var canvasElementHeight = GetNumberFromPx("height", canvasElementStyle);
+            if (imgWidth == 0 || canvasElementWidth == 0)
                 return;
             if (!ImageUtils.TryGetImageSize(srcPath, out Size size))
             {
                 return; // can't crop the image if we can't get its size.
             }
             var scale = imgWidth / size.Width;
-            var selWidth = overlayWidth / scale;
-            var selHeight = overlayHeight / scale;
+            var selWidth = canvasElementWidth / scale;
+            var selHeight = canvasElementHeight / scale;
             var selLeft = -imgLeft / scale;
             var selTop = -imgTop / scale;
             var ext = Path.GetExtension(srcPath).ToLowerInvariant();
@@ -1045,6 +1173,8 @@ namespace Bloom.Publish
             _fontMetadataMap = null;
         }
 
+        public const string DefaultFont = "Andika";
+
         /// <summary>
         /// Checks the wanted fonts for being valid for  embedding, both for licensing and for the type of file
         /// (based on the filename extension).
@@ -1067,7 +1197,6 @@ namespace Bloom.Publish
         {
             filesToEmbed = new List<string>();
             badFonts = new HashSet<string>();
-            const string defaultFont = "Andika";
 
             fontFileFinder.NoteFontsWeCantInstall = true;
             if (_fontMetadataMap == null)
@@ -1080,7 +1209,7 @@ namespace Bloom.Publish
             foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
                 var fontFile = fontFileFinder.GetFileForFont(
-                    font.fontName,
+                    font.fontFamily,
                     font.fontStyle,
                     font.fontWeight
                 );
@@ -1089,7 +1218,7 @@ namespace Bloom.Publish
                 var missingLicense = false;
                 var badFileType = false;
                 var fileExtension = "";
-                if (_fontMetadataMap.TryGetValue(font.fontName, out var meta))
+                if (_fontMetadataMap.TryGetValue(font.fontFamily, out var meta))
                 {
                     fileExtension = meta.fileExtension;
                     switch (meta.determinedSuitability)
@@ -1165,7 +1294,7 @@ namespace Bloom.Publish
                 }
                 // If the missing font is Andika New Basic, don't complain because Andika subsumes Andika New Basic,
                 // and will be automatically substituted for it.
-                var dontComplain = font.fontName == "Andika New Basic";
+                var dontComplain = font.fontFamily == "Andika New Basic";
                 if (badFileType)
                 {
                     progress.MessageWithParams(
@@ -1182,7 +1311,7 @@ namespace Bloom.Publish
                         ProgressKind.Error
                     );
                 }
-                else if (fontFileFinder.FontsWeCantInstall.Contains(font.fontName) || badLicense)
+                else if (fontFileFinder.FontsWeCantInstall.Contains(font.fontFamily) || badLicense)
                 {
                     progress.MessageWithParams(
                         "PublishTab.Android.File.Progress.LicenseForbids",
@@ -1218,10 +1347,10 @@ namespace Bloom.Publish
                         "{0} is a font name",
                         "Bloom will substitute \"{0}\" instead.",
                         ProgressKind.Error,
-                        defaultFont,
+                        DefaultFont,
                         font
                     );
-                badFonts.Add(font.fontName); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
+                badFonts.Add(font.fontFamily); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
             }
         }
 
@@ -1390,7 +1519,7 @@ namespace Bloom.Publish
                         );
                         var msg3 = LocalizationManager.GetString(
                             "PublishTab.FontProblem.Result",
-                            "BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the �READ� button or downloads for BloomPUB or ePUB."
+                            "BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the \"READ\" button or downloads for BloomPUB or ePUB."
                         );
                         var msg4 = LocalizationManager.GetString(
                             "PublishTab.FontProblem.CheckInBookSettingsDialog",
@@ -1407,6 +1536,108 @@ namespace Bloom.Publish
                 {
                     //progress.WriteWarning("This book has a font, \"{0}\", which is not on this computer and whose license is unknown.", font);
                 }
+            }
+        }
+
+        private const string AILangTagFragment = "-x-ai";
+        private const string BasicAIDataSelector =
+            $"//div[@lang and contains(@lang,'{AILangTagFragment}')]";
+
+        /// <summary>
+        /// Check if the language tag indicates that the content is unpublishable.
+        /// Currently, this is used only for AI-generated content.
+        /// </summary>
+        public static bool IsUnpublishableLanguage(string lang)
+        {
+            return lang.Contains(AILangTagFragment);
+        }
+
+        /// <summary>
+        /// Check if the book contains any data that is in an unpublishable language.
+        /// Currently, this means a translation generated by AI (BL-14339).
+        /// </summary>
+        public static bool BookHasUnpublishableData(Book.Book book)
+        {
+            return book.RawDom.SelectSingleNode($".{BasicAIDataSelector}") != null;
+        }
+
+        /// <summary>
+        /// Remove any elements on a Bloom page with content that is unpublishable.
+        /// Currently, that means a translation generated by AI (BL-14339).
+        /// </summary>
+        public static void RemoveUnpublishableContent(SafeXmlElement page)
+        {
+            var toBeDeleted = new List<SafeXmlElement>();
+            foreach (SafeXmlElement elt in page.SafeSelectNodes($".{BasicAIDataSelector}"))
+            {
+                toBeDeleted.Add(elt);
+            }
+            foreach (var elt in toBeDeleted)
+            {
+                if (elt.ParentNode != null)
+                    elt.ParentNode.RemoveChild(elt);
+            }
+        }
+
+        /// <summary>
+        /// Remove any data stored in the #bloomDataDiv that is unpublishable.
+        /// Currently, this means a translation generated by AI (BL-14339).
+        /// One would hope that AI generated content is never used for L1, L2, or L3
+        /// (especially L1!), but this can't be prevented.  So we need to clean out
+        /// any AI generated content from the data div to prevent publishing it.
+        /// </summary>
+        public static void RemoveUnpublishableBookData(SafeXmlDocument rawDom)
+        {
+            var toBeDeleted = new List<SafeXmlElement>();
+            foreach (
+                SafeXmlElement elt in rawDom.SafeSelectNodes(
+                    $".//div[@id='bloomDataDiv']{BasicAIDataSelector}"
+                )
+            )
+            {
+                toBeDeleted.Add(elt);
+            }
+            foreach (var elt in toBeDeleted)
+            {
+                if (elt.ParentNode != null)
+                    elt.ParentNode.RemoveChild(elt);
+            }
+        }
+
+        /// <summary>
+        /// Remove any data stored in the BookInfo that is unpublishable.
+        /// Currently, this means a translation generated by AI or a reference to
+        /// a language tag marking such a translation (BL-14339).
+        /// </summary>
+        public static void RemoveUnpublishableBookInfo(BookInfo bookInfo)
+        {
+            var allTitlesRaw = bookInfo.AllTitles;
+            if (allTitlesRaw != null && allTitlesRaw.Contains(AILangTagFragment))
+            {
+                var titleDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                    allTitlesRaw
+                );
+                var badKeys = new List<string>();
+                foreach (var key in titleDict.Keys)
+                {
+                    if (IsUnpublishableLanguage(key))
+                        badKeys.Add(key);
+                }
+                foreach (var key in badKeys)
+                    titleDict.Remove(key);
+                bookInfo.AllTitles = JsonConvert.SerializeObject(titleDict);
+            }
+            var displayNames = bookInfo.MetaData.DisplayNames;
+            if (displayNames.Any(kvp => IsUnpublishableLanguage(kvp.Key)))
+            {
+                var badKeys = new List<string>();
+                foreach (var key in displayNames.Keys)
+                {
+                    if (IsUnpublishableLanguage(key))
+                        badKeys.Add(key);
+                }
+                foreach (var key in badKeys)
+                    displayNames.Remove(key);
             }
         }
     }

@@ -266,7 +266,7 @@
         </div>
 
         <div
-            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage activityBlueOnTan side-right Device16x9Landscape bloom-monolingual"
+            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage side-right Device16x9Landscape bloom-monolingual"
             id="c8f4834c-1efd-4864-bc2c-8538ef26bb5b"
             data-page="extra"
             data-analyticscategories="drag-activity"
@@ -317,17 +317,17 @@
                         </div>
                     </div>
                     <div
-                        class="bloom-imageContainer hasOverlay"
+                        class="bloom-imageContainer bloom-has-canvas-element"
                         data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                         title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                     >
                         <img src="placeHolder.png" alt="" />
 
                         <div
-                            class="bloom-textOverPicture draggable-text ui-resizable ui-draggable bloom-noAutoHeight"
+                            class="bloom-canvas-element draggable-text ui-resizable ui-draggable bloom-noAutoHeight"
                             style="left: 30px; top: 109.766px; width: 50px; height: 50px;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
-                            data-bubble-id="b12rlzh"
+                            data-draggable-id="b12rlzh"
                         >
                             <div
                                 class="bloom-translationGroup bloom-leadingElement bloom-show-en-when-blank"
@@ -356,7 +356,7 @@
                         ></div>
 
                         <div
-                            class="bloom-textOverPicture bloom-gif drag-item-correct ui-resizable ui-draggable"
+                            class="bloom-canvas-element bloom-gif drag-item-correct ui-resizable ui-draggable"
                             style="height: 297px; left: 373.297px; top: 35.9844px; width: 233px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -377,7 +377,7 @@
                         </div>
 
                         <div
-                            class="bloom-textOverPicture ui-resizable ui-draggable"
+                            class="bloom-canvas-element ui-resizable ui-draggable"
                             style="left: 5px; top: 5px; width: 364px; height: 84px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -404,7 +404,7 @@
                         </div>
 
                         <div
-                            class="bloom-textOverPicture ui-resizable ui-draggable"
+                            class="bloom-canvas-element ui-resizable ui-draggable"
                             style="height: 193px; left: 385.141px; top: 44.1406px; width: 196px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:17,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -425,7 +425,7 @@
                         </div>
 
                         <div
-                            class="bloom-textOverPicture drag-item-wrong ui-resizable ui-draggable"
+                            class="bloom-canvas-element drag-item-wrong ui-resizable ui-draggable"
                             style="height: 287px; left: 360.33333px; top: 8.33333px; width: 260px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -479,8 +479,10 @@
             </div>
         </div>
 
+        <!-- Comment out the Order Words page for now.  We don't want to lose it, but
+             it's not ready for users because too much can still change. (BL-14457)
         <div
-            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage activityBlueOnTan Device16x9Landscape side-left bloom-monolingual"
+            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage Device16x9Landscape side-left bloom-monolingual"
             id="8227374b-a449-4105-9c14-9d03e3ce0de3"
             data-analyticscategories="drag-activity"
             data-activity="drag-sort-sentence"
@@ -504,18 +506,18 @@
             <div class="marginBox">
                 <div class="split-pane-component-inner">
                     <div
-                        class="bloom-imageContainer hasOverlay"
+                        class="bloom-imageContainer bloom-has-canvas-element"
                         data-title="For the current paper size: • The image container is 652 x 328 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1025 dots would fill this container at 300 DPI."
                         title="For the current paper size: • The image container is 652 x 328 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1025 dots would fill this container at 300 DPI."
                     >
                         <img src="placeHolder.png" alt="" />
 
                         <div
-                            class="bloom-textOverPicture bloom-allowAutoShrink drag-item-order-sentence ui-resizable ui-draggable"
+                            class="bloom-canvas-element bloom-allowAutoShrink drag-item-order-sentence ui-resizable ui-draggable"
                             data-txt-img="1"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                             style="left: 30px; top: 80px; width: 300px; height: 36px; position: absolute;"
-                            data-hint="EditTab.Toolbox.DragActivity.SentenceHint"
+                            data-hint="Type a sentence. The reader will be asked to sort the words."
                             data-hasqtip="true"
                             aria-describedby="qtip-1"
                         >
@@ -537,7 +539,7 @@
                             </div>
                         </div>
                         <div
-                            class="bloom-textOverPicture bloom-gif drag-item-correct ui-resizable ui-draggable"
+                            class="bloom-canvas-element bloom-gif drag-item-correct ui-resizable ui-draggable"
                             style="height: 297px; left: 373.297px; top: 35.9844px; width: 233px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -557,7 +559,7 @@
                             </div>
                         </div>
                         <div
-                            class="bloom-textOverPicture drag-item-wrong ui-resizable ui-draggable"
+                            class="bloom-canvas-element drag-item-wrong ui-resizable ui-draggable"
                             style="height: 287px; left: 360.33333px; top: 8.33333px; width: 260px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -610,9 +612,10 @@
                 </div>
             </div>
         </div>
+	-->
 
         <div
-            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage activityBlueOnTan side-right Device16x9Landscape bloom-monolingual"
+            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage side-right Device16x9Landscape bloom-monolingual"
             id="c8f4834c-1efd-4864-bc2c-8548ef26bb5b"
             data-page="extra"
             data-analyticscategories="drag-activity"
@@ -636,14 +639,14 @@
             <div class="marginBox">
                 <div class="split-pane-component-inner">
                     <div
-                        class="bloom-imageContainer hasOverlay"
+                        class="bloom-imageContainer bloom-has-canvas-element"
                         data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                         title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                     >
                         <img src="placeHolder.png" alt="" />
 
                         <div
-                            class="bloom-textOverPicture bloom-gif drag-item-correct ui-resizable ui-draggable"
+                            class="bloom-canvas-element bloom-gif drag-item-correct ui-resizable ui-draggable"
                             style="height: 297px; left: 373.297px; top: 35.9844px; width: 233px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -664,7 +667,7 @@
                         </div>
 
                         <div
-                            class="bloom-textOverPicture ui-resizable ui-draggable"
+                            class="bloom-canvas-element ui-resizable ui-draggable"
                             style="left: 5px; top: 5px; width: 364px; height: 50px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -690,7 +693,7 @@
                             </div>
                         </div>
                         <div
-                            class="bloom-textOverPicture drag-item-wrong ui-resizable ui-draggable"
+                            class="bloom-canvas-element drag-item-wrong ui-resizable ui-draggable"
                             style="height: 287px; left: 360.33333px; top: 8.33333px; width: 260px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -711,10 +714,10 @@
                         </div>
 
                         <div
-                            class="bloom-textOverPicture ui-resizable ui-draggable"
+                            class="bloom-canvas-element ui-resizable ui-draggable"
                             style="left: 147.578px; top: 109.766px; width: 61px; height: 60px;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
-                            data-bubble-id="b12rlzh"
+                            data-draggable-id="b12rlzh"
                         >
                             <div
                                 tabindex="0"
@@ -738,10 +741,10 @@
                         ></div>
 
                         <div
-                            class="bloom-textOverPicture ui-resizable ui-draggable"
+                            class="bloom-canvas-element ui-resizable ui-draggable"
                             style="left: 239.313px; top: 86.75px; width: 61px; height: 60px;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:12,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
-                            data-bubble-id="muozas1"
+                            data-draggable-id="muozas1"
                         >
                             <div
                                 tabindex="0"
@@ -765,10 +768,10 @@
                         ></div>
 
                         <div
-                            class="bloom-textOverPicture ui-resizable ui-draggable"
+                            class="bloom-canvas-element ui-resizable ui-draggable"
                             style="left: 49px; top: 90.6563px; width: 61px; height: 60px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:13,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
-                            data-bubble-id="lkbg233"
+                            data-draggable-id="lkbg233"
                         >
                             <div
                                 tabindex="0"

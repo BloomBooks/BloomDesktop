@@ -1,10 +1,13 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/react";
 import * as React from "react";
+import { kBloomBlue } from "../bloomMaterialUITheme";
 import {
     ILocalizationProps,
     ILocalizationState,
     LocalizableElement
 } from "./l10nComponents";
-import MarkdownIt = require("markdown-it");
+import * as MarkdownIt from "markdown-it";
 
 // This component expects its content to be a single string (like all localizable elements) that
 // contains Markdown. It will convert that into HTML and show it.
@@ -15,6 +18,11 @@ export class Markdown extends LocalizableElement<
     public render() {
         return (
             <div
+                css={css`
+                    a {
+                        color: ${kBloomBlue};
+                    }
+                `}
                 className={this.getClassName()}
                 onClick={() => {
                     if (this.props.onClick) {

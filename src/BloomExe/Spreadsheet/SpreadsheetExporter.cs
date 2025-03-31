@@ -667,7 +667,7 @@ namespace Bloom.Spreadsheet
                 if (!dataBookLabel.Equals(prevDataBookLabel))
                 {
                     row = new ContentRow(_spreadsheet);
-                    var label = "[" + dataBookLabel.Trim() + "]";
+                    string label = InternalSpreadsheet.MapDataBookLabelToRowLabel(dataBookLabel);
                     if (
                         label != InternalSpreadsheet.BookTitleRowLabel
                         && label != InternalSpreadsheet.CoverImageRowLabel

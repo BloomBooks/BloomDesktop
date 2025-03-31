@@ -7,8 +7,9 @@ import {
 import * as React from "react";
 
 import { WireUpForWinforms } from "../utils/WireUpWinform";
-import { postData } from "../utils/bloomApi";
+import { get, postData } from "../utils/bloomApi";
 import { getLanguageData } from "./LanguageChooserDialog";
+import { useSubscribeToWebSocketForStringMessage } from "../utils/WebSocketManager";
 
 const NewCollectionLanguageChooser: React.FunctionComponent = () => {
     function onSelectionChange(
@@ -20,8 +21,23 @@ const NewCollectionLanguageChooser: React.FunctionComponent = () => {
             getLanguageData(languageTag, languageSelection)
         );
     }
+
+    const [uiLanguage, setUiLanguage] = React.useState("en");
+    React.useEffect(() => {
+        get("currentUiLanguage", result => {
+            setUiLanguage(result.data);
+        });
+    }, []);
+
+    useSubscribeToWebSocketForStringMessage(
+        "app",
+        "uiLanguageChanged",
+        setUiLanguage
+    );
+
     return (
         <LanguageChooser
+            uiLanguage={uiLanguage}
             searchResultModifier={defaultSearchResultModifier}
             onSelectionChange={onSelectionChange}
         />

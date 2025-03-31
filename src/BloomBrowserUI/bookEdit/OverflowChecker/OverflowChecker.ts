@@ -5,9 +5,12 @@
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
-import { BubbleManager, theOneBubbleManager } from "../js/bubbleManager";
-import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
-import { addScrollbarsToPage, cleanupNiceScroll } from "../js/niceScrollBars";
+import {
+    CanvasElementManager,
+    theOneCanvasElementManager
+} from "../js/CanvasElementManager";
+import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
+import { addScrollbarsToPage, cleanupNiceScroll } from "../shared/scrolling";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -18,14 +21,33 @@ export default class OverflowChecker {
     // But this function should just do some basic checks and ADD the HANDLERS!
     public AddOverflowHandlers(container: HTMLElement) {
         //NB: for some historical reason in March 2014 the calendar still uses textareas
+        // I think .bloom-visibility-code-on is more reliable here than :visible;
+        // possibly this is set up before everything has been computed to be visible?
         const queryElementsThatCanOverflow =
-            ".bloom-editable:visible, textarea:visible";
+            ".bloom-editable.bloom-visibility-code-on, textarea:visible";
         const editablePageElements = $(container).find(
             queryElementsThatCanOverflow
         );
 
         // BL-1260: disable overflow checking for pages with too many elements
-        if (editablePageElements.length > 30) return;
+        if (editablePageElements.length > 30) {
+            // since we're not going to check it, remove any indications from
+            // previous checking. (Normal code also removes some qtips. I don't
+            // think those survive from one page load to the next, so we don't
+            // need to remove them here.)
+            const cleanup = (className: string) => {
+                Array.from(
+                    container.getElementsByClassName(className)
+                ).forEach(x => x.classList.remove(className));
+            };
+            cleanup("overflow");
+            cleanup("thisOverflowingParent");
+            cleanup("childOverflowingThis");
+            cleanup("Layout-Problem-Detected");
+            cleanup("pageOverflows");
+
+            return;
+        }
 
         //Add the handler so that when the elements change, we test for overflow
         editablePageElements.on("keyup paste", e => {
@@ -60,7 +82,7 @@ export default class OverflowChecker {
             .bind("_splitpaneparentresize", function() {
                 const $this = $(this);
                 $this.find(queryElementsThatCanOverflow).each(function() {
-                    OverflowChecker.MarkOverflowInternal(this);
+                    OverflowChecker.CheckForOverflowSoon(this);
                 });
             });
 
@@ -304,6 +326,26 @@ export default class OverflowChecker {
         return null;
     }
 
+    // We want to check for overflow, but we can't afford the delay right now.
+    // (checking all elements on a complex page can take several seconds, and this
+    // is called on every mouse move when adjusting origami). We will wait a second.
+    // If we're asked to check the same element again before that second is up, we'll
+    // cancel that timer and start a new one. When we don't get a new request for a
+    // whole second, we'll do the check.
+    // A further benefit of this delay is that a single mouse movement could resize
+    // several origami elements, and the loop over all of them used to be in the
+    // handling of one mouse move. Now, each timeout will be its own event, and
+    // hopefully other events can be processed in between if they occur.
+    public static CheckForOverflowSoon(element: HTMLElement) {
+        const timeOut = (element as any).overflowCheckTimeout;
+        if (timeOut) {
+            clearTimeout(timeOut);
+        }
+        (element as any).overflowCheckTimeout = setTimeout(() => {
+            OverflowChecker.MarkOverflowInternal(element);
+        }, 1000);
+    }
+
     // Checks for overflow on a bloom-page and adds/removes the proper class
     // N.B. This function is specifically designed to be called from within AddOverflowHandler()
     // but is also called from within StyleEditor (and therefore public)
@@ -354,7 +396,11 @@ export default class OverflowChecker {
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
         if (
-            theOneBubbleManager.growOverflowingBox(box, overflowY, doNotShrink)
+            theOneCanvasElementManager.growOverflowingBox(
+                box,
+                overflowY,
+                doNotShrink
+            )
         ) {
             overflowY = 0;
         }
@@ -363,7 +409,7 @@ export default class OverflowChecker {
             // above we did a much more precise calculation and gave it just enough padding
             // to prevent it (if necessary).
             // It's likely that the calls above to getSelfOverflowAmounts and growOverflowingBox above are
-            // redundant in this case. The latter only applies to TOP boxes, which are unlikely
+            // redundant in this case. The latter only applies to canvas element boxes, which are unlikely
             // to be bloom-padForOverflow. However, I can't guarantee that a bloom-padForOverflow box
             // can't overflow horizontally. It seemed safest to leave the existing code alone and just
             // prevent the spurious overflow markup.
@@ -518,7 +564,7 @@ export default class OverflowChecker {
             return false;
         }
         // This is the most reliable way I can find to detect data-overflow tooltips,
-        // at least on TOP boxes. By experiment in the debugger, qtipContent does
+        // at least on canvas element boxes. By experiment in the debugger, qtipContent does
         // not seem to be an element at all, but some sort of configuration object
         // for the qtip, so trying to retrieve it as an attribute (as the code below does)
         // does not work.

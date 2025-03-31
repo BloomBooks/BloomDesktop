@@ -16,7 +16,7 @@ import { getBloomApiPrefix } from "../utils/bloomApi";
 import { getToolboxBundleExports } from "../bookEdit/js/bloomFrames";
 import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
-import { useEnterpriseAvailable } from "../react_components/requiresBloomEnterprise";
+import { useHaveSubscription } from "../react_components/requiresSubscription";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 import axios from "axios";
 
@@ -120,7 +120,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         HTMLDivElement | undefined
     >(undefined);
 
-    const isEnterpriseAvailable = useEnterpriseAvailable();
+    const isEnterpriseAvailable = useHaveSubscription();
 
     // Tell edit tab to disable everything when the dialog is up.
     // (Without this, the page list is not disabled since the modal
@@ -659,6 +659,11 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                             pageIsEnterpriseOnly={selectedTemplatePageDiv.classList.contains(
                                 "enterprise-only"
                             )}
+                            pageIsMarkedBilingual={
+                                selectedTemplatePageDiv.getAttribute(
+                                    "data-ui-mark-bilingual"
+                                ) === "true"
+                            }
                             pageIsDigitalOnly={isDigitalOnly(
                                 selectedTemplatePageDiv
                             )}
@@ -710,7 +715,7 @@ export function getAttributeStringSafely(
 }
 
 // We want to count all the translationGroups that do not occur inside of a bloom-imageContainer div.
-// The reason for this is that images can have textOverPicture divs and imageDescription divs inside of them
+// The reason for this is that images can have canvas element divs and imageDescription divs inside of them
 // and these are completely independent of the template page. We need to count regular translationGroups and
 // also ensure that translationGroups inside of images get migrated correctly. If this algorithm changes, be
 // sure to also change 'GetTranslationGroupsInternal()' in HtmlDom.cs.

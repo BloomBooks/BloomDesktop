@@ -314,8 +314,19 @@ export default class WebSocketManager {
         const count =
             WebSocketManager.clientContextCallbacks[clientContext].length;
 
+        // if clientContext is not one of the known ones that have lots of listeners, report it.
+        const frequentlyListenedContexts = [
+            // Each BookButton, for the moment at least, subscribes to these.
+            "collections",
+            "bookImage",
+            "book", // via useWatchString
+            "bookTeamCollectionStatus", // via useTColBookStatus
+            // each book collection subscribes to this
+            "editableCollectionList"
+        ];
+
         // in the case of the progressDialog, we expect to have 2: one for the dialog, which is listening, and one for the ProgressBox.
-        if (count > 2) {
+        if (count > 2 && !frequentlyListenedContexts.includes(clientContext)) {
             console.error(
                 `addListener sees that we have ${count} listeners on "${clientContext}". Normally if everything is disconnecting appropriately, these should not add up.`
             );

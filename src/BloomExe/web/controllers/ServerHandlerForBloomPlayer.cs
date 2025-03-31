@@ -85,6 +85,8 @@ static class ServerHandlerForBloomPlayer
                     return true;
                 }
             }
+
+            return false; // report some error? supposed to be a book id url, but we couldn't find a redirect?
         }
         return false;
     }

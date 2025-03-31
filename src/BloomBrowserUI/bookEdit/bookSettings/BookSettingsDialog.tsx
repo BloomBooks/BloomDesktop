@@ -12,7 +12,7 @@ import {
     ConfigrBoolean,
     ConfigrSelect
 } from "@sillsdev/config-r";
-import React = require("react");
+import * as React from "react";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
     BloomDialog,
@@ -51,9 +51,9 @@ import { PWithLink } from "../../react_components/pWithLink";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 import { StyleAndFontTable } from "./StyleAndFontTable";
 import {
-    BloomEnterpriseIndicatorIconAndText,
-    useEnterpriseAvailable
-} from "../../react_components/requiresBloomEnterprise";
+    BloomSubscriptionIndicatorIconAndText,
+    useHaveSubscription
+} from "../../react_components/requiresSubscription";
 
 let isOpenAlready = false;
 
@@ -218,7 +218,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
     );
     //TODO real links (and change .xlf)
     const coverIsImageDescription = useL10n(
-        "Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org) for information on sizing your image to fit.",
+        "Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
         "BookSettings.CoverIsImage.Description"
     );
 
@@ -320,7 +320,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
         setMigratedTheme("");
     };
 
-    const enterpriseAvailable = useEnterpriseAvailable();
+    const haveSubscription = useHaveSubscription();
 
     function saveSettingsAndCloseDialog() {
         if (settingsToReturnLater) {
@@ -423,7 +423,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         )}
                                         disabled={
                                             appearanceDisabled ||
-                                            !enterpriseAvailable
+                                            !haveSubscription
                                         }
                                     />
                                     <div
@@ -434,7 +434,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                             font-weight: bold;
                                         `}
                                     >
-                                        <BloomEnterpriseIndicatorIconAndText
+                                        <BloomSubscriptionIndicatorIconAndText
                                             css={css`
                                                 margin-left: auto;
                                             `}
@@ -907,7 +907,9 @@ const ColorPickerForConfigr: React.FunctionComponent<{
 };
 
 // TODO: move this to config-r
-const ConfigrCustomRow: React.FunctionComponent<React.PropsWithChildren<{}>> = props => {
+const ConfigrCustomRow: React.FunctionComponent<React.PropsWithChildren<
+    object
+>> = props => {
     return (
         <ListItem
             css={css`

@@ -1,6 +1,6 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
-import React = require("react");
+import * as React from "react";
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import {
     post,
@@ -59,7 +59,10 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
 
     const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
 
-    const [hasOverlays] = useApiBoolean("publish/epub/overlays", true);
+    const [hasCanvasElements] = useApiBoolean(
+        "publish/epub/canvasElements",
+        true
+    );
 
     return (
         <div>
@@ -121,7 +124,8 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                             >
                                 {epubModes.map(item => {
                                     const disabled =
-                                        hasOverlays && item.mode === "flowable";
+                                        hasCanvasElements &&
+                                        item.mode === "flowable";
                                     const menuItem = (
                                         <MenuItem
                                             value={item.mode}

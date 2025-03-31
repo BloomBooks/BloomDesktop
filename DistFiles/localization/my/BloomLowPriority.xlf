@@ -116,10 +116,10 @@
         <target xml:lang="my" state="needs-translation">None. Enterprise features will be unavailable.</target>
         <note>ID: Settings.Enterprise.None</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.NeedsCode">
-        <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
-        <target xml:lang="my" state="needs-translation">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</target>
-        <note>ID: Settings.Enterprise.NeedsCode</note>
+      <trans-unit id="Settings.Subscription.NeedsCode">
+        <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. </source>
+        <target xml:lang="my" state="needs-translation">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. </target>
+        <note>ID: Settings.Subscription.NeedsCode</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NotValid">
         <source xml:lang="en">That code appears to be incorrect.</source>
@@ -136,10 +136,10 @@
         <target xml:lang="my" state="needs-translation">Enterprise Subscription</target>
         <note>ID: Settings.Enterprise.Subscription</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.SubscriptionCode">
+      <trans-unit id="Settings.Subscription.SubscriptionCodeLabel">
         <source xml:lang="en">Subscription Code:</source>
         <target xml:lang="my" state="needs-translation">Subscription Code:</target>
-        <note>ID: Settings.Enterprise.SubscriptionCode</note>
+        <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.UnknownCode">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>

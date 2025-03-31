@@ -127,12 +127,39 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                 // as far as we can either way without it getting much louder, and take the middle
                 // of that. We might also bias it somehow towards large quiet spots.
                 // Then again, this might be good enough.
+                const data = ws.decodedData?.getChannelData(0);
+                // Look for leading pause. Here the maxAmplitude * 0.1 and the 0.7 limit
+                // are pretty arbitrary. We're assuming the start of what we want will be
+                // at least a tenth as loud as the loudest sound in the file.
+                // And if the first sound is more than 70% of the way through the file,
+                // it seems likely that some very loud sound has confused things, so better
+                // not to adjust at all. This also limits how close together the initial
+                // splits can get as a result of trying to ignore initial silence.
+                let maxAmplitude = 0;
+                for (const amp of data) {
+                    maxAmplitude = Math.max(maxAmplitude, Math.abs(amp));
+                }
+                const firstSound = data.findIndex(
+                    amp => Math.abs(amp) > maxAmplitude * 0.1
+                );
+                let adjust = 1;
+                if (firstSound > 0 && firstSound < data.length * 0.7) {
+                    adjust = (data.length - firstSound) / data.length;
+                }
+                const startOfSound = ws.getDuration() * (1 - adjust);
+                //const realDuration = ws.getDuration() * adjust;
+                const adjustTime = (time: number): number => {
+                    // We're going to not count the part of the data before firstSound.
+                    // For example: suppose the first third of the audio is silence,
+                    // and the first segment starts half way through the total duration.
+                    // We want it instead to start half way through the non-silent final 2/3.
+                    return time * adjust + startOfSound;
+                };
                 const slopPercent = 0.3;
                 const breakSpotCount = 15;
-                const data = ws.decodedData?.getChannelData(0);
                 segments = props.segments.map(s => ({
-                    start: s.start,
-                    end: s.end,
+                    start: adjustTime(s.start),
+                    end: adjustTime(s.end),
                     text: s.text
                 }));
                 for (let i = 0; i < segments.length - 1; i++) {
@@ -182,6 +209,11 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                 // If the user clicks OK, this is what we want to save.
                 const endTimes = segments.map(seg => seg.end);
                 props.setEndTimes(endTimes);
+                // It sometimes looks better if we leave the silence out of the first segment,
+                // but if we guess wrong, there's no way to get the first split before the start of
+                // the first segment. Moreover, until we implement a way to trim the start of the audio,
+                // the first segment actually will include it, so this is also more realistic.
+                segments[0].start = 0;
             }
 
             rp.clearRegions();
@@ -264,7 +296,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                     const nextRegion = rp.getRegions()[index + 1];
                     if (nextRegion) {
                         nextRegion.start = region.end;
-                        region;
+                        //region; lint complained; seems to do nothing.
                         nextRegion.setOptions({
                             ...nextRegion,
                             start: region.end

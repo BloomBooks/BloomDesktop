@@ -1,6 +1,7 @@
-﻿using Bloom.Api;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.SafeXml;
+using L10NSharp;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -38,6 +39,12 @@ namespace Bloom.web.controllers
             public string fontName;
             public string pageId;
             public string pageDescription;
+
+            // just helpful for debugging at this point
+            public override string ToString()
+            {
+                return $"{style}, {fontName}";
+            }
         }
 
         public struct PageInfo
@@ -63,19 +70,19 @@ namespace Bloom.web.controllers
                 var modified = modifiedStylesAndFonts.FindAll(s => s.style == style).ToArray();
                 if (modified.Length == 0)
                 {
-                    var styleAndFont = new StyleAndFont();
-                    styleAndFont.style = style;
-                    if (fontToLangs.Count == 1)
+                    foreach (var kvp in fontToLangs)
                     {
-                        if (fontToLangs.First().Value.Count == 1)
-                            styleAndFont.languageTag = fontToLangs.First().Value.First();
+                        var styleAndFont = new StyleAndFont();
+                        styleAndFont.style = style;
+                        if (kvp.Value.Count == 1)
+                            styleAndFont.languageTag = kvp.Value.First();
                         else
                             styleAndFont.languageTag = "*";
-                        styleAndFont.fontName = fontToLangs.First().Key;
+                        styleAndFont.fontName = kvp.Key;
+                        styleAndFont.pageId = stylesInBook[style].id;
+                        styleAndFont.pageDescription = stylesInBook[style].description;
+                        stylesAndFonts.Add(styleAndFont);
                     }
-                    styleAndFont.pageId = stylesInBook[style].id;
-                    styleAndFont.pageDescription = stylesInBook[style].description;
-                    stylesAndFonts.Add(styleAndFont);
                 }
                 else
                 {
@@ -144,6 +151,45 @@ namespace Bloom.web.controllers
                         return namesCompared;
                 }
             );
+
+            // Ensure every collection-level default font is included in the list
+            var collectionLevelFonts = new HashSet<(string fontName, string languageTag)>
+            {
+                (book.CollectionSettings.Language1.FontName, book.CollectionSettings.Language1Tag),
+                (book.CollectionSettings.Language2.FontName, book.CollectionSettings.Language2Tag)
+            };
+            if (!String.IsNullOrEmpty(book.CollectionSettings.Language3Tag))
+            {
+                collectionLevelFonts.Add(
+                    (
+                        book.CollectionSettings.Language3.FontName,
+                        book.CollectionSettings.Language3Tag
+                    )
+                );
+            }
+            foreach (var font in collectionLevelFonts.Reverse()) // reverse because we're inserting at the beginning each time
+            {
+                if (!stylesAndFonts.Exists(s => s.fontName == font.fontName))
+                {
+                    var languageName = GetLanguageName(font.languageTag);
+                    stylesAndFonts.Insert(
+                        0,
+                        new StyleAndFont
+                        {
+                            styleName = string.Format(
+                                LocalizationManager.GetString(
+                                    "CollectionSettingsDialog.BookMakingTab.DefaultFontFor",
+                                    "Default Font for {0}",
+                                    "{0} is a language name."
+                                ),
+                                languageName
+                            ),
+                            languageName = languageName,
+                            fontName = font.fontName,
+                        }
+                    );
+                }
+            }
             var jsonData = JsonConvert.SerializeObject(stylesAndFonts.ToArray());
             request.ReplyWithJson(jsonData);
         }

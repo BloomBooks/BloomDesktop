@@ -21,7 +21,7 @@ interface IMusicState {
 // tsx files in bookEdit/toolbox.
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which passes an instance of MusicToolAdapter to ToolBox.registerTool();
-export class MusicToolControls extends React.Component<{}, IMusicState> {
+export class MusicToolControls extends React.Component<unknown, IMusicState> {
     public readonly state: IMusicState = {
         activeRadioValue: "continueMusic",
         volume: MusicToolControls.kDefaultVolumeFraction,

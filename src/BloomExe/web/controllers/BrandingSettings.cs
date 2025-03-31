@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Dynamic;
-using System.IO;
+using System.IO; // Add this for Path operations
 using System.Linq;
-using System.Windows.Forms;
-using Bloom.Book;
-using Bloom.Collection;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Linq;
@@ -110,28 +107,36 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// extract the base and flavor parts of a Branding name
+        /// extract the various parts of a Subscription Descriptor
         /// </summary>
-        /// <param name="fullBrandingName">the full key</param>
+        /// <param name="subscriptionDescriptor">the part of the subcription code before the numbers start</param>
         /// <param name="folderName">the name before any branding; this will match the folder holding all the files.</param>
         /// <param name="flavor">a name or empty string</param>
         /// <param name="subUnitName">a name (normally a country) or empty string</param>
-        public static void ParseBrandingKey(
-            String fullBrandingName,
+        public static void ParseSubscriptionDescriptor(
+            String subscriptionDescriptor,
             out String folderName,
             out String flavor,
             out String subUnitName
         )
         {
-            // A Branding may optionally have a suffix of the form "[FLAVOR]" where flavor is typically
+            if (subscriptionDescriptor.Contains("-LC"))
+            {
+                folderName = "Local-Community";
+                flavor = null;
+                subUnitName = null;
+                return;
+            }
+
+            // A Subscription Descriptor may optionally have a suffix of the form "[FLAVOR]" where flavor is typically
             // a language name. This is used to select different logo files without having to create
             // a completely separate branding folder (complete with summary, stylesheets, etc) for each
             // language in a project that is publishing in a situation with multiple major languages.
-            var parts = fullBrandingName.Split('[');
+            var parts = subscriptionDescriptor.Split('[');
             folderName = parts[0];
             flavor = parts.Length > 1 ? parts[1].Replace("]", "") : "";
 
-            // A Branding may optionally have a suffix of the form "(SUBUNIT)" where subUnitName is typically
+            // A Subscription Descriptor may optionally have a suffix of the form "(SUBUNIT)" where subUnitName is typically
             // a country name. This is useful when the project wants different codes, but wants *exactly*
             // the same branding.
             parts = folderName.Split('(');
@@ -170,51 +175,68 @@ namespace Bloom.Api
 
             try
             {
-                ParseBrandingKey(
-                    brandingNameOrFolderPath,
-                    out var brandingFolderName,
-                    out var flavor,
-                    out var subUnitName
-                );
-
-                // check to see if we have a special branding.json just for this flavor.
-                // Note that we could instead add code that allows a single branding.json to
-                // have rules that apply only on a flavor basis. As of 4.9, all we have is the
-                // ability for a branding.json (and anything else) to use "{flavor}" anywhere in the
-                // name of an image; this will often be enough to avoid making a new branding.json.
-                // But if we needed to have different boilerplate text, well then we would need to
-                // either use this here mechanism (separate json) or implement the ability to add
-                // "flavor:" to the rules.
                 string settingsPath = null;
-                if (!string.IsNullOrEmpty(flavor))
-                {
-                    settingsPath = BloomFileLocator.GetOptionalBrandingFile(
-                        brandingFolderName,
-                        "branding[" + flavor + "].json"
-                    );
-                }
+                string brandingFolderName = null;
+                string flavor = null;
 
-                // if not, fall back to just "branding.json"
-                if (string.IsNullOrEmpty(settingsPath))
+                // First check if this is a direct path to a folder
+                if (Directory.Exists(brandingNameOrFolderPath))
                 {
-                    settingsPath = BloomFileLocator.GetOptionalBrandingFile(
-                        brandingFolderName,
-                        "branding.json"
+                    // If it's a directory path, look for branding.json directly in that folder
+                    settingsPath = Path.Combine(brandingNameOrFolderPath, "branding.json");
+                    if (!RobustFile.Exists(settingsPath))
+                    {
+                        settingsPath = null;
+                    }
+                }
+                else
+                {
+                    // Regular case: treat it as a branding name/key
+                    ParseSubscriptionDescriptor(
+                        brandingNameOrFolderPath,
+                        out brandingFolderName,
+                        out flavor,
+                        out var subUnitName
                     );
+
+                    // check to see if we have a special branding.json just for this flavor.
+                    // Note that we could instead add code that allows a single branding.json to
+                    // have rules that apply only on a flavor basis. As of 4.9, all we have is the
+                    // ability for a branding.json (and anything else) to use "{flavor}" anywhere in the
+                    // name of an image; this will often be enough to avoid making a new branding.json.
+                    // But if we needed to have different boilerplate text, well then we would need to
+                    // either use this here mechanism (separate json) or implement the ability to add
+                    // "flavor:" to the rules.
+                    if (!string.IsNullOrEmpty(flavor))
+                    {
+                        settingsPath = BloomFileLocator.GetOptionalBrandingFile(
+                            brandingFolderName,
+                            "branding[" + flavor + "].json"
+                        );
+                    }
+
+                    // if not, fall back to just "branding.json"
                     if (string.IsNullOrEmpty(settingsPath))
                     {
-                        // Is the branding missing? If not, it is guaranteed to have a branding.css.
-                        var cssPath = BloomFileLocator.GetOptionalBrandingFile(
+                        settingsPath = BloomFileLocator.GetOptionalBrandingFile(
                             brandingFolderName,
-                            "branding.css"
+                            "branding.json"
                         );
-                        if (string.IsNullOrEmpty(cssPath))
+                        if (string.IsNullOrEmpty(settingsPath))
                         {
-                            // Branding has not yet shipped. We want the branding.json from the "Missing" branding
-                            settingsPath = BloomFileLocator.GetOptionalBrandingFile(
-                                "Missing",
-                                "branding.json"
+                            // Is the branding missing? If not, it is guaranteed to have a branding.css.
+                            var cssPath = BloomFileLocator.GetOptionalBrandingFile(
+                                brandingFolderName,
+                                "branding.css"
                             );
+                            if (string.IsNullOrEmpty(cssPath))
+                            {
+                                // Branding has not yet shipped. We want the branding.json from the "Missing" branding
+                                settingsPath = BloomFileLocator.GetOptionalBrandingFile(
+                                    "Missing",
+                                    "branding.json"
+                                );
+                            }
                         }
                     }
                 }
@@ -251,20 +273,16 @@ namespace Bloom.Api
                         return null;
                     }
 
-                    settings.Presets.ForEach(p =>
+                    if (settings.Presets != null && !string.IsNullOrEmpty(flavor))
                     {
-                        if (p.Content != null)
+                        settings.Presets.ForEach(p =>
                         {
-                            if (string.IsNullOrEmpty(flavor) && p.Content.Contains("{flavor"))
+                            if (p.Content != null)
                             {
-                                throw new ApplicationException(
-                                    "The branding had variable {flavor} but the branding key did not specify one: "
-                                        + brandingFolderName
-                                );
+                                p.Content = p.Content.Replace("{flavor}", flavor);
                             }
-                            p.Content = p.Content.Replace("{flavor}", flavor);
-                        }
-                    });
+                        });
+                    }
                     // lock for thread safety
                     lock (_cacheLock)
                     {

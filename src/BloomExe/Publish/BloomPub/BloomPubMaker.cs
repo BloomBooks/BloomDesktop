@@ -404,7 +404,7 @@ namespace Bloom.Publish.BloomPub
             //    than the one written to the .htm file.
             string modifiedBookFolderPath = modifiedBook.FolderPath;
 
-            if (modifiedBook.CollectionSettings.HaveEnterpriseFeatures)
+            if (modifiedBook.CollectionSettings.Subscription.HaveActiveSubscription)
                 ProcessQuizzes(modifiedBookFolderPath, modifiedBook.RawDom);
 
             // Right here, let's maintain the history of what the BloomdVersion signifies to a reader.
@@ -459,13 +459,11 @@ namespace Bloom.Publish.BloomPub
                 && modifiedBook.OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null
             )
             {
-                // This indicates that we are harvesting a book with comic speech bubbles or other overlays (Overlay Tool).
-                // For books with overlays, we only publish a single language. It's not currently feasible to
-                // allow the reader to switch language in a book with overlays, because typically that requires
-                // adjusting the positions of the overlays, and we don't yet support having more than one
-                // set of overlay locations in a single book. See BL-7912 for some ideas on how we might
-                // eventually improve this. In the meantime, switching language would have bad effects,
-                // and if you can't switch language, there's no point in the book containing more than one.
+                // This indicates that we are harvesting a book with canvas elements (Overlay Tool).
+                // For books with canvas elements, we only publish a single language. This harks back to a time when we couldn't
+                // store different sizes and positions for overlays in different languages. Now we can, but a book we're
+                // harvesting doesn't necessarily have appropriate locations stored for each language. So for now we'll just
+                // publish the first one.
                 var languagesToInclude = new string[1] { modifiedBook.BookData.Language1.Tag };
                 PublishModel.RemoveUnwantedLanguageData(
                     modifiedBook.OurHtmlDom,
@@ -844,29 +842,11 @@ namespace Bloom.Publish.BloomPub
             IFontFinder fontFileFinder
         )
         {
-            const string defaultFont = "Andika";
-
-            // "Andika" already in BR, don't need to embed or make rule.
-            fontsWanted.RemoveWhere(
-                x => x.fontName == defaultFont && x.fontStyle == "normal" && x.fontWeight == "400"
-            );
-            // We don't need to embed Andika New Basic Regular, because Andika Regular will handle it.
-            fontsWanted.RemoveWhere( // The default Andika Regular font will handle Andika New Basic Regular
-                x =>
-                    x.fontName == "Andika New Basic"
-                    && x.fontStyle == "normal"
-                    && x.fontWeight == "400"
-            );
-            // Don't include bold/italic variant of both Andika New Basic and Andika.
-            fontsWanted.RemoveWhere(
-                x =>
-                    x.fontName == "Andika New Basic"
-                    && fontsWanted.Any(
-                        y =>
-                            y.fontName == defaultFont
-                            && y.fontStyle == x.fontStyle
-                            && y.fontWeight == x.fontWeight
-                    )
+            // "Andika" already in BR in the standard four faces, don't need to embed or make rule.
+            fontsWanted.RemoveWhere(x => x.fontFamily == PublishHelper.DefaultFont);
+            // We don't need to embed Andika New Basic, because Andika will handle it.
+            fontsWanted.RemoveWhere( // The default Andika font will handle Andika New Basic
+                x => x.fontFamily == "Andika New Basic"
             );
 
             PublishHelper.CheckFontsForEmbedding(
@@ -886,9 +866,9 @@ namespace Bloom.Publish.BloomPub
             var sb = new StringBuilder();
             foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
-                if (badFonts.Contains(font.fontName))
+                if (badFonts.Contains(font.fontFamily))
                     continue;
-                var group = fontFileFinder.GetGroupForFont(font.fontName);
+                var group = fontFileFinder.GetGroupForFont(font.fontFamily);
                 if (group != null)
                 {
                     EpubMaker.AddFontFace(sb, font, group);
@@ -905,10 +885,14 @@ namespace Bloom.Publish.BloomPub
             // Repair defaultLangStyles.css and other places in the output book if needed.
             if (badFonts.Any())
             {
-                PublishHelper.FixCssReferencesForBadFonts(book.FolderPath, defaultFont, badFonts);
+                PublishHelper.FixCssReferencesForBadFonts(
+                    book.FolderPath,
+                    PublishHelper.DefaultFont,
+                    badFonts
+                );
                 PublishHelper.FixXmlDomReferencesForBadFonts(
                     book.OurHtmlDom.RawDom,
-                    defaultFont,
+                    PublishHelper.DefaultFont,
                     badFonts
                 );
             }

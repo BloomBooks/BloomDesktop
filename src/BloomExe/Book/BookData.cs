@@ -19,6 +19,7 @@ using SIL.Text;
 using SIL.WritingSystems;
 using SIL.IO;
 using Bloom.SafeXml;
+using Bloom.Publish;
 
 namespace Bloom.Book
 {
@@ -1836,6 +1837,19 @@ namespace Bloom.Book
             var oldImageUrl = HtmlDom.GetImageElementUrl(node);
             var imgOrDivWithBackgroundImage = node;
             HtmlDom.SetImageElementUrl(imgOrDivWithBackgroundImage, newImageUrl);
+            // Attaching the onerror handler in javascript is too late for the cover page
+            // image.  The image resource load fails before the bootstrap code is called
+            // in document.ready().  This minimal code sets a class that is used by CSS and
+            // javascript to make things look right.  The class is not copied into the
+            // new xmatter page, so it gets set afresh each time the book is opened for
+            // editing.  See BL-14241.
+            // Any change to the value of the onerror attribute here should be reflected
+            // in the javascript code in bloomImages.ts/HandleImageError().
+            if (imgOrDivWithBackgroundImage.Name == "img")
+                imgOrDivWithBackgroundImage.SetAttribute(
+                    "onerror",
+                    "this.classList.add('bloom-imageLoadError')"
+                );
 
             if (_updateImgNode != null && !newImageUrl.Equals(oldImageUrl))
             {
@@ -2093,6 +2107,8 @@ namespace Bloom.Book
                     sb.Append("{");
                     foreach (var langForm in title.TextAlternatives.Forms)
                     {
+                        if (PublishHelper.IsUnpublishableLanguage(langForm.WritingSystemId))
+                            continue; // skip unpublishable titles (BL-14339)
                         if (sb.Length > 1)
                             sb.Append(",");
                         sb.Append("\"");
@@ -2319,9 +2335,42 @@ namespace Bloom.Book
                                 CollectionSettings.DefaultBookshelf
                             );
                     }
+
+                    content = MergeInPersonalization(content);
+
                     Set(item.DataBook, XmlString.FromXml(content), item.Lang);
                 }
             }
+        }
+
+        /// <summary>
+        /// If we have "personalization" in the subscription and the HTML from the DOM,
+        //  fill in the personalization.
+        private string MergeInPersonalization(string content)
+        {
+            // Throw if we have a "{personalization}" in the content but no personalization.
+            // Note that we don't want the converse of this becuase even if, e.g., the back page
+            // has a slot for personalization, this method will be called for other pages as well.
+            if (
+                content.Contains("{personalization}")
+                && string.IsNullOrWhiteSpace(this.CollectionSettings.Subscription.Personalization)
+            )
+            {
+                throw new ApplicationException(
+                    "Branding personalization is not set, but the branding template contains {personalization}."
+                );
+            }
+
+            // if the CollectionSettings has a BrandingPersonalization, replace any instances of {personalization} with the value
+            if (!string.IsNullOrWhiteSpace(this.CollectionSettings.Subscription.Personalization))
+            {
+                content = content.Replace(
+                    "{personalization}",
+                    this.CollectionSettings.Subscription.Personalization
+                );
+            }
+
+            return content;
         }
 
         /// <summary>

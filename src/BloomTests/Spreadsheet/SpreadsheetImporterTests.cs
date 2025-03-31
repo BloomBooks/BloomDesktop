@@ -97,7 +97,7 @@ namespace BloomTests.Spreadsheet
             var imageSrcColumn = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 
             var firstXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(
-                row => row.MetadataKey.Contains("styleNumberSequence")
+                row => row.MetadataKey.Contains("style number sequence")
             );
             Assert.IsNotNull(
                 firstXmatterRowToModify,
@@ -106,7 +106,7 @@ namespace BloomTests.Spreadsheet
             firstXmatterRowToModify.SetCell(asteriskColumn, "7");
 
             var secondXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(
-                row => row.MetadataKey.Contains("coverImage")
+                row => row.MetadataKey == InternalSpreadsheet.CoverImageRowLabel
             );
             Assert.IsNotNull(
                 secondXmatterRowToModify,
@@ -115,7 +115,7 @@ namespace BloomTests.Spreadsheet
             secondXmatterRowToModify.SetCell(imageSrcColumn, "octopus.png");
 
             var thirdXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(
-                row => row.MetadataKey.Contains("bookTitle")
+                row => row.MetadataKey == InternalSpreadsheet.BookTitleRowLabel
             );
             Assert.IsNotNull(
                 thirdXmatterRowToModify,
@@ -129,7 +129,7 @@ namespace BloomTests.Spreadsheet
             );
 
             var fourthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(
-                row => row.MetadataKey.Contains("contentLanguage1")
+                row => row.MetadataKey.Contains("content language 1")
             );
             fourthXmatterRowToModify.SetCell(
                 _sheet.GetColumnForTag(InternalSpreadsheet.RowTypeColumnLabel),

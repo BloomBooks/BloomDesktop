@@ -32,8 +32,6 @@ namespace Bloom.Collection
         private readonly XMatterPackFinder _xmatterPackFinder;
         private bool _restartRequired;
         private bool _loaded;
-        private string _subscriptionCode;
-        private string _brand;
         private bool _settingsProtectionRequirePassword;
         private bool _settingsProtectionNormallyHidden;
         private bool _currentCollectionIsTeamCollection;
@@ -81,6 +79,21 @@ namespace Bloom.Collection
             _settingsProtectionNormallyHidden = SettingsProtectionSingleton.Settings.NormallyHidden;
             InitializeComponent();
 
+            // We want to make the settingsProtectionLauncherButton1 look the same as other Bloom buttons, but
+            // it does not expose a way to do that in SIL.Windows.Forms v15.0.0. But it is late in 6.1, so risky
+            // to take on all the changes since that version. Therefore I have created
+            // a proxy for it this control which, when clicked, will invoke the OnClick event its internal label.
+            // Meanwhile we will submit a patch to libpalaso so that we can get rid of this hack.
+            settingsProtectionLauncherButton1.Visible = false;
+
+            // when the new libpalaso lands here, we can throw out all this proxy stuff and just have this:
+            // settingsProtectionLauncherButton1.Link.ForeColor = Palette.BloomBlue;
+
+            // Update _settingsProtectionButtonProxy position to where settingsProtectionLauncherButton1 was
+            _settingsProtectionButtonProxy.Location = settingsProtectionLauncherButton1.Location;
+            _settingsProtectionButtonProxy.Size = settingsProtectionLauncherButton1.Size;
+            _settingsProtectionButtonProxy.Anchor = settingsProtectionLauncherButton1.Anchor;
+
             _language1Name.UseMnemonic = false; // Allow & to be part of the language display names.
             _language2Name.UseMnemonic = false; // This may be unlikely, but can't be ruled out.
             _language3Name.UseMnemonic = false; // See https://issues.bloomlibrary.org/youtrack/issue/BL-9919.
@@ -116,9 +129,6 @@ namespace Bloom.Collection
             _allowTeamCollection.Checked = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kTeamCollections
             );
-            _allowSpreadsheetImportExport.Checked = ExperimentalFeatures.IsFeatureEnabled(
-                ExperimentalFeatures.kSpreadsheetImportExport
-            );
 
             if (
                 !ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
@@ -128,7 +138,7 @@ namespace Bloom.Collection
                 this._tab.Controls.Remove(this._teamCollectionTab);
             }
 
-            if (_collectionSettings.LockedToOneDownloadedBook)
+            if (_collectionSettings.EditingABlorgBook)
             {
                 // Don't give the slightest encouragement to making a download-for-edit collection into a team collection.
                 _tab.Controls.Remove(this._teamCollectionTab);
@@ -153,7 +163,8 @@ namespace Bloom.Collection
             // The result is the bookshelf selection gets cleared when other collection settings are saved. See BL-10093.
             PendingDefaultBookshelf = _collectionSettings.DefaultBookshelf;
 
-            CollectionSettingsApi.BrandingChangeHandler = ChangeBranding;
+            SubscriptionSettingsEditorApi.NotifyPendingSubscriptionChange =
+                OnPendingSubscriptionChange;
 
             TeamCollectionApi.TheOneInstance.SetCallbackToReopenCollection(() =>
             {
@@ -166,7 +177,7 @@ namespace Bloom.Collection
 
             if (FixingEnterpriseSubscriptionCode)
             {
-                _tab.SelectedTab = _enterpriseTab;
+                _tab.SelectedTab = _subscriptionTab;
             }
 
             if (tcManager.CurrentCollectionEvenIfDisconnected == null)
@@ -189,8 +200,8 @@ namespace Bloom.Collection
 
         public void SetDesiredTab(string tab)
         {
-            if (tab == "enterprise")
-                _tab.SelectedTab = _enterpriseTab;
+            if (tab == "subscription")
+                _tab.SelectedTab = _subscriptionTab;
         }
 
         private void UpdateDisplay()
@@ -400,7 +411,6 @@ namespace Bloom.Collection
                 _automaticallyUpdate.Checked && Environment.OSVersion.Version.Major >= 10;
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
-            UpdateSpreadsheetImportExportAllowed();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -408,33 +418,18 @@ namespace Bloom.Collection
 
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
 
-            var oldBrand = _collectionSettings.BrandingProjectKey;
-            if (oldBrand != _brand || _collectionSettings.IgnoreExpiration)
+            if (_pendingSubscription != null)
             {
-                _collectionSettings.BrandingProjectKey = _brand;
-                _collectionSettings.SubscriptionCode = _subscriptionCode;
-                // An early version of this code allowed a download-for-edit collection to be unlocked once a valid
-                // branding code was provided. We decided not to do that, but here is the code we'd reinstate if we change our minds.
-                // We've definitely selected some branding, even if it's the default. If necessary, we have a valid code
-                // for it. So if this collection was created using the "Download for editing" button on Blorg
-                // and has been getting special permission to use some branding because of that, it no longer needs
-                // that special permission. Nor does the rule that books can't be added to such a collection apply
-                // any longer. And in case the user has now selected a different branding, we no longer want the book to use the
-                // branding we downloaded it with. A simple way to achieve all this is to delete the file (if any) that
-                // constitutes our record that this is a collection made using "Download for editing".
-                // (Everything that depends on it gets cleaned up when we restart bloom with the new branding.)
-                //var downloadEditPath = Path.Combine(
-                //    _collectionSettings.FolderPath,
-                //    BloomLibraryPublishModel.kNameOfDownloadForEditFile
-                //);
-                //RobustFile.Delete(downloadEditPath);
+                _collectionSettings.Subscription = _pendingSubscription;
+
+                if (_pendingSubscription.Descriptor != _collectionSettings.Subscription.Descriptor)
+                {
+                    // The user has entered a different subscription code than what was previously saved.
+                    // We need to clear out the Bookshelf, since the new branding may not have the same bookshelf as the old one.
+                    // (We don't know if it does or not, so we have to assume it doesn't.)
+                    PendingDefaultBookshelf = string.Empty;
+                }
             }
-
-            // We don't know which if any of the new branding's bookshelves we should upload to by default,
-            // but it will certainly be wrong to upload to one that belongs to some previous branding.
-            if (oldBrand != _brand)
-                _collectionSettings.DefaultBookshelf = "";
-
             string xmatterKeyForcedByBranding =
                 _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
             PendingXmatter = this._xmatterPackFinder.GetValidXmatter(
@@ -468,6 +463,7 @@ namespace Bloom.Collection
                 _queueRenameOfCollection.Raise(_bloomCollectionName.Text.SanitizeFilename('-'));
                 //_collectionSettings.PrepareToRenameCollection(_bloomCollectionName.Text.SanitizeFilename('-'));
             }
+
             Logger.WriteEvent("Closing Settings Dialog");
 
             _collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
@@ -601,6 +597,7 @@ namespace Bloom.Collection
         /// the code is needed for.
         /// </summary>
         public bool FixingEnterpriseSubscriptionCode;
+        private Subscription _pendingSubscription;
 
         private void OnLoad(object sender, EventArgs e)
         {
@@ -608,21 +605,6 @@ namespace Bloom.Collection
             _provinceText.Text = _collectionSettings.Province;
             _districtText.Text = _collectionSettings.District;
             _bloomCollectionName.Text = _collectionSettings.CollectionName;
-            _brand = _collectionSettings.BrandingProjectKey;
-            _subscriptionCode = _collectionSettings.SubscriptionCode;
-            // Set the branding as an (incomplete) code if we are running with a legacy branding
-            if (
-                CollectionSettingsApi.LegacyBrandingName != null
-                && string.IsNullOrEmpty(_subscriptionCode)
-            )
-            {
-                _subscriptionCode = CollectionSettingsApi.LegacyBrandingName;
-            }
-            CollectionSettingsApi.SetSubscriptionCode(
-                _subscriptionCode,
-                _collectionSettings.IsSubscriptionCodeKnown(),
-                _collectionSettings.GetEnterpriseStatus(FixingEnterpriseSubscriptionCode)
-            );
             _loaded = true;
             Logger.WriteEvent("Entered Settings Dialog");
         }
@@ -659,7 +641,7 @@ namespace Bloom.Collection
                 );
             else if (_tab.SelectedTab == tabPage3)
                 HelpLauncher.Show(this, "Tasks/Basic_tasks/Enter_project_information.htm");
-            else if (_tab.SelectedTab == _enterpriseTab)
+            else if (_tab.SelectedTab == _subscriptionTab)
                 HelpLauncher.Show(this, "Tasks/Basic_tasks/Select_Bloom_Enterprise_Status.htm");
             else
                 HelpLauncher.Show(this, "User_Interface/Dialog_boxes/Settings_dialog_box.htm");
@@ -713,43 +695,13 @@ namespace Bloom.Collection
             }
         }
 
-        /// <summary>
-        /// We configure the SettingsApi to use this method to notify this (as the manager of the whole dialog
-        /// including the "need to reload" message and the Ok/Cancel buttons) of changes the user makes
-        /// in the Enterprise tab.
-        /// </summary>
-        /// <param name="fullBrandingName"></param>
-        /// <param name="subscriptionCode"></param>
-        /// <returns></returns>
-        public bool ChangeBranding(string fullBrandingName, string subscriptionCode)
+        public void OnPendingSubscriptionChange(string subscriptionCode)
         {
-            if (
-                _brand != fullBrandingName
-                || DifferentSubscriptionCodes(subscriptionCode, _subscriptionCode)
-            )
+            if (_collectionSettings.Subscription.IsDifferent(subscriptionCode))
             {
+                _pendingSubscription = new Subscription(subscriptionCode);
                 Invoke((Action)ChangeThatRequiresRestart);
-                _brand = fullBrandingName;
-                _subscriptionCode = subscriptionCode;
-                //if (BrandingProject.HaveFilesForBranding(fullBrandingName))
-                //{
-                //	// if the branding.json specifies an xmatter, set the default for this collection to that.
-                //	var correspondingXMatterPack = BrandingSettings.GetSettingsOrNull(fullBrandingName).GetXmatterToUse();
-                //	if (!string.IsNullOrEmpty(correspondingXMatterPack))
-                //	{
-                //		_collectionSettings.XMatterPackName = correspondingXMatterPack;
-                //	}
-                //}
-                return true;
             }
-            return false;
-        }
-
-        private bool DifferentSubscriptionCodes(string code1, string code2)
-        {
-            if (string.IsNullOrEmpty(code1) && string.IsNullOrEmpty(code2))
-                return false;
-            return code1 != code2;
         }
 
         private void _numberStyleCombo_SelectedIndexChanged(object sender, EventArgs e)
@@ -770,17 +722,34 @@ namespace Bloom.Collection
             );
         }
 
-        private void _allowSpreadsheetImportExport_CheckedChanged(object sender, EventArgs e)
+        /// <summary>
+        /// See note above about _settingsProtectionButtonProxy and its temporary purpose in life
+        /// </summary>
+        private void _settingsProtectionButtonProxy_LinkClicked(
+            object sender,
+            LinkLabelLinkClickedEventArgs e
+        )
         {
-            ChangeThatRequiresRestart();
-        }
-
-        private void UpdateSpreadsheetImportExportAllowed()
-        {
-            ExperimentalFeatures.SetValue(
-                ExperimentalFeatures.kSpreadsheetImportExport,
-                _allowSpreadsheetImportExport.Checked
-            );
+            // this.settingsProtectionLauncherButton1 has a private TextBox named betterLinkLabel1, which is the one we want to click
+            // use reflection to get at the control and raise the OnClick() event
+            var betterLinkLabel1 =
+                this.settingsProtectionLauncherButton1
+                    .GetType()
+                    .GetField(
+                        "betterLinkLabel1",
+                        System.Reflection.BindingFlags.NonPublic
+                            | System.Reflection.BindingFlags.Instance
+                    )
+                    .GetValue(this.settingsProtectionLauncherButton1) as TextBox;
+            // use reflection to raise the OnClick() event
+            betterLinkLabel1
+                .GetType()
+                .GetMethod(
+                    "OnClick",
+                    System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Instance
+                )
+                .Invoke(betterLinkLabel1, new object[] { EventArgs.Empty });
         }
     }
 }

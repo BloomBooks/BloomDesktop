@@ -23,9 +23,9 @@ import { postData, useApiBoolean } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
 import { Link, LinkWithDisabledStyles } from "../../react_components/link";
 import {
-    RequiresBloomEnterpriseAdjacentIconWrapper,
-    RequiresBloomEnterpriseDialog
-} from "../../react_components/requiresBloomEnterprise";
+    RequiresSubscriptionAdjacentIconWrapper,
+    RequiresSubscriptionDialog
+} from "../../react_components/requiresSubscription";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
@@ -233,7 +233,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 `}
             />
             <CommandsGroup>
-                <RequiresBloomEnterpriseAdjacentIconWrapper>
+                <RequiresSubscriptionAdjacentIconWrapper>
                     <LinkWithDisabledStyles
                         l10nKey="PublishTab.BulkBloomPub.MakeAllBloomPubs"
                         onClick={() => {
@@ -242,7 +242,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     >
                         Make All BloomPUBs from Collection
                     </LinkWithDisabledStyles>
-                </RequiresBloomEnterpriseAdjacentIconWrapper>
+                </RequiresSubscriptionAdjacentIconWrapper>
             </CommandsGroup>
             <HelpGroup>
                 <HelpLink
@@ -295,7 +295,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     return (
         <React.Fragment>
             <BulkBloomPubDialog />
-            <RequiresBloomEnterpriseDialog />
+            <RequiresSubscriptionDialog />
             <PublishScreenTemplate
                 bannerTitleEnglish="Publish as BloomPUB"
                 bannerTitleL10nId="PublishTab.BloomPUB.BannerTitle"

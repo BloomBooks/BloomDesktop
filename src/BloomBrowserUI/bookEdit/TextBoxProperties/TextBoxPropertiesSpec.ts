@@ -1,7 +1,6 @@
 /// <reference path="./TextBoxProperties.ts" />
 
 import TextBoxProperties from "./TextBoxProperties";
-"use strict";
 
 describe("TextBoxProperties", () => {
     let dialog;

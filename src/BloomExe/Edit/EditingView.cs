@@ -589,7 +589,7 @@ namespace Bloom.Edit
             }
             var endPageLoad = DateTime.Now;
             Logger.WriteEvent(
-                $"update page elapsed time = {endPageLoad - _beginPageLoad} (garbage collect took {endPageLoad - beginGarbageCollect}"
+                $"update page elapsed time = {endPageLoad - _beginPageLoad} (garbage collect took {endPageLoad - beginGarbageCollect})"
             );
             //#if MEMORYCHECK
             // Check memory for the benefit of developers.
@@ -963,7 +963,7 @@ namespace Bloom.Edit
                 {
                     // Haven't been able to find a way to copy the Gif itself into the clipboard.
                     // Possibly we could also copy the first frame as an actual image.
-                    // For now, at least we can copy one GIF overlay to another, and nothing bad happens
+                    // For now, at least we can copy one GIF canvas element to another, and nothing bad happens
                     PortableClipboard.SetText(path);
                     return true;
                 }
@@ -1894,7 +1894,7 @@ namespace Bloom.Edit
             }
             // This prevents the built-in ctrl-mousewheel zooming as well as ctrl-+ and ctrl--.
             // They are a problem because the toolbox zooms too, which causes various problems including
-            // BL-13846 (can't drag new overlays onto the page).
+            // BL-13846 (can't drag new canvas elements onto the page).
             // We enable these mouse actions for the main document iframe by handling the events
             // in Javascript and calling our zoom functions through an API.
             var settings = (Browser as WebView2Browser)?.InternalBrowser?.CoreWebView2?.Settings;

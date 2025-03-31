@@ -8,7 +8,7 @@ import { Div } from "../../react_components/l10nComponents";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import StyleEditor from "./StyleEditor";
 import { useL10n } from "../../react_components/l10nHooks";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import { ColorDisplayButton } from "../../react_components/color-picking/colorPickerDialog";
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 

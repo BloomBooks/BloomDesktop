@@ -286,6 +286,25 @@ namespace Bloom.Workspace
         }
 
         /// <summary>
+        /// Check whether the selected book's path is obsolete (not in the current
+        /// collection or a source collection) or invalid (null or empty).
+        /// </summary>
+        private bool IsSelectedBookObsoleteOrInvalid(string selBookPath)
+        {
+            if (string.IsNullOrEmpty(selBookPath) || !Directory.Exists(selBookPath))
+                return true;
+            var selBookCollectionFolder = Path.GetDirectoryName(selBookPath);
+            var inCurrentCollection = selBookCollectionFolder == _collectionSettings.FolderPath;
+            var inSourceFolder =
+                !inCurrentCollection
+                && _model
+                    .GetSourceCollectionFolders()
+                    .ToList()
+                    .Exists(folder => selBookCollectionFolder == folder);
+            return !inCurrentCollection && !inSourceFolder;
+        }
+
+        /// <summary>
         /// Restore the the selection of the previously selected book, but only if the book is in either
         /// the same collection (waiting to be edited) or in a source collection (waiting to be created
         /// in the current collection).
@@ -297,39 +316,39 @@ namespace Bloom.Workspace
         {
             try
             {
+                // Now that _bookSelection is an application-level object, it's possible that it retains a
+                // value from a previous collection when we switch collections while Bloom is running.
+                // In such situations, we're restarting almost everything else, so we don't need notifications
+                // that the book selection has changed. But we do need it to be cleared. For one thing,
+                // it might be a book that isn't in any current collection and shouldn't be visible. For another,
+                // the collection that it's part of might have been theOneEditableCollection last time, but
+                // not now, or vice versa. In that case, we could end up retaining an obsolete BookInfo object
+                // with stale data about editability, because when we go to create BookInfos for a collection,
+                // we use the one from the book selection if it matches one of the folder paths.
+                _bookSelection.ClearSelectionWithoutNotifications();
+
                 var selBookPath =
                     Program.PathToBookDownloadedAtStartup ?? Settings.Default.CurrentBookPath;
-                if (string.IsNullOrEmpty(selBookPath) || !Directory.Exists(selBookPath))
+                if (IsSelectedBookObsoleteOrInvalid(selBookPath))
                     return;
-                var selBookCollectionFolder = Path.GetDirectoryName(selBookPath);
-                var inCurrentCollection = selBookCollectionFolder == _collectionSettings.FolderPath;
-                var inSourceFolder =
-                    !inCurrentCollection
-                    && _model
-                        .GetSourceCollectionFolders()
-                        .ToList()
-                        .Exists(folder => selBookCollectionFolder == folder);
-                if (inCurrentCollection || inSourceFolder)
-                {
-                    // We used to just create a BookInfo here. But there was a race condition where
-                    // an API call on another thread looking for the books of the collection would cause
-                    // the collection to independently create a bookInfo for the same book while
-                    // the book object was being created but before it is registered as the selected book.
-                    // Then the book and the collection go on having independent bookInfo objects, and
-                    // the bookInfo in the collection doesn't get some important initialization that
-                    // we do to (at least) the AppearanceSettings of the selected book.
-                    // So now we wait, if necessary, until we can get the bookInfo from the
-                    // appropriate collection.
-                    // Note: I think the checks above for inCurrentCollection and inSourceFolder can now
-                    // be dropped in favor of just checking that we got a bookInfo here. If it's not in
-                    // one of the current collections, we won't get one.
-                    var info = _collectionTabView.GetBookInfoByFolderPath(selBookPath);
-                    //var info = new BookInfo(selBookPath, inCurrentCollection, _tcManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext);
-                    // Fully updating book files ensures that the proper branding files are found for
-                    // previewing when the collection settings change but the book selection does not.
-                    var book = _bookServer.GetBookFromBookInfo(info);
-                    _bookSelection.SelectBook(book);
-                }
+                // We used to just create a BookInfo here. But there was a race condition where
+                // an API call on another thread looking for the books of the collection would cause
+                // the collection to independently create a bookInfo for the same book while
+                // the book object was being created but before it is registered as the selected book.
+                // Then the book and the collection go on having independent bookInfo objects, and
+                // the bookInfo in the collection doesn't get some important initialization that
+                // we do to (at least) the AppearanceSettings of the selected book.
+                // So now we wait, if necessary, until we can get the bookInfo from the
+                // appropriate collection.
+                // Note: I think the checks above for inCurrentCollection and inSourceFolder can now
+                // be dropped in favor of just checking that we got a bookInfo here. If it's not in
+                // one of the current collections, we won't get one.
+                var info = _collectionTabView.GetBookInfoByFolderPath(selBookPath);
+                //var info = new BookInfo(selBookPath, inCurrentCollection, _tcManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext);
+                // Fully updating book files ensures that the proper branding files are found for
+                // previewing when the collection settings change but the book selection does not.
+                var book = _bookServer.GetBookFromBookInfo(info);
+                _bookSelection.SelectBook(book);
             }
             // I think we would ideally catch ApplicationException here, but, at least for BL-11678,
             // what we actually get is an Autofac.Core.DependencyResolutionException.
@@ -363,8 +382,13 @@ namespace Bloom.Workspace
         public string GetCurrentSelectedBookInfo(bool forceNotSaveable = false)
         {
             var book = _bookSelection.CurrentSelection;
+            if (book != null && IsSelectedBookObsoleteOrInvalid(book.FolderPath))
+            {
+                // This can happen when changing collections, and the book is in the prior collection.
+                // See BL-14313.
+                book = null;
+            }
             var collectionKind = Book.Book.CollectionKind(book);
-
             string aboutBookInfoUrl = null;
             if (book != null && book.HasAboutBookInformationToShow)
             {
@@ -793,6 +817,9 @@ namespace Bloom.Workspace
             Settings.Default.Save();
             item.Select();
             UpdateMenuTextToShorterNameOfSelection(toolStripButton, item.Text);
+
+            // Currently needed for the language chooser to update its localization
+            BloomWebSocketServer.Instance.SendString("app", "uiLanguageChanged", tag.LangTag);
 
             finishClickAction?.Invoke();
         }

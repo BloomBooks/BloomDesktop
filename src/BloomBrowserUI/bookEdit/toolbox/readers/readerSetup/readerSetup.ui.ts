@@ -1,7 +1,7 @@
 /// <reference path="readerSetup.io.ts" />
 /// <reference path="../../../../lib/jquery.onSafe.d.ts" />
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
-import "../../../../lib/jquery.onSafe.ts";
+import "../../../../lib/jquery.onSafe";
 import {
     beginSaveChangedSettings,
     cleanSpaceDelimitedList,
@@ -495,7 +495,7 @@ function displayAllowedWordsForSelectedStage(wordsStr: string): void {
     const wordList = <HTMLElement>document.getElementById("rs-matching-words");
     wordList.innerHTML = "";
 
-    const wordsObj: Object = JSON.parse(wordsStr);
+    const wordsObj: object = JSON.parse(wordsStr);
     const words: string[] = <string[]>_.toArray(wordsObj);
 
     let result: string = "";
@@ -527,7 +527,7 @@ function displayWordsForSelectedStage(wordsStr: string): void {
     const wordList = <HTMLElement>document.getElementById("rs-matching-words");
     wordList.innerHTML = "";
 
-    const wordsObj: Object = JSON.parse(wordsStr);
+    const wordsObj: object = JSON.parse(wordsStr);
     let words: DataWord[] = <DataWord[]>_.toArray(wordsObj);
 
     // add sight words
@@ -808,7 +808,9 @@ function renumberRows(rows: JQuery): void {
     let rowNum = 1;
 
     $.each(rows, function() {
-        (<HTMLTableCellElement>this.cells[0]).innerHTML = (rowNum++).toString();
+        (<HTMLTableCellElement>(
+            (<HTMLTableRowElement>this).cells[0]
+        )).innerHTML = (rowNum++).toString();
     });
 }
 
@@ -1065,7 +1067,7 @@ function getMainTableSpan(spanClassName: string): HTMLSpanElement {
     const levelsTable = document.getElementById("levels-table")!;
     return levelsTable.querySelector(
         `tbody tr.selected td span.${spanClassName}`
-    )! as HTMLSpanElement;
+    ) as HTMLSpanElement;
 }
 
 function setAllowedWordsFile(fileName: string): void {

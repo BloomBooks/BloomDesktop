@@ -1,5 +1,9 @@
 import * as React from "react";
-import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
+import {
+    ILocalizationProps,
+    ILocalizationState,
+    LocalizableElement
+} from "./l10nComponents";
 
 export interface IRadioProps extends ILocalizationProps {
     value: string; // identifies this radio in set
@@ -8,12 +12,13 @@ export interface IRadioProps extends ILocalizationProps {
     labelClass?: string; // class for the label (text next to the radio button), in addition to default "radioLabel"
     defaultChecked?: boolean; // true if button should be checked; usually controlled by containing RadioGroup
     onSelected?: (value: string) => void; // passed this button's value when it is clicked; usually used by containing RadioGroup.
+    disabled?: boolean; // true if button should be disabled
 }
 
 // A radio button that is localizable.
 // Note that this is a vanilla html radio input.
 // Likely, any new control should be MuiRadio which is a material UI radio.
-export class Radio extends LocalizableElement<IRadioProps, {}> {
+export class Radio extends LocalizableElement<IRadioProps, ILocalizationState> {
     constructor(props) {
         super(props);
     }
@@ -49,6 +54,7 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
                             this.props.onSelected(this.props.value);
                         }
                     }}
+                    disabled={this.props.disabled}
                 />
                 <div
                     className={Radio.combineClasses(
@@ -56,7 +62,7 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
                         this.props.labelClass
                     )}
                     onClick={() => {
-                        if (this.props.onSelected) {
+                        if (!this.props.disabled && this.props.onSelected) {
                             this.props.onSelected(this.props.value);
                         }
                     }}
@@ -85,7 +91,7 @@ export interface IRadioGroupProps {
 //
 // Note that this was designed to work with the `Radio` control above.
 // But it is likely that any new controls should rather be MuiRadio.
-export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
+export class RadioGroup extends React.Component<IRadioGroupProps> {
     constructor(props) {
         super(props);
     }

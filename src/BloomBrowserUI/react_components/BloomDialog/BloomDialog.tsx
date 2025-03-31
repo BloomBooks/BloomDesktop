@@ -135,6 +135,25 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
             ...propsToPass
         } = props;
 
+        // Add a key down handler for when dialogFrameProvidedExternally is true.
+        // When dialogFrameProvidedExternally is false, Escape is handled by the Dialog component.
+        useEffect(() => {
+            if (dialogFrameProvidedExternally && (onCancel || onClose)) {
+                const handleKeyDown = (event: KeyboardEvent) => {
+                    if (event.key === "Escape") {
+                        if (onCancel) onCancel("escapeKeyDown");
+                        else onClose(event, "escapeKeyDown");
+                    }
+                };
+
+                document.addEventListener("keydown", handleKeyDown);
+                return () => {
+                    document.removeEventListener("keydown", handleKeyDown);
+                };
+            }
+            return undefined;
+        }, [dialogFrameProvidedExternally, onCancel, onClose]);
+
         const disableDragging =
             disableDraggingProp !== undefined
                 ? disableDraggingProp
@@ -320,7 +339,7 @@ DialogTitle.displayName = "DialogTitle";
 
 // The height of this is determined by what is inside of it. If the content might grow (e.g. a progress box), then it's up to the
 // client to set maxes or fixed dimensions. See <ProgressDialog> for an example.
-export const DialogMiddle: FunctionComponent<{}> = props => {
+export const DialogMiddle: FunctionComponent = props => {
     return (
         <div
             id="draggable-dialog-middle"
@@ -352,7 +371,7 @@ export const DialogMiddle: FunctionComponent<{}> = props => {
 };
 
 // should be a child of DialogBottomButtons
-export const DialogBottomLeftButtons: FunctionComponent<{}> = props => (
+export const DialogBottomLeftButtons: FunctionComponent = props => (
     <div
         css={css`
             margin-right: auto;
@@ -376,7 +395,7 @@ export const DialogBottomLeftButtons: FunctionComponent<{}> = props => (
 );
 
 // normally one or more buttons. 1st child can also be <DialogBottomLeftButtons> if you have left-aligned buttons to show
-export const DialogBottomButtons: FunctionComponent<{}> = props => {
+export const DialogBottomButtons: FunctionComponent = props => {
     return (
         <div
             css={css`

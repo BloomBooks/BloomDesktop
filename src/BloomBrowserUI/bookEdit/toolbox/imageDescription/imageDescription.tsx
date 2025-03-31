@@ -18,6 +18,7 @@ import {
     hideImageDescriptions,
     showImageDescriptions
 } from "./imageDescriptionUtils";
+import { getCanvasElementManager } from "../overlay/canvasElementUtils";
 
 interface IImageDescriptionState {
     enabled: boolean;
@@ -33,7 +34,7 @@ interface IImageDescriptionState {
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which passes an instance of ImageDescriptionTool to ToolBox.registerTool().
 export class ImageDescriptionToolControls extends React.Component<
-    {},
+    unknown,
     IImageDescriptionState
 > {
     public readonly state: IImageDescriptionState = {
@@ -231,8 +232,8 @@ export function setupImageDescriptions(
     // This function is called for each image container that gets modified by adding an image description
     doIfContentAdded: () => void
 ) {
-    const bubbleManager = OverlayTool.bubbleManager();
-    if (!bubbleManager) {
+    const canvasElementManager = getCanvasElementManager();
+    if (!canvasElementManager) {
         // try again later...maybe we're still bootstrapping? Haven't finished loading that iframe?
         setTimeout(() => {
             setupImageDescriptions(
@@ -243,7 +244,7 @@ export function setupImageDescriptions(
         }, 100);
         return;
     }
-    const imageContainers = bubbleManager.getAllPrimaryImageContainersOnPage(); // don't add to overlay images!
+    const imageContainers = canvasElementManager.getAllPrimaryImageContainersOnPage(); // don't add to canvas element images!
 
     for (let i = 0; i < imageContainers.length; i++) {
         const container = imageContainers[i];
@@ -288,7 +289,7 @@ function appendTranslationGroup(innerHtml, container: Element) {
 
     // from somewhere else I (John Thomson) copied this as a typical default set of classes for a translation group,
     // except for the extra bloom-imageDescription. This distinguishes it from other TGs (such as in
-    // textOverPicture) which might be nested in image containers.
+    // canvas element) which might be nested in image containers.
     // Note that, like normal-style, the class imageDescriptionEdit-style class is not defined
     // anywhere. Image descriptions will get the book's default font and Bloom's default text size
     // from other style sheets, unless the user edits the imageDescriptionEdit-style directly.

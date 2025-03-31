@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import { Tab, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.less";
 

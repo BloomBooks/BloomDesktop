@@ -96,17 +96,13 @@ export const ProgressDialogInner: React.FunctionComponent<{
                 </Typography>
             </DialogContent>
             <DialogActions>
-                {/* This && "" is needed because there's something about DialogActions that chokes if given a `false` in its children */}
-                {(somethingStillGoing && "") || (
-                    <Button
-                        onClick={() => onCopy()}
-                        color="primary"
-                        style={{ marginRight: "auto" }}
-                    >
-                        Copy to Clipboard
-                    </Button>
-                )}
-
+                <Button
+                    onClick={() => onCopy()}
+                    color="primary"
+                    style={{ marginRight: "auto" }}
+                >
+                    Copy to Clipboard
+                </Button>
                 {(() => {
                     switch (props.progressState) {
                         case ProgressState.Serving:

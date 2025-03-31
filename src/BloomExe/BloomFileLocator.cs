@@ -364,10 +364,10 @@ namespace Bloom
             );
         }
 
-        public static string GetBrandingFolder(string fullBrandingName)
+        public static string GetBrandingFolder(string subscriptionDescriptor)
         {
-            BrandingSettings.ParseBrandingKey(
-                fullBrandingName,
+            BrandingSettings.ParseSubscriptionDescriptor(
+                subscriptionDescriptor,
                 out var brandingFolderName,
                 out var flavor,
                 out var subUnitName

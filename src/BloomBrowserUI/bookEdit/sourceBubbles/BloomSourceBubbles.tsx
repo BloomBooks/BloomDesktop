@@ -8,8 +8,8 @@
 // This collectionSettings reference defines the function GetSettings(): ICollectionSettings
 // The actual function is injected by C#.
 /// <reference path="../js/collectionSettings.d.ts"/>
-import React = require("react");
-import ReactDOM = require("react-dom");
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from "../js/bloomQtipUtils";
@@ -92,6 +92,7 @@ export default class BloomSourceBubbles {
         group: HTMLElement,
         newLangTag?: string
     ): JQuery {
+        if (group.classList.contains("bloom-no-source-bubble")) return $();
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
         const divForBubble = $(group).clone();
@@ -259,54 +260,55 @@ export default class BloomSourceBubbles {
         editableDiv.css("min-height", "");
     }
 
-    // 'Smart' orders the tabs putting the latest viewed language first, followed by others in the collection
+    // 'Smart' orders the tabs putting the latest viewed languages first, followed by others in the collection
     // param 'items' is an alphabetical list of all the divs of different languages to be used as tabs
     // optional param 'newLangTag' is defined when the user clicks on a language in the dropdown box
-    private static SmartOrderSourceTabs(items, newLangTag?: string): JQuery {
-        // BL-2357 Do some smart ordering of source language tabs
-        const settingsObject = GetSettings();
-        let defaultSrcLang = settingsObject.defaultSourceLanguage;
-        let destination = 0;
-        if (newLangTag) defaultSrcLang = newLangTag;
-        let newItems = BloomSourceBubbles.DoSafeReplaceInList(
-            items,
-            defaultSrcLang,
-            destination
-        );
-        if ($(newItems).attr("lang") == defaultSrcLang) {
-            // .attr() just gets the first one
-            destination++;
-            items = newItems;
-        }
-        const language2 = settingsObject.currentCollectionLanguage2;
-        const language3 = settingsObject.currentCollectionLanguage3;
-        if (language2 && language2 != defaultSrcLang) {
-            newItems = BloomSourceBubbles.DoSafeReplaceInList(
-                items,
-                language2,
-                destination
-            );
-            if ($(newItems[destination]).attr("lang") == language2) {
-                destination++;
-                items = newItems;
-            }
-        }
-        if (language3 && language3 != defaultSrcLang) {
-            newItems = BloomSourceBubbles.DoSafeReplaceInList(
-                items,
-                language3,
-                destination
-            );
-            if ($(newItems[destination]).attr("lang") == language3) {
-                items = newItems;
-            }
-        }
-        return items;
+    private static SmartOrderSourceTabs(
+        items: JQuery,
+        newLangTag?: string
+    ): JQuery {
+        const settings = GetSettings();
+
+        // Get language preferences in priority order, filtering out any empty/undefined values
+        // and removing duplicates (same language codes) using Set
+        const preferredLanguages = [
+            newLangTag, // Highest priority - explicitly selected
+            settings.defaultSourceLanguage, // Second priority - primary source language
+            settings.defaultSourceLanguage2, // Third priority - secondary source language
+            settings.currentCollectionLanguage2, // Fourth priority - collection languages
+            settings.currentCollectionLanguage3
+        ].filter(lang => Boolean(lang?.trim())); // Remove empty/undefined/whitespace-only values
+
+        // Convert to Set to remove duplicates while preserving order
+        const preferredOrder = new Set(preferredLanguages);
+
+        // If we have no valid preferences, just return original alphabetically sorted items
+        if (preferredOrder.size === 0) return items;
+
+        const itemArray = items.toArray();
+
+        itemArray.sort((a, b) => {
+            const langA = $(a).attr("lang");
+            const langB = $(b).attr("lang");
+
+            const indexA = [...preferredOrder].indexOf(langA);
+            const indexB = [...preferredOrder].indexOf(langB);
+
+            // If both languages are in preferred list, sort by preference order
+            if (indexA >= 0 && indexB >= 0) return indexA - indexB;
+            // If only one is in preferred list, it goes first
+            if (indexA >= 0) return -1;
+            if (indexB >= 0) return 1;
+            // Neither in preferred list - maintain alphabetical order
+            return langA < langB ? (langA > langB ? 1 : 0) : -1;
+        });
+
+        return $(itemArray);
     }
 
     private static DoSafeReplaceInList(
         items: JQuery,
-        langCode: String,
+        langCode: string,
         position: number
     ): JQuery {
         // if items contains a div with langCode, then try to put it at the position specified in the list
@@ -457,25 +459,38 @@ export default class BloomSourceBubbles {
         }
     }
 
-    // Arrange a mutation observer to recompute position of tooltips when something changes in
-    // any of the translation groups.
+    private static debounceTimeout = 0;
+
+    // Arrange a mutation observer to recompute position of tooltips when something changes on
+    // the page.
     // I don't think we need worry about disposing of this. It's useful until the page is reloaded.
-    // This could be better done with resizeObserver...FixGecko60.
-    // Note, in that case we'd want to observer each .bloom-editable, not the whole page.
+    // Enhance: possibly this could be better done with resizeObserver? But we need to detect changes of position, too.
+    // Note, in that case we'd want to observe each translation group, not the whole page.
     // (The page typically will NOT change size when a text block does.)
     public static setupSizeChangedHandling(groups: HTMLElement[]) {
-        const observer = new MutationObserver(mutations => {
-            $(groups).qtip("reposition");
-        });
         const config = {
             childList: true,
             characterData: true,
-            subtree: true
+            subtree: true,
+            attributes: true
         };
-        observer.observe(
-            document.getElementsByClassName("bloom-page")[0],
-            config
-        );
+        const observer = new MutationObserver(mutations => {
+            // To minimize the overhead of this, we only do it after nothing changes for 100ms
+            if (BloomSourceBubbles.debounceTimeout) {
+                clearTimeout(BloomSourceBubbles.debounceTimeout);
+            }
+
+            BloomSourceBubbles.debounceTimeout = (setTimeout(() => {
+                observer.disconnect(); // don't want to respond to changes that reposition makes
+                $(document.querySelectorAll("[data-hasqtip]")).qtip(
+                    "reposition"
+                );
+                observer.observe(document.body, config);
+            }, 100) as any) as number;
+        });
+        // observe everything...even (for example) dialogs that are outside the page.
+        // For example, the GamePromptDialog has a source bubble and can be moved.
+        observer.observe(document.body, config);
     }
 
     // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).

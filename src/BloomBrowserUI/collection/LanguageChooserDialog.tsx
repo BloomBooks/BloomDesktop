@@ -15,12 +15,12 @@ import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
-import { postData } from "../utils/bloomApi";
+import { get, postData } from "../utils/bloomApi";
 import {
     BloomDialog,
     DialogBottomButtons
 } from "../react_components/BloomDialog/BloomDialog";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import { AppBar } from "@mui/material";
 import { kBloomLightGray } from "../utils/colorUtils";
 import {
@@ -41,11 +41,15 @@ export function getLanguageData(
     languageTag: string | undefined,
     selection: IOrthography | undefined
 ): ILanguageData {
+    const defaultName = selection?.language
+        ? defaultDisplayName(selection.language) || null
+        : null;
+    // Ensure values are null rather than undefined. Otherwise, the property won't be serialized at all.
     return {
         LanguageTag: languageTag || null,
-        DefaultName: defaultDisplayName(selection?.language),
-        DesiredName: selection?.customDetails?.displayName || null,
-        Country: defaultRegionForLangTag(languageTag).name
+        DefaultName: defaultName,
+        DesiredName: selection?.customDetails?.customDisplayName || defaultName,
+        Country: languageTag ? defaultRegionForLangTag(languageTag)?.name : null
     };
 }
 
@@ -112,11 +116,16 @@ export const LanguageChooserDialog: React.FunctionComponent<{
         closeDialog();
     }
 
+    const [uiLanguage, setUiLanguage] = React.useState("en");
+    React.useEffect(() => {
+        get("currentUiLanguage", result => {
+            setUiLanguage(result.data);
+        });
+    }, []);
+
     return (
         <BloomDialog
             {...propsForBloomDialog}
-            onCancel={closeDialog}
-            onClose={closeDialog}
             css={css`
                 padding: 0;
             `}
@@ -145,6 +154,7 @@ export const LanguageChooserDialog: React.FunctionComponent<{
                 </H1>
             </AppBar>
             <LanguageChooser
+                uiLanguage={uiLanguage}
                 searchResultModifier={defaultSearchResultModifier}
                 initialSearchString={props.initialLanguageTag?.split("-")[0]}
                 initialSelectionLanguageTag={props.initialLanguageTag}
@@ -162,10 +172,16 @@ let show: () => void = () => {
     window.alert("LanguageChooserDialog is not set up yet.");
 };
 
-export function showLanguageChooserDialog(initialLanguageTag?: string) {
+export function showLanguageChooserDialog(
+    initialLanguageTag?: string,
+    initialCustomName?: string
+) {
     try {
         ReactDOM.render(
-            <LanguageChooserDialog initialLanguageTag={initialLanguageTag} />,
+            <LanguageChooserDialog
+                initialLanguageTag={initialLanguageTag}
+                initialCustomName={initialCustomName}
+            />,
             getModalContainer()
         );
     } catch (error) {

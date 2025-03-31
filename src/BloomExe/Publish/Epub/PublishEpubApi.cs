@@ -83,7 +83,7 @@ namespace Bloom.Publish.Epub
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
-                        if (request.CurrentBook.OurHtmlDom.HasComicalOverlays())
+                        if (request.CurrentBook.OurHtmlDom.HasComicalCanvasElements())
                             // If we have comic pages (now), we have to use fixed layout, even if flowable was set at some point.
                             request.ReplyWithText("fixed");
                         else
@@ -166,8 +166,8 @@ namespace Bloom.Publish.Epub
                 false
             );
             apiHandler.RegisterBooleanEndpointHandler(
-                kApiUrlPart + "overlays",
-                request => request.CurrentBook.OurHtmlDom.HasComicalOverlays(),
+                kApiUrlPart + "canvasElements",
+                request => request.CurrentBook.OurHtmlDom.HasComicalCanvasElements(),
                 null,
                 false
             );
@@ -234,7 +234,7 @@ namespace Bloom.Publish.Epub
 
         private string getSaveAsPath(ApiRequest request)
         {
-            var initialPath = OutputFilenames.GetOutputFilePath(
+            var initialPath = FilePathMemory.GetOutputFilePath(
                 _bookSelection.CurrentSelection,
                 ".epub"
             );
@@ -244,7 +244,7 @@ namespace Bloom.Publish.Epub
             );
             if (!string.IsNullOrEmpty(destFileName))
             {
-                OutputFilenames.RememberOutputFilePath(
+                FilePathMemory.RememberOutputFilePath(
                     _bookSelection.CurrentSelection,
                     ".epub",
                     destFileName

@@ -52,7 +52,7 @@ export const kDefaultLanguageFontStack = "Andika, sans-serif";
 //const AACompliantBloomBlue = "#177c8a";
 
 declare module "@mui/styles" {
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    // eslint-disable-next-line  @typescript-eslint/no-empty-object-type
     interface DefaultTheme extends Theme {}
 }
 
@@ -89,7 +89,15 @@ export const lightTheme = createTheme({
                         }
                     }
                 }
-            ]
+            ],
+            // This makes all MuiLinks (import { Link as MuiLink } from "@mui/material";)
+            // default to our blue color. Note that it doesn't apply to plain <a> react
+            // components.
+            styleOverrides: {
+                root: {
+                    color: kBloomBlue
+                }
+            }
         },
 
         MuiTooltip: {
@@ -106,21 +114,6 @@ export const lightTheme = createTheme({
                 },
                 arrow: {
                     color: kBloomBlueTextBackground
-                }
-            }
-        },
-        MuiDialogTitle: {
-            styleOverrides: {
-                root: {
-                    backgroundColor: kDialogTopBottomGray,
-                    "& h6": { fontWeight: "bold" }
-                }
-            }
-        },
-        MuiDialogActions: {
-            styleOverrides: {
-                root: {
-                    backgroundColor: kDialogTopBottomGray
                 }
             }
         },
@@ -321,6 +314,69 @@ export const toolboxTheme = createTheme({
                     backgroundColor: "#d4d4d480",
                     marginTop: "5px",
                     marginBottom: "5px"
+                }
+            }
+        }
+    }
+});
+
+// Just over help bubbles, but under topic dialog
+const toolboxZIndex = 18000; // cf @toolboxZIndex in bloomUI.less
+const toolboxPopupZIndex = toolboxZIndex + 1; // cf @toolboxPopupZIndex in bloomUI.less
+
+// This theme is primarily designed to wrap around a Select in the toolbox.
+// Since the popup background is white, we need to make the text darker.
+// The chosen color is one Mui uses a lot, and we've already copied it in a few places.
+// We also mess with a few other things to make the input component look better
+// (including reverting the text color). That part could be done with Emotion, but
+// it's cleaner to do all the styling for Select here, and we can't change the popup
+// properties like that because it's not a child of the main component that the Select
+// generates.
+// I've given it a more general name since it might be useful for other things that
+// create popups in the toolbox.
+// This is not yet used for all our Selects; some of the same fiddles, for example,
+// are done in the overlayTool.less. I don't want to mess with that until we make it
+// entirely React; currently, for example, it's not even using the toolboxTheme.
+export const toolboxMenuPopupTheme = createTheme(toolboxTheme, {
+    palette: {
+        text: { primary: "rgb(0.0.0.87)" }
+    },
+    components: {
+        MuiInput: {
+            styleOverrides: {
+                root: {
+                    color: toolboxTextColor,
+                    border: `2px solid ${toolboxTextColor}`,
+                    borderRadius: "7px",
+                    paddingLeft: "10px",
+                    paddingTop: "3px",
+                    width: "95%",
+                    "&::after": {
+                        // Normally there is a 2px border when the dropdown menu is open. I like it better without it, because
+                        // the removal of the effect seems a little off because the border persists until after you select AND THEN after you click somewhere else.
+                        borderBottomWidth: "0px"
+                    }
+                }
+            }
+        },
+        // If we don't mess with popover zIndex (which currently defaults to 1300), it will be
+        // behind the toolbox, and since it is absolutely positioned in the expectation that it
+        // will be above it, it wont' be visible at all.
+        // I don't know why we need both of these (Copilot suggested a much larger set),
+        // but experimentally this works and removing either of them does not.
+        MuiPopover: {
+            styleOverrides: {
+                // This targets the root of the popover
+                root: {
+                    zIndex: toolboxPopupZIndex
+                }
+            }
+        },
+        MuiMenu: {
+            styleOverrides: {
+                // The Menu's paper element
+                paper: {
+                    zIndex: toolboxPopupZIndex
                 }
             }
         }

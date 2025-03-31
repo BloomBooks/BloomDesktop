@@ -300,7 +300,7 @@ namespace Bloom.CollectionTab
             _currentEditableCollectionSelection.SelectCollection(editableCollection);
             yield return editableCollection;
             // If we're locked to one downloaded book, we don't need to show the source collections, or even to load them.
-            if (!_collectionSettings.LockedToOneDownloadedBook)
+            if (!_collectionSettings.EditingABlorgBook)
             {
                 foreach (var bookCollection in _sourceCollectionsList.GetSourceCollectionsFolders())
                 {
@@ -323,7 +323,7 @@ namespace Bloom.CollectionTab
         // but with the Collection UI moving to JS I don't see a good alternative
         public void MakeBloomPack(bool forReaderTools)
         {
-            var initialPath = OutputFilenames.GetOutputFilePath(
+            var initialPath = FilePathMemory.GetOutputFilePath(
                 TheOneEditableCollection,
                 ".BloomPack"
             );
@@ -333,7 +333,7 @@ namespace Bloom.CollectionTab
             );
             if (!string.IsNullOrEmpty(destFileName))
             {
-                OutputFilenames.RememberOutputFilePath(
+                FilePathMemory.RememberOutputFilePath(
                     TheOneEditableCollection,
                     ".BloomPack",
                     destFileName

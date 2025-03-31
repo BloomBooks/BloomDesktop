@@ -27,7 +27,7 @@ interface IPageControlsState {
 
 // This is a small area of controls at the bottom of the webThumbnailList that gives the user controls
 // for adding/duplicating/deleting pages in a book and temporarily unlocking/locking the book.
-class PageControls extends React.Component<{}, IPageControlsState> {
+class PageControls extends React.Component<unknown, IPageControlsState> {
     // set a initial state
     public readonly state: IPageControlsState = {
         canAddState: true,

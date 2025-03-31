@@ -30,8 +30,8 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler("editView/setModalState", HandleSetModalState, true);
             apiHandler.RegisterEndpointHandler("editView/chooseWidget", HandleChooseWidget, true);
             apiHandler.RegisterEndpointHandler(
-                "editView/getColorsUsedInBookOverlays",
-                HandleGetColorsUsedInBookOverlays,
+                "editView/getColorsUsedInBookCanvasElements",
+                HandleGetColorsUsedInBookCanvasElements,
                 true
             );
             apiHandler.RegisterEndpointHandler("editView/pageDomLoaded", HandlePageDomLoaded, true);
@@ -176,10 +176,16 @@ namespace Bloom.web.controllers
             // I'm coding it here to ignore 'hint'.
             if (langTag != "hint")
             {
-                Settings.Default.LastSourceLanguageViewed = langTag;
-                Settings.Default.Save();
+                // If this is a different language than the current one, shift the current to secondary
+                if (langTag != Settings.Default.LastSourceLanguageViewed)
+                {
+                    Settings.Default.LastSourceLanguageViewed2 = Settings
+                        .Default
+                        .LastSourceLanguageViewed;
+                    Settings.Default.LastSourceLanguageViewed = langTag;
+                    Settings.Default.Save();
+                }
             }
-
             request.PostSucceeded();
         }
 
@@ -370,7 +376,7 @@ namespace Bloom.web.controllers
             }
         }
 
-        private void HandleGetColorsUsedInBookOverlays(ApiRequest request)
+        private void HandleGetColorsUsedInBookCanvasElements(ApiRequest request)
         {
             var model = View.Model;
             if (!model.HaveCurrentEditableBook)
@@ -383,7 +389,7 @@ namespace Bloom.web.controllers
             // colors to fit in our dialog's swatch array. (2) Order the list returned by frequency, so the most
             // frequently used colors are at the front of the resultant swatch array.
             var currentBookDom = currentBook.OurHtmlDom;
-            var colors = currentBookDom.GetColorsUsedInBookBubbleElements();
+            var colors = currentBookDom.GetColorsUsedInBookCanvasElements();
             request.ReplyWithText("[" + String.Join(",", colors) + "]");
         }
 

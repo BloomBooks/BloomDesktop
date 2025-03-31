@@ -18,9 +18,9 @@ import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import { getBoolean, post, postBoolean } from "../utils/bloomApi";
 import {
-    useEnterpriseAvailable,
-    useGetEnterpriseStatus
-} from "./requiresBloomEnterprise";
+    useHaveSubscription,
+    useGetSubscriptionTier
+} from "./requiresSubscription";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
 import { kUiFontStack } from "../bloomMaterialUITheme";
 import { Variant } from "@mui/material/styles/createTypography";
@@ -34,8 +34,16 @@ interface IBaseLocalizableMenuItemProps {
         Variant | "inherit",
         TypographyPropsVariantOverrides
     >;
-    subLabelL10nId?: string;
+    // To make a sublabel, you may pass an entire node. If that is missing, you may pass a string that is
+    // already localized as necessary (generatedSubLabel), and if that is also missing, you may pass
+    // an l10nId, and the corresponding string will be shown.
+    // Note that (unlike many places in our code) you are not supposed to pass the English string merely
+    // as a comment, with the expectation that the localized one will override it. GeneratedSubLabel will
+    // beat subLabelL10nId, if it is not undefined.
+    sublabel?: ReactNode;
     generatedSubLabel?: string;
+    subLabelL10nId?: string;
+    tooltip?: string;
 }
 
 export interface INestedMenuItemProps extends IBaseLocalizableMenuItemProps {
@@ -48,10 +56,10 @@ export interface ILocalizableMenuItemProps
     onClick: React.MouseEventHandler;
     icon?: ReactNode;
     addEllipsis?: boolean;
-    requiresAnyEnterprise?: boolean;
-    requiresEnterpriseSubscription?: boolean;
+    requiresAnySubscription?: boolean;
+    requiresEnterpriseTier?: boolean;
     dontGiveAffordanceForCheckbox?: boolean;
-    enterpriseTooltipOverride?: string;
+    subscriptionTooltipOverride?: string;
 }
 
 interface ILocalizableCheckboxMenuItemProps
@@ -77,21 +85,22 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
         variant: variant
     };
     const label = useL10n(props.english, props.l10nId);
-    // BL-10638 In the case of an expired subscription code, 'useEnterpriseAvailable()` returns false,
-    // but `useGetEnterpriseStatus()` returns "Subscription". That state of things is useful for the
-    // CollectionSettingsDialog, but not here in menu items. The absence of enterpriseAvailable needs to
-    // take precedence. But by rules of hooks we still need to run the hook and then modify the value.
-    const enterpriseAvailable = useEnterpriseAvailable();
-    let enterpriseStatus = useGetEnterpriseStatus();
-    if (!enterpriseAvailable) {
-        enterpriseStatus = "None";
+
+    const subscriptionAvailable = useHaveSubscription();
+    let subscriptionStatus = useGetSubscriptionTier();
+    if (!subscriptionAvailable) {
+        subscriptionStatus = "None"; // (years later) I don't know why we don't trust the useGetSubscriptionStatus() to return this
     }
 
-    const meetsEnterpriseRequirement = props.requiresEnterpriseSubscription
-        ? enterpriseStatus === "Subscription"
-        : props.requiresAnyEnterprise
-        ? enterpriseAvailable
-        : true;
+    let meetsSubscriptionRequirement = true;
+
+    // If requires subscription, check for "Subscription" status
+    if (props.requiresEnterpriseTier) {
+        meetsSubscriptionRequirement = subscriptionStatus !== "None";
+    } else if (props.requiresAnySubscription) {
+        meetsSubscriptionRequirement = subscriptionAvailable;
+    }
+    // Otherwise, keep the default true value
 
     const iconElement = props.icon ? (
         <ListItemIcon
@@ -102,7 +111,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                 // We can't use the disabled prop because it prevents the click from opening settings.
                 // So we just make it look disabled (using the same setting as Mui-disabled).
                 // And we only do it on the icon and text --not on the menu item-- so the enterprise icon doesn't look disabled.
-                opacity: ${meetsEnterpriseRequirement
+                opacity: ${meetsSubscriptionRequirement
                     ? undefined
                     : kBloomDisabledOpacity};
             `}
@@ -121,13 +130,13 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
 
     const ellipsis = props.addEllipsis ? "..." : "";
 
-    const requiresEnterpriseTooltip = useL10n(
-        "To use this feature, you'll need to enable Bloom Enterprise.",
-        "CollectionSettingsDialog.RequiresEnterprise_ToolTip_"
+    const requiresSubscriptionTooltip = useL10n(
+        "To use this feature, you'll need a Bloom Subscription.",
+        "CollectionSettingsDialog.RequiresSubscription_ToolTip_"
     );
 
-    const enterpriseElement =
-        props.requiresAnyEnterprise || props.requiresEnterpriseSubscription ? (
+    const subscriptionElement =
+        props.requiresAnySubscription || props.requiresEnterpriseTier ? (
             <img
                 css={css`
                     width: ${kEnterpriseStickerAffordance}px !important;
@@ -135,10 +144,10 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                 `}
                 src="/bloom/images/bloom-enterprise-badge.svg"
                 title={
-                    meetsEnterpriseRequirement
+                    meetsSubscriptionRequirement
                         ? undefined
-                        : props.enterpriseTooltipOverride ||
-                          requiresEnterpriseTooltip
+                        : props.subscriptionTooltipOverride ||
+                          requiresSubscriptionTooltip
                 }
             />
         ) : (
@@ -150,18 +159,19 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
         );
 
     const localizedSublabel = useL10n("", props.subLabelL10nId ?? null);
-    const sublabel = props.generatedSubLabel ?? localizedSublabel;
+    const sublabel =
+        props.sublabel ?? props.generatedSubLabel ?? localizedSublabel;
 
     const openCollectionSettings = () =>
-        post("common/showSettingsDialog?tab=enterprise");
+        post("common/showSettingsDialog?tab=subscription");
 
-    const menuClickHandler = meetsEnterpriseRequirement
+    const menuClickHandler = meetsSubscriptionRequirement
         ? props.onClick
         : openCollectionSettings;
 
     // The "div" wrapper is necessary to get the tooltip to work on a disabled MenuItem.
     return (
-        <div title={props.disabled ? props.tooltipIfDisabled : undefined}>
+        <div title={props.disabled ? props.tooltipIfDisabled : props.tooltip}>
             <MenuItem
                 key={props.l10nId}
                 onClick={menuClickHandler}
@@ -184,7 +194,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                                 // We can't use the disabled prop because it prevents the click from opening settings and
                                 // prevents the tooltip. So we just make it look disabled (using the same setting as Mui-disabled).
                                 // And we only do it on the icon and text so the enterprise icon doesn't look disabled.
-                                opacity: ${meetsEnterpriseRequirement
+                                opacity: ${meetsSubscriptionRequirement
                                     ? undefined
                                     : kBloomDisabledOpacity};
                             }
@@ -193,7 +203,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                         primary={label + ellipsis}
                         secondary={sublabel !== "" ? sublabel : null} // null is needed to not leave an empty row
                     ></ListItemText>
-                    {enterpriseElement}
+                    {subscriptionElement}
                 </React.Fragment>
             </MenuItem>
         </div>

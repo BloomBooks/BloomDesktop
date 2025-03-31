@@ -89,32 +89,6 @@ namespace Bloom
             return;
 #else
             bool isUninstalling = args.Any(x => x.Contains("uninstall"));
-            using (var logger = new InstallerLogger(true) { Level = LogLevel.Info })
-            {
-                try
-                {
-                    SquirrelLocator.CurrentMutable.Register(
-                        () => logger,
-                        typeof(Squirrel.SimpleSplat.ILogger)
-                    );
-                    HandleSquirrelInstallEventWithLogger(args, logger);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Failed to register logger: " + e.Message);
-                }
-            }
-        }
-
-        private static void HandleSquirrelInstallEventWithLogger(
-            string[] args,
-            InstallerLogger logger
-        )
-        {
-            logger.Write(
-                $"Bloom Install: arguments=\"{string.Join("\", \"", args)}\"",
-                LogLevel.Info
-            );
             var updateUrlResult = LookupUrlOfSquirrelUpdate();
             // Should only be null if we're not online. Not sure how squirrel will handle that,
             // but at least one of these operations is responsible for setting up shortcuts to the program,
@@ -122,7 +96,6 @@ namespace Bloom
             // seems less likely to cause problems than passing null.
             if (string.IsNullOrEmpty(updateUrlResult.URL))
                 updateUrlResult.URL = @"https://s3.amazonaws.com/bloomlibrary.org/squirrel";
-            logger.Write("Bloom Install: URL=" + updateUrlResult.URL, LogLevel.Info);
             if (args[0] == "--squirrel-uninstall")
             {
                 RemoveBloomRegistryEntries();
@@ -149,10 +122,6 @@ namespace Bloom
                 iconPath = Path.ChangeExtension(
                     Path.Combine(rootAppDirectory, Path.GetFileName(exePath)),
                     "ico"
-                );
-                logger.Write(
-                    $"Bloom Install: exePath={exePath}, iconPath={iconPath}",
-                    LogLevel.Info
                 );
                 // where we will put a version-independent icon
                 try
@@ -184,10 +153,6 @@ namespace Bloom
                         SquirrelAwareApp.HandleEvents(
                             onInitialInstall: v =>
                             {
-                                logger.Write(
-                                    "Bloom Install: onInitialInstall adding shortcuts",
-                                    LogLevel.Info
-                                );
                                 mgr.CreateShortcutsForExecutable(
                                     Path.GetFileName(Assembly.GetEntryAssembly().Location),
                                     StartMenuLocations,
@@ -203,10 +168,6 @@ namespace Bloom
                             },
                             onAppUninstall: v =>
                             {
-                                logger.Write(
-                                    "Bloom Install: onAppUninstall removing shortcuts",
-                                    LogLevel.Info
-                                );
                                 mgr.RemoveShortcutsForExecutable(
                                     Path.GetFileName(Assembly.GetEntryAssembly().Location),
                                     StartMenuLocations,
@@ -215,6 +176,8 @@ namespace Bloom
                             },
                             onFirstRun: () =>
                             {
+                                // If the shortcuts were not created during the initial install, create them now.
+                                // See BL-14084.
                                 var desktopDir = Environment.GetFolderPath(
                                     Environment.SpecialFolder.DesktopDirectory
                                 );
@@ -227,19 +190,8 @@ namespace Bloom
                                     "lnk"
                                 );
                                 var shortcutPath = Path.Combine(desktopDir, linkFile);
-                                if (RobustFile.Exists(shortcutPath))
+                                if (!RobustFile.Exists(shortcutPath))
                                 {
-                                    logger.Write(
-                                        $"Bloom Install: onFirstRun, shortcut {shortcutPath} exists",
-                                        LogLevel.Info
-                                    );
-                                }
-                                else
-                                {
-                                    logger.Write(
-                                        $"Bloom Install: onFirstRun, shortcut {shortcutPath} does not yet exist",
-                                        LogLevel.Warn
-                                    );
                                     mgr.CreateShortcutsForExecutable(
                                         Path.GetFileName(Assembly.GetEntryAssembly().Location),
                                         StartMenuLocations,

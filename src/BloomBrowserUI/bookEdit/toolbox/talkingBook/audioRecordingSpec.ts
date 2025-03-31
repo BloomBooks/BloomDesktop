@@ -850,7 +850,7 @@ describe("audio recording tests", () => {
                 true,
                 "textbox's class"
             );
-            expect($(divs[0]).attr("id")).not.toBe(undefined), "textbox's id";
+            expect($(divs[0]).attr("id")).not.toBe(undefined, "textbox's id");
             expect(divs[0].id.length).toBeGreaterThan(
                 31,
                 "textbox's id length"
@@ -944,12 +944,20 @@ describe("audio recording tests", () => {
                 true,
                 "textbox's class"
             );
-            expect($(divs[0]).attr("id").length).toBeGreaterThan(31),
-                "textbox's id"; // GUID without hyphens is 32 chars longs
-            expect($(divs[0]).attr("id").length).toBeLessThan(38),
-                "textbox's id"; // GUID with hyphens adds 4 chars. And we sometimes insert a 1-char prefix, adding up to 37.
-            expect($(divs[1]).attr("id")).toBe("formatButton"),
-                "formatButton's id";
+            // GUID without hyphens is 32 chars longs
+            expect($(divs[0]).attr("id").length).toBeGreaterThan(
+                31,
+                "textbox's id"
+            );
+            // GUID with hyphens adds 4 chars. And we sometimes insert a 1-char prefix, adding up to 37.
+            expect($(divs[0]).attr("id").length).toBeLessThan(
+                38,
+                "textbox's id"
+            );
+            expect($(divs[1]).attr("id")).toBe(
+                "formatButton",
+                "formatButton's id"
+            );
 
             const paragraphs = parent.find("p");
             expect(paragraphs.length).toBe(2, "number of paragraphs");
@@ -1777,32 +1785,6 @@ describe("audio recording tests", () => {
         );
     });
 
-    it("isInSoftSplitMode() works on positive examples", () => {
-        SetupIFrameFromHtml(
-            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox' data-audioRecordingEndTimes='1.0 2.0 3.0'><p>One. Two. Three.</p></div>"
-        );
-
-        const recording = new AudioRecording();
-        const result = recording.isInSoftSplitMode();
-
-        expect(result).toBe(true);
-    });
-
-    it("isInSoftSplitMode() works on negative examples", () => {
-        const div1 =
-            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p>One. Two. Three.</p></div>";
-        const div2 =
-            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='s1' class='audioSentence'>One.</span> <span id='s2' class='audioSentence'>Two.</span> <span id='s3' class='audioSentence'>Three.</span></p></div>";
-        const div3 =
-            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='Sentence'><p><span id='s1' class='audioSentence'>One.</span> <span id='s2' class='audioSentence'>Two.</span> <span id='s3' class='audioSentence'>Three.</span></p></div>";
-        SetupIFrameFromHtml(div1 + div2 + div3);
-
-        const recording = new AudioRecording();
-        const result = recording.isInSoftSplitMode();
-
-        expect(result).toBe(false);
-    });
-
     describe("- importRecordingAsync()", () => {
         function simulateBloomApiResponses(
             audioToCopyFilePath: string,
@@ -1927,16 +1909,18 @@ describe("audio recording tests", () => {
             elt1.getElementsByClassName("audio-sentence")
         );
         expect(sentences.length).toBe(3);
-        const ids = sentences.map(s => s.getAttribute("id"));
-        ids.forEach(id => expect(id?.length).toBeGreaterThan(35));
+        const ids: Array<any> = sentences.map((s: HTMLElement) =>
+            s.getAttribute("id")
+        );
+        ids.forEach((id: any) => expect(id?.length).toBeGreaterThan(35));
         expect(ids[0]).not.toBe(ids[1]);
         expect(ids[0]).not.toBe(ids[2]);
         expect(ids[1]).not.toBe(ids[2]);
 
-        sentences.forEach(s => expect(s.parentElement).toBe(elt1));
+        sentences.forEach((s: any) => expect(s.parentElement).toBe(elt1));
         const colorSpans = Array.from(elt1.getElementsByTagName("span")).filter(
-            s => s.getAttribute("style") === "color:#ff1616;"
-        );
+            (s: any) => s.getAttribute("style") === "color:#ff1616;"
+        ) as HTMLElement[];
         expect(colorSpans.length).toBe(5);
         for (let i = 0; i < 3; i++) {
             expect(colorSpans[2 * i].parentElement).toBe(sentences[i]);

@@ -5,14 +5,14 @@ import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { get, post, postThatMightNavigate } from "../../utils/bloomApi";
 import { ElementQueries } from "css-element-queries";
-import { theOneBubbleManager } from "./bubbleManager";
+import { theOneCanvasElementManager } from "./CanvasElementManager";
 
 $(() => {
     $("div.split-pane").splitPane();
 });
 
 export function setupOrigami() {
-    get("settings/enterpriseEnabled", result2 => {
+    get("settings/subscriptionEnabled", result2 => {
         const isEnterpriseEnabled: boolean = result2.data;
         const customPages = document.getElementsByClassName("customPage");
         if (customPages.length > 0) {
@@ -58,7 +58,7 @@ function isEmpty(el) {
     return temp === "";
 }
 function setupLayoutMode() {
-    theOneBubbleManager.suspendComicEditing("forTool");
+    theOneCanvasElementManager.suspendComicEditing("forTool");
     $(".split-pane-component-inner").each(function(): boolean {
         const $this = $(this);
         if ($this.find(".split-pane").length) {
@@ -138,7 +138,7 @@ function layoutToggleClickHandler() {
     } else {
         // This line is currently redundant since we will reload the page, but in case we
         // stop doing that, it will be important.
-        theOneBubbleManager.resumeComicEditing();
+        theOneCanvasElementManager.resumeComicEditing();
 
         marginBox.removeClass("origami-layout-mode");
         marginBox.find(".textBox-identifier").remove();
@@ -196,13 +196,13 @@ function performSplit(
     }
     newSplitPane.splitPane();
     adjustModifiedChild(innerElement.get(0) as HTMLElement);
-    theOneBubbleManager.setupSplitterEventHandling();
+    theOneCanvasElementManager.setupSplitterEventHandling();
 }
 
 function adjustModifiedChild(resizedElt: HTMLElement | undefined) {
     const mainChild = resizedElt?.firstElementChild as HTMLElement;
     if (mainChild?.classList.contains("bloom-imageContainer")) {
-        theOneBubbleManager.AdjustChildrenIfSizeChanged(mainChild);
+        theOneCanvasElementManager.AdjustChildrenIfSizeChanged(mainChild);
     }
 }
 

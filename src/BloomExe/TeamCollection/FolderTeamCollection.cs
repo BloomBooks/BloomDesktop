@@ -457,7 +457,12 @@ namespace Bloom.TeamCollection
                 // changes until reloading for some other reason.
                 return Directory
                     .EnumerateFiles(Path.Combine(_repoFolderPath, "Other"))
-                    .Any(p => new FileInfo(p).LastWriteTime > savedModTime);
+                    .Any(
+                        p => // We don't care about colorPalettes.json changing because the
+                            // local copy is always two-way merged with the repo copy.  See BL-14254.
+                            Path.GetFileName(p) != "colorPalettes.json"
+                            && new FileInfo(p).LastWriteTime > savedModTime
+                    );
             }
             catch (Exception ex)
             {
@@ -489,12 +494,22 @@ namespace Bloom.TeamCollection
 
         protected override void SyncColorPaletteFileWithRepo(string localFolder)
         {
-            SyncColorPaletteFileWithRepo(
-                localFolder,
-                _repoFolderPath,
-                _tcManager.Settings,
-                LocalCollectionFolder
-            );
+            try
+            {
+                // No need to spend time checking on colorPalettes.json while we're syncing it.
+                // And nothing else should be changing while we're syncing it.  See BL-14254.
+                _updatingCollectionFiles = true;
+                SyncColorPaletteFileWithRepo(
+                    localFolder,
+                    _repoFolderPath,
+                    _tcManager.Settings,
+                    LocalCollectionFolder
+                );
+            }
+            finally
+            {
+                _updatingCollectionFiles = false;
+            }
         }
 
         private static void CopyToRepoIfNeeded(
@@ -618,6 +633,8 @@ namespace Bloom.TeamCollection
                             localColorPalettes[key] = mergedValues;
                             dirty = true;
                         }
+                        if (mergedValues != repoColorPalettes[key])
+                            dirty = true;
                     }
                     if (dirty)
                     {

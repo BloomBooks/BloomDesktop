@@ -1,7 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import {
     kBloomBlue,
     kPanelBackground,
@@ -26,25 +26,25 @@ import { kBloomUnselectedTabBackground } from "../../utils/colorUtils";
 
 export const EnterpriseNeededScreen: React.FunctionComponent<{
     titleForDisplay: string;
-    firstOverlayPage: number;
+    firstCanvasElementPage: number;
 }> = props => {
     const needsEnterpriseText1 = useL10n(
         "The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.",
-        "PublishTab.PublishRequiresEnterprise.ProblemExplanation",
+        "PublishTab.PublishRequiresSubscription.ProblemExplanation",
         "",
         props.titleForDisplay
     );
 
     const needsEnterpriseText2 = useL10n(
         "In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.",
-        "PublishTab.PublishRequiresEnterprise.Options"
+        "PublishTab.PublishRequiresSubscription.Options"
     );
 
     const needsEnterpriseText3 = useL10n(
         "Page {0} is the first page that uses Overlay elements.",
-        "PublishTab.PublishRequiresEnterprise.FirstOverlayPage",
+        "PublishTab.PublishRequiresSubscription.FirstOverlayPage",
         "",
-        "" + props.firstOverlayPage
+        "" + props.firstCanvasElementPage
     );
 
     return (
@@ -67,7 +67,7 @@ export const EnterpriseNeededScreen: React.FunctionComponent<{
             >
                 <div>
                     <H2
-                        l10nKey="Common.EnterpriseRequired"
+                        l10nKey="Common.SubscriptionRequired"
                         css={css`
                             margin-top: 0;
                         `}
@@ -126,7 +126,7 @@ export const CheckoutNeededScreen: React.FunctionComponent<{
     );
 };
 
-export const PublishTabPane: React.FunctionComponent<{}> = () => {
+export const PublishTabPane: React.FunctionComponent = () => {
     const kWaitForUserToChooseTabIndex = 5;
 
     const [publishTabReady, setPublishTabReady] = React.useState(false);
@@ -135,7 +135,7 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
         checkoutNeeded: false,
         canUpload: false,
         bookTitle: "",
-        firstOverlayPage: 0
+        firstCanvasElementPage: 0
     });
     const [tabIndex, setTabIndex] = React.useState(
         kWaitForUserToChooseTabIndex
@@ -152,7 +152,8 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
                 checkoutNeeded: result.data.cannotPublishWithoutCheckout,
                 canUpload: result.data.canUpload,
                 bookTitle: result.data.titleForDisplay,
-                firstOverlayPage: result.data.numberOfFirstPageWithOverlay
+                firstCanvasElementPage:
+                    result.data.numberOfFirstPageWithCanvasElement
             });
             setPublishTabReady(true);
         });
@@ -178,7 +179,7 @@ export const PublishTabPane: React.FunctionComponent<{}> = () => {
         altContent = (
             <EnterpriseNeededScreen
                 titleForDisplay={publishTabInfo.bookTitle}
-                firstOverlayPage={publishTabInfo.firstOverlayPage}
+                firstCanvasElementPage={publishTabInfo.firstCanvasElementPage}
             />
         );
     } else if (publishTabInfo.checkoutNeeded) {

@@ -179,7 +179,7 @@ namespace BloomTests.Publish
                 var book2FolderPath = Path.Combine(tempFolder.FolderPath, "hello world");
                 var downloadForEditPath = Path.Combine(
                     tempFolder.FolderPath,
-                    BloomLibraryPublishModel.kNameOfDownloadForEditFile
+                    BloomLibraryPublishModel.kNameOfFileAboutABlorgBookWeHaveDownloadedForEditing
                 );
                 RobustFile.WriteAllText(
                     downloadForEditPath,

@@ -604,11 +604,13 @@ namespace Bloom.Book
             var headXml = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
             var originalBody = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/body");
 
-            var enterpriseStatusClass = this.CollectionSettings.HaveEnterpriseFeatures
-                ? "enterprise-on"
-                : "enterprise-off";
+            var subcriptionStatusClasses = this.CollectionSettings
+                .Subscription
+                .HaveActiveSubscription
+                ? "subscription-yes"
+                : "subscription-no";
             var dom = new HtmlDom(
-                @"<html>" + headXml + $"<body class='{enterpriseStatusClass}'></body></html>"
+                @"<html>" + headXml + $"<body class='{subcriptionStatusClasses}'></body></html>"
             );
             dom = Storage.MakeDomRelocatable(dom);
             // Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
@@ -1676,8 +1678,6 @@ namespace Bloom.Book
         /// </summary>
         private void EnsureUpToDateMemory(IProgress progress)
         {
-            Logger.WriteMinorEvent("DEBUG BL-14174 - Starting EnsureUpToDateMemory()");
-
             Guard.Against(
                 !IsSaveable,
                 "EnsureUpToDateMemory should only now be called for Saveable books as part of the main book updating"
@@ -1726,7 +1726,6 @@ namespace Bloom.Book
             }
             RemoveObsoleteSoundAttributes(OurHtmlDom);
             Storage.RepairEmptyPages();
-            RemoveObsoleteImageAttributes(OurHtmlDom);
             BringBookInfoUpToDate(oldMetaData);
             FixErrorsEncounteredByUsers(OurHtmlDom);
             AddReaderBodyAttributes(OurHtmlDom);
@@ -1789,6 +1788,12 @@ namespace Bloom.Book
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
+            Storage.MigrateToLevel5CanvasElement();
+            Storage.MigrateToLevel6LegacyActivities();
+
+            Storage.DoBackMigrations();
+
+            RemoveObsoleteImageAttributes(OurHtmlDom);
 
             // Make sure the appearance settings have checked the current state of the css files.
             // This should be done before UpdateSupportFiles, because this can affect what files
@@ -1949,7 +1954,7 @@ namespace Bloom.Book
                 _bookData,
                 BookInfo.MetaData.UseOriginalCopyright
             );
-            _bookData.MergeBrandingSettings(CollectionSettings.BrandingProjectKey);
+            _bookData.MergeBrandingSettings(CollectionSettings.Subscription.Descriptor);
             _bookData.SynchronizeDataItemsThroughoutDOM();
             licenseMetadata = GetLicenseMetadata();
             // I think we should only mess with tags if we are updating the book for real.
@@ -1959,7 +1964,7 @@ namespace Bloom.Book
                 ConvertTagsToMetaData(oldTagsPath, BookInfo);
                 RobustFile.Delete(oldTagsPath);
             }
-            BookInfo.BrandingProjectKey = CollectionSettings.BrandingProjectKey;
+            BookInfo.BrandingKey = CollectionSettings.Subscription.BrandingKey;
 
             // get any license info into the json and restored in the replaced front matter.
             BookCopyrightAndLicense.SetMetadata(
@@ -2448,7 +2453,7 @@ namespace Bloom.Book
                 _bookData.MetadataLanguage1Tag,
                 oldIds,
                 BookInfo.AppearanceSettings.CoverIsImage
-                    && CollectionSettings.HaveEnterpriseFeatures
+                    && CollectionSettings.Subscription.HaveActiveSubscription
             );
 
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
@@ -2858,6 +2863,8 @@ namespace Bloom.Book
             foreach (var div in langDivs)
             {
                 var lang = div.GetAttribute("lang");
+                if (PublishHelper.IsUnpublishableLanguage(lang))
+                    continue; // skip languages that we know are not to be published (BL-14339)
                 if (HtmlDom.DivHasContent(div))
                 {
                     result[lang] = true; // may be set repeatedly, but no harm.
@@ -3986,7 +3993,7 @@ namespace Bloom.Book
                 // but we haven't put that in the book settings yet.
                 BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
                 || BookInfo.AppearanceSettings.CoverIsImage
-            ) && CollectionSettings.HaveEnterpriseFeatures;
+            ) && CollectionSettings.Subscription.HaveActiveSubscription;
 
         /// <summary>
         /// Save the page content to the DOM.
@@ -4789,11 +4796,11 @@ namespace Bloom.Book
                         .GetOptionalStringAttribute("class", "")
                         .Contains("bloom-scale-with-code")
                     // Compare JS function SetupImage in bloomImages.ts. We stopped using explicit image
-                    // sizes in 2018 and added image overlays in 2022, so it should be very safe to
-                    // NOT remove explicit sizes from images in overlays. And in 6.1 (late 2024)
-                    // we started using explicit sizes in overlays for cropping, so removing them
+                    // sizes in 2018 and added image canvas elements in 2022, so it should be very safe to
+                    // NOT remove explicit sizes from images in canvas elements. And in 6.1 (late 2024)
+                    // we started using explicit sizes in canvas elements for cropping, so removing them
                     // is harmful.
-                    || img.ParentWithClass("bloom-textOverPicture") != null
+                    || img.ParentWithClass(HtmlDom.kCanvasElementClass) != null
                 )
                     continue;
                 var style = img.GetOptionalStringAttribute("style", "");
@@ -5312,7 +5319,7 @@ namespace Bloom.Book
         public bool HasQuizPages => OurHtmlDom.HasQuizPages();
         public bool HasActivities => OurHtmlDom.HasActivityPages();
 
-        public bool HasComicalOverlays => OurHtmlDom.HasComicalOverlays();
+        public bool HasComicalOverlays => OurHtmlDom.HasComicalCanvasElements();
 
         public bool HasOnlyPictureOnlyPages()
         {
@@ -5450,13 +5457,14 @@ namespace Bloom.Book
             // If we wanted to, it is also possible to compute it as a language-specific feature.
             // (That is, check if the languages in the book have non-empty text for part of the quiz section)
             BookInfo.MetaData.Feature_Quiz =
-                CollectionSettings.HaveEnterpriseFeatures && HasQuizPages;
+                CollectionSettings.Subscription.HaveActiveSubscription && HasQuizPages;
         }
 
         private void UpdateSimpleDomChoiceFeature()
         {
             BookInfo.MetaData.Feature_SimpleDomChoice =
-                CollectionSettings.HaveEnterpriseFeatures && OurHtmlDom.HasSimpleDomChoicePages();
+                CollectionSettings.Subscription.HaveActiveSubscription
+                && OurHtmlDom.HasSimpleDomChoicePages();
         }
 
         /// <summary>
@@ -5570,7 +5578,7 @@ namespace Bloom.Book
             }
         }
 
-        public static bool IsPageBloomEnterpriseOnly(SafeXmlElement page)
+        public static bool IsPageBloomSubscriptionOnly(SafeXmlElement page)
         {
             var classAttrib = page.GetAttribute("class");
             return classAttrib.Contains("enterprise-only")
@@ -5582,10 +5590,10 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Used by the publish tab to tell the user they can't publish a book with Overlay elements w/o Enterprise.
+        /// Used by the publish tab to tell the user they can't publish a book with canvas elements w/o Enterprise.
         /// </summary>
         /// <returns></returns>
-        public string GetNumberOfFirstPageWithOverlay()
+        public string GetNumberOfFirstPageWithCanvasElement()
         {
             var pageNodes = RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
             if (pageNodes.Length == 0) // Unexpected!
@@ -5593,7 +5601,7 @@ namespace Bloom.Book
             foreach (var pageNode in pageNodes)
             {
                 var resultNode = pageNode.SelectSingleNode(
-                    ".//div[contains(@class,'bloom-textOverPicture')]"
+                    ".//div[contains(@class,'" + HtmlDom.kCanvasElementClass + "')]"
                 );
                 if (resultNode == null)
                     continue;
@@ -5602,7 +5610,7 @@ namespace Bloom.Book
                 {
                     return pageNumberAttribute;
                 }
-                // If at some point we allow overlay elements on xmatter,
+                // If at some point we allow canvas element elements on xmatter,
                 // we will need to find and return the 'data-xmatter-page' attribute.
             }
             return ""; // Also unexpected!
@@ -5795,8 +5803,6 @@ namespace Bloom.Book
 
         internal void SettingsUpdated()
         {
-            Logger.WriteMinorEvent("DEBUG BL-14174 - Starting SettingsUpdated()");
-
             // Something has changed in relation to settings. For example, we may have changed theme,
             // or deleted customBookStyles.css. We need to update things to reflect the new state of things.
             var cssFiles = this.Storage.GetCssFilesToCheckForAppearanceCompatibility();
