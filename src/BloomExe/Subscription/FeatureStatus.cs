@@ -5,60 +5,15 @@ using System.Linq;
 using Bloom.Book;
 using Bloom.SafeXml;
 using L10NSharp;
+using Newtonsoft.Json;
+using static FeatureRegistry;
+using static Subscription;
 
-// tiers are ordered, so if you have a higher tier, you can use the features of the lower tiers.
-public enum SubscriptionTier
+public class FeatureInfo
 {
-    Basic = 0,
-    LocalCommunity = 1,
-    Pro = 2,
-    Enterprise = 3,
-}
-
-internal class FeatureInfo
-{
-    public FeatureNames Feature;
+    public FeatureName Feature;
     public SubscriptionTier SubscriptionTier;
     internal string existsInPageXPath;
-}
-
-public enum FeatureNames
-{
-    Overlay,
-    Game,
-    Spreadsheet,
-    TeamCollection,
-}
-
-// a static registry of features. Each one has a name, a subscription tier, and a flag indicating whether it is experimental or advanced.
-internal static class FeatureRegistry
-{
-    public static readonly List<FeatureInfo> Features = new List<FeatureInfo>
-    {
-        new FeatureInfo
-        {
-            Feature = FeatureNames.Overlay,
-            SubscriptionTier = SubscriptionTier.LocalCommunity,
-            existsInPageXPath = ".//div[contains(@class,'" + HtmlDom.kCanvasElementClass + "')]"
-        },
-        new FeatureInfo
-        {
-            Feature = FeatureNames.Game,
-            SubscriptionTier = SubscriptionTier.LocalCommunity,
-            // TODO: is this right? Probably need to restrict to just the new games.
-            existsInPageXPath = ".//div[contains(@data-activity,'game')]"
-        },
-        new FeatureInfo
-        {
-            Feature = FeatureNames.Spreadsheet,
-            SubscriptionTier = SubscriptionTier.Pro,
-        },
-        new FeatureInfo
-        {
-            Feature = FeatureNames.TeamCollection,
-            SubscriptionTier = SubscriptionTier.Enterprise,
-        },
-    };
 }
 
 /// <summary>
@@ -67,23 +22,32 @@ internal static class FeatureRegistry
 /// </summary>
 public class FeatureStatus
 {
-    public FeatureNames Feature;
+    public FeatureName FeatureName;
     public SubscriptionTier SubscriptionTier;
     public bool Enabled;
     public bool Visible;
     public string FirstPageNumber;
 
-    public static FeatureStatus GetFeatureStatus(
-        Subscription subscription,
-        FeatureNames featureName
-    )
+    // using a string (from typescript)
+    public static FeatureStatus GetFeatureStatus(Subscription subscription, string featureName)
+    {
+        if (Enum.TryParse<FeatureName>(featureName, true, out FeatureName featureEnum))
+        {
+            return GetFeatureStatus(subscription, featureEnum);
+        }
+        Debug.Assert(false, $"Feature '{featureName}' not found in FeatureName enum.");
+        return null;
+    }
+
+    // using an enum (from c#)
+    public static FeatureStatus GetFeatureStatus(Subscription subscription, FeatureName featureName)
     {
         var tier = subscription.Tier;
         var feature = FeatureRegistry.Features.Find(f => f.Feature == featureName);
-        Debug.Assert(feature != null, $"Feature {featureName} not found in registry.");
+        Debug.Assert(feature != null, $"Feature '{featureName}' not found in registry.");
         return new FeatureStatus
         {
-            Feature = feature.Feature,
+            FeatureName = feature.Feature,
             SubscriptionTier = feature.SubscriptionTier,
             Enabled = (int)tier >= (int)feature.SubscriptionTier,
             Visible = true // for now, we have not hooked up the advanced/experimental flags yet.
@@ -91,7 +55,16 @@ public class FeatureStatus
     }
 
     /// <summary>
-    /// return a json string of the FeatureStatus, using strings instead of enums
+    ///  Get the json we want, then deserialize bck into c# so that when serialized, the json will be correct.
+    /// </summary>
+    /// <returns></returns>
+    public object ForSerialization()
+    {
+        return JsonConvert.DeserializeObject(this.ToJson() ?? "null");
+    }
+
+    /// <summary>
+    /// return a json string of the FeatureStatus, using strings instead of enums and camel case properties as is normal in json/typescript.
     /// </summary>
     public string ToJson()
     {
@@ -103,10 +76,10 @@ public class FeatureStatus
         );
         var localizedFeature = LocalizationManager.GetDynamicString(
             appId: "Bloom",
-            id: "Feature." + Feature.ToString(),
-            englishText: Feature.ToString()
+            id: "Feature." + FeatureName.ToString(),
+            englishText: FeatureName.ToString()
         );
-        return $"{{\"localizedFeature\":\"{localizedFeature}\",\"localizedTier\":\"{localizedTier}\",\"enabled\":{Enabled.ToString().ToLower()},\"visible\":{Visible.ToString().ToLower()},\"firstPageNumber\":\"{FirstPageNumber}\"}}";
+        return $"{{\"localizedFeature\":\"{localizedFeature}\",\"localizedTier\":\"{localizedTier}\",\"subscriptionTier\":\"{SubscriptionTier}\",\"enabled\":{Enabled.ToString().ToLower()},\"visible\":{Visible.ToString().ToLower()},\"firstPageNumber\":\"{FirstPageNumber}\"}}";
     }
 
     /// <summary>
@@ -146,7 +119,7 @@ public class FeatureStatus
                     {
                         return new FeatureStatus
                         {
-                            Feature = feature.Feature,
+                            FeatureName = feature.Feature,
                             SubscriptionTier = feature.SubscriptionTier,
                             Enabled = false,
                             Visible = true,

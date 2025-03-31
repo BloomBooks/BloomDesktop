@@ -3,12 +3,14 @@ using System.Linq;
 
 public class Subscription
 {
-    // These options must match the strings used in requiresBloomEnterprise.tsx
+    // NB: this must match c# enum SubscriptionTier in FeaturesStatus.ts
+    // Tiers are ordered, so if you have a higher tier, you can use the features of the lower tiers.
     public enum SubscriptionTier
     {
-        None,
-        Community,
-        Enterprise
+        Basic = 0,
+        LocalCommunity = 1,
+        Pro = 2,
+        Enterprise = 3,
     }
 
     public static string kExpiryDateForDeprecatedCodes = "2025-07-01"; // per Cate. Careful! Make sure to use leading zeros in month and day.
@@ -85,7 +87,7 @@ public class Subscription
 
             sub.Tier =
                 descriptor == "Local-Community" || descriptor == "Local Community"
-                    ? SubscriptionTier.Community
+                    ? SubscriptionTier.LocalCommunity
                     : SubscriptionTier.Enterprise; // see https://issues.bloomlibrary.org/youtrack/issue/BL-14419
 
             return sub;
@@ -233,7 +235,7 @@ public class Subscription
     // Enhance: soon we will devide up these so that they don't have exactly the same set of features
     public bool HaveActiveSubscription =>
         Tier == Subscription.SubscriptionTier.Enterprise
-        || Tier == Subscription.SubscriptionTier.Community;
+        || Tier == Subscription.SubscriptionTier.LocalCommunity;
 
     // From the subscription code extract everything up to the second-last hyphen.
     // Pays no attention to the validity of the code, just returns the part before the numbers.
@@ -326,16 +328,24 @@ public class Subscription
     private SubscriptionTier CalculateTier()
     {
         if (GetIntegrityLabel() != "ok" || ExpirationDate < DateTime.Now)
-            return SubscriptionTier.None;
+            return SubscriptionTier.Basic;
         var descriptor = CalculateDescriptor();
         if (string.IsNullOrWhiteSpace(descriptor) || descriptor == "Default")
-            return SubscriptionTier.None;
+            return SubscriptionTier.Basic;
         else if (
             descriptor == "Local-Community"
             || descriptor == "Local Community" /* pre 4.4 */
             || descriptor.EndsWith("-LC")
         )
-            return SubscriptionTier.Community;
+            return SubscriptionTier.LocalCommunity;
+        // if it looks like an email, it's Pro
+        else if (
+            System.Text.RegularExpressions.Regex.IsMatch(
+                descriptor,
+                @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+            )
+        )
+            return SubscriptionTier.Pro;
         else
             return SubscriptionTier.Enterprise;
     }
