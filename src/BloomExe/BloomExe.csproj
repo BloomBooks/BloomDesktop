@@ -175,8 +175,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 	</Target>
 	<Target Name="CopyX86SqliteForArm" AfterTargets="ReallyAfterBuild">
 		<MakeDir Directories="$(OutDir)runtimes\win-arm64\native" />
-		<Copy SourceFiles="$(OutDir)runtimes\win-x86\native\e_sqlite3.dll"
-			  DestinationFiles="$(OutDir)e_sqlite3.dll" />
+		<Copy SourceFiles="$(OutDir)runtimes\win-x86\native\e_sqlite3.dll" DestinationFiles="$(OutDir)e_sqlite3.dll" />
 		<Message Text="BL-13934 sqlite looks in the ARM64 directory, but then fails because actually we're running as an x86 process still, as of Bloom 6.2. So for now we're cheating and just putting the x86 version in." Importance="high" />
 	</Target>
 	<ItemGroup>
@@ -188,27 +187,27 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<PackageReference Include="EPPlus" Version="6.2.4" />
 		<PackageReference Include="Fleck" Version="1.1.0" />
 		<PackageReference Include="Glob" Version="1.1.8" />
-		<PackageReference Include="L10NSharp" Version="8.0.0-beta0003" />
+		<PackageReference Include="L10NSharp" Version="8.0.0" />
 		<PackageReference Include="LargeAddressAware" Version="1.0.5" />
-		<PackageReference Include="Markdig.Signed" Version="0.30.4" />
+		<PackageReference Include="Markdig.Signed" Version="0.37.0" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.6" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1518.46" />
 		<PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
 		<PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
 		<PackageReference Include="NAudio" Version="1.10.0" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="RestSharp" Version="106.12.0" />
 		<PackageReference Include="Sentry" Version="3.9.4" />
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />
-		<PackageReference Include="SIL.Core" Version="15.0.0-beta0081" />
-		<PackageReference Include="SIL.Core.Desktop" Version="15.0.0-beta0081" />
+		<PackageReference Include="SIL.Core" Version="15.0.0" />
+		<PackageReference Include="SIL.Core.Desktop" Version="15.0.0" />
 		<PackageReference Include="SIL.DesktopAnalytics" Version="4.0.4" />
-		<PackageReference Include="SIL.Media" Version="15.0.0-beta0081" />
-		<PackageReference Include="SIL.Windows.Forms" Version="15.0.0-beta0081" />
-		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="15.0.0-beta0081" />
-		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="15.0.0-beta0081" />
-		<PackageReference Include="SIL.WritingSystems" Version="15.0.0-beta0081" />
+		<PackageReference Include="SIL.Media" Version="15.0.0" />
+		<PackageReference Include="SIL.Windows.Forms" Version="15.0.0" />
+		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="15.0.0" />
+		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="15.0.0" />
+		<PackageReference Include="SIL.WritingSystems" Version="15.0.0" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.2" />
 		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.2" />
