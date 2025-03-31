@@ -109,9 +109,11 @@ namespace Bloom.web.controllers
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
-                        var descriptor = _collectionSettings.Subscription.Descriptor;
+                        var subscriptionDescriptor = _collectionSettings.Subscription.Descriptor;
                         var defaultBookshelfUrlKey = _collectionSettings.DefaultBookshelf;
-                        request.ReplyWithJson(new { descriptor, defaultBookshelfUrlKey });
+                        request.ReplyWithJson(
+                            new { subscriptionDescriptor, defaultBookshelfUrlKey }
+                        );
                     }
                     else
                     {
