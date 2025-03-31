@@ -87,7 +87,7 @@ const normalMenuItemWithEllipsisAndEnterprise = (
         english="Open or Create Another Collection"
         l10nId="CollectionTab.OpenCreateCollectionMenuItem"
         addEllipsis={true}
-        subscriptionFeature="foobar"
+        featureName="foobar"
         onClick={() => {}}
     />
 );
@@ -96,7 +96,7 @@ const requiresEnterpriseSubscriptionWithIcon = (
     <LocalizableMenuItem
         english="BE subscription required, has disabled icon"
         l10nId="already-localized"
-        subscriptionFeature="foobar"
+        featureName="foobar"
         icon={<DeleteIcon />}
         onClick={() => {}}
     />

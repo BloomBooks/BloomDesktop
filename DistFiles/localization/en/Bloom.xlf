@@ -5398,6 +5398,11 @@ Do you want to go ahead?</note>
 <!-- Most subscription labels are in the BloomLowPriority. What we want here
 is mostly status, which shows on the Collection Tab -->
 
+      <trans-unit id="Subscription.RequiredTierForFeatureSentence">
+        <source xml:lang="en">This feature requires a Bloom subscription tier of at least "{0}".</source>
+        <note>ID: Subscription.RequiredTierForFeatureSentence</note>
+        <note>{0} is will be filled in with name of the tier. e.g "Pro" or "Enterprise"</note>
+      </trans-unit>
 
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
         <source xml:lang="en">Your {0} subscription expires on {1}.</source>

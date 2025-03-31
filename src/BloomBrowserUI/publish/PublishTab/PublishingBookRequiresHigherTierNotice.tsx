@@ -7,7 +7,8 @@ import { NoteBox } from "../../react_components/boxes";
 import { kBloomUnselectedTabBackground } from "../../utils/colorUtils";
 import {
     FeatureStatus,
-    openBloomSubscriptionSettings
+    openBloomSubscriptionSettings,
+    useGetFeatureTierMessage
 } from "../../react_components/featureStatus";
 import BloomButton from "../../react_components/bloomButton";
 
@@ -15,25 +16,26 @@ export const PublishingBookRequiresHigherTierNotice: React.FunctionComponent<{
     titleForDisplay: string;
     featurePreventingPublishing: FeatureStatus;
 }> = props => {
-    const needsEnterpriseText1 = useL10n2({
-        english:
-            'The book titled "{0}" uses the "{1}" feature. This feature requires a Bloom subscription of at least tier "{2}".', // Enhance: use some standard method to get a localized message about what current your tier is
+    const nameTheFeatureMessage = useL10n2({
+        english: 'The book titled "{0}" uses the "{1}" feature.',
         key:
             "PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation",
         params: [
             props.titleForDisplay,
-            props.featurePreventingPublishing.localizedFeature,
-            props.featurePreventingPublishing.localizedTier
+            props.featurePreventingPublishing.localizedFeature
         ]
     });
+    const requiredTierMessage = useGetFeatureTierMessage(
+        props.featurePreventingPublishing
+    );
 
-    const needsEnterpriseText2 = useL10n2({
+    const whatToDoMessage = useL10n2({
         english:
             "In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.",
         key: "PublishTab.PublishingBookRequiresHigherTierNotice.Options"
     });
 
-    const needsEnterpriseText3 = useL10n2({
+    const firstPageMessage = useL10n2({
         english: "Page {0} is the first page that uses this feature.",
         key:
             "PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage",
@@ -67,9 +69,11 @@ export const PublishingBookRequiresHigherTierNotice: React.FunctionComponent<{
                     >
                         Feature Requires Higher Subscription Tier
                     </H2>
-                    <p>{needsEnterpriseText1}</p>
-                    <p>{needsEnterpriseText2}</p>
-                    <p>{needsEnterpriseText3}</p>
+                    <p>
+                        {nameTheFeatureMessage} {requiredTierMessage}
+                    </p>
+                    <p>{whatToDoMessage}</p>
+                    <p>{firstPageMessage}</p>
                     <BloomButton
                         l10nKey="Subscription.OpenSettings"
                         enabled={true}

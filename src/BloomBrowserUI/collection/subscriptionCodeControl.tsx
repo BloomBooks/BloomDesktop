@@ -15,6 +15,7 @@ import ContentPaste from "@mui/icons-material/ContentPaste";
 import { useState } from "react";
 import {
     SubscriptionCodeIntegrity,
+    useLocalizedTier,
     useSubscriptionInfo
 } from "./useSubscriptionInfo";
 import { WarningBox } from "../react_components/boxes";
@@ -54,10 +55,11 @@ type Status =
 export const SubscriptionControls: React.FC = () => {
     const {
         code,
+        tier,
         subscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD,
         subscriptionSummary,
-        haveBrandingFiles,
+        missingBrandingFiles,
         editingBlorgBook,
         haveData
     } = useSubscriptionInfo();
@@ -71,7 +73,7 @@ export const SubscriptionControls: React.FC = () => {
                 subscriptionCodeIntegrity,
                 expiryDateStringAsYYYYMMDD,
                 editingBlorgBook,
-                haveBrandingFiles
+                missingBrandingFiles
             )
         );
     }, [
@@ -79,7 +81,7 @@ export const SubscriptionControls: React.FC = () => {
         expiryDateStringAsYYYYMMDD,
         editingBlorgBook,
         subscriptionCodeIntegrity,
-        haveBrandingFiles
+        missingBrandingFiles
     ]);
 
     if (!haveData) {
@@ -97,6 +99,7 @@ export const SubscriptionControls: React.FC = () => {
             <Editor status={status} />
 
             <StatusText
+                tier={tier}
                 status={status}
                 expiryDateStringAsYYYYMMDD={expiryDateStringAsYYYYMMDD}
             />
@@ -108,75 +111,98 @@ export const SubscriptionControls: React.FC = () => {
     );
 };
 const StatusText: React.FC<{
+    tier: string;
     status: Status;
     expiryDateStringAsYYYYMMDD: string;
-}> = props => (
-    <div>
-        {props.status === "SubscriptionIncorrect" && (
-            <Label l10nKey="Settings.Subscription.NotValid" className={"error"}>
-                That code appears to be incorrect.
-            </Label>
-        )}
-
-        {props.status === "SubscriptionIncomplete" && (
-            <Label
-                l10nKey="Settings.Subscription.Incomplete"
-                className={"incomplete"}
-            >
-                The code should look like SOMENAME-123456-7890
-            </Label>
-        )}
-        {props.status === "NoBrandingFilesYet" && (
-            <div
-                css={css`
-                    display: flex;
-                    flex-direction: column;
-                    width: 100%;
-                `}
-            >
-                <WarningBox
-                    l10nKey="Settings.Subscription.UnknownCode"
-                    bottomRightButton={
-                        <Button
-                            variant="outlined"
-                            onClick={() => post("common/checkForUpdates")}
-                            sx={{
-                                color: "black",
-                                borderColor: "black",
-                                "&:hover": {
-                                    borderColor: "black"
-                                }
-                            }}
-                        >
-                            <Label l10nKey="Settings.Subscription.CheckUpdates">
-                                Check for updates
-                            </Label>
-                        </Button>
-                    }
+}> = props => {
+    const localizedTier = useLocalizedTier(props.tier);
+    return (
+        <div>
+            {props.status === "SubscriptionIncorrect" && (
+                <Label
+                    l10nKey="Settings.Subscription.NotValid"
+                    className={"error"}
                 >
-                    This version of Bloom does not have the artwork that goes
-                    with that subscription.
-                </WarningBox>
-            </div>
-        )}
-        {props.status === "SubscriptionExpired" && (
-            <Label l10nKey="Settings.Subscription.Expired" className={"error"}>
-                That code has expired.
-            </Label>
-        )}
-
-        {props.status === "SubscriptionGood" && (
-            <div className={"expiration"}>
-                <Label l10nKey="Settings.Subscription.Expiration">
-                    Expires:
+                    That code appears to be incorrect.
                 </Label>
-                <span>
-                    {getSafeLocalizedDate(props.expiryDateStringAsYYYYMMDD)}
-                </span>
-            </div>
-        )}
-    </div>
-);
+            )}
+
+            {props.status === "SubscriptionIncomplete" && (
+                <Label
+                    l10nKey="Settings.Subscription.Incomplete"
+                    className={"incomplete"}
+                >
+                    The code should look like SOMENAME-123456-7890
+                </Label>
+            )}
+            {props.status === "NoBrandingFilesYet" && (
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        width: 100%;
+                    `}
+                >
+                    <WarningBox
+                        l10nKey="Settings.Subscription.UnknownCode"
+                        bottomRightButton={
+                            <Button
+                                variant="outlined"
+                                onClick={() => post("common/checkForUpdates")}
+                                sx={{
+                                    color: "black",
+                                    borderColor: "black",
+                                    "&:hover": {
+                                        borderColor: "black"
+                                    }
+                                }}
+                            >
+                                <Label l10nKey="Settings.Subscription.CheckUpdates">
+                                    Check for updates
+                                </Label>
+                            </Button>
+                        }
+                    >
+                        This version of Bloom does not have the artwork that
+                        goes with that subscription.
+                    </WarningBox>
+                </div>
+            )}
+            {props.status === "SubscriptionExpired" && (
+                <Label
+                    l10nKey="Settings.Subscription.Expired"
+                    className={"error"}
+                >
+                    That code has expired.
+                </Label>
+            )}
+
+            {props.status === "SubscriptionGood" && (
+                <div
+                    css={css`
+                        margin-top: 5px;
+                    `}
+                >
+                    <Label l10nKey="Subscription.TierWithColon">Tier:</Label>{" "}
+                    <span
+                        css={css`
+                            margin-right: 20px;
+                        `}
+                    >
+                        {localizedTier}
+                    </span>
+                    <Label l10nKey="Settings.Subscription.Expiration">
+                        Expires:
+                    </Label>{" "}
+                    <span>
+                        {getSafeLocalizedDate(props.expiryDateStringAsYYYYMMDD)}
+                    </span>
+                </div>
+            )}
+        </div>
+    );
+};
+
 export function getSafeLocalizedDate(dateAsYYYYMMDD: string | null) {
     const dateParts = dateAsYYYYMMDD ? dateAsYYYYMMDD.split("-") : null;
     return dateParts
@@ -194,7 +220,7 @@ function getStatus(
     subscriptionCodeIntegrity: SubscriptionCodeIntegrity,
     expiryDateStringAsYYYYMMDD: string,
     editingBlorgBook: boolean,
-    haveBrandingFiles: boolean
+    missingBrandingFiles: boolean
 ): Status {
     const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
     if (subscriptionCode === "" || subscriptionCodeIntegrity === "none") {
@@ -203,7 +229,7 @@ function getStatus(
     if (subscriptionCodeIntegrity === "invalid") return "SubscriptionIncorrect";
     // this is the case where we have a valid-looking code, but the server
     // does not have special files for it
-    if (!haveBrandingFiles) {
+    if (missingBrandingFiles) {
         return "NoBrandingFilesYet";
     }
     // if it looks like they haven't finished typing

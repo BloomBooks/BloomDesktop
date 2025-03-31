@@ -34,20 +34,13 @@ namespace Bloom.web.controllers
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
-                        var featureName = request.RequiredParam("feature");
-                        var featureStatus = FeatureRegistry.Features.Find(
-                            f =>
-                                f.Feature
-                                    .ToString()
-                                    .Equals(featureName, StringComparison.OrdinalIgnoreCase)
+                        var featureName = request.RequiredParam("featureName");
+                        var featureStatus = FeatureStatus.GetFeatureStatus(
+                            _subscription,
+                            featureName
                         );
-                        if (featureStatus == null)
-                        {
-                            request.Failed($"Feature '{featureName}' not found.");
-                            return;
-                        }
 
-                        request.ReplyWithJson(JsonConvert.SerializeObject(featureStatus));
+                        request.ReplyWithJson(featureStatus.ToJson());
                     }
                     else
                     {
