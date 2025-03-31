@@ -423,6 +423,8 @@ namespace Bloom.web.controllers
                 _publishModel
             );
             Logger.WriteEvent("Entered Publish Tab");
+            var featureStatus = _publishModel.GetFeaturePreventingPublishingOrNull();
+            var featureStatusForSerialization = featureStatus?.ForSerialization();
             var resultObject = new
             {
                 canUpload = _publishModel.BookSelection.CurrentSelection.BookInfo.AllowUploading,
@@ -432,9 +434,7 @@ namespace Bloom.web.controllers
                     .BookSelection
                     .CurrentSelection
                     .TitleBestForUserDisplay,
-                featurePreventingPublishing = JsonConvert.DeserializeObject(
-                    _publishModel.GetFeaturePreventingPublishingOrNull()?.ToJson() ?? "null"
-                )
+                featurePreventingPublishing = featureStatusForSerialization
             };
 
             var result = JsonConvert.SerializeObject(resultObject);

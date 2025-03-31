@@ -17,14 +17,10 @@ import NestedMenuItem from "mui-nested-menu-item";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import { getBoolean, post, postBoolean } from "../utils/bloomApi";
-import {
-    useHaveSubscription,
-    useGetSubscriptionTier
-} from "./requiresSubscription";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
 import { kUiFontStack } from "../bloomMaterialUITheme";
 import { Variant } from "@mui/material/styles/createTypography";
-import { useGetFeatureStatus } from "./featureStatus";
+import { useGetFeatureStatus, useGetFeatureTierMessage } from "./featureStatus";
 
 interface IBaseLocalizableMenuItemProps {
     english: string;
@@ -45,7 +41,7 @@ interface IBaseLocalizableMenuItemProps {
     generatedSubLabel?: string;
     subLabelL10nId?: string;
     tooltip?: string;
-    subscriptionFeature?: string;
+    featureName?: string;
 }
 
 export interface INestedMenuItemProps extends IBaseLocalizableMenuItemProps {
@@ -86,8 +82,8 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
         variant: variant
     };
     const label = useL10n(props.english, props.l10nId);
-    const featureStatus = useGetFeatureStatus(props.subscriptionFeature);
-    const enabled = featureStatus?.enabled;
+    const featureStatus = useGetFeatureStatus(props.featureName);
+    const enabled = featureStatus === undefined ? true : featureStatus.enabled;
 
     const iconElement = props.icon ? (
         <ListItemIcon
@@ -115,24 +111,19 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
 
     const ellipsis = props.addEllipsis ? "..." : "";
 
-    const requiresSubscriptionTooltip = useL10n(
-        "To use this feature, you'll need a Bloom Subscription.",
-        "CollectionSettingsDialog.RequiresSubscription_ToolTip_"
-    );
+    const requiredTierMessage = useGetFeatureTierMessage(featureStatus);
 
-    // TODO we'll need more than this enteprprise sticker for the new subscription model.
-    const subscriptionElement = enabled ? (
+    const subscriptionElement = featureStatus?.subscriptionTier ? (
         <img
             css={css`
                 width: ${kEnterpriseStickerAffordance}px !important;
                 margin-left: 12px;
             `}
-            src="/bloom/images/bloom-enterprise-badge.svg"
+            src="/bloom/images/bloom-enterprise-badge.svg" // Enhance currently we only have one icon for all tiers
             title={
                 enabled
                     ? undefined
-                    : props.subscriptionTooltipOverride ||
-                      requiresSubscriptionTooltip
+                    : props.subscriptionTooltipOverride || requiredTierMessage
             }
         />
     ) : (

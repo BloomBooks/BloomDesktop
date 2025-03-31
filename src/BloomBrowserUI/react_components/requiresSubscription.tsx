@@ -36,7 +36,7 @@ import {
 } from "./featureStatus";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
-//  From the enum values in CollectionSettingsApi.cs.
+//  From the enum values in Subscription
 const subscriptionTiers = ["None", "Community", "Enterprise"] as const;
 type SubscriptionTier = typeof subscriptionTiers[number];
 

@@ -78,12 +78,12 @@ namespace BloomTests.Collection
             Assert.AreEqual(expectedResult, subscription.IsExpired());
         }
 
-        [TestCase(null, Subscription.SubscriptionTier.None)]
-        [TestCase("", Subscription.SubscriptionTier.None)]
-        [TestCase("Legacy-LC-005809-2533", Subscription.SubscriptionTier.Community)]
+        [TestCase(null, Subscription.SubscriptionTier.Basic)]
+        [TestCase("", Subscription.SubscriptionTier.Basic)]
+        [TestCase("Legacy-LC-005809-2533", Subscription.SubscriptionTier.LocalCommunity)]
         [TestCase("Fake-006273-0501", Subscription.SubscriptionTier.Enterprise)]
-        [TestCase("Fake-LC-006273-1463", Subscription.SubscriptionTier.Community)]
-        [TestCase("Test-Expired-005691-4935", Subscription.SubscriptionTier.None)] // if expired, it's none
+        [TestCase("Fake-LC-006273-1463", Subscription.SubscriptionTier.LocalCommunity)]
+        [TestCase("Test-Expired-005691-4935", Subscription.SubscriptionTier.Basic)] // if expired, it's none
         public void Tier_ReturnsCorrectEnum(string code, Subscription.SubscriptionTier expectedTier)
         {
             var subscription = new Subscription(code);

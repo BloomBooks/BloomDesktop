@@ -764,7 +764,7 @@ namespace BloomTests.Publish
                         Is.EqualTo(-1)
                     );
                 },
-                tier: SubscriptionTier.None
+                tier: SubscriptionTier.Basic
             );
         }
 
@@ -996,7 +996,7 @@ namespace BloomTests.Publish
                         zip.FindEntry(PublishHelper.kSimpleComprehensionQuizJs, false)
                     );
                 },
-                tier: SubscriptionTier.None
+                tier: SubscriptionTier.Basic
             );
         }
 
@@ -1199,7 +1199,7 @@ namespace BloomTests.Publish
                     var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
                     AssertThatXmlIn.Dom(htmlDom).HasAtLeastOneMatchForXpath("//video");
                 },
-                tier: SubscriptionTier.None
+                tier: SubscriptionTier.Basic
             );
         }
 
@@ -1856,7 +1856,7 @@ namespace BloomTests.Publish
             Action<string> assertionsOnResultingHtmlString = null,
             Action<ZipHtmlObj> assertionsOnZipArchive = null,
             Action<ZipFile> assertionsOnRepeat = null,
-            SubscriptionTier tier = SubscriptionTier.None,
+            SubscriptionTier tier = SubscriptionTier.Basic,
             HashSet<string> languagesToInclude = null,
             string creator = BloomPubMaker.kCreatorBloom
         )

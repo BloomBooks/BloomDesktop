@@ -785,7 +785,7 @@ function addImageMenuOptions(
             generatedSubLabel:
                 "Currently: " + imgContainer.getAttribute("data-href") ||
                 undefined,
-            requiresAnySubscription: true,
+            featureName: "overlays",
             onClick: () => pasteLink(canvasElement)
 
             /*
@@ -909,7 +909,7 @@ function addAudioMenuItems(
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         onClick: () => {},
         icon: <VolumeUpIcon css={getMenuIconCss(1, "left:2px;")} />,
-        requiresAnySubscription: true,
+        featureName: "overlays",
         subMenu
     });
     if (imageSound !== "none") {
