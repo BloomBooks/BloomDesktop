@@ -215,10 +215,11 @@ namespace Bloom.Book
             string folderPath,
             IChangeableFileLocator baseFileLocator,
             BookRenamedEvent bookRenamedEvent,
-            CollectionSettings collectionSettings
+            CollectionSettings collectionSettings,
+            bool isInEditableCollection = false
         )
             : this(
-                new BookInfo(folderPath, false),
+                new BookInfo(folderPath, isInEditableCollection),
                 baseFileLocator,
                 bookRenamedEvent,
                 collectionSettings
@@ -3820,10 +3821,14 @@ namespace Bloom.Book
             if (GetMaintenanceLevel() <= kMaintenanceLevel)
                 return;
             var breakingFeatureRequirements = GetBreakingFeatureRequirements();
-            // Handle the back migrations 6.2 knows about, in the proper reverse order.
-            // This should not be merged to 6.2.
+            // Handle the back migrations this version of Bloom knows about, in the proper reverse order.
+            // This should not be merged to 6.2, though it may be a useful model of how to handle future
+            // back migrations.
             // If you add a new back migration, you must also modify GetHtmlMessageIfFeatureIncompatibility
             // to not complain if the only breaking changes are ones we can back-migrate.
+            // Also, each back migration has the potential to cause problems since the corresponding forward
+            // migration is likely to be run again. Make sure that each migration that might be re-run will
+            // not cause problems if it is run repeatedly, and comment it to reinforce this.
             if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "bloomCanvas"))
             {
                 MigrateBackFromLevel7BloomCanvas();
@@ -3873,12 +3878,12 @@ namespace Bloom.Book
             );
             if (GetMaintenanceLevel() <= 6)
                 return;
-            var legacyCanvasElements = Dom.SafeSelectNodes("//*[contains(@class, 'bloom-canvas')]")
+            var bloomCanvases = Dom.SafeSelectNodes("//*[contains(@class, 'bloom-canvas')]")
                 .Cast<SafeXmlElement>()
                 // the crude xpath above will also match bloom-canvas-element, which we don't want to change
                 .Where(e => e.HasClass("bloom-canvas"))
                 .ToList();
-            foreach (var element in legacyCanvasElements)
+            foreach (var element in bloomCanvases)
             {
                 element.RemoveClass("bloom-canvas");
                 element.AddClass("bloom-imageContainer");
