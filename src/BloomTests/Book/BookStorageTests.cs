@@ -1788,7 +1788,7 @@ namespace BloomTests.Book
 <body>
 	<div class='bloom-page'>
 		<div class='bloom-imageContainer'>
-			<div class='bloom-canvas-element' data-bubble='"
+			<div class='bloom-textOverPicture' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 			<svg class='comical-generated' />
@@ -1919,8 +1919,8 @@ These are similar but already have game-theme classes
 <body>
 	<div class='bloom-page'>
 		<div class='bloom-imageContainer'>
-			<div class='bloom-canvas-element'/>
-			<div class='bloom-canvas-element'/>
+			<div class='bloom-textOverPicture'/>
+			<div class='bloom-textOverPicture'/>
 			<img src='rubbish' id='moveMe' />
 		</div>
 	</div>
@@ -1954,12 +1954,12 @@ These are similar but already have game-theme classes
 </head>
 <body>
 	<div class='bloom-page'>
-		<div class='bloom-canvas'>
-			<div class='bloom-canvas-element' data-bubble='"
+		<div class='bloom-imageContainer'>
+			<div class='bloom-textOverPicture' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 			<svg class='comical-generated'/>
-			<div class='bloom-canvas-element' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
+			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
 		</div>
 	</div>
 </body></html>"
@@ -1990,19 +1990,19 @@ These are similar but already have game-theme classes
 </head>
 <body>
 	<div class='bloom-page'>
-		<div class='bloom-canvas'>
-			<div class='bloom-canvas-element' data-bubble='"
+		<div class='bloom-imageContainer'>
+			<div class='bloom-textOverPicture' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 			<svg class='comical-generated'/>
-			<div class='bloom-canvas-element' data-bubble='"
+			<div class='bloom-textOverPicture' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 		</div>
-		<div class='bloom-canvas'>
+		<div class='bloom-imageContainer'>
 			<svg class='comical-generated'/>
-			<div class='bloom-canvas-element' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
-			<div class='bloom-canvas-element' data-bubble='"
+			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
+			<div class='bloom-textOverPicture' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 		</div>
@@ -2035,8 +2035,8 @@ These are similar but already have game-theme classes
 </head>
 <body>
 	<div class='bloom-page'>
-		<div class='bloom-canvas'>
-			<div class='bloom-canvas-element' data-bubble='{`version`:`1.0`,`level`:1,`style`:`none`,`backgroundColors`:[`#e09494`],`tails`:[]}'/>
+		<div class='bloom-imageContainer'>
+			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`level`:1,`style`:`none`,`backgroundColors`:[`#e09494`],`tails`:[]}'/>
 			<svg class='comical-generated' />
 		</div>
 	</div>
@@ -2229,7 +2229,7 @@ These are similar but already have game-theme classes
 </head>
 <body>
 	<div class='bloom-page'>
-		<div class='bloom-canvas hasOverlay'>
+		<div class='bloom-imageContainer hasOverlay'>
 			<div class='bloom-textOverPicture bloom-backgroundImage' data-bubble-id='q9p48jh7' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
@@ -2269,9 +2269,9 @@ These are similar but already have game-theme classes
                 1
             );
 
-            assertThatDom.HasNoMatchForXpath("//div[@class='bloom-canvas hasOverlay']");
+            assertThatDom.HasNoMatchForXpath("//div[@class='bloom-imageContainer hasOverlay']");
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[@class='bloom-canvas bloom-has-canvas-element']",
+                "//div[@class='bloom-imageContainer bloom-has-canvas-element']",
                 1
             );
 

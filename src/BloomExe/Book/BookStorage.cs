@@ -1116,7 +1116,7 @@ namespace Bloom.Book
                 BloomDesktopMinVersion = "6.2",
                 BloomReaderMinVersion = "3.3",
                 // This is used for all images so will nearly always succeed fast.
-                XPath = $"//div[contains(@class,'bloom-canvas') ]"
+                XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
             }
         };
 
@@ -3654,8 +3654,10 @@ namespace Bloom.Book
             foreach (var svgElement in comicalSvgs)
             {
                 var bloomCanvas = svgElement.ParentNode; // bloom-canvas div (not gonna be null)
+                // Since this migration comes before the canvas-element migration, we have to look for the
+                // old class here. Not using any constant, because this should never change, however we later rename things.
                 var canvasElementDivs = bloomCanvas.SafeSelectNodes(
-                    "div[contains(@class, '" + HtmlDom.kCanvasElementClass + "')]"
+                    "div[contains(@class, 'bloom-textOverPicture')]"
                 );
                 if (canvasElementDivs == null) // unlikely, but maybe possible
                     continue;
@@ -3948,6 +3950,14 @@ namespace Bloom.Book
             }
         }
 
+        /// <summary>
+        /// Change the class bloom-textOverPicture to bloom-canvas-element, and hasOverlay to bloom-has-canvas-element,
+        /// and replace the attribute data-bubble-id with data-draggable-id
+        /// </summary>
+        ///<remarks>Because version 6.0 and 6.1 have been given back-migration code, maintenance level can
+        /// revert (currently to 4 from at least 7) resulting in this migration running multiple times.
+        /// The code must handle this. The class-name changes will need re-doing, since the back-migration
+        /// reverts them. data-draggable-id should not be affected; 6.0 and 6.1 do not use or mess with these.</remarks>
         public void MigrateToLevel5CanvasElement()
         {
             if (GetMaintenanceLevel() >= 5)
@@ -3968,6 +3978,16 @@ namespace Bloom.Book
             Dom.UpdateMetaElement("maintenanceLevel", "5");
         }
 
+        /// <summary>
+        /// Older activities are brought more in line with the newer games by making sure each has a data-activity
+        /// and a data-tool-id and one of the game-theme classes
+        /// </summary>
+        /// <remarks>Because version 6.0 and 6.1 have been given back-migration code, maintenance level can
+        /// revert (currently to 4 from at least 7) resulting in this migration running multiple times.
+        /// The code must handle this. It's not a problem for the data-activity and data-tool-id values,
+        /// as repeated migrations will just set it to the same thing. But on the game-theme, we could
+        /// easily overwrite the theme the user has chosen. For this reason, a game theme is only added
+        /// if the page does not already have one.</remarks>
         public void MigrateToLevel6LegacyActivities()
         {
             if (GetMaintenanceLevel() >= 6)
@@ -4003,6 +4023,18 @@ namespace Bloom.Book
             Dom.UpdateMetaElement("maintenanceLevel", "6");
         }
 
+        /// <summary>
+        /// Change the class bloom-imageContainer to bloom-canvas, but only for top-level image containers,
+        /// that is, those that do not have an ancestor with that class. (This migration came about because
+        /// we realized that what started out as "image containers" had come to contain many other kinds of
+        /// canvas elements, and no longer directly contain an image in edit mode, and sometimes contain
+        /// other image containers, and bugs were happening as code and CSS rules intended to apply to one
+        /// level of image container were accidentally affecting the others.)
+        /// </summary>
+        ///<remarks>Because version 6.0 and 6.1 have been given back-migration code, maintenance level can
+        /// revert (currently to 4 from at least 7) resulting in this migration running multiple times.
+        /// The code must handle this. The revert code will convert all bloom-canvas elements to
+        /// bloom-imageContainer; converting the outer ones to bloom-canvas again should be fine.</remarks>
         public void MigrateToLevel7BloomCanvas()
         {
             if (GetMaintenanceLevel() >= 7)

@@ -19,6 +19,11 @@ namespace BloomTests.Publish
                 @"
 <div class=""bloom-page"">
     <div class=""bloom-canvas bloom-has-canvas-element"" data-bubble=""{`version`:`1.0`}"">
+        <div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"" style=""font-size: 16px;"">
+            <div class=""bloom-editable ImageDescriptionEdit-style bloom-visibility-code-on bloom-content1 cke_editable cke_editable_inline cke_contents_ltr"" lang=""tuz"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" contenteditable=""true"" data-languagetipcontent=""Turka"">
+                <p>A platypus swimming in greenish brown water </p>
+            </div>
+        </div>
         <div class=""bloom-canvas-element bloom-backgroundImage"">
             <div class=""bloom-imageContainer"">
                 <img data-book=""coverImage"" src=""Duck-billed_platypus.jpg"" data-copyright=""Charles J Sharp""
@@ -37,6 +42,11 @@ namespace BloomTests.Publish
             // verifies that the img was moved to the right place and (at least several) attributes were kept.
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
                 "//div[@class='bloom-canvas']/img[@data-book='coverImage' and @src=\"Duck-billed_platypus.jpg\" and @data-creator=\"Charles J Sharp\"]",
+                1
+            );
+            // should not mess with the image description at all.
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[@class='bloom-canvas']/div[@class='bloom-translationGroup bloom-imageDescription bloom-trailingElement']",
                 1
             );
         }
