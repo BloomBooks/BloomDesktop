@@ -111,6 +111,8 @@ namespace BloomTests.Collection
         [TestCase("Quite-Phony-3098-4247", "invalid")] // Too few digits in part 2
         [TestCase("Tttest-Expired-Code-005658-9576", "invalid")]
         [TestCase("UnitTest-E-006046-3301", "ok")] // Using the test code that should be valid
+        [TestCase("345-Test-002460-2109", "ok")]
+        [TestCase("Test-789-006112-1755", "ok")]
         public void GetIntegrityLabel_ReturnsCorrectValue(string code, string expectedLabel)
         {
             var subscription = new Subscription(code);

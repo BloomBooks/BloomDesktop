@@ -181,30 +181,25 @@ public class Subscription
         var parts = Code.Split('-');
         if (parts.Length < 3)
             return "incomplete";
-        // the date part is the first part that starts with a digit
 
-        var datePart = parts.FirstOrDefault(part => part.All(char.IsDigit)) ?? "";
+        // the date part is the next to last part, must be all numbers, and at least 6 digits
+        var datePart = parts[parts.Length - 2];
         if (string.IsNullOrWhiteSpace(datePart))
             return "incomplete";
-        // if that is the last part, then this is incomplete
-        if (datePart == parts.Last())
+        if (!datePart.All(char.IsDigit))
             return "incomplete";
         if (datePart.Length < 6)
-            return "invalid"; // we say invalid because they have moved on to the checksum part, but the date part was too short
-        // the checksum is the part after that, and amust be the last part
+            return "invalid"; // we say invalid because we have a checksum part, but the date part was too short
+
+        // the checksum is the final part, must be all numbers, and at least 4 digits
         var checksumPart = parts.Last();
         if (!checksumPart.All(char.IsDigit))
             return "invalid";
         if (checksumPart.Length < 4)
             return "incomplete";
 
-        if (checksumPart.Length < 4)
-            return "incomplete";
-
         if (!IsChecksumCorrect())
-        {
             return "invalid";
-        }
 
         return "ok";
     }
