@@ -991,7 +991,11 @@ namespace BloomTests.Book
             );
         }
 
-        private BookStorage GetInitialStorageWithCustomHtml(string html, bool doSave = true)
+        private BookStorage GetInitialStorageWithCustomHtml(
+            string html,
+            bool doSave = true,
+            bool isInEditableCollection = false
+        )
         {
             RobustFile.WriteAllText(_bookPath, html);
             var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
@@ -1003,7 +1007,8 @@ namespace BloomTests.Book
                 _folder.Path,
                 _fileLocator,
                 new BookRenamedEvent(),
-                collectionSettings
+                collectionSettings,
+                isInEditableCollection: isInEditableCollection
             );
             if (doSave)
                 storage.Save();

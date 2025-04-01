@@ -223,10 +223,11 @@ namespace Bloom.Book
             string folderPath,
             IChangeableFileLocator baseFileLocator,
             BookRenamedEvent bookRenamedEvent,
-            CollectionSettings collectionSettings
+            CollectionSettings collectionSettings,
+            bool isInEditableCollection = false
         )
             : this(
-                new BookInfo(folderPath, false),
+                new BookInfo(folderPath, isInEditableCollection),
                 baseFileLocator,
                 bookRenamedEvent,
                 collectionSettings
@@ -3911,17 +3912,22 @@ namespace Bloom.Book
         {
             //if (GetMaintenanceLevel() <= kMaintenanceLevel)
             //    return;
-            //var breakingFeatureRequirements = GetBreakingFeatureRequirements();
-            //// Building a general mechanism here, but this is the only one 6.1 currently
-            //// knows how to do. (Note that this method doesn't get called at all if there
-            //// are breaking feature requirements we don't know how to deal with.)
-            //foreach (var requirement in breakingFeatureRequirements)
-            //{
-            //    // Something like this, with the ID of the feature to be back-migrated,
-            //    // and a function that knows how to do it. (Also fix GetHtmlMessageIfFeatureIncompatibility)
-            //    //if (requirement.FeatureId == "canvasElement")
-            //    //    MigrateBackFromLevel5CanvasElement();
-            //}
+            //var breakingFeatureRequirements = GetBreakingFeatureRequirements();            
+            // Handle the back migrations this version of Bloom knows about, in the proper reverse order.
+            // Back migrations should not be merged to later versions.
+            // If you add a new back migration, you must also modify GetHtmlMessageIfFeatureIncompatibility
+            // to not complain if the only breaking changes are ones we can back-migrate.
+            // Also, each back migration has the potential to cause problems since the corresponding forward
+            // migration is likely to be run again. Make sure that each migration that might be re-run will
+            // not cause problems if it is run repeatedly, and comment it to reinforce this.
+            // if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "bloomCanvas"))
+            // {
+            //     MigrateBackFromLevel7BloomCanvas();
+            // }
+            // if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "canvasElement"))
+            // {
+            //     MigrateBackFromLevel5CanvasElement();
+            // }
         }
 
         private void MigrateClassName(string oldClassName, string newClassName)
