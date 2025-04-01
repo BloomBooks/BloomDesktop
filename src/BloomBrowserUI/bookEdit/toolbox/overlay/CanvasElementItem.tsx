@@ -21,6 +21,8 @@ import { theOneCanvasElementManager } from "../../js/CanvasElementManager";
 import { Bubble, Comical } from "comicaljs";
 import { Point } from "../../js/point";
 import { getCanvasElementManager } from "./canvasElementUtils";
+import { all } from "underscore";
+import { getTarget } from "../../shared/dragActivityRuntime";
 
 const ondragstart = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
@@ -217,6 +219,27 @@ const ondragend = (
         setGeneratedDraggableId(canvasElement);
         canvasElement.style.width = ev.currentTarget.clientWidth + "px";
         makeTargetForDraggable(canvasElement);
+        const allItemsSameSize =
+            canvasElement
+                .closest(".bloom-page")!
+                .getAttribute("data-same-size") !== "false";
+        if (allItemsSameSize) {
+            // We want to adjust the new one to the existing ones (if any), not the other way around.
+            // By default, since the new one is about to be selected, its size will win.
+            // Calling adjustTarget preemptively with any other element (since they are all the same size)
+            // will also fix the new one, and then when it gets selected, it won't change the others
+            // (though the arrow will move back to it).
+            const page = canvasElement.closest(".bloom-page") as HTMLElement;
+            const anotherDraggable = Array.from(
+                page.querySelectorAll("[data-draggable-id]")
+            ).find(el => el !== canvasElement) as HTMLElement;
+            if (anotherDraggable) {
+                const anotherTarget = getTarget(anotherDraggable);
+                // the other one is probably already the right size, so we need a force to
+                // get the others adjusted.
+                adjustTarget(anotherDraggable, anotherTarget, true);
+            }
+        }
     }
     // This must be done AFTER we give the canvas element its id if we're going to, because that's how we know
     // it's one of the ones that should be ordered to the end.
