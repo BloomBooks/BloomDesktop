@@ -1371,12 +1371,17 @@ canvas.moving {
     position: absolute;
     z-index: @dragHandleEventZIndex + 1;
     outline: 1px solid @bloom-blue;
+    // makes the outline no larger than the frame's own size, so it doesn't get cropped if it fills
+    // the bloom-canvas, as background images do in at least one dimension. This means the outline
+    // will hide the outermost pixel of the image, but I think that's better than the alternative of
+    // having it cut off on one or two sides of a background image.
+    outline-offset: -1px;
     box-sizing: border-box;
     pointer-events: none;
     background-color: transparent;
 
     // background images can't be manually resized
-    &.bloom-backgroundImage {
+    &.bloom-backgroundImage-control-frame {
         .bloom-ui-canvas-element-resize-handle {
             display: none;
         }
@@ -1550,7 +1555,7 @@ canvas.moving {
     // the background image is hard up against the side of the container on at least two edges,
     // and can't be moved. Half the default crop handle is clipped at best, and sometimes the
     // origami control gets in the way even more. So we move them inwards.
-    &.bloom-backgroundImage {
+    &.bloom-backgroundImage-control-frame {
         .bloom-ui-canvas-element-side-handle-n {
             top: 1px;
         }
