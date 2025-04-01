@@ -8,8 +8,8 @@ public class Subscription
     public enum SubscriptionTier
     {
         Basic = 0,
-        LocalCommunity = 1,
-        Pro = 2,
+        Pro = 1,
+        LocalCommunity = 2,
         Enterprise = 3,
     }
 
