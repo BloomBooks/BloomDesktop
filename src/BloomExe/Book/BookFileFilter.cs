@@ -360,7 +360,7 @@ namespace Bloom.Book
                         SafeXmlElement soundElt in Dom.Body.SafeSelectNodes(".//div[@data-sound]")
                     )
                     {
-                        _specialAudioFiles.Add(soundElt.GetAttribute("data-sound"));
+						AddAttrFilenameValueToSet(soundElt, "data-sound", _specialAudioFiles);
                     }
 
                     foreach (var page in Dom.GetPageElements())
