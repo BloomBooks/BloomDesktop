@@ -295,13 +295,39 @@
         <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool">
-        <source xml:lang="en">
-          Game Tool
-        </source>
-        <target xml:lang="pbu" state="needs-translation">
-          Game Tool
-        </target>
+        <source xml:lang="en">Game Tool</source>
+        <target xml:lang="pbu" state="needs-translation">Game Tool</target>
         <note>ID: EditTab.Toolbox.GameTool</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.GameTool.CheckboxQuizHeading" translate="no">
+        <source xml:lang="en">Checkbox Quiz</source>
+        <target xml:lang="pbu" state="needs-translation">Checkbox Quiz</target>
+        <note>ID: EditTab.Toolbox.GameTool.CheckboxQuizHeading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.GameTool.CheckboxQuizInstructions" translate="no">
+        <source xml:lang="en">Check the box next to each correct answer.</source>
+        <target xml:lang="pbu" state="needs-translation">Check the box next to each correct answer.</target>
+        <note>ID: EditTab.Toolbox.GameTool.CheckboxQuizInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.GameTool.ChooseImageFromWordHeading" translate="no">
+        <source xml:lang="en">Choose Image from Word</source>
+        <target xml:lang="pbu" state="needs-translation">Choose Image from Word</target>
+        <note>ID: EditTab.Toolbox.GameTool.ChooseImageFromWordHeading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions" translate="no">
+        <source xml:lang="en">Place the correct image in the highlighted button, put other pictures in the other buttons. When it is time to play, Bloom will shuffle the order of buttons.</source>
+        <target xml:lang="pbu" state="needs-translation">Place the correct image in the highlighted button, put other pictures in the other buttons. When it is time to play, Bloom will shuffle the order of buttons.</target>
+        <note>ID: EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.GameTool.ChooseWordFromImageHeading" translate="no">
+        <source xml:lang="en">Choose Word from Image</source>
+        <target xml:lang="pbu" state="needs-translation">Choose Word from Image</target>
+        <note>ID: EditTab.Toolbox.GameTool.ChooseWordFromImageHeading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.GameTool.ChooseWordFromImageInstructions" translate="no">
+        <source xml:lang="en">Type the correct word in the highlighted button, put other words in the other buttons. When it is time to play, Bloom will shuffle the order of buttons.</source>
+        <target xml:lang="pbu" state="needs-translation">Type the correct word in the highlighted button, put other words in the other buttons. When it is time to play, Bloom will shuffle the order of buttons.</target>
+        <note>ID: EditTab.Toolbox.GameTool.ChooseWordFromImageInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.BookIsLeveled" sil:dynamic="true">
         <source xml:lang="en">Book is Leveled</source>
