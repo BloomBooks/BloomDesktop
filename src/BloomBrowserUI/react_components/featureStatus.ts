@@ -1,7 +1,8 @@
 // See also: the backend version of this in FeatureStatus.cs
 
-import { post, useApiObject } from "../utils/bloomApi";
+import { post, useApiObject, get } from "../utils/bloomApi";
 import { useL10n2 } from "./l10nHooks";
+import { useEffect, useState } from "react";
 
 // Equivalent to C# SubscriptionTier enum
 // export enum SubscriptionTier {
@@ -34,6 +35,22 @@ export interface FeatureStatus {
     enabled: boolean;
     visible: boolean;
     firstPageNumber?: string;
+}
+
+/**
+ * Non-React version of useGetFeatureStatus for use in non-React contexts.
+ * Returns a Promise that resolves to the FeatureStatus or undefined.
+ */
+export async function getFeatureStatusAsync(
+    featureName: string | undefined
+): Promise<FeatureStatus | undefined> {
+    if (!featureName) return undefined;
+
+    return new Promise<FeatureStatus | undefined>(resolve => {
+        get(`features/status?featureName=${featureName}`, result => {
+            resolve(result.data);
+        });
+    });
 }
 
 export function useGetFeatureStatus(
