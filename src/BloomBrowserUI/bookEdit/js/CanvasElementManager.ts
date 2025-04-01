@@ -56,7 +56,7 @@ export interface ITextColorInfo {
 const kComicalGeneratedClass: string = "comical-generated";
 // In the process of moving these two definitions to overlayUtils.ts, but duplicating here for now.
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
-export const kbackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
+export const kBackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
 
 type ResizeDirection = "ne" | "nw" | "sw" | "se";
 
@@ -1627,7 +1627,7 @@ export class CanvasElementManager {
             capture: true
         });
         this.currentDragControl?.classList.remove("active-control");
-        if (this.activeElement?.classList.contains(kbackgroundImageClass)) {
+        if (this.activeElement?.classList.contains(kBackgroundImageClass)) {
             this.adjustBackgroundImageSize(
                 this.activeElement.closest(kBloomCanvasSelector)!,
                 this.activeElement,
@@ -1770,7 +1770,7 @@ export class CanvasElementManager {
         let shouldSnapForBackground = "";
         let backgroundSnapDelta = 0;
         if (
-            this.activeElement.classList.contains(kbackgroundImageClass) &&
+            this.activeElement.classList.contains(kBackgroundImageClass) &&
             !event.ctrlKey
         ) {
             const bloomCanvas = this.activeElement.closest(
@@ -2264,7 +2264,7 @@ export class CanvasElementManager {
     public canExpandToFillSpace(): boolean {
         if (
             !this.activeElement ||
-            !this.activeElement.classList.contains(kbackgroundImageClass)
+            !this.activeElement.classList.contains(kBackgroundImageClass)
         )
             return false;
         const bloomCanvas = this.activeElement.closest(
@@ -2280,7 +2280,7 @@ export class CanvasElementManager {
     public expandImageToFillSpace() {
         if (
             !this.activeElement ||
-            !this.activeElement.classList.contains(kbackgroundImageClass)
+            !this.activeElement.classList.contains(kBackgroundImageClass)
         )
             return;
         const img = getImageFromCanvasElement(this.activeElement);
@@ -2344,7 +2344,7 @@ export class CanvasElementManager {
         if (timeoutHandler) {
             clearTimeout(timeoutHandler);
         }
-        if (canvasElement.classList.contains(kbackgroundImageClass)) {
+        if (canvasElement.classList.contains(kBackgroundImageClass)) {
             this.adjustBackgroundImageSize(
                 canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
@@ -2475,7 +2475,7 @@ export class CanvasElementManager {
         img.style.left = "";
         img.style.top = "";
         // Get the aspect ratio right (aligns control frame)
-        if (canvasElement.classList.contains(kbackgroundImageClass)) {
+        if (canvasElement.classList.contains(kBackgroundImageClass)) {
             this.adjustBackgroundImageSize(
                 canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
@@ -2528,8 +2528,8 @@ export class CanvasElementManager {
                 this.activeElement.classList.contains("bloom-noAutoHeight")
             );
             controlFrame.classList.toggle(
-                kbackgroundImageClass,
-                this.activeElement.classList.contains(kbackgroundImageClass)
+                kBackgroundImageClass,
+                this.activeElement.classList.contains(kBackgroundImageClass)
             );
             const hasText = controlFrame.classList.contains("has-text");
             // We don't need to await these, they are just async so the handle titles can be updated
@@ -3228,7 +3228,7 @@ export class CanvasElementManager {
                 event.preventDefault();
                 event.stopPropagation();
             }
-            if (bubble.content.classList.contains(kbackgroundImageClass)) {
+            if (bubble.content.classList.contains(kBackgroundImageClass)) {
                 this.setActiveElement(bubble.content); // usually done by startDraggingBubble, but we're not going to drag it.
                 return; // these can't be dragged, they are locked to a computed position like content-fit.
             }
@@ -4627,7 +4627,7 @@ export class CanvasElementManager {
         if (!textOverPicDiv || !textOverPicDiv.parentElement) {
             return;
         }
-        if (textOverPicDiv.classList.contains(kbackgroundImageClass)) {
+        if (textOverPicDiv.classList.contains(kBackgroundImageClass)) {
             // just revert it to a placeholder
             const img = getImageFromCanvasElement(textOverPicDiv);
             if (img) {
@@ -4744,7 +4744,7 @@ export class CanvasElementManager {
         if (!patriarchDuplicateElement) {
             return;
         }
-        patriarchDuplicateElement.classList.remove(kbackgroundImageClass);
+        patriarchDuplicateElement.classList.remove(kBackgroundImageClass);
         patriarchDuplicateElement.style.color = sourceElement.style.color; // preserve text color
         patriarchDuplicateElement.innerHTML = this.safelyCloneHtmlStructure(
             sourceElement
@@ -4997,7 +4997,7 @@ export class CanvasElementManager {
     public startDraggingSplitter() {
         this.getAllBloomCanvasesOnPage().forEach(bloomCanvas => {
             const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
-                kbackgroundImageClass
+                kBackgroundImageClass
             )[0] as HTMLElement;
             if (backgroundCanvasElement) {
                 // These two attributes are what the resize observer will mess with to make
@@ -5029,7 +5029,7 @@ export class CanvasElementManager {
     public endDraggingSplitter() {
         this.getAllBloomCanvasesOnPage().forEach(bloomCanvas => {
             const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
-                kbackgroundImageClass
+                kBackgroundImageClass
             )[0] as HTMLElement;
             // We need to remove the results of the continuous adjustments so that we can make the change again,
             // but this time adjust all the other canvas elements with it.
@@ -5545,7 +5545,7 @@ export class CanvasElementManager {
     // at publish time to set the image containers back to the original, more simple state.
     private revertBackgroundCanvasElements() {
         for (const bgo of Array.from(
-            document.getElementsByClassName(kbackgroundImageClass)
+            document.getElementsByClassName(kBackgroundImageClass)
         )) {
             const bgImage = getImageFromCanvasElement(bgo as HTMLElement);
             const mainImage = getImageFromContainer(
@@ -5582,7 +5582,7 @@ export class CanvasElementManager {
     // if we put position and size attributes on the background image directly.
     private switchBackgroundToCanvasElementIfNeeded(bloomCanvas: HTMLElement) {
         const bgCanvasElement = bloomCanvas.getElementsByClassName(
-            kbackgroundImageClass
+            kBackgroundImageClass
         )[0] as HTMLElement;
         if (bgCanvasElement) {
             // I think this is redundant, but it got added by mistake at one point,
@@ -5596,14 +5596,14 @@ export class CanvasElementManager {
     private switchBackgroundToCanvasElement(bloomCanvas: HTMLElement) {
         const oldBgImage = getImageFromContainer(bloomCanvas);
         let bgCanvasElement = bloomCanvas.getElementsByClassName(
-            kbackgroundImageClass
+            kBackgroundImageClass
         )[0] as HTMLElement;
         if (!bgCanvasElement) {
             // various legacy behavior, such as hiding the old-style background placeholder.
             bloomCanvas.classList.add(kHasCanvasElementClass);
             bgCanvasElement = document.createElement("div");
             bgCanvasElement.classList.add(kCanvasElementClass);
-            bgCanvasElement.classList.add(kbackgroundImageClass);
+            bgCanvasElement.classList.add(kBackgroundImageClass);
 
             // Make a new image-container to hold just the background image, inside the new canvas element.
             // We don't want a deep clone...that will copy all the canvas elements, too.
@@ -5945,7 +5945,7 @@ export class CanvasElementManager {
 
             // If found, it should be the first one; we'll make it the whole rectangle we try
             // to fit to the new container size.
-            if (child.classList.contains(kbackgroundImageClass)) {
+            if (child.classList.contains(kBackgroundImageClass)) {
                 if (
                     (child.clientLeft !== 0 && child.clientTop !== 0) ||
                     (Math.abs(child.clientWidth - oldWidth) > 1 &&
