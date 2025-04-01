@@ -660,10 +660,11 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                             )}
                             pageId={selectedTemplatePageDiv.id}
                             imageSource={getPreviewImageSource()}
-                            enterpriseAvailable={isEnterpriseAvailable}
-                            pageIsEnterpriseOnly={selectedTemplatePageDiv.classList.contains(
-                                "enterprise-only"
-                            )}
+                            featureName={
+                                selectedTemplatePageDiv.getAttribute(
+                                    "data-feature"
+                                ) ?? undefined
+                            }
                             pageIsMarkedBilingual={
                                 selectedTemplatePageDiv.getAttribute(
                                     "data-ui-mark-bilingual"

@@ -559,7 +559,7 @@ namespace BloomTests.Spreadsheet
         {
             var builder = new StringBuilder(
                 @"
-<div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page  numberedPage side-right A5Portrait bloom-monolingual"" data-feature=""games"" id=""ca363e76-9474-4e54-bd99-c3f554b67784"" data-page="""" data-analyticscategories=""comprehension"" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""1"" lang="""">
+<div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page  numberedPage side-right A5Portrait bloom-monolingual"" data-feature=""game"" id=""ca363e76-9474-4e54-bd99-c3f554b67784"" data-page="""" data-analyticscategories=""comprehension"" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""1"" lang="""">
     <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Quiz Page"">
         Quiz Page
     </div>

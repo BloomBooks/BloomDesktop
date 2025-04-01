@@ -32,13 +32,11 @@ import {
 import { getBloomApiPrefix } from "../utils/bloomApi";
 import {
     openBloomSubscriptionSettings,
-    useGetFeatureStatus
+    useGetFeatureStatus,
+    useGetFeatureTierMessage
 } from "./featureStatus";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
-//  From the enum values in Subscription
-const subscriptionTiers = ["None", "Community", "Enterprise"] as const;
-type SubscriptionTier = typeof subscriptionTiers[number];
 
 // Tells you wether the user has an active subscription or not.
 export function useHaveSubscription() {
@@ -53,20 +51,6 @@ export function useHaveSubscription() {
     return haveSubscription;
 }
 
-export function useGetSubscriptionTier(): SubscriptionTier {
-    const [status, setSubscriptionTier] = useState<SubscriptionTier>("None");
-
-    useEffect(() => {
-        get("settings/subscriptionTier", result => {
-            setSubscriptionTier(result.data);
-        });
-    }, []);
-    if (!(subscriptionTiers as readonly string[]).includes(status)) {
-        throw new Error(`Invalid subscription tier: ${status}`);
-    }
-    return status;
-}
-
 /**
  * A component's props that include a "disabled" property
  */
@@ -76,23 +60,22 @@ interface IDisableable {
 
 export const RequiresSubscriptionAdjacentIconWrapper = (props: {
     iconStyles?: string;
+    featureName: string;
     children:
         | React.ReactElement<IDisableable>
         | Array<React.ReactElement<IDisableable>>;
 }) => {
-    const haveSubscription = useHaveSubscription();
+    const featureStatus = useGetFeatureStatus(props.featureName);
+    const tierMessage = useGetFeatureTierMessage(featureStatus);
 
     // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
-    const tooltip = useL10n(
-        haveSubscription
-            ? "Your subscription includes this feature."
-            : "To use this feature, you'll need a Bloom subscription.",
-        "EditTab." +
-            (haveSubscription ? "SubscriptionEnabled" : "RequiresSubscription")
+    const okMessage = useL10n(
+        "Your subscription includes this feature.",
+        "EditTab.SubscriptionEnabled"
     );
 
-    // // Set the disabled property on all the children
-    const children = haveSubscription
+    // Set the disabled property on all the children
+    const children = featureStatus?.enabled
         ? props.children
         : React.Children.map(props.children, child =>
               React.cloneElement(child, {
@@ -107,9 +90,9 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
                     (props.iconStyles ?? "")}
             `}
             src={badgeUrl}
-            title={tooltip}
+            title={featureStatus?.enabled ? okMessage : tierMessage}
             onClick={() => {
-                if (!haveSubscription) {
+                if (!featureStatus?.enabled) {
                     showRequiresSubscriptionDialog();
                 }
             }}
@@ -126,13 +109,15 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
         >
             <div
                 css={css`
-                    opacity: ${haveSubscription ? 1.0 : kBloomDisabledOpacity};
+                    opacity: ${featureStatus?.enabled
+                        ? 1.0
+                        : kBloomDisabledOpacity};
                 `}
                 ref={node =>
                     node &&
                     // later version of react reportedly do support `inert`, but this version doesn't,
                     // so we are using this `ref` way to get it into the DOM.
-                    (haveSubscription || node.setAttribute("inert", ""))
+                    (featureStatus?.enabled || node.setAttribute("inert", ""))
                 }
             >
                 {children}
@@ -222,14 +207,9 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
 export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
     darkTheme?: boolean;
     inSeparateDialog?: boolean;
-}> = ({ darkTheme, inSeparateDialog }) => {
-    const [visible, setVisible] = useState(false);
-
-    useEffect(() => {
-        get("settings/subscriptionEnabled", response => {
-            setVisible(!response.data);
-        });
-    }, []);
+    featureName?: string;
+}> = ({ darkTheme, inSeparateDialog, featureName }) => {
+    const featureStatus = useGetFeatureStatus(featureName);
 
     const kBloomSubscriptionNoticePadding = "15px;";
     const kButtonRadius = "4px;";
@@ -266,7 +246,7 @@ export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
             <ThemeProvider theme={lightTheme}>
                 <div
                     css={
-                        !visible
+                        featureStatus?.enabled
                             ? css`
                                   display: none;
                               `
@@ -509,18 +489,5 @@ export const BloomSubscriptionIndicatorIconAndText: React.FunctionComponent<{
         </div>
     );
 };
-
-// Still used in imageDescription.tsx and talkingBook.ts
-export function checkIfEnterpriseAvailable(): HaveSubscriptionPromise {
-    return new HaveSubscriptionPromise();
-}
-
-class HaveSubscriptionPromise {
-    public then(resolve: (haveSubscription: boolean) => void) {
-        get("settings/subscriptionEnabled", response => {
-            resolve(response.data);
-        });
-    }
-}
 
 WireUpForWinforms(RequiresSubscriptionNoticeDialog);
