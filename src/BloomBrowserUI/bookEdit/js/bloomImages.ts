@@ -11,6 +11,7 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 
 import {
     kbackgroundImageClass,
+    theOneCanvasElementManager,
     updateCanvasElementClass
 } from "./CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
@@ -27,10 +28,17 @@ import { getCanvasElementManager } from "../toolbox/overlay/canvasElementUtils";
 const kBrowserDpi = 96;
 export const kImageContainerClass = "bloom-imageContainer";
 export const kImageContainerSelector = `.${kImageContainerClass}`;
+export const kBloomCanvasClass = "bloom-canvas";
+export const kBloomCanvasSelector = `.${kBloomCanvasClass}`;
 
 export function cleanupImages() {
     $(".bloom-imageContainer").css("opacity", ""); //comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing
     $(".bloom-imageContainer").css("overflow", ""); //review: also comes form myimgscale; is it a problem?
+    // I'm not clear about the source of the problem we're trying to fix here, so it MIGHT happen
+    // on bloom-canvas elements (could they get migrated before some bloom did the fix above?).  So let's keep the old code above and
+    // also fix if we see these on bloom-canvas.
+    $(kBloomCanvasSelector).css("opacity", "");
+    $(kBloomCanvasSelector).css("overflow", "");
 }
 
 export function SetupImagesInContainer(container) {
@@ -39,13 +47,20 @@ export function SetupImagesInContainer(container) {
         .each(function() {
             SetupImage(this);
         });
+    // I think this is redundant, but it might be important for a bloom-canvas
+    // where the background img has not yet been converted to a background canvas element.
+    $(container)
+        .find(".bloom-canvas > img") // the ">" here prevents finding img's of ui affordances deep in comics
+        .each(function() {
+            SetupImage(this);
+        });
 
     $(container)
-        .find(".bloom-imageContainer")
+        .find(kBloomCanvasSelector)
         .each((index, element) => {
             // For now, bookButtons aren't editable
             if (!element.closest(".bloom-bookButton")) {
-                SetupImageContainer(element as HTMLHtmlElement);
+                SetupBloomCanvas(element as HTMLHtmlElement);
             }
         });
 
@@ -199,31 +214,31 @@ export function doImageCommand(
     });
 }
 
-export function addImageEditingButtons(containerDiv: HTMLElement): void {
+export function addImageEditingButtons(bloomCanvas: HTMLElement): void {
     if (
-        !containerDiv || // huh? so why did we call this?
-        containerDiv.classList.contains("hoverUp") // should already have them if wanted
+        !bloomCanvas || // huh? so why did we call this?
+        bloomCanvas.classList.contains("hoverUp") // should already have them if wanted
     ) {
         return;
     }
-    if (playingBloomGame(containerDiv)) {
+    if (playingBloomGame(bloomCanvas)) {
         // I wish this knowledge was not here, but I don't see a better way to prevent image editing
         // and hover effects when in test mode.
         return;
     }
-    const img = getBackgroundImageFromContainer(containerDiv);
-    containerDiv.classList.add("hoverUp"); // maybe one day refactor to use :hover?
+    const img = getBackgroundImageFromBloomCanvas(bloomCanvas);
+    bloomCanvas.classList.add("hoverUp"); // maybe one day refactor to use :hover?
 
     if (!img) {
         return;
     }
-    SetImageTooltip(containerDiv);
+    SetImageTooltip(bloomCanvas);
 
     if (
-        containerDiv.getElementsByClassName(kPlaybackOrderContainerClass)
+        bloomCanvas.getElementsByClassName(kPlaybackOrderContainerClass)
             .length > 0
     ) {
-        return; // Playback order controls are active, deactivate image container stuff.
+        return; // Playback order controls are active, deactivate bloom-canvas stuff.
     }
 
     const bgImageContainer = img.parentElement as HTMLElement;
@@ -265,12 +280,12 @@ function SetupChangeImageButton(
 
 /**
  * Gets a NodeListOf of the image editing button elements, which can be iterated through.
- * @param containerDiv: The .bloom-imageContainer which contains the image editing buttons.
+ * @param bloomCanvas: The .bloom-canvas which contains the image editing buttons.
  * @param options: An object with the following fields:
  *    skipProblemIndicator: true to omit the imgMetadataProblem element(s) from the list
  */
 function getImageEditingButtons(
-    containerDiv: Element,
+    bloomCanvas: Element,
     options: {
         skipProblemIndicator: boolean;
     }
@@ -281,7 +296,7 @@ function getImageEditingButtons(
     const selector =
         ".imageOverlayButton" +
         (options.skipProblemIndicator ? ":not(.imgMetadataProblem)" : "");
-    return containerDiv.querySelectorAll(selector);
+    return bloomCanvas.querySelectorAll(selector);
 }
 
 export function removeImageEditingButtons(containerDiv: Element): void {
@@ -299,17 +314,17 @@ export function removeImageEditingButtons(containerDiv: Element): void {
     DisableImageTooltip(containerDiv as HTMLElement);
 }
 
-export function DisableImageEditing(imageContainer: HTMLElement) {
-    imageContainer.classList.add("bloom-hideImageButtons");
-    UpdateImageTooltipVisibility(imageContainer);
+export function DisableImageEditing(bloomCanvas: HTMLElement) {
+    bloomCanvas.classList.add("bloom-hideImageButtons");
+    UpdateImageTooltipVisibility(bloomCanvas);
 }
 
 /**
  * Undo the effect of calling DisableImageEditing()
  */
-export function EnableImageEditing(imageContainer: HTMLElement) {
-    imageContainer.classList.remove("bloom-hideImageButtons");
-    UpdateImageTooltipVisibility(imageContainer);
+export function EnableImageEditing(bloomCanvas: HTMLElement) {
+    bloomCanvas.classList.remove("bloom-hideImageButtons");
+    UpdateImageTooltipVisibility(bloomCanvas);
 }
 
 /**
@@ -318,7 +333,7 @@ export function EnableImageEditing(imageContainer: HTMLElement) {
 export function EnableAllImageEditing() {
     // getElementsByClassName returns these in document order.
     // EnableImageEditing has side effects. Whose should win?
-    // We'd rather have the first primary image container win, rather than the last child container,
+    // We'd rather have the first bloom-canvas win, rather than the last child container,
     // so apply these in reverse document order.
     // (This may not be strictly needed because currently, all calls to this function
     // occur when the side effects don't matter. But just in case.)
@@ -327,55 +342,45 @@ export function EnableAllImageEditing() {
         .forEach(EnableImageEditing);
 }
 
-// Bloom "imageContainer"s are <div>'s which wrap an <img>, and automatically proportionally resize
-// the img to fit the available space.
-// Precondition: containerDiv must be just a single HTMLElement
-function SetupImageContainer(containerDiv: HTMLElement) {
-    const isOutermostImageContainer = !containerDiv.parentElement?.closest(
-        ".bloom-imageContainer"
-    );
+// Bloom "bloom-canvas" elements are <div>'s which wrap various kinds of canvas elements.
+// In legacy books and in publication mode, they may directly wrap an img (or have a
+// background image) which acts as a background for any other content.
+// Precondition: bloomCanvas must be just a single HTMLElement
+function SetupBloomCanvas(bloomCanvas: HTMLElement) {
     // Initialize the value of the hoverUp class.
     // the hoverup class should be present whenever the mouse is over the containerDiv.
     // This is usually achieved by mouseenter/mouseleave event handlers,
-    // but mouseenter won't trigger if the mouse starts off over the image container when the page is loaded
+    // but mouseenter won't trigger if the mouse starts off over the bloomCanvas when the page is loaded
     // That case is extremely commonplace when adding canvas elements, because that needs to reload the page.
     // (It is also possible to trigger even when opening up a new page, but probably less likely to happen accidentally)
-    if (isOutermostImageContainer && containerDiv.matches(":hover")) {
-        containerDiv.classList.add("hoverUp");
+    if (bloomCanvas.matches(":hover")) {
+        bloomCanvas.classList.add("hoverUp");
     } else {
-        containerDiv.classList.remove("hoverUp");
+        bloomCanvas.classList.remove("hoverUp");
     }
 
     // Now that we can overlay things on top of images, we don't want to show the flower placeholder
-    // if the image container contains a canvas element.
-    updateCanvasElementClass(containerDiv);
+    // if the bloom-canvas contains a canvas element.
+    updateCanvasElementClass(bloomCanvas);
 
     // This will fix cover image on Kyrgyzstan books that we created before we switched to this
     // new border system. Going forward, say 5.1, we could remove this and just
     // rely on a call to SetImageDisplaySize() when the image is added.
-    const img = $(containerDiv).find("img");
-    SetImageDisplaySizeIfCalledFor($(containerDiv), img);
+    const img = $(bloomCanvas).find("img");
+    SetImageDisplaySizeIfCalledFor($(bloomCanvas), img);
 
-    if (isOutermostImageContainer) {
-        $(containerDiv)
-            .mouseenter(function() {
-                addImageEditingButtons(this);
-            })
-            .mouseleave(function(e: JQueryMouseEventObject) {
-                // Page numbers displaying inside the image container must have their
-                // width and height constrained.  That way, hovering over the page number
-                // triggers the mouseleave event, and the image editing buttons are hidden
-                // before the mouse cursor actually leaves the image container, but hovering
-                // above or beside the page number does nothing.  See BL-13098 and BL-13221.
-                removeImageEditingButtons(this);
-            });
-    }
-}
-
-export function getImageUrlFromImageButton(button: HTMLButtonElement): string {
-    const imageContainer = button?.parentElement;
-    if (!imageContainer) return "";
-    return GetRawImageUrl(getImageFromContainer(imageContainer));
+    $(bloomCanvas)
+        .mouseenter(function() {
+            addImageEditingButtons(this);
+        })
+        .mouseleave(function(e: JQueryMouseEventObject) {
+            // Page numbers displaying inside the bloom-canvas must have their
+            // width and height constrained.  That way, hovering over the page number
+            // triggers the mouseleave event, and the image editing buttons are hidden
+            // before the mouse cursor actually leaves the bloom-canvas, but hovering
+            // above or beside the page number does nothing.  See BL-13098 and BL-13221.
+            removeImageEditingButtons(this);
+        });
 }
 
 export function getImageUrlFromImageContainer(
@@ -385,7 +390,7 @@ export function getImageUrlFromImageContainer(
 }
 
 export function getImageFromContainer(
-    imageContainer: HTMLElement
+    imageContainer: HTMLElement // in one possibly obsolete caller, might be a bloom-canvas
 ): HTMLImageElement | null {
     // If there is ever a case where the img we want is not a direct child of the container,
     // be careful not to fix this in a way that might accidentally return a canvas element image
@@ -412,33 +417,33 @@ export function getImageFromCanvasElement(
     return getImageFromContainer(imageContainer as HTMLElement);
 }
 
-// The background image in an image container doesn't behave quite like other canvas elements,
+// The background image in a bloom-canvas doesn't behave quite like other canvas elements,
 // since code keeps it centered and filling the container in at least one dimension. (Currently
 // we mainly mimic object-fit:contain, but some pages really want object-fit:cover). The internal
 // representation, however, is the same as for other canvas elements, so we can use many of the
 // same functions. That is, the background image is an element with the bloom-canvas-element
 // class (with a determined size and position in its style top, left, width, and height),
-// an image container (with 100% size) and an img (which may have top, left, and width
+// an image-container (with 100% size) and an img (which may have top, left, and width
 // attributes to crop it, as well as the src that determines the actual image).
 // (It also has bloom-backgroundImage).
 // There are enough common behaviors to make it useful to use the same structure, and I
 // (JohnT) at least find it useful to think of it as a background canvas element.
-export function getBackgroundCanvasElementFromContainer(
-    imageContainer: HTMLElement
+export function getBackgroundCanvasElementFromBloomCanvas(
+    bloomCanvas: HTMLElement
 ): HTMLElement | null {
-    return imageContainer.getElementsByClassName(
+    return bloomCanvas.getElementsByClassName(
         kbackgroundImageClass
     )[0] as HTMLElement;
 }
 
-// Shortcut to get the img element from the background canvas element (if any) of an image container.
+// Shortcut to get the img element from the background canvas element (if any) of a bloom-canvas.
 // This, rather than the obsolete img that is a direct child and is always placeHolder.png,
 // is the background image that is actually displayed.
-export function getBackgroundImageFromContainer(
-    imageContainer: HTMLElement
+export function getBackgroundImageFromBloomCanvas(
+    bloomCanvas: HTMLElement
 ): HTMLElement | null {
-    const bgCanvasElement = getBackgroundCanvasElementFromContainer(
-        imageContainer
+    const bgCanvasElement = getBackgroundCanvasElementFromBloomCanvas(
+        bloomCanvas
     );
     if (!bgCanvasElement) {
         return null;
@@ -455,9 +460,9 @@ function DisableImageTooltip(container: HTMLElement | undefined | null) {
         // If this is set up, since we only want this tooltip for one container that has an active
         // background image, the most complete thing is to remove them all.
         canvasElementManager
-            .getAllPrimaryImageContainersOnPage()
-            .forEach(container => {
-                container.title = "";
+            .getAllBloomCanvasesOnPage()
+            .forEach(bloomCanvas => {
+                bloomCanvas.title = "";
             });
         return;
     }
@@ -466,13 +471,10 @@ function DisableImageTooltip(container: HTMLElement | undefined | null) {
     }
 
     // If the canvas element manager hasn't been set up at all we can at least clear the current one.
-    const outermostImageContainer = farthest<HTMLElement>(
-        container,
-        ".bloom-imageContainer"
-    );
+    const bloomCanvas = container.closest(kBloomCanvasClass) as HTMLElement; // this is the one we want to clear the title on, if any
 
-    if (outermostImageContainer) {
-        outermostImageContainer.title = "";
+    if (bloomCanvas) {
+        bloomCanvas.title = "";
     }
 }
 
@@ -499,7 +501,7 @@ export function UpdateImageTooltipVisibility(
 
         // If dataTitle is null for some unexpected reason, let's just leave the title unchanged.
         if (dataTitle !== null) {
-            // Set title on the main image container
+            // Set title on the main bloom-canvas
             // The intuitive thing to do would be to set each container's title individually.
             // However, that relies on each container being able to receive mouse events.
             // Canvas element images have problems receiving mouse events on the majority of their surface area
@@ -508,33 +510,28 @@ export function UpdateImageTooltipVisibility(
             // but that's a lot more complicated z-index wise and introduces other undesired side effects which need to be coded against.
             // It's less complicated to just set the title of the main container (its events trigger because the canvas is its descendant,
             // and the canvas is receiving events)
-            //
-            const patriarch = farthest<HTMLElement>(
-                container,
-                ".bloom-imageContainer"
-            );
+            const bloomCanvas = container.closest(
+                kBloomCanvasSelector
+            ) as HTMLElement;
 
-            if (patriarch) {
-                patriarch.title = dataTitle;
+            if (bloomCanvas) {
+                bloomCanvas.title = dataTitle;
             } else {
-                console.assert(
-                    false,
-                    ".bloom-imageContainer expected but not found."
-                );
+                console.assert(false, ".bloom-canvas expected but not found.");
             }
         }
     }
 }
 
-async function SetImageTooltip(container: HTMLElement) {
-    const title = await DetermineImageTooltipAsync(container);
+async function SetImageTooltip(bloomCanvas: HTMLElement) {
+    const title = await DetermineImageTooltipAsync(bloomCanvas);
 
     // We use data-title to store what the tooltip should be, regardless of whether the tooltip should actually be currently visible
     // Use the real title attribute to show the tooltip only when desired
     // (e.g. show when no canvas element selected but hide when a canvas element is selected)
-    container.setAttribute("data-title", title);
+    bloomCanvas.setAttribute("data-title", title);
 
-    UpdateImageTooltipVisibility(container);
+    UpdateImageTooltipVisibility(bloomCanvas);
 }
 
 // Corresponds with ImageApi.cs::HandleImageInfo
@@ -547,10 +544,9 @@ interface IImageInfoResponse {
 }
 
 async function DetermineImageTooltipAsync(
-    container: HTMLElement
+    bloomCanvas: HTMLElement
 ): Promise<string> {
-    const containerJQ = $(container);
-    const imgElement = containerJQ.find(".bloom-imageContainer>img");
+    const imgElement = getBackgroundImageFromBloomCanvas(bloomCanvas);
 
     if (!imgElement) {
         return "";
@@ -562,6 +558,7 @@ async function DetermineImageTooltipAsync(
         return "";
     }
 
+    const containerJQ = $(bloomCanvas);
     const targetDpiWidth = Math.ceil((300 * containerJQ.width()) / kBrowserDpi);
     const targetDpiHeight = Math.ceil(
         (300 * containerJQ.height()) / kBrowserDpi
@@ -586,7 +583,7 @@ async function DetermineImageTooltipAsync(
         linesAboutThisFile = `${imageFileInfo.name} not found\n`;
     } else {
         const dpi = getDpi(
-            container,
+            bloomCanvas,
             imageFileInfo.width,
             imageFileInfo.height
         );
@@ -602,6 +599,7 @@ async function DetermineImageTooltipAsync(
         }
     }
 
+    // This is really talking about the bloom-canvas, but for UI we'll stick with image container.
     const linesAboutThisContext =
         `For the current paper size:\n` +
         `  • The image container is ${containerJQ.width()} x ${containerJQ.height()} dots.\n` +
@@ -611,7 +609,7 @@ async function DetermineImageTooltipAsync(
 
     // if there is a data-href, start with that url
     let hyperlinkInfo = "";
-    const hyperlink = container.getAttribute("data-href");
+    const hyperlink = bloomCanvas.getAttribute("data-href");
     if (hyperlink) {
         // Enhance: we should eventually give book names and page numbers, but perhaps that will
         // require clicking something to see all that instead of doing that lookup just in case
@@ -857,6 +855,8 @@ function SetAlternateTextOnImages(element) {
     }
 }
 
+// Handle elements like the wordAndPicture container in the Picture Dictionary which have the class bloom-resizable.
+// This method uses jQuery UI resizable to make it so.
 export function SetupResizableElement(element) {
     $(element)
         .mouseenter(function() {
@@ -865,37 +865,53 @@ export function SetupResizableElement(element) {
         .mouseleave(function() {
             $(this).removeClass("ui-mouseOver");
         });
-    const childImgContainer = $(element).find(".bloom-imageContainer");
+    // When the outer container is resized, the inner bloom-canvas is resized with it.
+    const bloomCanvas = $(element).find(kBloomCanvasSelector);
     // A Picture Dictionary Word-And-Image
-    if ($(childImgContainer).length > 0) {
-        /* The case here is that the thing with this class actually has an
-         inner image, as is the case for the Picture Dictionary.
-         The key, non-obvious, difficult requirement is keeping the text below
-         a picture dictionary item centered underneath the image.  I'd be
-         surprised if this wasn't possible in CSS, but I'm not expert enough.
-         So, I switched from having the image container be resizable, to having the
-         whole div (image+headwords) be resizable, then use the "alsoResize"
-         parameter to make the imageContainer resize.  Then, in order to make
-         the image resize in real-time as you're dragging, I use the "resize"
-         event to scale the image up proportionally (and centered) inside the
-         newly resized container.
-         */
-        const img = $(childImgContainer).find("img");
+    if ($(bloomCanvas).length > 0) {
+        // This method gets called on elements that have class bloom-resizable, which at the moment
+        // is only the wordAndPicture container in the Picture Dictionary. It contains a bloom-canvas,
+        // typically just with a picture, but nothing prevents adding canvas elements to it.
+        // The idea is to use jquery resizable on the outer element (the argument to this function)
+        // which is expected to contain one bloom-canvas and typically some other text.
+        // The bloom-canvas is resized by the same amount as the outer element (using jquery's
+        // alsoResize). As with an orgami splitter move, we need some magic to make the main
+        // image inside the canvas resize in real time, and any other bloom-canvas elements
+        // adjust when the drag ends.
+        // A previous comment talked about the reason for this strategy being to keep the
+        // caption centered, but currently we are NOT centering it. However, it makes sense
+        // to resize the picture and its captions together anyway. We at least want the text
+        // boxes to stay the same size as the bloom-canvas.)
+        const img = $(bloomCanvas).find("img");
         $(element).resizable({
             handles: "nw, ne, sw, se",
             containment: "parent",
-            alsoResize: childImgContainer
+            alsoResize: bloomCanvas,
+            start(e, ui) {
+                theOneCanvasElementManager.suspendComicEditing(
+                    "forJqueryResize"
+                );
+            },
+            stop(e, ui) {
+                theOneCanvasElementManager.resumeComicEditing();
+            }
         });
     }
-    //An Image Container div (which must have an inner <img>
-    else if ($(element).hasClass("bloom-imageContainer")) {
+    // It actually IS a bloom-canvas. This old code expects it to directly contain
+    // an img and does not account for canvas elements. With no wasy way to test, I'm not
+    // going to attempt a full fix.
+    else if ($(element).hasClass(kBloomCanvasClass)) {
+        alert(
+            "applying bloom-resizable to a bloom-canvas may not work. Code in bloomImages.SetupResizableElement needs updating"
+        );
         const img = $(element).find("img");
         $(element).resizable({
             handles: "nw, ne, sw, se",
             containment: "parent"
         });
     }
-    // some other kind of resizable
+    // some other kind of resizable. (JT Mar 2025: I don't think anything currently uses this,
+    // so it has not been tested with any changes we've made in the last few years)
     else {
         $(element).resizable({
             handles: "nw, ne, sw, se",

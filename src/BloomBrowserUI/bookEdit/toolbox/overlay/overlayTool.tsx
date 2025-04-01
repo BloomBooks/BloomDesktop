@@ -197,10 +197,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
         if (!mgr) {
             return undefined;
         }
-        if (mgr.isActiveElementPictureOverPicture()) {
+        if (mgr.isActiveElementPictureCanvasElement()) {
             return "image";
         }
-        return mgr.isActiveElementVideoOverPicture() ? "video" : "text";
+        return mgr.isActiveElementVideoCanvasElement() ? "video" : "text";
     };
 
     // Callback for style changed

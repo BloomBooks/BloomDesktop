@@ -131,6 +131,87 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void SetImageAltAttrsFromDescriptions_BgImage_AltGetsSetOnRightElements()
+        {
+            var dom = new HtmlDom(
+                @"
+<html><body>
+    <div class='bloom-page'>
+        <div class='bloom-canvas'>
+            <div class='bloom-canvas-element bloom-backgroundImage'>
+                <div class='bloom-imageContainer'>
+                    <img src='something.jpg'/>
+                </div>
+            </div>
+            <div class='bloom-canvas-element'>
+                <div class='bloom-imageContainer'>
+                    <img src='something1.jpg' alt='delete me'/>
+                </div>
+            </div>
+            <div class='bloom-canvas-element'>
+                <div class='bloom-imageContainer'>
+                    <img src='something2.jpg'/>
+                </div>
+            </div>
+            <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement ImageDescriptionEdit-style' style='font-size: 16px;'>
+                <div class='bloom-editable bloom-visibility-code-on bloom-content1 bloom-contentNational1 ImageDescriptionEdit-style cke_editable cke_editable_inline cke_contents_ltr' contenteditable='true' lang='fr'>
+                    <p>French text</p>
+                </div>
+                <div class='bloom-editable bloom-contentNational2 ImageDescriptionEdit-style cke_editable cke_editable_inline cke_contents_ltr' contenteditable='true' lang='de'>
+                    <p>German text</p>
+                </div>
+            </div>
+        </div>
+        <img src='something3.jpg' alt='delete me'/>
+        <img src='something4.jpg'/>
+        <img src='something5.jpg' class='branding' alt='leave me alone'/>
+    </div>
+</body></html>"
+            );
+            dom.SetImageAltAttrsFromDescriptions("de");
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='bloom-canvas-element bloom-backgroundImage']/div/img[@alt='German text']",
+                    1
+                );
+            // the non-BG images should have their alt set explicitly to the empty string
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//img[@alt='']", 4);
+            // except for the branding one, which should be left alone
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//img[@alt='leave me alone' and @class='branding']",
+                    1
+                );
+        }
+
+        [Test]
+        public void SetImageAltAttrsFromDescriptions_BgImage_NoDescription_AltEmpty()
+        {
+            var dom = new HtmlDom(
+                @"
+<html><body>
+    <div class='bloom-page'>
+        <div class='bloom-canvas'>
+            <div class='bloom-canvas-element bloom-backgroundImage'>
+                <div class='bloom-imageContainer'>
+                    <img src='something.jpg'/>
+                </div>
+            </div>
+        </div>
+    </div>
+</body></html>"
+            );
+            dom.SetImageAltAttrsFromDescriptions("en");
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//img[@alt='']", 1);
+        }
+
+        [Test]
         public void AddClass_AlreadyThere_LeavesAlone()
         {
             var dom = SafeXmlDocument.Create();
@@ -1679,7 +1760,7 @@ namespace BloomTests.Book
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'>Contents</div>
 							</div>
-							<div class='bloom-imageContainer' data-imgsizebasedon='703, 313'>
+							<div class='bloom-canvas' data-imgsizebasedon='703, 313'>
 								<img src='something.jpg' />
 							</div>
 						</div>
@@ -1690,7 +1771,7 @@ namespace BloomTests.Book
                 @"<html><head></head><body>
 					<div class='bloom-page' id='templateGuid'>
 						<div class='split-pane-component-inner'>
-							<div class='bloom-imageContainer' />
+							<div class='bloom-canvas' />
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'></div>
 							</div>
@@ -1908,7 +1989,7 @@ p {
                 @"<html><head></head><body>
 					<div class='bloom-page' id='pageGuid'>
 						<div class='split-pane-component-inner'>
-							<div class='bloom-imageContainer'>
+							<div class='bloom-canvas'>
 								<div class='bloom-canvas-element'>
 									<div class='bloom-translationGroup'>
 										<div class='bloom-editable'>
@@ -1951,7 +2032,7 @@ p {
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'>Second text contents</div>
 							</div>
-							<div class='bloom-imageContainer'>
+							<div class='bloom-canvas'>
 								<img src='myImageFile2.png'></img>
 							</div>
 						</div>
@@ -1972,7 +2053,7 @@ p {
 							</div>
 						</div>
 						<div class='split-pane-component-inner'>
-							<div id='canvasElementSlot' title='placeHolder.png' class='bloom-imageContainer'>
+							<div id='canvasElementSlot' title='placeHolder.png' class='bloom-canvas'>
 								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
@@ -1980,7 +2061,7 @@ p {
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'></div>
 							</div>
-							<div id='imageSlot2' title='placeHolder.png' class='bloom-imageContainer'>
+							<div id='imageSlot2' title='placeHolder.png' class='bloom-canvas'>
 								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
@@ -2013,9 +2094,9 @@ p {
             var secondTextXpath =
                 "//div[contains(@class,'bloom-editable') and text()='Second text contents']";
             var topTextXpath =
-                "//div[contains(@class,'bloom-imageContainer')]//div[contains(@class,'bloom-editable')]/p[text()='Text over picture text']";
+                "//div[contains(@class,'bloom-canvas')]//div[contains(@class,'bloom-editable')]/p[text()='Text over picture text']";
             var imageDescXpath =
-                "//div[contains(@class,'bloom-imageContainer')]/div[contains(@class,'bloom-imageDescription')]//p[text()='Image description text']";
+                "//div[contains(@class,'bloom-canvas')]/div[contains(@class,'bloom-imageDescription')]//p[text()='Image description text']";
             assertThatOutput.HasNoMatchForXpath("//div[@id='templateGuid']");
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath("//div[@id='pageGuid']", 1);
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(firstTextXpath, 1);
@@ -2061,7 +2142,7 @@ p {
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable normal-style' contenteditable='true' lang='en'>First text contents</div>
 							</div>
-							<div class='bloom-imageContainer'>
+							<div class='bloom-canvas'>
 								<img src='myImageFile.png'></img>
 							</div>
 						</div>
@@ -2090,7 +2171,7 @@ p {
 							</div>
 						</div>
 						<div class='split-pane-component-inner'>
-							<div title='placeHolder.png' class='bloom-imageContainer'>
+							<div title='placeHolder.png' class='bloom-canvas'>
 								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
@@ -2406,7 +2487,7 @@ p {
                 @"<html>
 	<body>
 		<div class='bloom-page bloom-frontMatter'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				<img src='coverImage.jpg'></img>
 				<div class='bloom-translationGroup bloom-imageDescription'>
 					<div id='badFrontXmatter' class='bloom-editable' lang='en'>
@@ -2416,7 +2497,7 @@ p {
 			</div>
 		</div>
 		<div class='bloom-page'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				<img src='page1Image.jpg'></img>
 				<div class='bloom-translationGroup bloom-imageDescription'>
 					<div id='good1' class='bloom-editable' lang='es'>
@@ -2445,7 +2526,7 @@ p {
 			</div>
 		</div>
 		<div class='bloom-page bloom-backMatter'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				<img src='backCoverImage.jpg'></img>
 				<div class='bloom-translationGroup bloom-imageDescription'>
 					<div id='badBackXmatter' class='bloom-editable' lang='fr'>
@@ -2546,7 +2627,7 @@ p {
 						<div class='bloom-translationGroup'>
 							<div class='bloom-editable'>First text contents</div>
 						</div>
-						<div class='bloom-imageContainer'>
+						<div class='bloom-canvas'>
 							<div class='bloom-canvas-element' style='left: 8.50603%; "
                     + textColorLoc1
                     + @"'
@@ -2560,7 +2641,7 @@ p {
 								</div>
 							</div>
 						</div>
-						<div class='bloom-imageContainer'>
+						<div class='bloom-canvas'>
 							<div class='bloom-canvas-element' style='left: 8.50603%; "
                     + textColorLoc2
                     + @"'
@@ -2578,7 +2659,7 @@ p {
 				</div>
 				<div class='bloom-page' id='pageGuid2'>
 					<div class='split-pane-component-inner'>
-						<div class='bloom-imageContainer'>
+						<div class='bloom-canvas'>
 							<div class='bloom-canvas-element' style='left: 8.50603%; "
                     + textColorLoc3
                     + @"'

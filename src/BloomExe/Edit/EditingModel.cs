@@ -986,7 +986,7 @@ namespace Bloom.Edit
                             _previouslySelectedPage.Book.UserPrefs.MostRecentPage = idx;
                     }
 
-                    CurrentBook.BringPageUpToDate(page.GetDivNodeForThisPage());
+                    CurrentBook.ConvertPreOrigamiPages(page.GetDivNodeForThisPage());
                     if (Visible)
                         _view.StartNavigationToEditPage(page);
 

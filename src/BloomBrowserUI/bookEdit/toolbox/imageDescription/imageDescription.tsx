@@ -19,6 +19,7 @@ import {
     showImageDescriptions
 } from "./imageDescriptionUtils";
 import { getCanvasElementManager } from "../overlay/canvasElementUtils";
+import { kBloomCanvasClass } from "../../js/bloomImages";
 
 interface IImageDescriptionState {
     enabled: boolean;
@@ -175,19 +176,19 @@ export class ImageDescriptionToolControls extends React.Component<
         ) as unknown) as ImageDescriptionToolControls;
     }
 
-    public selectImageDescription(imageContainer: Element | null): void {
-        if (imageContainer == null) {
+    public selectImageDescription(bloomCanvas: Element | null): void {
+        if (bloomCanvas == null) {
             // pathological
             this.setDisabledState();
             return;
         }
-        this.activeEditable = imageContainer;
+        this.activeEditable = bloomCanvas;
         const noDescriptionNeeded = this.activeEditable.getAttribute(
             "aria-hidden"
         );
         this.setState({
             enabled: true,
-            descriptionNotNeeded: noDescriptionNeeded == "true",
+            descriptionNotNeeded: noDescriptionNeeded === "true",
             isXmatterPage: ToolBox.isXmatterPage()
         });
     }
@@ -200,15 +201,13 @@ export class ImageDescriptionToolControls extends React.Component<
         }
         // If we're still on the same page, it must be one without images.
         // We might also have switched TO one without images.
-        const imageContainers = page.getElementsByClassName(
-            "bloom-imageContainer"
-        );
-        if (imageContainers.length === 0) {
+        const bloomCanvases = page.getElementsByClassName(kBloomCanvasClass);
+        if (bloomCanvases.length === 0) {
             // This is OK whether we switched from a page without images or just stayed on one.
             this.setDisabledState();
             return;
         }
-        this.selectImageDescription(imageContainers[0]);
+        this.selectImageDescription(bloomCanvases[0]);
     }
 
     private setDisabledState() {
@@ -226,10 +225,10 @@ export class ImageDescriptionToolControls extends React.Component<
 export function setupImageDescriptions(
     page: HTMLElement,
     // This function will be run on the (usually single-member) collection of image descriptions
-    // for each image container, either immediately if it already exists, or (asynchronously)
+    // for each bloom-canvas, either immediately if it already exists, or (asynchronously)
     // after it gets created, if it does not.
     doToImageDescriptions: (descriptions: HTMLCollectionOf<Element>) => void,
-    // This function is called for each image container that gets modified by adding an image description
+    // This function is called for each bloom-canvas that gets modified by adding an image description
     doIfContentAdded: () => void
 ) {
     const canvasElementManager = getCanvasElementManager();
@@ -244,10 +243,10 @@ export function setupImageDescriptions(
         }, 100);
         return;
     }
-    const imageContainers = canvasElementManager.getAllPrimaryImageContainersOnPage(); // don't add to canvas element images!
+    const bloomCanvases = canvasElementManager.getAllBloomCanvasesOnPage(); // don't add to canvas element images!
 
-    for (let i = 0; i < imageContainers.length; i++) {
-        const container = imageContainers[i];
+    for (let i = 0; i < bloomCanvases.length; i++) {
+        const container = bloomCanvases[i];
         let imageDescriptions = container.getElementsByClassName(
             "bloom-imageDescription"
         );
@@ -390,7 +389,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 return;
             }
             showImageDescriptions(page);
-            // Make sure every image container has a child bloom-translationGroup to hold the image description.
+            // Make sure every bloom-canvas has a child bloom-translationGroup to hold the image description.
             setupImageDescriptions(
                 page,
                 // BL-6798: we need to add focus listeners to these new (or newly visible) description elements.

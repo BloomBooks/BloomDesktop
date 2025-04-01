@@ -38,26 +38,31 @@ textarea,
 .bloom-editable {
     flex-direction: column;
 }
-.bloom-backgroundImage {
+.bloom-background-image-in-style {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
 }
+// the bloom-canvas case is new (not from legacy), but needed now that we're migrating
+// outer ICs to bloom-canvas, both in publication, and for pages not yet migrated to background-canvas-image
+// The IC rule is limited to direct children in our current stylesheet, but keeping this one as much like
+// legacy as I can. I don't think ICs ever have other child img elements, so it shouldn't make a difference.
+.bloom-canvas > img,
 .bloom-imageContainer img {
     width: 100%;
     height: 100%;
     object-fit: contain;
 }
-.bloom-imageContainer img.bloom-imageObjectFit-cover {
+.bloom-canvas.bloom-imageObjectFit-cover > img {
     object-fit: cover;
 }
-.bloom-imageContainer.bloom-imageObjectFit-cover {
+.bloom-canvas.bloom-imageObjectFit-cover {
     background-size: cover;
 }
-.bloom-imageContainer.bloom-has-canvas-element > img[src="placeHolder.png"] {
+.bloom-canvas.bloom-has-canvas-element > img[src="placeHolder.png"] {
     display: none;
 }
-.bloom-imageContainer .bloom-imageDescription {
+.bloom-canvas .bloom-imageDescription {
     display: none;
 }
 .bloom-alignImageTopLeft img {
@@ -165,9 +170,9 @@ span.bloom-linebreak {
     > .split-pane-component.position-top {
     margin-bottom: 0;
 }
-.Device16x9Landscape .marginBox .bloom-imageContainer,
-.Device16x9Portrait .marginBox .bloom-imageContainer,
-.PictureStoryLandscape .marginBox .bloom-imageContainer {
+.Device16x9Landscape .marginBox .bloom-canvas,
+.Device16x9Portrait .marginBox .bloom-canvas,
+.PictureStoryLandscape .marginBox .bloom-canvas {
     height: calc(100%) !important;
 }
 .Device16x9Landscape.numberedPage::after,
@@ -233,65 +238,65 @@ span.bloom-linebreak {
 .numberedPage.PictureStoryLandscape .marginBox {
     height: 88.09375mm;
 }
-.bloom-imageContainer.ui-ctrlDown .bloom-canvas-element .ui-resizable-handle {
+.bloom-canvas.ui-ctrlDown .bloom-canvas-element .ui-resizable-handle {
     display: none !important;
 }
-.bloom-imageContainer .bloom-imageContainer {
+.bloom-canvas .bloom-imageContainer {
     z-index: auto !important;
 }
-.bloom-imageContainer.grabbable:not(.ui-jquery-resizing-in-progress),
-.bloom-imageContainer.grabbable:not(.ui-jquery-resizing-in-progress)
+.bloom-canvas.grabbable:not(.ui-jquery-resizing-in-progress),
+.bloom-canvas.grabbable:not(.ui-jquery-resizing-in-progress)
     .bloom-canvas-element
     .bloom-translationGroup
     .bloom-editable.cke_editable {
     cursor: grab;
 }
-.bloom-imageContainer.grabbing:not(.ui-jquery-resizing-in-progress),
-.bloom-imageContainer.grabbing:not(.ui-jquery-resizing-in-progress)
+.bloom-canvas.grabbing:not(.ui-jquery-resizing-in-progress),
+.bloom-canvas.grabbing:not(.ui-jquery-resizing-in-progress)
     .bloom-canvas-element
     .bloom-translationGroup
     .bloom-editable.cke_editable {
     cursor: grabbing;
 }
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element:not(.ui-resizable-resizing)
     .bloom-dragHandle {
     cursor: grab;
 }
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element:not(.ui-resizable-resizing)
     .bloom-dragHandle.grabbing {
     cursor: grabbing;
 }
-.bloom-imageContainer.ne-resizable,
-.bloom-imageContainer.ne-resizable
+.bloom-canvas.ne-resizable,
+.bloom-canvas.ne-resizable
     .bloom-canvas-element
     .bloom-translationGroup
     .bloom-editable.cke_editable {
     cursor: ne-resize;
 }
-.bloom-imageContainer.nw-resizable,
-.bloom-imageContainer.nw-resizable
+.bloom-canvas.nw-resizable,
+.bloom-canvas.nw-resizable
     .bloom-canvas-element
     .bloom-translationGroup
     .bloom-editable.cke_editable {
     cursor: nw-resize;
 }
-.bloom-imageContainer.sw-resizable,
-.bloom-imageContainer.sw-resizable
+.bloom-canvas.sw-resizable,
+.bloom-canvas.sw-resizable
     .bloom-canvas-element
     .bloom-translationGroup
     .bloom-editable.cke_editable {
     cursor: sw-resize;
 }
-.bloom-imageContainer.se-resizable,
-.bloom-imageContainer.se-resizable
+.bloom-canvas.se-resizable,
+.bloom-canvas.se-resizable
     .bloom-canvas-element
     .bloom-translationGroup
     .bloom-editable.cke_editable {
     cursor: se-resize;
 }
-.bloom-imageContainer .bloom-canvas-element {
+.bloom-canvas .bloom-canvas-element {
     position: absolute;
     width: 140px;
     min-width: 30px;
@@ -299,32 +304,29 @@ span.bloom-linebreak {
     border-radius: 3px;
     border: none !important;
 }
-.bloom-imageContainer .bloom-canvas-element div:focus,
-.bloom-imageContainer .bloom-canvas-element video:focus {
+.bloom-canvas .bloom-canvas-element div:focus,
+.bloom-canvas .bloom-canvas-element video:focus {
     border: 1px solid #1d94a4;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px #1d94a4;
 }
-.bloom-imageContainer .bloom-canvas-element .bloom-translationGroup {
+.bloom-canvas .bloom-canvas-element .bloom-translationGroup {
     background: transparent;
     border: none;
     z-index: 1002;
 }
-.bloom-imageContainer
-    .bloom-canvas-element
-    .bloom-translationGroup
-    .bloom-editable {
+.bloom-canvas .bloom-canvas-element .bloom-translationGroup .bloom-editable {
     min-width: 27px;
     min-height: 27px !important;
     text-align: center;
     overflow: visible;
 }
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element
     .bloom-translationGroup
     .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     display: none;
 }
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element
     .bloom-translationGroup
     .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):focus:after {
@@ -337,24 +339,24 @@ span.bloom-linebreak {
     font-size: small;
     cursor: auto;
 }
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element
     .bloom-translationGroup
     .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):focus:after:hover {
     background-color: white;
 }
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"])
     .bloom-translationGroup
     .bloom-editable {
     border: none;
     box-shadow: none;
 }
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element:not([data-bubble])
     .bloom-translationGroup
     .bloom-editable:focus,
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble*="`style`:`none`"]
     .bloom-translationGroup
     .bloom-editable:focus {
@@ -362,22 +364,22 @@ span.bloom-linebreak {
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px #1d94a4;
 }
 .bloom-fullBleed
-    .bloom-imageContainer
+    .bloom-canvas
     .bloom-canvas-element[data-bubble*="`style`:`none`"] {
     display: flex;
     flex-direction: column;
 }
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow)),
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow)) {
     display: flex;
     align-items: center;
 }
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow))
     .bloom-editable.bloom-visibility-code-on,
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow))
     .bloom-editable.bloom-visibility-code-on {
     display: flex;
@@ -386,44 +388,44 @@ span.bloom-linebreak {
     align-items: center;
     align-content: center;
 }
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"])
     .bloom-editable.bloom-visibility-code-on
     p,
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"])
     .bloom-editable.bloom-visibility-code-on
     p {
     flex-basis: 100%;
     flex-grow: 0;
 }
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow))
     .bloom-vertical-align-top
     .bloom-editable,
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow))
     .bloom-vertical-align-top
     .bloom-editable {
     align-items: flex-start;
     align-content: flex-start;
 }
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow))
     .bloom-vertical-align-center
     .bloom-editable,
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow))
     .bloom-vertical-align-center
     .bloom-editable {
     align-items: center;
     align-content: center;
 }
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow))
     .bloom-vertical-align-bottom
     .bloom-editable,
-.bloom-imageContainer
+.bloom-canvas
     .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow))
     .bloom-vertical-align-bottom
     .bloom-editable {
@@ -539,7 +541,7 @@ div.ui-tooltip-content {
     /*This minimum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
     min-height: 60px !important;
 }
-.bloom-imageContainer {
+.bloom-canvas {
     min-height: 50px;
 }
 p {
@@ -1043,7 +1045,7 @@ h2 {
 .bloom-editable.bloom-visibility-code-on ~ .bloom-editable {
     margin-top: 10px;
 }
-.customPage .bloom-imageContainer {
+.customPage .bloom-canvas {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
@@ -1139,10 +1141,10 @@ h2 {
     right: 60px;
     text-align: right;
 }
-.bloom-showImageDescriptions .bloom-imageContainer .bloom-imageDescription {
+.bloom-showImageDescriptions .bloom-canvas .bloom-imageDescription {
     display: flex;
 }
-.bloom-showImageDescriptions .bloom-imageContainer .bloom-imageDescription {
+.bloom-showImageDescriptions .bloom-canvas .bloom-imageDescription {
     width: calc(50% - 3px);
     height: 100%;
     top: 0;
@@ -1258,45 +1260,45 @@ body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpi
     visibility: hidden;
 }
 body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer,
+    .bloom-canvas,
 body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer {
+    .bloom-canvas {
     background-color: black;
     position: fixed;
     left: 0;
@@ -1305,87 +1307,87 @@ body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpi
     margin-top: 0;
 }
 body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer[class*="Device16x9Landscape"],
+    .bloom-canvas[class*="Device16x9Landscape"],
 body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer[class*="Device16x9Landscape"] {
+    .bloom-canvas[class*="Device16x9Landscape"] {
     width: 177.77777778mm;
 }
 body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="allOrientations"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="landscape"]
     .bloom-page[class*="Landscape"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="allMedia"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="print"][data-media*="print"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="bloomReader"][data-media*="bloomReader"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="epub"][data-media*="epub"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer[class*="Device16x9Portrait"],
+    .bloom-canvas[class*="Device16x9Portrait"],
 body[data-bffullscreenpicture*="video"][data-media*="video"][data-bffullscreenpicture*="portrait"]
     .bloom-page[class*="Portrait"]
-    .bloom-imageContainer[class*="Device16x9Portrait"] {
+    .bloom-canvas[class*="Device16x9Portrait"] {
     width: 100mm;
 }
 body[data-bftextoverlay*="allMedia"][data-bftextoverlay*="allOrientations"],
@@ -1659,6 +1661,6 @@ body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"]
 }
 
 // Added from newer basePage.less to keep cover images working
-.bloom-imageContainer .bloom-canvas-element .bloom-imageContainer {
+.bloom-canvas .bloom-canvas-element .bloom-imageContainer {
     margin: 0;
 }

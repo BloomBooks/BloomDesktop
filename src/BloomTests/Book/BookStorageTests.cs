@@ -134,7 +134,7 @@ namespace BloomTests.Book
       <div class=""pageDescription"" lang=""en""></div>
       <div class=""marginBox"">
         <div class=""split-pane-component-inner"">
-          <div class=""bloom-imageContainer""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
+          <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
           </div>
         </div>
       </div>
@@ -145,7 +145,7 @@ namespace BloomTests.Book
 	  <div>
 		  <div class=""marginBox"">
 		    <div class=""split-pane-component-inner"">
-		      <div class=""bloom-imageContainer""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
+		      <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
 		      </div>
 		    </div>
 		  </div>
@@ -1656,24 +1656,14 @@ namespace BloomTests.Book
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
 				<div data-audiorecordingmode='TextBox'/>
-				<div class='bloom-imageContainer'>
+				<div class='bloom-canvas'>
 					<svg class='comical-generated' />
 				</div>
 			</div></body></html>"
             );
             var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
-            Assert.That(requiredVersions.Length, Is.EqualTo(2));
-
-            Assert.That(requiredVersions[1].FeatureId, Is.EqualTo("wholeTextBoxAudio"));
-            Assert.That(requiredVersions[1].FeaturePhrase, Is.EqualTo("Whole Text Box Audio"));
-            Assert.That(requiredVersions[1].BloomDesktopMinVersion, Is.EqualTo("4.4"));
-            Assert.That(requiredVersions[1].BloomReaderMinVersion, Is.EqualTo("1.0"));
-
-            Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("comical-1"));
-            Assert.That(requiredVersions[0].FeaturePhrase, Is.EqualTo("Support for Comics"));
-            Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("4.7"));
-            Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("1.0"));
+            AssertRequiredFeatures(requiredVersions, new[] { "comical-1", "wholeTextBoxAudio" });
         }
 
         public const string MinimalDataBubbleValue =
@@ -1685,7 +1675,7 @@ namespace BloomTests.Book
             var storage = GetInitialStorageWithCustomHtml(
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
-				<div class='bloom-imageContainer'>
+				<div class='bloom-canvas'>
 					<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
@@ -1694,9 +1684,26 @@ namespace BloomTests.Book
             );
             var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
-            Assert.That(requiredVersions.Length, Is.EqualTo(1));
+            AssertRequiredFeatures(requiredVersions, new[] { "canvasElement", "bloomCanvas" });
+        }
 
-            Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("canvasElement"));
+        void AssertRequiredFeatures(
+            VersionRequirement[] requiredVersions,
+            string[] expectedFeatureIds
+        )
+        {
+            Assert.That(
+                requiredVersions.Length,
+                Is.GreaterThanOrEqualTo(expectedFeatureIds.Length)
+            );
+            foreach (var featureId in expectedFeatureIds)
+            {
+                Assert.That(
+                    requiredVersions.Any(rv => rv.FeatureId == featureId),
+                    Is.True,
+                    "Failed to find feature " + featureId
+                );
+            }
         }
 
         [Test]
@@ -1707,7 +1714,7 @@ namespace BloomTests.Book
             var storage = GetInitialStorageWithCustomHtml(
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 				<body><div class='bloom-page'>
-					<div class='bloom-imageContainer'>
+					<div class='bloom-canvas'>
 						<div class='bloom-canvas-element' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
@@ -1720,16 +1727,23 @@ namespace BloomTests.Book
             );
             var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
-            Assert.That(requiredVersions.Length, Is.EqualTo(2));
+            AssertRequiredFeatures(
+                requiredVersions,
+                new[] { "canvasElement", "bloomCanvas", "comical-1" }
+            );
 
-            Assert.That(requiredVersions[1].FeatureId, Is.EqualTo("comical-1"));
-            Assert.That(requiredVersions[1].FeaturePhrase, Is.EqualTo("Support for Comics"));
-            Assert.That(requiredVersions[1].BloomDesktopMinVersion, Is.EqualTo("4.7"));
-            Assert.That(requiredVersions[1].BloomReaderMinVersion, Is.EqualTo("1.0"));
-            // First because it has the highest version requirement
-            Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("canvasElement"));
-            Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("6.2"));
-            Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("3.3"));
+            Assert.That(requiredVersions.Length, Is.GreaterThanOrEqualTo(2));
+
+            // last because it has the lowest version requirement
+            var comicalFeature = requiredVersions.Last();
+            Assert.That(comicalFeature.FeatureId, Is.EqualTo("comical-1"));
+            Assert.That(comicalFeature.FeaturePhrase, Is.EqualTo("Support for Comics"));
+            Assert.That(comicalFeature.BloomDesktopMinVersion, Is.EqualTo("4.7"));
+            Assert.That(comicalFeature.BloomReaderMinVersion, Is.EqualTo("1.0"));
+
+            var canvasElementFeature = requiredVersions.First(x => x.FeatureId == "canvasElement");
+            Assert.That(canvasElementFeature.BloomDesktopMinVersion, Is.EqualTo("6.2"));
+            Assert.That(canvasElementFeature.BloomReaderMinVersion, Is.EqualTo("3.3"));
         }
 
         [Test]
@@ -1743,7 +1757,7 @@ namespace BloomTests.Book
             var storage = GetInitialStorageWithCustomHtml(
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
-				<div class='bloom-imageContainer'>
+				<div class='bloom-canvas'>
 					<div class='bloom-canvas-element ui-resizable' data-bubble='"
                     + ellipseBubble
                     + @"'/>
@@ -1756,21 +1770,10 @@ namespace BloomTests.Book
             );
             var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
-            Assert.That(requiredVersions.Length, Is.EqualTo(3));
-
-            Assert.That(requiredVersions[2].FeatureId, Is.EqualTo("comical-1"));
-            Assert.That(requiredVersions[2].FeaturePhrase, Is.EqualTo("Support for Comics"));
-            Assert.That(requiredVersions[2].BloomDesktopMinVersion, Is.EqualTo("4.7"));
-            Assert.That(requiredVersions[2].BloomReaderMinVersion, Is.EqualTo("1.0"));
-
-            Assert.That(requiredVersions[1].FeatureId, Is.EqualTo("comical-2"));
-            Assert.That(
-                requiredVersions[1].FeaturePhrase,
-                Is.EqualTo("Support for Comic Captions with Straight Line Tails")
+            AssertRequiredFeatures(
+                requiredVersions,
+                new[] { "comical-1", "comical-2", "canvasElement", "bloomCanvas" }
             );
-            Assert.That(requiredVersions[1].BloomDesktopMinVersion, Is.EqualTo("5.0"));
-            Assert.That(requiredVersions[1].BloomReaderMinVersion, Is.EqualTo("1.0"));
-            Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("canvasElement"));
         }
 
         [Test]
@@ -1785,7 +1788,7 @@ namespace BloomTests.Book
 <body>
 	<div class='bloom-page'>
 		<div class='bloom-imageContainer'>
-			<div class='bloom-canvas-element' data-bubble='"
+			<div class='bloom-textOverPicture' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 			<svg class='comical-generated' />
@@ -1865,8 +1868,48 @@ These are similar but already have game-theme classes
         }
 
         [Test]
+        public void PerformNecessaryMaintenanceOnBook_UpdatesToBloomCanvas()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='6'></meta>
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-imageContainer'>
+			<div class='bloom-canvas-element' data-bubble='"
+                    + MinimalDataBubbleValue
+                    + @"'>
+                <div class= 'bloom-imageContainer'>
+                    <img src='rubbish' />
+                </div>
+            </div>
+			<svg class='comical-generated' />
+		</div>
+	</div>
+</body></html>"
+            );
+
+            //SUT
+            storage.MigrateToLevel7BloomCanvas();
+
+            //Verification
+            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("7"));
+            AssertThatXmlIn
+                .Dom(storage.Dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='bloom-page']/div[@class='bloom-canvas']/div[@class='bloom-canvas-element']/div[@class='bloom-imageContainer']/img[@src='rubbish']",
+                    1
+                );
+        }
+
+        [Test]
         public void PerformNecessaryMaintenanceOnBook_EnsuresImgAtStartOfImageContainer()
         {
+            // Since the migration starts before level 7, we use imageContainer instead of bloom-canvas
             var storage = GetInitialStorageWithCustomHtml(
                 @"
 <html><head>
@@ -1876,8 +1919,8 @@ These are similar but already have game-theme classes
 <body>
 	<div class='bloom-page'>
 		<div class='bloom-imageContainer'>
-			<div class='bloom-canvas-element'/>
-			<div class='bloom-canvas-element'/>
+			<div class='bloom-textOverPicture'/>
+			<div class='bloom-textOverPicture'/>
 			<img src='rubbish' id='moveMe' />
 		</div>
 	</div>
@@ -1891,10 +1934,11 @@ These are similar but already have game-theme classes
 
             //Verification
             var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
-            var container = storage.Dom.SelectSingleNode("//*[@class='bloom-imageContainer']");
-            Assert.That(container, Is.Not.Null);
+            // Since we only migrated as far as 3, the bloom-canvas is still bloom-imageContainer.
+            var bloomCanvas = storage.Dom.SelectSingleNode("//*[@class='bloom-imageContainer']");
+            Assert.That(bloomCanvas, Is.Not.Null);
             var firstChild =
-                container.ChildNodes.FirstOrDefault(x => x is SafeXmlElement) as SafeXmlElement;
+                bloomCanvas.ChildNodes.FirstOrDefault(x => x is SafeXmlElement) as SafeXmlElement;
             Assert.That(firstChild.GetAttribute("id"), Is.EqualTo("moveMe"));
             Assert.That(maintLevel, Is.GreaterThanOrEqualTo("3"));
         }
@@ -1911,11 +1955,11 @@ These are similar but already have game-theme classes
 <body>
 	<div class='bloom-page'>
 		<div class='bloom-imageContainer'>
-			<div class='bloom-canvas-element' data-bubble='"
+			<div class='bloom-textOverPicture' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 			<svg class='comical-generated'/>
-			<div class='bloom-canvas-element' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
+			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
 		</div>
 	</div>
 </body></html>"
@@ -1947,18 +1991,18 @@ These are similar but already have game-theme classes
 <body>
 	<div class='bloom-page'>
 		<div class='bloom-imageContainer'>
-			<div class='bloom-canvas-element' data-bubble='"
+			<div class='bloom-textOverPicture' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 			<svg class='comical-generated'/>
-			<div class='bloom-canvas-element' data-bubble='"
+			<div class='bloom-textOverPicture' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 		</div>
 		<div class='bloom-imageContainer'>
 			<svg class='comical-generated'/>
-			<div class='bloom-canvas-element' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
-			<div class='bloom-canvas-element' data-bubble='"
+			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
+			<div class='bloom-textOverPicture' data-bubble='"
                     + MinimalDataBubbleValue
                     + @"'/>
 		</div>
@@ -1992,7 +2036,7 @@ These are similar but already have game-theme classes
 <body>
 	<div class='bloom-page'>
 		<div class='bloom-imageContainer'>
-			<div class='bloom-canvas-element' data-bubble='{`version`:`1.0`,`level`:1,`style`:`none`,`backgroundColors`:[`#e09494`],`tails`:[]}'/>
+			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`level`:1,`style`:`none`,`backgroundColors`:[`#e09494`],`tails`:[]}'/>
 			<svg class='comical-generated' />
 		</div>
 	</div>

@@ -1,6 +1,6 @@
 // not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
 ///<reference path="../../lib/split-pane/split-pane.d.ts" />
-import { SetupImage } from "./bloomImages";
+import { kBloomCanvasClass, SetupImage } from "./bloomImages";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { get, post, postThatMightNavigate } from "../../utils/bloomApi";
@@ -85,8 +85,11 @@ function setupLayoutMode() {
     });
     // Text should not be editable in layout mode
     $(".bloom-editable[contentEditable=true]").removeAttr("contentEditable");
-    // Images cannot be changed (other than growing/shrinking with container) in layout mode
-    $(".bloom-imageContainer")
+    // Images cannot be changed (other than growing/shrinking with their containing bloom-canvas) in layout mode
+    // I think this targets the mouseenter/leave events that add and remove the "hoverUp" class and
+    // the change image button whose visibility that controls. We don't want that button to show
+    // while we are in layout mode.
+    $(".bloom-canvas")
         .off("mouseenter")
         .off("mouseleave");
     // Attaching to html allows it to work even if nothing has focus.
@@ -104,8 +107,9 @@ function setupLayoutMode() {
 }
 
 // N.B. If you add/remove a container class, you'll likely need to modify 'createTypeSelectors()' too.
+// These are the top-level things, other than text, that an origami split can contain.
 const bloomContainerClasses =
-    ".bloom-imageContainer, .bloom-widgetContainer, .bloom-videoContainer,";
+    ".bloom-canvas, .bloom-widgetContainer, .bloom-videoContainer,";
 
 function isSplitPaneComponentInnerEmpty(spci: JQuery) {
     return !spci.find(
@@ -115,7 +119,7 @@ function isSplitPaneComponentInnerEmpty(spci: JQuery) {
 
 function doesSplitPaneComponentNeedTextBoxIdentifier(spci: JQuery) {
     // don't put the text box identifier in:
-    //   image container
+    //   bloom-canvas
     //   video container
     //   widget container,
     // or where we just put the "Picture, Video, Widget or Text" selector links
@@ -201,7 +205,7 @@ function performSplit(
 
 function adjustModifiedChild(resizedElt: HTMLElement | undefined) {
     const mainChild = resizedElt?.firstElementChild as HTMLElement;
-    if (mainChild?.classList.contains("bloom-imageContainer")) {
+    if (mainChild?.classList.contains(kBloomCanvasClass)) {
         theOneCanvasElementManager.AdjustChildrenIfSizeChanged(mainChild);
     }
 }
@@ -490,15 +494,15 @@ function makePictureFieldClickHandler(e) {
     e.preventDefault();
     const container = $(this).closest(".split-pane-component-inner");
     addUndoPoint();
-    const imageContainer = $(
-        "<div class='bloom-imageContainer bloom-leadingElement'></div>"
+    const bloomCanvas = $(
+        "<div class='bloom-canvas bloom-leadingElement'></div>"
     );
     const image = $(
         "<img src='placeHolder.png' alt='Could not load the picture'/>"
     );
-    imageContainer.append(image);
+    bloomCanvas.append(image);
     SetupImage(image); // Must attach it first so event handler gets added to parent
-    container.append(imageContainer);
+    container.append(bloomCanvas);
     $(this)
         .closest(".selector-links")
         .remove();

@@ -385,7 +385,7 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-imageContainer bloom-leadingElement"" data-test-id=""ic{2}""><img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>{4}</div>
+                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{2}""><img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>{4}</div>
                 </div>
             </div>
         </div>
@@ -433,7 +433,7 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-imageContainer bloom-leadingElement"" data-test-id=""ic{2}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{2}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
                 </div>
             </div>
 			<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
@@ -452,7 +452,7 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-imageContainer bloom-leadingElement"" data-test-id=""ic{4}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{4}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
                 </div>
             </div>
         </div>
@@ -511,10 +511,10 @@ namespace BloomTests.Spreadsheet
             );
         }
 
-        static string ImageContainer(int icNumber)
+        static string BloomCanvas(int icNumber)
         {
             return String.Format(
-                @"<div class=""bloom-imageContainer bloom-leadingElement"" data-test-id=""ic{0}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>",
+                @"<div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{0}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>",
                 icNumber
             );
         }
@@ -544,11 +544,11 @@ namespace BloomTests.Spreadsheet
                     pageNumber
                 )
                 + TranslationGroup(idNumber)
-                + ImageContainer(idNumber)
+                + BloomCanvas(idNumber)
                 + VideoContainer(idNumber)
                 + WidgetContainer(idNumber)
                 + TranslationGroup(idNumber + 1)
-                + ImageContainer(idNumber + 1)
+                + BloomCanvas(idNumber + 1)
                 + VideoContainer(idNumber + 1)
                 + WidgetContainer(idNumber + 1)
                 + @"</div>
@@ -679,7 +679,7 @@ namespace BloomTests.Spreadsheet
         <div class=""split-pane-component marginBox"" style="""">
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-imageContainer bloom-leadingElement"" title=""this might be nonsense after import"" data-test-id=""ic{1}"">
+                    <div class=""bloom-canvas bloom-leadingElement"" title=""this might be nonsense after import"" data-test-id=""ic{1}"">
 						<img src=""placeholder.png"" alt="""" data-copyright="""" data-creator="""" data-license="""" height=""100"" width=""200""></img>
 						<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"" data-default-languages=""auto"">
 		                    <div class=""bloom-editable ImageDescriptionEdit-style"" lang=""z"" contenteditable=""true"" data-book=""coverImageDescription""></div>
@@ -717,7 +717,7 @@ namespace BloomTests.Spreadsheet
                 </div>
                 <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Cover-style"" lang=""*"" contenteditable=""true"" data-book=""bookTitle""></div>
             </div>
-            <div class=""bloom-imageContainer bloom-backgroundImage"" data-book=""coverImage"" style=""background-image:url('Othello 199.jpg')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd"">
+            <div class=""bloom-canvas bloom-background-image-in-style"" data-book=""coverImage"" style=""background-image:url('Othello 199.jpg')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd"">
 				<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"" data-default-languages=""auto"">
 					<div class=""bloom-editable ImageDescriptionEdit-style"" lang=""z"" contenteditable=""true"" data-book=""coverImageDescription""></div>
 				</div>
@@ -1055,7 +1055,7 @@ namespace BloomTests.Spreadsheet
         {
             AssertThatXmlIn
                 .Dom(_dom.RawDom)
-                .HasNoMatchForXpath("//div[contains(@class, 'bloom-imageContainer') and @title]");
+                .HasNoMatchForXpath("//div[contains(@class, 'bloom-canvas') and @title]");
         }
 
         [Test]
@@ -1077,7 +1077,7 @@ namespace BloomTests.Spreadsheet
         {
             AssertThatXmlIn
                 .Element(_contentPages[n])
-                .HasNoMatchForXpath($".//div[contains(@class, 'bloom-imageContainer')]");
+                .HasNoMatchForXpath($".//div[contains(@class, 'bloom-canvas')]");
         }
 
         [TestCase(1, "ic1", "lady24b.png")]
@@ -1105,7 +1105,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
                     1
                 );
             // This is the ID for the standard "Just a picture" page
@@ -1137,7 +1137,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
                     1
                 );
             AssertThatXmlIn
@@ -1193,7 +1193,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_firstPage)
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    @".//div[contains(@class, ""bloom-imageContainer"") and contains(@style, ""background-image:url('Othello 199.jpg')"")]",
+                    @".//div[contains(@class, ""bloom-canvas"") and contains(@style, ""background-image:url('Othello 199.jpg')"")]",
                     1
                 );
             AssertThatXmlIn
@@ -1393,7 +1393,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
                     1
                 );
             // This is the ID for the standard "Just a picture" page
@@ -1414,7 +1414,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
                     1
                 );
             AssertThatXmlIn
