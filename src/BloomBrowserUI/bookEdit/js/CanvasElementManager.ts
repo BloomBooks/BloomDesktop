@@ -2817,14 +2817,15 @@ export class CanvasElementManager {
         container.ondragover = ev => {
             if (
                 ev.dataTransfer &&
-                // don't be tempted to return to ev.dataTransfer.getData("text/x-bloomCanvasElement")
+                // don't be tempted to return to ev.dataTransfer.getData("text/x-bloom-canvas-element")
                 // as we used with geckofx. In WebView2, this returns an empty string.
                 // I think it is some sort of security thing, the idea is that something
                 // you're just dragging over shouldn't have access to the content.
                 // The presence of our custom data type at all indicates this is something
                 // we want to accept dropped here.
                 // (types is an array: indexOf returns -1 if the item is not found)
-                ev.dataTransfer.types.indexOf("text/x-bloomCanvasElement") >= 0
+                ev.dataTransfer.types.indexOf("text/x-bloom-canvas-element") >=
+                    0
             ) {
                 ev.preventDefault();
             }
@@ -2837,12 +2838,12 @@ export class CanvasElementManager {
             // nor add canvas elements when something else is dragged
             if (
                 ev.dataTransfer &&
-                ev.dataTransfer.getData("text/x-bloomCanvasElement") &&
+                ev.dataTransfer.getData("text/x-bloom-canvas-element") &&
                 !ev.dataTransfer.getData("text/x-bloomdraggable") // items that create a draggable use another approach
             ) {
                 ev.preventDefault();
                 const style = ev.dataTransfer
-                    ? ev.dataTransfer.getData("text/x-bloomCanvasElement")
+                    ? ev.dataTransfer.getData("text/x-bloom-canvas-element")
                     : "speech";
                 // If this got used, we'd want it to have a rightTopOffset value. But I think all our things that can
                 // be dragged are now using CanvasElementItem, and its dragStart sets text/x-bloomdraggable, so this

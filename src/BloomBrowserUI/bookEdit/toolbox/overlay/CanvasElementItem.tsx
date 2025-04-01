@@ -26,7 +26,7 @@ const ondragstart = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
     style: string
 ) => {
-    // Here "text/x-bloomCanvasElement" is a unique, private data type recognised
+    // Here "text/x-bloom-canvas-element" is a unique, private data type recognised
     // by ondragover and ondragdrop methods that CanvasElementManager
     // attaches to bloom image containers. It doesn't make sense to
     // drag these objects anywhere else, so they don't need any of
@@ -36,7 +36,10 @@ const ondragstart = (
     // canvas elements anywhere outside Bloom. I believe the text/x- prefix makes these
     // valid (unregistered) mime types, which technically this argument is supposed
     // to be.
-    ev.dataTransfer.setData("text/x-bloomCanvasElement", style);
+    // Note that these private mime types must be all lowercase.  If you mix in some
+    // uppercase letters, the browser code silently converts them to lowercase.  See
+    // BL-14490 for a mysterious symptom of what that can cause.
+    ev.dataTransfer.setData("text/x-bloom-canvas-element", style);
     ev.dataTransfer.setData("text/x-bloomdraggable", "true");
     const target = ev.currentTarget as HTMLElement;
     const rect = target.getBoundingClientRect();
