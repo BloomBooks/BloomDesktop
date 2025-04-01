@@ -14,7 +14,8 @@ import {
     adjustDraggablesForLanguage,
     copyContentToTarget,
     getTarget,
-    shuffle
+    shuffle,
+    isTheTextInDraggablesTheSame
 } from "../../shared/dragActivityRuntime";
 import { setGeneratedDraggableId } from "../overlay/CanvasElementItem";
 import {
@@ -425,7 +426,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         }
         const shuffledDraggables = draggables.slice();
         shuffledDraggables.splice(letters.length); // don't want any invisible ones taking up space
-        shuffle(shuffledDraggables);
+        shuffle(shuffledDraggables, isTheTextInDraggablesTheSame);
         for (let i = 0; i < shuffledDraggables.length; i++) {
             shuffledDraggables[i].style.left = `${draggableX +
                 i * separation}px`;
