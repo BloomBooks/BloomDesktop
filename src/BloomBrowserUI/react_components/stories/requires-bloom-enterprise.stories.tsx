@@ -31,12 +31,10 @@ export const RequiresSubscriptionDialogStory: Story = {
 
 export const RequiresSubscriptionNoticeStory: Story = {
     name: "RequiresSubscriptionNotice",
-    render: () => <RequiresSubscriptionNotice />
+    render: () => <RequiresSubscriptionNotice featureName={"foobar"} />
 };
 
 export const RequiresSubscriptionOverlayWrapperStory: Story = {
     name: "RequiresSubscriptionOverlayWrapper",
-    render: () => (
-        <RequiresSubscriptionOverlayWrapper subscriptionFeature={"foobar"} />
-    )
+    render: () => <RequiresSubscriptionOverlayWrapper featureName={"foobar"} />
 };

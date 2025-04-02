@@ -8,7 +8,7 @@ import { kBloomUnselectedTabBackground } from "../../utils/colorUtils";
 import {
     FeatureStatus,
     openBloomSubscriptionSettings,
-    useGetFeatureTierMessage
+    useGetFeatureAvailabilityMessage
 } from "../../react_components/featureStatus";
 import BloomButton from "../../react_components/bloomButton";
 
@@ -25,7 +25,7 @@ export const PublishingBookRequiresHigherTierNotice: React.FunctionComponent<{
             props.featurePreventingPublishing.localizedFeature
         ]
     });
-    const requiredTierMessage = useGetFeatureTierMessage(
+    const requiredTierMessage = useGetFeatureAvailabilityMessage(
         props.featurePreventingPublishing
     );
 

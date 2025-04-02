@@ -20,7 +20,10 @@ import { getBoolean, post, postBoolean } from "../utils/bloomApi";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
 import { kUiFontStack } from "../bloomMaterialUITheme";
 import { Variant } from "@mui/material/styles/createTypography";
-import { useGetFeatureStatus, useGetFeatureTierMessage } from "./featureStatus";
+import {
+    useGetFeatureStatus,
+    useGetFeatureAvailabilityMessage
+} from "./featureStatus";
 
 interface IBaseLocalizableMenuItemProps {
     english: string;
@@ -111,7 +114,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
 
     const ellipsis = props.addEllipsis ? "..." : "";
 
-    const requiredTierMessage = useGetFeatureTierMessage(featureStatus);
+    const requiredTierMessage = useGetFeatureAvailabilityMessage(featureStatus);
 
     const subscriptionElement = featureStatus?.subscriptionTier ? (
         <img

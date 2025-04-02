@@ -657,7 +657,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
 
     return (
         <div id="overlayToolControls">
-            <RequiresSubscriptionOverlayWrapper subscriptionFeature="overlay">
+            <RequiresSubscriptionOverlayWrapper featureName="overlay">
                 {// Using most kinds of comic bubbles is problematic in various ways in Bloom games, so we don't allow it.
                 // We may eventually want to allow some controls to be used, but for now we just disable the whole thing.
                 // If we don't change our minds this string should get localized.
@@ -806,10 +806,6 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
 
     public isExperimental(): boolean {
         return false;
-    }
-
-    public toolRequiresEnterprise(): boolean {
-        return true;
     }
 
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
