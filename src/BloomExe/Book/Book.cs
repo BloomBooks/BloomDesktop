@@ -1964,7 +1964,7 @@ namespace Bloom.Book
                 ConvertTagsToMetaData(oldTagsPath, BookInfo);
                 RobustFile.Delete(oldTagsPath);
             }
-            BookInfo.BrandingKey = CollectionSettings.Subscription.BrandingKey;
+            BookInfo.SubscriptionDescriptor = CollectionSettings.Subscription.Descriptor;
 
             // get any license info into the json and restored in the replaced front matter.
             BookCopyrightAndLicense.SetMetadata(
