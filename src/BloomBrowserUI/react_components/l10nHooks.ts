@@ -20,7 +20,7 @@ export function useL10n(
     l10nParam0?: string,
     l10nParam1?: string,
     temporarilyDisableI18nWarning?: boolean
-) {
+): string {
     // Create an array of parameters, filtering out undefined values
     const l10nParams: string[] = [l10nParam0, l10nParam1].filter(
         (param): param is string => !!param
@@ -47,12 +47,12 @@ export function useL10n(
  * @param options.temporarilyDisableI18nWarning - If true, doesn't warn if the key is missing
  */
 export function useL10n2(options: {
-    english: string;
+    english?: string;
     key: string | null;
     comment?: string;
     params?: string[];
     temporarilyDisableI18nWarning?: boolean;
-}) {
+}): string {
     const {
         english,
         key: l10nKey,
@@ -66,7 +66,7 @@ export function useL10n2(options: {
             window.setTimeout(() => setLocalizedText(english), 0);
         } else {
             getLocalization({
-                english,
+                english: english || "", // no need actually to duplicate the English when we have to put it in the XLF anyways
                 l10nKey,
                 l10nComment,
                 l10nParams,
@@ -92,5 +92,5 @@ export function useL10n2(options: {
         l10nParams,
         temporarilyDisableI18nWarning
     ]); // often the params are coming in later, via an api call. So we need to re-do the localization when that happens.
-    return localizedText;
+    return localizedText || "";
 }

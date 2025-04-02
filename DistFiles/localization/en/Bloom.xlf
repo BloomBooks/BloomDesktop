@@ -567,11 +567,6 @@
         <source xml:lang="en">Province</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.RequiresSubscription_ToolTip_" sil:dynamic="true">
-        <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
-        <note>ID: CollectionSettingsDialog.RequiresSubscription_ToolTip_</note>
-        <note>Same as the text for "EditTab.RequiresSubscription"</note>
-      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart">
         <source xml:lang="en">Restart</source>
         <note>ID: CollectionSettingsDialog.Restart</note>
@@ -1966,11 +1961,6 @@
       <trans-unit id="EditTab.PastePage">
         <source xml:lang="en">Paste Page</source>
         <note>ID: EditTab.PastePage</note>
-      </trans-unit>
-      <trans-unit id="EditTab.RequiresSubscription" sil:dynamic="true">
-        <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
-        <note>ID: EditTab.RequiresSubscription</note>
-        <note>Appears in notice (possibly obscuring other controls when they may not be used) because no Bloom Subcription project has been selected.</note>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
@@ -5404,6 +5394,11 @@ is mostly status, which shows on the Collection Tab -->
         <note>{0} is will be filled in with name of the tier. e.g "Pro" or "Enterprise"</note>
       </trans-unit>
 
+      <trans-unit id="Subscription.FeatureIsIncludedSentence">
+        <source xml:lang="en">This feature is included in your {0} subscription.</source>
+        <note>ID: Subscription.FeatureIsIncludedSentence</note>
+        <note>{0} is will be filled in with name of the tier. e.g "Pro" or "Enterprise"</note>
+      </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
         <source xml:lang="en">Your {0} subscription expires on {1}.</source>
         <note>ID: SubscriptionStatus.ExpiringSoonMessage</note>

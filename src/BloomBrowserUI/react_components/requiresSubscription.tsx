@@ -33,11 +33,12 @@ import { getBloomApiPrefix } from "../utils/bloomApi";
 import {
     openBloomSubscriptionSettings,
     useGetFeatureStatus,
-    useGetFeatureTierMessage
+    useGetFeatureAvailabilityMessage
 } from "./featureStatus";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 
+// TODO: REMOVE THIS. Everything should be using useGetFeatureStatus() instead of this.
 // Tells you wether the user has an active subscription or not.
 export function useHaveSubscription() {
     const [haveSubscription, setHaveSubscription] = useState(true);
@@ -66,7 +67,7 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
         | Array<React.ReactElement<IDisableable>>;
 }) => {
     const featureStatus = useGetFeatureStatus(props.featureName);
-    const tierMessage = useGetFeatureTierMessage(featureStatus);
+    const tierMessage = useGetFeatureAvailabilityMessage(featureStatus);
 
     // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
     const okMessage = useL10n(
@@ -126,22 +127,11 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
         </div>
     );
 };
-
-export const BloomEnterpriseIcon = props => {
-    const needSubscriptionTooltip = useL10n(
-        "To use this feature, you'll need a Bloom subscription.",
-        "EditTab.RequiresSubscription"
-    );
-    const subscriptionFeatureTooltip = useL10n(
-        "Bloom Subscription Feature",
-        "Common.BloomSubscriptionFeature"
-    );
-    const haveSubscription = useHaveSubscription();
-
-    // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
-    const tooltip = haveSubscription
-        ? subscriptionFeatureTooltip
-        : needSubscriptionTooltip;
+export const BloomEnterpriseIconWithTooltip: React.FunctionComponent<{
+    subscriptionFeature: string;
+}> = props => {
+    const featureStatus = useGetFeatureStatus(props.subscriptionFeature);
+    const featureMessage = useGetFeatureAvailabilityMessage(featureStatus);
 
     return (
         <img
@@ -151,15 +141,15 @@ export const BloomEnterpriseIcon = props => {
             `}
             {...props} // let caller override the size and whatever
             src={badgeUrl}
-            title={tooltip}
+            title={featureMessage}
         />
     );
 };
 
 export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
-    subscriptionFeature: string;
+    featureName: string;
 }> = props => {
-    const featureStatus = useGetFeatureStatus(props.subscriptionFeature);
+    const featureStatus = useGetFeatureStatus(props.featureName);
 
     return (
         <div
@@ -195,7 +185,10 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
                             margin-right: auto;
                         `}
                     >
-                        <RequiresSubscriptionNotice darkTheme={true} />
+                        <RequiresSubscriptionNotice
+                            featureName={props.featureName}
+                            darkTheme={true}
+                        />
                     </div>
                 </div>
             )}
@@ -210,6 +203,7 @@ export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
     featureName?: string;
 }> = ({ darkTheme, inSeparateDialog, featureName }) => {
     const featureStatus = useGetFeatureStatus(featureName);
+    const subscriptionMessage = useGetFeatureAvailabilityMessage(featureStatus);
 
     const kBloomSubscriptionNoticePadding = "15px;";
     const kButtonRadius = "4px;";
@@ -294,8 +288,7 @@ export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
                                       `
                             }
                         >
-                            <Div
-                                l10nKey="EditTab.RequiresSubscription"
+                            <div
                                 css={
                                     inSeparateDialog
                                         ? css`
@@ -307,7 +300,9 @@ export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
                                               font-size: small;
                                           `
                                 }
-                            />
+                            >
+                                {subscriptionMessage}
+                            </div>
                             <Button
                                 className="requiresSubscriptionButton"
                                 variant={"contained"}

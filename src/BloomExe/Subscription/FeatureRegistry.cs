@@ -22,7 +22,8 @@ public static class FeatureRegistry
         LeveledReader,
         PrintshopReady,
         BulkUpload,
-        BulkBloomPub
+        BulkBloomPub,
+        Bookshelf
     }
 
     public static readonly List<FeatureInfo> Features = new List<FeatureInfo>
@@ -115,6 +116,11 @@ public static class FeatureRegistry
         new FeatureInfo
         {
             Feature = FeatureName.BulkBloomPub,
+            SubscriptionTier = SubscriptionTier.Enterprise
+        },
+        new FeatureInfo
+        {
+            Feature = FeatureName.Bookshelf,
             SubscriptionTier = SubscriptionTier.Enterprise
         }
     };
