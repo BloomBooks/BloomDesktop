@@ -841,7 +841,7 @@ namespace Bloom.Publish.BloomLibrary
                 existingUpdatedDate = updatedDate,
                 existingBookUrl,
                 existingThumbUrl,
-                newBranding = Book.BookInfo.BrandingKey,
+                newBranding = Book.BookInfo.SubscriptionDescriptor,
                 oldBranding,
                 uploader = existingBookInfo.uploader.email,
                 count = existingBookInfo.count,

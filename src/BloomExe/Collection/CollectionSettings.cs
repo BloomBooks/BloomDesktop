@@ -303,7 +303,7 @@ namespace Bloom.Collection
             xml.Add(new XElement("XMatterPack", XMatterPackName));
             xml.Add(new XElement("PageNumberStyle", PageNumberStyle));
 
-            // Version before Bloom 6.1 read this in. Starting with Bloom 6.1, we ignore this and just parse the SubscriptionCode.
+            // Versions before Bloom 6.1 read this in. Starting with Bloom 6.1, we ignore this and just parse the SubscriptionCode.
             // For now we are still saving this for backwards compatibility.
             xml.Add(new XElement("BrandingProjectName", Subscription.BrandingKey));
             xml.Add(new XElement("SubscriptionCode", Subscription.Code));
