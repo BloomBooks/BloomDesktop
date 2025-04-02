@@ -1692,7 +1692,7 @@ export class GameTool extends ToolboxToolReactAdaptor {
             // reinitialize for the current tab. This is especially important in Play mode,
             // because detachFromPage() undoes some of the initialization for that tab.
             const currentTab = getActiveDragActivityTab();
-            setActiveDragActivityTab(currentTab);
+            getToolboxBundleExports()?.setActiveDragActivityTab(currentTab);
         } else {
             this.lastPageId = pageId;
             // useful during development, MAY not need in production.
@@ -1703,7 +1703,7 @@ export class GameTool extends ToolboxToolReactAdaptor {
             // Force things to Start tab as we change page.
             // If we decide not to do this, we should probably at least find a way to do it
             // when it's a brand newly-created page.
-            setActiveDragActivityTab(0);
+            getToolboxBundleExports()?.setActiveDragActivityTab(0);
         }
         this.observeElementsWhereBlankMatters();
     }
@@ -1849,6 +1849,12 @@ export function getActiveDragActivityTab(): number {
 
 // The top-level function to get everything into the right state for the specified tab
 // (Start, Correct, Wrong, Play).
+// Note: the games code is currently pulled into the page bundle, but this function
+// MUST be called using the toolbox bundle copy, because it adds and removes event
+// handlers, and if we mix bundles, removing the handlers will fail since a different
+// copy of the function is being 'removed'. Safest to always use
+// getToolboxBundleExports()?.setActiveDragActivityTab(), which works in any bundle.
+// Even in this file, a calling function could be running in the page bundle.
 export function setActiveDragActivityTab(tab: number) {
     window.top!["dragActivityPage"] = tab;
     const page = GameTool.getBloomPage();
@@ -1938,7 +1944,13 @@ export function setupDragActivityTabControl() {
     // a nice wrapper inside the page (so we can
     // get the correct page alignment) and have already arranged to delete before saving the page.
     abovePageControlContainer.appendChild(tabControl);
-    setActiveDragActivityTab(getActiveDragActivityTab());
+    // Seems strange that we need to do this to call a function in the same file,
+    // but currently this code is also pulled into the page bundle, and called from
+    // its initialization code, and it's vital to be consistent about the bundle
+    // from which event handler functions are taken, so they can later be removed.
+    getToolboxBundleExports()?.setActiveDragActivityTab(
+        getActiveDragActivityTab()
+    );
 }
 
 // dimension is assumed to end with "px" (as we use for positioning and dimensioning canvas elements).
