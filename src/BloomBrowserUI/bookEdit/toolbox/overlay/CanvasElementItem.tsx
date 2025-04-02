@@ -22,7 +22,7 @@ import { Bubble, Comical } from "comicaljs";
 import { Point } from "../../js/point";
 import { getCanvasElementManager } from "./canvasElementUtils";
 import { all } from "underscore";
-import { getTarget } from "../../shared/dragActivityRuntime";
+import { getTarget } from "bloom-player";
 
 const ondragstart = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,

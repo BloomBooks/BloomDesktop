@@ -26,7 +26,7 @@ import { AdjustTimingsControl, TimedTextSegment } from "./AdjustTimingsControl";
 import {
     getUrlPrefixFromWindowHref,
     kHighlightSegmentClass
-} from "../../shared/narration";
+} from "bloom-player";
 import { IAudioRecorder } from "./IAudioRecorder";
 import { getToolboxBundleExports } from "../../editViewFrame";
 import { Div } from "../../../react_components/l10nComponents";

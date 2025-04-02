@@ -16,7 +16,7 @@ import {
     getTarget,
     shuffle,
     isTheTextInDraggablesTheSame
-} from "../../shared/dragActivityRuntime";
+} from "bloom-player";
 import { setGeneratedDraggableId } from "../overlay/CanvasElementItem";
 import {
     adjustTarget,
