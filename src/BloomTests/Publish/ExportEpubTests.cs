@@ -16,8 +16,8 @@ using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.PlatformUtilities;
-using static Subscription;
 using BloomBook = Bloom.Book.Book;
+using Bloom.SubscriptionAndFeatures;
 
 namespace BloomTests.Publish
 {

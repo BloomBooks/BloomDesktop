@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using Bloom.SubscriptionAndFeatures;
 
 namespace BloomTests.Collection
 {
@@ -78,13 +79,13 @@ namespace BloomTests.Collection
             Assert.AreEqual(expectedResult, subscription.IsExpired());
         }
 
-        [TestCase(null, Subscription.SubscriptionTier.Basic)]
-        [TestCase("", Subscription.SubscriptionTier.Basic)]
-        [TestCase("Legacy-LC-005809-2533", Subscription.SubscriptionTier.LocalCommunity)]
-        [TestCase("Fake-006273-0501", Subscription.SubscriptionTier.Enterprise)]
-        [TestCase("Fake-LC-006273-1463", Subscription.SubscriptionTier.LocalCommunity)]
-        [TestCase("Test-Expired-005691-4935", Subscription.SubscriptionTier.Basic)] // if expired, it's none
-        public void Tier_ReturnsCorrectEnum(string code, Subscription.SubscriptionTier expectedTier)
+        [TestCase(null, SubscriptionTier.Basic)]
+        [TestCase("", SubscriptionTier.Basic)]
+        [TestCase("Legacy-LC-005809-2533", SubscriptionTier.LocalCommunity)]
+        [TestCase("Fake-006273-0501", SubscriptionTier.Enterprise)]
+        [TestCase("Fake-LC-006273-1463", SubscriptionTier.LocalCommunity)]
+        [TestCase("Test-Expired-005691-4935", SubscriptionTier.Basic)] // if expired, it's none
+        public void Tier_ReturnsCorrectEnum(string code, SubscriptionTier expectedTier)
         {
             var subscription = new Subscription(code);
             Assert.AreEqual(expectedTier, subscription.Tier);

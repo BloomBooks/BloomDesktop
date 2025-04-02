@@ -21,6 +21,7 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Windows.Forms.ClearShare;
+using Bloom.SubscriptionAndFeatures;
 
 namespace BloomTests.Book
 {
@@ -5140,7 +5141,7 @@ namespace BloomTests.Book
 
             var book = CreateBook();
             book.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
-                Subscription.SubscriptionTier.Enterprise
+                SubscriptionTier.Enterprise
             ); // Needed so Enterprise Features is considered enabled which is needed for quizzes
 
             book.UpdateMetadataFeatures(false, false, null);
@@ -5169,7 +5170,7 @@ namespace BloomTests.Book
 
             var book = CreateBook();
             book.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
-                Subscription.SubscriptionTier.Enterprise
+                SubscriptionTier.Enterprise
             ); // Needed so Enterprise Features is considered enabled which is needed for quizzes
 
             book.UpdateMetadataFeatures(false, false, null);

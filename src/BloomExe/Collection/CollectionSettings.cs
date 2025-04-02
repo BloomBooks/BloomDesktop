@@ -22,6 +22,7 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.WritingSystems;
+using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.Collection
 {
@@ -560,7 +561,7 @@ namespace Bloom.Collection
                 DefaultBookshelf =
                     (
                         defaultBookshelfTag != null
-                        && Subscription.Tier == Subscription.SubscriptionTier.Enterprise
+                        && Subscription.Tier == SubscriptionTier.Enterprise
                     )
                         ? defaultBookshelfTag.Substring("bookshelf:".Length)
                         : "";

@@ -1,10 +1,6 @@
-using System;
-using System.Globalization;
-using System.Text;
 using Bloom.Api;
 using Bloom.Collection;
-using SIL.IO;
-using Newtonsoft.Json;
+using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.web.controllers
 {

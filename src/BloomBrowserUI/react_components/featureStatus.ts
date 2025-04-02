@@ -72,8 +72,7 @@ export function openBloomSubscriptionSettings() {
 export function useGetFeatureAvailabilityMessage(
     featureStatus: FeatureStatus | undefined
 ): string {
-    const [message, setMessage] = useState<string | undefined>("");
-
+    // Get localized strings first
     const featureNotInTierMessage = useL10n2({
         english:
             'This feature requires a Bloom subscription tier of at least "{0}".',
@@ -86,11 +85,14 @@ export function useGetFeatureAvailabilityMessage(
         params: [featureStatus?.localizedTier || ""]
     });
 
-    if (!featureStatus) return "";
-    if (featureStatus.enabled) {
-        setMessage(featureEnabledMessage);
-    } else {
-        setMessage(featureNotInTierMessage);
+    // Calculate and return the message directly
+    if (!featureStatus) {
+        return "";
     }
-    return message || "";
+
+    if (featureStatus.enabled) {
+        return featureEnabledMessage;
+    } else {
+        return featureNotInTierMessage;
+    }
 }

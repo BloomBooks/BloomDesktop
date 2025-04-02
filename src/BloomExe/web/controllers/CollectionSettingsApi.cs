@@ -283,7 +283,9 @@ namespace Bloom.web.controllers
                 kApiUrlPart + "deprecatedBrandingsExpiryDate",
                 request =>
                 {
-                    request.ReplyWithText(Subscription.kExpiryDateForDeprecatedCodes);
+                    request.ReplyWithText(
+                        SubscriptionAndFeatures.Subscription.kExpiryDateForDeprecatedCodes
+                    );
                 },
                 false
             );
