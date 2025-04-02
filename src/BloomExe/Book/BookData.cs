@@ -2333,8 +2333,14 @@ namespace Bloom.Book
         //  fill in the personalization.
         private string MergeInPersonalization(string content)
         {
+            // For this particular old free subscription, use the probably empty personalization.  See BL-14513.
+            if (CollectionSettings.Subscription.Descriptor == "Local-Community")
+            {
+                content = content.Replace("{personalization}", this.CollectionSettings.Subscription.Personalization);
+                return content;
+            }
             // Throw if we have a "{personalization}" in the content but no personalization.
-            // Note that we don't want the converse of this becuase even if, e.g., the back page
+            // Note that we don't want the converse of this because even if, e.g., the back page
             // has a slot for personalization, this method will be called for other pages as well.
             if (
                 content.Contains("{personalization}")
