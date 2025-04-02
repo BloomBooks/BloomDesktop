@@ -11,6 +11,7 @@ using Bloom.Collection;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using BloomTests.Book;
+using Bloom.SubscriptionAndFeatures;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;

@@ -1,21 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.Publish.PDF;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using BloomTemp;
@@ -26,7 +15,13 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using SIL.Xml;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace Bloom.Publish
 {

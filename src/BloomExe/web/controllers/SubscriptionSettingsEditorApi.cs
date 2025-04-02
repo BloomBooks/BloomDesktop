@@ -5,7 +5,7 @@ using Bloom.Api;
 using Bloom.Collection;
 using SIL.IO;
 using Newtonsoft.Json;
-using static Subscription;
+using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.web.controllers
 {

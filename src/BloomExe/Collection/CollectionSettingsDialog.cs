@@ -1,24 +1,18 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Windows.Forms;
 using Bloom.Book;
-using Bloom.Properties;
-using L10NSharp;
-using SIL.Reporting;
-using SIL.Windows.Forms.WritingSystems;
-using SIL.Extensions;
-using SIL.WritingSystems;
-using Bloom.TeamCollection;
 using Bloom.MiscUI;
+using Bloom.Properties;
+using Bloom.SubscriptionAndFeatures;
+using Bloom.TeamCollection;
 using Bloom.web.controllers;
-using Bloom.Api;
-using Bloom.Publish.BloomLibrary;
-using SIL.IO;
+using Bloom.WebLibraryIntegration;
+using L10NSharp;
+using SIL.Extensions;
+using SIL.Reporting;
 using SIL.Windows.Forms.SettingProtection;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Bloom.WebLibraryIntegration;
+using System.Windows.Forms;
 
 namespace Bloom.Collection
 {

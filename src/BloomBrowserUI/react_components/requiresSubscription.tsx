@@ -66,7 +66,10 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
         | React.ReactElement<IDisableable>
         | Array<React.ReactElement<IDisableable>>;
 }) => {
-    const featureStatus = useGetFeatureStatus(props.featureName);
+    const memoizedFeatureName = React.useMemo(() => props.featureName, [
+        props.featureName
+    ]);
+    const featureStatus = useGetFeatureStatus(memoizedFeatureName);
     const tierMessage = useGetFeatureAvailabilityMessage(featureStatus);
 
     // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
@@ -149,7 +152,10 @@ export const BloomEnterpriseIconWithTooltip: React.FunctionComponent<{
 export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
     featureName: string;
 }> = props => {
-    const featureStatus = useGetFeatureStatus(props.featureName);
+    const memoizedFeatureName = React.useMemo(() => props.featureName, [
+        props.featureName
+    ]);
+    const featureStatus = useGetFeatureStatus(memoizedFeatureName);
 
     return (
         <div
@@ -186,7 +192,7 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
                         `}
                     >
                         <RequiresSubscriptionNotice
-                            featureName={props.featureName}
+                            featureName={memoizedFeatureName}
                             darkTheme={true}
                         />
                     </div>
@@ -202,7 +208,8 @@ export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
     inSeparateDialog?: boolean;
     featureName?: string;
 }> = ({ darkTheme, inSeparateDialog, featureName }) => {
-    const featureStatus = useGetFeatureStatus(featureName);
+    const memoizedFeatureName = React.useMemo(() => featureName, [featureName]);
+    const featureStatus = useGetFeatureStatus(memoizedFeatureName); // Use the memoized value
     const subscriptionMessage = useGetFeatureAvailabilityMessage(featureStatus);
 
     const kBloomSubscriptionNoticePadding = "15px;";

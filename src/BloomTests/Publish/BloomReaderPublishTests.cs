@@ -22,7 +22,7 @@ using SIL.PlatformUtilities;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
-using static Subscription;
+using Bloom.SubscriptionAndFeatures;
 using Directory = System.IO.Directory;
 using File = System.IO.File;
 

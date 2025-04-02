@@ -1,13 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Windows.Forms;
-using System.Xml;
 using Amazon.Runtime;
 using Amazon.S3;
 using Bloom.Api;
@@ -16,6 +6,7 @@ using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
@@ -26,6 +17,14 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Windows.Forms;
 
 namespace Bloom.WebLibraryIntegration
 {

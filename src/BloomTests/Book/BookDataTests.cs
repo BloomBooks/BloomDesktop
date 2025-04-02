@@ -17,7 +17,7 @@ using SIL.Reporting;
 using SIL.TestUtilities;
 using SIL.Text;
 using SIL.Windows.Forms.ClearShare;
-using SIL.Xml;
+using Bloom.SubscriptionAndFeatures;
 
 // TODO (default name BL-13703) currently, the Tag setter also automatically sets the name using LibPalasso logic.
 // If we make changes to that logic now that we are changing default names with the new
