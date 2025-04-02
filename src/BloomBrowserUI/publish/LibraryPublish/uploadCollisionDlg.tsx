@@ -51,8 +51,8 @@ export interface IUploadCollisionDlgData {
     existingBookUrl: string;
     existingThumbUrl?: string;
     uploader?: string;
-    oldBranding?: string;
-    newBranding?: string;
+    oldSubscriptionDescriptor?: string;
+    newSubscriptionDescriptor?: string;
     // Note that this may be called some time after the dialog closes (in response to Upload failing,
     // for example, because the user asked us to fix the Book ID but Team Collection said we can't).
     onCancel?: () => void;
@@ -92,7 +92,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
     );
 
     const [doChangeUploader, setDoChangeUploader] = useState(false);
-    const [doChangeBranding, setDoChangeBranding] = useState(false);
+    const [doChangeSubscription, setDoChangeSubscription] = useState(false);
 
     const kAskForHelpColor = "#D65649";
     const kDarkerSecondaryTextColor = "#555555";
@@ -142,12 +142,12 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
         "This is explanatory commentary on a radio button."
     );
 
-    const changeBrandingMessage = useL10n(
-        'The branding was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.',
-        "PublishTab.UploadCollisionDialog.ChangeBranding",
+    const changeSubscriptionMessage = useL10n(
+        'The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.',
+        "PublishTab.UploadCollisionDialog.ChangeSubscription",
         "",
-        props.oldBranding,
-        props.newBranding
+        props.oldSubscriptionDescriptor,
+        props.newSubscriptionDescriptor
     );
 
     const sameBookRadioLabel = useL10n(
@@ -260,8 +260,9 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
         </div>
     );
 
-    const needChangeBranding =
-        props.oldBranding && props.oldBranding !== props.newBranding;
+    const needChangeSubscription =
+        props.oldSubscriptionDescriptor &&
+        props.oldSubscriptionDescriptor !== props.newSubscriptionDescriptor;
 
     const differentBooksRadioCommentary = (): JSX.Element => (
         <div
@@ -507,7 +508,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                             ariaLabel="Same book radio button"
                             commentaryChildren={sameBookRadioCommentary()}
                         />
-                        {canUpload && needChangeBranding && (
+                        {canUpload && needChangeSubscription && (
                             <div css={cssForCheckboxes}>
                                 {/* The checkbox has an icon prop we could use instead of making it part of
                                 the label, but the mockup has it wrapping as part of the first line of the
@@ -529,19 +530,21 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                                                     margin-right: 5px;
                                                 `}
                                             />
-                                            {changeBrandingMessage}
+                                            {changeSubscriptionMessage}
                                         </p>
                                     }
                                     alreadyLocalized={true}
                                     l10nKey="ignored"
-                                    checked={doChangeBranding}
+                                    checked={doChangeSubscription}
                                     onCheckChanged={() => {
                                         // Enhance: it would probably be nice to select the appropriate radio button
-                                        // if it isn't already, but this is a rare special case (branding is rarely
+                                        // if it isn't already, but this is a rare special case (subscription is rarely
                                         // changed), we're trying to discourage doing it by accident, and it's not
                                         // easy to actually take control of the radio button embedded in the
                                         // RadioWithLabelAndCommentary from here. So for now, the user must do both.)
-                                        setDoChangeBranding(!doChangeBranding);
+                                        setDoChangeSubscription(
+                                            !doChangeSubscription
+                                        );
                                     }}
                                 ></BloomCheckbox>
                             </div>
@@ -598,7 +601,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                         // If we don't have permission to overwrite, we can only upload using a new ID
                         buttonState !== RadioState.Indeterminate &&
                         (canUpload || buttonState === RadioState.Different) &&
-                        (doChangeBranding || !needChangeBranding)
+                        (doChangeSubscription || !needChangeSubscription)
                     }
                     size="large"
                     onClick={() => {
