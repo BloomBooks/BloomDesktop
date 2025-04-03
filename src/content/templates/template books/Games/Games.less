@@ -348,6 +348,18 @@
     }
 }
 
+.drag-activity-play [data-target-of] {
+    // In case a target is over something else, such as a picture that has a click sound,
+    // we want the click to go right through.
+    // I spent a long time looking for something that was preventing propagation, but I
+    // think what is really happening is that once the target receives the click,
+    // it bubbles only to ancestors of the target; but other overlays on the page are
+    // not ancestors, so they don't receive it at all. Fortunately, in play mode we
+    // don't want any mouse behaviors for targets, so we can just prevent them from
+    // registering them at all.
+    pointer-events: none;
+}
+
 .bloom-targetWrapper {
     height: 100%;
     width: 100%;
