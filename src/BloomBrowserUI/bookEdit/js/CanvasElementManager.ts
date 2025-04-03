@@ -47,6 +47,10 @@ import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
+import {
+    isPageAllSameSize,
+    isSameSizeElement
+} from "../toolbox/games/gameUtilities";
 
 export interface ITextColorInfo {
     color: string;
@@ -168,6 +172,15 @@ export class CanvasElementManager {
             newHeight > wrapperBox.clientHeight - 4
         ) {
             return false; // near enough, avoid jitter making it a tiny bit smaller.
+        }
+        // Todo: and wrapperBox is one of the same-size ones
+        if (
+            newHeight < wrapperBox.clientHeight &&
+            isSameSizeElement(wrapperBox)
+        ) {
+            // Shrinking might cause other boxes in the group to overflow.
+            // for now we just don't do it.
+            return false;
         }
 
         // If a lot of text is pasted, the bloom-canvas will scroll down.
