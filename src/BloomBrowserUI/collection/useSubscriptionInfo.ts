@@ -65,7 +65,7 @@ export const useSubscriptionInfo = () => {
     return {
         code: subscriptionData.Code,
         subscriptionCodeIntegrity: subscriptionData.CodeIntegrity as SubscriptionCodeIntegrity,
-        expiryDateStringAsYYYYMMDD: subscriptionData.Expiration,
+        expiryDateStringAsYYYYMMDD: subscriptionData.Expiration || "",
         subscriptionDescriptor: subscriptionData.SubscriptionDescriptor,
         subscriptionSummary: subscriptionData.Summary,
         haveBrandingFiles: subscriptionData.HaveBrandingFiles,
