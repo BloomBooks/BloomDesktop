@@ -29,6 +29,12 @@ export const SubscriptionStatus: React.FunctionComponent<{
     let descriptorToShow = subscriptionDescriptor;
 
     if (props.minimalUI) descriptorToShow = ""; // in the Settings Dialog context, the backend doesn't yet know what the user is clicking on, so it will give the wrong branding
+    if (
+        expiryDateStringAsYYYYMMDD === null ||
+        expiryDateStringAsYYYYMMDD === undefined
+    ) {
+        expiryDateStringAsYYYYMMDD = ""; // avoid crashing later on when not set
+    }
 
     // a "deprecated" subscription is one that used to be eternal but is now being phased out
     const haveDeprecatedSubscription = expiryDateStringAsYYYYMMDD.startsWith(
