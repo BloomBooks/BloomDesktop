@@ -25,12 +25,12 @@ export default class OverflowChecker {
         // possibly this is set up before everything has been computed to be visible?
         const queryElementsThatCanOverflow =
             ".bloom-editable.bloom-visibility-code-on, textarea:visible";
-        const editablePageElements = $(container).find(
+        const $editablePageElements = $(container).find(
             queryElementsThatCanOverflow
         );
 
         // BL-1260: disable overflow checking for pages with too many elements
-        if (editablePageElements.length > 30) {
+        if ($editablePageElements.length > 30) {
             // since we're not going to check it, remove any indications from
             // previous checking. (Normal code also removes some qtips. I don't
             // think those survive from one page load to the next, so we don't
@@ -50,7 +50,7 @@ export default class OverflowChecker {
         }
 
         //Add the handler so that when the elements change, we test for overflow
-        editablePageElements.on("keyup paste", e => {
+        $editablePageElements.on("keyup paste", e => {
             // Don't test for overflow on navigation keys.
             if (e.keyCode >= 33 && e.keyCode <= 40) {
                 return;
@@ -58,7 +58,7 @@ export default class OverflowChecker {
 
             // BL-2892 There's no guarantee that the paste target isn't inside one of the editablePageElements
             // If we allow an embedded paste target (e.g. <p>) to get tested for overflow, it will overflow artificially.
-            const target = $(e.target).closest(editablePageElements)[0];
+            const target = $(e.target).closest($editablePageElements)[0];
             // Give the browser time to get the pasted text into the DOM first, before testing for overflow
             // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
             //        At first I was concerned that this might slow typing, but it doesn't seem to.
@@ -96,33 +96,13 @@ export default class OverflowChecker {
             });
 
         // Checking for overflow is time-consuming for complex pages, and doesn't HAVE to be done
-        // before we display and allow editing. We check one box per 'animation cycle' which
-        // in a maximum-29-box page will take less than half a second if a single check fits in the
-        // usual animation cycle of 1/60 second. This is the most effective way I've found to actually
-        // get the page showing (and editable) before doing all the overflow checking.
-        window.requestAnimationFrame(() =>
-            OverflowChecker.IncrementalOverflowCheck(editablePageElements, 0)
-        );
-    }
-
-    public static IncrementalOverflowCheck(
-        editablePageElements: JQuery,
-        index: number
-    ) {
-        if (index >= editablePageElements.length) {
-            return;
+        // before we display and allow editing. We set up a timeout for each one, which allows
+        // other events to get in between, and also, if multiple sources request an overflow check
+        // on the same element during startup, only one of them really happens. The delay is also
+        // helpful in letting the page stabilize before we start resizing overlays.
+        for (const element of $editablePageElements.get()) {
+            OverflowChecker.CheckForOverflowSoon(element);
         }
-        const box = editablePageElements.get(index);
-        //first, check to see if the stylesheet is going to give us overflow even for a single character:
-        OverflowChecker.CheckOnMinHeight(box);
-        // Right now, test to see if any are already overflowing
-        OverflowChecker.MarkOverflowInternal(box);
-        window.requestAnimationFrame(() =>
-            OverflowChecker.IncrementalOverflowCheck(
-                editablePageElements,
-                index + 1
-            )
-        );
     }
 
     // Actual testable determination of Type I overflow or not
@@ -342,6 +322,7 @@ export default class OverflowChecker {
             clearTimeout(timeOut);
         }
         (element as any).overflowCheckTimeout = setTimeout(() => {
+            this.CheckOnMinHeight(element);
             OverflowChecker.MarkOverflowInternal(element);
         }, 1000);
     }
