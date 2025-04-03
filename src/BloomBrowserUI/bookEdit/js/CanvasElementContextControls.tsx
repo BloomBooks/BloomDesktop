@@ -207,6 +207,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     if (hasVideo) {
         addVideoMenuItems(menuOptions, videoContainer, setMenuOpen);
     }
+    let deleteEnabled = true;
     if (isBackgroundImage) {
         const fillItem = {
             l10nId: "EditTab.Toolbox.ComicTool.Options.FillSpace",
@@ -228,12 +229,18 @@ const CanvasElementContextControls: React.FunctionComponent<{
             index = menuOptions.indexOf(divider);
         }
         menuOptions.splice(index, 0, fillItem);
+
+        // we can't delete the placeholder (or if there isn't an img, somehow)
+        deleteEnabled = !!(
+            img && !img.getAttribute("src")?.startsWith("placeHolder.png")
+        );
     }
 
     // last one
     menuOptions.push(divider, {
         l10nId: "Common.Delete",
         english: "Delete",
+        disabled: !deleteEnabled,
         onClick: theOneCanvasElementManager?.deleteCurrentCanvasElement,
         icon: <DeleteIcon css={getMenuIconCss()} />
     });
