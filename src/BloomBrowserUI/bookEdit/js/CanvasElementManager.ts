@@ -5949,6 +5949,23 @@ export class CanvasElementManager {
             const child = children[i];
             const childTop = child.offsetTop;
             const childLeft = child.offsetLeft;
+            if (child.classList.contains(kBackgroundImageClass)) {
+                const img = getImageFromCanvasElement(child);
+                if (!img || img.getAttribute("src") === "placeHolder.png") {
+                    // No image, or placeholder. Not visible (unless it's the only thing there).
+                    // Don't include this in the calculations.
+                    // But in case it gets selected, or is the only one, adjust it independently
+                    this.adjustBackgroundImageSize(bloomCanvas, child, false);
+                    if (children.length > 1) {
+                        // we'll process the others ignoring the invisible BG image
+                        continue;
+                    } else {
+                        // there are no others, and with zero iterations of this loop
+                        // something bad might happen.
+                        return;
+                    }
+                }
+            }
             // Clip the rectangle to the old container. If the author previously placed
             // something so that it was partly clipped, we don't need to 'correct' that.
             // (We're not trying to ensure that it stays clipped by the same amount,
