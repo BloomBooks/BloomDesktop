@@ -54,7 +54,7 @@ import {
     kImageContainerClass,
     kImageContainerSelector
 } from "../../js/bloomImages";
-import { isPageAllSameSize } from "./gameUtilities";
+import { doesContainingPageHaveSameSizeMode } from "./gameUtilities";
 
 // This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -178,7 +178,7 @@ export const adjustTarget = (
     if (!draggable?.getAttribute("data-draggable-id")) {
         return;
     }
-    const allSameSize = isPageAllSameSize(draggable);
+    const allSameSize = doesContainingPageHaveSameSizeMode(draggable);
     // get height and width of things this way, because sometimes some are not visible
     // (e.g., when creating letters in the drag-letter-to-target game)
     const getHeight = (elt: HTMLElement) => {
@@ -899,7 +899,7 @@ const DragActivityControls: React.FunctionComponent<{
                 return;
             }
 
-            setAllItemsSameSize(isPageAllSameSize(page));
+            setAllItemsSameSize(doesContainingPageHaveSameSizeMode(page));
             setShowTargetsDuringPlay(
                 page.getAttribute("data-show-targets-during-play") !== "false"
             );

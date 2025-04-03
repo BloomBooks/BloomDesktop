@@ -48,8 +48,8 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import {
-    isPageAllSameSize,
-    isSameSizeElement
+    doesContainingPageHaveSameSizeMode,
+    needsToBeKeptSameSize
 } from "../toolbox/games/gameUtilities";
 
 export interface ITextColorInfo {
@@ -173,10 +173,9 @@ export class CanvasElementManager {
         ) {
             return false; // near enough, avoid jitter making it a tiny bit smaller.
         }
-        // Todo: and wrapperBox is one of the same-size ones
         if (
             newHeight < wrapperBox.clientHeight &&
-            isSameSizeElement(wrapperBox)
+            needsToBeKeptSameSize(wrapperBox)
         ) {
             // Shrinking might cause other boxes in the group to overflow.
             // for now we just don't do it.

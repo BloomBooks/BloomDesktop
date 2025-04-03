@@ -23,7 +23,7 @@ import { Point } from "../../js/point";
 import { getCanvasElementManager } from "./canvasElementUtils";
 import { all } from "underscore";
 import { getTarget } from "bloom-player";
-import { isPageAllSameSize } from "../games/gameUtilities";
+import { doesContainingPageHaveSameSizeMode } from "../games/gameUtilities";
 
 const ondragstart = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
@@ -220,7 +220,7 @@ const ondragend = (
         setGeneratedDraggableId(canvasElement);
         canvasElement.style.width = ev.currentTarget.clientWidth + "px";
         makeTargetForDraggable(canvasElement);
-        if (isPageAllSameSize(canvasElement)) {
+        if (doesContainingPageHaveSameSizeMode(canvasElement)) {
             // We want to adjust the new one to the existing ones (if any), not the other way around.
             // By default, since the new one is about to be selected, its size will win.
             // Calling adjustTarget preemptively with any other element (since they are all the same size)
