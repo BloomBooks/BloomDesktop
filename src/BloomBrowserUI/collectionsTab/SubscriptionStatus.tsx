@@ -26,6 +26,12 @@ export const SubscriptionStatus: React.FunctionComponent<{
     if (props.overrideSubscriptionExpiration !== undefined) {
         expiryDateStringAsYYYYMMDD = props.overrideSubscriptionExpiration;
     }
+    if (
+        expiryDateStringAsYYYYMMDD === null ||
+        expiryDateStringAsYYYYMMDD === undefined
+    ) {
+        expiryDateStringAsYYYYMMDD = ""; // avoid crashing later on when not set
+    }
     let brandingProjectKey = useApiString(
         "settings/brandingProjectKey",
         "notyet"
