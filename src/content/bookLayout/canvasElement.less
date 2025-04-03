@@ -218,7 +218,7 @@
 // seems acceptable, since layout will need to be checked anyway.
 .bloom-fullBleed
     .bloom-canvas
-    .bloom-canvas-element[data-bubble*="`style`:`none`"] {
+    .bloom-canvas-element[data-bubble*="`style`:`none`"]:not(.drag-item-wrong, .drag-item-correct) {
     display: flex;
     flex-direction: column;
 }
