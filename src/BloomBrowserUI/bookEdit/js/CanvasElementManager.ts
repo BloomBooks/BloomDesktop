@@ -2527,8 +2527,13 @@ export class CanvasElementManager {
                 "bloom-noAutoHeight",
                 this.activeElement.classList.contains("bloom-noAutoHeight")
             );
+            // We want some special CSS rules for control frames on background images (e.g., no resize handles).
+            // But we give the class a different name so the control frame won't accidentally be affected
+            // by any CSS intended for the background image itself. That is, if the active element (the actual canvas
+            // element) has kbackgroundImageClass, which triggers its own CSS rules, we want the control frame
+            // to have this different class to trigger control frame background-specific CSS rules.
             controlFrame.classList.toggle(
-                kBackgroundImageClass,
+                kBackgroundImageClass + "-control-frame",
                 this.activeElement.classList.contains(kBackgroundImageClass)
             );
             const hasText = controlFrame.classList.contains("has-text");
