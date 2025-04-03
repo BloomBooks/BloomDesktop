@@ -794,8 +794,12 @@ export function SetupElements(
             // }
 
             if (elementToFocus !== "none") {
+                // the check for visibility-code-on here prevents focusing a bloom-editable that we are just
+                // showing as a prompt.
                 const focusable = elementToFocus
-                    ? $(elementToFocus).find(":focusable")
+                    ? $(elementToFocus).find(
+                          ".bloom-visibility-code-on:focusable"
+                      )
                     : undefined;
                 // If we were passed an element to focus, it could be a new canvas element, and we'd like to
                 // be all set to type in it. So we focus it.
