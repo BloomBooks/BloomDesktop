@@ -2341,28 +2341,22 @@ namespace Bloom.Book
             }
         }
 
-        /// <summary>
-        /// If we have "personalization" in the subscription and the HTML from the DOM,
-        //  fill in the personalization.
-        private string MergeInPersonalization(string content)
+		/// <summary>
+		/// If we have "personalization" in the subscription and the HTML from the DOM,
+		/// fill in the personalization.
+		/// </summary>
+		/// <remarks>
+		/// Note that "Local-Community" sets personalization to "" which is okay for that situation.
+		/// So there is no point to a sanity check here requiring a personalization.  See BL-14513.
+		/// </remarks>
+		private string MergeInPersonalization(string content)
         {
-            // Throw if we have a "{personalization}" in the content but no personalization.
-            // Note that we don't want the converse of this becuase even if, e.g., the back page
-            // has a slot for personalization, this method will be called for other pages as well.
-            if (
-                content.Contains("{personalization}")
-                && string.IsNullOrWhiteSpace(this.CollectionSettings.Subscription.Personalization)
-            )
+            // if the CollectionSettings has a Subscription Personalization, replace any instances of
+            // {personalization} with the value
+            if (content.Contains("{personalization}") &&
+                !string.IsNullOrWhiteSpace(this.CollectionSettings.Subscription.Personalization))
             {
-                throw new ApplicationException(
-                    "Branding personalization is not set, but the branding template contains {personalization}."
-                );
-            }
-
-            // if the CollectionSettings has a BrandingPersonalization, replace any instances of {personalization} with the value
-            if (!string.IsNullOrWhiteSpace(this.CollectionSettings.Subscription.Personalization))
-            {
-                content = content.Replace(
+                return content.Replace(
                     "{personalization}",
                     this.CollectionSettings.Subscription.Personalization
                 );
