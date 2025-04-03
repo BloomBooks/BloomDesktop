@@ -1,0 +1,17 @@
+{
+    "presets": [
+        {
+            "comment": "For SIL's Global Sign Language Multilingual Deaf Education together with other NGOs or government departments",
+            "data-book": "outside-back-cover-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding' src='GSLT Logo Stacked Blue.png'/><div><p>This book was created by the local Deaf Community in partnership with SIL’s Global Sign Languages Team (GSLT) and other NGOs or governmental departments.</p><p>Este libro fue creado por la Comunidad Sorda local en colaboración con el Equipo Global de Lenguas de Señas (GSLT) de SIL y otras ONG o entidades gubernamentales.</p><p>Ce livre a été créé par la Communauté Sourde locale en partenariat avec l’équipe mondiale des langues des signes (GSLT) de SIL et d’autres ONG ou départements gouvernementaux.</p></div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='badge' src='made-with-bloom-badge-white-on-red.svg'/><img class='bar' src='topgraphical-bar.png'/>",
+            "condition": "always"
+        }
+    ]
+}
