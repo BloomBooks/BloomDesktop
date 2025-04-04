@@ -303,7 +303,7 @@ namespace Bloom.Collection
             xml.Add(new XElement("XMatterPack", XMatterPackName));
             xml.Add(new XElement("PageNumberStyle", PageNumberStyle));
 
-            // Version before Bloom 6.1 read this in. Starting with Bloom 6.1, we ignore this and just parse the SubscriptionCode.
+            // Versions before Bloom 6.1 read this in. Starting with Bloom 6.1, we ignore this and just parse the SubscriptionCode.
             // For now we are still saving this for backwards compatibility.
             xml.Add(new XElement("BrandingProjectName", Subscription.BrandingKey));
             xml.Add(new XElement("SubscriptionCode", Subscription.Code));
@@ -494,9 +494,13 @@ namespace Bloom.Collection
 
                 // This may be set during construction if we're actually doing the download.
                 // In later runs, we know because the first run leaves a special json file.
-                EditingABlorgBook |= RobustFile.Exists(
-                    pathToFileAboutABlorgBookWeHaveDownloadedForEditing
-                );
+                EditingABlorgBook |=
+                    RobustFile.Exists(pathToFileAboutABlorgBookWeHaveDownloadedForEditing)
+                    // We also treat harvester runs as if we are editing a blorg book.
+                    // The main reason for this is to ensure that redacted subscriptions are handled correctly.
+                    // In other words, when running harvester, subscription code will be something like SIL-LEAD-***-***,
+                    // but we still want to process the book using the original branding.
+                    || Program.RunningHarvesterMode;
 
                 // There are cases where we want to keep the branding, even if it's expired.
                 // 1) they got this book using blorg's "download for editing" feature which is restricted to
@@ -790,10 +794,10 @@ namespace Bloom.Collection
 
         public string GetXMatterPackNameSpecifiedByBrandingOrNull()
         {
-            if (!string.IsNullOrEmpty(Subscription.Descriptor))
+            if (!string.IsNullOrEmpty(Subscription.BrandingKey))
             {
                 var xmatterToUse = BrandingSettings
-                    .GetSettingsOrNull(Subscription.Descriptor)
+                    .GetSettingsOrNull(Subscription.BrandingKey)
                     ?.GetXmatterToUse();
                 if (xmatterToUse != null)
                 {

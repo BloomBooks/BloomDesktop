@@ -4735,9 +4735,9 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
         <note>This is the header for the book that is in bloomlibrary.org already.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeBranding">
-        <source xml:lang="en">The branding was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
-        <note>ID: PublishTab.UploadCollisionDialog.ChangeBranding</note>
+      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeSubscription">
+        <source xml:lang="en">The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
+        <note>ID: PublishTab.UploadCollisionDialog.ChangeSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.ChangeUploader">
         <source xml:lang="en">Change the official uploader to {0}. (Bloom Library will hide part of your email address)</source>
@@ -5389,17 +5389,17 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
         <source xml:lang="en">Your {0} subscription expires on {1}.</source>
         <note>ID: SubscriptionStatus.ExpiringSoonMessage</note>
-        <note>{0} is the branding project key, {1} is the formatted expiration date</note>
+        <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiredMessage">
         <source xml:lang="en">Your {0} subscription expired on {1}.</source>
         <note>ID: SubscriptionStatus.ExpiredMessage</note>
-        <note>{0} is the branding project key, {1} is the formatted expiration date</note>
+        <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.DefaultMessage">
         <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
         <note>ID: SubscriptionStatus.DefaultMessage</note>
-        <note>{0} is the branding project key, {1} is the formatted expiration date</note>
+        <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
       </trans-unit>
 
 
