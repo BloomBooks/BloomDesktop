@@ -489,6 +489,19 @@ body:not(.origami-drag) .bloom-canvas.hoverUp {
     }
 }
 
+.bloom-imageContainer {
+    container-type: inline-size;
+    container-name: bloom-image-container;
+}
+
+// Hide these large buttons when the image isn't wide enough to hold them both.
+// There are equivalent controls in the toolbar and its menu.
+@container bloom-image-container (max-width: 160px) {
+    .imageButton {
+        display: none !important;
+    }
+}
+
 // we need to inset the buttons a bit when the full bleed borders are showing
 body.bloom-fullBleed {
     @inset: calc(@bleed * 2);
