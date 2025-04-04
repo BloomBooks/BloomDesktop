@@ -2633,7 +2633,7 @@ export class CanvasElementManager {
         const contextControlRect = contextControl.getBoundingClientRect();
         const scale = Point.getScalingFactor();
 
-        // This just needs to be wider than the context controls ever are. The get centered in a box this wide.
+        // This just needs to be wider than the context controls ever are. They get centered in a box this wide.
         const contextControlsWidth = 300;
         // Subtracting half the width of the context control frame and adding half the width of the control Frame
         // centers it. The width of the context controls is scaled by its own transform (which we set
@@ -2665,6 +2665,15 @@ export class CanvasElementManager {
         } else {
             // Top 11 px below the bottom of the control frame
             top += controlFrameRect.height + 11;
+            // exception: if the control frame extends beyond the bottom of the image-container,
+            // we want to use the image-container's bottom as our reference point.
+            // This can happen with a background image set to bloom-imageObjectFitCover.
+            const bloomCanvasRect = this.activeElement!.closest(
+                kBloomCanvasSelector
+            )!.getBoundingClientRect();
+            if (controlFrameRect.bottom > bloomCanvasRect.bottom) {
+                top = bloomCanvasRect.bottom + 11;
+            }
         }
         contextControl.style.left = left + "px";
         contextControl.style.top = top + "px";
@@ -5836,7 +5845,15 @@ export class CanvasElementManager {
 
         const oldWidth = bgCanvasElement.clientWidth;
         const containerAspectRatio = bloomCanvasWidth / bloomCanvasHeight;
-        if (imgAspectRatio > containerAspectRatio) {
+        const fitCoverMode = img?.classList.contains(
+            "bloom-imageObjectFit-cover"
+        );
+        let matchWidthOfContainer = imgAspectRatio > containerAspectRatio;
+        if (fitCoverMode) {
+            matchWidthOfContainer = !matchWidthOfContainer;
+        }
+
+        if (matchWidthOfContainer) {
             // size of image is width-limited
             bgCanvasElement.style.width = bloomCanvasWidth + "px";
             bgCanvasElement.style.left = "0px";
