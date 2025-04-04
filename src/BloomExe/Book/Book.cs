@@ -1954,7 +1954,7 @@ namespace Bloom.Book
                 _bookData,
                 BookInfo.MetaData.UseOriginalCopyright
             );
-            _bookData.MergeBrandingSettings(CollectionSettings.Subscription.Descriptor);
+            _bookData.MergeBrandingSettings(CollectionSettings.Subscription.BrandingKey);
             _bookData.SynchronizeDataItemsThroughoutDOM();
             licenseMetadata = GetLicenseMetadata();
             // I think we should only mess with tags if we are updating the book for real.
