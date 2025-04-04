@@ -794,10 +794,10 @@ namespace Bloom.Collection
 
         public string GetXMatterPackNameSpecifiedByBrandingOrNull()
         {
-            if (!string.IsNullOrEmpty(Subscription.Descriptor))
+            if (!string.IsNullOrEmpty(Subscription.BrandingKey))
             {
                 var xmatterToUse = BrandingSettings
-                    .GetSettingsOrNull(Subscription.Descriptor)
+                    .GetSettingsOrNull(Subscription.BrandingKey)
                     ?.GetXmatterToUse();
                 if (xmatterToUse != null)
                 {
