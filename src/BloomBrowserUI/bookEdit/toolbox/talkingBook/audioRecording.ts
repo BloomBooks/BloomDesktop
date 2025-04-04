@@ -173,7 +173,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     private audioSplitButton: HTMLButtonElement;
 
-    private showingImageDescriptions: boolean;
+    public showingImageDescriptions: boolean;
     public recordingMode: RecordingMode;
     private previousRecordMode: RecordingMode;
     private haveAudio: boolean;

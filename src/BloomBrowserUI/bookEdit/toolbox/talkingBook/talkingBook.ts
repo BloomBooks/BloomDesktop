@@ -175,7 +175,7 @@ export default class TalkingBookTool implements ITool {
         if (!page) {
             return;
         }
-        if (!this.isImageDescriptionToolActive()) {
+        if (!AudioRecorder.theOneAudioRecorder.showingImageDescriptions) {
             return;
         }
         const imageContainers = page.getElementsByClassName(
