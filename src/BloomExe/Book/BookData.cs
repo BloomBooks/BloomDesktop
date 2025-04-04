@@ -2094,8 +2094,6 @@ namespace Bloom.Book
                     sb.Append("{");
                     foreach (var langForm in title.TextAlternatives.Forms)
                     {
-                        if (PublishHelper.IsUnpublishableLanguage(langForm.WritingSystemId))
-                            continue; // skip unpublishable titles (BL-14339)
                         if (sb.Length > 1)
                             sb.Append(",");
                         sb.Append("\"");
@@ -2322,9 +2320,36 @@ namespace Bloom.Book
                                 CollectionSettings.DefaultBookshelf
                             );
                     }
+
+                    content = MergeInPersonalization(content);
+
                     Set(item.DataBook, XmlString.FromXml(content), item.Lang);
                 }
             }
+        }
+
+		/// <summary>
+		/// If we have "personalization" in the subscription and the HTML from the DOM,
+		/// fill in the personalization.
+		/// </summary>
+		/// <remarks>
+		/// Note that "Local-Community" sets personalization to "" which is okay for that situation.
+		/// So there is no point to a sanity check here requiring a personalization.  See BL-14513.
+		/// </remarks>
+		private string MergeInPersonalization(string content)
+        {
+            // if the CollectionSettings has a Subscription Personalization, replace any instances of
+            // {personalization} with the value
+            if (content.Contains("{personalization}") &&
+                !string.IsNullOrWhiteSpace(this.CollectionSettings.Subscription.Personalization))
+            {
+                return content.Replace(
+                    "{personalization}",
+                    this.CollectionSettings.Subscription.Personalization
+                );
+            }
+
+            return content;
         }
 
         /// <summary>

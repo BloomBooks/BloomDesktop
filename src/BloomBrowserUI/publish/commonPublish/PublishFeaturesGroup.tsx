@@ -23,7 +23,7 @@ import { ComicIcon } from "../../react_components/icons/ComicIcon";
 import { VisuallyImpairedIcon } from "../../react_components/icons/VisuallyImpairedIcon";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
-import { useEnterpriseAvailable } from "../../react_components/requiresBloomEnterprise";
+import { useHaveSubscription } from "../../react_components/requiresSubscription";
 
 export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
@@ -36,7 +36,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "publish/visuallyImpairedEnabled",
         false
     );
-    const enterpriseAvailable = useEnterpriseAvailable();
+    const enterpriseAvailable = useHaveSubscription();
     const [langs, setLangs] = React.useState<ILanguagePublishInfo[]>([]);
     React.useEffect(() => {
         get(
@@ -173,8 +173,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     );
 
     const enterpriseRequiredTooltip = useL10n(
-        "This is disabled because publishing interactive activities is a Bloom Enterprise feature.",
-        "PublishTab.Feature.Activities.RequiresEnterprise"
+        "This is disabled because publishing interactive activities requires a subcription.",
+        "PublishTab.Feature.Activities.RequiresSubscription"
     );
 
     const activitiesTooltip = hasActivities

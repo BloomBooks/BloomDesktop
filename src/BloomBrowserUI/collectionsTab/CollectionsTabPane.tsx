@@ -709,7 +709,7 @@ export const makeMenuItems = (
                     onClick={clickAction}
                     icon={spec.icon}
                     addEllipsis={spec.addEllipsis}
-                    requiresAnyEnterprise={spec.requiresEnterprise}
+                    requiresAnySubscription={spec.requiresEnterprise}
                     disabled={disabled}
                     tooltipIfDisabled={tooltipIfCannotSaveBook}
                 ></LocalizableMenuItem>

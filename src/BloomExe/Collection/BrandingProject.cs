@@ -1,14 +1,12 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using Bloom.Api;
 using L10NSharp;
-using SIL.IO;
 
 namespace Bloom.Collection
 {
     /// <summary>
-    /// A BrandingProject, known in the UI as a "Bloom Enterprise Project", is an organization or effort
+    /// A BrandingProject is an organization or effort
     ///  using Bloom that has registered with us in order to get various things into every book created
     /// by that group or effort (project). These include logos & Creative Commons license. Under the
     /// Bloom Enterprise system, this also unlocks some advanced publishing capabilities like comprehension
@@ -24,7 +22,7 @@ namespace Bloom.Collection
 
         public static bool HaveFilesForBranding(string fullBrandKey)
         {
-            BrandingSettings.ParseBrandingKey(
+            BrandingSettings.ParseSubscriptionDescriptor(
                 fullBrandKey,
                 out var baseKey,
                 out var flavor,

@@ -279,10 +279,10 @@ namespace Bloom.Book
             set { MetaData.FormatVersion = value; }
         }
 
-        public string BrandingProjectKey
+        public string SubscriptionDescriptor
         {
-            get { return MetaData.BrandingProjectName; }
-            set { MetaData.BrandingProjectName = value; }
+            get { return MetaData.SubscriptionDescriptor; }
+            set { MetaData.SubscriptionDescriptor = value; }
         }
 
         // When license is 'custom' this contains the license information. For other types in may contain additional permissions
@@ -1223,8 +1223,13 @@ namespace Bloom.Book
                 );
         }
 
-        [JsonProperty("brandingProjectName")]
-        public string BrandingProjectName { get; set; }
+        // Whether we should use the BrandingKey or the SubscriptionDescriptor here is a bit of a toss up.
+        // If we use the BrandingKey "Local-Community", we are actually losing information that we would have
+        // with the SubscriptionDescriptor "ABC-LC". SubscriptionDescriptor will create a bit of discontinuity
+        // with existing analytics (which have "Local-Community"), but we decided we would rather capture all the
+        // information we can and deal with the discontinuity elsewhere if needed.
+        [JsonProperty("brandingProjectName")] // NB: don't change this to "subscriptionDescriptor"; it must match what is in json and the Parse database
+        public string SubscriptionDescriptor { get; set; }
 
         /// <summary>
         /// True if the user explicitly set a name (name is not automatically derived

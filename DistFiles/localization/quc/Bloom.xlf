@@ -4844,10 +4844,10 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="final">Kemtzijob'exik</target>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
+      <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage">
         <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
         <target xml:lang="quc" state="needs-translation">Page {0} is the first page that uses Overlay elements.</target>
-        <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
+        <note>ID: PublishTab.PublishRequiresSubscription.FirstOverlayPage</note>
       </trans-unit>
       <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
         <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
@@ -6149,10 +6149,10 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="final">Reta'maxik jule' chik</target>
         <note>ID: Settings.Enterprise.LearnMore</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.NeedsCode" sil:dynamic="true">
+      <trans-unit id="Settings.Subscription.NeedsCode" sil:dynamic="true">
         <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
         <target xml:lang="quc" state="needs-translation">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </target>
-        <note>ID: Settings.Enterprise.NeedsCode</note>
+        <note>ID: Settings.Subscription.NeedsCode</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None" sil:dynamic="true" approved="yes">
         <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
@@ -6174,10 +6174,10 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="final">Utz'ib'axik ib' pa wokk’ayinel</target>
         <note>ID: Settings.Enterprise.Subscription</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.SubscriptionCode" sil:dynamic="true" approved="yes">
+      <trans-unit id="Settings.Subscription.SubscriptionCodeLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Subscription Code:</source>
         <target xml:lang="quc" state="final">Retal utz'ib'axik ib':</target>
-        <note>ID: Settings.Enterprise.SubscriptionCode</note>
+        <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
       </trans-unit>
       <trans-unit id="TeamCollection.TeamCollection">
         <source xml:lang="en">Team Collection</source>

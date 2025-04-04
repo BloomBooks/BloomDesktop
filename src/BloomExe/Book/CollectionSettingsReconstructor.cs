@@ -40,16 +40,14 @@ namespace Bloom.Book
                 if (SignLanguageCode == "") // use the older method of looking for a sign language feature
                     SignLanguageCode = GetSignLanguageCode(metaObj);
 
-                if (metaObj.IsDefined("brandingProjectName"))
+                if (
+                    metaObj.IsDefined("brandingProjectName")
+                    && !string.IsNullOrWhiteSpace(metaObj.brandingProjectName)
+                ) // in file produced by Bloom's old enough to require this "reconstruction", we saved this
                 {
-                    Branding = metaObj.brandingProjectName;
-                }
-                else
-                {
-                    // If we don't set this default value, then the epub will not build successfully. (The same is probably true for the
-                    // bloompub file.)  We get a "Failure to completely load visibility document in RemoveUnwantedContent" exception thrown.
-                    // See https://issues.bloomlibrary.org/youtrack/issue/BL-8485.
-                    Branding = "Default";
+                    // put it in the new redacted subscription form we write out starting with Bloom 6.1
+
+                    SubscriptionCode = metaObj.brandingProjectName + "-***-***";
                 }
 
                 _bookshelf = GetBookshelfIfPossible(_dom, metaObj);
@@ -89,7 +87,6 @@ namespace Bloom.Book
                         new XText(GetLanguageDisplayNameOrEmpty(metaObj, SignLanguageCode))
                     ),
                     new XElement("XMatterPack", new XText(GetBestXMatter())),
-                    new XElement("BrandingProjectName", new XText(Branding ?? "")),
                     new XElement("DefaultBookTags", new XText(_bookshelf)),
                     new XElement("PageNumberStyle", new XText(pageNumberStyle ?? "")),
                     new XElement("IsLanguage1Rtl", new XText(isRtl.ToString().ToLowerInvariant())),
@@ -97,6 +94,12 @@ namespace Bloom.Book
                     new XElement("Province", new XText(Province ?? "")),
                     new XElement("District", new XText(District ?? ""))
                 );
+                if (SubscriptionCode != null)
+                {
+                    bloomCollectionElement.Add(
+                        new XElement("SubscriptionCode", new XText(SubscriptionCode))
+                    );
+                }
                 var sb = new StringBuilder();
                 using (var writer = XmlWriter.Create(sb))
                     bloomCollectionElement.WriteTo(writer);
@@ -319,7 +322,7 @@ namespace Bloom.Book
         public string Language2Code { get; protected set; }
         public string Language3Code { get; set; }
         public string SignLanguageCode { get; protected set; }
-        public string Branding { get; protected set; }
+        internal string SubscriptionCode { get; set; }
 
         public string Country { get; protected set; }
         public string Province { get; protected set; }

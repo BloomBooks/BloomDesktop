@@ -409,12 +409,12 @@
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work.</source>
-        <target xml:lang="ne-NP" state="final">तपाईंले यस रचनालाई समायोज गर्न वा यसमा आफ्नो तर्फबाट थपथाप गर्न पाउनुहुन्छ।</target>
+        <target xml:lang="ne-NP" state="final">तपाईंले यस रचनालाई समायोजन गर्न वा यसमा आफ्नो तर्फबाट थपथाप गर्न पाउनुहुन्छ।</target>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
-        <target xml:lang="ne-NP" state="final">तपाईंले यस रचनालाई समायोज गर्न वा यसमा आफ्नो तर्फबाट थपथाप गर्न पाउनुहुन्छ, तर परिणामी रचनालाई त्‍यसको मूल इजाजतपत्र वा सो सरहको इजाजतपत्र अन्तर्गत मात्र वितरण गर्न पाउनुहुन्छ।</target>
+        <target xml:lang="ne-NP" state="final">तपाईंले यस रचनालाई समायोजन गर्न वा यसमा आफ्नो तर्फबाट थपथाप गर्न पाउनुहुन्छ, तर परिणामी रचनालाई त्‍यसको मूल इजाजतपत्र वा सो सरहको इजाजतपत्र अन्तर्गत मात्र वितरण गर्न पाउनुहुन्छ।</target>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true" approved="yes">

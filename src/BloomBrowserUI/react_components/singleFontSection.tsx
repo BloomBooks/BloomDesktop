@@ -57,7 +57,6 @@ const SingleFontSection: React.FunctionComponent<{
             <Link
                 css={css`
                     text-decoration: underline !important;
-                    color: blue !important;
                     margin-bottom: 16px !important;
                 `}
                 l10nKey="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink"
