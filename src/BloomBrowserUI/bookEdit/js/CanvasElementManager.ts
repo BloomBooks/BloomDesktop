@@ -5836,7 +5836,15 @@ export class CanvasElementManager {
 
         const oldWidth = bgCanvasElement.clientWidth;
         const containerAspectRatio = bloomCanvasWidth / bloomCanvasHeight;
-        if (imgAspectRatio > containerAspectRatio) {
+        const fitCoverMode = img?.classList.contains(
+            "bloom-imageObjectFit-cover"
+        );
+        let matchWidthOfContainer = imgAspectRatio > containerAspectRatio;
+        if (fitCoverMode) {
+            matchWidthOfContainer = !matchWidthOfContainer;
+        }
+
+        if (matchWidthOfContainer) {
             // size of image is width-limited
             bgCanvasElement.style.width = bloomCanvasWidth + "px";
             bgCanvasElement.style.left = "0px";
