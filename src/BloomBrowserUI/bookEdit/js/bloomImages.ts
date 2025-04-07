@@ -156,24 +156,6 @@ export function HandleImageError(event: Event) {
     // console.error("Image failed to load:", target.src);
 }
 
-export function GetButtonModifier(container) {
-    let buttonModifier = "";
-    const imageButtonWidth = 87;
-    const imageButtonHeight = 52;
-    // container may or may not be a jQuery object already.
-    const $container = $(container);
-    if ($container.height() < imageButtonHeight * 2) {
-        buttonModifier = "smallButtonHeight";
-    }
-    if ($container.width() < imageButtonWidth * 2) {
-        buttonModifier += " smallButtonWidth";
-    }
-    if ($container.width() < imageButtonWidth) {
-        buttonModifier += " verySmallButtons";
-    }
-    return buttonModifier;
-}
-
 export function doImageCommand(
     img: HTMLElement | undefined,
     command: "cut" | "copy" | "paste" | "change"
@@ -214,11 +196,8 @@ export function doImageCommand(
     });
 }
 
-export function addImageEditingButtons(bloomCanvas: HTMLElement): void {
-    if (
-        !bloomCanvas || // huh? so why did we call this?
-        bloomCanvas.classList.contains("hoverUp") // should already have them if wanted
-    ) {
+export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {
+    if (!bloomCanvas) {
         return;
     }
     if (playingBloomGame(bloomCanvas)) {
@@ -227,7 +206,6 @@ export function addImageEditingButtons(bloomCanvas: HTMLElement): void {
         return;
     }
     const img = getBackgroundImageFromBloomCanvas(bloomCanvas);
-    bloomCanvas.classList.add("hoverUp"); // maybe one day refactor to use :hover?
 
     if (!img) {
         return;
@@ -240,26 +218,19 @@ export function addImageEditingButtons(bloomCanvas: HTMLElement): void {
     ) {
         return; // Playback order controls are active, deactivate bloom-canvas stuff.
     }
-
-    const bgImageContainer = img.parentElement as HTMLElement;
-    SetupChangeImageButton(bgImageContainer, img);
 }
 
-function SetupChangeImageButton(
-    bgImageContainer: HTMLElement,
-    img: HTMLElement
-) {
+function SetupChangeImageButton(bloomCanvas: HTMLElement) {
+    const img = getBackgroundImageFromBloomCanvas(bloomCanvas);
     for (const oldButton of Array.from(
-        bgImageContainer.getElementsByClassName("changeImageButton")
+        bloomCanvas.getElementsByClassName("changeImageButton")
     )) {
         oldButton.remove();
     }
-    const button = bgImageContainer.ownerDocument.createElement("button");
-    button.className = `changeImageButton imageButton imageOverlayButton bloom-ui ${GetButtonModifier(
-        bgImageContainer
-    )}`;
+    const button = bloomCanvas.ownerDocument.createElement("button");
+    button.className = `changeImageButton imageButton imageOverlayButton bloom-ui`;
     button.addEventListener("click", (e: MouseEvent) => {
-        if ((e as any).detail > 1) {
+        if ((e as any).detail > 1 || !img) {
             return;
         }
         doImageCommand(img, "change");
@@ -270,47 +241,15 @@ function SetupChangeImageButton(
         .asyncGetText(titleId, titleText, "tooltip text")
         .done(translation => {
             button.title = translation;
-            bgImageContainer.prepend(button);
+            bloomCanvas.prepend(button);
         })
         .fail(() => {
             button.title = titleText;
-            bgImageContainer.prepend(button);
+            bloomCanvas.prepend(button);
         });
 }
 
-/**
- * Gets a NodeListOf of the image editing button elements, which can be iterated through.
- * @param bloomCanvas: The .bloom-canvas which contains the image editing buttons.
- * @param options: An object with the following fields:
- *    skipProblemIndicator: true to omit the imgMetadataProblem element(s) from the list
- */
-function getImageEditingButtons(
-    bloomCanvas: Element,
-    options: {
-        skipProblemIndicator: boolean;
-    }
-): NodeListOf<Element> {
-    // NOTE: imgMetadataProblem isn't actually an imageOverlayButton,
-    // so strictly speaking, we don't need to do any special checks,
-    // but let's check anyway just in case it ever receives the imageOverlayButton class in the future
-    const selector =
-        ".imageOverlayButton" +
-        (options.skipProblemIndicator ? ":not(.imgMetadataProblem)" : "");
-    return bloomCanvas.querySelectorAll(selector);
-}
-
-export function removeImageEditingButtons(containerDiv: Element): void {
-    containerDiv.classList.remove("hoverUp");
-    getImageEditingButtons(containerDiv, {
-        skipProblemIndicator: true // leave the problem indicator visible
-    }).forEach(button => {
-        // The ones that have bloom-ui don't need to be removed; we are using CSS :hover
-        // to show and hide them, and counting on the bloom-ui class to prevent them from
-        // being persisted.
-        if (!button.classList.contains("bloom-ui")) {
-            button.remove();
-        }
-    });
+export function handleMouseLeaveBloomCanvas(containerDiv: Element): void {
     DisableImageTooltip(containerDiv as HTMLElement);
 }
 
@@ -347,18 +286,6 @@ export function EnableAllImageEditing() {
 // background image) which acts as a background for any other content.
 // Precondition: bloomCanvas must be just a single HTMLElement
 function SetupBloomCanvas(bloomCanvas: HTMLElement) {
-    // Initialize the value of the hoverUp class.
-    // the hoverup class should be present whenever the mouse is over the containerDiv.
-    // This is usually achieved by mouseenter/mouseleave event handlers,
-    // but mouseenter won't trigger if the mouse starts off over the bloomCanvas when the page is loaded
-    // That case is extremely commonplace when adding canvas elements, because that needs to reload the page.
-    // (It is also possible to trigger even when opening up a new page, but probably less likely to happen accidentally)
-    if (bloomCanvas.matches(":hover")) {
-        bloomCanvas.classList.add("hoverUp");
-    } else {
-        bloomCanvas.classList.remove("hoverUp");
-    }
-
     // Now that we can overlay things on top of images, we don't want to show the flower placeholder
     // if the bloom-canvas contains a canvas element.
     updateCanvasElementClass(bloomCanvas);
@@ -368,10 +295,11 @@ function SetupBloomCanvas(bloomCanvas: HTMLElement) {
     // rely on a call to SetImageDisplaySize() when the image is added.
     const img = $(bloomCanvas).find("img");
     SetImageDisplaySizeIfCalledFor($(bloomCanvas), img);
+    SetupChangeImageButton(bloomCanvas);
 
     $(bloomCanvas)
         .mouseenter(function() {
-            addImageEditingButtons(this);
+            handleMouseEnterBloomCanvas(this);
         })
         .mouseleave(function(e: JQueryMouseEventObject) {
             // Page numbers displaying inside the bloom-canvas must have their
@@ -379,7 +307,7 @@ function SetupBloomCanvas(bloomCanvas: HTMLElement) {
             // triggers the mouseleave event, and the image editing buttons are hidden
             // before the mouse cursor actually leaves the bloom-canvas, but hovering
             // above or beside the page number does nothing.  See BL-13098 and BL-13221.
-            removeImageEditingButtons(this);
+            handleMouseLeaveBloomCanvas(this);
         });
 }
 
@@ -717,7 +645,6 @@ function getFileLengthString(bytes): string {
 // IsImageReal returns true if the img tag refers to a non-placeholder image
 // If the image is a placeholder:
 // - we don't want to offer to edit placeholder credits
-// - we don't want to activate the minibuttons for cut/copy
 function IsImageReal(img) {
     return (
         GetRawImageUrl(img)
@@ -768,8 +695,9 @@ export function SetupMetadataButton(parent: HTMLElement) {
         ) as HTMLElement[];
     }
     for (const bgImageCanvasElement of bgImageCanvasElements) {
+        const bloomCanvas = bgImageCanvasElement.parentElement as HTMLElement;
         for (const oldButton of Array.from(
-            bgImageCanvasElement.getElementsByClassName("editMetadataButton")
+            bloomCanvas.getElementsByClassName("editMetadataButton")
         )) {
             oldButton.remove();
         }
@@ -787,9 +715,7 @@ export function SetupMetadataButton(parent: HTMLElement) {
 
         // With the bloom-ui class present, we don't have to worry about removing this except when
         // this function is called again.
-        let buttonClasses = `editMetadataButton imageButton bloom-ui ${GetButtonModifier(
-            container
-        )}`;
+        let buttonClasses = `editMetadataButton imageButton bloom-ui`;
         let title = "Edit image credits, copyright, & license";
         let titleId = "EditTab.Image.EditMetadata";
         if (!copyright || copyright.length === 0) {
@@ -809,11 +735,11 @@ export function SetupMetadataButton(parent: HTMLElement) {
             .done(translation => {
                 const title = translation.replace(/'/g, "&apos;");
                 button.title = title;
-                container.prepend(button);
+                bloomCanvas.prepend(button);
             })
             .fail(() => {
                 button.title = title;
-                container.prepend(button);
+                bloomCanvas.prepend(button);
             });
     }
 }
