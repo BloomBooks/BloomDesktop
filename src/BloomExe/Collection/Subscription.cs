@@ -37,33 +37,55 @@ public class Subscription
         Tier = CalculateTier();
     }
 
+    /// <summary>
     // Factory Method
-    // We would really like to say look it's only the code, from that we can get everything else.
-    // However there are two cases where that is not enough:
-    // 1. Legacy collections will have no code, but only a branding of "Local-Community".
-    // 2. We are editing a book that was uploaded to BloomLibrary.org, and we want to use the same branding as when it was uploaded but the code
-    // was intentionally blanked so as not to publish it.
+    /// We would really like to say look it's only the code, from that we can get everything else.
+    /// However there are two cases where that is not enough:
+    /// 1. Local legacy collections have no code, but only a branding of "Local-Community".
+    /// 2. We are editing a book that was uploaded to BloomLibrary.org, and we want to use the same branding
+    ///    as when it was uploaded, but the code was intentionally blanked so as not to publish it.
+    /// </summary>
+    /// <param name="code">content of &lt;SubscriptionCode&gt; from file, or null if empty</param>
+    /// <param name="brandingProjectName">content of &lt;BrandingProjectName&gt; from file, or "Default" if empty</param>
+    /// <param name="editingABlorgBook">true iff we're editing a book downloaded specifically for edit/update</param>
+    /// <returns>a new Subscription object based on the inputs</returns>
+    /// <remarks>
+    /// When downloading books for editing/updating, Bloom Library provides a code of "Local-Community-***-***"
+    /// for the branding of "Local-Community" and does not provide a branding.  (so it goes to "Default")
+    /// </remarks>
     public static Subscription FromCollectionSettingsInfo(
         string code,
-        string descriptor,
+        string brandingProjectName,
         bool editingABlorgBook = false
     )
     {
-        // If the collection has <SubscriptionCode>foobar-***-***</SubscriptionCode> but <BrandingName>Default</BrandingName>,
-        // then we have a conflict (which is why we're phasing out the use of <BrandingName>). In that case, go with what
-        // is given in the code by clearing the descriptor.
-        if (editingABlorgBook && descriptor == "Default" && code.Contains(kRedactedCodeSuffix))
+        // If the collection has <SubscriptionCode>foobar-***-***</SubscriptionCode>, but
+        // <BrandingProjectName>Default</BrandingProjectName>, then we have a conflict (which is why we're
+        // phasing out the use of <BrandingProjectName>). In that case, go with what is given in the code
+        // by updating the brandingProjectName.
+        if (editingABlorgBook && brandingProjectName == "Default" && code.Contains(kRedactedCodeSuffix))
         {
-            // set the descriptor by parsing the code
-            ParseCode(code, out descriptor, out _, out _);
+            if (code == "Local-Community-***-***")
+            {
+                // set the branding name to "Legacy-LC" for legacy Local-Community branding
+                brandingProjectName = "Legacy-LC";
+                code = "Legacy-LC-005809-2533"; // expires on 1 July 2025
+            }
+            else
+            {
+                // set the branding name by parsing the code
+                ParseCode(code, out brandingProjectName, out _, out _);
+            }
         }
+        // Collections created before Bloom 4.4 have the branding "Local Community" instead of "Local-Community"
         if (
             string.IsNullOrWhiteSpace(code)
-            && (descriptor == "Local-Community" || descriptor == "Local Community")
+            && (brandingProjectName == "Local-Community" || brandingProjectName == "Local Community")
         )
         {
-            // migrating to actual code
+            // Migrate the local collection to the actual code and branding name.
             code = "Legacy-LC-005809-2533"; // expires on 1 July 2025
+            brandingProjectName = "Legacy-LC";
         }
 
         // When on BloomLibrary.org you click "Download for Edit", we want to let you use the same tier and
@@ -71,22 +93,27 @@ public class Subscription
         if (editingABlorgBook)
         {
             Subscription sub;
+            // The Descriptor is calculated from the code in the constructor, so we don't
+            // need to set it separately.
             if (string.IsNullOrEmpty(code))
             {
-                sub = new Subscription(descriptor + kRedactedCodeSuffix);
+                sub = new Subscription(brandingProjectName + kRedactedCodeSuffix);
             }
             else
                 sub = new Subscription(code);
 
             sub.EditingBlorgBook = editingABlorgBook;
 
-            sub.Descriptor = descriptor;
             sub.ExpirationDate = DateTime.Now.AddDays(1);
 
-            sub.Tier =
-                descriptor == "Local-Community" || descriptor == "Local Community"
-                    ? SubscriptionTier.Community
-                    : SubscriptionTier.Enterprise; // see https://issues.bloomlibrary.org/youtrack/issue/BL-14419
+            if (code == null && brandingProjectName == "Default")
+                sub.Tier = SubscriptionTier.None;
+            // After migration, the code for "Local-Community" is "Legacy-LC-5809-2533", but
+            // the branding project name is still written out as "Local-Community".
+            else if (brandingProjectName.EndsWith("-LC") || brandingProjectName == "Local-Community")
+                sub.Tier = SubscriptionTier.Community;
+            else
+                sub.Tier = SubscriptionTier.Enterprise; // see https://issues.bloomlibrary.org/youtrack/issue/BL-14419
 
             return sub;
         }
@@ -208,7 +235,7 @@ public class Subscription
     // without creating a custom branding.
     public string Personalization
     {
-        // In Local Community subsription, the personalization code is everything preceding the "-LC-". We replace dashes with spaces.
+        // In Local Community subscription, the personalization code is everything preceding the "-LC-". We replace dashes with spaces.
         get
         {
             // if the descriptor contains "-LC", we want to return the part before that, with dashes replaced by spaces. Otherwise, empty string.
@@ -225,7 +252,7 @@ public class Subscription
         }
     }
 
-    // Enhance: soon we will devide up these so that they don't have exactly the same set of features
+    // Enhance: soon we will divide up these so that they don't have exactly the same set of features
     public bool HaveActiveSubscription =>
         Tier == Subscription.SubscriptionTier.Enterprise
         || Tier == Subscription.SubscriptionTier.Community;
@@ -234,7 +261,7 @@ public class Subscription
     // Pays no attention to the validity of the code, just returns the part before the numbers.
     private string CalculateDescriptor()
     {
-        ParseCode(Code, out var descriptor, out var datePart, out var combinedChecksum);
+        ParseCode(Code, out var descriptor, out _, out _);
         return descriptor;
     }
 
