@@ -5421,10 +5421,10 @@
         <target xml:lang="vi" state="needs-translation">Already in Bloom Library</target>
         <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeBranding">
-        <source xml:lang="en">The branding was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
-        <target xml:lang="vi" state="needs-translation">The branding was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</target>
-        <note>ID: PublishTab.UploadCollisionDialog.ChangeBranding</note>
+      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeSubscription">
+        <source xml:lang="en">The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
+        <target xml:lang="vi" state="needs-translation">The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</target>
+        <note>ID: PublishTab.UploadCollisionDialog.ChangeSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.ChangeUploader">
         <source xml:lang="en">Change the official uploader to {0}. (Bloom Library will hide part of your email address)</source>
