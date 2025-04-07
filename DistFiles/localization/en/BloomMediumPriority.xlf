@@ -5,9 +5,9 @@
       <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
-      <trans-unit id="AvailableWithEnterprise" translate="no">
-        <source xml:lang="en">Available with your Enterprise Subscription</source>
-        <note>ID: AvailableWithEnterprise</note>
+      <trans-unit id="AvailableWithSubscription" translate="no">
+        <source xml:lang="en">Available with your Bloom Subscription</source>
+        <note>ID: AvailableWithSubscription</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.Check">
