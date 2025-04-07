@@ -102,24 +102,36 @@ export class CanvasElementManager {
         return this.isCanvasElementEditingOn;
     }
 
-    // Given the box has been determined to be overflowing vertically by
+    // Given the editable has been determined to be overflowing vertically by
     // 'overflowY' pixels, if it's inside a canvas element that does not have the class
-    // bloom-noAutoSize, adjust the size of the canvas element
-    // to fit it.
-    // (Caller may wish to do box.scrollTop = 0 to make sure the whole content shows now there
+    // bloom-noAutoSize (or one of several other disclaimers you'll find in the code below),
+    // adjust the size of the canvas element to fit it.
+    // (We also call editable.scrollTop = 0 to make sure the whole content shows now there
     // is room for it all.)
-    // Returns true if successful; it will currently fail if box is not
+    // Returns true if successful; it will currently fail if editable is not
     // inside a valid canvas element or if the canvas element can't grow this much while
     // remaining inside the bloom-canvas. If it returns false, it makes no changes at all.
-    public growOverflowingBox(
-        box: HTMLElement,
+    public adjustSizeOfContainingCanvasElementToMatchContent(
+        editable: HTMLElement,
         overflowY: number,
         doNotShrink?: boolean
     ): boolean {
-        const wrapperBox = box.closest(kCanvasElementSelector) as HTMLElement;
+        if (editable instanceof HTMLTextAreaElement) {
+            // Calendars still use textareas, but we don't do anything with them here.
+            return false;
+        }
+
+        console.assert(
+            editable.classList.contains("bloom-editable"),
+            "editable is not a bloom-editable"
+        );
+
+        const canvasElement = editable.closest(
+            kCanvasElementSelector
+        ) as HTMLElement;
         if (
-            !wrapperBox ||
-            wrapperBox.classList.contains("bloom-noAutoHeight")
+            !canvasElement ||
+            canvasElement.classList.contains("bloom-noAutoHeight")
         ) {
             return false; // we can't fix it
         }
@@ -127,8 +139,8 @@ export class CanvasElementManager {
             return false; // we don't want to change the box's size
         }
 
-        const container = CanvasElementManager.getBloomCanvas(wrapperBox);
-        if (!container) {
+        const bloomCanvas = CanvasElementManager.getBloomCanvas(canvasElement);
+        if (!bloomCanvas) {
             return false; // paranoia; canvas element should always be in bloom-canvas
         }
 
@@ -139,43 +151,22 @@ export class CanvasElementManager {
         // The 27 is the minimumSize that CSS imposes on canvas elements; it may cause
         // Comical some problems if we try to set the actual size smaller.
         // (I think I saw background gradients behaving strangely, for example.)
-        let newHeight = Math.max(box.clientHeight + overflowY + 4, 27);
-        // Get any siblings of our argument that are also visible. (Typically siblings are the
-        // other bloom-editables in the same bloom-translationGroup, and are all display:none.)
-        const visibleSiblings = Array.from(box.parentElement!.children).filter(
-            child => {
-                if (child === box) return false; // skip the box itself
-                const computedStyle = window.getComputedStyle(child);
-                return (
-                    computedStyle.display !== "none" &&
-                    computedStyle.visibility !== "hidden"
-                );
-            }
+        let newHeight = Math.max(editable.clientHeight + overflowY + 4, 27);
+
+        newHeight = Math.max(
+            newHeight,
+            this.getMaxVisibleSiblingHeight(editable) ?? 0
         );
-        if (visibleSiblings.length > 0) {
-            // This is very rare. As of March 2025, the only known case is in Games, where we sometimes
-            // make the English of a prompt visible until the desired langauge is typed. When it happens,
-            // we'll make sure the canvas element is at least high enough to show the tallest sibling, but without
-            // using the precision we do for just one child.
-            // More care might be needed if the parent might show a format cog or language label (even as :after)...
-            // anything bottom-aligned will interfere with shrinking. Currently we don't do anything like that
-            // in canvas elements.
-            newHeight = Math.max(
-                newHeight,
-                ...visibleSiblings.map(
-                    child => child.clientTop + child.clientHeight
-                )
-            );
-        }
+
         if (
-            newHeight < wrapperBox.clientHeight &&
-            newHeight > wrapperBox.clientHeight - 4
+            newHeight < canvasElement.clientHeight &&
+            newHeight > canvasElement.clientHeight - 4
         ) {
             return false; // near enough, avoid jitter making it a tiny bit smaller.
         }
         if (
-            newHeight < wrapperBox.clientHeight &&
-            needsToBeKeptSameSize(wrapperBox)
+            newHeight < canvasElement.clientHeight &&
+            needsToBeKeptSameSize(canvasElement)
         ) {
             // Shrinking might cause other boxes in the group to overflow.
             // for now we just don't do it.
@@ -187,26 +178,58 @@ export class CanvasElementManager {
         // The children of the bloom-canvas (e.g. img and canvas elements) will be offset above the bloom-canvas.
         // This is an annoying situation, both visually for the image and in terms of computing the correct position for JQuery draggables.
         // So instead, we force the container to scroll back to the top.
-        container.scrollTop = 0;
+        bloomCanvas.scrollTop = 0;
 
         // Check if required height exceeds available height
-        if (newHeight + wrapperBox.offsetTop > container.clientHeight) {
+        if (newHeight + canvasElement.offsetTop > bloomCanvas.clientHeight) {
             // ENHANCE: Would be nice if this set the height up to the max
             //          But it probably requires some changes to what the return value represents and how the caller should deal.
             //          Maybe we should return an adjusted overflowY instead of a boolean.
             return false;
         }
 
-        wrapperBox.style.height = newHeight + "px";
+        canvasElement.style.height = newHeight + "px";
         // The next method call will change from % positioning to px if needed.  Bloom originally
         // used % values to position canvas elements before we realized that was a bad idea.
         CanvasElementManager.convertCanvasElementPositionToAbsolute(
-            wrapperBox,
-            container
+            canvasElement,
+            bloomCanvas
         );
-        this.adjustTarget(wrapperBox);
+        this.adjustTarget(canvasElement);
         this.alignControlFrameWithActiveElement();
         return true;
+    }
+
+    private getMaxVisibleSiblingHeight(
+        editable: HTMLElement
+    ): number | undefined {
+        // Get any siblings of our editable that are also visible. (Typically siblings are the
+        // other bloom-editables in the same bloom-translationGroup, and are all display:none.)
+        const visibleSiblings = Array.from(
+            editable.parentElement!.children
+        ).filter(child => {
+            if (child === editable) return false; // skip the element itself
+            const computedStyle = window.getComputedStyle(child);
+            return (
+                computedStyle.display !== "none" &&
+                computedStyle.visibility !== "hidden"
+            );
+        });
+        if (visibleSiblings.length > 0) {
+            // This is very rare. As of March 2025, the only known case is in Games, where we sometimes
+            // make the English of a prompt visible until the desired language is typed. When it happens,
+            // we'll make sure the canvas element is at least high enough to show the tallest sibling, but without
+            // using the precision we do for just one child.
+            // More care might be needed if the parent might show a format cog or language label (even as :after)...
+            // anything bottom-aligned will interfere with shrinking. Currently we don't do anything like that
+            // in canvas elements.
+            return Math.max(
+                ...visibleSiblings.map(
+                    child => child.clientTop + child.clientHeight
+                )
+            );
+        }
+        return undefined;
     }
 
     public updateAutoHeight(): void {
@@ -222,6 +245,7 @@ export class CanvasElementManager {
         }
         this.alignControlFrameWithActiveElement();
     }
+
     public adjustCanvasElementHeightToContentOrMarkOverflow(
         editable: HTMLElement
     ): void {
@@ -236,8 +260,8 @@ export class CanvasElementManager {
 
         // This mimics the relevant part of OverflowChecker.MarkOverflowInternal
         if (
-            theOneCanvasElementManager.growOverflowingBox(
-                this.activeElement,
+            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
+                editable,
                 overflowY
             )
         ) {
@@ -248,7 +272,7 @@ export class CanvasElementManager {
 
     // When the format dialog changes the amount of padding for canvas elements, adjust their sizes
     // and positions (keeping the text in the same place).
-    // This function assumes that the postion and size of canvas elements are determined by the
+    // This function assumes that the position and size of canvas elements are determined by the
     // top, left, width, and height properties of the canvas elements,
     // and that they are measured in pixels.
     public static adjustCanvasElementsForPaddingChange(

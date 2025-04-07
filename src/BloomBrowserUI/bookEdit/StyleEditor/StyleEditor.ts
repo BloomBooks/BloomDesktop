@@ -2133,12 +2133,12 @@ export default class StyleEditor {
     }
 
     public cleanupAfterStyleChange(doNotShrink?: boolean) {
-        const target = this.boxBeingEdited;
-        const styleName = StyleEditor.GetStyleNameForElement(target);
+        const editable = this.boxBeingEdited;
+        const styleName = StyleEditor.GetStyleNameForElement(editable);
         if (!styleName) {
             return; // bizarre, since we put up the dialog
         }
-        OverflowChecker.MarkOverflowInternal(target, doNotShrink);
+        OverflowChecker.MarkOverflowInternal(editable, doNotShrink);
         this.updateLabelsWithStyleName();
         this.getParagraphTabDescription();
 
