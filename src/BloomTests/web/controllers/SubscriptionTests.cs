@@ -43,23 +43,27 @@ namespace BloomTests.Collection
             Assert.AreEqual(expectedBranding, subscription.BrandingKey);
         }
 
-        [TestCase("", "", "")]
-        [TestCase(null, null, null)]
-        [TestCase("", "Local Community", "Legacy-LC-005809-2533")] // migrate legacy branding only to a modern subscription code
-        [TestCase("", "Local-Community", "Legacy-LC-005809-2533")] // migrate legacy branding only to a modern subscription code
+        [TestCase("", "", false, "")]
+        [TestCase(null, null, false, null)]
+        [TestCase(null, "Local Community", false, "Legacy-LC-005809-2533")] // migrate legacy branding only to a modern subscription code
+        [TestCase(null, "Local-Community", false, "Legacy-LC-005809-2533")] // migrate legacy branding only to a modern subscription code
         [TestCase(
             "Test-Expiring-Soon-005779-1460",
             "Local-Community",
+            false,
             "Test-Expiring-Soon-005779-1460"
         )] // ignore branding if we have a code
-        [TestCase("foobar-***-***", "Default", "foobar-***-***")] // if the subscription and the branding are both provided and different, use the subscription
+		[TestCase("foobar-***-***", "Default", false, "foobar-***-***")] // if the subscription and the branding are both provided and different, use the subscription
+		[TestCase("foobar-***-***", "Default", true, "foobar-***-***")] // if the subscription and the branding are both provided and different, use the subscription
+		[TestCase("Local-Community-***-***", "Default", true, "Legacy-LC-005809-2533")] // migrate legacy subscription to a modern subscription code for editing from Blorg
         public void FromSettingsXml_ReturnsCorrectValue(
             string code,
             string branding,
+            bool editingABlorgBook,
             string expectedCode
         )
         {
-            var subscription = Subscription.FromCollectionSettingsInfo(code, branding);
+            var subscription = Subscription.FromCollectionSettingsInfo(code, branding, editingABlorgBook);
             Assert.AreEqual(expectedCode, subscription.Code);
         }
 
