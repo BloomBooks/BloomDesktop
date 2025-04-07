@@ -1958,7 +1958,7 @@ namespace Bloom.Book
                 _bookData,
                 BookInfo.MetaData.UseOriginalCopyright
             );
-            _bookData.MergeBrandingSettings(CollectionSettings.Subscription.Descriptor);
+            _bookData.MergeBrandingSettings(CollectionSettings.Subscription.BrandingKey);
             _bookData.SynchronizeDataItemsThroughoutDOM();
             licenseMetadata = GetLicenseMetadata();
             // I think we should only mess with tags if we are updating the book for real.
@@ -1968,7 +1968,7 @@ namespace Bloom.Book
                 ConvertTagsToMetaData(oldTagsPath, BookInfo);
                 RobustFile.Delete(oldTagsPath);
             }
-            BookInfo.BrandingKey = CollectionSettings.Subscription.BrandingKey;
+            BookInfo.SubscriptionDescriptor = CollectionSettings.Subscription.Descriptor;
 
             // get any license info into the json and restored in the replaced front matter.
             BookCopyrightAndLicense.SetMetadata(

@@ -2777,7 +2777,7 @@ namespace Bloom.Book
 
         public ExpandoObject BrandingAppearanceSettings =>
             Api.BrandingSettings
-                .GetSettingsOrNull(CollectionSettings.Subscription.Descriptor)
+                .GetSettingsOrNull(CollectionSettings.Subscription.BrandingKey)
                 ?.Appearance;
 
         // Brandings come with logos and such... we want them in the book folder itself so that they work
