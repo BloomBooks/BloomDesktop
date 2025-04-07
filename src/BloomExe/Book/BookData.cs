@@ -2329,24 +2329,23 @@ namespace Bloom.Book
         }
 
 		/// <summary>
-		/// If we have "personalization" in the subscription and the HTML from the DOM,
-		/// fill in the personalization.
+		/// If we have "{personalization}" in the subscription's HTML template, fill in the
+		/// personalization from the subscription code.  If the personalization is empty,
+		/// throw an exception because it should always exist if it's in the template.
 		/// </summary>
-		/// <remarks>
-		/// Note that "Local-Community" sets personalization to "" which is okay for that situation.
-		/// So there is no point to a sanity check here requiring a personalization.  See BL-14513.
-		/// </remarks>
 		private string MergeInPersonalization(string content)
         {
             // if the CollectionSettings has a Subscription Personalization, replace any instances of
-            // {personalization} with the value
-            if (content.Contains("{personalization}") &&
-                !string.IsNullOrWhiteSpace(this.CollectionSettings.Subscription.Personalization))
+            // {personalization} with that value.
+            if (content.Contains("{personalization}"))
             {
-                return content.Replace(
-                    "{personalization}",
-                    this.CollectionSettings.Subscription.Personalization
-                );
+                var personalization = this.CollectionSettings.Subscription.Personalization;
+                if (string.IsNullOrEmpty(personalization))
+                {
+                    throw new ApplicationException(
+                        "Branding personalization is not set, but the branding template contains {personalization}.");
+                }
+                return content.Replace("{personalization}", personalization);
             }
 
             return content;

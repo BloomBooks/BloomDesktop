@@ -37,7 +37,7 @@ namespace BloomTests.Collection
         [TestCase("Test-Invalid-111-1111", "Default")] //  invalid, thus "Default"
         [TestCase("Foobar-***-***", "Default")] //  invalid, thus "Default". To use a redacted code, you have to use a factory method
         [TestCase("Fake[Western]-006273-6382", "Fake[Western]")]
-        public void BrandingKey_ReturnsCorrectValue(string code, string expectedBranding)
+		public void BrandingKey_ReturnsCorrectValue(string code, string expectedBranding)
         {
             var subscription = new Subscription(code);
             Assert.AreEqual(expectedBranding, subscription.BrandingKey);
@@ -47,6 +47,7 @@ namespace BloomTests.Collection
         [TestCase(null, null, null)]
         [TestCase("", "Local Community", "Legacy-LC-005809-2533")] // migrate legacy branding only to a modern subscription code
         [TestCase("", "Local-Community", "Legacy-LC-005809-2533")] // migrate legacy branding only to a modern subscription code
+        [TestCase("Local-Community-***-***", "Local-Community", "Legacy-LC-005809-2533")] // migrate legacy branding only to a modern subscription code
         [TestCase(
             "Test-Expiring-Soon-005779-1460",
             "Local-Community",

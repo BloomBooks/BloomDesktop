@@ -58,12 +58,13 @@ public class Subscription
             ParseCode(code, out descriptor, out _, out _);
         }
         if (
-            string.IsNullOrWhiteSpace(code)
+            (string.IsNullOrWhiteSpace(code) || code.StartsWith("Local-Community"))
             && (descriptor == "Local-Community" || descriptor == "Local Community")
         )
         {
-            // migrating to actual code
+            // migrating to actual code and descriptor
             code = "Legacy-LC-005809-2533"; // expires on 1 July 2025
+            descriptor = "Legacy-LC";
         }
 
         // When on BloomLibrary.org you click "Download for Edit", we want to let you use the same tier and
@@ -84,7 +85,7 @@ public class Subscription
             sub.ExpirationDate = DateTime.Now.AddDays(1);
 
             sub.Tier =
-                descriptor == "Local-Community" || descriptor == "Local Community"
+                descriptor.EndsWith("-LC")
                     ? SubscriptionTier.Community
                     : SubscriptionTier.Enterprise; // see https://issues.bloomlibrary.org/youtrack/issue/BL-14419
 
