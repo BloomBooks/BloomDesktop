@@ -5423,7 +5423,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.ChangeSubscription">
         <source xml:lang="en">The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
-        <target xml:lang="es-ES" state="needs-translation">The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</target>
+        <target xml:lang="es-ES" state="translated">La suscripción era "{0}" pero ahora es "{1}". Esto puede cambiar los logotipos y otros materiales. Marque esta casilla si esto es lo que desea.</target>
         <note>ID: PublishTab.UploadCollisionDialog.ChangeSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.ChangeUploader">
