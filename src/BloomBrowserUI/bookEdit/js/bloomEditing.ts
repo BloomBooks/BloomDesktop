@@ -138,6 +138,7 @@ function Cleanup() {
     $("div, figure").each(function() {
         $(this).removeClass("ui-draggable");
         $(this).removeClass("ui-resizable");
+        // obsolete, but we'll keep the cleanup for a while
         $(this).removeClass("hoverUp");
     });
     $("span").each(function() {

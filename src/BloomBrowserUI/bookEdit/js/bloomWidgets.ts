@@ -1,4 +1,3 @@
-import { GetButtonModifier } from "./bloomImages";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { get, getString } from "../../utils/bloomApi";
 
@@ -25,22 +24,10 @@ export function SetupWidgetEditing(container: HTMLElement): void {
 }
 
 function SetupWidget(w: Element): void {
-    if (w.matches(":hover")) {
-        w.classList.add("hoverUp");
-    } else {
-        w.classList.remove("hoverUp");
-    }
-    const buttonModifier = GetButtonModifier(w);
-
     w.addEventListener("mouseenter", () => {
-        // I'm not enthusiastic about this approach to making the "choose" button
-        // appear on hover, but various classes are shared with other such buttons
-        // so it seemed better not to take a different approach here.
-        w.classList.add("hoverUp");
         const wrapper = document.createElement("div");
         wrapper.innerHTML =
             '<button class="chooseWidgetButton imageButton imageOverlayButton ' +
-            buttonModifier +
             '" title="' +
             theOneLocalizationManager.getText(
                 "EditTab.Widget.ChooseWidget",
@@ -71,7 +58,6 @@ function SetupWidget(w: Element): void {
         };
     });
     w.addEventListener("mouseleave", () => {
-        w.classList.remove("hoverUp");
         const buttons = Array.from(
             w.getElementsByClassName("imageOverlayButton")
         );

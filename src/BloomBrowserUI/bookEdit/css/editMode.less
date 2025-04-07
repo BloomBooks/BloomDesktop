@@ -278,8 +278,7 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
 // ARE child canvas elements. So we want the disabling there. We use important because the rule that makes
 // them visible ever is very complex and has high specificity.
 .bloom-canvas.bloom-hideImageButtons {
-    .imageButton,
-    .miniButton {
+    .imageButton {
         display: none !important;
     }
 }
@@ -367,16 +366,16 @@ div.readOnlyInTranslationMode {
 
 // Since 'basePage.less' has a rule that puts the video placeholder in as a background image,
 // '.customPage' is needed to add enough specificity here to override that rule.
-body:not(.origami-drag) .customPage .bloom-videoContainer.hoverUp,
-body:not(.origami-drag) .bloom-canvas.hoverUp {
+body:not(.origami-drag) .customPage .bloom-videoContainer:hover,
+body:not(.origami-drag) .bloom-canvas:hover {
     background-color: @ImageAndVideoHoverOverlay;
 }
 
 // The hovered bloom-canvas background is just distracting when the whole page is a bloom-canvas.
 // One group of such cases is bloom games. We may want to suppress it for pages
 // designed to have a full-bleed background for a comic, and perhaps others. I went for a
-// minimal change for now.
-.bloom-page[data-tool-id="game"] .bloom-canvas.hoverUp {
+// minimal change for now. (Possibly obsolete: we're no longer doing this hover-background at all.)
+.bloom-page[data-tool-id="game"] .bloom-canvas:hover {
     background-color: transparent;
 }
 
@@ -474,8 +473,8 @@ body:not(.origami-drag) .bloom-canvas.hoverUp {
     display: none !important;
 }
 
-// In an active background canvas element, show yet another form of the edit metadata icon
-.bloom-backgroundImage[data-bloom-active="true"] {
+// In a bloom-canvas with an active background canvas element, show yet another form of the edit metadata icon
+.bloom-canvas:has(.bloom-backgroundImage[data-bloom-active="true"]) {
     .editMetadataButton.imgMetadataProblem {
         background-image: url("/bloom/bookEdit/img/imageMissingMetaData.svg") !important;
     }
@@ -483,7 +482,7 @@ body:not(.origami-drag) .bloom-canvas.hoverUp {
 // In an active background canvas element, don't show the edit metadata icon if the image failed
 // to load.  Clicking on it would just show an error message anyway, and the button would
 // obscure part of the alt attribute error message.
-.bloom-backgroundImage:has(img.bloom-imageLoadError) {
+.bloom-canavas:has(.bloom-backgroundImage:has(img.bloom-imageLoadError)) {
     .editMetadataButton.imgMetadataProblem {
         display: none !important;
     }
@@ -518,7 +517,7 @@ body.bloom-fullBleed {
         }
 
         &.editMetadataButton {
-            left: calc(@inset + imageButtonInset);
+            left: calc(@inset + @imageButtonHInset);
             top: calc(@inset + @imageButtonVInset);
         }
     }
@@ -645,7 +644,7 @@ body.bloom-fullBleed {
 // problem.
 .bloom-canvas:hover {
     &:not(:has(.bloom-canvas-element:not(.bloom-backgroundImage))),
-    .bloom-backgroundImage[data-bloom-active="true"] {
+    &:has(.bloom-backgroundImage[data-bloom-active="true"]) {
         .editMetadataButton,
         .changeImageButton {
             display: block;
@@ -663,37 +662,6 @@ body.bloom-fullBleed {
         img[src^="placeHolder.png"] {
             display: none;
         }
-    }
-}
-
-// Review: do we still want some hover effect for the big image buttons?
-
-button.miniButton {
-    width: 20px;
-    height: 18px;
-    right: 60px;
-    border: none;
-    position: absolute;
-    background-position: left center;
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-color: transparent;
-    z-index: @miniImageEditingButtonZIndex;
-
-    &:hover {
-        border: 1px inset @ImageButtonBorder;
-    }
-
-    &.verySmallButtons {
-        right: 60%;
-    }
-
-    &.smallButtonHeight {
-        height: 15%;
-    }
-
-    &.verySmallButtons {
-        width: 30%;
     }
 }
 
@@ -729,11 +697,7 @@ button.moveButton {
     background-size: contain;
 }
 
-img.hoverUp {
-    outline: 1px outset black;
-}
-
-// I'm not sure why the rule above is !important, but this one has to be to beat it.
+// I'm not sure why the rule above (JT: which one?) is !important, but this one has to be to beat it.
 // In edit mode we don't want such an automatic outline, because the control frame
 // provides one, and typically they don't even line up, becuase we grow the control
 // frame a little bit to prevent the side buttons overlapping text.
@@ -1220,7 +1184,7 @@ body {
 
 // Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image
 // (This and several following rules were moved from content/bookLayout/overlayTool.less)
-.bloom-canvas:not(.hoverUp) .bloom-canvas-element {
+.bloom-canvas:not(:hover) .bloom-canvas-element {
     .bloom-editable {
         border: none;
 
