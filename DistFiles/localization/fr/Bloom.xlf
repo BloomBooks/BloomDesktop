@@ -5421,9 +5421,9 @@
         <target xml:lang="fr" state="final">Déjà dans la Bibliothèque Bloom</target>
         <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeSubscription">
+      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeSubscription" approved="yes">
         <source xml:lang="en">The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
-        <target xml:lang="fr" state="needs-translation">The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</target>
+        <target xml:lang="fr" state="final">L'abonnement était "{0}" mais est actuellement "{1}". Cela pourrait changer les logos et d'autres aspects. Cochez cette case si c'est bien cela que vous souhaitez.</target>
         <note>ID: PublishTab.UploadCollisionDialog.ChangeSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.ChangeUploader" approved="yes">
