@@ -1968,7 +1968,12 @@ namespace Bloom.Book
                 ConvertTagsToMetaData(oldTagsPath, BookInfo);
                 RobustFile.Delete(oldTagsPath);
             }
-            BookInfo.SubscriptionDescriptor = CollectionSettings.Subscription.Descriptor;
+            // For both analytics and the upload collision dialog, we want "Default" rather than blank.
+            BookInfo.SubscriptionDescriptor = string.IsNullOrEmpty(
+                CollectionSettings.Subscription.Descriptor
+            )
+                ? "Default"
+                : CollectionSettings.Subscription.Descriptor;
 
             // get any license info into the json and restored in the replaced front matter.
             BookCopyrightAndLicense.SetMetadata(
