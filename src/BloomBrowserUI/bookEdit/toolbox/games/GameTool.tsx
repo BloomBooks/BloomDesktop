@@ -660,7 +660,7 @@ const getSoundFilesAsync = async (prefix: string): Promise<string[]> => {
 const getSoundOptions = (
     prefix: string,
     files: string[],
-    current: string,
+    currentId: string,
     noneLabel: string,
     chooseLabel: string
 ): { label: string; id: string; divider: boolean }[] => {
@@ -682,13 +682,12 @@ const getSoundOptions = (
     soundOptions.push({ label: chooseLabel, id: "choose", divider: false });
 
     if (
-        current !== "none" &&
-        soundOptions.find(opt => opt.id === prefix + "-" + current) ===
-            undefined
+        currentId !== "none" &&
+        !soundOptions.find(opt => opt.id === currentId)
     ) {
         soundOptions.splice(0, 0, {
-            label: idToLabel(current),
-            id: current,
+            label: idToLabel(currentId),
+            id: currentId,
             divider: false
         });
     }
@@ -759,8 +758,8 @@ const DragActivityControls: React.FunctionComponent<{
     pageGeneration: number; // incremented when the page changes
 }> = props => {
     // The sound files for correct and wrong answers, determined by attributes of the page.
-    const [correctSound, setCorrectSound] = useState("");
-    const [wrongSound, setWrongSound] = useState("");
+    const [correctSoundId, setCorrectSoundId] = useState("");
+    const [wrongSoundId, setWrongSoundId] = useState("");
 
     // The core type of activity of the current page, from the data-activity attribute.
     const [activityType, setActivityType] = useState<string>("");
@@ -910,8 +909,10 @@ const DragActivityControls: React.FunctionComponent<{
             setShowAnswersInTargets(
                 page.getAttribute("data-show-answers-in-targets") === "true"
             );
-            setCorrectSound(page.getAttribute("data-correct-sound") || "none");
-            setWrongSound(page.getAttribute("data-wrong-sound") || "none");
+            setCorrectSoundId(
+                page.getAttribute("data-correct-sound") || "none"
+            );
+            setWrongSoundId(page.getAttribute("data-wrong-sound") || "none");
             setActivityType(page.getAttribute("data-activity") ?? "");
         };
         getStateFromPage();
@@ -946,22 +947,22 @@ const DragActivityControls: React.FunctionComponent<{
             getSoundOptions(
                 "correct",
                 correctFiles,
-                correctSound,
+                correctSoundId,
                 noneLabel,
                 chooseLabel
             ),
-        [correctFiles, correctSound, noneLabel, chooseLabel]
+        [correctFiles, correctSoundId, noneLabel, chooseLabel]
     );
     const wrongSoundOptions = useMemo(
         () =>
             getSoundOptions(
                 "wrong",
                 wrongFiles,
-                wrongSound,
+                wrongSoundId,
                 noneLabel,
                 chooseLabel
             ),
-        [wrongFiles, wrongSound, noneLabel, chooseLabel]
+        [wrongFiles, wrongSoundId, noneLabel, chooseLabel]
     );
 
     // const [dragObjectType, setDragObjectType] = useState("text");
@@ -980,8 +981,8 @@ const DragActivityControls: React.FunctionComponent<{
             return;
         }
         if (
-            (newSoundId === correctSound && soundType === "correct") ||
-            (newSoundId === wrongSound && soundType === "wrong")
+            (newSoundId === correctSoundId && soundType === "correct") ||
+            (newSoundId === wrongSoundId && soundType === "wrong")
         ) {
             // Nothing is changing; also, we don't want to try to copy the sound file again, especially if it
             // is a user-chosen one that we won't find in our sounds folder.
@@ -998,7 +999,7 @@ const DragActivityControls: React.FunctionComponent<{
         const page = getPage();
         switch (soundType) {
             case "correct":
-                setCorrectSound(newSoundId);
+                setCorrectSoundId(newSoundId);
                 if (newSoundId === "none") {
                     page.removeAttribute("data-correct-sound");
                 } else {
@@ -1006,7 +1007,7 @@ const DragActivityControls: React.FunctionComponent<{
                 }
                 break;
             case "wrong":
-                setWrongSound(newSoundId);
+                setWrongSoundId(newSoundId);
                 if (newSoundId === "none") {
                     page.removeAttribute("data-wrong-sound");
                 } else {
@@ -1342,7 +1343,7 @@ const DragActivityControls: React.FunctionComponent<{
                     whenTheAnswerIsSubKey="WhenCorrect"
                     classToAddToItems="drag-item-correct"
                     soundOptions={correctSoundOptions}
-                    currentSound={correctSound}
+                    currentSound={correctSoundId}
                     onSoundItemChosen={onSoundItemChosen}
                 />
             )}
@@ -1356,7 +1357,7 @@ const DragActivityControls: React.FunctionComponent<{
                     whenTheAnswerIsSubKey="WhenWrong"
                     classToAddToItems="drag-item-wrong"
                     soundOptions={wrongSoundOptions}
-                    currentSound={wrongSound}
+                    currentSound={wrongSoundId}
                     onSoundItemChosen={onSoundItemChosen}
                 />
             )}
