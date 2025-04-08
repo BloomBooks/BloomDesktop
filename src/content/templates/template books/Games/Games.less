@@ -36,6 +36,21 @@
 .drag-activity-wrong .drag-item-wrong {
     display: block;
 }
+// Hide draggable items that are not part of the correct answer in the Correct mode/tab.
+// Hide all draggable items in the Wrong mode/tab.  (The second rule overrides the first
+// rule to display the draggable items that are part of the correct answer in the Correct
+// mode, either in the Play tab or while playing the game in a BloomPub view.)  See BL-14532.
+.drag-activity-correct,
+.drag-activity-wrong {
+    .bloom-canvas-element[data-draggable-id] {
+        display: none;
+    }
+}
+.drag-activity-play.drag-activity-correct
+    .bloom-canvas-element[data-draggable-id]:not([data-no-target]) {
+    display: block;
+}
+
 // in play mode suppress these focus effects
 .drag-activity-play {
     .bloom-canvas .bloom-canvas-element div:focus,

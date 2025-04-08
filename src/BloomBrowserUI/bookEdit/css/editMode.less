@@ -1304,6 +1304,32 @@ body.hideAllCKEditors .cke_chrome {
     width: 100%;
 }
 
+// Hide unwanted clutter in the Correct and Wrong tabs. See BL-14532.
+.drag-activity-correct,
+.drag-activity-wrong {
+    [data-draggable-id],
+    ~ #canvas-element-context-controls {
+        display: none;
+    }
+}
+// In the Correct tab, the correct answer is shown via the [data-target-of] elements.
+// We want to hide these in the Wrong tab.
+.drag-activity-wrong [data-target-of] {
+    display: none;
+}
+// Prevent unwanted interaction with the background images and other items that are not
+// supposed to be changed in the Correct and Wrong tabs.  See BL-14532.
+.drag-activity-correct [data-target-of] .bloom-imageContainer {
+    pointer-events: none;
+}
+.drag-activity-correct,
+.drag-activity-wrong {
+    .bloom-canvas-element.bloom-backgroundImage,
+    .bloom-canvas-element:has(.bloom-translationGroup) {
+        pointer-events: none;
+    }
+}
+
 // we want :blank, but it's not in browsers yet. So we simulate it by a mutation observer
 // that adds a class to the editable when it is empty.
 // In theory, the first rule handles an English editable that is followed by a blank bloom-content1,
