@@ -26,6 +26,8 @@ namespace Bloom.Collection
     {
         public delegate CollectionSettingsDialog Factory(); //autofac uses this
 
+        public static event EventHandler DialogCancelled;
+
         private readonly CollectionSettings _collectionSettings;
         private readonly QueueRenameOfCollection _queueRenameOfCollection;
         private readonly XMatterPackFinder _xmatterPackFinder;
@@ -477,7 +479,7 @@ namespace Bloom.Collection
                 //_collectionSettings.PrepareToRenameCollection(_bloomCollectionName.Text.SanitizeFilename('-'));
             }
 
-            Logger.WriteEvent("Closing Settings Dialog");
+            Logger.WriteEvent("Closing Collection Settings Dialog");
 
             _collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
             _collectionSettings.Save();
@@ -640,6 +642,9 @@ namespace Bloom.Collection
                     _settingsProtectionNormallyHidden;
                 SettingsProtectionSingleton.Settings.Save();
             }
+
+            DialogCancelled?.Invoke(this, EventArgs.Empty);
+
             CollectionSettingsApi.DialogBeingEdited = null;
             Close();
         }
