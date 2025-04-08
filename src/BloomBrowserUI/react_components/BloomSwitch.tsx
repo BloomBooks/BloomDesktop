@@ -26,9 +26,12 @@ export const BloomSwitch: React.FunctionComponent<IProps> = props => {
         ? possibleLabelWhenChecked
         : label;
 
-    const [checked, setChecked] = React.useState<boolean | undefined>(
-        props.checked
+    const [internalChecked, setInternalChecked] = React.useState<boolean>(
+        props.checked ?? false
     );
+
+    const isControlled = props.checked !== undefined;
+    const checked = isControlled ? props.checked : internalChecked;
 
     const {
         english: _english,
@@ -40,7 +43,7 @@ export const BloomSwitch: React.FunctionComponent<IProps> = props => {
     } = props;
 
     const switchCss =
-        props.checked &&
+        checked &&
         (props.highlightWhenChecked
             ? kHighlightSwitchWhenCheckedCSS
             : kNormalStylingWhenCheckedCSS);
@@ -59,9 +62,11 @@ export const BloomSwitch: React.FunctionComponent<IProps> = props => {
                         `}
                         {...switchProps}
                         checked={checked}
-                        onChange={(event, checked) => {
-                            setChecked(checked);
-                            props.onChange?.(event, checked);
+                        onChange={(event, newChecked) => {
+                            if (!isControlled) {
+                                setInternalChecked(newChecked);
+                            }
+                            props.onChange?.(event, newChecked);
                         }}
                     />
                 </div>
