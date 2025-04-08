@@ -49,7 +49,10 @@ import {
     IConfirmDialogProps,
     DialogResult
 } from "../../../react_components/confirmDialog";
-import { getEditTabBundleExports } from "../../js/bloomFrames";
+import {
+    getEditTabBundleExports,
+    getToolboxBundleExports
+} from "../../js/bloomFrames";
 import PlaybackOrderControls from "../../../react_components/playbackOrderControls";
 import Recordable from "./recordable";
 import { getMd5 } from "./md5Util";
@@ -143,6 +146,15 @@ interface ISetHighlightParams {
     suppressHighlightIfNoAudio?: boolean;
     oldElement?: Element | null | undefined; // Optional. Provides some minor optimization if set.
     forceRedisplay?: boolean; // optional. If true, reset higlight even if selected element unchanged.
+}
+
+// use this function to get the one and only audio recorder from the right iframe
+export function getAudioRecorder(): IAudioRecorder | undefined {
+    const exports = getToolboxBundleExports();
+    const result = exports
+        ? exports.getTheOneAudioRecorderForExportOnly()
+        : undefined;
+    return result;
 }
 
 // Terminology //
@@ -664,21 +676,6 @@ export default class AudioRecording implements IAudioRecorder {
         if (transgroup) {
             if (transgroup.classList.contains("box-header-off")) {
                 return false;
-            }
-            if (this.showingImageDescriptions) {
-                // canvas elements are hidden, don't include them
-                if (
-                    transgroup.parentElement?.classList?.contains(
-                        kCanvasElementClass
-                    )
-                ) {
-                    return false;
-                }
-            } else {
-                // image descriptions are hidden, don't include them
-                if (transgroup.classList.contains("bloom-imageDescription")) {
-                    return false;
-                }
             }
         }
         return true;
@@ -4629,10 +4626,8 @@ export class AudioTextFragment {
     }
 }
 
+// Generally, use getAudioRecorder() instead to make sure you get the one in the right iframe
 export let theOneAudioRecorder: AudioRecording;
-export function getTheOneAudioRecorder(): IAudioRecorder {
-    return theOneAudioRecorder;
-}
 
 // Used by talkingBook when initially showing the tool.
 export async function initializeTalkingBookToolAsync(): Promise<void> {
