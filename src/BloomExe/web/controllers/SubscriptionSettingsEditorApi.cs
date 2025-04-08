@@ -23,6 +23,11 @@ namespace Bloom.web.controllers
         {
             _collectionSettings = collectionSettings;
             _subscription = collectionSettings.Subscription;
+
+            CollectionSettingsDialog.DialogCancelled += (sender, e) =>
+            {
+                _subscription = collectionSettings.Subscription;
+            };
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -59,7 +64,7 @@ namespace Bloom.web.controllers
                     else
                     {
                         request.Failed(
-                            "Only GET method is supported for the Subscription endpoint"
+                            "Only GET method is supported for the 'subscription' endpoint"
                         );
                     }
                 },
