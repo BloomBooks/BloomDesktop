@@ -51,6 +51,7 @@ import { ThemeChooser } from "./ThemeChooser";
 import GameIntroText, { Instructions } from "./GameIntroText";
 import { getGameType, isPageBloomGame } from "./GameInfo";
 import {
+    getImageFromCanvasElement,
     kImageContainerClass,
     kImageContainerSelector
 } from "../../js/bloomImages";
@@ -223,7 +224,10 @@ export const adjustTarget = (
             page.querySelectorAll("[data-draggable-id]")
         );
         draggables.forEach(x => {
-            if (x.getElementsByClassName(kImageContainerClass).length !== 0) {
+            const img = getImageFromCanvasElement(x);
+            // I don't think we want to increase the minimum size of targets to account
+            // for images that are still placeholders.
+            if (img && img.getAttribute("src") !== "placeholder.png") {
                 draggableImages.push(x as HTMLElement);
             } else if (x !== draggable) {
                 otherDraggables.push(x as HTMLElement);
