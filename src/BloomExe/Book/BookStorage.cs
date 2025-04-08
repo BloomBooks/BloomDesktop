@@ -3887,7 +3887,11 @@ namespace Bloom.Book
                 var bgImage = element.ChildNodes.FirstOrDefault(
                     x => x is SafeXmlElement elt && elt.Name == "img" && elt.HasAttribute("src")
                 );
-                if (bgImage == null)
+                // Our 6.2 comic book templates for a while came with a data-div coverImage that had class="bloom-canvas".
+                // We expect the content of a data-div coverImage element to be a file name, so having markup for an img
+                // element there caused a crash, since the wedge characters are not valid in filenames. So if the bloom-canvas
+                // is a child of the data-div, we do NOT want to add a placeholder!
+                if (bgImage == null && element.ParentNode.GetAttribute("id") != "bloomDataDiv")
                 {
                     bgImage = element.OwnerDocument.CreateElement("img");
                     bgImage.SetAttribute("src", "placeHolder.png");
