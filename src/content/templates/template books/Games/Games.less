@@ -205,11 +205,17 @@
     // above canvas element canvas so we can drag it when the canvas is active
     z-index: @canvasElementCanvasZIndex + 1;
     box-sizing: border-box;
-    > * {
-        // targets have children to show a shadow of what is supposed to go there.
-        // the contents are identical, this makes them a shadow.
-        opacity: 50%;
+
+    // We don't want this opacity in the drag image game because it makes it hard to see the image.
+    // See BL-14534.
+    .bloom-page:not([data-activity="drag-image-to-target"]) & {
+        > * {
+            // targets have children to show a shadow of what is supposed to go there.
+            // the contents are identical, this makes them a shadow.
+            opacity: 50%;
+        }
     }
+
     // in targets, as in image canvas elements, we want the height to be derived from the width.
     .bloom-imageContainer img {
         height: unset;
