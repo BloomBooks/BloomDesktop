@@ -36,6 +36,47 @@
 .drag-activity-wrong .drag-item-wrong {
     display: block;
 }
+// Hide draggable items in the Correct and Wrong tabs. See BL-14532.
+// The data-target-of elements will show the positions of the targets and
+// indicate the correct answer.  (even in the Wrong tab, but not the Wrong mode.)
+.drag-activity-correct,
+.drag-activity-wrong {
+    [data-draggable-id] {
+        display: none;
+    }
+}
+// The drag-activity-play and drag-activity-correct are both present when the user has
+// given a correct answer and clicked for it to be checked.  Show the correct answer
+// via the [data-draggable-id] elements which have been dragged to the correct targets.
+// Unused [data-draggable-id] elements are hidden in showing the right answer.
+.drag-activity-play.drag-activity-correct
+    .bloom-canvas-element[data-draggable-id]:not(.bloom-noDraggableTarget) {
+    display: block;
+}
+// The drag-activity-play and drag-activity-wrong are both present when the user has
+// given a wrong answer and clicked for it to be checked.  Show the wrong answer via the
+// [data-draggable-id] elements which have been dragged to the wrong targets.  Unused
+// [data-draggable-id] elements are shown because they may have been used in the wrong
+// answer, and hiding them would give a partial clue to the right answer.
+.drag-activity-play.drag-activity-wrong
+    .bloom-canvas-element[data-draggable-id] {
+    display: block;
+}
+// Prevent unwanted interaction with the background images and other items that are not
+// supposed to be changed in the Correct and Wrong tabs.  See BL-14532.
+// Less doesn't appear to handle the :is() operator with a list of selectors, so we have
+// to use two rules to get the result we want.
+.drag-activity-correct .bloom-canvas-element:not(.drag-item-correct),
+.drag-activity-wrong .bloom-canvas-element:not(.drag-item-wrong) {
+    pointer-events: none;
+}
+.drag-activity-correct,
+.drag-activity-wrong {
+    [data-target-of] {
+        pointer-events: none;
+    }
+}
+
 // in play mode suppress these focus effects
 .drag-activity-play {
     .bloom-canvas .bloom-canvas-element div:focus,
@@ -212,11 +253,17 @@
     .drag-activity-start
         .bloom-page:not([data-activity="drag-image-to-target"])
         &,
-    div:not(.drag-activity-start) & {
+    .drag-activity-play & {
         > * {
             // targets have children to show a shadow of what is supposed to go there.
             // the contents are identical, this makes them a shadow.
             opacity: 50%;
+        }
+    }
+    .drag-activity-wrong & {
+        // In the wrong tab, we don't want to see the target at all, but just the dashed box if it's visible.
+        > * {
+            opacity: 0%;
         }
     }
 
@@ -350,11 +397,20 @@
         background-color: transparent;
     }
 }
-// And don't show them at all in play mode.
-.drag-activity-play .bloom-page[data-show-targets-during-play="false"] {
-    [data-target-of] {
-        // display:none would prevent the snap code from using them, since they would not have a location.
+// And don't show them at all in play mode or the Wrong tab.
+.drag-activity-play,
+.drag-activity-wrong {
+    .bloom-page[data-show-targets-during-play="false"] [data-target-of] {
+        // display:none would prevent the snap code from using them in play mode, since they would not have a location.
         visibility: hidden;
+    }
+}
+// If we don't show targets during play, we don't want to show the dashed box in the Correct tab.
+.drag-activity-correct {
+    .bloom-page[data-show-targets-during-play="false"] [data-target-of] {
+        border: none;
+        outline: none;
+        box-shadow: none;
     }
 }
 
