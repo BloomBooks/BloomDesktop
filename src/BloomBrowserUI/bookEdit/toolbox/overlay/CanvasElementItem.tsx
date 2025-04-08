@@ -217,9 +217,7 @@ const ondragend = (
         addBubbles(); // Do now if we can, if not, sometime when we've gotten all the localizations.
     }
     if (makeTarget) {
-        setGeneratedDraggableId(canvasElement);
-        canvasElement.style.width = ev.currentTarget.clientWidth + "px";
-        makeTargetForDraggable(canvasElement);
+        canvasElement.style.width = ev.currentTarget.clientWidth + "px"; // may be changed below
         if (doesContainingPageHaveSameSizeMode(canvasElement)) {
             // We want to adjust the new one to the existing ones (if any), not the other way around.
             // By default, since the new one is about to be selected, its size will win.
@@ -231,12 +229,19 @@ const ondragend = (
                 page.querySelectorAll("[data-draggable-id]")
             ).find(el => el !== canvasElement) as HTMLElement;
             if (anotherDraggable) {
+                // adjustTarget won't do the right thing at this point, because the new
+                // draggable doesn't have a draggable ID or target yet. But calling makeTargetForDraggable
+                // will end up making them all the wrong size. Just fix this one.
+                // With image draggables, the best size to match is the target (these are all the same),
+                // not the draggable, since image sizes can vary.
                 const anotherTarget = getTarget(anotherDraggable);
-                // the other one is probably already the right size, so we need a force to
-                // get the others adjusted.
-                adjustTarget(anotherDraggable, anotherTarget, true);
+                const matchSizeOf = anotherTarget ?? anotherDraggable;
+                canvasElement.style.width = matchSizeOf.style.width;
+                canvasElement.style.height = matchSizeOf.style.height;
             }
         }
+        setGeneratedDraggableId(canvasElement);
+        makeTargetForDraggable(canvasElement);
     }
     // This must be done AFTER we give the canvas element its id if we're going to, because that's how we know
     // it's one of the ones that should be ordered to the end.
