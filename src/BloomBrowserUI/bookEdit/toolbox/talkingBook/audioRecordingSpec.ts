@@ -9,7 +9,7 @@ import AudioRecording, {
 import { customJasmineMatchers } from "../../../utils/testHelper";
 import axios from "axios";
 import * as $ from "jquery";
-
+// TODO test
 // Notes:
 // For any async tests:
 //   I recommend using async/await syntax, without the done() callback.
@@ -1479,7 +1479,7 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
 
             // System under test
-            await recording.newPageReady();
+            await recording.handleNewPageReady();
 
             // Verification
             const firstDiv = getFrameElementById("page", "div1")!;

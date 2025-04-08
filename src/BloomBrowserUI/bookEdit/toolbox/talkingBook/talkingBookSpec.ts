@@ -1,10 +1,10 @@
 import TalkingBookTool from "./talkingBook";
 import {
-    theOneAudioRecorder,
     initializeTalkingBookToolAsync,
     RecordingMode,
     AudioMode,
-    getAllAudioModes
+    getAllAudioModes,
+    getAudioRecorder
 } from "./audioRecording";
 import {
     SetupTalkingBookUIElements,
@@ -17,7 +17,7 @@ import {
 import * as XRegExp from "xregexp"; // Not sure why, but import * as XRegExp works better. import XRegExp causes "xregexp_1.default is undefined" error
 import { setSentenceEndingPunctuationForBloom } from "../readers/libSynphony/bloom_xregexp_categories";
 import axios from "axios";
-
+import { IAudioRecorder } from "./IAudioRecorder";
 describe("talking book tests", () => {
     beforeAll(async () => {
         SetupTalkingBookUIElements();
@@ -63,8 +63,12 @@ describe("talking book tests", () => {
             const tbTool = new TalkingBookTool();
             await tbTool.showTool();
 
+            let audioRecorder = getAudioRecorder();
+            expect(audioRecorder).toBeDefined();
+            audioRecorder = audioRecorder as IAudioRecorder;
+
             // Simulate a keypress on a different div
-            const div2Element = theOneAudioRecorder
+            const div2Element = audioRecorder
                 .getPageDocBody()
                 ?.querySelector("#div2") as HTMLElement;
             div2Element.tabIndex = -1; // focus() won't work if no tabindex.
@@ -75,7 +79,7 @@ describe("talking book tests", () => {
             doUpdate();
 
             // Verification
-            const currentTextBox = theOneAudioRecorder.getCurrentTextBox();
+            const currentTextBox = audioRecorder.getCurrentTextBox();
             const currentId = currentTextBox?.getAttribute("id");
             expect(currentId).toBe("div2");
         });
@@ -294,10 +298,14 @@ describe("talking book tests", () => {
                 `<div id="page1"><div class="bloom-translationGroup">${innerHtml}</div></div>`
             );
 
+            let audioRecorder = getAudioRecorder();
+            expect(audioRecorder).toBeDefined();
+            audioRecorder = audioRecorder as IAudioRecorder;
+
             if (scenario === AudioMode.PureSentence) {
-                theOneAudioRecorder.recordingMode = RecordingMode.Sentence;
+                audioRecorder.recordingMode = RecordingMode.Sentence;
             } else {
-                theOneAudioRecorder.recordingMode = RecordingMode.TextBox;
+                audioRecorder.recordingMode = RecordingMode.TextBox;
             }
 
             originalDiv1Html = getFrameElementById("page", "div1")
