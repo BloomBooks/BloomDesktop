@@ -36,6 +36,42 @@
 .drag-activity-wrong .drag-item-wrong {
     display: block;
 }
+// Hide unwanted clutter in the Correct and Wrong tabs. See BL-14532.
+.drag-activity-correct,
+.drag-activity-wrong {
+    [data-draggable-id],
+    ~ #canvas-element-context-controls {
+        display: none;
+    }
+}
+.drag-activity-wrong [data-target-of] {
+    display: none;
+}
+.drag-activity-correct,
+.drag-activity-wrong {
+    .bloom-canvas-element:not(.drag-item-correct):not(.drag-item-wrong):not(.bloom-backgroundImage):not(:has(.bloom-translationGroup)) {
+        display: none;
+    }
+}
+// The following rule has to be extremely specific to override the previous rule when in the Play tab.
+div.drag-activity-play.drag-activity-correct
+    div.bloom-canvas
+    div.bloom-canvas-element[data-draggable-id]:not([data-no-target]):has(img[src]) {
+    display: block;
+}
+// Also prevent unwanted interaction with the background images and other items that are not
+// supposed to be changed in the Correct and Wrong tabs.  (BL-14532)
+.drag-activity-correct [data-target-of] .bloom-imageContainer {
+    pointer-events: none;
+}
+.drag-activity-correct,
+.drag-activity-wrong {
+    .bloom-canvas-element.bloom-backgroundImage,
+    .bloom-canvas-element:has(.bloom-translationGroup) {
+        pointer-events: none;
+    }
+}
+
 // in play mode suppress these focus effects
 .drag-activity-play {
     .bloom-canvas .bloom-canvas-element div:focus,

@@ -840,8 +840,10 @@ function addMenuItemsForDraggable(
                 ?.remove();
             currentDraggableTarget.remove();
             setCurrentDraggableTarget(undefined);
+            canvasElement.setAttribute("data-no-target", "true");
         } else {
             setCurrentDraggableTarget(makeTargetForDraggable(canvasElement));
+            canvasElement.removeAttribute("data-no-target");
         }
     };
     menuOptions.push(divider, {
