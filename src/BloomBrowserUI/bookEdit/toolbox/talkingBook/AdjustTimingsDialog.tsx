@@ -27,8 +27,6 @@ import {
     getUrlPrefixFromWindowHref,
     kHighlightSegmentClass
 } from "bloom-player";
-import { IAudioRecorder } from "./IAudioRecorder";
-import { getToolboxBundleExports } from "../../editViewFrame";
 import { Div } from "../../../react_components/l10nComponents";
 import SyncIcon from "@mui/icons-material/Sync";
 import EditIcon from "@mui/icons-material/Edit";
@@ -37,12 +35,7 @@ import { LocalizableMenuItem } from "../../../react_components/localizableMenuIt
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { PWithLink } from "../../../react_components/pWithLink";
 import { Icon, Menu } from "@mui/material";
-
-export function getAudioRecorder(): IAudioRecorder | undefined {
-    const exports = getToolboxBundleExports();
-    const result = exports ? exports.getTheOneAudioRecorder() : undefined;
-    return result;
-}
+import { getAudioRecorder } from "./audioRecording";
 
 const timingsMenuId = "timingsMenuAnchor";
 

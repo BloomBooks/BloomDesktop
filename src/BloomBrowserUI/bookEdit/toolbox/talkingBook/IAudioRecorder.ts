@@ -5,4 +5,14 @@
 export interface IAudioRecorder {
     autoSegmentBasedOnTextLength: () => number[];
     markAudioSplit: () => void;
+    setShowingImageDescriptions: (boolean) => void;
+    hideTool: () => void;
+    removeRecordingSetup: () => void;
+    getUpdateMarkupAction: () => Promise<() => void>;
+    setupForRecordingAsync: () => Promise<void>;
+    newPageReady: (
+        deshroudPhraseDelimiters?:
+            | ((page: HTMLElement | null) => void)
+            | undefined
+    ) => Promise<void>;
 }

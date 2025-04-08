@@ -39,7 +39,7 @@ export interface IToolboxFrameExports {
 
     removeToolboxMarkup(): void;
     setActiveDragActivityTab(tab: number): void;
-    getTheOneAudioRecorder(): IAudioRecorder;
+    getTheOneAudioRecorderForExportOnly(): IAudioRecorder;
 }
 
 // each of these exports shows up under this window's toolboxBundle object (see bloomFrames.ts)
@@ -80,7 +80,8 @@ export function applyToolboxStateToPage() {
     applyToolboxStateToUpdatedPage();
 }
 
-export function getTheOneAudioRecorder(): IAudioRecorder {
+// Don't use this directly, use getAudioRecorder() in audioRecording.ts instead.
+export function getTheOneAudioRecorderForExportOnly(): IAudioRecorder {
     return theOneAudioRecorder;
 }
 
