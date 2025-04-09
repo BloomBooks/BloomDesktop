@@ -27,7 +27,7 @@ export const BloomSwitch: React.FunctionComponent<IProps> = props => {
         : label;
 
     const [internalChecked, setInternalChecked] = React.useState<boolean>(
-        props.checked ?? false
+        props.checked ?? props.defaultChecked ?? false
     );
 
     const isControlled = props.checked !== undefined;
