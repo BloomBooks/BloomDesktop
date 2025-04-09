@@ -385,7 +385,7 @@ body:not(.origami-drag) .bloom-canvas:hover {
 .imageButton {
     width: 63px;
     height: 52px;
-    z-index: @dragHandleEventZIndex;
+    z-index: @imageButtonZIndex;
     position: absolute;
     background-repeat: no-repeat;
     background-size: contain;
@@ -1246,7 +1246,7 @@ body {
             height: 22px;
             top: -15px;
             // This z-index should be above the canvas
-            z-index: @dragHandleEventZIndex;
+            z-index: @canvasElementDragHandleZIndex;
         }
     }
 }
@@ -1344,7 +1344,7 @@ canvas.moving {
 // for the resize and crop handles and the toolbox below.
 #canvas-element-control-frame {
     position: absolute;
-    z-index: @dragHandleEventZIndex + 1;
+    z-index: @canvasElementFrameZIndex;
     outline: 1px solid @bloom-blue;
     // makes the outline no larger than the frame's own size, so it doesn't get cropped if it fills
     // the bloom-canvas, as background images do in at least one dimension. This means the outline

@@ -221,7 +221,6 @@ export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {
 }
 
 function SetupChangeImageButton(bloomCanvas: HTMLElement) {
-    const img = getBackgroundImageFromBloomCanvas(bloomCanvas);
     for (const oldButton of Array.from(
         bloomCanvas.getElementsByClassName("changeImageButton")
     )) {
@@ -230,6 +229,7 @@ function SetupChangeImageButton(bloomCanvas: HTMLElement) {
     const button = bloomCanvas.ownerDocument.createElement("button");
     button.className = `changeImageButton imageButton imageOverlayButton bloom-ui`;
     button.addEventListener("click", (e: MouseEvent) => {
+        const img = getBackgroundImageFromBloomCanvas(bloomCanvas);
         if ((e as any).detail > 1 || !img) {
             return;
         }
