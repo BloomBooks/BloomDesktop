@@ -33,8 +33,19 @@
 
 // Text in canvas elements needs to be above the canvas element so we can see and edit it.
 @canvasElementZIndex: @canvasElementCanvasZIndex + 1;
+// Historically, the format button wanted to be above the text. They don't conflict any more, so
+// this probably isn't necessary.
 @formatButtonZIndex: @canvasElementZIndex + 1;
-@dragHandleEventZIndex: @canvasElementZIndex + 1;
+// Drag handles for resizing the canvas element need to be above the canvas to be clickable.
+@canvasElementDragHandleZIndex: @canvasElementZIndex + 1;
+// The reason this should be one more than the drag handle is lost. It doesn't actually make
+// it above the drag handles, because they are children.
+@canvasElementFrameZIndex: @canvasElementDragHandleZIndex + 1;
+// The large buttons we show for bloom-canvases can overlap the edge of the element,
+// and therefore the control frame. We don't want the blue line across them, so they
+// need to be above it.
+@imageButtonZIndex: @canvasElementFrameZIndex + 1;
+
 @resizeHandleEventZIndex: @canvasElementZIndex + 1; // Not directly referenced via .less, but conceptually used in canvas elementManager.ts
 
 // These two constants are also in bloomMaterialUITheme.ts
