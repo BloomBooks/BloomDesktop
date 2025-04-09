@@ -82,15 +82,16 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                     padding-bottom: ${kDialogBottomPadding};
                     // dialogFrameProvidedExternally means that we're inside of a winforms dialog.
                     /// So we grow to fit it, and we supply a single black border for some reason (?)
-                    ${props.dialogFrameProvidedExternally
-                        ? `height: 100%; border: solid thin black; box-sizing: border-box;`
-                        : ""}
-
-                    * {
-                        // This value is the same as that given in bloomMaterialUITheme.  For some
-                        // reason, it is not being applied here.  See BL-10208 and BL-10228.
-                        font-family: ${kUiFontStack};
+                    ${
+                        props.dialogFrameProvidedExternally
+                            ? `height: 100%; border: solid thin black; box-sizing: border-box;`
+                            : ""
                     }
+
+                    // This value is the same as that given in bloomMaterialUITheme.  For some
+                    // reason, it is not being applied here.  See BL-10208 and BL-10228.
+                    font-family: ${kUiFontStack};
+
                     // This will correctly allow the DialogMiddle to add its scrollbar when needed.
                     // Callers should set dialog height by setting the height of DialogMiddle.
                     overflow: auto;
