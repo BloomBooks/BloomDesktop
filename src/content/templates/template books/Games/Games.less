@@ -206,9 +206,13 @@
     z-index: @canvasElementCanvasZIndex + 1;
     box-sizing: border-box;
 
-    // We don't want this opacity in the drag image game because it makes it hard to see the image.
+    // We don't want this shadow effect in start mode for the drag image game because it makes it hard to see the image.
+    // We do want the shadow effect in the other modes if we are showing the target.
     // See BL-14534.
-    .bloom-page:not([data-activity="drag-image-to-target"]) & {
+    .drag-activity-start
+        .bloom-page:not([data-activity="drag-image-to-target"])
+        &,
+    div:not(.drag-activity-start) & {
         > * {
             // targets have children to show a shadow of what is supposed to go there.
             // the contents are identical, this makes them a shadow.
