@@ -2848,6 +2848,12 @@ namespace Bloom.Book
                 != null;
         }
 
+        public bool HasLegacyCanvasElements()
+        {
+            return _dom.SelectSingleNode("//div[contains(@class, 'bloom-textOverPicture')]")
+                != null;
+        }
+
         public bool HasImageDescriptions =>
             _dom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]")
                 .Cast<SafeXmlElement>()

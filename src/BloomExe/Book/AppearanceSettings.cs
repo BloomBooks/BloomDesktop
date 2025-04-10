@@ -350,10 +350,12 @@ public class AppearanceSettings
         // or if something about the book DOM forces us to use the legacy theme.
         CssThemeName = "default";
         string substituteAppearance = null;
-        if (Program.RunningHarvesterMode || bookDom.HasCanvasElements())
+        if (Program.RunningHarvesterMode || bookDom.HasLegacyCanvasElements())
         {
             // We'll preserve the current appearance of older books we are harvesting,
             // and books that have canvas elements even when editing.
+            // This applies to pre-Appearance system books, so they will not yet have been migrated to
+            // canvas-element, either; so we look for the legacy class to make this determination.
             // The harvester restriction should only apply to temporary copies on their way to becoming artifacts,
             // so it doesn't interfere with getting books migrated when they are to be edited.
             // The canvas element restriction will have some impact on getting books migrated, but we think the
