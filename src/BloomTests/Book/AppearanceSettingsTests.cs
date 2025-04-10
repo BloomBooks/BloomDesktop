@@ -323,8 +323,8 @@ namespace BloomTests.Book
                 ? new HtmlDom(
                     @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
-				<div class='bloom-canvas'>
-					<div class='bloom-canvas-element' data-bubble='"
+				<div class='bloom-imageContainer'>
+					<div class='bloom-textOverPicture' data-bubble='"
                         + BookStorageTests.MinimalDataBubbleValue
                         + @"'/>
 				</div>
