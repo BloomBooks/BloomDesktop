@@ -1,4 +1,6 @@
 using System;
+using System.Globalization;
+using System.Threading;
 using NUnit.Framework;
 
 namespace BloomTests.Collection
@@ -179,12 +181,30 @@ namespace BloomTests.Collection
             int day
         )
         {
-            var subscription = new Subscription(input);
-            var result = subscription.ExpirationDate;
+            void RunTestWithCulture(string input, int year, int month, int day, CultureInfo culture)
+            {
+                Thread.CurrentThread.CurrentCulture = culture;
 
-            Assert.That(result.Year, Is.EqualTo(year));
-            Assert.That(result.Month, Is.EqualTo(month));
-            Assert.That(result.Day, Is.EqualTo(day));
+                var subscription = new Subscription(input);
+                var result = subscription.ExpirationDate;
+
+                Assert.That(result.Year, Is.EqualTo(year));
+                Assert.That(result.Month, Is.EqualTo(month));
+                Assert.That(result.Day, Is.EqualTo(day));
+            }
+
+            var originalCulture = Thread.CurrentThread.CurrentCulture;
+            try
+            {
+                RunTestWithCulture(input, year, month, day, originalCulture);
+                RunTestWithCulture(input, year, month, day, new CultureInfo("th-TH"));
+                RunTestWithCulture(input, year, month, day, new CultureInfo("en-US"));
+                RunTestWithCulture(input, year, month, day, CultureInfo.InvariantCulture);
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = originalCulture;
+            }
         }
 
         [TestCase("")] // empty

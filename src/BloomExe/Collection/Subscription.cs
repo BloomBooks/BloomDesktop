@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 
 public class Subscription
@@ -327,7 +328,11 @@ public class Subscription
             return DateTime.MinValue;
 
         if (Code == "Local-Community")
-            return DateTime.Parse(kExpiryDateForDeprecatedCodes);
+            return DateTime.ParseExact(
+                kExpiryDateForDeprecatedCodes,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture
+            );
 
         ParseCode(Code, out var descriptor, out var datePart, out var combinedChecksum);
 
@@ -344,7 +349,11 @@ public class Subscription
 
         // At one time there were some subscriptions which never ended. Those have been retired.
         if (date.Year == 3000)
-            return DateTime.Parse(kExpiryDateForDeprecatedCodes);
+            return DateTime.ParseExact(
+                kExpiryDateForDeprecatedCodes,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture
+            );
         return date;
     }
 
