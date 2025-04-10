@@ -266,7 +266,8 @@ namespace Bloom.Publish
                     pageElts.Add(page);
             }
 
-            RemoveEnterpriseFeaturesIfNeeded(book, pageElts, warningMessages);
+            // Retiring this: We now stop you with the UI before you get this far:
+            // RemoveFeaturesThatExceedSubscription(book, pageElts, warningMessages);
 
             // Remove any left-over bubbles
             foreach (SafeXmlElement elt in dom.RawDom.SafeSelectNodes("//label"))
@@ -517,73 +518,77 @@ namespace Bloom.Publish
             );
         }
 
-        public static void RemoveEnterpriseFeaturesIfNeeded(
-            Book.Book book,
-            List<SafeXmlElement> pageElts,
-            ISet<string> warningMessages
-        )
-        {
-            var omittedPages = RemoveEnterprisePagesIfNeeded(
-                book.BookData,
-                book.Storage.Dom,
-                pageElts
-            );
-            if (omittedPages.Count > 0)
-            {
-                warningMessages.Add(
-                    LocalizationManager.GetString(
-                        "Publish.RemovingEnterprisePages",
-                        "Removing one or more pages which require Bloom Enterprise to be enabled"
-                    )
-                );
-                foreach (var label in omittedPages.Keys.OrderBy(x => x))
-                    warningMessages.Add($"{omittedPages[label]} {label}");
-            }
-            if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
-                RemoveEnterpriseOnlyAssets(book);
-        }
+        // Retiring this: We now stop you with the UI before you get this far
+        // public static void RemoveFeaturesThatExceedSubscription(
+        //     Book.Book book,
+        //     List<SafeXmlElement> pageElts,
+        //     ISet<string> warningMessages
+        // )
+        // {
+        //     var omittedPages = RemovePagesThatExceedSubscription(
+        //         book.BookData,
+        //         book.Storage.Dom,
+        //         pageElts
+        //     );
+        //     if (omittedPages.Count > 0)
+        //     {
+        //         warningMessages.Add(
+        //             LocalizationManager.GetString(
+        //                 "Publish.RemovingEnterprisePages",
+        //                 "Removing one or more pages which require Bloom Enterprise to be enabled"
+        //             )
+        //         );
+        //         foreach (var label in omittedPages.Keys.OrderBy(x => x))
+        //             warningMessages.Add($"{omittedPages[label]} {label}");
+        //     }
+        //     if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
+        //         RemoveEnterpriseOnlyAssets(book);
+        // }
 
         /// <summary>
-        /// Remove any Bloom Enterprise-only pages if Bloom Enterprise is not enabled.
+        /// Remove any pages that violate the current subscription.
         /// Also renumber the pages if any are removed.
         /// </summary>
         /// <returns>dictionary of types of pages removed and how many of each type (may be empty)</returns>
-        public static Dictionary<string, int> RemoveEnterprisePagesIfNeeded(
-            BookData bookData,
-            HtmlDom dom,
-            List<SafeXmlElement> pageElts
-        )
-        {
-            var omittedPages = new Dictionary<string, int>();
-            if (!bookData.CollectionSettings.Subscription.HaveActiveSubscription)
-            {
-                var pageRemoved = false;
-                foreach (var page in pageElts.ToList())
-                {
-                    if (Book.Book.IsPageBloomSubscriptionOnly(page))
-                    {
-                        CollectPageLabel(page, omittedPages);
-                        page.ParentNode.RemoveChild(page);
-                        pageElts.Remove(page);
-                        pageRemoved = true;
-                    }
-                }
-                if (pageRemoved)
-                {
-                    dom.UpdatePageNumberAndSideClassOfPages(
-                        bookData.CollectionSettings.CharactersForDigitsForPageNumbers,
-                        bookData.Language1.IsRightToLeft
-                    );
-                }
-            }
-            return omittedPages;
-        }
+        // Retiring this: We now stop you with the UI before you get this far
+        // public static Dictionary<string, int> RemovePagesThatExceedSubscription(
+        //     BookData bookData,
+        //     HtmlDom dom,
+        //     List<SafeXmlElement> pageElts
+        // )
+        // {
+        //     var omittedPages = new Dictionary<string, int>();
+        //     if (!bookData.CollectionSettings.Subscription.HaveActiveSubscription)
+        //     {
+        //         var pageRemoved = false;
+        //         foreach (var page in pageElts.ToList())
+        //         {
+        //             if (Book.Book.IsPageBloomSubscriptionOnly(page))
+        //             {
+        //                 CollectPageLabel(page, omittedPages);
+        //                 page.ParentNode.RemoveChild(page);
+        //                 pageElts.Remove(page);
+        //                 pageRemoved = true;
+        //             }
+        //         }
+        //         if (pageRemoved)
+        //         {
+        //             dom.UpdatePageNumberAndSideClassOfPages(
+        //                 bookData.CollectionSettings.CharactersForDigitsForPageNumbers,
+        //                 bookData.Language1.IsRightToLeft
+        //             );
+        //         }
+        //     }
+        //     return omittedPages;
+        // }
 
-        private static void RemoveEnterpriseOnlyAssets(Book.Book book)
-        {
-            RobustFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));
-            RobustFile.Delete(Path.Combine(book.FolderPath, kVideoPlaceholderImageFile));
-        }
+        // TODO BL-14565: this is apparently out of date but also something of mystery so I'm not sure how to clean it up
+        // Retiring this: We now stop you with the UI before you get this far
+        // private static void RemoveEnterpriseOnlyAssets(Book.Book book)
+        // {
+        //     RobustFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));
+        //     RobustFile.Delete(Path.Combine(book.FolderPath, kVideoPlaceholderImageFile));
+        // }
 
         private bool IsDisplayed(SafeXmlElement elt, bool throwOnFailure)
         {

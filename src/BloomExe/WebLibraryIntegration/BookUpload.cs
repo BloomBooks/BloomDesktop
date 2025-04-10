@@ -841,13 +841,18 @@ namespace Bloom.WebLibraryIntegration
             var pages = new List<SafeXmlElement>();
             foreach (SafeXmlElement page in copiedBook.GetPageElements())
                 pages.Add(page);
-            if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
-            {
-                // Remove enterprise features since they aren't allowed.
-                ISet<string> warningMessages = new HashSet<string>();
-                PublishHelper.RemoveEnterpriseFeaturesIfNeeded(copiedBook, pages, warningMessages);
-                PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
-            }
+            // Retiring this: We now stop you with the UI before you get this far
+            // if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
+            // {
+            //     // Remove enterprise features since they aren't allowed.
+            //     ISet<string> warningMessages = new HashSet<string>();
+            //     PublishHelper.RemoveFeaturesThatExceedSubscription(
+            //         copiedBook,
+            //         pages,
+            //         warningMessages
+            //     );
+            //     PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
+            // }
             // Remove any AI generated content from the book. (BL-14339)
             foreach (var page in pages)
                 PublishHelper.RemoveUnpublishableContent(page);

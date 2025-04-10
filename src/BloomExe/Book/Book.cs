@@ -3628,6 +3628,9 @@ namespace Bloom.Book
             foreach (SafeXmlElement scriptElt in newPageDiv.SafeSelectNodes(".//script[@src]"))
             {
                 var fileName = scriptElt.GetAttribute("src");
+
+                // TODO BL-14565: this is probably out of date; any such file should be part of Bloom Player shared code.
+
                 // Bloom Desktop accesses simpleComprehensionQuiz.js from the output/browser folder.
                 // Bloom Reader uses the copy of that file which comes with bloom-player.
                 // See https://issues.bloomlibrary.org/youtrack/issue/BL-8480.
@@ -4317,11 +4320,13 @@ namespace Bloom.Book
                 printingDom.RawDom,
                 p => p.GetAttribute("class").ToLowerInvariant().Contains("bloom-nonprinting")
             );
-            PublishHelper.RemoveEnterprisePagesIfNeeded(
-                _bookData,
-                printingDom,
-                printingDom.GetPageElements().ToList()
-            );
+
+            // Retiring this: We now stop you with the UI before you get this far
+            //PublishHelper.RemoveEnterprisePagesIfNeeded(
+            //    _bookData,
+            //    printingDom,
+            //    printingDom.GetPageElements().ToList()
+            //);
 
             switch (bookletPortion)
             {
@@ -5589,16 +5594,18 @@ namespace Bloom.Book
             }
         }
 
-        public static bool IsPageBloomSubscriptionOnly(SafeXmlElement page)
-        {
-            var classAttrib = page.GetAttribute("class");
-            return page.HasAttribute("data-feature")
-                ||
-                // legacy quiz pages don't have 'data-feature'
-                classAttrib.Contains("questions")
-                || page.SafeSelectNodes(".//div[contains(@class,'bloom-widgetContainer')]").Length
-                    > 0;
-        }
+        // Retiring this: We now stop you with the UI before you get this far
+        //public static bool IsPageBloomSubscriptionOnly(SafeXmlElement page)
+        //{
+        //    var classAttrib = page.GetAttribute("class");
+        //    // if there is a data-feature, check the feature registry and determine if it is a subscription feature
+        //    return page.HasAttribute("data-feature")
+        //        ||
+        //        // legacy quiz pages don't have 'data-feature'
+        //        classAttrib.Contains("questions")
+        //        || page.SafeSelectNodes(".//div[contains(@class,'bloom-widgetContainer')]").Length
+        //            > 0;
+        //}
 
         /// <summary>
         /// Given a choice, what language should we use to display text on the page (not in the UI, which is controlled by the UI Language)

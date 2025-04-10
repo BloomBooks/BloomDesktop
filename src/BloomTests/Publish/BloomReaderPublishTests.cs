@@ -966,39 +966,40 @@ namespace BloomTests.Publish
             );
         }
 
-        [Test]
-        public void CompressBookForDevice_NotBloomEnterprise_QuizPagesAreRemovedAndQuestionsFileNotGenerated()
-        {
-            TestHtmlAfterCompression(
-                kNewQuizPageTestsHtml,
-                actionsOnFolderBeforeCompressing: NewQuizTestActionsOnFolderBeforeCompressing,
-                assertionsOnResultingHtmlString: html =>
-                {
-                    // The quiz pages should be removed.
-                    var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-                    AssertThatXmlIn
-                        .Dom(htmlDom)
-                        .HasNoMatchForXpath(
-                            "//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]"
-                        );
-                    AssertThatXmlIn
-                        .Dom(htmlDom)
-                        .HasNoMatchForXpath(
-                            $"//script[@src='{PublishHelper.kSimpleComprehensionQuizJs}']"
-                        );
-                },
-                assertionsOnZipArchive: paramObj =>
-                {
-                    var zip = paramObj.ZipFile;
-                    Assert.AreEqual(-1, zip.FindEntry(BloomPubMaker.kQuestionFileName, false));
-                    Assert.AreEqual(
-                        -1,
-                        zip.FindEntry(PublishHelper.kSimpleComprehensionQuizJs, false)
-                    );
-                },
-                tier: SubscriptionTier.Basic
-            );
-        }
+        // Retiring this: We now stop you with the UI before you get this far
+        //[Test]
+        //public void CompressBookForDevice_NotBloomEnterprise_QuizPagesAreRemovedAndQuestionsFileNotGenerated()
+        //{
+        //    TestHtmlAfterCompression(
+        //        kNewQuizPageTestsHtml,
+        //        actionsOnFolderBeforeCompressing: NewQuizTestActionsOnFolderBeforeCompressing,
+        //        assertionsOnResultingHtmlString: html =>
+        //        {
+        //            // The quiz pages should be removed.
+        //            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+        //            AssertThatXmlIn
+        //                .Dom(htmlDom)
+        //                .HasNoMatchForXpath(
+        //                    "//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]"
+        //                );
+        //            AssertThatXmlIn
+        //                .Dom(htmlDom)
+        //                .HasNoMatchForXpath(
+        //                    $"//script[@src='{PublishHelper.kSimpleComprehensionQuizJs}']"
+        //                );
+        //        },
+        //        assertionsOnZipArchive: paramObj =>
+        //        {
+        //            var zip = paramObj.ZipFile;
+        //            Assert.AreEqual(-1, zip.FindEntry(BloomPubMaker.kQuestionFileName, false));
+        //            Assert.AreEqual(
+        //                -1,
+        //                zip.FindEntry(PublishHelper.kSimpleComprehensionQuizJs, false)
+        //            );
+        //        },
+        //        tier: SubscriptionTier.Basic
+        //    );
+        //}
 
         [Test]
         public void CompressBookForDevice_MakesThumbnailFromCoverPicture()

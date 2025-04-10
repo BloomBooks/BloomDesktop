@@ -5,6 +5,9 @@ namespace Bloom.SubscriptionAndFeatures
 {
     public enum FeatureName
     {
+        BasicPage, // we don't really need this, it's just a basic feature and not experimental or anything. It's for test cases.
+        DeleteBook, // we don't really need this, it's just a basic feature and not experimental or anything. It's for test cases.
+
         Overlay,
         Game,
         Widget, //HTML5 Widget
@@ -29,6 +32,19 @@ namespace Bloom.SubscriptionAndFeatures
 
         public static readonly List<FeatureInfo> Features = new List<FeatureInfo>
         {
+            // ----------------------------------------
+            // Free Tier Features
+            // ----------------------------------------
+            new FeatureInfo
+            {
+                Feature = FeatureName.BasicPage,
+                SubscriptionTier = SubscriptionTier.Basic
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.DeleteBook,
+                SubscriptionTier = SubscriptionTier.Basic
+            },
             // ----------------------------------------
             // Pro Tier Features
             // ----------------------------------------

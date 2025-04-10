@@ -12,9 +12,7 @@ import {
     getPageIFrame,
     getPageIframeBody
 } from "../../utils/shared";
-import { EditableDivUtils } from "../js/editableDivUtils";
 import { GameTool } from "./games/GameTool";
-import { DragActivityTool } from "./games/GameTool";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
