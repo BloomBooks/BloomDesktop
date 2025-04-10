@@ -428,6 +428,14 @@
     align-items: center;
 }
 
+.bloom-target-row {
+    display: flex;
+    [data-target-of] {
+        margin-inline-end: 15px;
+        position: unset;
+    }
+}
+
 .drag-item-order-sentence .bloom-editable {
     // If we want to put these back, we have to make it the full size. Currently the special padding is messing that up.
     border: none !important;
