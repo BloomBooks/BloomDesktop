@@ -6150,7 +6150,7 @@ namespace BloomTests.Book
                 );
         }
 
-        // Retiring this: We now stop you with the UI before you get this far
+        // Retiring this: checking pages for the now more complex subscription complians is now part of the FeatureStatus class
         // note, this may not always be what we want... just having a feature tag doesn't have to mean subscription-only,
         // if we start using it for things like showing experimental features
         //[Test]
@@ -6206,68 +6206,38 @@ namespace BloomTests.Book
         //           Assert.False(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
         //       }
 
-        public string GetIntegrityLabel()
-        {
-            if (String.IsNullOrWhiteSpace(Code))
-            {
-                return "none";
-            }
-            var parts = Code.Split('-');
-            if (parts.Length < 3)
-                return "incomplete";
+        // Retiring this: checking pages for the now more complex subscription complians is now part of the FeatureStatus class
 
-            // the date part is the next to last part, must be all numbers, and at least 6 digits
-            var datePart = parts[parts.Length - 2];
-            if (string.IsNullOrWhiteSpace(datePart))
-                return "incomplete";
-            if (!datePart.All(char.IsDigit))
-                return "incomplete";
-            if (datePart.Length < 6)
-                return "invalid"; // we say invalid because we have a checksum part, but the date part was too short
+        //       [Test]
+        //       public void IsPageBloomEnterpriseOnly_NoEnterpriseOnlyItems_False()
+        //       {
+        //           string xml =
+        //               @"
+        //<div class=""bloom-page numberedPage customPage side-left A5Portrait bloom-monolingual"" data-page="""" id=""4854bc4a-0046-426e-9e19-596773582d23"" data-pagelineage=""8bedcdf8-3ad6-4967-b027-6c186436572f"" data-page-number=""2"" lang="""">
+        //       <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Just Video"" lang=""en"">
+        //           Just Video
+        //       </div>
 
-            // the checksum is the final part, must be all numbers, and at least 4 digits
-            var checksumPart = parts.Last();
-            if (!checksumPart.All(char.IsDigit))
-                return "invalid";
-            if (checksumPart.Length < 4)
-                return "incomplete";
+        //       <div class=""pageDescription"" lang=""en""></div>
 
-            if (!IsChecksumCorrect())
-                return "invalid";
+        //       <div class=""marginBox"">
+        //           <div class=""split-pane-component-inner"">
+        //               <div class=""box-header-off bloom-translationGroup"">
+        //                   Processing
 
-            return "ok";
-        }
+        //                   <div data-languagetipcontent=""English"" class=""bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" contenteditable=""true"" lang=""en"">
+        //                       <p></p>
+        //                   </div>
+        //               </div>
+        //           </div>
+        //       </div>
+        //   </div>";
 
-        [Test]
-        public void IsPageBloomEnterpriseOnly_NoEnterpriseOnlyItems_False()
-        {
-            string xml =
-                @"
-	<div class=""bloom-page numberedPage customPage side-left A5Portrait bloom-monolingual"" data-page="""" id=""4854bc4a-0046-426e-9e19-596773582d23"" data-pagelineage=""8bedcdf8-3ad6-4967-b027-6c186436572f"" data-page-number=""2"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Just Video"" lang=""en"">
-            Just Video
-        </div>
-
-        <div class=""pageDescription"" lang=""en""></div>
-
-        <div class=""marginBox"">
-            <div class=""split-pane-component-inner"">
-                <div class=""box-header-off bloom-translationGroup"">
-                    Processing
-
-                    <div data-languagetipcontent=""English"" class=""bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" contenteditable=""true"" lang=""en"">
-                        <p></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>";
-
-            var doc = SafeXmlDocument.Create();
-            doc.LoadXml(xml);
-            var page = doc.DocumentElement;
-            Assert.False(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
-        }
+        //           var doc = SafeXmlDocument.Create();
+        //           doc.LoadXml(xml);
+        //           var page = doc.DocumentElement;
+        //           Assert.False(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
+        //       }
 
         private const string kSentenceModeRecordingHtml =
             @"<!DOCTYPE html [ <!ENTITY nbsp '&#160;'> ]>
