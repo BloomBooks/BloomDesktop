@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.Threading;
 using Bloom.web.controllers;
 using NUnit.Framework;
 
@@ -18,13 +20,30 @@ namespace BloomTests.web.controllers
             int day
         )
         {
-            var result = CollectionSettingsApi.GetExpirationDate(input);
-            Assert.That(result.Year, Is.EqualTo(year));
-            Assert.That(result.Month, Is.EqualTo(month));
-            Assert.That(result.Day, Is.EqualTo(day));
+            void RunTestWithCulture(string input, int year, int month, int day, CultureInfo culture)
+            {
+                Thread.CurrentThread.CurrentCulture = culture;
+                var result = CollectionSettingsApi.GetExpirationDate(input);
+                Assert.That(result.Year, Is.EqualTo(year));
+                Assert.That(result.Month, Is.EqualTo(month));
+                Assert.That(result.Day, Is.EqualTo(day));
+            }
+
+            var originalCulture = Thread.CurrentThread.CurrentCulture;
+            try
+            {
+                RunTestWithCulture(input, year, month, day, originalCulture);
+                RunTestWithCulture(input, year, month, day, new CultureInfo("th-TH"));
+                RunTestWithCulture(input, year, month, day, new CultureInfo("en-US"));
+                RunTestWithCulture(input, year, month, day, CultureInfo.InvariantCulture);
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = originalCulture;
+            }
         }
 
-        [TestCase("")] // empty
+        [TestCase("")]
         [TestCase(null)]
         [TestCase("Acme3506487")] // no dashes
         [TestCase("Acme-3506487")] // too few dashes
@@ -35,7 +54,7 @@ namespace BloomTests.web.controllers
         [TestCase("Quite-Phony-3098-4247")] // Too few digits in part 2
         [TestCase("Acme-003506-487")] // Too few digits in part 3
         [TestCase("Somevery long fake thing-361769-19523")] // Too many digits in part 3
-        public void GetExpirationDate_InValid_ReturnsMinDate(string input)
+        public void GetExpirationDate_Invalid_ReturnsMinDate(string input)
         {
             var result = CollectionSettingsApi.GetExpirationDate(input);
             Assert.That(result, Is.EqualTo(DateTime.MinValue));
