@@ -181,7 +181,7 @@ namespace Bloom.web.controllers
                         var newBranding = GetBrandingFromCode(SubscriptionCode);
                         var oldBranding = !string.IsNullOrEmpty(_collectionSettings.InvalidBranding)
                             ? _collectionSettings.InvalidBranding
-                            : _collectionSettings.BrandingProjectKey;   // (update before expired)
+                            : _collectionSettings.BrandingProjectKey; // (update before expired)
                         // If the user has entered a different subscription code then what was previously saved, we
                         // generally want to clear out the Bookshelf. But if the BrandingKey is the same as the old one,
                         // we'll leave it alone, since they probably renewed for another year or so and want to use the
@@ -754,7 +754,11 @@ namespace Bloom.web.controllers
                 return DateTime.MinValue;
 
             if (input == "Local-Community")
-                return DateTime.Parse(kExpiryDateForDeprecatedBrandings);
+                return DateTime.ParseExact(
+                    kExpiryDateForDeprecatedBrandings,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture
+                );
             var parts = input.Split('-');
             if (parts.Length < 3)
                 return DateTime.MinValue;
@@ -776,7 +780,11 @@ namespace Bloom.web.controllers
 
             // At one time there were some subscriptions which never ended. Those have been retired.
             if (date.Year == 3000)
-                return DateTime.Parse(kExpiryDateForDeprecatedBrandings);
+                return DateTime.ParseExact(
+                    kExpiryDateForDeprecatedBrandings,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture
+                );
             return date;
         }
 
