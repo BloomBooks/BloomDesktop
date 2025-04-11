@@ -5389,12 +5389,14 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
         <source xml:lang="en">Your {0} subscription expires on {1}.</source>
         <note>ID: SubscriptionStatus.ExpiringSoonMessage</note>
-        <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
+        <note>{0} is the subscription descriptor, {1} is the formatted expiration date.</note>
+        <note>Note that {0} will sometimes be blank, so if possible, please use a translation which allows for that.</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiredMessage">
         <source xml:lang="en">Your {0} subscription expired on {1}.</source>
         <note>ID: SubscriptionStatus.ExpiredMessage</note>
-        <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
+        <note>{0} is the subscription descriptor, {1} is the formatted expiration date.</note>
+        <note>Note that {0} will sometimes be blank, so if possible, please use a translation which allows for that.</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.DefaultMessage">
         <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
