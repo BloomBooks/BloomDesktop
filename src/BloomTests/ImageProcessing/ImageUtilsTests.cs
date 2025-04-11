@@ -383,5 +383,58 @@ namespace BloomTests.ImageProcessing
                 }
             }
         }
+
+        [TestCase("myFolder", "myFile.png")]
+        [TestCase("மரியாதை ராமன் கதைகள்", "テスト画像.png")]
+        public void TryGetImageSize_NonAsciiFilePath_GetsSize(string folderName, string fileName)
+        {
+            var originalPath = FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "bird.png"
+            );
+
+            string tempFolder = Path.Combine(Path.GetTempPath(), folderName);
+            try
+            {
+                if (!Directory.Exists(tempFolder))
+                    Directory.CreateDirectory(tempFolder);
+
+                string newPath = Path.Combine(tempFolder, fileName);
+                RobustFile.Copy(originalPath, newPath, true);
+
+                bool result = ImageUtils.TryGetImageSize(newPath, out Size size);
+
+                Assert.IsTrue(result, "TryGetImageSize should return true");
+
+                // Compare with actual dimensions
+                using (var img = Image.FromFile(originalPath))
+                {
+                    Assert.AreEqual(
+                        img.Width,
+                        size.Width,
+                        "Width should match the actual image width"
+                    );
+                    Assert.AreEqual(
+                        img.Height,
+                        size.Height,
+                        "Height should match the actual image height"
+                    );
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(tempFolder))
+                {
+                    try
+                    {
+                        Directory.Delete(tempFolder, true);
+                    }
+                    catch
+                    {
+                        // Ignore
+                    }
+                }
+            }
+        }
     }
 }
