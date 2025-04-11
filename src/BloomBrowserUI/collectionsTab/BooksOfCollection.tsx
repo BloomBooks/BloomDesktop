@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/react";
 
 import Grid from "@mui/material/Grid";
-import React = require("react");
+import * as React from "react";
 import { useState, useEffect } from "react";
 import "BooksOfCollection.less";
 import { useApiData, useWatchApiData } from "../utils/bloomApi";
@@ -37,7 +37,6 @@ export const BooksOfCollection: React.FunctionComponent<{
     collectionId: string;
     isEditableCollection: boolean;
     manager: BookSelectionManager;
-    isSpreadsheetFeatureActive: boolean;
     // If true, the collection will be wrapped in a LazyLoad so that most of its rendering
     // isn't done until it is visible on screen.
     lazyLoadCollection?: boolean;
@@ -166,9 +165,6 @@ export const BooksOfCollection: React.FunctionComponent<{
                                         book={book}
                                         collection={collection}
                                         manager={props.manager}
-                                        isSpreadsheetFeatureActive={
-                                            props.isSpreadsheetFeatureActive
-                                        }
                                         lockedToOneDownloadedBook={
                                             props.lockedToOneDownloadedBook
                                         }

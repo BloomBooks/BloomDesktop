@@ -105,7 +105,7 @@
                 class=" bloom-editable"
                 contenteditable="true"
             >
-                <p>Paper Comic Book</p>
+                <p>Paper Comic Book Pages</p>
             </div>
 
             <div data-book="contentLanguage1" lang="*">
@@ -120,11 +120,7 @@
                 English
             </div>
 
-            <div
-                data-book="coverImage"
-                lang="*"
-                class=" bloom-imageContainer bloom-backgroundImage"
-            >
+            <div data-book="coverImage" lang="*">
                 placeHolder.png
             </div>
 
@@ -186,12 +182,21 @@
             <div class="pageDescription" lang="en"></div>
 
             <div class="marginBox">
-                <div class="bloom-translationGroup bookTitle" data-default-languages="V,N1" data-visibility-variable="cover-title-LN-show">
+                <div
+                    class="bloom-translationGroup bookTitle"
+                    data-default-languages="V,N1"
+                    data-visibility-variable="cover-title-LN-show"
+                >
                     <label class="bubble">Book title in {lang}</label>
-                    <div class="bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-padForOverflow" lang="z" contenteditable="true" data-book="bookTitle"></div>
+                    <div
+                        class="bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-padForOverflow"
+                        lang="z"
+                        contenteditable="true"
+                        data-book="bookTitle"
+                    ></div>
                 </div>
-                <div class="bloom-imageContainer">
-                    <img data-book="coverImage" src="placeHolder.png"/>
+                <div class="bloom-canvas">
+                    <img data-book="coverImage" src="placeHolder.png" />
                 </div>
                 <div class="bottomBlock"></div>
             </div>
@@ -220,7 +225,7 @@
 
             <div class="marginBox">
                 <div class="split-pane-component-inner">
-                    <div title="" class="bloom-imageContainer">
+                    <div title="" class="bloom-canvas">
                         <img
                             class="bloom-imageObjectFit-cover"
                             src="placeHolder.png"
@@ -257,7 +262,7 @@
                 <div class="split-pane-component-inner">
                     <div
                         title="placeHolder.png 6.58 KB 341 x 335 52 DPI (should be 300-600) Bit Depth: 32"
-                        class="bloom-imageContainer"
+                        class="bloom-canvas"
                     >
                         <img
                             class="bloom-imageObjectFit-cover"
@@ -266,7 +271,7 @@
                         />
 
                         <div
-                            class="bloom-textOverPicture ui-resizable ui-draggable bloom-allowAutoShrink"
+                            class="bloom-canvas-element ui-resizable ui-draggable bloom-allowAutoShrink"
                             style="left: 2.87692%; top: 94.1039%; width: 94.0063%; height: 3.05501%; position: absolute; color: white;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >

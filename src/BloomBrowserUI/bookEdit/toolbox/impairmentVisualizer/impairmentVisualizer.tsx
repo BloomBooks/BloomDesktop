@@ -10,6 +10,8 @@ import "./impairmentVisualizer.less";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
+import { kHasCanvasElementClass } from "../overlay/canvasElementUtils";
+import { kImageContainerClass } from "../../js/bloomImages";
 
 interface IState {
     kindOfColorBlindness: string;
@@ -20,7 +22,10 @@ interface IState {
 // tsx files in bookEdit/toolbox.
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which  passes an instance of ImpairmentVisualizerAdaptor to ToolBox.registerTool();
-export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
+export class ImpairmentVisualizerControls extends React.Component<
+    unknown,
+    IState
+> {
     public readonly state: IState = {
         kindOfColorBlindness: "redGreen"
     };
@@ -139,7 +144,7 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
             // on the img being the first thing in its parent and the parent
             // being positioned, which we can't count on for other images.
             const containers = page.getElementsByClassName(
-                "bloom-imageContainer"
+                kImageContainerClass
             );
             for (let i = 0; i < containers.length; i++) {
                 const immediateChildren = containers[i].children;
@@ -150,7 +155,7 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
                 ) {
                     const child = immediateChildren[childIndex] as HTMLElement;
                     if (!child || child.nodeName !== "IMG") continue;
-                    // Don't make an overlay for a draghandle or other UI element.
+                    // Don't make a overlay for a draghandle or other UI element.
                     if (child.classList.contains("bloom-ui")) continue;
                     this.makeColorBlindnessOverlay(child as HTMLImageElement);
                 }
@@ -220,7 +225,7 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
         }
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
-        // Make the canvas fill the image container, like the img.
+        // Make the canvas fill the image-container, like the img.
         // This allows object-fit and object-position to put it where we want.
         canvas.style.position = "absolute";
         canvas.style.left = "0";
@@ -234,7 +239,7 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
         // in the same stacking context. Therefore, all things being equal, this one would be covered
         // by that later one.
         const parentContainer = img.parentElement;
-        if (!parentContainer.classList.contains("hasOverlay")) {
+        if (!parentContainer.classList.contains(kHasCanvasElementClass)) {
             canvas.style.zIndex = "1";
         }
         // And position it within the container the same as the img.

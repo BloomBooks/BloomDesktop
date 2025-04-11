@@ -514,7 +514,7 @@ namespace BloomTests.Book
         <div style='min-height: 42px;' class='split-pane horizontal-percent'>
           <div class='split-pane-component position-top' style='bottom: 50%'>
             <div class='split-pane-component-inner'>
-              <div title='placeHolder.png 6.58 KB 341 x 335 81 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer bloom-leadingElement'>
+              <div title='placeHolder.png 6.58 KB 341 x 335 81 DPI (should be 300-600) Bit Depth: 32' class='bloom-canvas bloom-leadingElement'>
                 <img src='placeHolder.png' alt='place holder'></img>
                 <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement'></div>
               </div>
@@ -536,7 +536,7 @@ namespace BloomTests.Book
         <div style='min-height: 42px;' class='split-pane horizontal-percent'>
           <div class='split-pane-component position-top' style='bottom: 50%'>
             <div class='split-pane-component-inner'>
-              <div title='aor_ACC029M.png 35.14 KB 1500 x 806 355 DPI (should be 300-600) Bit Depth: 1' class='bloom-imageContainer bloom-leadingElement'>
+              <div title='aor_ACC029M.png 35.14 KB 1500 x 806 355 DPI (should be 300-600) Bit Depth: 1' class='bloom-canvas bloom-leadingElement'>
                 <img src='aor_ACC029M.png' alt=''></img>
                 <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement'></div>
               </div>
@@ -574,7 +574,7 @@ namespace BloomTests.Book
         <div style='min-height: 42px;' class='split-pane horizontal-percent'>
           <div class='split-pane-component position-top' style='bottom: 50%'>
             <div min-height='60px 150px 250px' min-width='60px 150px 250px' style='position: relative;' class='split-pane-component-inner'>
-              <div title='PT-eclipse1.jpg 526.06 KB 4010 x 2684 1915 DPI (should be 300-600) Bit Depth: 24' class='bloom-imageContainer bloom-leadingElement'>
+              <div title='PT-eclipse1.jpg 526.06 KB 4010 x 2684 1915 DPI (should be 300-600) Bit Depth: 24' class='bloom-canvas bloom-leadingElement'>
                 <img src='PT-eclipse1.jpg' alt='sun hidden by moon with corona shining all around the moon&apos;s obscuring disk' height='217' width='324'></img>
                 <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement'>
                   <div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable ImageDescriptionEdit-style bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>

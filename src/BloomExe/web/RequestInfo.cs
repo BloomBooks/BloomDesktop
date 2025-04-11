@@ -1,4 +1,4 @@
-// Copyright (c) 2014 SIL International
+﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
@@ -545,6 +545,31 @@ namespace Bloom.Api
             return _postData;
         }
 
+        // only handles simple key/value pairs, not nested objects or arrays
+        public NameValueCollection GetPostDataWhenSimpleJsonEncoded()
+        {
+            Debug.Assert(RequestContentType.StartsWith("application/json"));
+            if (_postData == null)
+            {
+                var request = _actualContext.Request;
+
+                if (!request.HasEntityBody)
+                    return null;
+
+                _postData = new NameValueCollection();
+                // get the content of the request and parse the json
+                var json = GetPostJson();
+                //parse the json using the newtonsoft json library
+                var jsonParsed = Newtonsoft.Json.Linq.JObject.Parse(json);
+                //iterate over the json object and add the key value pairs to the NameValueCollection
+                foreach (var pair in jsonParsed)
+                {
+                    _postData.Add(pair.Key, pair.Value.ToString());
+                }
+            }
+            return _postData;
+        }
+
         private static string UnescapeString(string value)
         {
             return Uri.UnescapeDataString(value.Replace("+", " "));
@@ -563,6 +588,16 @@ namespace Bloom.Api
                 HttpMethods.TryParse(this.HttpMethod, true, out v);
                 return v;
             }
+        }
+
+        public void WriteRedirect(string url, bool permanent)
+        {
+            _actualContext.Response.StatusCode = permanent ? 301 : 302;
+            var encodedUrl = Uri.EscapeUriString(url); // handle, e.g. http://localhost:8089/bloom/C:/foo/bar/ปก2.jpg
+            _actualContext.Response.Headers.Add("Location", encodedUrl);
+            // This supports Bloom Player Storybook's "Live from Bloom Editor" feature, preventing CORS errors on the redirect.
+            _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
+            _actualContext.Response.Close();
         }
     }
 }

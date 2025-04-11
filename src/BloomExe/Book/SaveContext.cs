@@ -33,6 +33,8 @@ namespace Bloom.Book
         {
             return false;
         }
+
+        public static readonly NoEditSaveContext Singleton = new NoEditSaveContext();
     }
 
     /// <summary>
@@ -50,6 +52,8 @@ namespace Bloom.Book
         {
             return true;
         }
+
+        public static readonly AlwaysEditSaveContext Singleton = new AlwaysEditSaveContext();
     }
 
     // (The other implementations are kinds of TeamCollections, where changes can be saved

@@ -381,6 +381,12 @@ namespace Bloom.Book
                 "EditTab.Toolbox.DragActivity.CheckHint",
                 "Clicking this validates the positions things have been dragged to."
             );
+            // Bloom games
+            AddTranslationToDictionaryUsingKey(
+                d,
+                "EditTab.Toolbox.DragActivity.SentenceHint",
+                "Type a sentence. The reader will be asked to sort the words."
+            );
         }
 
         private static void AddTranslationToDictionaryUsingKey(

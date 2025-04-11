@@ -342,7 +342,7 @@ namespace BloomTests.Book
             return new HtmlDom(
                 @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
-				<div class='bloom-imageContainer'>
+				<div class='bloom-canvas'>
 				</div>
 			</div></body></html>"
             );

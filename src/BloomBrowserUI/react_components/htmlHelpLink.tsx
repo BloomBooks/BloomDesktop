@@ -1,5 +1,9 @@
 import * as React from "react";
-import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
+import {
+    ILocalizationProps,
+    ILocalizationState,
+    LocalizableElement
+} from "./l10nComponents";
 import Link from "@mui/material/Link";
 import { getString } from "../utils/bloomApi";
 
@@ -12,7 +16,7 @@ interface IHtmlHelpLinkProps extends ILocalizationProps {
 // give us the localized version of the target file, if it exists
 export default class HtmlHelpLink extends LocalizableElement<
     IHtmlHelpLinkProps,
-    {}
+    ILocalizationState
 > {
     private target = `externalLink?path=help/${this.props.fileid}-en.htm`;
 

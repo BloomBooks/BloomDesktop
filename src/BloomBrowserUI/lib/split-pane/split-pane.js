@@ -16,6 +16,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 import { get } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../localizationManager/localizationManager";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
+import { kBloomCanvasClass } from "../../bookEdit/js/bloomImages";
 
 (function($) {
     $.fn.splitPane = function() {
@@ -136,6 +137,10 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
             pageYof(event)
         );
         document.addEventListener(moveEvent, moveFunction, { capture: true });
+        // MUST be on the document, both for the usual reason that the mouse can move out of the element
+        // where the mouse down happened, and also because there is another capturing document-level mouseup
+        // handler in CanvasElementManager that uses stopPropagation to prevent the event from reaching
+        // any descendants.
         document.addEventListener(endEvent, mouseUpHandler, {
             capture: true,
             once: true
@@ -755,7 +760,7 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
         return isHorizontal(divider);
     }
     // If child is a split-pane-component containing a split-pane-container-inner
-    // containing exactly one bloom-imageContainer
+    // containing exactly one bloom-canvas
     // containing a picture, return the fraction of the height of splitPane which would result
     // in the image fitting perfectly. Otherwise, return -1.
     function getImagePercent(
@@ -774,28 +779,30 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
         if (!child || !child.classList.contains("split-pane-component-inner")) {
             return -1;
         }
-        const imageContainer = child.firstElementChild;
+        const bloomCanvas = child.firstElementChild;
         if (
-            !imageContainer ||
-            !imageContainer.classList.contains("bloom-imageContainer")
+            !bloomCanvas ||
+            !bloomCanvas.classList.contains(kBloomCanvasClass)
         ) {
             return -1;
         }
-        const img = Array.from(imageContainer.children).filter(
-            c => c.nodeName === "IMG"
+        // If there is a bloom-backgroundImage, use that to get the aspect ratio we want
+        const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
+            "bloom-backgroundImage"
         )[0];
-        if (!img) {
+        if (!backgroundCanvasElement) {
             return -1;
         }
+        const aspectRatio =
+            backgroundCanvasElement.clientWidth /
+            backgroundCanvasElement.clientHeight;
         const horizontal = isPaneHorizontal(splitPane);
-        const splitPaneComponent = img.closest(".split-pane-component"); // the element that has the percent
+        const splitPaneComponent = bloomCanvas.closest(".split-pane-component"); // the element that has the percent
         const scale = EditableDivUtils.getPageScale();
 
         if (horizontal) {
             const width = splitPane.offsetWidth;
-            const height = isForSquareSplit
-                ? width
-                : (width * img.naturalHeight) / img.naturalWidth;
+            const height = isForSquareSplit ? width : width / aspectRatio;
             // At some point we apparently had 3px of margin on the top pane, possibly something to do
             // with the splitter control. Somewhere about 6.0 we lost it, so this correction is no longer needed.
             // I'm leaving it here commented out in case losing that margin was a mistake and we also need
@@ -804,7 +811,7 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
             //     height += 3;
             // }
             // This compensates for any padding between the element on which we set the percent
-            // and the image container whose height we are setting.
+            // and the bloom-canvas whose height we are setting.
             // (Apart from the immediate child, it would also handle margin, but we're not
             // currently using margin to space things.)
             // (This assumes padding is set with some absolute unit, not a percentage. If the padding is a percentage,
@@ -814,26 +821,23 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
             if (splitPaneComponent) {
                 extraHeight =
                     (splitPaneComponent.offsetHeight -
-                        imageContainer.offsetHeight) /
+                        bloomCanvas.offsetHeight) /
                     scale;
             }
             return ((height + extraHeight) * 100) / splitPane.offsetHeight;
         } else {
             const height = splitPane.offsetHeight;
-            const width = isForSquareSplit
-                ? height
-                : (height * img.naturalWidth) / img.naturalHeight;
+            const width = isForSquareSplit ? height : height * aspectRatio;
             // See comment above in horizontal block.
             // if (isForFirstChildPane) {
             //     width += 3;
             // }
             // This compensates for any padding between the element on which we set the percent
-            // and the image container whose width we are setting. See more detailed comment on the height version.
+            // and the bloom-canvas whose width we are setting. See more detailed comment on the height version.
             let extraWidth = 0;
             if (splitPaneComponent) {
                 extraWidth =
-                    (splitPaneComponent.offsetWidth -
-                        imageContainer.offsetWidth) /
+                    (splitPaneComponent.offsetWidth - bloomCanvas.offsetWidth) /
                     scale;
             }
             return ((width + extraWidth) * 100) / splitPane.offsetWidth;

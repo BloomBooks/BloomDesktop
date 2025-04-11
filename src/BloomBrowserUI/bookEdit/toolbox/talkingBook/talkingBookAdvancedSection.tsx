@@ -2,12 +2,7 @@
 import { jsx, css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
 import BloomButton from "../../../react_components/bloomButton";
-import {
-    ImportIcon,
-    UseTimingsFileIcon,
-    InsertSegmentMarkerIcon,
-    EditTimingsFileIcon
-} from "./TalkingBookToolboxIcons";
+import { ImportIcon, InsertSegmentMarkerIcon } from "./TalkingBookToolboxIcons";
 import { Divider, TooltipProps, RadioGroup, Typography } from "@mui/material";
 import { MuiRadio } from "../../../react_components/muiRadio";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
@@ -20,7 +15,6 @@ import { useL10n } from "../../../react_components/l10nHooks";
 
 export const TalkingBookAdvancedSection: React.FunctionComponent<{
     hasAudio: boolean;
-    lastTimingsFilePath?: string;
     //enableRecordingModeControl: boolean;
     recordingMode: RecordingMode;
     // this will differ from recordingMode if we changed to textbox mode but
@@ -28,9 +22,6 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
     haveACurrentTextboxModeRecording: boolean;
     hasRecordableDivs: boolean;
     handleImportRecordingClick: () => void;
-    split: (timingFilePath: string) => Promise<void>;
-    editTimingsFile: () => void;
-    applyTimingsFile: () => void;
     setRecordingMode: (recordingMode: RecordingMode) => Promise<void>;
     inShowPlaybackOrderMode: boolean;
     setShowPlaybackOrder: (isOn: boolean) => void;
@@ -40,11 +31,6 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
     setShowingImageDescriptions: (isOn: boolean) => void;
 }> = props => {
     // return a triangle button. Its children are normally hidden. When you click it, it rotates and shows its children.
-
-    const enableEditTimings =
-        props.recordingMode === RecordingMode.TextBox &&
-        props.hasAudio &&
-        !!props.lastTimingsFilePath;
 
     const enabledImportRecordingButton =
         props.recordingMode === RecordingMode.TextBox &&
@@ -56,10 +42,18 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
     };
 
     // Originally, this string was just the first part without the final sentence. When we added the final sentence,
-    // we decided among the various unpleasant options that we would just add a new l10n string. 
+    // we decided among the various unpleasant options that we would just add a new l10n string.
     //Some day we may have to revisit if a translator says this is unfeasible for a particular language.
-    const insertSegmentMarkerTooltipText = useL10n(`Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.`, 
-        "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip") + " " + useL10n(`Bloom will hide these when you publish.`, "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition");
+    const insertSegmentMarkerTooltipText =
+        useL10n(
+            `Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.`,
+            "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip"
+        ) +
+        " " +
+        useL10n(
+            `Bloom will hide these when you publish.`,
+            "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition"
+        );
 
     return (
         <ThemeProvider theme={toolboxTheme}>
@@ -197,59 +191,6 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             enabled={enabledImportRecordingButton}
                             l10nKey="EditTab.Toolbox.TalkingBookTool.ImportRecording"
                             onClick={() => props.handleImportRecordingClick()}
-                        />
-                    </BloomTooltip>
-                    <BloomTooltip
-                        id="edit-timings-file-button-tooltip"
-                        tip={{
-                            l10nKey:
-                                "EditTab.Toolbox.TalkingBookTool.EditTimingsFileTip"
-                        }}
-                        showDisabled={!enableEditTimings}
-                        tipWhenDisabled={{
-                            l10nKey:
-                                "EditTab.Toolbox.TalkingBookTool.EditTimingsFileDisabledTip"
-                        }}
-                        {...commonTooltipProps}
-                    >
-                        <BloomButton
-                            id="edit-timings-file-button"
-                            iconBeforeText={React.createElement(
-                                EditTimingsFileIcon
-                            )}
-                            hasText={true}
-                            variant="outlined"
-                            size="small"
-                            enabled={enableEditTimings}
-                            l10nKey="EditTab.Toolbox.TalkingBookTool.EditTimingsFile"
-                            onClick={props.editTimingsFile}
-                        />
-                    </BloomTooltip>
-                    <BloomTooltip
-                        tip={{
-                            l10nKey:
-                                "EditTab.Toolbox.TalkingBookTool.SplitRecordingTip"
-                        }}
-                        showDisabled={
-                            props.recordingMode !== RecordingMode.TextBox ||
-                            !props.hasAudio
-                        }
-                        {...commonTooltipProps}
-                    >
-                        <BloomButton
-                            id="apply-timings-file-button"
-                            iconBeforeText={React.createElement(
-                                UseTimingsFileIcon
-                            )}
-                            hasText={true}
-                            variant="outlined"
-                            size="small"
-                            enabled={
-                                props.recordingMode === RecordingMode.TextBox &&
-                                props.hasAudio
-                            }
-                            l10nKey="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile"
-                            onClick={props.applyTimingsFile}
                         />
                     </BloomTooltip>
                 </div>

@@ -323,7 +323,7 @@ namespace Bloom.CollectionTab
         // but with the Collection UI moving to JS I don't see a good alternative
         public void MakeBloomPack(bool forReaderTools)
         {
-            var initialPath = OutputFilenames.GetOutputFilePath(
+            var initialPath = FilePathMemory.GetOutputFilePath(
                 TheOneEditableCollection,
                 ".BloomPack"
             );
@@ -333,7 +333,7 @@ namespace Bloom.CollectionTab
             );
             if (!string.IsNullOrEmpty(destFileName))
             {
-                OutputFilenames.RememberOutputFilePath(
+                FilePathMemory.RememberOutputFilePath(
                     TheOneEditableCollection,
                     ".BloomPack",
                     destFileName
@@ -1009,8 +1009,12 @@ namespace Bloom.CollectionTab
         public BookInfo GetBookInfoByFolderPath(string path)
         {
             var collectionPath = Path.GetDirectoryName(path);
+            // This might need adjustment if we ever get Linux/Mac versions working. But I think not. See the
+            // comment in BookCollection.GetBookInfoByFolderPath.
             var collection = GetBookCollections()
-                .FirstOrDefault(c => c.PathToDirectory == collectionPath);
+                .FirstOrDefault(
+                    c => c.PathToDirectory.ToLowerInvariant() == collectionPath.ToLowerInvariant()
+                );
             if (collection == null)
                 return null;
             return collection.GetBookInfoByFolderPath(path);

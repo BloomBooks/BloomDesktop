@@ -10,7 +10,7 @@ import {
 } from "../commonPublish/PublishScreenBaseComponents";
 import { PDFPrintFeaturesGroup } from "./PDFPrintFeaturesGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { darkTheme } from "../../bloomMaterialUITheme";
 import { useL10n } from "../../react_components/l10nHooks";

@@ -1,10 +1,9 @@
-import {
-    hideImageDescriptions,
-    showImageDescriptions
-} from "../imageDescription/imageDescriptionUtils";
+import { kBloomCanvasClass } from "../../js/bloomImages";
+import { hideImageDescriptions } from "../imageDescription/imageDescriptionUtils";
 import { beginLoadSynphonySettings } from "../readers/readerTools";
 import { getTheOneToolbox, ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
+import { getAudioRecorder } from "./audioRecording";
 import * as AudioRecorder from "./audioRecording";
 
 export default class TalkingBookTool implements ITool {
@@ -55,15 +54,6 @@ export default class TalkingBookTool implements ITool {
     // Called when a new page is loaded.
     public async newPageReady(): Promise<void> {
         this.showImageDescriptionsIfAny();
-        const imageDescToolActive = this.isImageDescriptionToolActive();
-        const checkbox = document.getElementById(
-            "audio-showImageDescription-wrapper"
-        );
-        if (checkbox) {
-            checkbox.style.display = imageDescToolActive
-                ? "inline-block"
-                : "none";
-        }
         const pageReadyPromise = AudioRecorder.theOneAudioRecorder.newPageReady(
             TalkingBookTool.deshroudPhraseDelimiters
         );
@@ -152,7 +142,6 @@ export default class TalkingBookTool implements ITool {
 
     // Called whenever the user edits text.
     public async updateMarkupAsync(): Promise<() => void> {
-        this.showImageDescriptionsIfAny();
         return AudioRecorder.theOneAudioRecorder.getUpdateMarkupAction();
     }
 
@@ -176,24 +165,25 @@ export default class TalkingBookTool implements ITool {
             return;
         }
         if (!this.isImageDescriptionToolActive()) {
+            getAudioRecorder()?.setShowingImageDescriptions(false);
             return;
         }
-        const imageContainers = page.getElementsByClassName(
-            "bloom-imageContainer"
-        );
-        for (let i = 0; i < imageContainers.length; i++) {
-            const container = imageContainers[i];
-            const imageDescriptions = container.getElementsByClassName(
+        const bloomCanvases = page.getElementsByClassName(kBloomCanvasClass);
+
+        for (let i = 0; i < bloomCanvases.length; i++) {
+            const bloomCanvas = bloomCanvases[i];
+            const imageDescriptions = bloomCanvas.getElementsByClassName(
                 "bloom-imageDescription"
             );
             for (let j = 0; j < imageDescriptions.length; j++) {
                 const text = imageDescriptions[j].textContent;
                 if (text && text.trim().length > 0) {
-                    showImageDescriptions(page);
+                    getAudioRecorder()?.setShowingImageDescriptions(true);
                     return;
                 }
             }
         }
+        getAudioRecorder()?.setShowingImageDescriptions(false);
     }
 
     public id() {

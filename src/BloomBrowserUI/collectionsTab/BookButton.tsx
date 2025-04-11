@@ -35,7 +35,6 @@ export const BookButton: React.FunctionComponent<{
     collection: ICollection;
     //selected: boolean;
     manager: BookSelectionManager;
-    isSpreadsheetFeatureActive: boolean;
     lockedToOneDownloadedBook: boolean;
 }> = props => {
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
@@ -433,7 +432,6 @@ export const BookButton: React.FunctionComponent<{
             handleClose,
             props.book.id,
             props.collection.id,
-            props.isSpreadsheetFeatureActive,
             tooltipIfCannotSaveBook
         );
     }

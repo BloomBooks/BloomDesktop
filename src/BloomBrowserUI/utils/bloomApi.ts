@@ -1,7 +1,7 @@
 import axios, { AxiosResponse, AxiosRequestConfig, AxiosError } from "axios";
 import * as StackTrace from "stacktrace-js";
 import { reportError, reportPreliminaryError } from "../lib/errorHandler";
-import React = require("react");
+import * as React from "react";
 import { useEffect, useState } from "react";
 import { useSubscribeToWebSocketForEvent } from "./WebSocketManager";
 
@@ -191,6 +191,11 @@ export function get(
     );
 }
 
+// This method is used to get a result from Bloom.
+export async function getAsync(urlSuffix: string) {
+    return await axios.get(getBloomApiPrefix() + urlSuffix);
+}
+
 // A react hook for controlling an API-backed boolean from a React pure functional component
 // Returns a tuple of [theCurrentValue, aFunctionForChangingTheValue(newValue)]
 // When you call the returned function, two things happen: 1) we POST the value to the Bloom API
@@ -329,6 +334,30 @@ export function useApiState<T>(
         setValue(value);
     };
     return [value, setFunction];
+}
+
+// A vairiant of useApiState which returns a third value indicating whether we actually got the data yet.
+// Possibly this could just replace useApiState, and clients that don't want the third argument could
+// ignore it. But I'm not sure that there might not be an extra render resulting from setting the
+// extra state variable, so I think it's worth having a separate function.
+export function useApiStateWithStatus<T>(
+    urlSuffix: string,
+    defaultValue: T
+): [T, (value: T) => void, boolean] {
+    const [value, setValue] = useState<T>(defaultValue);
+    const [gotit, setGotIt] = useState(false);
+    useEffect(() => {
+        get(urlSuffix, c => {
+            setValue(c.data);
+            setGotIt(true);
+        });
+    }, []);
+
+    const setFunction = (value: T) => {
+        postData(urlSuffix, value);
+        setValue(value);
+    };
+    return [value, setFunction, gotit];
 }
 
 // Like useApiState, except it doesn't send the state back to the server when something changes.
@@ -576,6 +605,9 @@ export function postData(
 // This method is used to post something from Bloom with data and params.
 // You can do follow-up work either using the older callback pattern (successCallback/errorCallback)
 //    or you can use the returned Promise to use the newer promise-chain or async/await patterns.
+// [JT: I don't think this is entirely true, at least if you pass callbacks. You can await the result, but the calling code doesn't
+// actually wait for the successCallback to complete. Use postDataWithConfigAsync if you need to await the
+// result.]
 export function postDataWithConfig(
     urlSuffix: string,
     data: any,
@@ -604,8 +636,24 @@ export function postDataWithConfig(
     );
 }
 
+// This method is used to post something from Bloom with data and params.
+// Follow-up work must use the async/await pattern.
+export async function postDataWithConfigAsync(
+    urlSuffix: string,
+    data: any,
+    config: AxiosRequestConfig
+): Promise<void | AxiosResponse<any>> {
+    data = adjustFalsyData(data);
+    // Review: do we need something like wrapAxios here? I _think_ the browser is pretty
+    // good about showing complete call stacks in async code, so I hope not.
+    return await axios.post(getBloomApiPrefix() + urlSuffix, data, config);
+}
+
 // You can do follow-up work either using the older callback pattern (successCallback/errorCallback)
 //    or you can use the returned Promise to use the newer promise-chain or async/await patterns.
+// [JT: I don't think this is entirely true, at least if you pass callbacks. You can await the result, but the calling code doesn't
+// actually wait for the successCallback to complete. Use postJsonAsync if you need to wait for the
+// result.]
 export function postJson(
     urlSuffix: string,
     data: any,
@@ -624,6 +672,18 @@ export function postJson(
         successCallback,
         errorCallback
     );
+}
+
+export async function postJsonAsync(
+    urlSuffix: string,
+    data: any
+): Promise<void | AxiosResponse<any>> {
+    data = adjustFalsyData(data);
+    return await postDataWithConfigAsync(urlSuffix, data, {
+        headers: {
+            "Content-Type": "application/json; charset=utf-8" // JSON normally uses UTF-8. Need to explicitly set it because UTF-8 is not the default.
+        }
+    });
 }
 
 let debugMessageCount = 0; // used to serialize debug messages

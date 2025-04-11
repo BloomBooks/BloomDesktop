@@ -193,8 +193,17 @@ export class EditableDivUtils {
     }
 
     // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
-    public static getPageScale(): number {
+    // If target is supplied, we only want a scale based on the page scaler if the target is inside it.
+    public static getPageScale(target?: HTMLElement): number {
         const page = this.getPage();
+        let scaler: HTMLElement | undefined = undefined;
+        const getScaler = () => page.find("div#page-scaling-container").get(0);
+        if (target) {
+            scaler = getScaler();
+            if (!scaler || !scaler.contains(target)) {
+                return 1.0;
+            }
+        }
 
         // With full bleed, we have a transform on the page in addition to the possible scaling using the zoom control.
         // This calculation gets the scale experimentally. Because offsetWidth is an integer,
@@ -216,9 +225,8 @@ export class EditableDivUtils {
 
         let scale = 1.0;
         if (page.length === 0) return scale;
-        const styleString = page
-            .find("div#page-scaling-container")
-            .attr("style");
+        const styleString =
+            (scaler ?? getScaler())?.getAttribute("style") ?? "";
         const searchData = /transform: *scale\(([0-9.]*)/.exec(styleString);
         if (searchData) {
             scale = parseFloat(searchData[1]);
@@ -498,7 +506,7 @@ export class EditableDivUtils {
             // Really not wanting this scenario to happen, because we may get inaccurate results, but...
             // We ought to be able to continue on without anything terrible happening
             console.assert(
-                parentEditable,
+                !!parentEditable,
                 "isVisible(): Unexpected span that is not inside a bloom-editable. span = " +
                     elem
             );

@@ -12,7 +12,7 @@ import {
     ConfigrBoolean,
     ConfigrSelect
 } from "@sillsdev/config-r";
-import React = require("react");
+import * as React from "react";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
     BloomDialog,
@@ -50,6 +50,10 @@ import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { PWithLink } from "../../react_components/pWithLink";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 import { StyleAndFontTable } from "./StyleAndFontTable";
+import {
+    BloomSubscriptionIndicatorIconAndText,
+    useHaveSubscription
+} from "../../react_components/requiresSubscription";
 
 let isOpenAlready = false;
 
@@ -208,6 +212,16 @@ export const BookSettingsDialog: React.FunctionComponent<{
         "BookSettings.TopLevelTextPadding.1emLabel"
     );
 
+    const coverIsImageLabel = useL10n(
+        "Fill the front cover with a single image",
+        "BookSettings.CoverIsImage"
+    );
+    //TODO real links (and change .xlf)
+    const coverIsImageDescription = useL10n(
+        "Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
+        "BookSettings.CoverIsImage.Description"
+    );
+
     // This is a helper function to make it easier to pass the override information
     function getAdditionalProps<T>(
         subPath: string
@@ -306,6 +320,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
         setMigratedTheme("");
     };
 
+    const haveSubscription = useHaveSubscription();
+
     function saveSettingsAndCloseDialog() {
         if (settingsToReturnLater) {
             // If nothing changed, we don't get any...and don't need to make this call.
@@ -353,7 +369,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                         height: 600px;
                         // This odd width was chosen to make the customBookStyles alert box format nicely.
                         // See BL-12956. It's not that important, but I don't think anything else is affected
-                        // much by the exact witdh.
+                        // much by the exact width.
                         width: 638px;
                         #groups {
                             margin-right: 10px; // make room for the scrollbar
@@ -398,6 +414,34 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 label={whatToShowOnCoverLabel}
                                 path={`appearance`}
                             >
+                                <div>
+                                    <ConfigrBoolean
+                                        label={coverIsImageLabel}
+                                        description={coverIsImageDescription}
+                                        {...getAdditionalProps<boolean>(
+                                            `coverIsImage`
+                                        )}
+                                        disabled={
+                                            appearanceDisabled ||
+                                            !haveSubscription
+                                        }
+                                    />
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            padding-bottom: 5px;
+                                            font-size: 12px;
+                                            font-weight: bold;
+                                        `}
+                                    >
+                                        <BloomSubscriptionIndicatorIconAndText
+                                            css={css`
+                                                margin-left: auto;
+                                            `}
+                                            disabled={appearanceDisabled}
+                                        />
+                                    </div>
+                                </div>
                                 <FieldVisibilityGroup
                                     field="cover-title"
                                     labelFrame="Show Title in {0}"
@@ -863,7 +907,9 @@ const ColorPickerForConfigr: React.FunctionComponent<{
 };
 
 // TODO: move this to config-r
-const ConfigrCustomRow: React.FunctionComponent<React.PropsWithChildren<{}>> = props => {
+const ConfigrCustomRow: React.FunctionComponent<React.PropsWithChildren<
+    object
+>> = props => {
     return (
         <ListItem
             css={css`

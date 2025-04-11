@@ -963,7 +963,7 @@ namespace Bloom.Edit
                 {
                     // Haven't been able to find a way to copy the Gif itself into the clipboard.
                     // Possibly we could also copy the first frame as an actual image.
-                    // For now, at least we can copy one GIF overlay to another, and nothing bad happens
+                    // For now, at least we can copy one GIF canvas element to another, and nothing bad happens
                     PortableClipboard.SetText(path);
                     return true;
                 }
@@ -1062,6 +1062,7 @@ namespace Bloom.Edit
                     if (result == DialogResult.OK)
                         SetGifImage(imageId, imageSrc, dlg.FileName);
                 }
+                return; // we don't want to do the rest of this method, calling the toolbox, etc.
             }
 
             var imageInfo = new PalasoImage();
@@ -1893,7 +1894,7 @@ namespace Bloom.Edit
             }
             // This prevents the built-in ctrl-mousewheel zooming as well as ctrl-+ and ctrl--.
             // They are a problem because the toolbox zooms too, which causes various problems including
-            // BL-13846 (can't drag new overlays onto the page).
+            // BL-13846 (can't drag new canvas elements onto the page).
             // We enable these mouse actions for the main document iframe by handling the events
             // in Javascript and calling our zoom functions through an API.
             var settings = (Browser as WebView2Browser)?.InternalBrowser?.CoreWebView2?.Settings;
@@ -2172,6 +2173,51 @@ namespace Bloom.Edit
         {
             if (Model.Visible && ModifierKeys == (Keys.Shift | Keys.Control))
                 _model.RethinkPageAndReloadItAndReportIfItFails();
+        }
+
+        public async Task AddImageFromUrlAsync(string desiredFileNameWithoutExtension, string url)
+        {
+            using (var client = new System.Net.Http.HttpClient())
+            {
+                try
+                {
+                    var expandedUrl = url.StartsWith("/") ? BloomServer.ServerUrl + url : url;
+                    var bytes = await client.GetByteArrayAsync(expandedUrl);
+
+                    using (var memoryStream = new MemoryStream(bytes))
+                    using (var image = System.Drawing.Image.FromStream(memoryStream))
+                    {
+                        // Determine file extension based on image format
+                        string extension = ".png"; // default
+                        if (ImageUtils.AppearsToBeJpeg(new PalasoImage(image)))
+                            extension = ".jpg";
+
+                        var fileName = desiredFileNameWithoutExtension + extension;
+                        var filePath = Path.Combine(_model.CurrentBook.FolderPath, fileName);
+
+                        // Save the image to the book's folder
+                        using (var fs = RobustFile.Create(filePath))
+                        {
+                            memoryStream.Position = 0;
+                            await memoryStream.CopyToAsync(fs);
+                            // tell the caller that we have added the image
+                            BloomWebSocketServer.Instance.SendEvent(
+                                "makeThumbnailFile-" + desiredFileNameWithoutExtension,
+                                "success"
+                            );
+                            Debug.WriteLine("Added image for: " + desiredFileNameWithoutExtension);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    BloomWebSocketServer.Instance.SendEvent(
+                        "makeThumbnailFile-" + desiredFileNameWithoutExtension,
+                        "error: " + ex.Message
+                    );
+                    Debug.WriteLine("Failed to download image: " + ex.Message);
+                }
+            }
         }
     }
 }

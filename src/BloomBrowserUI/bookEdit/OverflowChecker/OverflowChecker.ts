@@ -5,9 +5,12 @@
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
-import { BubbleManager, theOneBubbleManager } from "../js/bubbleManager";
-import { playingBloomGame } from "../toolbox/dragActivity/DragActivityTabControl";
-import { addScrollbarsToPage, cleanupNiceScroll } from "../js/niceScrollBars";
+import {
+    CanvasElementManager,
+    theOneCanvasElementManager
+} from "../js/CanvasElementManager";
+import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
+import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -22,12 +25,12 @@ export default class OverflowChecker {
         // possibly this is set up before everything has been computed to be visible?
         const queryElementsThatCanOverflow =
             ".bloom-editable.bloom-visibility-code-on, textarea:visible";
-        const editablePageElements = $(container).find(
+        const $editablePageElements = $(container).find(
             queryElementsThatCanOverflow
         );
 
         // BL-1260: disable overflow checking for pages with too many elements
-        if (editablePageElements.length > 30) {
+        if ($editablePageElements.length > 30) {
             // since we're not going to check it, remove any indications from
             // previous checking. (Normal code also removes some qtips. I don't
             // think those survive from one page load to the next, so we don't
@@ -47,7 +50,7 @@ export default class OverflowChecker {
         }
 
         //Add the handler so that when the elements change, we test for overflow
-        editablePageElements.on("keyup paste", e => {
+        $editablePageElements.on("keyup paste", e => {
             // Don't test for overflow on navigation keys.
             if (e.keyCode >= 33 && e.keyCode <= 40) {
                 return;
@@ -55,12 +58,12 @@ export default class OverflowChecker {
 
             // BL-2892 There's no guarantee that the paste target isn't inside one of the editablePageElements
             // If we allow an embedded paste target (e.g. <p>) to get tested for overflow, it will overflow artificially.
-            const target = $(e.target).closest(editablePageElements)[0];
+            const editable = $(e.target).closest($editablePageElements)[0];
             // Give the browser time to get the pasted text into the DOM first, before testing for overflow
             // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
             //        At first I was concerned that this might slow typing, but it doesn't seem to.
             setTimeout(() => {
-                OverflowChecker.MarkOverflowInternal(target);
+                OverflowChecker.MarkOverflowInternal(editable);
 
                 //REVIEW: why is this here, in the overflow detection?
 
@@ -93,33 +96,13 @@ export default class OverflowChecker {
             });
 
         // Checking for overflow is time-consuming for complex pages, and doesn't HAVE to be done
-        // before we display and allow editing. We check one box per 'animation cycle' which
-        // in a maximum-29-box page will take less than half a second if a single check fits in the
-        // usual animation cycle of 1/60 second. This is the most effective way I've found to actually
-        // get the page showing (and editable) before doing all the overflow checking.
-        window.requestAnimationFrame(() =>
-            OverflowChecker.IncrementalOverflowCheck(editablePageElements, 0)
-        );
-    }
-
-    public static IncrementalOverflowCheck(
-        editablePageElements: JQuery,
-        index: number
-    ) {
-        if (index >= editablePageElements.length) {
-            return;
+        // before we display and allow editing. We set up a timeout for each one, which allows
+        // other events to get in between, and also, if multiple sources request an overflow check
+        // on the same element during startup, only one of them really happens. The delay is also
+        // helpful in letting the page stabilize before we start resizing overlays.
+        for (const editable of $editablePageElements.get()) {
+            OverflowChecker.CheckForOverflowSoon(editable);
         }
-        const box = editablePageElements.get(index);
-        //first, check to see if the stylesheet is going to give us overflow even for a single character:
-        OverflowChecker.CheckOnMinHeight(box);
-        // Right now, test to see if any are already overflowing
-        OverflowChecker.MarkOverflowInternal(box);
-        window.requestAnimationFrame(() =>
-            OverflowChecker.IncrementalOverflowCheck(
-                editablePageElements,
-                index + 1
-            )
-        );
     }
 
     // Actual testable determination of Type I overflow or not
@@ -333,20 +316,24 @@ export default class OverflowChecker {
     // several origami elements, and the loop over all of them used to be in the
     // handling of one mouse move. Now, each timeout will be its own event, and
     // hopefully other events can be processed in between if they occur.
-    public static CheckForOverflowSoon(element: HTMLElement) {
-        const timeOut = (element as any).overflowCheckTimeout;
+    public static CheckForOverflowSoon(editable: HTMLElement) {
+        const timeOut = (editable as any).overflowCheckTimeout;
         if (timeOut) {
             clearTimeout(timeOut);
         }
-        (element as any).overflowCheckTimeout = setTimeout(() => {
-            OverflowChecker.MarkOverflowInternal(element);
+        (editable as any).overflowCheckTimeout = setTimeout(() => {
+            this.CheckOnMinHeight(editable);
+            OverflowChecker.MarkOverflowInternal(editable);
         }, 1000);
     }
 
     // Checks for overflow on a bloom-page and adds/removes the proper class
     // N.B. This function is specifically designed to be called from within AddOverflowHandler()
     // but is also called from within StyleEditor (and therefore public)
-    public static MarkOverflowInternal(box, doNotShrink?: boolean) {
+    public static MarkOverflowInternal(
+        editable: HTMLElement,
+        doNotShrink?: boolean
+    ) {
         // There are two types of overflow that we need to check.
         // 1-When we're called by a handler on an element, we need to check that that element
         // doesn't overflow internally (i.e. has too much stuff to fit in itself).
@@ -354,9 +341,9 @@ export default class OverflowChecker {
         // haven't been pushed outside the margins
 
         // Type 1 Overflow
-        const $box = $(box);
-        if ($box.hasClass("overflow")) {
-            OverflowChecker.RemoveOverflowQtip($box);
+        const $editable = $(editable);
+        if ($editable.hasClass("overflow")) {
+            OverflowChecker.RemoveOverflowQtip($editable);
         }
 
         // We used to remove the "overflow" class unconditionally, then add it back if needed.
@@ -364,24 +351,29 @@ export default class OverflowChecker {
         // Now we leave it in place until we determine if it should be there.
         // $box.removeClass("overflow");
 
-        $box.removeClass("thisOverflowingParent");
-        $box.off("mousemove.overflow");
-        $box.off("mouseleave.overflow");
-        $box.parents(".childOverflowingThis").each((dummy, parent) => {
+        $editable.removeClass("thisOverflowingParent");
+        $editable.off("mousemove.overflow");
+        $editable.off("mouseleave.overflow");
+        $editable.parents(".childOverflowingThis").each((dummy, parent) => {
             OverflowChecker.RemoveOverflowQtip($(parent));
         });
-        OverflowChecker.RemoveOverflowQtip($box);
-        $box.parents().removeClass("childOverflowingThis");
+        OverflowChecker.RemoveOverflowQtip($editable);
+        $editable.parents().removeClass("childOverflowingThis");
 
-        const preventOverflowY = box.classList.contains("bloom-padForOverflow");
+        const preventOverflowY = editable.classList.contains(
+            "bloom-padForOverflow"
+        );
 
         if (preventOverflowY) {
-            box.style.paddingBottom = "0";
-            const measurements = MeasureText.getDescentMeasurementsOfBox(box);
+            editable.style.paddingBottom = "0";
+            const measurements = MeasureText.getDescentMeasurementsOfBox(
+                editable
+            );
             const excessDescent =
                 measurements.actualDescent - measurements.layoutDescent;
             if (excessDescent > 0) {
-                box.style.paddingBottom = "" + Math.ceil(excessDescent) + "px";
+                editable.style.paddingBottom =
+                    "" + Math.ceil(excessDescent) + "px";
             }
         }
 
@@ -389,11 +381,17 @@ export default class OverflowChecker {
         //          then backspace to remove the newly added line. It still indicates overflow (because it was was scrolled down, I guess).
         //          However, if you press the up arrow long enough until you get it to scroll back up, it will reset to Not Overflowing.
         //          Reloading the page will also clear it.
-        const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(box);
+        const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(
+            editable
+        );
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
         if (
-            theOneBubbleManager.growOverflowingBox(box, overflowY, doNotShrink)
+            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
+                editable,
+                overflowY,
+                doNotShrink
+            )
         ) {
             overflowY = 0;
         }
@@ -401,22 +399,22 @@ export default class OverflowChecker {
             // The usual fairly crude calculation may indicate it's overflowing, but
             // above we did a much more precise calculation and gave it just enough padding
             // to prevent it (if necessary).
-            // It's likely that the calls above to getSelfOverflowAmounts and growOverflowingBox above are
-            // redundant in this case. The latter only applies to TOP boxes, which are unlikely
+            // It's likely that the calls above to getSelfOverflowAmounts and adjustSizeOfContainingCanvasElementToMatchContent
+            // are redundant in this case. The latter only applies to canvas element boxes, which are unlikely
             // to be bloom-padForOverflow. However, I can't guarantee that a bloom-padForOverflow box
             // can't overflow horizontally. It seemed safest to leave the existing code alone and just
             // prevent the spurious overflow markup.
             overflowY = 0;
         }
         if (overflowY > 0 || overflowX > 0) {
-            $box.addClass("overflow");
-            const page = $box.closest(".bloom-page");
+            $editable.addClass("overflow");
+            const page = $editable.closest(".bloom-page");
             if (overflowY > 0 && page.length) {
                 cleanupNiceScroll();
                 addScrollbarsToPage(page[0]);
             }
 
-            if ($box.parents("[class*=Device]").length === 0) {
+            if ($editable.parents("[class*=Device]").length === 0) {
                 // don't show an overflow warning if we have scrolling available
                 theOneLocalizationManager
                     .asyncGetText(
@@ -425,7 +423,7 @@ export default class OverflowChecker {
                         ""
                     )
                     .done(overflowText => {
-                        $box.qtip({
+                        $editable.qtip({
                             content:
                                 '<img data-overflow="true" height="20" width="20" style="vertical-align:middle" src="/bloom/images/Attention.svg">' +
                                 overflowText,
@@ -440,14 +438,14 @@ export default class OverflowChecker {
                     });
             }
         } else {
-            $box.removeClass("overflow");
-            const page = $box.closest(".bloom-page");
+            $editable.removeClass("overflow");
+            const page = $editable.closest(".bloom-page");
             if (page.length) {
                 cleanupNiceScroll();
             }
         }
 
-        const container = $box.closest(".marginBox");
+        const container = $editable.closest(".marginBox");
         const quizPage = $(container).closest(".simple-comprehension-quiz");
         //NB: for some historical reason in March 2014 the calendar still uses textareas
         const queryElementsThatCanOverflow =
@@ -557,7 +555,7 @@ export default class OverflowChecker {
             return false;
         }
         // This is the most reliable way I can find to detect data-overflow tooltips,
-        // at least on TOP boxes. By experiment in the debugger, qtipContent does
+        // at least on canvas element boxes. By experiment in the debugger, qtipContent does
         // not seem to be an element at all, but some sort of configuration object
         // for the qtip, so trying to retrieve it as an attribute (as the code below does)
         // does not work.

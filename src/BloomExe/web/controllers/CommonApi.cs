@@ -34,7 +34,7 @@ namespace Bloom.web.controllers
         public static WorkspaceView WorkspaceView { get; set; }
 
         // Called by autofac, which creates the one instance and registers it with the server.
-        public CommonApi(BookSelection bookSelection, BloomWebSocketServer webSocketServer)
+        public CommonApi(BookSelection bookSelection)
         {
             _bookSelection = bookSelection;
         }

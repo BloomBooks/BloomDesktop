@@ -104,7 +104,10 @@ namespace Bloom.Publish.BloomPub
         {
             var dictToUse = settings.BloomLibrary.TextLangs;
             return new HashSet<string>(
-                dictToUse.Where(kvp => kvp.Value.IsIncluded()).Select(kvp => kvp.Key)
+                // I don't know why the ToArray() is needed, but without it, we get random exceptions about modifying
+                // a collection while iterating over it. As far as I can see, we're only iterating over a fixed dictionary and
+                // not modifying it, but the ToArray() seems to help.
+                dictToUse.Where(kvp => kvp.Value.IsIncluded()).ToArray().Select(kvp => kvp.Key)
             );
         }
 

@@ -7,8 +7,8 @@ import "long-press/jquery.mousewheel.js";
 import "long-press/jquery.longpress.js";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 
-import "../jquery.div-columns.ts";
-import "../libSynphony/jquery.text-markup.ts";
+import "../jquery.div-columns";
+import "../libSynphony/jquery.text-markup";
 import { ReaderStage, ReaderLevel, ReaderSettings } from "../ReaderSettings";
 import {
     theOneLanguageDataInstance,

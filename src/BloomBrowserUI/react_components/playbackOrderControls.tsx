@@ -1,4 +1,4 @@
-import React = require("react");
+import * as React from "react";
 import IncreaseIcon from "@mui/icons-material/Add";
 import DecreaseIcon from "@mui/icons-material/Remove";
 import Typography from "@mui/material/Typography";

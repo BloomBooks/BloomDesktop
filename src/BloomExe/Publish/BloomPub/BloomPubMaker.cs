@@ -284,10 +284,22 @@ namespace Bloom.Publish.BloomPub
             )
             {
                 var style = div.GetAttribute("style");
-                if (!String.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
+                // current books should never have either of these classes on an image Container.
+                // They are applied on publication when converting an img to the otherwise-obsoleted background-image(url...)
+                // way of showing images. We might, however, see one of them if someone is trying to re-create a book from
+                // the contents of a bloompub, so we'll do our best to handle it.
+                // (I'm deliberately not using kBloomBackgroundImage here because we're looking for a historic usage, not
+                // something that should change if we redefine the constant.)
+                if (
+                    !String.IsNullOrEmpty(style)
+                    && (
+                        style.Contains("bloom-backgroundImage")
+                        || style.Contains("bloom-background-image-in-style")
+                    )
+                )
                 {
-                    System.Diagnostics.Debug.Assert(
-                        div.GetAttribute("class").Contains("bloom-backgroundImage")
+                    System.Diagnostics.Debug.Fail(
+                        "Cover image should not have a background image style"
                     );
                     // extract filename from the background-image style
                     transparentImageFiles.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
@@ -316,10 +328,17 @@ namespace Bloom.Publish.BloomPub
             )
             {
                 var style = div.GetAttribute("style");
-                if (!string.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
+                // See comment above on this unexpected situation
+                if (
+                    !string.IsNullOrEmpty(style)
+                    && (
+                        style.Contains("bloom-backgroundImage")
+                        || style.Contains("bloom-background-image-in-style")
+                    )
+                )
                 {
-                    System.Diagnostics.Debug.Assert(
-                        div.GetAttribute("class").Contains("bloom-backgroundImage")
+                    System.Diagnostics.Debug.Fail(
+                        "Should not have images using background-image(url) approach in editor"
                     );
                     preservedImages.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
                 }
@@ -459,13 +478,11 @@ namespace Bloom.Publish.BloomPub
                 && modifiedBook.OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null
             )
             {
-                // This indicates that we are harvesting a book with comic speech bubbles or other overlays (Overlay Tool).
-                // For books with overlays, we only publish a single language. It's not currently feasible to
-                // allow the reader to switch language in a book with overlays, because typically that requires
-                // adjusting the positions of the overlays, and we don't yet support having more than one
-                // set of overlay locations in a single book. See BL-7912 for some ideas on how we might
-                // eventually improve this. In the meantime, switching language would have bad effects,
-                // and if you can't switch language, there's no point in the book containing more than one.
+                // This indicates that we are harvesting a book with canvas elements (Overlay Tool).
+                // For books with canvas elements, we only publish a single language. This harks back to a time when we couldn't
+                // store different sizes and positions for overlays in different languages. Now we can, but a book we're
+                // harvesting doesn't necessarily have appropriate locations stored for each language. So for now we'll just
+                // publish the first one.
                 var languagesToInclude = new string[1] { modifiedBook.BookData.Language1.Tag };
                 PublishModel.RemoveUnwantedLanguageData(
                     modifiedBook.OurHtmlDom,
@@ -729,13 +746,19 @@ namespace Bloom.Publish.BloomPub
         }
 
         /// <summary>
-        /// Find every place in the html file where an img element is nested inside a div with class bloom-imageContainer.
-        /// Convert the img into a background image of the image container div.
+        /// Find every place in the html file where an img element is nested inside a div with class bloom-imageContainer
+        /// or bloom-canvas. (In normal BE operation, bloom-canvases in pages being edited don't have direct img children,
+        /// but pages that have never been edited by 6.2 might have, and by the stage
+        /// this method is called, we've already converted to the publish format where background images are really cropped
+        /// and are direct children of the bloom-canvas).
+        /// Convert the img into a background image of the parent div.
         /// Specifically, make the following changes:
         /// - Copy any data-x attributes from the img element to the div
-        /// - Convert the src attribute of the img to style="background-image:url('...')" (with the same source) on the div
+        /// - Convert the src attribute of the img to style="background-image:url('...')" (with the same source) on the parent div
         ///    (any pre-existing style attribute on the div is lost)
-        /// - Add the class bloom-backgroundImage to the div
+        /// - Add the class bloom-background-image-in-style to the div
+        ///    (6.1 and earlier used bloom-backgroundImage, but 6.2 started using that class for background canvas elements.
+        ///    so we're now using a different one for this publishing change.)
         /// - delete the img element
         /// (See oldImg and newImg in unit test CompressBookForDevice_ImgInImgContainer_ConvertedToBackground for an example).
         /// </summary>
@@ -745,7 +768,7 @@ namespace Bloom.Publish.BloomPub
         {
             foreach (
                 var imgContainer in dom.SafeSelectNodes(
-                        "//div[contains(@class, 'bloom-imageContainer')]"
+                        "//div[contains(@class, 'bloom-imageContainer') or contains(@class, 'bloom-canvas')]"
                     )
                     .Cast<SafeXmlElement>()
                     .ToArray()
@@ -768,7 +791,7 @@ namespace Bloom.Publish.BloomPub
                         imgContainer.SetAttribute(attr.Name, attr.Value);
                 }
 
-                var classesToAdd = " bloom-backgroundImage";
+                var classesToAdd = " bloom-background-image-in-style";
                 // This is a nasty special case; see BL-11712. This class causes images to grow to
                 // cover the container, so when we convert to a background image, somehow we need to
                 // do the same thing. If we have other similar classes we will have to do it again,
@@ -844,13 +867,11 @@ namespace Bloom.Publish.BloomPub
             IFontFinder fontFileFinder
         )
         {
-            const string defaultFont = "Andika";
-
             // "Andika" already in BR in the standard four faces, don't need to embed or make rule.
-            fontsWanted.RemoveWhere(x => x.fontName == defaultFont);
+            fontsWanted.RemoveWhere(x => x.fontFamily == PublishHelper.DefaultFont);
             // We don't need to embed Andika New Basic, because Andika will handle it.
             fontsWanted.RemoveWhere( // The default Andika font will handle Andika New Basic
-                x => x.fontName == "Andika New Basic"
+                x => x.fontFamily == "Andika New Basic"
             );
 
             PublishHelper.CheckFontsForEmbedding(
@@ -870,9 +891,9 @@ namespace Bloom.Publish.BloomPub
             var sb = new StringBuilder();
             foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
-                if (badFonts.Contains(font.fontName))
+                if (badFonts.Contains(font.fontFamily))
                     continue;
-                var group = fontFileFinder.GetGroupForFont(font.fontName);
+                var group = fontFileFinder.GetGroupForFont(font.fontFamily);
                 if (group != null)
                 {
                     EpubMaker.AddFontFace(sb, font, group);
@@ -889,10 +910,14 @@ namespace Bloom.Publish.BloomPub
             // Repair defaultLangStyles.css and other places in the output book if needed.
             if (badFonts.Any())
             {
-                PublishHelper.FixCssReferencesForBadFonts(book.FolderPath, defaultFont, badFonts);
+                PublishHelper.FixCssReferencesForBadFonts(
+                    book.FolderPath,
+                    PublishHelper.DefaultFont,
+                    badFonts
+                );
                 PublishHelper.FixXmlDomReferencesForBadFonts(
                     book.OurHtmlDom.RawDom,
-                    defaultFont,
+                    PublishHelper.DefaultFont,
                     badFonts
                 );
             }

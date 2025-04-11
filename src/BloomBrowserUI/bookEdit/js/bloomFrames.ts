@@ -31,9 +31,12 @@ export function getEditablePageBundleExports(): IPageFrameExports | null {
 export function getEditTabBundleExports(): IEditViewFrameExports {
     const rootWindow = getRootWindow();
     if (!rootWindow["editTabBundle"]) {
-        alert("no editTabBundle!");
-        // eslint-disable-next-line no-debugger
-        debugger;
+        // Tempting to do an alert here. But if the browser control has not yet been added
+        // to its parent, we won't see it, and the loading code will be frozen waiting for
+        // a response to the alert. Hopefully the error will show up somewhere.
+        throw new Error(
+            "no editTabBundle! Did editing code get compiled into the wrong bundle?"
+        );
     }
     return (<any>getRootWindow()).editTabBundle as IEditViewFrameExports;
 }

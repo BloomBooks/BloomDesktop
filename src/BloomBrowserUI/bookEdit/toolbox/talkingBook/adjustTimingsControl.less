@@ -1,0 +1,37 @@
+#waveform {
+    /* I don't understand why, but ::part rules don't work as emotion rules. */
+    ::part(region-content) {
+        margin: 0;
+        position: absolute;
+        top: 0;
+        left: 5px;
+        /* Using normalize:true, I can't find a way to be sure text won't overlap the highest peaks of the waveform.
+     * This attempts to make the conflicting text somewhat readable without hiding the wave completely.*/
+        background-color: #ffffff80;
+    }
+    ::part(region-handle-right) {
+        border-right: dashed;
+
+        border-right-color: #d65649;
+    }
+    /* hide the start-marker handles */
+    ::part(region-handle-left) {
+        display: none;
+    }
+
+    ::part(region) {
+        padding-top: 20px;
+    }
+
+    /* Tried several things to allow the waveform to be normalize:true without overlapping the text.
+    * This is the closest, and looks right initially, but when the waveform plays it somehow moves
+    * up and overlays the text again, as well as being out of alignment with any part that has not
+    * yet played. The idea was that in combination with normalize:true, this lets the waveform be as big as possible,
+    * but leaves room for the absolutely positioned text to be above it. It basically only affects the
+    * canvas that shows the waveform, as all the other children of the wrapper are position:absolute. */
+    /*::part(wrapper) {
+    padding-top: 20px;
+} */
+    /* Tried positioning region-content at top:-20px, but that puts it outside the shadow root, so it's not visible,
+    * even with all the overflow:visible settings I could find. */
+}

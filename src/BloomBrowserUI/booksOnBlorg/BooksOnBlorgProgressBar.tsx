@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { get } from "../utils/bloomApi";
+import { get, useWatchApiData } from "../utils/bloomApi";
 import { ProgressBar } from "../react_components/Progress/ProgressBar";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { useL10n } from "../react_components/l10nHooks";
@@ -13,11 +13,16 @@ import { Link } from "../react_components/link";
 export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
     const [percentage, setPercentage] = useState(-1); // When calculated this will be [0, 100]
 
-    const [bookCount, setBookCount] = useState(-1);
-
     const [languageName, setLanguageName] = useState("");
     const [languageCode, setLanguageCode] = useState("");
     const [webGoal, setWebGoal] = useState(-1);
+
+    const bookCount = useWatchApiData(
+        "collections/getBookCountByLanguage",
+        -1,
+        "booksOnBlorg",
+        "reload"
+    );
 
     const goalLabel = useL10n(
         "Goal:",
@@ -42,13 +47,6 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
             if (langData?.data) {
                 setLanguageName(langData.data.languageName);
                 setLanguageCode(langData.data.languageCode);
-            }
-        });
-        // Get book count from bloomlibrary.org of books in this language.
-        get("collections/getBookCountByLanguage", response => {
-            const bookCount = response.data;
-            if (bookCount > -1) {
-                setBookCount(response.data);
             }
         });
     }, []);

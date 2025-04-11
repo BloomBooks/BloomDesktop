@@ -8,8 +8,8 @@
 // This collectionSettings reference defines the function GetSettings(): ICollectionSettings
 // The actual function is injected by C#.
 /// <reference path="../js/collectionSettings.d.ts"/>
-import React = require("react");
-import ReactDOM = require("react-dom");
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from "../js/bloomQtipUtils";
@@ -39,10 +39,27 @@ export default class BloomSourceBubbles {
         return BloomSourceBubbles.MakeSourceTextDivForGroup(group, newLangTag);
     }
 
+    // remvoe tooltips from every TG in the container (and the container itself, if it IS a TG).
+    public static removeSourceBubbles(
+        container: HTMLElement | null | undefined
+    ): void {
+        if (!container) return; // saves every client checking (often only because of eslint)
+        const groups = Array.from(
+            container.getElementsByClassName("bloom-translationGroup")
+        );
+        if (container.classList.contains("bloom-translationGroup")) {
+            groups.push(container);
+        }
+        groups.forEach(group => {
+            $(group).qtip("destroy");
+        });
+    }
+
     public static MakeSourceBubblesIntoQtips(
         elementThatHasBubble: HTMLElement,
         contentsOfBubble: JQuery,
-        selectLangTag?: string
+        selectLangTag?: string,
+        forceShowAlwaysOnBody?: boolean
     ) {
         // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
         let divForBubble = BloomSourceBubbles.CreateTabsFromDiv(
@@ -61,7 +78,8 @@ export default class BloomSourceBubbles {
         // Also makes sure the tooltips are setup correctly.
         BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(
             elementThatHasBubble,
-            divForBubble
+            divForBubble,
+            forceShowAlwaysOnBody
         );
     }
 
@@ -74,6 +92,7 @@ export default class BloomSourceBubbles {
         group: HTMLElement,
         newLangTag?: string
     ): JQuery {
+        if (group.classList.contains("bloom-no-source-bubble")) return $();
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
         const divForBubble = $(group).clone();
@@ -289,7 +308,7 @@ export default class BloomSourceBubbles {
 
     private static DoSafeReplaceInList(
         items: JQuery,
-        langCode: String,
+        langCode: string,
         position: number
     ): JQuery {
         // if items contains a div with langCode, then try to put it at the position specified in the list
@@ -440,32 +459,52 @@ export default class BloomSourceBubbles {
         }
     }
 
-    // Arrange a mutation observer to recompute position of tooltips when something changes in
-    // any of the translation groups.
+    private static debounceTimeout = 0;
+
+    // Arrange a mutation observer to recompute position of tooltips when something changes on
+    // the page.
     // I don't think we need worry about disposing of this. It's useful until the page is reloaded.
-    // This could be better done with resizeObserver...FixGecko60.
-    // Note, in that case we'd want to observer each .bloom-editable, not the whole page.
+    // Enhance: possibly this could be better done with resizeObserver? But we need to detect changes of position, too.
+    // Note, in that case we'd want to observe each translation group, not the whole page.
     // (The page typically will NOT change size when a text block does.)
     public static setupSizeChangedHandling(groups: HTMLElement[]) {
-        const observer = new MutationObserver(mutations => {
-            $(groups).qtip("reposition");
-        });
         const config = {
             childList: true,
             characterData: true,
-            subtree: true
+            subtree: true,
+            attributes: true
         };
-        observer.observe(
-            document.getElementsByClassName("bloom-page")[0],
-            config
-        );
+        const observer = new MutationObserver(mutations => {
+            // To minimize the overhead of this, we only do it after nothing changes for 100ms
+            if (BloomSourceBubbles.debounceTimeout) {
+                clearTimeout(BloomSourceBubbles.debounceTimeout);
+            }
+
+            BloomSourceBubbles.debounceTimeout = (setTimeout(() => {
+                observer.disconnect(); // don't want to respond to changes that reposition makes
+                $(document.querySelectorAll("[data-hasqtip]")).qtip(
+                    "reposition"
+                );
+                observer.observe(document.body, config);
+            }, 100) as any) as number;
+        });
+        // observe everything...even (for example) dialogs that are outside the page.
+        // For example, the GamePromptDialog has a source bubble and can be moved.
+        observer.observe(document.body, config);
     }
 
     // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).
     // Also makes sure the tooltips are setup correctly.
     private static CreateAndShowQtipBubbleFromDiv(
         group: HTMLElement,
-        divForBubble: JQuery
+        divForBubble: JQuery,
+        // When this is true, the bubble is shown always, without regard to whether it might overlap
+        // any others, and it is put on the body rather than the page scaling container. This us useful
+        // for dialogs that are not part of the page content, like the spell-words prompt dialog.
+        // Since the dialog is outside the scaling container, it isn't scaled, so scaling the bubble
+        // will make it look wrong in both size and position. And it only shows when hovering the dialog,
+        // so conflicting with other bubbles is not an issue.
+        forceShowAlwaysOnBody?: boolean
     ): void {
         let showEvents = false;
         let hideEvents = false;
@@ -475,7 +514,10 @@ export default class BloomSourceBubbles {
 
         const $group = $(group);
         if (
-            bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($group) ||
+            (!forceShowAlwaysOnBody &&
+                bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(
+                    $group
+                )) ||
             !$group.is(":visible")
         ) {
             showEvents = true;
@@ -499,7 +541,9 @@ export default class BloomSourceBubbles {
                         x: 0,
                         y: 0
                     },
-                    container: bloomQtipUtils.qtipZoomContainer()
+                    container: forceShowAlwaysOnBody
+                        ? document.body
+                        : bloomQtipUtils.qtipZoomContainer()
                 },
                 content: divForBubble,
 

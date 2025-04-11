@@ -7,7 +7,7 @@ import { get, post } from "../utils/bloomApi";
 import Button from "@mui/material/Button";
 import { kBloomBlue50Transparent, lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { Div } from "./l10nComponents";
+import { Div, Span } from "./l10nComponents";
 import { useL10n } from "./l10nHooks";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { Dialog, DialogActions, DialogContent } from "@mui/material";
@@ -459,6 +459,48 @@ export const RequiresSubscriptionDialog: React.FunctionComponent<{
                 </DialogBottomButtons>
             </div>
         </BloomDialog>
+    );
+};
+
+export const BloomSubscriptionIndicatorIconAndText: React.FunctionComponent<{
+    disabled?: boolean;
+    className?: string;
+}> = props => {
+    const haveSubscription = useHaveSubscription();
+
+    return (
+        <div
+            onClick={() => {
+                if (!haveSubscription && !props.disabled) {
+                    openBloomSubscriptionSettings();
+                }
+            }}
+            css={css`
+                display: flex;
+                align-items: center;
+                ${haveSubscription || props.disabled || "cursor:pointer"};
+
+                opacity: ${props.disabled ? kBloomDisabledOpacity : 1.0};
+            `}
+            className={props.className}
+        >
+            <img
+                src={badgeUrl}
+                css={css`
+                    height: 1.5em;
+                    padding-right: 0.5em;
+                `}
+            />
+            {haveSubscription ? (
+                <Span l10nKey={"AvailableWithSubscription"}>
+                    Available with your Bloom Subscription
+                </Span>
+            ) : (
+                <Span l10nKey={"Common.SubscriptionRequired"}>
+                    Subscription Required
+                </Span>
+            )}
+        </div>
     );
 };
 

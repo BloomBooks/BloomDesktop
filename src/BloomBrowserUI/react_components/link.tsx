@@ -5,7 +5,11 @@ import * as React from "react";
 import { Link as MuiLink } from "@mui/material";
 import { LinkBaseProps } from "@mui/material/Link";
 
-import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
+import {
+    ILocalizationProps,
+    ILocalizationState,
+    LocalizableElement
+} from "./l10nComponents";
 import { kBloomDisabledText } from "../utils/colorUtils";
 
 interface ILinkProps extends ILocalizationProps {
@@ -28,7 +32,7 @@ interface ILinkProps extends ILocalizationProps {
 // A link element that is localizable.
 // Note: if you find yourself looking for a way to make one of these with the text forced to
 // upper case, you may be really wanting a BloomButton with variant={text}
-export class Link extends LocalizableElement<ILinkProps, {}> {
+export class Link extends LocalizableElement<ILinkProps, ILocalizationState> {
     public render() {
         return (
             //prettier-ignore
@@ -70,7 +74,7 @@ export class Link extends LocalizableElement<ILinkProps, {}> {
 // Usage <TextWithEmbeddedLink l10nKey="blah" href="google.com"/>Click [here] or else</TextWithEmbeddedLink>
 export class TextWithEmbeddedLink extends LocalizableElement<
     ILocalizationProps & LinkBaseProps,
-    {}
+    ILocalizationState
 > {
     public render() {
         // Text within [] is for the link.

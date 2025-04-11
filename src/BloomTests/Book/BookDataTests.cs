@@ -19,6 +19,10 @@ using SIL.Text;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
 
+// TODO (default name BL-13703) currently, the Tag setter also automatically sets the name using LibPalasso logic.
+// If we make changes to that logic now that we are changing default names with the new
+// language chooser, we need to check through the tests in this file
+
 namespace BloomTests.Book
 {
     // Tests of BookData, especially SynchronizeDataItemsThroughoutDOM and friends.
@@ -2323,6 +2327,7 @@ namespace BloomTests.Book
         [TestCase("Bible Society")]
         [TestCase("Group of Bible Translators")]
         [TestCase("SIL International")]
+        [TestCase("SIL Global")]
         [TestCase("Kartidaya")]
         [TestCase("WPS")]
         public void MigrateSpiritualTopic_TopicIsSpiritual_CopyrightIsForBible_MigratesTopicToBible(
@@ -2944,7 +2949,7 @@ namespace BloomTests.Book
 					<div  data-book='coverImage' src='new.png' style='width: 233.719px; height:100%;'>new.png</div>
 				</div>
 				<div class='bloom-page'>
-					 <div class='bloom-imageContainer {containerClass}'>
+					 <div class='bloom-canvas {containerClass}'>
 						<img data-book='coverImage' src='placeholder.png' ></img>
 					</div>
 				</div>
@@ -2977,7 +2982,7 @@ namespace BloomTests.Book
 					<div  data-book='coverImage' src='old.png'>old.png</div>
 				</div>
 				<div class='bloom-page'>
-					 <div class='bloom-imageContainer {containerClass}'>
+					 <div class='bloom-canvas {containerClass}'>
 						<img data-book='coverImage' src='old.png'></img>
 					</div>
 				</div>
@@ -2988,7 +2993,7 @@ namespace BloomTests.Book
             var editedPageDom = new HtmlDom(
                 $@"<html ><head></head><body>
 				<div class='bloom-page'>
-					 <div class='bloom-imageContainer {containerClass}'>
+					 <div class='bloom-canvas {containerClass}'>
 						<img data-book='coverImage' src='new.png' style='width: 233.719px; height:100%;'></img>
 					</div>
 				</div>

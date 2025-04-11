@@ -257,8 +257,8 @@ namespace Bloom.Publish.Epub
         /// </summary>
         public void StageEpub(WebSocketProgress progress, bool publishWithoutAudio = false)
         {
-            if (Unpaginated && Book.OurHtmlDom.HasComicalOverlays())
-                Unpaginated = false; // comics require fixed layout to align bubbles.
+            if (Unpaginated && Book.OurHtmlDom.HasComicalCanvasElements())
+                Unpaginated = false; // comics require fixed layout to align canvas elements.
             if (!Unpaginated)
                 RemoveFontSizes = false; // fixed layout requires specified font sizes
             PublishWithoutAudio = publishWithoutAudio;
@@ -599,7 +599,10 @@ namespace Bloom.Publish.Epub
             var internalHyperlinks = Book.OurHtmlDom.SafeSelectNodes(
                 "//a[starts-with(@href, '#')]"
             );
-            if (internalHyperlinks.Length > 0)
+            var externalHyperlinks = Book.OurHtmlDom.SafeSelectNodes(
+                "//a[starts-with(@href, 'bloomnav://')]"
+            );
+            if (internalHyperlinks.Length > 0 || externalHyperlinks.Length > 0)
             {
                 var msg = LocalizationManager.GetString(
                     "PublishTab.Epub.LocalLinksProblem",
@@ -607,6 +610,10 @@ namespace Bloom.Publish.Epub
                 );
                 progress.MessageWithoutLocalizing(msg, ProgressKind.Warning);
                 foreach (var link in internalHyperlinks.Cast<SafeXmlElement>().ToArray())
+                {
+                    link.UnwrapElement();
+                }
+                foreach (var link in externalHyperlinks.Cast<SafeXmlElement>().ToArray())
                 {
                     link.UnwrapElement();
                 }
@@ -1993,8 +2000,8 @@ namespace Bloom.Publish.Epub
                     if (activeDescriptions.Length == 0)
                         continue;
                     // Now that we need multiple asides (BL-6314), I'm putting them in a separate div.
-                    // Insert the div after the image container, thus not interfering with the
-                    // reader's placement of the image itself.
+                    // Insert the div after the bloom-canvas, thus not interfering with the
+                    // reader's placement of the contents of the canvas itself.
                     var asideContainer = description.OwnerDocument.CreateElement("div");
                     asideContainer.SetAttribute("class", "asideContainer");
                     description.ParentNode.ParentNode.InsertAfter(
@@ -2505,12 +2512,9 @@ namespace Bloom.Publish.Epub
             {
                 if (img.HasClass("licenseImage") || img.HasClass("branding"))
                     continue;
-                div =
-                    img.SelectSingleNode(
-                        "parent::div[contains(concat(' ',@class,' '),' bloom-imageContainer ')]"
-                    ) as SafeXmlElement;
+                div = img.ParentWithClass(HtmlDom.kBloomCanvasClass);
                 // Typically by this point we've converted the image descriptions into asides whose container is the next
-                // sibling of the image container. Set Aria Accessibility stuff for them.
+                // sibling of the bloom-canvas. Set Aria Accessibility stuff for them.
                 var asideContainer = div?.NextSibling as SafeXmlElement;
                 if (
                     asideContainer != null
@@ -2724,7 +2728,6 @@ namespace Bloom.Publish.Epub
         {
             ISet<string> warningMessages = new HashSet<string>();
             var fontFileFinder = FontFileFinder.GetInstance(Program.RunningUnitTests);
-            const string defaultFont = "Andika";
             PublishHelper.CheckFontsForEmbedding(
                 progress,
                 _fontsUsedInBook,
@@ -2748,10 +2751,10 @@ namespace Bloom.Publish.Epub
             var sb = new StringBuilder();
             foreach (var font in _fontsUsedInBook.OrderBy(x => x.ToString()))
             {
-                if (badFonts.Contains(font.fontName))
+                if (badFonts.Contains(font.fontFamily))
                     continue;
                 var file = fontFileFinder.GetFileForFont(
-                    font.fontName,
+                    font.fontFamily,
                     font.fontStyle,
                     font.fontWeight
                 );
@@ -2765,7 +2768,7 @@ namespace Bloom.Publish.Epub
                     // If we can't embed the font, no reason to refer to it in the css.
                     continue;
                 }
-                var group = fontFileFinder.GetGroupForFont(font.fontName);
+                var group = fontFileFinder.GetGroupForFont(font.fontFamily);
                 if (group != null)
                 {
                     // The fonts.css file is stored in a subfolder as are the font files.  They are in different
@@ -2779,7 +2782,7 @@ namespace Bloom.Publish.Epub
                 && !_fontsUsedInBook
                     .Where(
                         x =>
-                            x.fontName == defaultFont
+                            x.fontFamily == PublishHelper.DefaultFont
                             && x.fontStyle == "normal"
                             && x.fontWeight != "700"
                     )
@@ -2787,10 +2790,10 @@ namespace Bloom.Publish.Epub
             )
                 AddFontFace(
                     sb,
-                    defaultFont,
+                    PublishHelper.DefaultFont,
                     "normal",
                     "normal",
-                    fontFileFinder.GetGroupForFont(defaultFont).Normal,
+                    fontFileFinder.GetGroupForFont(PublishHelper.DefaultFont).Normal,
                     "../" + kFontsFolder + "/"
                 );
             Directory.CreateDirectory(Path.Combine(_contentFolder, kCssFolder));
@@ -2804,10 +2807,10 @@ namespace Bloom.Publish.Epub
             {
                 PublishHelper.FixCssReferencesForBadFonts(
                     Path.Combine(_contentFolder, kCssFolder),
-                    defaultFont,
+                    PublishHelper.DefaultFont,
                     badFonts
                 );
-                FixXhtmlReferencesForBadFonts(_contentFolder, defaultFont, badFonts);
+                FixXhtmlReferencesForBadFonts(_contentFolder, PublishHelper.DefaultFont, badFonts);
             }
 
             return warningMessages;
@@ -2861,7 +2864,7 @@ namespace Bloom.Publish.Epub
                 path = group.Normal;
             AddFontFace(
                 sb,
-                font.fontName,
+                font.fontFamily,
                 weight,
                 font.fontStyle,
                 path,

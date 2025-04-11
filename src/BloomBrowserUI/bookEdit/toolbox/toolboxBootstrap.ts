@@ -18,10 +18,9 @@ import { SignLanguageTool } from "./signLanguage/signLanguageTool";
 import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 import "errorHandler";
 import { OverlayTool } from "./overlay/overlayTool";
-import {
-    DragActivityTool,
-    setActiveDragActivityTab
-} from "./dragActivity/dragActivityTool";
+import { GameTool, setActiveDragActivityTab } from "./games/GameTool";
+import { IAudioRecorder } from "./talkingBook/IAudioRecorder";
+import { theOneAudioRecorder } from "./talkingBook/audioRecording";
 
 export interface IToolboxFrameExports {
     addWordListChangedListener(
@@ -29,7 +28,7 @@ export interface IToolboxFrameExports {
         callback: () => void
     ): void;
 
-    loadLongpressInstructions(jQuerySetOfMatchedElements): void;
+    activateLongPressFor(jQuerySetOfMatchedElements): void;
 
     getTheOneToolbox(): ToolBox;
 
@@ -40,6 +39,7 @@ export interface IToolboxFrameExports {
 
     removeToolboxMarkup(): void;
     setActiveDragActivityTab(tab: number): void;
+    getTheOneAudioRecorderForExportOnly(): IAudioRecorder;
 }
 
 // each of these exports shows up under this window's toolboxBundle object (see bloomFrames.ts)
@@ -54,7 +54,7 @@ export {
     beginSaveChangedSettings,
     makeLetterWordList
 } from "./readers/readerTools";
-export { loadLongpressInstructions } from "../js/bloomEditing";
+export { activateLongPressFor } from "../js/bloomEditing";
 export { TalkingBookTool }; // one function is called by CSharp.
 
 export { getTheOneToolbox };
@@ -80,6 +80,11 @@ export function applyToolboxStateToPage() {
     applyToolboxStateToUpdatedPage();
 }
 
+// Don't use this directly, use getAudioRecorder() in audioRecording.ts instead.
+export function getTheOneAudioRecorderForExportOnly(): IAudioRecorder {
+    return theOneAudioRecorder;
+}
+
 export function copyLeveledReaderStatsToClipboard() {
     const readerToolsModel = getTheOneReaderToolsModel();
     if (readerToolsModel) {
@@ -103,4 +108,4 @@ ToolBox.registerTool(new TalkingBookTool());
 ToolBox.registerTool(new SignLanguageTool());
 ToolBox.registerTool(new ImageDescriptionAdapter());
 ToolBox.registerTool(new OverlayTool());
-ToolBox.registerTool(new DragActivityTool());
+ToolBox.registerTool(new GameTool());

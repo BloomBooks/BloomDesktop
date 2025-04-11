@@ -30,6 +30,7 @@ namespace Bloom.web.controllers
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
+        // See also PageTemplateApi.
         {
             // Both of these display UI, expect to require UI thread.
             apiHandler
@@ -188,6 +189,10 @@ namespace Bloom.web.controllers
             if (requestData.convertWholeBook)
                 convertWholeBook = true;
             var allowDataLoss = requestData.allowDataLoss;
+            if (!string.IsNullOrEmpty(requestData.dataToolId))
+            {
+                page.GetDivNodeForThisPage().SetAttribute("data-tool-id", requestData.dataToolId);
+            }
 
             int addNum;
             // Unfortunately, a try-catch is the only reliable way to know if 'numberToAdd' is defined or not.

@@ -360,24 +360,28 @@ namespace Bloom.Book
                         SafeXmlElement soundElt in Dom.Body.SafeSelectNodes(".//div[@data-sound]")
                     )
                     {
-                        _specialAudioFiles.Add(soundElt.GetAttribute("data-sound"));
+						AddAttrFilenameValueToSet(soundElt, "data-sound", _specialAudioFiles);
                     }
 
                     foreach (var page in Dom.GetPageElements())
                     {
-                        AddAttrValueToSet(page, "data-correct-sound", _specialAudioFiles);
-                        AddAttrValueToSet(page, "data-wrong-sound", _specialAudioFiles);
+                        AddAttrFilenameValueToSet(page, "data-correct-sound", _specialAudioFiles);
+                        AddAttrFilenameValueToSet(page, "data-wrong-sound", _specialAudioFiles);
                     }
                 }
                 return _specialAudioFiles;
             }
         }
 
-        void AddAttrValueToSet(SafeXmlElement elt, string attrName, HashSet<string> set)
+        /// <summary>
+        /// Get a filename from an optional attribute, and if present, store the normalized form
+        /// of the filename in the set.
+        /// </summary>
+        void AddAttrFilenameValueToSet(SafeXmlElement elt, string attrName, HashSet<string> set)
         {
             var value = elt.GetAttribute(attrName);
-            if (value != null)
-                set.Add(value);
+            if (!String.IsNullOrEmpty(value))
+                set.Add(normalizePath(value));
         }
 
         private HashSet<string> _musicFiles;

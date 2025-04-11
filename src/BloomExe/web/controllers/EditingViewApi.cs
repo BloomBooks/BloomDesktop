@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -29,8 +30,8 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler("editView/setModalState", HandleSetModalState, true);
             apiHandler.RegisterEndpointHandler("editView/chooseWidget", HandleChooseWidget, true);
             apiHandler.RegisterEndpointHandler(
-                "editView/getColorsUsedInBookOverlays",
-                HandleGetColorsUsedInBookOverlays,
+                "editView/getColorsUsedInBookCanvasElements",
+                HandleGetColorsUsedInBookCanvasElements,
                 true
             );
             apiHandler.RegisterEndpointHandler("editView/pageDomLoaded", HandlePageDomLoaded, true);
@@ -89,6 +90,11 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler("editView/jumpToPage", HandleJumpToPage, true);
+            apiHandler.RegisterEndpointHandler(
+                "editView/addImageFromUrl",
+                HandleAddImageFromUrl,
+                true
+            );
         }
 
         private void HandleJumpToPage(ApiRequest request)
@@ -173,7 +179,9 @@ namespace Bloom.web.controllers
                 // If this is a different language than the current one, shift the current to secondary
                 if (langTag != Settings.Default.LastSourceLanguageViewed)
                 {
-                    Settings.Default.LastSourceLanguageViewed2 = Settings.Default.LastSourceLanguageViewed;
+                    Settings.Default.LastSourceLanguageViewed2 = Settings
+                        .Default
+                        .LastSourceLanguageViewed;
                     Settings.Default.LastSourceLanguageViewed = langTag;
                     Settings.Default.Save();
                 }
@@ -260,7 +268,7 @@ namespace Bloom.web.controllers
         }
 
         static Regex _bloomHyperlinkRegex = new Regex(
-            @"^bloomnav://book/([-A-Fa-f0-9]+)\?page=([-A-Fa-f0-9]+|cover)$",
+            @"^(/book/([-A-Fa-f0-9]+))?(#(cover|[-A-Fa-f0-9]+))?",
             RegexOptions.Compiled
         );
 
@@ -278,8 +286,8 @@ namespace Bloom.web.controllers
             var match = _bloomHyperlinkRegex.Match(text);
             if (match.Success)
             {
-                var bookId = match.Groups[1].Value;
-                var pageId = match.Groups[2].Value;
+                var bookId = match.Groups[2].Value;
+                var pageId = match.Groups[4].Value;
                 // It is no good linking to xmatter pages by id because their IDs change.
                 // We maintain a link to the outside front cover using the id "cover" to get
                 // around this problem.
@@ -368,7 +376,7 @@ namespace Bloom.web.controllers
             }
         }
 
-        private void HandleGetColorsUsedInBookOverlays(ApiRequest request)
+        private void HandleGetColorsUsedInBookCanvasElements(ApiRequest request)
         {
             var model = View.Model;
             if (!model.HaveCurrentEditableBook)
@@ -381,7 +389,7 @@ namespace Bloom.web.controllers
             // colors to fit in our dialog's swatch array. (2) Order the list returned by frequency, so the most
             // frequently used colors are at the front of the resultant swatch array.
             var currentBookDom = currentBook.OurHtmlDom;
-            var colors = currentBookDom.GetColorsUsedInBookBubbleElements();
+            var colors = currentBookDom.GetColorsUsedInBookCanvasElements();
             request.ReplyWithText("[" + String.Join(",", colors) + "]");
         }
 
@@ -458,6 +466,25 @@ namespace Bloom.web.controllers
             }
 
             request.ReplyWithJson(answer);
+        }
+
+        private void HandleAddImageFromUrl(ApiRequest request)
+        {
+            var desiredFileNameWithoutExtension = request.RequiredPostString(
+                "desiredFileNameWithoutExtension"
+            );
+            var url = request.RequiredPostString("url");
+
+            try
+            {
+                // When this is done, it will send a websocket message of the form "makeThumbnailFile-" + imageId
+                Task.Run(() => View.AddImageFromUrlAsync(desiredFileNameWithoutExtension, url));
+                request.PostSucceeded();
+            }
+            catch (Exception ex)
+            {
+                request.Failed("Error adding image: " + ex.Message);
+            }
         }
     }
 }

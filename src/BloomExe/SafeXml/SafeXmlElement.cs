@@ -102,6 +102,21 @@ namespace Bloom.SafeXml
                 return GetClasses().Contains(className);
         }
 
+        public static SafeXmlElement[] GetAllDivsWithClass(
+            SafeXmlElement containerElement,
+            string className
+        )
+        {
+            const string xpath =
+                ".//div[contains(concat(' ', normalize-space(@class), ' '), ' {0} ')]";
+            var classPath = xpath.Replace("{0}", className);
+            // It's a pain to have to make another array when SafeSelectNodes already made one,
+            // but children that have a class are certainly elements, and it makes no sense not
+            // to return the proper type of array. If it becomes a performance problem, we can
+            // find a way to postpone the ToArray() until after we do the cast.
+            return containerElement.SafeSelectNodes(classPath).Cast<SafeXmlElement>().ToArray();
+        }
+
         public void AddClass(string className)
         {
             lock (_doc.Lock)
@@ -224,6 +239,9 @@ namespace Bloom.SafeXml
             }
             parent.RemoveChild(this);
         }
+
+        public SafeXmlElement FirstElementChild =>
+            ChildNodes.FirstOrDefault(n => n is SafeXmlElement) as SafeXmlElement;
 
         /// <summary>
         /// Use this only for tests!

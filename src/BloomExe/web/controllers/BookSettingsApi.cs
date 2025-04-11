@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
-using System.Linq;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.web.controllers;

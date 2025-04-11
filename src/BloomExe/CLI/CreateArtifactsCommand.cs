@@ -383,7 +383,7 @@ namespace Bloom.CLI
 
             maker.Book = s_book;
             // This is the previous default, but probably we should make it configurable, and possibly change the default.
-            // Note that it will end up Fixed if the presence of Comic bubbles requires it.
+            // Note that it will end up Fixed if the presence of canvas elements requires it.
             maker.Unpaginated = true;
             // and if it has explicitly been set to fixed, make it that way.
             if (s_book.BookInfo?.PublishSettings?.Epub?.Mode == "fixed")

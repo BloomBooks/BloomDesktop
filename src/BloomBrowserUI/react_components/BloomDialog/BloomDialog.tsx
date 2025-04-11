@@ -40,9 +40,15 @@ export interface IBloomDialogProps extends DialogProps {
     // The available reasons come from MUI's DialogProps.
     onClose: (evt?: object, reason?: "escapeKeyDown" | "backdropClick") => void;
 
-    // If you define this, then ways of leaving the dialog other than the OK/accept button (escape, clicking out, the cancel button)
-    // will call it.
-    onCancel?: () => void;
+    // If you define this, then ways of leaving the dialog other than the OK/accept button (escape, clicking out,
+    // the cancel button, the BloomTitle close button) will call it.
+    onCancel?: (
+        reason?:
+            | "escapeKeyDown"
+            | "backdropClick"
+            | "titleCloseClick"
+            | "cancelClicked"
+    ) => void;
 
     // we know of at least one scenario (CopyrightAndLicenseDialog) which needs to do
     // this because enabling it causes a react render loop. Our theory is that there is
@@ -76,15 +82,16 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                     padding-bottom: ${kDialogBottomPadding};
                     // dialogFrameProvidedExternally means that we're inside of a winforms dialog.
                     /// So we grow to fit it, and we supply a single black border for some reason (?)
-                    ${props.dialogFrameProvidedExternally
-                        ? `height: 100%; border: solid thin black; box-sizing: border-box;`
-                        : ""}
-
-                    * {
-                        // This value is the same as that given in bloomMaterialUITheme.  For some
-                        // reason, it is not being applied here.  See BL-10208 and BL-10228.
-                        font-family: ${kUiFontStack};
+                    ${
+                        props.dialogFrameProvidedExternally
+                            ? `height: 100%; border: solid thin black; box-sizing: border-box;`
+                            : ""
                     }
+
+                    // This value is the same as that given in bloomMaterialUITheme.  For some
+                    // reason, it is not being applied here.  See BL-10208 and BL-10228.
+                    font-family: ${kUiFontStack};
+
                     // This will correctly allow the DialogMiddle to add its scrollbar when needed.
                     // Callers should set dialog height by setting the height of DialogMiddle.
                     overflow: auto;
@@ -129,6 +136,25 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
             ...propsToPass
         } = props;
 
+        // Add a key down handler for when dialogFrameProvidedExternally is true.
+        // When dialogFrameProvidedExternally is false, Escape is handled by the Dialog component.
+        useEffect(() => {
+            if (dialogFrameProvidedExternally && (onCancel || onClose)) {
+                const handleKeyDown = (event: KeyboardEvent) => {
+                    if (event.key === "Escape") {
+                        if (onCancel) onCancel("escapeKeyDown");
+                        else onClose(event, "escapeKeyDown");
+                    }
+                };
+
+                document.addEventListener("keydown", handleKeyDown);
+                return () => {
+                    document.removeEventListener("keydown", handleKeyDown);
+                };
+            }
+            return undefined;
+        }, [dialogFrameProvidedExternally, onCancel, onClose]);
+
         const disableDragging =
             disableDraggingProp !== undefined
                 ? disableDraggingProp
@@ -142,9 +168,6 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
         }
 
         const hasTitle = hasChildOfType("DialogTitle");
-
-        //const cancellable = hasChildOfType("DialogCancelButton");
-        const cancellable = props.onCancel != undefined;
 
         function getPaperComponent() {
             if (disableDragging) {
@@ -172,7 +195,7 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                                 ) => {
                                     // MUI.Dialog onClose() is only called if you click outside the dialog or escape, so that's
                                     // the same as canceling for dialogs that have a notion of canceling.
-                                    if (props.onCancel) props.onCancel();
+                                    if (props.onCancel) props.onCancel(reason);
                                     else props.onClose(event, reason);
                                 }}
                                 // maxWidth={false} Instead, if you want more than the default (600px?) then add maxWidth={false} in the props.
@@ -222,6 +245,8 @@ export const DialogTitle: FunctionComponent<{
     // to show an arbitrary React thing for the icon seemed uglier.)
     icon?: React.ReactNode | string;
     title: string; // note, this is prop instead of just a child so that we can ensure vertical alignment and bar height, which are easy to mess up.
+    // true: no close button. otherwise: close button iff BloomDialogContext has onCancel.
+    preventCloseButton?: boolean;
 }> = props => {
     const color = props.color || "black";
     const background = props.backgroundColor || "transparent";
@@ -291,7 +316,7 @@ export const DialogTitle: FunctionComponent<{
             </h1>
             {/* Example child would be a Spinner in a progress dialog. */}
             {props.children}
-            {context.onCancel && (
+            {context.onCancel && !props.preventCloseButton && (
                 <IconButton
                     aria-label={closeText}
                     title={closeText}
@@ -303,7 +328,7 @@ export const DialogTitle: FunctionComponent<{
                         padding: unset;
                         display: flex;
                     `}
-                    onClick={context.onCancel}
+                    onClick={() => context.onCancel?.("titleCloseClick")}
                 >
                     <CloseIcon />
                 </IconButton>
@@ -315,7 +340,7 @@ DialogTitle.displayName = "DialogTitle";
 
 // The height of this is determined by what is inside of it. If the content might grow (e.g. a progress box), then it's up to the
 // client to set maxes or fixed dimensions. See <ProgressDialog> for an example.
-export const DialogMiddle: FunctionComponent<{}> = props => {
+export const DialogMiddle: FunctionComponent = props => {
     return (
         <div
             id="draggable-dialog-middle"
@@ -347,7 +372,7 @@ export const DialogMiddle: FunctionComponent<{}> = props => {
 };
 
 // should be a child of DialogBottomButtons
-export const DialogBottomLeftButtons: FunctionComponent<{}> = props => (
+export const DialogBottomLeftButtons: FunctionComponent = props => (
     <div
         css={css`
             margin-right: auto;
@@ -371,7 +396,7 @@ export const DialogBottomLeftButtons: FunctionComponent<{}> = props => (
 );
 
 // normally one or more buttons. 1st child can also be <DialogBottomLeftButtons> if you have left-aligned buttons to show
-export const DialogBottomButtons: FunctionComponent<{}> = props => {
+export const DialogBottomButtons: FunctionComponent = props => {
     return (
         <div
             css={css`
@@ -436,7 +461,13 @@ const DraggablePaperLimited: FunctionComponent<PaperProps> = props => {
 
 // This used to pass down things to components of the dialog
 type BloomDialogContextArgs = {
-    onCancel?: () => void;
+    onCancel?: (
+        reason?:
+            | "escapeKeyDown"
+            | "backdropClick"
+            | "titleCloseClick"
+            | "cancelClicked" // an instance of DialogCancelButton was clicked
+    ) => void;
     disableDragging: boolean;
 };
 export const BloomDialogContext = React.createContext<BloomDialogContextArgs>({

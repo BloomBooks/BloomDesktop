@@ -395,15 +395,21 @@ namespace Bloom.Collection
                     return;
                 var editable = Type == CollectionType.TheOneEditableCollection;
                 ISaveContext sc = editable
-                    ? _tcManager?.CurrentCollectionEvenIfDisconnected
-                        ?? new AlwaysEditSaveContext() as ISaveContext
-                    : new NoEditSaveContext() as ISaveContext;
+                    ? _tcManager?.CurrentCollectionEvenIfDisconnected as ISaveContext
+                        ?? AlwaysEditSaveContext.Singleton
+                    : NoEditSaveContext.Singleton;
                 // I think this is no longer true, but at one point we could sometimes (race condition) select a book
                 // before its containing collection was initialized.
                 // The bookInfo already in the book would eventually be more up-to-date (e.g., its AppearanceSettings gets
                 // Initialized) than a new one we would create here. So use it instead of making a new one.
+                // Mar 2025: I think this is no longer a problem, because the BookInfo constructor fully loads
+                // AppearanceSettings. Not sure, so I'm leaving this code here, but I've made another exception,
+                // because it's bad to use the selection BookInfo if it has the wrong SaveContext.
                 var bookInfo =
-                    (folderPath == _bookSelection.CurrentSelection?.FolderPath)
+                    (
+                        folderPath == _bookSelection.CurrentSelection?.FolderPath
+                        && _bookSelection.CurrentSelection.BookInfo.SaveContext == sc
+                    )
                         ? _bookSelection.CurrentSelection.BookInfo
                         : new BookInfo(folderPath, editable, sc);
 
@@ -558,7 +564,14 @@ namespace Bloom.Collection
 
         public BookInfo GetBookInfoByFolderPath(string path)
         {
-            return GetBookInfos().FirstOrDefault(b => b.FolderPath == path);
+            // This might need adjustment if we ever get Linux/Mac versions working. But I think even if we do we
+            // should forbid two books in the same collection with names differing only by case. For one thing,
+            // it will be a nightmare to make a TC work on Windows if Linux has created two such books.
+            // Assuming that, this change is helpful on Windows (e.g., when renaming a book and only case changed)
+            // and should be harmless (maybe even helpful in the same way) on Linux/Mac.
+            // If it does need fixing, check out the similar method in CollectionModel.
+            return GetBookInfos()
+                .FirstOrDefault(b => b.FolderPath.ToLowerInvariant() == path.ToLowerInvariant());
         }
 
         public BookInfo GetBookInfoById(string id)

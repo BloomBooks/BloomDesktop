@@ -1033,10 +1033,7 @@ namespace Bloom.Book
                 return;
             }
             _pagesCache = null;
-            string oldMetaData = string.Empty;
 
-            // This does its own check for whether it needs to be done, and updates the state
-            // after doing anything it needs to.
             EnsureUpToDateMemory(progress);
 
             Storage.MigrateToMediaLevel1ShrinkLargeImages();
@@ -1587,11 +1584,13 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Bring the page up to date. Currently this is used to switch various old page types to new versions
-        /// based on Custom Page (so they can actually be customized).
+        /// Update some very old page types to new versions
+        /// based on Custom Page (so they can be customized using origami).
+        /// Assumes the pages have already been updated to use bloom-canvas rather than bloom-imageContainer,
+        /// although pages that old certainly would not have before migration started.
         /// </summary>
         /// <param name="page"></param>
-        public void BringPageUpToDate(SafeXmlElement page)
+        public void ConvertPreOrigamiPages(SafeXmlElement page)
         {
             var lineage = page.GetAttribute("data-pagelineage");
             if (string.IsNullOrEmpty(lineage))
@@ -1751,19 +1750,6 @@ namespace Bloom.Book
                 OurHtmlDom.RawDom.RemoveClassFromBody("template");
             }
 
-            // Following code (roughly) was in the main BBUD but we were doing it when the book gets selected.
-            // We've now simplified to only three states, so it makes most sense to do everything we can
-            // that doesn't involve writing files here.
-            progress.WriteStatus("Updating pages...");
-            foreach (
-                SafeXmlElement pageDiv in OurHtmlDom.SafeSelectNodes(
-                    "//body/div[contains(@class, 'bloom-page')]"
-                )
-            )
-            {
-                BringPageUpToDate(pageDiv);
-            }
-
             // Most of this probably only needs doing if we're actually about to edit it.
             // But earlier versions did it whenever we did BBUD on a book in the editable collection,
             // and I'm not game to change it.
@@ -1791,8 +1777,26 @@ namespace Bloom.Book
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
+            Storage.MigrateToLevel5CanvasElement();
+            Storage.MigrateToLevel6LegacyActivities();
+            Storage.MigrateToLevel7BloomCanvas();
+
             Storage.DoBackMigrations();
-            // After DoBackMigrations, since looking for the renamed class
+
+            // Following code (roughly) was in the main BBUD but we were doing it when the book gets selected.
+            // We've now simplified to only three states, so it makes most sense to do everything we can
+            // that doesn't involve writing files here.
+            // Needs to be after the bloom-canvas migration.
+            progress.WriteStatus("Updating pages...");
+            foreach (
+                SafeXmlElement pageDiv in OurHtmlDom.SafeSelectNodes(
+                    "//body/div[contains(@class, 'bloom-page')]"
+                )
+            )
+            {
+                ConvertPreOrigamiPages(pageDiv);
+            }
+
             RemoveObsoleteImageAttributes(OurHtmlDom);
 
             // Make sure the appearance settings have checked the current state of the css files.
@@ -2456,7 +2460,9 @@ namespace Bloom.Book
                 layout,
                 BookInfo.UseDeviceXMatter,
                 _bookData.MetadataLanguage1Tag,
-                oldIds
+                oldIds,
+                BookInfo.AppearanceSettings.CoverIsImage
+                    && CollectionSettings.Subscription.HaveActiveSubscription
             );
 
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
@@ -3392,13 +3398,13 @@ namespace Bloom.Book
         /// </summary>
         private static void RemoveImageResolutionMessageAndAddMissingImageMessage(HtmlDom dom)
         {
-            var imageContainerList = dom.Body.SafeSelectNodes(
-                "//div[contains(@class,'bloom-imageContainer')]"
+            var bloomCanvasList = dom.Body.SafeSelectNodes(
+                "//div[contains(@class,'bloom-canvas')]"
             );
-            foreach (SafeXmlElement imageContainer in imageContainerList)
+            foreach (SafeXmlElement bloomCanvas in bloomCanvasList)
             {
-                imageContainer.RemoveAttribute("title");
-                foreach (SafeXmlElement img in imageContainer.SafeSelectNodes("img"))
+                bloomCanvas.RemoveAttribute("title");
+                foreach (SafeXmlElement img in bloomCanvas.SafeSelectNodes("img"))
                 {
                     var src = img.GetAttribute("src");
                     var alt = img.GetAttribute("alt");
@@ -3990,8 +3996,13 @@ namespace Bloom.Book
         }
 
         public bool FullBleed =>
-            BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-            && CollectionSettings.Subscription.HaveActiveSubscription;
+            (
+                // Wants to be
+                // BookInfo.AppearanceSettings.FullBleed
+                // but we haven't put that in the book settings yet.
+                BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
+                || BookInfo.AppearanceSettings.CoverIsImage
+            ) && CollectionSettings.Subscription.HaveActiveSubscription;
 
         /// <summary>
         /// Save the page content to the DOM.
@@ -4663,6 +4674,7 @@ namespace Bloom.Book
             }
 
             RemoveObsoleteSoundAttributes(OurHtmlDom);
+            RemoveVideoWarnings();
             // Note that at this point _bookData has already been updated with the edited page's data, if any.
             // This will take priority over other data it finds in the book, even earlier in the book
             // than the edited page.
@@ -4678,6 +4690,29 @@ namespace Bloom.Book
                 PageTemplateSource = Path.GetFileName(FolderPath);
             }
 
+            // This doesn't seem like the best place for this code.
+            // For example, it would probably be better to do immediately when saving book settings dialog.
+            // But this is the only place I could find to plumb things to actually get it to work.
+            // Other attempts to break into the complicated book save cycle were unsuccessful.
+            if (BookInfo.AppearanceSettings.PendingChangeRequiresXmatterUpdate)
+            {
+                // Yes, calling EnsureUpToDateMemory() is unfortunately overkill.
+                // And an unfortunate expansion of the use of this version of the method.
+                // It would be great if there was a way to just update the XMatter;
+                // in theory, that would be BringXmatterHtmlUpToDate().
+                // But just calling that leaves several things undone, including
+                // - calling either UpdateVariablesAndDataDivThroughDOM() or SynchronizeDataItemsThroughoutDOM()
+                //    (such that data-book values are lost)
+                // - calling UpdatePageNumberAndSideClassOfPages()
+                //    (such that side-right/left classes are lost)
+                // If we knew it was just those, we could call them here instead
+                // (we can even move this above the call to UpdateVariablesAndDataDivThroughDOM above).
+                // But there is a whole slew of things EnsureUpToDateMemory() does after calling BringXmatterHtmlUpToDate()
+                // and I wouldn't have any confidence that some of the rest of it is not needed here as well.
+                EnsureUpToDateMemory(new NullProgress());
+            }
+            BookInfo.AppearanceSettings.PendingChangeRequiresXmatterUpdate = false;
+
             try
             {
                 Storage.Save();
@@ -4689,6 +4724,18 @@ namespace Bloom.Book
             }
 
             DoPostSaveTasks();
+        }
+
+        private void RemoveVideoWarnings()
+        {
+            var warningDivs = OurHtmlDom
+                .SafeSelectNodes("//div[contains(@class,'video-error-message')]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            foreach (var div in warningDivs)
+            {
+                div.ParentElement.RemoveChild(div);
+            }
         }
 
         public void SaveForPageChanged(string pageId, SafeXmlElement modifiedPage)
@@ -4747,8 +4794,10 @@ namespace Bloom.Book
         {
             foreach (
                 var img in htmlDom.RawDom
+                    // a normal fully up-to-date book shouldn't have imgs directly in bloom-canvas,
+                    // but books we're migrating might.
                     .SafeSelectNodes(
-                        "//div[contains(@class,'bloom-imageContainer')]/img[@style|@width|@height]"
+                        "//div[contains(@class,'bloom-imageContainer') or contains(@class, 'bloom-canvas')]/img[@style|@width|@height]"
                     )
                     .Cast<SafeXmlElement>()
             )
@@ -4758,11 +4807,11 @@ namespace Bloom.Book
                         .GetOptionalStringAttribute("class", "")
                         .Contains("bloom-scale-with-code")
                     // Compare JS function SetupImage in bloomImages.ts. We stopped using explicit image
-                    // sizes in 2018 and added image overlays in 2022, so it should be very safe to
-                    // NOT remove explicit sizes from images in overlays. And in 6.1 (late 2024)
-                    // we started using explicit sizes in overlays for cropping, so removing them
+                    // sizes in 2018 and added image canvas elements in 2022, so it should be very safe to
+                    // NOT remove explicit sizes from images in canvas elements. And in 6.1 (late 2024)
+                    // we started using explicit sizes in canvas elements for cropping, so removing them
                     // is harmful.
-                    || img.ParentWithClass("bloom-textOverPicture") != null
+                    || img.ParentWithClass(HtmlDom.kCanvasElementClass) != null
                 )
                     continue;
                 var style = img.GetOptionalStringAttribute("style", "");
@@ -5095,7 +5144,7 @@ namespace Bloom.Book
         /// <summary>
         /// The primary focus of this method is removing pages we don't want in bloompub files,
         /// particularly xmatter pages that often don't have content but just might.
-        /// It will detect pages with img elements or bloom-imageContainer elements with
+        /// It will detect pages with img elements or bloom-canvas elements with
         /// background images, and as long as the image isn't our placeholder, such pages
         /// are non-blank. For text, it is looking for divs that have the bloom-visibility-code-on
         /// class (and some non-white content). This means that it's looking for content that is
@@ -5207,7 +5256,7 @@ namespace Bloom.Book
             }
             foreach (
                 SafeXmlElement div in page.SafeSelectNodes(
-                    ".//div[contains(@class, 'bloom-imageContainer')]"
+                    ".//div[contains(@class, 'bloom-imageContainer') or contains(@class, 'bloom-canvas')]"
                 )
             )
             {
@@ -5238,12 +5287,12 @@ namespace Bloom.Book
                 )
             )
             {
-                // For now we only apply this to the first image container.
-                var imgContainer =
+                // For now we only apply this to the first bloom-canvas.
+                var bloomCanvas =
                     page.SelectSingleNode(
-                        ".//div[contains(@class, 'bloom-imageContainer') and @data-initialrect]"
+                        ".//div[contains(@class, 'bloom-canvas') and @data-initialrect]"
                     ) as SafeXmlElement;
-                if (imgContainer == null)
+                if (bloomCanvas == null)
                     continue;
                 double duration = 0.0;
                 foreach (
@@ -5269,7 +5318,7 @@ namespace Bloom.Book
                 }
                 if (duration == 0.0)
                     duration = 4.0; // per BL-5393, if we don't have voice durations use 4 seconds.
-                imgContainer.SetAttribute(
+                bloomCanvas.SetAttribute(
                     "data-duration",
                     duration.ToString(CultureInfo.InvariantCulture)
                 );
@@ -5281,7 +5330,7 @@ namespace Bloom.Book
         public bool HasQuizPages => OurHtmlDom.HasQuizPages();
         public bool HasActivities => OurHtmlDom.HasActivityPages();
 
-        public bool HasComicalOverlays => OurHtmlDom.HasComicalOverlays();
+        public bool HasComicalOverlays => OurHtmlDom.HasComicalCanvasElements();
 
         public bool HasOnlyPictureOnlyPages()
         {
@@ -5552,10 +5601,10 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Used by the publish tab to tell the user they can't publish a book with Overlay elements w/o Enterprise.
+        /// Used by the publish tab to tell the user they can't publish a book with canvas elements w/o Enterprise.
         /// </summary>
         /// <returns></returns>
-        public string GetNumberOfFirstPageWithOverlay()
+        public string GetNumberOfFirstPageWithCanvasElement()
         {
             var pageNodes = RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
             if (pageNodes.Length == 0) // Unexpected!
@@ -5563,7 +5612,7 @@ namespace Bloom.Book
             foreach (var pageNode in pageNodes)
             {
                 var resultNode = pageNode.SelectSingleNode(
-                    ".//div[contains(@class,'bloom-textOverPicture')]"
+                    ".//div[contains(@class,'" + HtmlDom.kCanvasElementClass + "')]"
                 );
                 if (resultNode == null)
                     continue;
@@ -5572,7 +5621,7 @@ namespace Bloom.Book
                 {
                     return pageNumberAttribute;
                 }
-                // If at some point we allow overlay elements on xmatter,
+                // If at some point we allow canvas element elements on xmatter,
                 // we will need to find and return the 'data-xmatter-page' attribute.
             }
             return ""; // Also unexpected!

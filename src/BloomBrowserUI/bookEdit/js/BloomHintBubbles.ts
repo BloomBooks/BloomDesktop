@@ -91,14 +91,14 @@ export default class BloomHintBubbles {
             });
 
         $(container)
-            .find("*.bloom-imageContainer > label.bubble")
+            .find("*.bloom-canvas > label.bubble")
             .each(function() {
                 const labelElement = $(this);
-                const imageContainer = $(this).parent();
+                const bloomCanvas = $(this).parent();
                 const whatToSay = labelElement.text();
                 if (!whatToSay) return;
                 // These can't have source bubbles, no need to look for that.
-                BloomHintBubbles.MakeHelpBubble(imageContainer, labelElement);
+                BloomHintBubbles.MakeHelpBubble(bloomCanvas, labelElement);
             });
 
         //This is the "low-level" way to get a hint bubble, cramming it all into a data-hint attribute.

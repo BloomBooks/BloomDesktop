@@ -6,6 +6,7 @@ using System.Text;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
@@ -30,6 +31,8 @@ namespace Bloom.web.controllers
         private readonly List<object> _numberingStyles = new List<object>();
         private readonly XMatterPackFinder _xmatterPackFinder;
         private readonly BookSelection _bookSelection;
+
+        public static event EventHandler<LanguageChangeEventArgs> LanguageChange;
 
         public CollectionSettingsApi(
             CollectionSettings collectionSettings,
@@ -128,6 +131,32 @@ namespace Bloom.web.controllers
                     }
                 },
                 false
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "changeLanguage",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Get)
+                        return; // Should be a post
+                    var data = DynamicJson.Parse(request.RequiredPostJson());
+                    if (string.IsNullOrEmpty(data.LanguageTag))
+                    {
+                        // User clicked cancel. Clear all listeners for this dialog
+                        UnsubscribeAllLanguageChangeListeners();
+                    }
+                    LanguageChange?.Invoke(
+                        this,
+                        new LanguageChangeEventArgs()
+                        {
+                            LanguageTag = data.LanguageTag,
+                            DesiredName = data.DesiredName,
+                            DefaultName = data.DefaultName,
+                            Country = data.Country
+                        }
+                    );
+                    request.PostSucceeded();
+                },
+                true
             );
             // Calls to handle communication with new FontScriptControl on Book Making tab
             apiHandler.RegisterEndpointHandler(
@@ -521,5 +550,20 @@ namespace Bloom.web.controllers
         public void PrepareToShowDialog() { }
 
         public static void DialogClosed() { }
+
+        public static void UnsubscribeAllLanguageChangeListeners()
+        {
+            if (LanguageChange == null)
+                return;
+            foreach (Delegate del in LanguageChange.GetInvocationList())
+            {
+                EventHandler<LanguageChangeEventArgs> handler =
+                    del as EventHandler<LanguageChangeEventArgs>;
+                if (handler != null)
+                {
+                    LanguageChange -= handler;
+                }
+            }
+        }
     }
 }

@@ -15,19 +15,24 @@
         // When an image is the prompt, it looks bad if a closely-cropped image is right up against the colored background of the page.
         // When an image is the answer, there is a white border but it still looks better with some padding. These don't necessarily
         // need to be the same padding, but at the moment they are.
-        .bloom-imageContainer img {
+        // Careful where this is put. Padding on the bloom-canvas or the img, for example, doesn't work when cropping.
+        // Note: the rule to do this actually didn't work in 6.1 for the case where the image is the prompt, but in the course
+        // of fixing the 6.1 rule for 6.2, I made it actually work there.
+        .bloom-backgroundImage {
             padding: 5px;
             box-sizing: border-box;
+            background-color: white;
+            border-radius: 8px;
         }
 
         .Prompt-style {
-            // not that .Prompt-style is also a user-modifiable style in the .htm file
+            // note that .Prompt-style is also a user-modifiable style in the .htm file
             margin-bottom: 10px;
         }
 
         .player-button {
             display: block;
-            border: none;
+            border: 1px solid var(--button-choice-border-color);
             margin-bottom: 11px;
             margin-right: 7px; // need room to show any button shadows
 
@@ -84,9 +89,9 @@
     &[class*="Landscape"] {
         .imageThenChoices {
             flex-direction: row;
-            align-items: center; // nb: messes up the img size unless the image container has a explicit height
+            align-items: center; // nb: messes up the img size unless the bloom canvas has a explicit height
 
-            div.bloom-imageContainer {
+            div.bloom-canvas {
                 margin-right: 10px;
                 width: 50%;
                 height: 80%; // undesirable but see note above about align-items:center on the parent, imageAndChoices
@@ -111,7 +116,7 @@
         .imageThenChoices {
             flex-direction: column;
 
-            div.bloom-imageContainer {
+            div.bloom-canvas {
                 height: 40% !important;
                 margin-bottom: 10px;
             }
@@ -126,7 +131,7 @@
         .imageThenChoices {
             flex-direction: column;
 
-            div.bloom-imageContainer {
+            div.bloom-canvas {
                 height: 70% !important;
                 margin-bottom: 10px;
             }
@@ -184,9 +189,9 @@
 
             .player-button {
                 margin: 1rem;
-                .bloom-imageContainer {
+                .bloom-canvas {
                     // NB: a transparent background is fine in edit, where there is an <img>, but in bloomPUB (for some reason?) the image is places as a background-image
-                    // on the bloom-imageContainer, and so a transparent background actually makes it disappear.
+                    // on the bloom-canvas, and so a transparent background actually makes it disappear.
                     // background: transparent;
                     height: 100%;
                     margin-left: auto;
@@ -202,7 +207,7 @@
 
     &[class*="Landscape"] {
         .marginBox .wordThenChoices {
-            align-items: center; // nb: messes up the img size unless the image container has a explicit height
+            align-items: center; // nb: messes up the img size unless the bloom canvas has a explicit height
 
             .choices {
                 height: 100%;
@@ -266,12 +271,18 @@
     // page
 
     & {
-        background-color: #539eff; // legacy-only, beaten by appearance system setting to var with !important
-        --page-background-color: #539eff; // appearance system
+        color: var(--page-foreground-color);
+        // in previous versions, a definition of Prompt-style set color:white.
+        // Migrating this causes a problem if the book is opened using an older Bloom.
+        // So, this stronger rule defeats that one.
+        .bloom-editable.Prompt-style {
+            color: var(--header-color);
+            background-color: var(--header-background-color);
+        }
     }
     // page number
     &.numberedPage::after {
-        color: white;
+        color: var(--page-foreground-color);
         --pageNumber-background-color: var(
             --page-background-color
         ); // appearance system
@@ -284,14 +295,17 @@
         border-radius: 10px;
         background-color: white;
 
+        color: var(--button-choice-color);
+        background-color: var(--button-choice-background-color);
+
         &.chosen-correct {
-            color: white;
-            background-color: #ffb453;
+            color: var(--button-correct-color);
+            background-color: var(--button-correct-background-color);
         }
 
         &.chosen-wrong {
-            color: white;
-            background-color: #848484;
+            color: var(--button-wrong-color);
+            background-color: var(--button-wrong-background-color);
         }
 
         // when the button is depressed
@@ -304,7 +318,7 @@
     }
 
     .imageThenChoices {
-        .bloom-imageContainer {
+        .bloom-canvas {
             background-color: transparent;
             border-radius: 8px;
         }
@@ -312,10 +326,10 @@
 
     .wordThenChoices {
         .TextToMatch-style {
-            color: white;
+            color: var(--page-foreground-color);
         }
 
-        .bloom-imageContainer {
+        .bloom-canvas {
             background-color: white;
         }
     }

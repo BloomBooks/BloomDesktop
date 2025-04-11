@@ -110,9 +110,13 @@ mixin field-version1(placeholder)
 //-		+image.storyPicture
 //-			+field.bloom-draggableLabel
 //-			+field.bloom-draggableLabel
+//- we may want to update this to the new architecture that puts the img inside a background canvas element,
+//- but that needs sizes and positions that depend on the page size and orientation. I tentatively
+//- think it's better to make the template books with the old architecture, and let them be migrated
+//- and sized when the page opens in our editor.
 mixin image
 	- requireZeroArguments('image', arguments);
-	.bloom-imageContainer&attributes(attributes)
+	.bloom-canvas&attributes(attributes)
 		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='This picture, placeHolder.png, is missing or was loading too slowly.')
 		block
 

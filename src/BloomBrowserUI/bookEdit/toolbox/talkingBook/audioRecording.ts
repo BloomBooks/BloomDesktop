@@ -32,20 +32,27 @@ import { TextFragment } from "../readers/libSynphony/bloomSynphonyExtensions";
 import axios, { AxiosResponse } from "axios";
 import {
     get,
+    getAsync,
     getWithPromise,
+    post,
     postData,
-    postJson
+    postJson,
+    postJsonAsync,
+    postString
 } from "../../../utils/bloomApi";
 import * as toastr from "toastr";
 import WebSocketManager from "../../../utils/WebSocketManager";
-import { ToolBox } from "../toolbox";
-import React = require("react");
-import ReactDOM = require("react-dom");
+import { getActiveToolId, ToolBox } from "../toolbox";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import {
     IConfirmDialogProps,
     DialogResult
 } from "../../../react_components/confirmDialog";
-import { getEditTabBundleExports } from "../../js/bloomFrames";
+import {
+    getEditTabBundleExports,
+    getToolboxBundleExports
+} from "../../js/bloomFrames";
 import PlaybackOrderControls from "../../../react_components/playbackOrderControls";
 import Recordable from "./recordable";
 import { getMd5 } from "./md5Util";
@@ -56,6 +63,8 @@ import {
     hideImageDescriptions,
     showImageDescriptions
 } from "../imageDescription/imageDescriptionUtils";
+import { IAudioRecorder } from "./IAudioRecorder";
+import { kCanvasElementClass } from "../overlay/canvasElementUtils";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -111,7 +120,7 @@ const kDisableHighlightClass = "ui-disableHighlight";
 const kSuppressHighlightClass = "ui-suppressHighlight";
 const kAudioSentence = "audio-sentence"; // Even though these can now encompass more than strict sentences, we continue to use this class name for backwards compatability reasons
 const kAudioSentenceClassSelector = "." + kAudioSentence;
-const kAudioCurrent = "ui-audioCurrent";
+export const kAudioCurrent = "ui-audioCurrent";
 const kAudioCurrentClassSelector = "." + kAudioCurrent;
 const kBloomEditableTextBoxClass = "bloom-editable";
 const kBloomEditableTextBoxSelector = "div.bloom-editable";
@@ -120,7 +129,7 @@ const kBloomVisibleClass = "bloom-visibility-code-on";
 
 const kAudioSplitId = "audio-split";
 
-const kPlaybackOrderContainerClass: string =
+export const kPlaybackOrderContainerClass: string =
     "bloom-playbackOrderControlsContainer";
 
 const kEndTimeAttributeName: string = "data-audioRecordingEndTimes";
@@ -139,6 +148,15 @@ interface ISetHighlightParams {
     forceRedisplay?: boolean; // optional. If true, reset higlight even if selected element unchanged.
 }
 
+// use this function to get the one and only audio recorder from the right iframe
+export function getAudioRecorder(): IAudioRecorder | undefined {
+    const exports = getToolboxBundleExports();
+    const result = exports
+        ? exports.getTheOneAudioRecorderForExportOnly()
+        : undefined;
+    return result;
+}
+
 // Terminology //
 // AudioSegment: the smallest unit of text to playback at a time.
 // CurrentTextBox: The text box (div) which is either currently highlighted itself or contains the currently highlighted element. CurrentTextBox never points to a audio-sentence span.
@@ -151,7 +169,7 @@ interface ISetHighlightParams {
 // Selected: Means that the element is selected, e.g. it will be highlighted during the next stable state. However, it might not be currently highlighted YET.
 
 // TODO: Maybe a lot of this code should move to TalkingBook.ts (regarding the tool) instead of AudioRecording.ts (regarding recording/playing the audio files)
-export default class AudioRecording {
+export default class AudioRecording implements IAudioRecorder {
     private recording: boolean;
     private levelCanvas: HTMLCanvasElement;
     private currentAudioId: string;
@@ -190,8 +208,6 @@ export default class AudioRecording {
 
     private playbackOrderCache: IPlaybackOrderInfo[] = [];
     private disablingOverlay: HTMLDivElement;
-
-    lastTimingsFilePath?: string;
 
     constructor() {
         this.audioSplitButton = <HTMLButtonElement>(
@@ -241,7 +257,19 @@ export default class AudioRecording {
         $("#audio-split")
             .off()
             .click(async e => {
-                this.split();
+                const mediaPlayer = this.getMediaPlayer();
+                mediaPlayer.pause();
+                getEditTabBundleExports().showAdjustTimingsDialogFromEditViewFrame(
+                    this.split,
+                    this.editTimingsFileAsync,
+                    this.applyTimingsFileAsync,
+                    canceled => {
+                        if (!canceled) {
+                            this.changeStateAndSetExpectedAsync("next");
+                            this.updatePlayerStatus();
+                        }
+                    }
+                );
             });
 
         $("#audio-listen")
@@ -421,42 +449,6 @@ export default class AudioRecording {
         }
 
         return recordingMode;
-    }
-
-    // At this point we are handling all missing dependencies the same.
-    private handleMissingDependency(): void {
-        const aeneasName = "aeneas";
-        const blAeneasUrl = "https://bloomlibrary.org/aeneas";
-        // For now at least, we only report Aeneas as missing and point the user to pages
-        // where installing Aeneas will also install all of its dependencies.
-        theOneLocalizationManager
-            .asyncGetText(
-                "EditTab.Toolbox.TalkingBook.MissingDependency",
-                "To split recordings into sentences, first install this {0} system.",
-                "The placeholder {0} will be replaced with the dependency that needs to be installed."
-            )
-            .done(localizedMessage => {
-                let url: string = "";
-                if (window.navigator.platform.startsWith("Win")) {
-                    url = blAeneasUrl;
-                } else {
-                    url = blAeneasUrl + "/linux";
-                }
-                const anchor = '<a href="' + url + '">' + aeneasName + "</a>";
-                const missingDependencyHoverTip = theOneLocalizationManager.simpleFormat(
-                    localizedMessage,
-                    [aeneasName]
-                );
-                const missingDependencyMsgWithLink = theOneLocalizationManager.simpleFormat(
-                    localizedMessage,
-                    [anchor]
-                );
-                toastr.error(missingDependencyMsgWithLink);
-                this.audioSplitButton.setAttribute(
-                    "title",
-                    missingDependencyHoverTip
-                );
-            });
     }
 
     public setupForListen() {
@@ -684,21 +676,6 @@ export default class AudioRecording {
         if (transgroup) {
             if (transgroup.classList.contains("box-header-off")) {
                 return false;
-            }
-            if (this.showingImageDescriptions) {
-                // overlays are hidden, don't include them
-                if (
-                    transgroup.parentElement?.classList?.contains(
-                        "bloom-textOverPicture"
-                    )
-                ) {
-                    return false;
-                }
-            } else {
-                // image descriptions are hidden, don't include them
-                if (transgroup.classList.contains("bloom-imageDescription")) {
-                    return false;
-                }
             }
         }
         return true;
@@ -959,6 +936,16 @@ export default class AudioRecording {
     public async setSoundAndHighlightAsync(
         setHighlightParams: ISetHighlightParams
     ): Promise<void> {
+        // Check that the active tool is not something other than "talkingBook".  A page
+        // can specify a tool it wants to be active initially when it first loads.
+        // The multiple asynchronous calls during page loading can result in the wrong
+        // tool getting the "newPageReady" method called when the new page specifies a
+        // different tool to be activated.  This is the simplest fix that I've found.
+        // See BL-14434.
+        const activeToolId = getActiveToolId();
+        const notInTalkingBook = activeToolId && activeToolId !== "talkingBook";
+        if (notInTalkingBook) return;
+
         // Note: setHighlightToAsync() should be run first so that ui-audioCurrent points to the correct element when setSoundFrom() is run.
         await this.setHighlightToAsync(setHighlightParams);
         this.setSoundFrom(setHighlightParams.newElement);
@@ -1134,7 +1121,7 @@ export default class AudioRecording {
     // based on the current time so that it asks the server for the file again.
     // Fixes BL-3161
     private updatePlayerStatus() {
-        console.assert(this.currentAudioId != null);
+        console.assert(this.currentAudioId !== null);
 
         const player = this.getMediaPlayer();
         player.setAttribute(
@@ -1697,7 +1684,7 @@ export default class AudioRecording {
                     // But now we need to switch the highlight back to show the Recording segment.
                     const currentTextBox = this.getCurrentTextBox();
                     console.assert(
-                        currentTextBox,
+                        !!currentTextBox,
                         "CurrentTextBox not expected to be null"
                     );
                     if (currentTextBox) {
@@ -1856,7 +1843,6 @@ export default class AudioRecording {
         if (!this.isEnabledOrExpected("clear")) {
             return;
         }
-        this.lastTimingsFilePath = undefined;
         // First determine which IDs we need to delete.
         const elementIdsToDelete: string[] = [];
         if (this.recordingMode == RecordingMode.Sentence) {
@@ -1979,7 +1965,7 @@ export default class AudioRecording {
         }
         // Whether or not we had to move the selection, some button states may need to change.
         // For example, perhaps there was previously nowhere for the 'next' button to take us,
-        // but now we revealed a overlay which is set to be after the current element.
+        // but now we revealed a canvas element which is set to be after the current element.
         await this.updateButtonStateAsync("record");
         this.updateDisplay();
     }
@@ -2401,7 +2387,7 @@ export default class AudioRecording {
         }
 
         const currentTextBox = audioCurrentElements[0];
-        console.assert(currentTextBox, "CurrentTextBox should not be null");
+        console.assert(!!currentTextBox, "CurrentTextBox should not be null");
         return <HTMLElement | null>(
             this.getTextBoxOfElement(audioCurrentElements[0])
         );
@@ -2450,7 +2436,7 @@ export default class AudioRecording {
         const currentTextBox = this.getTextBoxOfElement(
             audioCurrentElements.item(0)
         );
-        console.assert(currentTextBox, "CurrentTextBox should not be null");
+        console.assert(!!currentTextBox, "CurrentTextBox should not be null");
         return <HTMLElement>currentTextBox;
     }
 
@@ -2500,7 +2486,6 @@ export default class AudioRecording {
     ): Promise<void> {
         // Changing the page causes the previous page's audio to stop playing (be "emptied").
         ++this.currentAudioSessionNum;
-        this.lastTimingsFilePath = undefined;
 
         // FYI, it is possible for newPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
@@ -2523,7 +2508,10 @@ export default class AudioRecording {
         const editable = this.getRecordableDivs(true, false);
         if (editable.length === 0) {
             // no editable text on this page.
-            return this.changeStateAndSetExpectedAsync("");
+            this.haveAudio = false; // appropriately disables some advanced controls
+            const result = this.changeStateAndSetExpectedAsync("");
+            this.updateDisplay();
+            return result;
         } else {
             if (deshroudPhraseDelimiters)
                 deshroudPhraseDelimiters(this.getPageDocBody());
@@ -2634,7 +2622,7 @@ export default class AudioRecording {
 
     // Called upon newPageReady(). Calls updateMarkup
     public async setupAndUpdateMarkupAsync(): Promise<void> {
-        // For this purpose we want to include overlays even if they are hidden to show an image description,
+        // For this purpose we want to include canvas elements even if they are hidden to show an image description,
         // since they may become visible when the show image description checkbox is deselected without
         // this code running again.
         const recordables = this.getRecordableDivs(true, true, false);
@@ -3653,19 +3641,11 @@ export default class AudioRecording {
             this.haveAudio = false;
         }
 
-        const currentPlaybackMode = this.getCurrentPlaybackMode();
         if (
             doesElementAudioExist &&
             this.recordingMode === RecordingMode.TextBox
         ) {
-            if (
-                currentPlaybackMode === RecordingMode.TextBox &&
-                !this.isInSoftSplitMode()
-            ) {
-                this.setEnabledOrExpecting("split", expectedVerb);
-            } else {
-                this.setStatus("split", Status.DisabledUnlessHover);
-            }
+            this.setEnabledOrExpecting("split", expectedVerb);
         } else {
             this.setStatus("split", Status.Disabled);
         }
@@ -3748,11 +3728,11 @@ export default class AudioRecording {
     }
 
     public setEnabledOrExpecting(verb: string, expectedVerb: string) {
-        if (expectedVerb == verb) this.setStatus(verb, Status.Expected);
+        if (expectedVerb === verb) this.setStatus(verb, Status.Expected);
         else this.setStatus(verb, Status.Enabled);
     }
 
-    private isEnabledOrExpected(verb: string): Boolean {
+    private isEnabledOrExpected(verb: string): boolean {
         return (
             $("#audio-" + verb).hasClass("enabled") ||
             $("#audio-" + verb).hasClass("expected")
@@ -3875,41 +3855,22 @@ export default class AudioRecording {
         }
     }
 
-    private async split(manualTimingsPath?: string): Promise<void> {
-        this.setStatus("split", Status.Disabled); // Disable it immediately (not asynchronously!) so that the button stops registering clicks
-        this.resetAudioIfPaused();
-        await this.setHighlightToAsync({
-            newElement: this.getCurrentAudioSentence()!,
-            shouldScrollToElement: true,
-            forceRedisplay: true
-        });
-        this.showBusy();
-        await get(
-            "audioSegmentation/checkAutoSegmentDependencies",
-            async result => {
-                if (result.data === "FALSE") {
-                    // The specific missing dependency is only reported in the error log on the C# side.
-                    this.handleMissingDependency();
-                    this.setStatus("split", Status.Enabled);
-                    this.endBusy();
-                } else {
-                    await this.autoSegment(manualTimingsPath);
-                    // endBusy is handled when promises in autoSegment complete.
-                }
-            }
-        );
-    }
-    // Callback for when the user clicks on the "Auto Segment" button.
-    // This will automatically segment the audio to synchronize with the text (a.k.a. forced alignment)
+    // Called when the user chooses "Use Aeneas to guess timings" (with no argument) or
+    // "Apply Timings file" (with the file name).
+    // This will return a new set of split timings (like we store in data-audioRecordingEndTimes),
+    // or just possibly undefined if there was an error (already reported).
     // The basic steps are:
     // * Split the text into fragments (sentences)
     // * Call API server to split the whole audio file into pieces, one piece per sentence.
+    //   (or, if we're passed a mnualTimingsPath, just get the times extracted from that)
     // *   (Black Box internals:  by using Aeneas to find the timing of each sentence start, then FFMPEG to split)
-    // * Update the state of the UI to utilize the new files created by API server
-    private async autoSegment(manualTimingsPath?: string): Promise<void> {
-        this.audioSplitButton.setAttribute("title", ""); // remove any error tooltips
-
-        // First, check if there's even an audio recorded yet.
+    // The data returned is used to update the Adjust Timings dialog, and makes its way back to the
+    // document from there if OK is clicked.
+    private split = async (
+        manualTimingsPath?: string
+    ): Promise<string | undefined> => {
+        // First, check if there's even an audio recorded yet. (Not sure if we could ever get called in this
+        // situation; I think the adjust timings dialog couldn't even be launched.)
         const playButtonElement = document.getElementById("audio-play");
         if (
             playButtonElement &&
@@ -3917,9 +3878,10 @@ export default class AudioRecording {
         ) {
             this.displaySplitError();
             this.setStatus("split", Status.Disabled); // Remove active/expected highlights
-            this.endBusy();
-            return;
+            return undefined;
         }
+        this.showBusy();
+        this.resetAudioIfPaused();
 
         const currentTextBox = this.getCurrentHighlight();
         if (!currentTextBox) {
@@ -3928,7 +3890,7 @@ export default class AudioRecording {
             this.displaySplitError();
             this.setStatus("split", Status.Enabled); // Remove active/expected highlights
             this.endBusy();
-            return;
+            return undefined;
         }
 
         const fragmentIdTuples = this.extractFragmentsAndSetSpanIdsForAudioSegmentation();
@@ -3941,36 +3903,29 @@ export default class AudioRecording {
                 manualTimingsPath
             };
 
-            this.disableInteraction();
             // this.setStatus("split", Status.Active);  // Now we decide to just keep it disabled instead.
+            let result: void | AxiosResponse<any>;
+            try {
+                result = await postJsonAsync(
+                    "audioSegmentation/getForcedAlignmentTimings", // Or can use "audioSegmentation/autoSegmentAudio" to create hard splits of the audio
+                    JSON.stringify(inputParameters)
+                );
+            } catch (error) {
+                // This always needs to happen regardless of what happens
+                // Otherwise, classes like cursor-progress will not go away upon a C# exception.
+                // It can even be persisted into the saved HTML file and re-loaded with the cursor-progress state still applied
+                this.endBusy();
+                this.updateDisplay();
+                return undefined;
+            }
 
-            await postJson(
-                "audioSegmentation/getForcedAlignmentTimings", // Or can use "audioSegmentation/autoSegmentAudio" to create hard splits of the audio
-                JSON.stringify(inputParameters),
-
-                // onSuccess
-                result => {
-                    this.setStatus("split", Status.Disabled);
-                    this.endBusy(); // This always needs to happen regardless of what path through processAutoSegmentResponse the code takes.
-
-                    this.processAutoSegmentResponse(result);
-                    this.updateDisplay();
-                },
-
-                // onError
-                result => {
-                    // This always needs to happen regardless of what happens
-                    // Otherwise, classes like cursor-progress will not go away upon a C# exception.
-                    // It can even be persisted into the saved HTML file and re-loaded with the cursor-progress state still applied
-                    this.endBusy();
-                    this.updateDisplay();
-                }
-            );
-        } else {
-            this.endBusy();
-            this.updateDisplay();
+            this.endBusy(); // This always needs to happen regardless of what path through processAutoSegmentResponse the code takes.
+            if (result && result.data) {
+                return this.processAutoSegmentResponse(result);
+            }
         }
-    }
+        return undefined;
+    };
 
     public displaySplitError() {
         theOneLocalizationManager
@@ -3982,19 +3937,6 @@ export default class AudioRecording {
             .done(localizedMessage => {
                 toastr.error(localizedMessage);
             });
-    }
-
-    // Soft Split mode: Split is done by noting the start/end times of each sentence, but the actual audio files is not actually physically split. (e.g. if opening books created in 4.6+)
-    // Hard Split mode: Perform split by physically splitting a single audio file into multiple audio files, one per sentence. (e.g. if opening books created in 4.5)
-    public isInSoftSplitMode(): boolean {
-        const currentTextBox = this.getCurrentTextBox();
-        if (
-            currentTextBox &&
-            currentTextBox.getAttribute(kEndTimeAttributeName)
-        ) {
-            return true;
-        }
-        return false;
     }
 
     // Finds the current text box, gets its text, split into sentences, then return each sentence with a UUID.
@@ -4107,6 +4049,18 @@ export default class AudioRecording {
                 element.classList.add("cursor-progress");
             }
         }
+        // One context where we want to show busy is the AdjustTimings dialog.
+        // It's a dialog, so it's not in the normal flow of the page. Moreover, to give
+        // it the greatest possible width, it's not even in this iframe. It doesn't even
+        // have the stylesheet that knows what to do with .cursor-progress.
+        // So I'm doing the same thing a different way. Maybe we should forget about
+        // using CSS and modify them all directly like this?
+        const rootDialogContainer = window.top?.document.getElementsByClassName(
+            "MuiDialog-container"
+        )[0] as HTMLElement;
+        if (rootDialogContainer) {
+            rootDialogContainer.style.cursor = "progress";
+        }
     }
 
     private endBusy(): void {
@@ -4118,62 +4072,84 @@ export default class AudioRecording {
                 element.classList.remove("cursor-progress");
             }
         }
+        const rootDialogContainer = window.top?.document.getElementsByClassName(
+            "MuiDialog-container"
+        )[0] as HTMLElement;
+        if (rootDialogContainer) {
+            rootDialogContainer.style.cursor = "";
+        }
     }
 
-    public processAutoSegmentResponse(result: AxiosResponse<any>): void {
+    // Break up the current text box into sentences marked with kSegmentClass.
+    // This is the markup used when  recording in text box mode, but a recording has been
+    // split somehow. However, we don't add the markup that causes it to be displayed
+    // that way, because we don't yet have confirmed splits. Instead, we return a list
+    // of proposed end times (which AdjustTimingsControl typically refines)
+    public autoSegmentBasedOnTextLength(): number[] {
+        const currentTextBox = this.getCurrentTextBox();
+        if (!currentTextBox) return [];
+        const segments = this.extractFragmentsAndSetSpanIdsForAudioSegmentation();
+        // Generate crude estimate of audio lengths based on text lengths and total time,
+        // which should be known if we have an audio recording to adjust at all.
+        const durationText = currentTextBox.getAttribute("data-duration");
+        const duration = durationText ? parseFloat(durationText) : 0;
+        if (!duration) {
+            // should never happen
+            return [];
+        }
+        let textLength = 0;
+        for (const segment of segments) {
+            // ??1 here and below prevents any segment being completely empty.
+            // (Though, I don't think extractFragmentsAndSetSpanIdsForAudioSegmentation
+            // should actually make empty segments...belt and braces here.)
+            textLength += segment.fragmentText?.length ?? 1;
+        }
+        const endTimes: number[] = [];
+        let start = 0;
+        for (const segment of segments) {
+            const fragmentLength = segment.fragmentText?.length ?? 1;
+            const end = start + (duration * fragmentLength) / textLength;
+            endTimes.push(end);
+            start = end;
+        }
+
+        // Don't do this until the user confirms the splits.
+        // currentTextBox.setAttribute(
+        //     kEndTimeAttributeName,
+        //     endTimes.map(x => x.toString()).join(" ")
+        // );
+
+        // Temporarily switch to sentence, to get sentence elements created, using IDs generated
+        // in extractFragmentsAndSetSpanIdsForAudioSegmentation
+        this.updateMarkupForTextBox(
+            currentTextBox,
+            this.recordingMode,
+            RecordingMode.Sentence
+        );
+        // And now back to text box mode, but we'll keep the sentences as auto-segmented fragments
+        this.updatePlaybackModeToTextBox();
+        // don't do this so it doesn't yet LOOK split.
+        //this.markAudioSplit();
+        return endTimes;
+    }
+
+    // If the result is success, we return the allEndTimesString, a list of end times,
+    // such as we store in data-audioRecordingEndTimes
+    public processAutoSegmentResponse(
+        result: AxiosResponse<any>
+    ): string | undefined {
         const isSuccess = result && result.data;
 
         if (isSuccess) {
             const autoSegmentResponse = result.data;
-            this.lastTimingsFilePath = autoSegmentResponse.timingsFilePath;
-            // Now that we know the Auto Segmentation succeeded, finally update the markup
-            const currentTextBox = this.getCurrentTextBox();
-            if (currentTextBox) {
-                currentTextBox.setAttribute(
-                    kEndTimeAttributeName,
-                    autoSegmentResponse.allEndTimesString
-                );
-
-                // Precondition: Assumes that re-running stringToSentences on the same input will give
-                // the same result as when we ran it before the bloomApi result came back.
-
-                // Note that this will want to use the sentenceToIdListMap member variable to inform it
-                // to re-use the IDs used to create the split audio files.
-                this.updateMarkupForTextBox(
-                    currentTextBox,
-                    this.recordingMode,
-                    RecordingMode.Sentence
-                );
-            }
-
-            this.updatePlaybackModeToTextBox();
-
-            this.markAudioSplit();
-
-            // Now that we're all done with use sentenceToIdListMap, clear it out so that there's no potential for accidental re-use
-            this.sentenceToIdListMap = {};
-            this.changeStateAndSetExpectedAsync("next");
-            this.setStatus("split", Status.Disabled); // No need to run it again if it was successful. (Until the settings are changed).
-            if (result.data.warningMessage) {
-                // something is clear()ing my warning message, so I have to delay it a bit
-                setTimeout(() => {
-                    toastr.warning(result.data.warningMessage, "Warning", {
-                        timeOut: 10000
-                    });
-                }, 1000);
-            }
-            if (result.data.successMessage) {
-                // something is clear()ing my toast, so I have to delay it a bit
-                setTimeout(() => {
-                    toastr.success(result.data.successMessage, "Success");
-                }, 1000);
-            }
+            return autoSegmentResponse.allEndTimesString;
         } else {
             this.changeStateAndSetExpectedAsync("record");
 
             // If there is a more detailed error from C#, it should be reported via ErrorReport.ReportNonFatal[...]
 
             this.displaySplitError();
+            return undefined;
         }
     }
 
@@ -4202,7 +4178,7 @@ export default class AudioRecording {
         }
     }
 
-    private markAudioSplit() {
+    public markAudioSplit() {
         const currentTextBox = this.getCurrentTextBox();
         if (currentTextBox) {
             currentTextBox.classList.add("bloom-postAudioSplit");
@@ -4229,6 +4205,7 @@ export default class AudioRecording {
                 elementsToUpdate.push(editables[i]);
             }
         }
+
         return elementsToUpdate;
     }
 
@@ -4308,16 +4285,14 @@ export default class AudioRecording {
                     this.setRecordingModeAsync(recordingMode);
                     this.updateDisplay();
                 },
-
-                lastTimingsFilePath: this.lastTimingsFilePath,
-
                 //hasAudio: this.getStatus("clear") === Status.Enabled, // plausibly, we could instead require that we have *all* the audio
                 hasAudio: this.haveAudio,
                 hasRecordableDivs:
-                    this.getRecordableDivs(false, false).length > 0,
+                    // It's a bit expensive to do the test for text present, but without it,
+                    // Import Recording will be improperly enabled on an empty page.
+                    this.getRecordableDivs(true, false).length > 0,
                 handleImportRecordingClick: () =>
                     this.handleImportRecordingClick(),
-                split: this.split.bind(this),
                 insertSegmentMarker: () => {
                     const selection = this.getPageFrame()!.contentWindow!.getSelection();
                     const range = selection!.getRangeAt(0);
@@ -4331,37 +4306,42 @@ export default class AudioRecording {
                 showingImageDescriptions: this.showingImageDescriptions,
                 setShowingImageDescriptions: (isOn: boolean) => {
                     this.setShowingImageDescriptions(isOn);
-                },
-                editTimingsFile: async () => {
-                    // we'll give this a real UI in the future. Also, not going to localize this yet.
-                    alert(
-                        `Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity" Either way, you will need to use the "Apply Timings File..." button to apply your changes.\r\n\r\nCurrent timings file is ${this.lastTimingsFilePath}\r\nCurrent audio file is ${this.currentAudioId} (.wav or .mp3)`
-                    );
-                    postJson("fileIO/openFileInDefaultEditor", {
-                        path: this.lastTimingsFilePath
-                    });
-                },
-                applyTimingsFile: async () => {
-                    const result = await postJson("fileIO/chooseFile", {
-                        title: "Choose Timing File",
-                        fileTypes: [
-                            {
-                                name: "Tab-separated Timing File",
-                                extensions: ["txt", "tsv"]
-                            }
-                        ],
-                        defaultPath: this.lastTimingsFilePath
-                    });
-                    if (!result || !result.data) {
-                        return;
-                    }
-
-                    await this.split(result.data);
                 }
             }),
             container
         );
     }
+
+    private editTimingsFileAsync = async (timingsFilePath: string) => {
+        // we'll give this a real UI in the future. Also, not going to localize this yet.
+        const realTimingsFile = timingsFilePath;
+        alert(
+            `Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity" Either way, you will need to use the "Apply Timings File..." button to apply your changes.\r\n\r\nCurrent timings file is ${realTimingsFile}\r\nCurrent audio file is ${this.currentAudioId} (.wav or .mp3)`
+        );
+        postJson("fileIO/openFileInDefaultEditor", {
+            path: realTimingsFile
+        });
+    };
+    private applyTimingsFileAsync = async (
+        timingsFilePath: string
+    ): Promise<string | undefined> => {
+        const realTimingsFile = timingsFilePath;
+        const result = await postJson("fileIO/chooseFile", {
+            title: "Choose Timing File",
+            fileTypes: [
+                {
+                    name: "Tab-separated Timing File",
+                    extensions: ["txt", "tsv"]
+                }
+            ],
+            defaultPath: realTimingsFile
+        });
+        if (!result || !result.data) {
+            return;
+        }
+
+        return await this.split(result.data);
+    };
 
     private confirmReplaceProps: IConfirmDialogProps = {
         title: "Replace with new audio?",
@@ -4646,6 +4626,7 @@ export class AudioTextFragment {
     }
 }
 
+// Generally, use getAudioRecorder() instead to make sure you get the one in the right iframe
 export let theOneAudioRecorder: AudioRecording;
 
 // Used by talkingBook when initially showing the tool.

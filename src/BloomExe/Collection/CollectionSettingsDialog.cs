@@ -18,6 +18,7 @@ using SIL.IO;
 using SIL.Windows.Forms.SettingProtection;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Bloom.WebLibraryIntegration;
 
 namespace Bloom.Collection
 {
@@ -129,9 +130,6 @@ namespace Bloom.Collection
             );
             _allowTeamCollection.Checked = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kTeamCollections
-            );
-            _allowSpreadsheetImportExport.Checked = ExperimentalFeatures.IsFeatureEnabled(
-                ExperimentalFeatures.kSpreadsheetImportExport
             );
 
             if (
@@ -278,16 +276,13 @@ namespace Bloom.Collection
         {
             var potentiallyCustomName = PendingLanguage1.Name;
 
-            var l = ChangeLanguage(PendingLanguage1.Tag, potentiallyCustomName);
-
-            if (l != null)
+            void onLanguageChange(LanguageChangeEventArgs args)
             {
-                PendingLanguage1.Tag = l.LanguageTag;
-                PendingLanguage1.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
-                // Enhance: if we already have information about the newly chosen language we could copy it into the dialog.
-                // (find it by _collectionSettings.LanguagesZeroBased.Find(x => x.Tag == l.languageTag);)
+                PendingLanguage1.Tag = args.LanguageTag;
+                PendingLanguage1.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
                 ChangeThatRequiresRestart();
             }
+            ChangeLanguage(onLanguageChange, PendingLanguage1.Tag, potentiallyCustomName);
         }
 
         private void _language2ChangeLink_LinkClicked(
@@ -296,15 +291,13 @@ namespace Bloom.Collection
         )
         {
             var potentiallyCustomName = PendingLanguage2.Name;
-            var l = ChangeLanguage(PendingLanguage2.Tag, potentiallyCustomName);
-            if (l != null)
+            void onLanguageChange(LanguageChangeEventArgs args)
             {
-                PendingLanguage2.Tag = l.LanguageTag;
-                PendingLanguage2.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
-                // Enhance: if we already have information about the newly chosen language we could copy it into the dialog.
-                // (find it by _collectionSettings.LanguagesZeroBased.Find(x => x.Tag == l.languageTag);)
+                PendingLanguage2.Tag = args.LanguageTag;
+                PendingLanguage2.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
                 ChangeThatRequiresRestart();
             }
+            ChangeLanguage(onLanguageChange, PendingLanguage2.Tag, potentiallyCustomName);
         }
 
         private void _language3ChangeLink_LinkClicked(
@@ -313,15 +306,13 @@ namespace Bloom.Collection
         )
         {
             var potentiallyCustomName = PendingLanguage3.Name;
-            var l = ChangeLanguage(PendingLanguage3.Tag, potentiallyCustomName);
-            if (l != null)
+            void onLanguageChange(LanguageChangeEventArgs args)
             {
-                PendingLanguage3.Tag = l.LanguageTag;
-                PendingLanguage3.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
-                // Enhance: if we already have information about the newly chosen language we could copy it into the dialog.
-                // (find it by _collectionSettings.LanguagesZeroBased.Find(x => x.Tag == l.languageTag);)
+                PendingLanguage3.Tag = args.LanguageTag;
+                PendingLanguage3.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
                 ChangeThatRequiresRestart();
             }
+            ChangeLanguage(onLanguageChange, PendingLanguage3.Tag, potentiallyCustomName);
         }
 
         private void _removeSecondNationalLanguageButton_LinkClicked(
@@ -330,6 +321,7 @@ namespace Bloom.Collection
         )
         {
             PendingLanguage3.ChangeTag(string.Empty); // null causes a crash in trying to set it again (BL-5795)
+            PendingLanguage3.SetName(string.Empty, false);
             ChangeThatRequiresRestart();
         }
 
@@ -339,18 +331,14 @@ namespace Bloom.Collection
         )
         {
             var potentiallyCustomName = PendingSignLanguage.Name;
-            var l = ChangeLanguage(PendingSignLanguage.Tag, potentiallyCustomName, true);
-            if (l != null)
+            void onLanguageChange(LanguageChangeEventArgs args)
             {
-                // How to know if the new sign language name is custom or not!?
-                // 1- set the Tag (which also sets the Name to the non-custom default
-                // 2- read the Name
-                // 3- if it's not the same as DesiredName, the new name is custom
-                PendingSignLanguage.Tag = l.LanguageTag;
-                var slIsCustom = PendingSignLanguage.Name != l.DesiredName;
-                PendingSignLanguage.SetName(l.DesiredName, slIsCustom);
+                PendingSignLanguage.Tag = args.LanguageTag;
+                var slIsCustom = args.DefaultName != args.DesiredName;
+                PendingSignLanguage.SetName(args.DesiredName, slIsCustom);
                 ChangeThatRequiresRestart();
             }
+            ChangeLanguage(onLanguageChange, PendingSignLanguage.Tag, potentiallyCustomName);
         }
 
         private void _removeSignLanguageButton_LinkClicked(
@@ -359,44 +347,41 @@ namespace Bloom.Collection
         )
         {
             PendingSignLanguage.ChangeTag(string.Empty);
+            PendingSignLanguage.SetName(string.Empty, false);
             ChangeThatRequiresRestart();
         }
 
-        public static LanguageInfo ChangeLanguage(
+        public static void ChangeLanguage(
+            Action<LanguageChangeEventArgs> onLanguageChange,
             string languageIdentifier,
-            string potentiallyCustomName = null,
-            bool showScriptAndVariantLink = true
+            string potentiallyCustomName = null
         )
         {
-            using (var dlg = new LanguageLookupDialog())
+            // There shouldn't be listeners at this point, but clear just in case any are left over from a previous dialog opening
+            CollectionSettingsApi.UnsubscribeAllLanguageChangeListeners();
+            EventHandler<LanguageChangeEventArgs> onLanguageChangeListener = null;
+            onLanguageChangeListener = delegate(object sender, LanguageChangeEventArgs args)
             {
-                //at this point, we don't let them customize the national languages
-                dlg.IsDesiredLanguageNameFieldVisible = potentiallyCustomName != null;
-                dlg.IsShowRegionalDialectsCheckBoxVisible = true;
-                dlg.IsScriptAndVariantLinkVisible = showScriptAndVariantLink;
+                onLanguageChange(args);
+                CollectionSettingsApi.LanguageChange -= onLanguageChangeListener;
+            };
+            CollectionSettingsApi.LanguageChange += onLanguageChangeListener;
 
-                var language = new LanguageInfo() { LanguageTag = languageIdentifier };
-                if (!string.IsNullOrEmpty(potentiallyCustomName))
-                {
-                    language.DesiredName = potentiallyCustomName; // to be noticed, must set before dlg.SelectedLanguage
-                }
-                dlg.SelectedLanguage = language;
-                // if languageIdentifier includes Script/Region/Variant codes... which it might now...
-                // limit the SearchText to the part before the first hyphen (the iso 639 code).
-                dlg.SearchText = languageIdentifier.Split('-')[0];
+            using (
+                var dlg = new ReactDialog(
+                    "languageChooserBundle",
+                    new
+                    {
+                        initialLanguageTag = languageIdentifier,
+                        initialCustomName = potentiallyCustomName
+                    }
+                )
+            )
+            {
+                dlg.Width = 1000;
+                dlg.Height = 580;
 
-                // Following should be consistent with LanguageIdControl constructor.
-                dlg.UseSimplifiedChinese();
-
-                // Avoid showing gratuitous script markers in language tags.
-                // See https://issues.bloomlibrary.org/youtrack/issue/BL-7641.
-                dlg.IncludeScriptMarkers = false;
-
-                if (DialogResult.OK != dlg.ShowDialog(Shell.GetShellOrOtherOpenForm()))
-                {
-                    return null;
-                }
-                return dlg.SelectedLanguage;
+                dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());
             }
         }
 
@@ -428,7 +413,6 @@ namespace Bloom.Collection
                 _automaticallyUpdate.Checked && Environment.OSVersion.Version.Major >= 10;
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
-            UpdateSpreadsheetImportExportAllowed();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -458,7 +442,10 @@ namespace Bloom.Collection
 
             //no point in letting them have the Nat lang 2 be the same as 1
             if (PendingLanguage2.Tag == PendingLanguage3.Tag)
+            {
                 PendingLanguage3.ChangeTag(String.Empty);
+                PendingLanguage3.SetName(String.Empty, false);
+            }
 
             UpdateLanguageSettings(
                 _collectionSettings.AllLanguages,
@@ -576,7 +563,6 @@ namespace Bloom.Collection
 
             Language1.ChangeTag(PendingLanguage1.Tag);
             Language1.SetName(PendingLanguage1.Name, PendingLanguage1.IsCustomName);
-            // Note that setting the tag to empty will cause the name to be set to empty.
             Language2.ChangeTag(PendingLanguage2.Tag);
             if (!String.IsNullOrEmpty(PendingLanguage2.Tag))
                 Language2.SetName(PendingLanguage2.Name, PendingLanguage2.IsCustomName);
@@ -738,19 +724,6 @@ namespace Bloom.Collection
             ExperimentalFeatures.SetValue(
                 ExperimentalFeatures.kTeamCollections,
                 _allowTeamCollection.Checked
-            );
-        }
-
-        private void _allowSpreadsheetImportExport_CheckedChanged(object sender, EventArgs e)
-        {
-            ChangeThatRequiresRestart();
-        }
-
-        private void UpdateSpreadsheetImportExportAllowed()
-        {
-            ExperimentalFeatures.SetValue(
-                ExperimentalFeatures.kSpreadsheetImportExport,
-                _allowSpreadsheetImportExport.Checked
             );
         }
 

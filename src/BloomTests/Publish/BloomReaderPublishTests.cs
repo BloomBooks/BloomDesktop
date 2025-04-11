@@ -47,10 +47,9 @@ namespace BloomTests.Publish
             s_bloomServer = new BloomServer(
                 new RuntimeImageProcessor(new BookRenamedEvent()),
                 new BookSelection(),
-                settings,
                 locator
             );
-            s_bloomServer.StartListening();
+            s_bloomServer.EnsureListening();
         }
 
         [OneTimeTearDown]
@@ -358,7 +357,7 @@ namespace BloomTests.Publish
             <div style='min-height: 42px;' class='split-pane horizontal-percent'>
                 <div class='split-pane-component position-top' style='bottom: 50%'>
                     <div class='split-pane-component-inner'>
-                        <div title='aor_BRD11.png 41.36 KB 1500 x 581 716 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer bloom-leadingElement'
+                        <div title='aor_BRD11.png 41.36 KB 1500 x 581 716 DPI (should be 300-600) Bit Depth: 32' class='bloom-canvas bloom-leadingElement'
 							data-initialrect='0.0024509803921568627 0.002967359050445104 0.75 0.7507418397626113' data-finalrect='0.37745098039215685 0.12759643916913946 0.5 0.5014836795252225'>
 							< img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' src='aor_BRD11.png' alt='Two birds on a branch with beak tips touching'></img>
 
@@ -478,10 +477,10 @@ namespace BloomTests.Publish
 										<body>
 											<div class='bloom-page' id='blah'>
 												<div class='marginBox'>
-													<div class='bloom-imageContainer bloom-leadingElement'>"
+													<div class='bloom-canvas bloom-leadingElement'>"
                 + "	<img src=\"HL00'14 1.svg\"/>"
                 + @"</div>
-													<div class='bloom-imageContainer bloom-leadingElement'>"
+													<div class='bloom-canvas bloom-leadingElement'>"
                 + "<img src=\"HL00'14 1.svg\"/>"
                 + @"</div>
 											</div>
@@ -498,26 +497,24 @@ namespace BloomTests.Publish
                 assertionsOnResultingHtmlString: changedHtml =>
                 {
                     // The imgs should be replaced with something like this:
-                    //		"<div class='bloom-imageContainer bloom-leadingElement bloom-backgroundImage' style='background-image:url('HL00%2714%201.svg.svg')'</div>
+                    //		"<div class='bloom-canvas bloom-leadingElement bloom-background-image-in-style' style='background-image:url('HL00%2714%201.svg.svg')'</div>
                     //	Note that normally there would also be data-creator, data-license, etc. If we put those in the html, they will be stripped because
                     // the code will actually look at our fake image and, finding now metadata will remove these. This is not a problem for our
                     // testing here, because we're not trying to test the functioning of that function here. The bit we can test, that the image became a
                     // background image, is sufficient to know the function was run.
 
-                    // Oct 2017 jh: I added this bloom-imageContainer/ because the code that does the conversion is limited to these,
+                    // Oct 2017 jh: I added this bloom-canvas/ because the code that does the conversion is limited to these,
                     // presumably because that is the only img's that were giving us problems (ones that need to be sized at display time).
                     // But Xmatter has other img's, for license & branding.
                     var changedDom = XmlHtmlConverter.GetXmlDomFromHtml(changedHtml);
-                    AssertThatXmlIn
-                        .Dom(changedDom)
-                        .HasNoMatchForXpath("//bloom-imageContainer/img"); // should be merged into parent
+                    AssertThatXmlIn.Dom(changedDom).HasNoMatchForXpath("//bloom-canvas/img"); // should be merged into parent
 
                     //Note: things like  @data-creator='Anis', @data-license='cc-by' and @data-copyright='1996 SIL PNG' are not going to be there by now,
                     //because they aren't actually supported by the image file, so they get stripped.
                     AssertThatXmlIn
                         .Dom(changedDom)
                         .HasSpecifiedNumberOfMatchesForXpath(
-                            "//div[@class='bloom-imageContainer bloom-leadingElement bloom-backgroundImage' and @style=\"background-image:url('HL00%2714%201.svg')\"]",
+                            "//div[@class='bloom-canvas bloom-leadingElement bloom-background-image-in-style' and @style=\"background-image:url('HL00%2714%201.svg')\"]",
                             2
                         );
                 }
@@ -1022,7 +1019,7 @@ namespace BloomTests.Publish
 									</div>
 									<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
 										<div class='marginBox'>"
-                + "<div class=\"bloom-imageContainer bloom-backgroundImage\" data-book=\"coverImage\" style=\"background-image:url('Listen%20to%20My%20Body_Cover.png')\"></div>"
+                + "<div class=\"bloom-imageContainer bloom-background-image-in-style\" data-book=\"coverImage\" style=\"background-image:url('Listen%20to%20My%20Body_Cover.png')\"></div>"
                 + @"</div>
 									</div>
 								</body>
@@ -1672,7 +1669,7 @@ namespace BloomTests.Publish
                 fontsWanted.Add(
                     new PublishHelper.FontInfo
                     {
-                        fontName = "Times New Roman",
+                        fontFamily = "Times New Roman",
                         fontStyle = "normal",
                         fontWeight = "400"
                     }
@@ -1680,7 +1677,7 @@ namespace BloomTests.Publish
                 fontsWanted.Add(
                     new PublishHelper.FontInfo
                     {
-                        fontName = "Wen Yei",
+                        fontFamily = "Wen Yei",
                         fontStyle = "normal",
                         fontWeight = "400"
                     }
@@ -1688,7 +1685,7 @@ namespace BloomTests.Publish
                 fontsWanted.Add(
                     new PublishHelper.FontInfo
                     {
-                        fontName = "Calibre",
+                        fontFamily = "Calibre",
                         fontStyle = "normal",
                         fontWeight = "400"
                     }
@@ -1696,7 +1693,7 @@ namespace BloomTests.Publish
                 fontsWanted.Add(
                     new PublishHelper.FontInfo
                     {
-                        fontName = "NotAllowed",
+                        fontFamily = "NotAllowed",
                         fontStyle = "normal",
                         fontWeight = "400"
                     }
@@ -1704,7 +1701,7 @@ namespace BloomTests.Publish
                 fontsWanted.Add(
                     new PublishHelper.FontInfo
                     {
-                        fontName = "NotFound",
+                        fontFamily = "NotFound",
                         fontStyle = "normal",
                         fontWeight = "400"
                     }
