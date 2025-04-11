@@ -63,7 +63,18 @@ export const SubscriptionStatus: React.FunctionComponent<{
         "Your {0} subscription expired on {1}.",
         "SubscriptionStatus.ExpiredMessage",
         "",
-        brandingProjectKey,
+        // We had a bug in 6.0 because of the way we implemented expiring subscriptions:
+        // This subscription descriptor (brandingProjectKey) would display as "Default".
+        // (I don't think we ever get something other than "Default" here, but we
+        // would prefer to display that if we do, so I check first.)
+        // We decided the easiest fix was to just remove the subscription descriptor entirely.
+        // The bug is already fixed with a total rework in 6.1, and I don't want to mess with the localization string,
+        // so just passing "" here will give us what we want.
+        // Note that the double space will not be displayed because the browser collapses it.
+        // Also note that this is exactly what we will display if props.minimalUI is true.
+        // This should not be merged to 6.1.
+        // See BL-14563.
+        brandingProjectKey === "Default" ? "" : brandingProjectKey,
         localizedDateString
     );
     const defaultStatusMessage = useL10n(
