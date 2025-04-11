@@ -1371,34 +1371,47 @@ namespace Bloom.ImageProcessing
         public static bool TryGetImageSize(string path, out Size size)
         {
             size = new Size(0, 0);
-            try
-            {
-                var arguments = "identify -format %P \"" + path + "\"";
-                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
-                    GetGraphicsMagickPath(),
-                    arguments,
-                    "",
-                    600,
-                    new NullProgress()
-                );
-                if (result.ExitCode == 0)
+            var calculatedSize = new Size(0, 0);
+
+            var result = WithSafeFilePath(
+                path,
+                safePath =>
                 {
-                    var parts = result.StandardOutput.Split('x');
-                    if (parts.Length == 2)
+                    try
                     {
-                        size.Width = int.Parse(parts[0]);
-                        size.Height = int.Parse(parts[1]);
-                        return true;
+                        var arguments = "identify -format %P \"" + safePath + "\"";
+                        var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                            GetGraphicsMagickPath(),
+                            arguments,
+                            "",
+                            600,
+                            new NullProgress()
+                        );
+                        if (result.ExitCode == 0)
+                        {
+                            var parts = result.StandardOutput.Split('x');
+                            if (parts.Length == 2)
+                            {
+                                calculatedSize.Width = int.Parse(parts[0]);
+                                calculatedSize.Height = int.Parse(parts[1]);
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        return false;
                     }
                 }
+            );
 
-                return false;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return false;
-            }
+            if (result)
+                size = calculatedSize;
+
+            return result;
         }
 
         public static ExecutionResult CropImage(
@@ -1435,96 +1448,92 @@ namespace Bloom.ImageProcessing
                 !(options.MakeOpaque && options.MakeTransparent),
                 "makeOpaque and makeTransparent cannot both be true."
             );
-            // We have no idea what the input (and output) file names are, and whether they can be safely represented
-            // in the user's codepage.  We also have no idea what the user's codepage is.  This has a major impact
-            // on whether the spawned GraphicsMagick process will succeed in reading/writing the files.  We can
-            // assume that ASCII file paths are safe regardless of the user's default codepage.
-            var safeSourcePath = sourcePath;
-            if (!IsAsciiFilepath(sourcePath))
-            {
-                safeSourcePath = TempFileUtils.GetTempFilepathWithExtension(
-                    Path.GetExtension(sourcePath)
-                );
-                RobustFile.Copy(sourcePath, safeSourcePath);
-            }
-            var safeDestPath = destPath;
-            if (!IsAsciiFilepath(destPath))
-                safeDestPath = TempFileUtils.GetTempFilepathWithExtension(
-                    Path.GetExtension(destPath)
-                );
-            try
-            {
-                var argsBldr = new StringBuilder();
-                argsBldr.AppendFormat("convert \"{0}\"", sourcePath);
-                if (options.MakeOpaque)
-                    argsBldr.Append(" -background white -extent 0x0 +matte");
-                else if (options.MakeTransparent)
-                    argsBldr.Append(
-                        " -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\""
-                    );
-                if (options.cropRectangle != Rectangle.Empty)
+
+            return WithSafeFilePath(
+                sourcePath,
+                safeSourcePath =>
                 {
-                    argsBldr.AppendFormat(
-                        " -crop {0}x{1}+{2}+{3}",
-                        options.cropRectangle.Width,
-                        options.cropRectangle.Height,
-                        options.cropRectangle.X,
-                        options.cropRectangle.Y
+                    return WithSafeFilePath(
+                        destPath,
+                        safeDestPath =>
+                        {
+                            var argsBldr = new StringBuilder();
+                            argsBldr.AppendFormat("convert \"{0}\"", safeSourcePath);
+                            if (options.MakeOpaque)
+                                argsBldr.Append(" -background white -extent 0x0 +matte");
+                            else if (options.MakeTransparent)
+                                argsBldr.Append(
+                                    " -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\""
+                                );
+                            if (options.cropRectangle != Rectangle.Empty)
+                            {
+                                argsBldr.AppendFormat(
+                                    " -crop {0}x{1}+{2}+{3}",
+                                    options.cropRectangle.Width,
+                                    options.cropRectangle.Height,
+                                    options.cropRectangle.X,
+                                    options.cropRectangle.Y
+                                );
+                            }
+
+                            // http://www.graphicsmagick.org/GraphicsMagick.html#details-profile states:
+                            // Use +profile profile_name to remove the respective profile.
+                            // For example, +profile '!icm,*' strips all profiles except for the ICM profile.
+                            if (!String.IsNullOrEmpty(options.ProfilesToStrip))
+                                argsBldr.AppendFormat(" +profile \"{0}\"", options.ProfilesToStrip);
+
+                            // GraphicsMagick quality numbers: http://www.graphicsmagick.org/GraphicsMagick.html#details-quality
+                            // For PNG files, "quality" really means "compression".  75 is the default value used in GraphicsMagick
+                            // for .png files, and tests out as having a good balance between speed and resulting file size.
+                            // See https://issues.bloomlibrary.org/youtrack/issue/BL-11441 for an extensive discussion of this.
+                            if (
+                                destPath.EndsWith(
+                                    ".png",
+                                    StringComparison.InvariantCultureIgnoreCase
+                                )
+                            )
+                                argsBldr.Append(" -quality 75"); // no lossage in output, use adaptive filter in changing image dimensions
+                            else if (
+                                destPath.EndsWith(
+                                    ".jpg",
+                                    StringComparison.InvariantCultureIgnoreCase
+                                )
+                            )
+                            {
+                                if (options.JpegQuality == 0 && sourcePath.EndsWith(".jpg"))
+                                    argsBldr.Append(" -define jpeg:preserve-settings"); // preserve input quality and sampling factor
+                                else if (options.JpegQuality > 0)
+                                    argsBldr.AppendFormat(" -quality {0}", options.JpegQuality);
+                                else
+                                    argsBldr.Append(" -quality 90"); // high quality (but not extreme) if we don't know any better
+                            }
+                            argsBldr.Append(" -density 96"); // GraphicsMagick defaults to 72 dpi, which is rather low
+                            if (options.Size.Height > 0 && options.Size.Width > 0)
+                                // -resize would do a better job than -scale, but it can be much (~10x) slower on large images.
+                                argsBldr.AppendFormat(
+                                    " -scale {0}x{1}",
+                                    options.Size.Width,
+                                    options.Size.Height
+                                );
+                            argsBldr.AppendFormat(" \"{0}\"", safeDestPath);
+                            var arguments = argsBldr.ToString();
+
+                            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                                GetGraphicsMagickPath(),
+                                arguments,
+                                "",
+                                600,
+                                new NullProgress()
+                            );
+
+                            if (result.ExitCode == 0 && destPath != safeDestPath)
+                                RobustFile.Copy(safeDestPath, destPath, true);
+                            return result;
+                        },
+                        makeCopyIfNeeded: false
                     );
                 }
-
-                // http://www.graphicsmagick.org/GraphicsMagick.html#details-profile states:
-                // Use +profile profile_name to remove the respective profile.
-                // For example, +profile '!icm,*' strips all profiles except for the ICM profile.
-                if (!String.IsNullOrEmpty(options.ProfilesToStrip))
-                    argsBldr.AppendFormat(" +profile \"{0}\"", options.ProfilesToStrip);
-
-                // GraphicsMagick quality numbers: http://www.graphicsmagick.org/GraphicsMagick.html#details-quality
-                // For PNG files, "quality" really means "compression".  75 is the default value used in GraphicsMagick
-                // for .png files, and tests out as having a good balance between speed and resulting file size.
-                // See https://issues.bloomlibrary.org/youtrack/issue/BL-11441 for an extensive discussion of this.
-                if (destPath.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
-                    argsBldr.Append(" -quality 75"); // no lossage in output, use adaptive filter in changing image dimensions
-                else if (destPath.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    if (options.JpegQuality == 0 && sourcePath.EndsWith(".jpg"))
-                        argsBldr.Append(" -define jpeg:preserve-settings"); // preserve input quality and sampling factor
-                    else if (options.JpegQuality > 0)
-                        argsBldr.AppendFormat(" -quality {0}", options.JpegQuality);
-                    else
-                        argsBldr.Append(" -quality 90"); // high quality (but not extreme) if we don't know any better
-                }
-                argsBldr.Append(" -density 96"); // GraphicsMagick defaults to 72 dpi, which is rather low
-                if (options.Size.Height > 0 && options.Size.Width > 0)
-                    // -resize would do a better job than -scale, but it can be much (~10x) slower on large images.
-                    argsBldr.AppendFormat(
-                        " -scale {0}x{1}",
-                        options.Size.Width,
-                        options.Size.Height
-                    );
-                argsBldr.AppendFormat(" \"{0}\"", safeDestPath);
-                var arguments = argsBldr.ToString();
-
-                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
-                    GetGraphicsMagickPath(),
-                    arguments,
-                    "",
-                    600,
-                    new NullProgress()
-                );
-
-                if (result.ExitCode == 0 && destPath != safeDestPath)
-                    RobustFile.Copy(safeDestPath, destPath, true);
-                return result;
-            }
-            finally
-            {
-                // remove unneeded copies
-                if (sourcePath != safeSourcePath)
-                    RobustFile.Delete(safeSourcePath);
-                if (destPath != safeDestPath)
-                    RobustFile.Delete(safeDestPath);
-            }
+            );
         }
 
         /// <summary>
@@ -1966,6 +1975,57 @@ namespace Bloom.ImageProcessing
                 else
                 {
                     throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Executes an action with a file path that is guaranteed to be ASCII-only, creating a temporary
+        /// copy if needed. This ensures GraphicsMagick and other external processes can handle the path.
+        ///
+        /// Original comment before this was factored out into a separate wrapping method:
+        ///  We have no idea what the input (and output) file names are, and whether they can be safely represented
+        ///  in the user's codepage. We also have no idea what the user's codepage is. This has a major impact
+        ///  on whether the spawned GraphicsMagick process will succeed in reading/writing the files. We can
+        ///  assume that ASCII file paths are safe regardless of the user's default codepage.
+        /// </summary>
+        /// <param name="originalPath">The original file path that might contain non-ASCII characters</param>
+        /// <param name="action">The action to execute with the safe path</param>
+        /// <typeparam name="T">The return type of the action</typeparam>
+        /// <returns>The result of the action</returns>
+        private static T WithSafeFilePath<T>(
+            string originalPath,
+            Func<string, T> action,
+            bool makeCopyIfNeeded = true
+        )
+        {
+            var safePath = originalPath;
+
+            try
+            {
+                if (!IsAsciiFilepath(originalPath))
+                {
+                    safePath = TempFileUtils.GetTempFilepathWithExtension(
+                        Path.GetExtension(originalPath)
+                    );
+                    if (makeCopyIfNeeded)
+                        RobustFile.Copy(originalPath, safePath);
+                }
+
+                return action(safePath);
+            }
+            finally
+            {
+                if (originalPath != safePath)
+                {
+                    try
+                    {
+                        RobustFile.Delete(safePath);
+                    }
+                    catch (Exception e)
+                    {
+                        MiscUtils.SuppressUnusedExceptionVarWarning(e);
+                    }
                 }
             }
         }

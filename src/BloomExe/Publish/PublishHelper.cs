@@ -1030,6 +1030,9 @@ namespace Bloom.Publish
                 return;
             if (!ImageUtils.TryGetImageSize(srcPath, out Size size))
             {
+                Logger.WriteEvent(
+                    "Unable to calculate image size for cropping during publication: " + srcPath
+                );
                 return; // can't crop the image if we can't get its size.
             }
             var scale = imgWidth / size.Width;
