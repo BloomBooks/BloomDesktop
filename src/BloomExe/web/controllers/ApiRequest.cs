@@ -432,7 +432,7 @@ namespace Bloom.Api
         public string RequiredPostString(bool unescape = true)
         {
             var s = GetPostStringOrNull(unescape);
-            if (!string.IsNullOrWhiteSpace(s))
+            if (s != null) // note, whitespace is still a valid string
             {
                 return s;
             }

@@ -120,9 +120,10 @@ namespace Bloom.Publish.BloomLibrary
             _license?.Url != null
             && _license.Url.StartsWith("http://creativecommons.org/publicdomain/zero/");
 
-        public const string kNameOfDownloadForEditFile = "downloadForEdit.json";
+        public const string kNameOfFileAboutABlorgBookWeHaveDownloadedForEditing =
+            "downloadForEdit.json";
 
-        internal dynamic GetConflictingBookInfoFromServer(int index)
+        internal dynamic GetInfoAboutOneConflictingBookFromServer(int bookIndex)
         {
             // Include language information so we can get the names.
             var books = _uploader.GetBooksOnServer(Book.BookInfo.Id, includeLanguageInfo: true);
@@ -133,20 +134,34 @@ namespace Bloom.Publish.BloomLibrary
                 Book.BookInfo.PHashOfFirstContentImage,
                 bookId => _uploader.GetBookPermissions(bookId).reupload
             );
-            if (index >= books.Length)
+            if (bookIndex >= books.Length)
                 return null;
-            var result = books[index] as JObject;
+            var result = books[bookIndex] as JObject;
             // set count of books as a field on result
             result.Add("count", books.Length);
             var databaseId = result["id"].ToString();
             var permissions = _uploader.GetBookPermissions(databaseId);
             result.Add("permissions", permissions);
+
+            // Until Bloom 6.1, we used "branding" but the branding alone doesn't fit well with the current Subscription model.
+            // So if we are working with a book that had that, then just convert it to the new model.
+            if (!result.ContainsKey("subscriptionCode") && result.ContainsKey("branding"))
+            {
+                result["subscriptionCode"] = Subscription
+                    .FromLegacyBranding(result["branding"].ToString())
+                    .Code;
+            }
+            result.Remove("branding");
+
             return result;
         }
 
         public static JObject GetDownloadForEditData(string pathToCollectionFolder)
         {
-            var filePath = Path.Combine(pathToCollectionFolder, kNameOfDownloadForEditFile);
+            var filePath = Path.Combine(
+                pathToCollectionFolder,
+                kNameOfFileAboutABlorgBookWeHaveDownloadedForEditing
+            );
             if (RobustFile.Exists(filePath))
             {
                 return JObject.Parse(RobustFile.ReadAllText(filePath));
@@ -762,7 +777,7 @@ namespace Bloom.Publish.BloomLibrary
             int index
         )
         {
-            var existingBookInfo = GetConflictingBookInfoFromServer(index);
+            var existingBookInfo = GetInfoAboutOneConflictingBookFromServer(index);
 
             if (existingBookInfo == null)
             {
@@ -809,7 +824,8 @@ namespace Bloom.Publish.BloomLibrary
             var updatedDate = updatedDateTime.ToString("d", CultureInfo.CurrentCulture);
             var existingThumbUrl = GetBloomLibraryThumbnailUrl(existingBookInfo);
 
-            var oldBranding = existingBookInfo.brandingProjectName?.ToString();
+            // "brandingProjectName" is the raw field name from parse. We can't change it now for historical reasons.
+            var oldSubscriptionDescriptor = existingBookInfo.brandingProjectName?.ToString();
 
             // Must match IUploadCollisionDlgProps in uploadCollisionDlg.tsx.
             return new
@@ -826,8 +842,8 @@ namespace Bloom.Publish.BloomLibrary
                 existingUpdatedDate = updatedDate,
                 existingBookUrl,
                 existingThumbUrl,
-                newBranding = Book.BookInfo.BrandingProjectKey,
-                oldBranding,
+                newSubscriptionDescriptor = Book.BookInfo.SubscriptionDescriptor,
+                oldSubscriptionDescriptor,
                 uploader = existingBookInfo.uploader.email,
                 count = existingBookInfo.count,
                 permissions = existingBookInfo.permissions

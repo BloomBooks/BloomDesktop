@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using Bloom.Api;
 using Bloom.Book;
@@ -16,37 +15,16 @@ using SIL.Progress;
 namespace Bloom.web.controllers
 {
     /// <summary>
-    /// Used by the settings dialog (currently just the EnterpriseSettings tab) and various places that need to know
-    /// if Enterprise is enabled or not.
+    /// Used by the settings dialog (currently just the Subscription Settings tab) and various places that need to know
+    /// if a subscription is enabled or not.
     /// </summary>
     public class CollectionSettingsApi
     {
         public const string kApiUrlPart = "settings/";
 
-        // These options must match the strings used in accessibileImage.tsx
-        public enum EnterpriseStatus
-        {
-            None,
-            Community,
-            Subscription
-        }
-
-        // These are static so they can easily be set by the collection settings dialog using SetSubscriptionCode()
-        private static string SubscriptionCode { get; set; }
-        private static DateTime _enterpriseExpiry = DateTime.MinValue;
-
-        // True if the part of the subscription code that identifies the branding is one this version of Bloom knows about
-        private static bool _knownBrandingInSubscriptionCode = false;
-        private static EnterpriseStatus _enterpriseStatus;
-
         // While displaying the CollectionSettingsDialog, which is what this API mainly exists to serve
         // we keep a reference to it here so pending settings can be updated there.
         public static CollectionSettingsDialog DialogBeingEdited;
-
-        // When in FixEnterpriseSubscriptionCodeMode, and we think it is a legacy branding problem
-        // (because the subscription code is missing or incomplete rather than wrong or expired or unknown),
-        // this keeps track of the branding the collection file specified but which was not validated by a current code.
-        public static string LegacyBrandingName { get; set; }
 
         private readonly CollectionSettings _collectionSettings;
         private readonly List<object> _numberingStyles = new List<object>();
@@ -62,18 +40,13 @@ namespace Bloom.web.controllers
             _collectionSettings = collectionSettings;
             _xmatterPackFinder = xmatterPackFinder;
             this._bookSelection = bookSelection;
-            SetSubscriptionCode(
-                _collectionSettings.SubscriptionCode,
-                _collectionSettings.IsSubscriptionCodeKnown(),
-                _collectionSettings.GetEnterpriseStatus(false)
-            );
         }
 
-        private bool IsEnterpriseEnabled(bool failIfLockedToOneBook)
+        private bool IsSubscriptionEnabled(bool failIfLockedToOneBook)
         {
-            if (failIfLockedToOneBook && _collectionSettings.LockedToOneDownloadedBook)
+            if (failIfLockedToOneBook && _collectionSettings.EditingABlorgBook)
                 return false;
-            return _collectionSettings.HaveEnterpriseFeatures;
+            return _collectionSettings.Subscription.HaveActiveSubscription;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -96,13 +69,13 @@ namespace Bloom.web.controllers
             );
             apiHandler.RegisterBooleanEndpointHandler(
                 kApiUrlPart + "lockedToOneDownloadedBook",
-                request => _collectionSettings.LockedToOneDownloadedBook,
+                request => _collectionSettings.EditingABlorgBook,
                 null,
                 false
             );
 
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "enterpriseEnabled",
+                kApiUrlPart + "subscriptionEnabled",
                 request =>
                 {
                     if (request.HttpMethod == HttpMethods.Get)
@@ -110,12 +83,12 @@ namespace Bloom.web.controllers
                         lock (request)
                         {
                             // Some things (currently only creating a Team Collection) are not allowed if we're only
-                            // in enterprise mode as a concession to allowing editing of a book that was downloaded
+                            // in subscription mode as a concession to allowing editing of a book that was downloaded
                             // for direct editing.
                             var failIfLockedToOneBook =
                                 (request.GetParamOrNull("failIfLockedToOneBook") ?? "false")
                                 == "true";
-                            request.ReplyWithBoolean(IsEnterpriseEnabled(failIfLockedToOneBook));
+                            request.ReplyWithBoolean(IsSubscriptionEnabled(failIfLockedToOneBook));
                         }
                     }
                     else // post
@@ -128,160 +101,24 @@ namespace Bloom.web.controllers
                 },
                 true
             );
-            apiHandler.RegisterEnumEndpointHandler(
-                kApiUrlPart + "enterpriseStatus",
-                request => _enterpriseStatus,
-                (request, status) =>
-                {
-                    _enterpriseStatus = status;
-                    if (_enterpriseStatus == EnterpriseStatus.None)
-                    {
-                        _knownBrandingInSubscriptionCode = true;
-                        ResetBookshelf();
-                        BrandingChangeHandler("Default", null);
-                    }
-                    else if (_enterpriseStatus == EnterpriseStatus.Community)
-                    {
-                        ResetBookshelf();
-                        BrandingChangeHandler("Local-Community", null);
-                    }
-                    else
-                    {
-                        BrandingChangeHandler(
-                            GetBrandingFromCode(SubscriptionCode),
-                            SubscriptionCode
-                        );
-                    }
-                },
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "legacyBrandingName",
-                request =>
-                {
-                    request.ReplyWithText(LegacyBrandingName ?? "");
-                },
-                false
-            );
 
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "subscriptionCode",
-                request =>
-                {
-                    if (request.HttpMethod == HttpMethods.Get)
-                    {
-                        request.ReplyWithText(SubscriptionCode ?? "");
-                    }
-                    else // post
-                    {
-                        var requestData = DynamicJson.Parse(request.RequiredPostJson());
-                        SubscriptionCode = requestData.subscriptionCode;
-                        _enterpriseExpiry = GetExpirationDate(SubscriptionCode);
-                        var newBranding = GetBrandingFromCode(SubscriptionCode);
-                        var oldBranding = !string.IsNullOrEmpty(_collectionSettings.InvalidBranding)
-                            ? _collectionSettings.InvalidBranding
-                            : "";
-                        // If the user has entered a different subscription code then what was previously saved, we
-                        // generally want to clear out the Bookshelf. But if the BrandingKey is the same as the old one,
-                        // we'll leave it alone, since they probably renewed for another year or so and want to use the
-                        // same bookshelf.
-                        if (
-                            SubscriptionCode != _collectionSettings.SubscriptionCode
-                            && newBranding != oldBranding
-                        )
-                            ResetBookshelf();
-                        if (_enterpriseExpiry < DateTime.Now) // expired or invalid
-                        {
-                            BrandingChangeHandler("Default", null);
-                        }
-                        else
-                        {
-                            _knownBrandingInSubscriptionCode = BrandingChangeHandler(
-                                GetBrandingFromCode(SubscriptionCode),
-                                SubscriptionCode
-                            );
-                            if (!_knownBrandingInSubscriptionCode)
-                            {
-                                BrandingChangeHandler("Default", null); // Review: or just leave unchanged?
-                            }
-                        }
-                        request.PostSucceeded();
-                    }
-                },
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "enterpriseSummary",
-                request =>
-                {
-                    string branding = "";
-                    if (_enterpriseStatus == EnterpriseStatus.Community)
-                        branding = "Local-Community";
-                    else if (_enterpriseStatus == EnterpriseStatus.Subscription)
-                        branding =
-                            _enterpriseExpiry == DateTime.MinValue
-                                ? ""
-                                : GetBrandingFromCode(SubscriptionCode);
-                    var html = GetSummaryHtml(branding);
-                    request.ReplyWithText(html);
-                },
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "enterpriseExpiry",
-                request =>
-                {
-                    if (_enterpriseExpiry == DateTime.MinValue)
-                    {
-                        if (SubscriptionCodeLooksIncomplete(SubscriptionCode))
-                            request.ReplyWithText("incomplete");
-                        else
-                            request.ReplyWithText("null");
-                    }
-                    else if (_knownBrandingInSubscriptionCode)
-                    {
-                        // O is ISO 8601, the only format I can find that C# ToString() can produce and JS is guaranteed to parse.
-                        // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse
-                        request.ReplyWithText(
-                            _enterpriseExpiry.ToString("O", CultureInfo.InvariantCulture)
-                        );
-                    }
-                    else
-                    {
-                        request.ReplyWithText("unknown");
-                    }
-                },
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "hasSubscriptionFiles",
-                request =>
-                {
-                    var haveFiles = BrandingProject.HaveFilesForBranding(
-                        GetBrandingFromCode(SubscriptionCode)
-                    );
-                    if (haveFiles)
-                        request.ReplyWithText("true");
-                    else
-                        request.ReplyWithText("false");
-                },
-                false
-            );
-
-            // Enhance: The get here has one signature {brandingProjectName, defaultBookshelf} while the post has another (defaultBookshelfId:string).
+            // Enhance: The get here has one signature {descriptor, defaultBookshelf} while the post has another (defaultBookshelfId:string).
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "bookShelfData",
                 request =>
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
-                        var brandingProjectName = _collectionSettings.BrandingProjectKey;
+                        var subscriptionDescriptor = _collectionSettings.Subscription.Descriptor;
                         var defaultBookshelfUrlKey = _collectionSettings.DefaultBookshelf;
-                        request.ReplyWithJson(new { brandingProjectName, defaultBookshelfUrlKey });
+                        // Note that these variable names flow through as the object keys and must match the names expected by the client.
+                        request.ReplyWithJson(
+                            new { subscriptionDescriptor, defaultBookshelfUrlKey }
+                        );
                     }
                     else
                     {
-                        // post: doesn't include the brandingProjectName, as this is not where we edit that.
+                        // post: doesn't include the descriptor, as this is not where we edit that.
                         var newShelf = request.RequiredPostString();
                         if (newShelf == "none")
                             newShelf = ""; // RequiredPostString won't allow us to just pass this
@@ -360,16 +197,13 @@ namespace Bloom.web.controllers
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
-                        request.ReplyWithJson(_collectionSettings.BrandingProjectKey);
+                        request.ReplyWithJson(_collectionSettings.Subscription.Descriptor);
                     }
                     else
                     {
-                        // At least as of 5.6, this is only used by the visual regression tests
-                        // Normally, we require a restart to change branding.
-                        var key = request.RequiredPostString();
-                        _collectionSettings.BrandingProjectKey = key;
-                        _bookSelection.CurrentSelection?.BringBookUpToDate(new NullProgress()); // in case we changed the book's branding
-                        request.PostSucceeded();
+                        throw new NotImplementedException(
+                            "We don't expect to be setting the branding key, ever. It flows from the subscription code."
+                        );
                     }
                 },
                 true
@@ -413,6 +247,15 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "languageNames",
                 HandleGetLanguageNames,
+                false
+            );
+            // // a "deprecated" subscription is one that used to be eternal but is now being phased out
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "deprecatedBrandingsExpiryDate",
+                request =>
+                {
+                    request.ReplyWithText(Subscription.kExpiryDateForDeprecatedCodes);
+                },
                 false
             );
             apiHandler.RegisterEndpointHandler(
@@ -661,7 +504,7 @@ namespace Bloom.web.controllers
 
         public static string GetSummaryHtml(string branding)
         {
-            BrandingSettings.ParseBrandingKey(
+            BrandingSettings.ParseSubscriptionDescriptor(
                 branding,
                 out var baseKey,
                 out var flavor,
@@ -675,112 +518,8 @@ namespace Bloom.web.controllers
             return html.Replace("{flavor}", flavor).Replace("SUBUNIT", subUnitName);
         }
 
-        public void PrepareToShowDialog()
-        {
-            if (SubscriptionCodeLooksIncomplete(_collectionSettings.SubscriptionCode))
-                LegacyBrandingName = _collectionSettings.InvalidBranding; // otherwise we won't show the legacy branding message, just bring up the dialog and show whatever's wrong.
-            else
-                LegacyBrandingName = "";
-        }
+        public void PrepareToShowDialog() { }
 
-        public static void DialogClosed()
-        {
-            LegacyBrandingName = "";
-        }
-
-        // CollectionSettingsDialog sets this so we can call back with results from the tab.
-        public static Func<string, string, bool> BrandingChangeHandler;
-
-        public static bool SubscriptionCodeLooksIncomplete(string input)
-        {
-            if (input == null)
-                return true;
-            var parts = input.Split('-');
-            if (parts.Length < 3)
-                return true; // less than the required three components
-            int last = parts.Length - 1;
-            int dummy;
-            if (!Int32.TryParse(parts[last - 1], out dummy))
-                return true; // If they haven't started typing numbers, assume they're still in the name part, which could include a hyphen
-            // If they've typed one number, we expect another. (Might not be true...ethnos-360-guatemala is incomplete...)
-            // So, we already know the second-last part is a number, only short numbers or empty last part qualify as incomplete now.
-            // Moreover, for the whole thing to be incomplete in this case, the completed number must be the right length; otherwise,
-            // we consider it definitely wrong.
-            if (
-                parts[last - 1].Length == 6
-                && parts[last].Length < 4
-                && (parts[last].Length == 0 || Int32.TryParse(parts[last], out dummy))
-            )
-                return true;
-
-            return false;
-        }
-
-        // Parse a string like PNG-RISE-361769-363798 or SIL-LEAD-361769-363644,
-        // generated by a private google spreadsheet. The two last elements are numbers;
-        // the first is an encoding of an expiry date, the second is a simple hash of
-        // the project name (case-insensitive) and the expiry date, used to make it
-        // a little less trivial to fake codes. We're not aiming for something that
-        // would be difficult for someone willing to take the trouble to read this code.
-        public static DateTime GetExpirationDate(string input)
-        {
-            if (input == null)
-                return DateTime.MinValue;
-            var parts = input.Split('-');
-            if (parts.Length < 3)
-                return DateTime.MinValue;
-            int last = parts.Length - 1;
-            if (parts[last].Length != 4 || parts[last - 1].Length != 6)
-                return DateTime.MinValue;
-            int datePart;
-            if (!Int32.TryParse(parts[last - 1], out datePart))
-                return DateTime.MinValue;
-            int combinedChecksum;
-            if (!Int32.TryParse(parts[last], out combinedChecksum))
-                return DateTime.MinValue;
-
-            int checkSum = CheckSum(GetBrandingFromCode(input));
-            if ((Math.Floor(Math.Sqrt(datePart)) + checkSum) % 10000 != combinedChecksum)
-                return DateTime.MinValue;
-            int dateNum = datePart + 40000; // days since Dec 30 1899
-            return new DateTime(1899, 12, 30) + TimeSpan.FromDays(dateNum);
-        }
-
-        // From the same sort of code extract the project name,
-        // everything up to the second-last hyphen.
-        public static string GetBrandingFromCode(string input)
-        {
-            if (input == null)
-                return "";
-            var parts = input.Split('-').ToList();
-            if (parts.Count < 3)
-                return "";
-            parts.RemoveAt(parts.Count - 1);
-            parts.RemoveAt(parts.Count - 1);
-            return string.Join("-", parts.ToArray());
-        }
-
-        // Must match the function associated with the code generation google sheet
-        private static int CheckSum(string input)
-        {
-            var sum = 0;
-            input = input.ToUpperInvariant();
-            for (var i = 0; i < input.Length; i++)
-            {
-                sum += input[i] * i;
-            }
-            return sum;
-        }
-
-        // Used to initialize things in the constructor.
-        //
-        // Also used by the settings dialog to ensure things are initialized properly there for a special "legacy" case.
-        public static void SetSubscriptionCode(string code, bool knownCode, EnterpriseStatus status)
-        {
-            SubscriptionCode = code;
-            _enterpriseExpiry = GetExpirationDate(code);
-            _knownBrandingInSubscriptionCode = knownCode;
-            _enterpriseStatus = status;
-        }
+        public static void DialogClosed() { }
     }
 }

@@ -253,7 +253,7 @@ namespace BloomTests.Book
                 @"{""a11y_NoEssentialInfoByColor"":true,""a11y_NoTextIncludedInAnyImages"":true,""epub_HowToPublishImageDescriptions"":1,
 				""epub_RemoveFontStyles"":true,""bookInstanceId"":""738cf8ea-357d-4c50-88d2-60774ffbd32b"",""suitableForMakingShells"":true,
 				""suitableForMakingTemplates"":false,""suitableForVernacularLibrary"":true,""bloomdVersion"":0,""experimental"":false,
-				""brandingProjectName"":null,""nameLocked"":false,""folio"":false,""isRtl"":false,""title"":"""",""allTitles"":null,
+				""subscriptionDescriptor"":null,""nameLocked"":false,""folio"":false,""isRtl"":false,""title"":"""",""allTitles"":null,
 				""originalTitle"":null,""baseUrl"":null,""bookOrder"":null,""isbn"":null,""bookLineage"":"""",""downloadSource"":null,
 				""license"":null,""formatVersion"":null,""licenseNotes"":null,""copyright"":null,""credits"":null,""tags"":null,
 				""pageCount"":0,""languages"":[],""langPointers"":null,""summary"":null,""allowUploadingToBloomLibrary"":true,

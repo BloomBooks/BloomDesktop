@@ -22,6 +22,7 @@ using SIL.PlatformUtilities;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
+using static Subscription;
 using Directory = System.IO.Directory;
 using File = System.IO.File;
 
@@ -766,7 +767,7 @@ namespace BloomTests.Publish
                         Is.EqualTo(-1)
                     );
                 },
-                branding: "Default"
+                tier: SubscriptionTier.None
             );
         }
 
@@ -848,7 +849,7 @@ namespace BloomTests.Publish
                     // Make sure we don't miss the last answer of the last question.
                     Assert.That(groups[2].questions[3].answers[3].text, Is.EqualTo("Wherever"));
                 },
-                branding: "Test"
+                tier: SubscriptionTier.Enterprise
             );
         }
 
@@ -964,7 +965,7 @@ namespace BloomTests.Publish
                     Assert.That(answers[1].correct, Is.False);
                     Assert.That(answers[2].correct, Is.True);
                 },
-                branding: "Test"
+                tier: SubscriptionTier.Enterprise
             );
         }
 
@@ -998,7 +999,7 @@ namespace BloomTests.Publish
                         zip.FindEntry(PublishHelper.kSimpleComprehensionQuizJs, false)
                     );
                 },
-                branding: "Default"
+                tier: SubscriptionTier.None
             );
         }
 
@@ -1166,7 +1167,7 @@ namespace BloomTests.Publish
                             1
                         );
                 },
-                branding: "Test"
+                tier: SubscriptionTier.Enterprise
             );
         }
 
@@ -1201,7 +1202,7 @@ namespace BloomTests.Publish
                     var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
                     AssertThatXmlIn.Dom(htmlDom).HasAtLeastOneMatchForXpath("//video");
                 },
-                branding: "Default"
+                tier: SubscriptionTier.None
             );
         }
 
@@ -1858,15 +1859,15 @@ namespace BloomTests.Publish
             Action<string> assertionsOnResultingHtmlString = null,
             Action<ZipHtmlObj> assertionsOnZipArchive = null,
             Action<ZipFile> assertionsOnRepeat = null,
-            string branding = "Default",
+            SubscriptionTier tier = SubscriptionTier.None,
             HashSet<string> languagesToInclude = null,
             string creator = BloomPubMaker.kCreatorBloom
         )
         {
             var testBook = CreateBookWithPhysicalFile(originalBookHtml, bringBookUpToDate: true);
-
-            // Branding must be something other than "Default" or all the Enterprise-only features get stripped
-            testBook.CollectionSettings.BrandingProjectKey = branding;
+            testBook.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
+                tier
+            );
 
             var bookFileName = Path.GetFileName(testBook.GetPathHtmlFile());
 

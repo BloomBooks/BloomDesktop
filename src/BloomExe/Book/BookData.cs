@@ -2094,8 +2094,6 @@ namespace Bloom.Book
                     sb.Append("{");
                     foreach (var langForm in title.TextAlternatives.Forms)
                     {
-                        if (PublishHelper.IsUnpublishableLanguage(langForm.WritingSystemId))
-                            continue; // skip unpublishable titles (BL-14339)
                         if (sb.Length > 1)
                             sb.Append(",");
                         sb.Append("\"");
@@ -2322,9 +2320,35 @@ namespace Bloom.Book
                                 CollectionSettings.DefaultBookshelf
                             );
                     }
+
+                    content = MergeInPersonalization(content);
+
                     Set(item.DataBook, XmlString.FromXml(content), item.Lang);
                 }
             }
+        }
+
+		/// <summary>
+		/// If we have "{personalization}" in the subscription's HTML template, fill in the
+		/// personalization from the subscription code.  If the personalization is empty,
+		/// throw an exception because it should always exist if it's in the template.
+		/// </summary>
+		private string MergeInPersonalization(string content)
+        {
+            // if the CollectionSettings has a Subscription Personalization, replace any instances of
+            // {personalization} with that value.
+            if (content.Contains("{personalization}"))
+            {
+                var personalization = this.CollectionSettings.Subscription.Personalization;
+                if (string.IsNullOrEmpty(personalization))
+                {
+                    throw new ApplicationException(
+                        "Branding personalization is not set, but the branding template contains {personalization}.");
+                }
+                return content.Replace("{personalization}", personalization);
+            }
+
+            return content;
         }
 
         /// <summary>

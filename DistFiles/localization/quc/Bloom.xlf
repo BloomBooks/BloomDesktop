@@ -204,7 +204,7 @@
       </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</source>
-        <target xml:lang="quc" state="final">Chech uch'axik, chakojo ri setesik rech ri ch'o, chak'utu' ri kawaj, te'qne chapitz'a' ri cholnak'tz'ib' uk'utum ruk' ri raxkaqkoj q'o'b'al. 
+        <target xml:lang="quc" state="final">Chech uch'axik, chakojo ri setesik rech ri ch'o, chak'utu' ri kawaj, te'qne chapitz'a' ri cholnak'tz'ib' uk'utum ruk' ri raxkaqkoj q'o'b'al.
 K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'aj.</target>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
       </trans-unit>
@@ -4150,7 +4150,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</source>
-        <target xml:lang="quc" state="final">We no'jwuj ri' k'o woktzij chi upam ruk ' jun kemuxe' ub'i' "{0}" xa are k'ut Bloom man xurij ta 
+        <target xml:lang="quc" state="final">We no'jwuj ri' k'o woktzij chi upam ruk ' jun kemuxe' ub'i' "{0}" xa are k'ut Bloom man xurij ta
  le kemuxe' pa we kematz'ib' ri'.</target>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
       </trans-unit>
@@ -4844,10 +4844,10 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="final">Kemtzijob'exik</target>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
+      <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage">
         <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
         <target xml:lang="quc" state="needs-translation">Page {0} is the first page that uses Overlay elements.</target>
-        <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
+        <note>ID: PublishTab.PublishRequiresSubscription.FirstOverlayPage</note>
       </trans-unit>
       <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
         <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
@@ -6149,10 +6149,10 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="final">Reta'maxik jule' chik</target>
         <note>ID: Settings.Enterprise.LearnMore</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.NeedsCode" sil:dynamic="true">
-        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
-        <target xml:lang="quc" state="needs-translation">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</target>
-        <note>ID: Settings.Enterprise.NeedsCode</note>
+      <trans-unit id="Settings.Subscription.NeedsCode" sil:dynamic="true">
+        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
+        <target xml:lang="quc" state="needs-translation">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </target>
+        <note>ID: Settings.Subscription.NeedsCode</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None" sil:dynamic="true" approved="yes">
         <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
@@ -6174,10 +6174,10 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="final">Utz'ib'axik ib' pa wokk’ayinel</target>
         <note>ID: Settings.Enterprise.Subscription</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.SubscriptionCode" sil:dynamic="true" approved="yes">
+      <trans-unit id="Settings.Subscription.SubscriptionCodeLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Subscription Code:</source>
         <target xml:lang="quc" state="final">Retal utz'ib'axik ib':</target>
-        <note>ID: Settings.Enterprise.SubscriptionCode</note>
+        <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
       </trans-unit>
       <trans-unit id="TeamCollection.TeamCollection">
         <source xml:lang="en">Team Collection</source>

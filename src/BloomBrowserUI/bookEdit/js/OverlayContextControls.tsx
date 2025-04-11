@@ -96,12 +96,25 @@ const OverlayContextControls: React.FunctionComponent<{
         );
     };
 
-    const setMenuOpen = (open: boolean) => {
+    const setMenuOpen = (open: boolean, launchingDialog?: boolean) => {
         // Even though we've done our best to tell the MUI menu NOT to steal focus, it seems it still does...
         // or some other code somewhere is doing it when we choose a menu item. So we tell the bubble manager
         // to ignore focus changes while the menu is open.
-        BubbleManager.ignoreFocusChanges = open;
+        if (open) {
+            BubbleManager.ignoreFocusChanges = true;
+        }
         props.setMenuOpen(open);
+        // Setting ignoreFocusChanges to false immediately after closing the menu doesn't work,
+        // because the the focus change is still happening after the menu closes.  This timeout
+        // ensures that the focus change is ignored immediately after the menu closes.
+        // The skipNextFocusChange flag is used to prevent the focus change that happens when
+        // a dialog opened by the menu command closes.  See BL-14123.
+        if (!open) {
+            setTimeout(() => {
+                if (launchingDialog) BubbleManager.skipNextFocusChange = true;
+                BubbleManager.ignoreFocusChanges = false;
+            }, 0);
+        }
     };
 
     const menuEl = useRef<HTMLElement | null>();
@@ -227,7 +240,7 @@ const OverlayContextControls: React.FunctionComponent<{
                 l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
                 english: "Choose...",
                 onClick: () => {
-                    setMenuOpen(false);
+                    setMenuOpen(false, true);
                     updateSoundShowingDialog();
                 }
             }
@@ -264,7 +277,10 @@ const OverlayContextControls: React.FunctionComponent<{
             {
                 l10nId: "EditTab.Image.ChooseImage",
                 english: "Choose image from your computer...",
-                onClick: () => doImageCommand(img, "change"),
+                onClick: () => {
+                    doImageCommand(img, "change");
+                    setMenuOpen(false, true);
+                },
                 icon: <SearchIcon css={getMenuIconCss()} />
             },
             {
@@ -306,7 +322,10 @@ const OverlayContextControls: React.FunctionComponent<{
             {
                 l10nId: "EditTab.Toolbox.ComicTool.Options.ChooseVideo",
                 english: "Choose Video from your Computer...",
-                onClick: () => doVideoCommand(videoContainer, "choose"),
+                onClick: () => {
+                    doVideoCommand(videoContainer, "choose");
+                    setMenuOpen(false, true);
+                },
                 icon: <SearchIcon css={getMenuIconCss()} />
             },
             {

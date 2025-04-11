@@ -236,7 +236,7 @@ namespace Bloom.WebLibraryIntegration
 
             if (!String.IsNullOrEmpty(collectionSettings?.DefaultBookshelf))
             {
-                if (collectionSettings.HaveEnterpriseFeatures)
+                if (collectionSettings.Subscription.HaveActiveSubscription)
                     tags = tags.Concat(
                         new[] { "bookshelf:" + collectionSettings.DefaultBookshelf }
                     );
@@ -557,26 +557,48 @@ namespace Bloom.WebLibraryIntegration
         {
             if (String.IsNullOrEmpty(settingsPath) || !RobustFile.Exists(settingsPath))
                 return;
+            var doc = SanitizeCollectionSettingsForUpload(settingsPath);
+            Directory.CreateDirectory(Path.Combine(tempBookFolder, "collectionFiles"));
+            doc.Save(
+                Path.Combine(tempBookFolder, "collectionFiles", "book.uploadCollectionSettings")
+            );
+        }
+
+        /// <summary>
+        /// Sanitize collection settings file for upload by redacting subscription code and removing unpublishable languages.
+        /// </summary>
+        /// <param name="settingsPath">The path to the collection settings file</param>
+        /// <returns>A SafeXmlDocument with sanitized collection settings</returns>
+        public static SafeXmlDocument SanitizeCollectionSettingsForUpload(string settingsPath)
+        {
             var settingsText = RobustFile.ReadAllText(settingsPath);
             var doc = SafeXmlDocument.Create();
             doc.PreserveWhitespace = true;
             doc.LoadXml(settingsText);
+
             var subscriptionNode = doc.SelectSingleNode("/Collection/SubscriptionCode");
             if (subscriptionNode != null)
-                subscriptionNode.InnerText = "";
+            {
+                var sub = new Subscription(subscriptionNode.InnerText);
+                subscriptionNode.InnerText = sub.GetRedactedCode();
+            }
+            // we don't publish the "BrandingProjectName" anymore, since we're using a redacted code instead
+            var brandingProjectNameNode = doc.SelectSingleNode("/Collection/BrandingProjectName");
+            if (brandingProjectNameNode != null)
+            {
+                brandingProjectNameNode.ParentNode.RemoveChild(brandingProjectNameNode);
+            }
+
             // Remove traces of AI generated data from the collection settings.
-            var languages = doc.SafeSelectNodes("/Collection/Languages/Language")
-                .Cast<SafeXmlElement>();
+            var languages = doc.SafeSelectNodes("/Collection/Languages/Language");
+
             foreach (SafeXmlElement lang in languages)
             {
                 var code = lang.GetChildWithName("languageiso639code")?.InnerText;
                 if (PublishHelper.IsUnpublishableLanguage(code))
                     lang.ParentNode.RemoveChild(lang);
             }
-            Directory.CreateDirectory(Path.Combine(tempBookFolder, "collectionFiles"));
-            doc.Save(
-                Path.Combine(tempBookFolder, "collectionFiles", "book.uploadCollectionSettings")
-            );
+            return doc;
         }
 
         private void RemoveUnwantedLanguageData(
@@ -777,7 +799,7 @@ namespace Bloom.WebLibraryIntegration
         )
         {
             if (
-                book.CollectionSettings.HaveEnterpriseFeatures
+                book.CollectionSettings.Subscription.HaveActiveSubscription
                 && !PublishHelper.BookHasUnpublishableData(book)
             )
                 return false; // no need to prune the book data
@@ -795,7 +817,7 @@ namespace Bloom.WebLibraryIntegration
             var pages = new List<SafeXmlElement>();
             foreach (SafeXmlElement page in copiedBook.GetPageElements())
                 pages.Add(page);
-            if (!book.CollectionSettings.HaveEnterpriseFeatures)
+            if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
             {
                 // Remove enterprise features since they aren't allowed.
                 ISet<string> warningMessages = new HashSet<string>();

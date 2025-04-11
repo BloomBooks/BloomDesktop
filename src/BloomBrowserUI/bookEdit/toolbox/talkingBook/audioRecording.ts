@@ -1953,18 +1953,15 @@ export default class AudioRecording {
                 showImageDescriptions(page);
             }
             // If we don't already have them, set them up
-            let changed = false;
             if (page) {
                 setupImageDescriptions(
                     page,
                     () => {},
-                    () => (changed = true)
+                    () => {}
                 );
-                if (changed) {
-                    // Make sure audio recording is set up for the new image descriptions,
-                    // even though for now they will be empty.
-                    await this.setupAndUpdateMarkupAsync();
-                }
+                // Make sure audio recording is set up for the image descriptions, whether
+                // they are new (and empty) or they already exist.  See BL-14436.
+                await this.setupAndUpdateMarkupAsync();
                 // The main reason for this is that we may need to change the enabled state
                 // of buttons so the audio highlight can be moved into the image description.
                 await this.changeStateAndSetExpectedAsync("record");
@@ -2518,6 +2515,10 @@ export default class AudioRecording {
             }
         }
 
+        // The proper display setup must be in place before trying to update the audio markup.
+        // See BL-14436.
+        await this.setShowingImageDescriptions(this.showingImageDescriptions);
+
         this.watchElementsThatMightChangeAffectingVisibility(); // before we might return early if there are none!
         const editable = this.getRecordableDivs(true, false);
         if (editable.length === 0) {
@@ -2531,8 +2532,6 @@ export default class AudioRecording {
             // See comment on this method.
             this.ensureHighlight(20);
         }
-
-        await this.setShowingImageDescriptions(this.showingImageDescriptions);
 
         this.updateDisplay();
     }
@@ -3676,7 +3675,7 @@ export default class AudioRecording {
             // Next exists. Set the Next button to at least Enabled, if not Expected.
 
             const shouldNextButtonOverrideSplit: boolean =
-                expectedVerb == "split" &&
+                expectedVerb === "split" &&
                 this.getStatus("split") === Status.Disabled;
             if (!shouldNextButtonOverrideSplit) {
                 // Normal case for Next

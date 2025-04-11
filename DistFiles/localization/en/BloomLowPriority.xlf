@@ -1,227 +1,233 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
-    <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
-        <body>
-            <trans-unit id="Installer.InstallationInProgress">
-                <source xml:lang="en">Installing...</source>
-                <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
-                <note> In English, given the context, just "Installing..." is enough. But your translation can be verbose, like "Software Installation in Progress...".</note>
-            </trans-unit>
-            <trans-unit id="Errors.CorruptImageFile">
-              <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
-              <note>ID: Errors.CorruptImageFile</note>
-              <note>The placeholder {0} represents the name of the corrupt file. The placeholder {0} represents a message describing the problem with the file.</note>
-            </trans-unit>
-            <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true">
-              <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
-              <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
-            </trans-unit>
-            <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
-                <source xml:lang="en">Conversion file used:</source>
-                <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
-                <note>After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another.</note>
-            </trans-unit>
-            <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
-                <source xml:lang="en">eSpeak failed.</source>
-                <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
-                <note>This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
-            </trans-unit>
-            <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed">
-                <source xml:lang="en">eSpeak language:</source>
-                <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
-                <note>After this text, the program will display the language code of the language settings that eSpeak used. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
-            </trans-unit>
-            <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion">
-                <source xml:lang="en">Result of orthography conversion:</source>
-                <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
-                <note>After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file.</note>
-            </trans-unit>
-            <trans-unit id="Errors.CannotConnectToBloomServer.2">
-                <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Web browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
-                <note>ID: Errors.CannotConnectToBloomServer.2</note>
-            </trans-unit>
-            <trans-unit id="OpenCreateCloneControl.InZipFileMessage">
-                <source xml:lang="en">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</source>
-                <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
-            </trans-unit>
-            <trans-unit id="OpenCreateCloneControl.InvalidFileTypeMessage">
-                <source xml:lang="en">Please select a .bloomCollection file.</source>
-                <note>ID: OpenCreateCloneControl.InvalidFileTypeMessage</note>
-            </trans-unit>
-          <trans-unit id="PublishTab.Android.BulkBookshelfColor" sil:dynamic="true">
-                <source xml:lang="en">Bookshelf Color</source>
-                <note>ID: PublishTab.Android.BulkBookshelfColor</note>
-                <note>The title of the color picker dialog shown to choose the color of the bulk BloomPUB bookshelf.</note>
-            </trans-unit>
-          <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
-                <source xml:lang="en">Currently, Bloom does not support including audio from embedded videos in video output.</source>
-                <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
-            </trans-unit>
-            <trans-unit id="PublishTab.Upload.CheckEmailFailed">
-                <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
-                <note>ID: PublishTab.Upload.CheckEmailFailed</note>
-            </trans-unit>
-            <trans-unit id="PublishTab.Upload.BookshelfError">
-                <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</source>
-                <note>ID: PublishTab.Upload.BookshelfError</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.Community">
-                <source xml:lang="en">Funded by the local community only</source>
-                <note>ID: Settings.Enterprise.Community</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.CheckUpdates">
-                <source xml:lang="en">Check for updates</source>
-                <note>ID: Settings.Enterprise.CheckUpdates</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.Expiration">
-                <source xml:lang="en">Expires:</source>
-                <note>ID: Settings.Enterprise.Expiration</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.Expired">
-                <source xml:lang="en">That code has expired.</source>
-                <note>ID: Settings.Enterprise.Expired</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.Incomplete">
-                <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
-                <note>ID: Settings.Enterprise.Incomplete</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.LearnMore">
-                <source xml:lang="en">Learn More</source>
-                <note>ID: Settings.Enterprise.LearnMore</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.Overview">
-                <source xml:lang="en">
-            Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
+  <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+    <body>
+      <trans-unit id="Installer.InstallationInProgress">
+        <source xml:lang="en">Installing...</source>
+        <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
+        <note> In English, given the context, just "Installing..." is enough. But your translation can be verbose, like "Software Installation in Progress...".</note>
+      </trans-unit>
+      <trans-unit id="Errors.CorruptImageFile">
+        <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
+        <note>ID: Errors.CorruptImageFile</note>
+        <note>The placeholder {0} represents the name of the corrupt file. The placeholder {0} represents a message describing the problem with the file.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true">
+        <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
+        <source xml:lang="en">Conversion file used:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
+        <note>After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
+        <source xml:lang="en">eSpeak failed.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
+        <note>This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed">
+        <source xml:lang="en">eSpeak language:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
+        <note>After this text, the program will display the language code of the language settings that eSpeak used. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion">
+        <source xml:lang="en">Result of orthography conversion:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
+        <note>After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file.</note>
+      </trans-unit>
+      <trans-unit id="Errors.CannotConnectToBloomServer.2">
+        <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Web browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
+        <note>ID: Errors.CannotConnectToBloomServer.2</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateCloneControl.InZipFileMessage">
+        <source xml:lang="en">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</source>
+        <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateCloneControl.InvalidFileTypeMessage">
+        <source xml:lang="en">Please select a .bloomCollection file.</source>
+        <note>ID: OpenCreateCloneControl.InvalidFileTypeMessage</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BulkBookshelfColor" sil:dynamic="true">
+        <source xml:lang="en">Bookshelf Color</source>
+        <note>ID: PublishTab.Android.BulkBookshelfColor</note>
+        <note>The title of the color picker dialog shown to choose the color of the bulk BloomPUB bookshelf.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
+        <source xml:lang="en">Currently, Bloom does not support including audio from embedded videos in video output.</source>
+        <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.CheckEmailFailed">
+        <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
+        <note>ID: PublishTab.Upload.CheckEmailFailed</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.BookshelfError">
+        <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</source>
+        <note>ID: PublishTab.Upload.BookshelfError</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true">
+        <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>
+        <note>ID: Settings.Subscription.DownloadForEdit</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.NeedsCode" sil:dynamic="true">
+        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
+        <note>ID: Settings.Subscription.NeedsCode</note>
+        <note>**%0** should be kept. It will become the subscription descriptor.</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.IntroText">
+        <source xml:lang="en">To help cover a portion of the costs associated with providing Bloom, we offer [advanced features](%0) and customizations as a subscription service.</source>
+        <note>ID: Settings.Subscription.IntroText</note>
+        <note>%0 will be replaced with a URL for more information about advanced features</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.RequestSubscription">
+        <source xml:lang="en">Please contact [%0](%1) to purchase your subscription code.</source>
+        <note>ID: Settings.Subscription.RequestSubscription</note>
+        <note>%0 will be replaced with an email address, %1 with a mailto link to that address</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.Community.Invitation">
+        <source xml:lang="en">If your project is fully funded and managed by your local language community, you may qualify for a free [Bloom Community Subscription](https://bloomlibrary.org/subscriptions).</source>
+        <note>ID: Settings.Subscription.Community.Invitation</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.SubscriptionCodeLabel">
+        <source xml:lang="en">Subscription Code:</source>
+        <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.CheckUpdates">
+        <source xml:lang="en">Check for updates</source>
+        <note>ID: Settings.Subscription.CheckUpdates</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.Expiration">
+        <source xml:lang="en">Expires:</source>
+        <note>ID: Settings.Subscription.Expiration</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.Expired">
+        <source xml:lang="en">That code has expired.</source>
+        <note>ID: Settings.Subscription.Expired</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.Incomplete">
+        <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
+        <note>ID: Settings.Subscription.Incomplete</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.Overview">
+        <source xml:lang="en">
+            Bloom Settings.Subscription adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
         </source>
-                <note>ID: Settings.Enterprise.Overview</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.None">
-                <source xml:lang="en">None. Enterprise features will be unavailable.</source>
-                <note>ID: Settings.Enterprise.None</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.NeedsCode">
-                <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
-                <note>ID: Settings.Enterprise.NeedsCode</note>
-                <note>%0 will be replaced with the name of the branding. Keep surrounding **...**. [here](%1) will become a hot link; %1 will not be seen, but will be the URL for the destination page. Translate "here" and keep the [](%1) around it.</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.NotValid">
-                <source xml:lang="en">That code appears to be incorrect.</source>
-                <note>ID: Settings.Enterprise.NotValid</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.Status">
-                <source xml:lang="en">Bloom Enterprise Status</source>
-                <note>ID: Settings.Enterprise.Status</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.Subscription">
-                <source xml:lang="en">Enterprise Subscription</source>
-                <note>ID: Settings.Enterprise.Subscription</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.SubscriptionCode">
-                <source xml:lang="en">Subscription Code:</source>
-                <note>ID: Settings.Enterprise.SubscriptionCode</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.UnknownCode">
-                <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
-                <note>ID: Settings.Enterprise.UnknownCode</note>
-            </trans-unit>
-            <trans-unit id="Settings.Enterprise.WhatsThis">
-                <source xml:lang="en">What's This?</source>
-                <note>ID: Settings.Enterprise.WhatsThis</note>
-                <note>A link offering more information about the Funded Local Community Only option</note>
-            </trans-unit>
-            <trans-unit id="Spreadsheet.DataDivConflictWarning">
-                <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
-                <note>ID: Spreadsheet.DataDivConflictWarning</note>
-            </trans-unit>
-            <trans-unit id="Spreadsheet.DataDivImageMultiple">
-                <source xml:lang="en">Export warning: Found multiple elements for image element {0}. Only the first will be exported.</source>
-                <note>ID: Spreadsheet.DataDivImageMultiple</note>
-            </trans-unit>
-            <trans-unit id="Spreadsheet.ExportFailed">
-                <source xml:lang="en">Export failed: {0}</source>
-                <note>ID: Spreadsheet.ExportFailed</note>
-		<note>{0} is a placeholder for an exception message</note>
-            </trans-unit>
-            <trans-unit id="Spreadsheet.SpreadsheetLocked">
-                <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
-                <note>ID: Spreadsheet.SpreadsheetLocked</note>
-            </trans-unit>
-            <trans-unit id="Spreadsheet.MissingImage">
-                <source xml:lang="en">Export warning: did not find the image {0}. It will be missing from the export folder.</source>
-                <note>ID: Spreadsheet.MissingImage</note>
-            </trans-unit>
-            <trans-unit id="Spreadsheet.MultipleImageChildren">
-                <source xml:lang="en">Export warning: Found multiple images in data-book element {0}. Only the first will be exported.</source>
-                <note>ID: Spreadsheet.MultipleImageChildren</note>
-            </trans-unit>
-            <trans-unit id="Spreadsheet.Overwrite">
-                <source xml:lang="en">You are about to replace the existing folder named {0}</source>
-                <note>ID: Spreadsheet.Overwrite</note>
-            </trans-unit>
-            <trans-unit id="Spreadsheet.OverwriteBook">
-                <source xml:lang="en">The folder named {0} already exists and looks like it might be a Bloom book folder!</source>
-                <note>ID: Spreadsheet.OverwriteBook</note>
-            </trans-unit>
-          <trans-unit id="Spreadsheet.TroubleCopying">
-            <source xml:lang="en">Bloom had trouble copying the file {0} to the video folder: {1}</source>
-            <note>ID: Spreadsheet.TroubleCopying</note>
-            <note>{1} is a more detailed, usually technical, error message and should be at the end if possible.</note>
-          </trans-unit>
-            <trans-unit id="Spreadsheet.TroubleCopyingFolder">
-                <source xml:lang="en">Bloom had trouble copying the folder {0} to the activities folder: {1}</source>
-                <note>ID: Spreadsheet.TroubleCopyingFolder</note>
-              <note>{1} is a more detailed, usually technical, error message and should be at the end if possible.</note>
-            </trans-unit>
-
-          <trans-unit id="Spreadsheet.WriteFailed">
-            <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>
-            <note>ID: Spreadsheet.WriteFailed</note>
-          </trans-unit>
-            <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
-                <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
-            </trans-unit>
-            <trans-unit id="Download.PleaseSendLogFile">
-                <source xml:lang="en">Please also send us the latest log file found at {0}.</source>
-                <note>ID: Download.PleaseSendLogFile</note>
-                <note>{0} will be replaced with the location on the user's computer of the Bloom log file (usually Log.txt).</note>
-            </trans-unit>
-          <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem">
-            <source xml:lang="en">Bloom was not able to access a microphone.</source>
-            <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
-          </trans-unit>
-          <trans-unit id="ReportProblemDialog.OneDriveProblem">
-            <source xml:lang="en">OneDrive Problem</source>
-            <note>ID: ReportProblemDialog.OneDriveProblem</note>
-            <note>The title of a dialog telling the user about a problem with their Microsoft OneDrive.</note>
-          </trans-unit>
-          <trans-unit id="ReportProblemDialog.OneDriveErrorMessage">
-            <source xml:lang="en">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</source>
-            <note>ID: ReportProblemDialog.OneDriveErrorMessage</note>
-          </trans-unit>
-          <trans-unit id="ProblemReport.PageStructureProblem">
-            <source xml:lang="en">Bloom made a mistake on this page. Please report this to us, then check that nothing was lost.</source>
-            <note>ID: ProblemReport.PageStructureProblem</note>
-          </trans-unit>
-          <trans-unit id="TeamCollection.AdministratorEmails">
-            <source xml:lang="en">Administrator Emails:</source>
-            <note>ID: TeamCollection.AdministratorEmails</note>
-          </trans-unit>
-          <trans-unit id="TeamCollection.InvalidAdminEmails">
-            <source xml:lang="en">Please enter one or more valid administrator email addresses, separated by commas or spaces.</source>
-            <note>ID: TeamCollection.InvalidAdminEmails</note>
-          </trans-unit>
-          <trans-unit id="Common.Preparing">
-            <source xml:lang="en">Preparing...</source>
-            <note>Common.Preparing</note>
-          </trans-unit>
-          <trans-unit id="Common.Finishing">
-            <source xml:lang="en">Finishing...</source>
-            <note>Common.Finishing</note>
-          </trans-unit>
-          <trans-unit id="Common.Finished">
-            <source xml:lang="en">Finished</source>
-            <note>Common.Finished</note>
-          </trans-unit>
-        </body>
-    </file>
+        <note>ID: Settings.Subscription.Overview</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.None">
+        <source xml:lang="en">None. Settings.Subscription features will be unavailable.</source>
+        <note>ID: Settings.Subscription.None</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.NeedsCode">
+        <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code.</source>
+        <note>ID: Settings.Subscription.NeedsCode</note>
+        <note>%0 will be replaced with the name of the subscription. Keep surrounding **...**.</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.NotValid">
+        <source xml:lang="en">That code appears to be incorrect.</source>
+        <note>ID: Settings.Subscription.NotValid</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.UnknownCode">
+        <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
+        <note>ID: Settings.Subscription.UnknownCode</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.WhatsThis">
+        <source xml:lang="en">What's This?</source>
+        <note>ID: Settings.Subscription.WhatsThis</note>
+        <note>A link offering more information about the Funded Local Community Only option</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.DataDivConflictWarning">
+        <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
+        <note>ID: Spreadsheet.DataDivConflictWarning</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.DataDivImageMultiple">
+        <source xml:lang="en">Export warning: Found multiple elements for image element {0}. Only the first will be exported.</source>
+        <note>ID: Spreadsheet.DataDivImageMultiple</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportFailed">
+        <source xml:lang="en">Export failed: {0}</source>
+        <note>ID: Spreadsheet.ExportFailed</note>
+        <note>{0} is a placeholder for an exception message</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.SpreadsheetLocked">
+        <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
+        <note>ID: Spreadsheet.SpreadsheetLocked</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MissingImage">
+        <source xml:lang="en">Export warning: did not find the image {0}. It will be missing from the export folder.</source>
+        <note>ID: Spreadsheet.MissingImage</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MultipleImageChildren">
+        <source xml:lang="en">Export warning: Found multiple images in data-book element {0}. Only the first will be exported.</source>
+        <note>ID: Spreadsheet.MultipleImageChildren</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.Overwrite">
+        <source xml:lang="en">You are about to replace the existing folder named {0}</source>
+        <note>ID: Spreadsheet.Overwrite</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.OverwriteBook">
+        <source xml:lang="en">The folder named {0} already exists and looks like it might be a Bloom book folder!</source>
+        <note>ID: Spreadsheet.OverwriteBook</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.TroubleCopying">
+        <source xml:lang="en">Bloom had trouble copying the file {0} to the video folder: {1}</source>
+        <note>ID: Spreadsheet.TroubleCopying</note>
+        <note>{1} is a more detailed, usually technical, error message and should be at the end if possible.</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.TroubleCopyingFolder">
+        <source xml:lang="en">Bloom had trouble copying the folder {0} to the activities folder: {1}</source>
+        <note>ID: Spreadsheet.TroubleCopyingFolder</note>
+        <note>{1} is a more detailed, usually technical, error message and should be at the end if possible.</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.WriteFailed">
+        <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>
+        <note>ID: Spreadsheet.WriteFailed</note>
+      </trans-unit>
+      <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
+        <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
+      </trans-unit>
+      <trans-unit id="Download.PleaseSendLogFile">
+        <source xml:lang="en">Please also send us the latest log file found at {0}.</source>
+        <note>ID: Download.PleaseSendLogFile</note>
+        <note>{0} will be replaced with the location on the user's computer of the Bloom log file (usually Log.txt).</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem">
+        <source xml:lang="en">Bloom was not able to access a microphone.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveProblem">
+        <source xml:lang="en">OneDrive Problem</source>
+        <note>ID: ReportProblemDialog.OneDriveProblem</note>
+        <note>The title of a dialog telling the user about a problem with their Microsoft OneDrive.</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveErrorMessage">
+        <source xml:lang="en">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</source>
+        <note>ID: ReportProblemDialog.OneDriveErrorMessage</note>
+      </trans-unit>
+      <trans-unit id="ProblemReport.PageStructureProblem">
+        <source xml:lang="en">Bloom made a mistake on this page. Please report this to us, then check that nothing was lost.</source>
+        <note>ID: ProblemReport.PageStructureProblem</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AdministratorEmails">
+        <source xml:lang="en">Administrator Emails:</source>
+        <note>ID: TeamCollection.AdministratorEmails</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.InvalidAdminEmails">
+        <source xml:lang="en">Please enter one or more valid administrator email addresses, separated by commas or spaces.</source>
+        <note>ID: TeamCollection.InvalidAdminEmails</note>
+      </trans-unit>
+      <trans-unit id="Common.Preparing">
+        <source xml:lang="en">Preparing...</source>
+        <note>Common.Preparing</note>
+      </trans-unit>
+      <trans-unit id="Common.Finishing">
+        <source xml:lang="en">Finishing...</source>
+        <note>Common.Finishing</note>
+      </trans-unit>
+      <trans-unit id="Common.Finished">
+        <source xml:lang="en">Finished</source>
+        <note>Common.Finished</note>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>

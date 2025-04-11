@@ -4843,10 +4843,10 @@
         <target xml:lang="fr" state="final">Publier</target>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage" approved="yes">
+      <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage" approved="yes">
         <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
         <target xml:lang="fr" state="final">La page {0} est la première page qui utilise des éléments de superposition.</target>
-        <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
+        <note>ID: PublishTab.PublishRequiresSubscription.FirstOverlayPage</note>
       </trans-unit>
       <trans-unit id="PublishTab.PublishRequiresEnterprise.Options" approved="yes">
         <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
@@ -6148,10 +6148,10 @@
         <target xml:lang="fr" state="final">En savoir plus</target>
         <note>ID: Settings.Enterprise.LearnMore</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.NeedsCode" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
+      <trans-unit id="Settings.Subscription.NeedsCode" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
         <target xml:lang="fr" state="final">Ce projet a déjà utilisé **%0**. Pour continuer à l'utiliser, il faut saisir un code d'abonnement actuel. On peut trouver les codes pour les marques SIL [here](%1). Pour d'autres abonnements, veuillez contacter l'administrateur de votre projet.</target>
-        <note>ID: Settings.Enterprise.NeedsCode</note>
+        <note>ID: Settings.Subscription.NeedsCode</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None" sil:dynamic="true" approved="yes">
         <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
@@ -6173,10 +6173,10 @@
         <target xml:lang="fr" state="final">Abonnement Entreprise</target>
         <note>ID: Settings.Enterprise.Subscription</note>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.SubscriptionCode" sil:dynamic="true" approved="yes">
+      <trans-unit id="Settings.Subscription.SubscriptionCodeLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Subscription Code:</source>
         <target xml:lang="fr" state="final">Code d'abonnement:</target>
-        <note>ID: Settings.Enterprise.SubscriptionCode</note>
+        <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
       </trans-unit>
       <trans-unit id="TeamCollection.TeamCollection" approved="yes">
         <source xml:lang="en">Team Collection</source>

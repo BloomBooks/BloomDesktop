@@ -534,7 +534,7 @@ namespace Bloom.Publish
                 foreach (var label in omittedPages.Keys.OrderBy(x => x))
                     warningMessages.Add($"{omittedPages[label]} {label}");
             }
-            if (!book.CollectionSettings.HaveEnterpriseFeatures)
+            if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
                 RemoveEnterpriseOnlyAssets(book);
         }
 
@@ -550,12 +550,12 @@ namespace Bloom.Publish
         )
         {
             var omittedPages = new Dictionary<string, int>();
-            if (!bookData.CollectionSettings.HaveEnterpriseFeatures)
+            if (!bookData.CollectionSettings.Subscription.HaveActiveSubscription)
             {
                 var pageRemoved = false;
                 foreach (var page in pageElts.ToList())
                 {
-                    if (Book.Book.IsPageBloomEnterpriseOnly(page))
+                    if (Book.Book.IsPageBloomSubscriptionOnly(page))
                     {
                         CollectPageLabel(page, omittedPages);
                         page.ParentNode.RemoveChild(page);
@@ -1341,7 +1341,7 @@ namespace Bloom.Publish
             }
         }
 
-        private const string AILangTagFragment = "-x-ai-";
+        private const string AILangTagFragment = "-x-ai";
         private const string BasicAIDataSelector =
             $"//div[@lang and contains(@lang,'{AILangTagFragment}')]";
 
