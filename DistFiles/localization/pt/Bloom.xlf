@@ -5421,7 +5421,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.ChangeSubscription">
         <source xml:lang="en">The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
-        <target xml:lang="pt-PT" state="needs-translation">The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</target>
+        <target xml:lang="pt-PT" state="translated">A assinatura foi "{0}", mas agora é "{1}". Isto pode alterar logotipos e outros materiais. Marque esta caixa se é isso que você quer.</target>
         <note>ID: PublishTab.UploadCollisionDialog.ChangeSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.ChangeUploader" approved="yes">
