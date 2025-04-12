@@ -12,6 +12,19 @@ namespace Bloom.SubscriptionAndFeatures
     {
         public FeatureName Feature;
         public SubscriptionTier SubscriptionTier;
+
+        // Prior to 6.2b, some pages had `<div  class="bloom-page enterprise-only ...`
+        // We were short-sighted, locating the subscription tier in the book itself.
+        // Starting in 6.2b, we instead specify the feature that the page represents, e.g.:
+        // `data-feature="overlay"`
+        // This field is used to find see if a page we are migrating in should get the `data-feature` attribute for this feature.
+        public string matchesLegacyPageXPath;
+
+        // Some features are are tied not to the page itself, but to children of the page. To this point, we have detected these
+        // by the existence of a css class or a data attribute. As of 6.2b, there are three examples: .bloom-canvas-element, .custom-widget-page, and data-activity.
+        // These, too, could be converted to just explicitly specifying the `data-feature` (both in the templates and using forward migration).
+        // Even if we go with migration to add data-activity, we will still need this value in order to detect the feature in the DOM.
+        // That step has not been taken yet, so we still have this way detecting them.  <--- REVIEW
         internal string existsInPageXPath;
     }
 
