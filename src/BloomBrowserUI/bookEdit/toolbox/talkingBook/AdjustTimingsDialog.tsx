@@ -337,7 +337,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                             />
                         }
                         english={"Use Aeneas to guess timings"}
-                        sublabel={
+                        subLabel={
                             <PWithLink
                                 css={css`
                                     margin-top: -3px;

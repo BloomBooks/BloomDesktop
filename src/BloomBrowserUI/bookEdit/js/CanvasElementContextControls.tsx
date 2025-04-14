@@ -63,6 +63,7 @@ import { useApiString } from "../../utils/bloomApi";
 import { MissingMetadataIcon } from "./MissingMetadataIcon";
 import { FillSpaceIcon } from "./FillSpaceIcon";
 import { kBloomDisabledOpacity } from "../../utils/colorUtils";
+import { Span } from "../../react_components/l10nComponents";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -780,11 +781,16 @@ function addImageMenuOptions(
         },
         divider,
         {
-            l10nId: "EditTab.PasteHyperLink",
+            l10nId: "EditTab.PasteHyperlink",
             english: "Paste Hyperlink",
-            generatedSubLabel:
-                "Currently: " + imgContainer.getAttribute("data-href") ||
-                undefined,
+            subLabel: imgContainer.getAttribute("data-href") && (
+                <Span
+                    l10nKey="EditTab.PasteHyperlink.Currently"
+                    l10nParam0={imgContainer.getAttribute("data-href") || ""}
+                >
+                    Currently: %0
+                </Span>
+            ),
             requiresAnySubscription: true,
             onClick: () => pasteLink(canvasElement)
 
