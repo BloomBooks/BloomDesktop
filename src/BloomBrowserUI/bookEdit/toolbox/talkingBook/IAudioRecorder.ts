@@ -2,17 +2,24 @@
 // that theOneAudioRecorder exposes to other iframes, without requiring them to import
 // anything implementation-specific.
 
+import { RecordingMode } from "./audioRecording";
+
 export interface IAudioRecorder {
     autoSegmentBasedOnTextLength: () => number[];
     markAudioSplit: () => void;
     setShowingImageDescriptions: (boolean) => void;
-    hideTool: () => void;
     removeRecordingSetup: () => void;
     getUpdateMarkupAction: () => Promise<() => void>;
     setupForRecordingAsync: () => Promise<void>;
-    newPageReady: (
+    handleToolHiding: () => void;
+    handleNewPageReady: (
         deshroudPhraseDelimiters?:
             | ((page: HTMLElement | null) => void)
             | undefined
     ) => Promise<void>;
+    bumpUp: (number) => void;
+    bumpDown: (number) => void;
+    getPageDocBody: () => HTMLElement | null;
+    getCurrentTextBox: () => HTMLElement | null; // todo chec type
+    recordingMode: RecordingMode;
 }

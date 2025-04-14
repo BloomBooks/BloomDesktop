@@ -1479,7 +1479,7 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
 
             // System under test
-            await recording.newPageReady();
+            await recording.handleNewPageReady();
 
             // Verification
             const firstDiv = getFrameElementById("page", "div1")!;
