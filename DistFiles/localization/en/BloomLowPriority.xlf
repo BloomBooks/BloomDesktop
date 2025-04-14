@@ -228,6 +228,11 @@
         <source xml:lang="en">Finished</source>
         <note>Common.Finished</note>
       </trans-unit>
+      <trans-unit id="EditTab.PasteHyperlink.Currently" translate="no">
+        <source xml:lang="en">Currently %0</source>
+        <note>ID: EditTab.PasteHyperlink.Currently</note>
+        <note>%0 is a placeholder for the current url where the hyperlink points</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
