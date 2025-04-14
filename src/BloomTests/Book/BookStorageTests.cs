@@ -991,7 +991,11 @@ namespace BloomTests.Book
             );
         }
 
-        private BookStorage GetInitialStorageWithCustomHtml(string html, bool doSave = true)
+        private BookStorage GetInitialStorageWithCustomHtml(
+            string html,
+            bool doSave = true,
+            bool isInEditableCollection = false
+        )
         {
             RobustFile.WriteAllText(_bookPath, html);
             var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
@@ -1003,7 +1007,8 @@ namespace BloomTests.Book
                 _folder.Path,
                 _fileLocator,
                 new BookRenamedEvent(),
-                collectionSettings
+                collectionSettings,
+                isInEditableCollection: isInEditableCollection
             );
             if (doSave)
                 storage.Save();
@@ -1803,6 +1808,109 @@ namespace BloomTests.Book
                 storage.Dom.SafeSelectNodes("//*[@class='comical-generated']").Count,
                 Is.EqualTo(0)
             );
+        }
+
+        [Test]
+        public void MigrateBackFromLevel7BloomCanvas_HasOverlay_ConvertsAndInsertsPlaceholder()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='7'></meta>
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-canvas'>
+            <div class='bloom-canvas-element'>
+                <img src='placeHolder.png' />
+            </div>
+		</div>
+	</div>
+</body></html>",
+                isInEditableCollection: true
+            );
+
+            var parent = storage.Dom.RawDom.SelectSingleNode("//div[@class='bloom-canvas']");
+
+            //SUT
+            storage.MigrateBackFromLevel7BloomCanvas();
+
+            //Verification
+            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("6"));
+            BloomTests.AssertThatXmlIn
+                .Dom(storage.Dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='bloom-imageContainer']/img[@src='placeHolder.png']",
+                    1
+                );
+            Assert.That(parent.FirstChild.Name, Is.EqualTo("img"));
+        }
+
+        [Test]
+        public void MigrateBackFromLevel7BloomCanvas_EmptyContainer_ConvertsAndInsertsPlaceholder()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='7'></meta>
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-canvas'>
+		</div>
+	</div>
+</body></html>",
+                isInEditableCollection: true
+            );
+
+            //SUT
+            storage.MigrateBackFromLevel7BloomCanvas();
+
+            //Verification
+            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("6"));
+            BloomTests.AssertThatXmlIn
+                .Dom(storage.Dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='bloom-imageContainer']/img[@src='placeHolder.png']",
+                    1
+                );
+        }
+
+        [Test]
+        public void MigrateBackFromLevel7BloomCanvas_HasImg_ConvertsButDoesNotInsert()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='7'></meta>
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-canvas'>
+            <img src='placeHolder.png' />
+		</div>
+	</div>
+</body></html>",
+                isInEditableCollection: true
+            );
+
+            //SUT
+            storage.MigrateBackFromLevel7BloomCanvas();
+
+            //Verification
+            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("6"));
+            BloomTests.AssertThatXmlIn
+                .Dom(storage.Dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='bloom-imageContainer']/img[@src='placeHolder.png']",
+                    1
+                );
         }
 
         [Test]
