@@ -2,7 +2,12 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { post, postString, useWatchString } from "../utils/bloomApi";
+import {
+    post,
+    postString,
+    useApiString,
+    useWatchString
+} from "../utils/bloomApi";
 import { Button, Menu } from "@mui/material";
 import TruncateMarkup from "react-truncate-markup";
 import { useTColBookStatus } from "../teamCollection/teamCollectionApi";
@@ -192,6 +197,11 @@ export const BookButton: React.FunctionComponent<{
         }
     ];
 
+    const editableCollectionName = useApiString(
+        "collections/getCurrentEditableCollectionName",
+        ""
+    );
+
     const getBookMenuItemsSpecs: () => MenuItemSpec[] = () => {
         return [
             {
@@ -215,6 +225,17 @@ export const BookButton: React.FunctionComponent<{
                 l10nId: "CollectionTab.BookMenu.ShowInFileExplorer",
                 command: "bookCommand/openFolderOnDisk",
                 hide: () => props.collection.isFactoryInstalled // show for all collections except factory
+            },
+            {
+                label: `Move into ${editableCollectionName}`,
+                l10nId: "CollectionTab.BookMenu.MoveToCurrentCollection",
+                l10nParam0: editableCollectionName,
+                command: "bookCommand/moveToCurrentCollection",
+                hide: () =>
+                    props.lockedToOneDownloadedBook ||
+                    props.collection.isEditableCollection ||
+                    props.collection.isFactoryInstalled ||
+                    props.collection.containsDownloadedBooks
             },
             {
                 label: "Delete Book",

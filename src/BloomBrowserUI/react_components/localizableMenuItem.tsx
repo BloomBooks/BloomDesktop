@@ -28,6 +28,7 @@ import { Variant } from "@mui/material/styles/createTypography";
 interface IBaseLocalizableMenuItemProps {
     english: string;
     l10nId: string | null; // pass null if already localized, to just use the "english"
+    l10nParam0?: string;
     disabled?: boolean;
     tooltipIfDisabled?: string;
     variant?: OverridableStringUnion<
@@ -84,7 +85,12 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
     const typographyProps: TypographyProps = {
         variant: variant
     };
-    const label = useL10n(props.english, props.l10nId);
+    const label = useL10n(
+        props.english,
+        props.l10nId,
+        undefined,
+        props.l10nParam0
+    );
 
     const subscriptionAvailable = useHaveSubscription();
     let subscriptionStatus = useGetSubscriptionTier();
@@ -215,7 +221,12 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<ILocalizableCh
     const typographyProps: TypographyProps = {
         variant: variant
     };
-    const label = useL10n(props.english, props.l10nId);
+    const label = useL10n(
+        props.english,
+        props.l10nId,
+        undefined,
+        props.l10nParam0
+    );
     const [checked, setChecked] = useState(false);
     useEffect(() => {
         getBoolean(props.apiEndpoint, value => {
@@ -276,7 +287,12 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<ILocalizableCh
 };
 
 export const LocalizableNestedMenuItem: React.FunctionComponent<INestedMenuItemProps> = props => {
-    const label = useL10n(props.english, props.l10nId);
+    const label = useL10n(
+        props.english,
+        props.l10nId,
+        undefined,
+        props.l10nParam0
+    );
     const sublabel = useL10n("", props.subLabelL10nId ?? null);
     if (!props.children) {
         return <React.Fragment />;

@@ -100,6 +100,25 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
+                "bookCommand/moveToCurrentCollection",
+                (request) =>
+                {
+                    var book = GetBookObjectFromPost(request);
+                    var origCollection = GetCollectionOfRequest(request);
+                    try
+                    {
+                        _collectionModel.moveBookIntoThisCollection(book, origCollection);
+                    }
+                    catch (Exception error)
+                    {
+                        var msg = "Could not move book to this collection: " + error.Message;
+                        BloomMessageBox.ShowWarning(msg);
+                    }
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
                 "bookCommand/exportToWord",
                 (request) =>
                 {
