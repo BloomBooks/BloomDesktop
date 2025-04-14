@@ -48,13 +48,13 @@ export default class TalkingBookTool implements ITool {
         // the initialize function had completed, now that it isn't there we need to treat the initialize
         // as the asynchronous method it is.
         await AudioRecorder.initializeTalkingBookToolAsync();
-        await AudioRecorder.theOneAudioRecorder.setupForRecordingAsync();
+        await getAudioRecorder().setupForRecordingAsync();
     }
 
     // Called when a new page is loaded.
     public async newPageReady(): Promise<void> {
         this.showImageDescriptionsIfAny();
-        const pageReadyPromise = AudioRecorder.theOneAudioRecorder.newPageReady(
+        const pageReadyPromise = getAudioRecorder().handleNewPageReady(
             TalkingBookTool.deshroudPhraseDelimiters
         );
         return pageReadyPromise;
@@ -122,16 +122,18 @@ export default class TalkingBookTool implements ITool {
     }
 
     public hideTool() {
-        if (AudioRecorder && AudioRecorder.theOneAudioRecorder) {
-            AudioRecorder.theOneAudioRecorder.hideTool();
+        const audioRecorder = getAudioRecorder();
+        if (audioRecorder) {
+            audioRecorder.handleToolHiding();
         }
     }
 
     public detachFromPage() {
+        const audioRecorder = getAudioRecorder();
         // not quite sure how this can be called when never initialized, but if
         // we don't have the object we certainly can't use it.
-        if (AudioRecorder.theOneAudioRecorder) {
-            AudioRecorder.theOneAudioRecorder.removeRecordingSetup();
+        if (audioRecorder) {
+            audioRecorder.removeRecordingSetup();
         }
         const page = ToolBox.getPage();
         if (page) {
@@ -142,7 +144,7 @@ export default class TalkingBookTool implements ITool {
 
     // Called whenever the user edits text.
     public async updateMarkupAsync(): Promise<() => void> {
-        return AudioRecorder.theOneAudioRecorder.getUpdateMarkupAction();
+        return getAudioRecorder().getUpdateMarkupAction();
     }
 
     public updateMarkup() {
