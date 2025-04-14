@@ -36,6 +36,7 @@ export const BookButton: React.FunctionComponent<{
     //selected: boolean;
     manager: BookSelectionManager;
     lockedToOneDownloadedBook: boolean;
+    editableCollectionName?: string;
 }> = props => {
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
 
@@ -215,6 +216,17 @@ export const BookButton: React.FunctionComponent<{
                 l10nId: "CollectionTab.BookMenu.ShowInFileExplorer",
                 command: "bookCommand/openFolderOnDisk",
                 hide: () => props.collection.isFactoryInstalled // show for all collections except factory
+            },
+            {
+                label: `Move into ${props.editableCollectionName}`,
+                l10nId: "CollectionTab.BookMenu.MoveToCurrentCollection",
+                l10nParam0: props.editableCollectionName,
+                command: "bookCommand/moveToCurrentCollection",
+                hide: () =>
+                    props.lockedToOneDownloadedBook ||
+                    props.collection.isEditableCollection ||
+                    props.collection.isFactoryInstalled ||
+                    props.collection.containsDownloadedBooks
             },
             {
                 label: "Delete Book",

@@ -42,6 +42,7 @@ export const BooksOfCollection: React.FunctionComponent<{
     lazyLoadCollection?: boolean;
     lockedToOneDownloadedBook: boolean;
     filter?: (book: IBookInfo) => boolean;
+    editableCollectionName?: string;
 }> = props => {
     if (!props.collectionId) {
         window.alert("null collectionId");
@@ -167,6 +168,9 @@ export const BooksOfCollection: React.FunctionComponent<{
                                         manager={props.manager}
                                         lockedToOneDownloadedBook={
                                             props.lockedToOneDownloadedBook
+                                        }
+                                        editableCollectionName={
+                                            props.editableCollectionName
                                         }
                                     />
                                 </LazyLoad>
