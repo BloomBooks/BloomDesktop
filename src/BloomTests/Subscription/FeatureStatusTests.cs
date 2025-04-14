@@ -27,7 +27,7 @@ namespace BloomTests.FeatureStatusTests
             var subscription = Subscription.ForUnitTestWithOverrideTier(currentTier);
 
             // Act - Overlay feature with Basic subscription
-            var status = FeatureStatus.GetFeatureStatus(subscription, featureEnum);
+            var status = FeatureStatus.GetFeatureUseStatus(subscription, featureEnum);
 
             // Assert
             Assert.That(status, Is.Not.Null);
@@ -66,7 +66,7 @@ namespace BloomTests.FeatureStatusTests
         {
             // Arrange
             var subscription = Subscription.ForUnitTestWithOverrideTier(SubscriptionTier.Pro);
-            var status = FeatureStatus.GetFeatureStatus(subscription, FeatureName.Motion);
+            var status = FeatureStatus.GetFeatureUseStatus(subscription, FeatureName.Motion);
 
             // Act
             string json = status.ToJson();
@@ -84,7 +84,7 @@ namespace BloomTests.FeatureStatusTests
         {
             // Arrange
             var subscription = Subscription.ForUnitTestWithOverrideTier(SubscriptionTier.Pro);
-            var status = FeatureStatus.GetFeatureStatus(subscription, FeatureName.Motion);
+            var status = FeatureStatus.GetFeatureUseStatus(subscription, FeatureName.Motion);
 
             // Act
             var serializableObject = status.ForSerialization();

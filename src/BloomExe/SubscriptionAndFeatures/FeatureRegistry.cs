@@ -51,7 +51,11 @@ namespace Bloom.SubscriptionAndFeatures
             new FeatureInfo
             {
                 Feature = FeatureName.Motion,
-                SubscriptionTier = SubscriptionTier.Pro
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExistsInPageXPath = "foobar", // TODO what is the way to know?
+                SupportedMediums = PublishingMediums.BloomPub | PublishingMediums.Video,
+                RestrictionInDerivativeBooks = PublicationRestrictions.None,
+                RestrictionInOriginalBooks = PublicationRestrictions.Remove
             },
             new FeatureInfo
             {
@@ -88,7 +92,7 @@ namespace Bloom.SubscriptionAndFeatures
                 // HTML5 Widgets
                 Feature = FeatureName.Widget,
                 SubscriptionTier = SubscriptionTier.Pro,
-                existsInPageXPath = ".//div[contains(@class,'custom-widget-page')]"
+                ExistsInPageXPath = ".//div[contains(@class,'custom-widget-page')]",
             },
             // ----------------------------------------
             // LocalCommunity Tier Features
@@ -97,14 +101,19 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.Overlay,
                 SubscriptionTier = SubscriptionTier.Pro,
-                existsInPageXPath =
+                SupportedMediums = PublishingMediums.All,
+                RestrictionInDerivativeBooks = PublicationRestrictions.None,
+                RestrictionInOriginalBooks = PublicationRestrictions.Block,
+                ExistsInPageXPath =
                     ".//div[contains(@class,'" + Bloom.Book.HtmlDom.kCanvasElementClass + "')]"
             },
             new FeatureInfo
             {
                 Feature = FeatureName.Game,
                 SubscriptionTier = SubscriptionTier.Pro,
-                existsInPageXPath = ".//div[contains(@data-activity,'game')]"
+                RestrictionInDerivativeBooks = PublicationRestrictions.Remove,
+                RestrictionInOriginalBooks = PublicationRestrictions.Remove,
+                ExistsInPageXPath = ".//div[contains(@data-activity,'game')]"
             },
             new FeatureInfo
             {
