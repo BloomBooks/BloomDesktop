@@ -265,6 +265,11 @@
         <target xml:lang="rw" state="needs-translation">Finished</target>
         <note>Common.Finished</note>
       </trans-unit>
+      <trans-unit id="EditTab.PasteHyperlink.Currently" translate="no">
+        <source xml:lang="en">Currently %0</source>
+        <target xml:lang="rw" state="needs-translation">Currently %0</target>
+        <note>ID: EditTab.PasteHyperlink.Currently</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
