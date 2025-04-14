@@ -23,7 +23,8 @@ namespace Bloom.History
         ForcedUnlock,
         ImportSpreadsheet,
         SyncProblem,
-        Deleted
+        Deleted,
+        Moved, // Moved from one collection to another
         // NB: add them here, too: teamCollection\CollectionHistoryTable.tsx
         // and also add them to EventTypeEnumerationIsStable() in History\HistoryEventTests.cs
     }

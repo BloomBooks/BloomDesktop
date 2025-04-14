@@ -18,6 +18,7 @@ namespace BloomTests.History
             Assert.That((int)BookHistoryEventType.ImportSpreadsheet, Is.EqualTo(6));
             Assert.That((int)BookHistoryEventType.SyncProblem, Is.EqualTo(7));
             Assert.That((int)BookHistoryEventType.Deleted, Is.EqualTo(8));
+            Assert.That((int)BookHistoryEventType.Moved, Is.EqualTo(9));
         }
     }
 }
