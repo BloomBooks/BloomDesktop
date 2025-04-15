@@ -270,6 +270,11 @@
         <target xml:lang="ne-NP" state="needs-translation">Currently %0</target>
         <note>ID: EditTab.PasteHyperlink.Currently</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.MoveToCurrentCollection" translate="no">
+        <source xml:lang="en">Move into {0}</source>
+        <target xml:lang="ne-NP" state="needs-translation">Move into {0}</target>
+        <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
