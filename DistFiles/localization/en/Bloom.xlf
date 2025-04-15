@@ -2150,6 +2150,10 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
         <note>Tooltip for the bubble Duplicate icon</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate ="no">
+        <source xml:lang="en">Fill Background</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FillBackground</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate ="no">
         <source xml:lang="en">Expand image to fill space</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FillSpace</note>

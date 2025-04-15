@@ -1343,9 +1343,16 @@ canvas.moving {
 // The frame itself is invisible (and ignores pointer events), but it provides a container
 // for the resize and crop handles and the toolbox below.
 #canvas-element-control-frame {
+    // Color for the various parts of the control frame. In a bloom-game page, we use the same
+    // color as other rectangles. In particular we want to match the bloom-rectangle shape, because
+    // that coincides with the control frame and looks strange if they are different colors.
+    --canvas-element-control-color: var(
+        --draggable-background-color,
+        @bloom-blue
+    );
     position: absolute;
     z-index: @canvasElementFrameZIndex;
-    outline: 1px solid @bloom-blue;
+    outline: 1px solid var(--canvas-element-control-color);
     // makes the outline no larger than the frame's own size, so it doesn't get cropped if it fills
     // the bloom-canvas, as background images do in at least one dimension. This means the outline
     // will hide the outermost pixel of the image, but I think that's better than the alternative of
@@ -1418,13 +1425,13 @@ canvas.moving {
         height: @resizeHandleRadius * 2;
         border-radius: 50%;
         background-color: white;
-        border: 1px solid @bloom-blue;
+        border: 1px solid var(--canvas-element-control-color);
         box-sizing: border-box;
         pointer-events: all;
         //z-index: @canvasZIndex + 2;
         &.active-control,
         &:hover {
-            background-color: @bloom-blue;
+            background-color: var(--canvas-element-control-color);
         }
     }
     .bloom-ui-canvas-element-resize-handle-nw {
@@ -1468,11 +1475,11 @@ canvas.moving {
         height: @sideHandleRadius * 2;
         border-radius: @sideHandleRadius;
         background-color: white;
-        border: 1px solid @bloom-blue;
+        border: 1px solid var(--canvas-element-control-color);
         box-sizing: border-box;
         pointer-events: all;
         &.bloom-currently-cropped {
-            background-color: @bloom-blue;
+            background-color: var(--canvas-element-control-color);
         }
     }
 
