@@ -4418,6 +4418,13 @@ export class CanvasElementManager {
                 rightTopOffset
             );
         }
+        if (style === "rectangle") {
+            return this.addRectangleCanvasElement(
+                positionInViewport,
+                bloomCanvas,
+                rightTopOffset
+            );
+        }
         return this.addCanvasElementCore(
             positionInViewport,
             bloomCanvas,
@@ -4508,6 +4515,43 @@ export class CanvasElementManager {
         );
     }
 
+    private addRectangleCanvasElement(
+        location: Point,
+        bloomCanvasJQuery: JQuery,
+        rightTopOffset?: string
+    ): HTMLElement {
+        const html =
+            // The tabindex here is necessary to allow it to be focused.
+            "<div tabindex='0' class='bloom-rectangle'></div>";
+        const result = this.finishAddingCanvasElement(
+            bloomCanvasJQuery,
+            html,
+            location,
+            "none",
+            true,
+            rightTopOffset
+        );
+        // reorder it after the element with class kBackgroundImageClass. This puts it in front of
+        // the background but but behind the other canvas elements it is meant to frame.
+        const bloomCanvas = bloomCanvasJQuery.get(0);
+        const backgroundImage = bloomCanvas.getElementsByClassName(
+            kBackgroundImageClass
+        )[0] as HTMLElement;
+        if (backgroundImage) {
+            bloomCanvas.insertBefore(result, backgroundImage.nextSibling);
+            // Being first in document order gives it the right z-order, but it also has to be
+            // in the right sequence by ComicalJs Bubble level for the hit test to work right.
+            CanvasElementManager.putBubbleBefore(
+                result,
+                (Array.from(
+                    bloomCanvas.getElementsByClassName(kCanvasElementClass)
+                ) as HTMLElement[]).filter(x => x !== backgroundImage),
+                Bubble.getBubbleSpec(backgroundImage).level + 1
+            );
+        }
+        return result;
+    }
+
     private finishAddingCanvasElement(
         bloomCanvasJQuery: JQuery,
         internalHtml: string,
@@ -4576,7 +4620,10 @@ export class CanvasElementManager {
     // we want something a bit taller.
     private setDefaultWrapperBoxHeight(wrapperBox: JQuery) {
         const width = parseInt(wrapperBox.css("width"), 10);
-        if (wrapperBox.find(`.${kVideoContainerClass}`).length > 0) {
+        if (
+            wrapperBox.find(`.${kVideoContainerClass}`).length > 0 ||
+            wrapperBox.find(`.bloom-rectangle`).length > 0
+        ) {
             // Set the default video aspect to 4:3, the same as the sign language tool generates.
             wrapperBox.css("height", (width * 3) / 4);
         }
@@ -5676,29 +5723,12 @@ export class CanvasElementManager {
             // Set level so Comical will consider the new canvas element to be under the existing ones.
             const canvasElementElements = Array.from(
                 bloomCanvas.getElementsByClassName(kCanvasElementClass)
+            ) as HTMLElement[];
+            CanvasElementManager.putBubbleBefore(
+                bgCanvasElement,
+                canvasElementElements,
+                1
             );
-            let minLevel = Math.min(
-                ...canvasElementElements.map(
-                    b => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0
-                )
-            );
-            if (minLevel <= 1) {
-                // bump all the others up so we can insert one at level 1 below them all
-                // We don't want to use zero as a level...some Comical code complains that
-                // the canvas element doesn't have a level at all. And I'm nervous about using
-                // negative numbers...something that wants a level one higher might get zero.
-                canvasElementElements.forEach(b => {
-                    const bubble = new Bubble(b as HTMLElement);
-                    const spec = bubble.getBubbleSpec();
-                    // the one previously at minLevel will now be at 2, others higher in same sequence.
-                    spec.level += 2 - minLevel;
-                    bubble.persistBubbleSpec();
-                });
-                minLevel = 2;
-            }
-            const bubble = new Bubble(bgCanvasElement as HTMLElement);
-            bubble.getBubbleSpec().level = minLevel - 1;
-            bubble.persistBubbleSpec();
             bgCanvasElement.style.visibility = "none"; // hide it until we adjust its shape and position
             // consistent with level, we want it in front of the (new, placeholder) background image
             // and behind the other canvas elements.
@@ -5708,7 +5738,7 @@ export class CanvasElementManager {
                     oldBgImage.nextSibling
                 );
             } else {
-                var canvas = bloomCanvas.getElementsByTagName(
+                const canvas = bloomCanvas.getElementsByTagName(
                     "canvas"
                 )[0] as HTMLElement;
                 bloomCanvas.insertBefore(bgCanvasElement, canvas.nextSibling);
@@ -5730,6 +5760,39 @@ export class CanvasElementManager {
         if (oldBgImage) {
             oldBgImage.remove();
         }
+    }
+
+    // Adjust the levels of all the bubbles of all the listed canvas elements so that
+    // the one passed can be given the required level and all the others (keeping their
+    // current order) will be perceived by ComicalJs as having a higher level
+    private static putBubbleBefore(
+        canvasElement: HTMLElement,
+        canvasElementElements: HTMLElement[],
+        requiredLevel: number
+    ) {
+        let minLevel = Math.min(
+            ...canvasElementElements.map(
+                b => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0
+            )
+        );
+        if (minLevel <= requiredLevel) {
+            // bump all the others up so we can insert one at level 1 below them all
+            // We don't want to use zero as a level...some Comical code complains that
+            // the canvas element doesn't have a level at all. And I'm nervous about using
+            // negative numbers...something that wants a level one higher might get zero.
+            canvasElementElements.forEach(b => {
+                const bubble = new Bubble(b as HTMLElement);
+                const spec = bubble.getBubbleSpec();
+                // the one previously at minLevel will now be at requiredLevel+1, others higher in same sequence.
+                spec.level += requiredLevel - minLevel + 1;
+                bubble.persistBubbleSpec();
+            });
+            minLevel = 2;
+        }
+        const bubble = new Bubble(canvasElement as HTMLElement);
+        bubble.getBubbleSpec().level = requiredLevel;
+        bubble.persistBubbleSpec();
+        Comical.update(canvasElement.parentElement as HTMLElement);
     }
 
     private adjustBackgroundImageSize(

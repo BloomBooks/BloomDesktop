@@ -53,8 +53,12 @@ export const ThemeChooser: React.FunctionComponent<{
         const pageThemeClass = Array.from(page.classList)
             .find(c => c.startsWith(gameThemePrefix))
             ?.substring(gameThemePrefix.length);
-        if (currentTheme && !pageThemeClass) {
-            // it's a new page and we've been on a game page this session.
+        if (
+            currentTheme &&
+            !pageThemeClass &&
+            page.getAttribute("data-tool-id") === "game"
+        ) {
+            // it's a new game page and we've been on a game page this session.
             // Instead of updating our control, update the page to match
             // the theme of the page we were on previously.
             page.classList.add(`${gameThemePrefix}${currentTheme}`);
