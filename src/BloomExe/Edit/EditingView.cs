@@ -678,7 +678,8 @@ namespace Bloom.Edit
             }
         }
 
-        /// <returns>false if saving via libpalaso image toolbox or saving failed; true otherwise</returns>
+        /// <returns>return true iff we did a successful, normal (non-libpalaso toolbox) save of a normal image
+        /// and therefore should check whether to update the other images in the book</returns>
         public bool SaveImageMetadata(Metadata metadata)
         {
             if (_saveNewImageMetadataActionForImageToolbox != null)
@@ -703,7 +704,7 @@ namespace Bloom.Edit
                 );
                 return false;
             }
-            return true;
+            return ImageUpdater.IsNormalImagePath(_fileNameOfImageBeingModified);
         }
 
         private void UpdateMetadataForCurrentImage()
