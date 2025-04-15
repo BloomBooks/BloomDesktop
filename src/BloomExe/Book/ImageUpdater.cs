@@ -124,15 +124,7 @@ namespace Bloom.Book
         /// <returns></returns>
         private static IEnumerable<string> GetImagePaths(string folderPath)
         {
-            foreach (
-                var path in Directory
-                    .EnumerateFiles(folderPath)
-                    .Where(
-                        s =>
-                            s.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
-                            || s.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
-                    )
-            )
+            foreach (var path in Directory.EnumerateFiles(folderPath).Where(IsImagePath))
             {
                 if (ExcludedFiles.Contains(Path.GetFileName(path).ToLowerInvariant()))
                     continue;
@@ -142,6 +134,12 @@ namespace Bloom.Book
 
                 yield return path;
             }
+        }
+
+        public static bool IsImagePath(string path)
+        {
+            return path.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                || path.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
