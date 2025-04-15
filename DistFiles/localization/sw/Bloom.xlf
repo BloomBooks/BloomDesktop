@@ -2475,6 +2475,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Nakili</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fill Background</source>
+        <target xml:lang="sw" state="needs-translation">Fill Background</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FillBackground</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate="no">
         <source xml:lang="en">Expand image to fill space</source>
         <target xml:lang="sw" state="needs-translation">Expand image to fill space</target>
@@ -6150,8 +6155,8 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       <!-- Most subscription labels are in the BloomLowPriority. What we want here
 is mostly status, which shows on the Collection Tab -->
       <trans-unit id="SubscriptionStatus.RenewalMessage">
-        <source xml:lang="en">Please [contact us](%0) to renew.</source>
-        <target xml:lang="sw" state="needs-translation">Please [contact us](%0) to renew.</target>
+        <source xml:lang="en">Please email [subscriptions@bloomlibrary.org](%0) to renew.</source>
+        <target xml:lang="sw" state="needs-translation">Please email [subscriptions@bloomlibrary.org](%0) to renew.</target>
         <note>ID: SubscriptionStatus.RenewalMessage</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
