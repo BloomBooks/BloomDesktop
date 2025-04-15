@@ -572,6 +572,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
 export interface MenuItemSpec {
     label: string;
     l10nId?: string;
+    l10nParam0?: string;
     // One of these two must be provided. If both are, onClick is used and command is ignored.
     // If only command is provided, the click action is to call handleBookCommand with that argument,
     // which invokes the corresponding API call to C# code.
@@ -627,6 +628,7 @@ export const makeMenuItems = (
                     <LocalizableNestedMenuItem
                         english={spec.label}
                         l10nId={spec.l10nId!}
+                        l10nParam0={spec.l10nParam0}
                     >
                         {submenuItems}
                     </LocalizableNestedMenuItem>
@@ -652,6 +654,7 @@ export const makeMenuItems = (
                         key={index}
                         english={spec.label}
                         l10nId={spec.l10nId!}
+                        l10nParam0={spec.l10nParam0}
                         onClick={() => {
                             // We deliberately do NOT close the menu, so the user can see it really got checked.
                         }}
@@ -680,6 +683,7 @@ export const makeMenuItems = (
                     key={spec.l10nId}
                     english={spec.label}
                     l10nId={spec.l10nId!}
+                    l10nParam0={spec.l10nParam0}
                     onClick={clickAction}
                     icon={spec.icon}
                     addEllipsis={spec.addEllipsis}

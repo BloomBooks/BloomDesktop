@@ -233,6 +233,11 @@
         <note>ID: EditTab.PasteHyperlink.Currently</note>
         <note>%0 is a placeholder for the current url where the hyperlink points</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.MoveToCurrentCollection" translate="no">
+        <source xml:lang="en">Move into {0}</source>
+        <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
+        <note>{0} will be replaced with the name of the collection that the user currently has open for editing.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
