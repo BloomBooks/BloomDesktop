@@ -2474,6 +2474,11 @@
         <target xml:lang="fr" state="final">Doublon</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fill Background</source>
+        <target xml:lang="fr" state="needs-translation">Fill Background</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FillBackground</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate="no">
         <source xml:lang="en">Expand image to fill space</source>
         <target xml:lang="fr" state="needs-translation">Expand image to fill space</target>
@@ -6150,9 +6155,9 @@
       </trans-unit>
       <!-- Most subscription labels are in the BloomLowPriority. What we want here
 is mostly status, which shows on the Collection Tab -->
-      <trans-unit id="SubscriptionStatus.RenewalMessage" approved="yes">
-        <source xml:lang="en">Please [contact us](%0) to renew.</source>
-        <target xml:lang="fr" state="final">Veuillez [nous contacter](%0) pour renouveler.</target>
+      <trans-unit id="SubscriptionStatus.RenewalMessage">
+        <source xml:lang="en">Please email [subscriptions@bloomlibrary.org](%0) to renew.</source>
+        <target xml:lang="fr" state="translated">Veuillez [nous contacter](%0) pour renouveler.</target>
         <note>ID: SubscriptionStatus.RenewalMessage</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage" approved="yes">
