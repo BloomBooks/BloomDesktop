@@ -360,7 +360,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
-        <target xml:lang="es-ES" state="needs-translation">About Bloom Subscriptions</target>
+        <target xml:lang="es-ES" state="translated">Acerca de las suscripciones de Bloom</target>
         <note>ID: CollectionSettingsDialog.AboutBloomSubscriptions</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
@@ -668,7 +668,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.RequiresSubscription_ToolTip_" sil:dynamic="true">
         <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
-        <target xml:lang="es-ES" state="needs-translation">To use this feature, you'll need a Bloom Subscription.</target>
+        <target xml:lang="es-ES" state="translated">Para utilizar esta función, necesitará una suscripción a Bloom.</target>
         <note>ID: CollectionSettingsDialog.RequiresSubscription_ToolTip_</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart" approved="yes">
@@ -1033,7 +1033,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="Common.BloomSubscriptionFeature">
         <source xml:lang="en">Bloom Subscription Feature</source>
-        <target xml:lang="es-ES" state="needs-translation">Bloom Subscription Feature</target>
+        <target xml:lang="es-ES" state="translated">Característica de la suscripción a Bloom</target>
         <note>ID: Common.BloomSubscriptionFeature</note>
       </trans-unit>
       <trans-unit id="Common.Cancel" approved="yes">
@@ -1107,7 +1107,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="Common.SubscriptionRequired">
         <source xml:lang="en">Subscription Required</source>
-        <target xml:lang="es-ES" state="needs-translation">Subscription Required</target>
+        <target xml:lang="es-ES" state="translated">Suscripción requerida</target>
         <note>ID: Common.SubscriptionRequired</note>
       </trans-unit>
       <trans-unit id="Common.Error" approved="yes">
@@ -1657,12 +1657,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="EditTab.SubscriptionEnabled" sil:dynamic="true">
         <source xml:lang="en">Your subscription includes this feature.</source>
-        <target xml:lang="es-ES" state="needs-translation">Your subscription includes this feature.</target>
+        <target xml:lang="es-ES" state="translated">Su suscripción incluye esta característica.</target>
         <note>ID: EditTab.SubscriptionEnabled</note>
       </trans-unit>
       <trans-unit id="EditTab.SubscriptionSettingsButton" sil:dynamic="true">
         <source xml:lang="en">Bloom Subscription Settings</source>
-        <target xml:lang="es-ES" state="needs-translation">Bloom Subscription Settings</target>
+        <target xml:lang="es-ES" state="translated">Configuración de suscripción a Bloom</target>
         <note>ID: EditTab.SubscriptionSettingsButton</note>
       </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true" approved="yes">
@@ -2138,7 +2138,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" translate="no">
         <source xml:lang="en">This sound will play when the item is touched.</source>
-        <target xml:lang="es-ES" state="needs-translation">This sound will play when the item is touched.</target>
+        <target xml:lang="es-ES" state="translated">Este sonido se reproducirá cuando se toque el elemento.</target>
         <note>ID: EditTab.Image.PlayWhenTouched</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true" approved="yes">
@@ -2268,7 +2268,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="EditTab.RequiresSubscription" sil:dynamic="true">
         <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
-        <target xml:lang="es-ES" state="needs-translation">To use this feature, you'll need a Bloom Subscription.</target>
+        <target xml:lang="es-ES" state="translated">Para utilizar esta función, necesitará una suscripción a Bloom.</target>
         <note>ID: EditTab.RequiresSubscription</note>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true" approved="yes">
@@ -2428,7 +2428,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
         <source xml:lang="en">Fill the space</source>
-        <target xml:lang="es-ES" state="needs-translation">Fill the space</target>
+        <target xml:lang="es-ES" state="translated">Rellena el espacio</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Fit</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
@@ -2478,7 +2478,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate="no">
         <source xml:lang="en">Expand image to fill space</source>
-        <target xml:lang="es-ES" state="needs-translation">Expand image to fill space</target>
+        <target xml:lang="es-ES" state="translated">Ampliar imagen para llenar espacio</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FillSpace</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true">
@@ -4860,12 +4860,12 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PublishRequiresSubscription.Options">
         <source xml:lang="en">In order to publish your book, you need to either have an active Bloom Subscription, or remove the Overlay elements from your book.</source>
-        <target xml:lang="es-ES" state="needs-translation">In order to publish your book, you need to either have an active Bloom Subscription, or remove the Overlay elements from your book.</target>
+        <target xml:lang="es-ES" state="translated">Para publicar su libro, necesita tener una suscripción activa a Bloom o quitar los elementos de la capa general de su libro.</target>
         <note>ID: PublishTab.PublishRequiresSubscription.Options</note>
       </trans-unit>
       <trans-unit id="PublishTab.PublishRequiresSubscription.ProblemExplanation">
         <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Subscription feature.</source>
-        <target xml:lang="es-ES" state="needs-translation">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Subscription feature.</target>
+        <target xml:lang="es-ES" state="translated">El libro titulado '{0}' añade nuevos elementos de capa general. Los elementos de capa superior son una característica de suscripción de Bloom.</target>
         <note>ID: PublishTab.PublishRequiresSubscription.ProblemExplanation</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute" approved="yes">
@@ -6145,29 +6145,29 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="Common.BloomSubscription">
         <source xml:lang="en">Bloom Subscription</source>
-        <target xml:lang="es-ES" state="needs-translation">Bloom Subscription</target>
+        <target xml:lang="es-ES" state="translated">Suscripción a Bloom</target>
         <note>ID: Common.BloomSubscription</note>
       </trans-unit>
       <!-- Most subscription labels are in the BloomLowPriority. What we want here
 is mostly status, which shows on the Collection Tab -->
       <trans-unit id="SubscriptionStatus.RenewalMessage">
         <source xml:lang="en">Please [contact us](%0) to renew.</source>
-        <target xml:lang="es-ES" state="needs-translation">Please [contact us](%0) to renew.</target>
+        <target xml:lang="es-ES" state="translated">Por favor [contáctenos](%0) para renovar.</target>
         <note>ID: SubscriptionStatus.RenewalMessage</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
         <source xml:lang="en">Your {0} subscription expires on {1}.</source>
-        <target xml:lang="es-ES" state="needs-translation">Your {0} subscription expires on {1}.</target>
+        <target xml:lang="es-ES" state="translated">Su suscripción {0} expira el {1}.</target>
         <note>ID: SubscriptionStatus.ExpiringSoonMessage</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiredMessage">
         <source xml:lang="en">Your {0} subscription expired on {1}.</source>
-        <target xml:lang="es-ES" state="needs-translation">Your {0} subscription expired on {1}.</target>
+        <target xml:lang="es-ES" state="translated">Su suscripción {0} expiró el {1}.</target>
         <note>ID: SubscriptionStatus.ExpiredMessage</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.DefaultMessage">
         <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
-        <target xml:lang="es-ES" state="needs-translation">Using subscription: {0}. Expires {1}</target>
+        <target xml:lang="es-ES" state="translated">Usando suscripción: {0}. Expira {1}</target>
         <note>ID: SubscriptionStatus.DefaultMessage</note>
       </trans-unit>
       <trans-unit id="TeamCollection.TeamCollection" approved="yes">
@@ -6469,7 +6469,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle" sil:dynamic="true" translate="no">
         <source xml:lang="en">A page with one language above the image and another below it.</source>
-        <target xml:lang="es-ES" state="needs-translation">A page with one language above the image and another below it.</target>
+        <target xml:lang="es-ES" state="translated">Una página con un idioma encima de la imagen y otro debajo de ella.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true" approved="yes">
@@ -6874,7 +6874,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle" sil:dynamic="true" translate="no">
         <source xml:lang="en">Bilingual &amp; Picture in Middle</source>
-        <target xml:lang="es-ES" state="needs-translation">Bilingual &amp; Picture in Middle</target>
+        <target xml:lang="es-ES" state="translated">Bilingüe &amp; Imagen en el centro</target>
         <note>ID: TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true" approved="yes">
