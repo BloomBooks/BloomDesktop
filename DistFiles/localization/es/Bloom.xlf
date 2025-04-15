@@ -2476,6 +2476,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Duplicar</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fill Background</source>
+        <target xml:lang="es-ES" state="needs-translation">Fill Background</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FillBackground</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate="no">
         <source xml:lang="en">Expand image to fill space</source>
         <target xml:lang="es-ES" state="translated">Ampliar imagen para llenar espacio</target>
@@ -6151,7 +6156,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <!-- Most subscription labels are in the BloomLowPriority. What we want here
 is mostly status, which shows on the Collection Tab -->
       <trans-unit id="SubscriptionStatus.RenewalMessage">
-        <source xml:lang="en">Please [contact us](%0) to renew.</source>
+        <source xml:lang="en">Please email [subscriptions@bloomlibrary.org](%0) to renew.</source>
         <target xml:lang="es-ES" state="translated">Por favor [contáctenos](%0) para renovar.</target>
         <note>ID: SubscriptionStatus.RenewalMessage</note>
       </trans-unit>
