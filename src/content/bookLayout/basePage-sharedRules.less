@@ -1,4 +1,5 @@
 ﻿// Styles that are shared by both the regular book css and the more minimalist epub css.
+@import (reference) "../../BloomBrowserUI/bloomUI.less";
 
 @preferredBackgroundGray: hsl(0, 0%, 86%);
 
@@ -85,6 +86,16 @@ textarea,
     object-fit: unset;
     height: unset;
     // width will initially be 100%, but typically overridden by object style
+}
+.bloom-rectangle {
+    border: 5px solid var(--draggable-background-color, @bloom-blue);
+    border-radius: 9px;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    &.bloom-theme-background {
+        background-color: var(--draggable-background-color, @bloom-blue);
+    }
 }
 
 // Now that we have canvas element elements, we don't want to show the placeholder flower underneath them.
