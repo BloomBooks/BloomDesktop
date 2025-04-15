@@ -2,10 +2,10 @@ import TalkingBookTool from "./talkingBook";
 import {
     theOneAudioRecorder,
     initializeTalkingBookToolAsync,
-    RecordingMode,
     AudioMode,
     getAllAudioModes
 } from "./audioRecording";
+import { RecordingMode } from "./recordingMode";
 import {
     SetupTalkingBookUIElements,
     SetupIFrameAsync,

@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import AudioRecording, {
-    RecordingMode,
     AudioTextFragment,
     initializeTalkingBookToolAsync,
     AudioMode,
     getAllAudioModes
 } from "./audioRecording";
+import { RecordingMode } from "./recordingMode";
 import { customJasmineMatchers } from "../../../utils/testHelper";
 import axios from "axios";
 import * as $ from "jquery";
@@ -1479,7 +1479,7 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
 
             // System under test
-            await recording.newPageReady();
+            await recording.handleNewPageReady();
 
             // Verification
             const firstDiv = getFrameElementById("page", "div1")!;

@@ -1,5 +1,6 @@
 import * as XRegExp from "xregexp";
-import AudioRecording, { RecordingMode } from "./audioRecording";
+import AudioRecording from "./audioRecording";
+import { RecordingMode } from "./recordingMode";
 import axios, { AxiosResponse } from "axios";
 
 const kAudioSentence = "audio-sentence";

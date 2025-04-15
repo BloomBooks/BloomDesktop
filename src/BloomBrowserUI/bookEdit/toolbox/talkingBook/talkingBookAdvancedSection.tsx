@@ -8,7 +8,7 @@ import { MuiRadio } from "../../../react_components/muiRadio";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import { BloomSwitch } from "../../../react_components/BloomSwitch";
-import { RecordingMode } from "./audioRecording";
+import { RecordingMode } from "./recordingMode";
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 import { LocalizedString } from "../../../react_components/l10nComponents";
 import { useL10n } from "../../../react_components/l10nHooks";

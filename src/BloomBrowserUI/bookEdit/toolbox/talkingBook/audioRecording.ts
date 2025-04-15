@@ -65,6 +65,7 @@ import {
 } from "../imageDescription/imageDescriptionUtils";
 import { IAudioRecorder } from "./IAudioRecorder";
 import { kCanvasElementClass } from "../overlay/canvasElementUtils";
+import { RecordingMode } from "./recordingMode";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -72,19 +73,6 @@ enum Status {
     Enabled, // Can use now, not the most likely thing to do next
     Expected, // The most likely/appropriate button to use next (e.g., Play right after recording)
     Active // Button now active (Play while playing; Record while held down)
-}
-
-// TODO: What's a better name so that it can apply to both RecordingMode and PlaybackMode?
-// Or maybe you want to make a duplicate enum for playback mode.
-// Or maybe your playback mode enum would have a different set of states... TextBox, Sentence, SentenceHardSplit, SentenceSoftSplit
-// Or, maybe you should list out in an enum the valid combinations (PureSentence, PureText, TextHardSplit, TextSoftSplit)
-// Or you could try to do same as above but using discriminated unions?
-//
-// Should correspond to the version in "\src\BloomExe\web\controllers\TalkingBookApi.cs"
-export enum RecordingMode {
-    Unknown = "Unknown",
-    Sentence = "Sentence",
-    TextBox = "TextBox"
 }
 
 // ENHANCE: Replace AudioRecordingMode with this?
@@ -149,11 +137,14 @@ interface ISetHighlightParams {
 }
 
 // use this function to get the one and only audio recorder from the right iframe
-export function getAudioRecorder(): IAudioRecorder | undefined {
-    const exports = getToolboxBundleExports();
-    const result = exports
-        ? exports.getTheOneAudioRecorderForExportOnly()
-        : undefined;
+export function getAudioRecorder(): IAudioRecorder {
+    const toolboxBundleExports = getToolboxBundleExports();
+    const result = toolboxBundleExports
+        ? toolboxBundleExports.getTheOneAudioRecorderForExportOnly()
+        : // there might be a startup situation where it still gets the wrong one,
+          // but we are using getAudioRecorder to replace instances of theOneAudioRecorder in code
+          // and decided this was safer than returning undefined
+          theOneAudioRecorder;
     return result;
 }
 
@@ -2481,13 +2472,13 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
-    public async newPageReady(
+    public async handleNewPageReady(
         deshroudPhraseDelimiters?: (page: HTMLElement | null) => void
     ): Promise<void> {
         // Changing the page causes the previous page's audio to stop playing (be "emptied").
         ++this.currentAudioSessionNum;
 
-        // FYI, it is possible for newPageReady to be called without updateMarkup() being called
+        // FYI, it is possible for handleNewPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
         this.initializeAudioRecordingMode();
 
@@ -2536,7 +2527,7 @@ export default class AudioRecording implements IAudioRecorder {
     private watchElementsThatMightChangeAffectingVisibility() {
         this.removeVisibilityObserver();
         this.visibilityObserver = new MutationObserver(_ => {
-            this.newPageReady();
+            this.handleNewPageReady();
         });
         const divs = this.getDivsThatMightChangeAffectingVisibility();
         for (let i = 0; i < divs.length; i++) {
@@ -2607,7 +2598,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
-    public hideTool() {
+    public handleToolHiding() {
         this.isShowing = false;
         this.stopListeningForLevels();
         // In case this initialize loop is still going, stop it. Passing an invalid value won't hurt.
@@ -2620,7 +2611,7 @@ export default class AudioRecording implements IAudioRecorder {
         this.removeVisibilityObserver();
     }
 
-    // Called upon newPageReady(). Calls updateMarkup
+    // Called upon handleNewPageReady(). Calls updateMarkup
     public async setupAndUpdateMarkupAsync(): Promise<void> {
         // For this purpose we want to include canvas elements even if they are hidden to show an image description,
         // since they may become visible when the show image description checkbox is deselected without
@@ -4638,15 +4629,17 @@ export async function initializeTalkingBookToolAsync(): Promise<void> {
 }
 
 export function bumpUp(whichPositionToBump: number) {
-    if (!theOneAudioRecorder) {
+    const audioRecorder = getAudioRecorder();
+    if (!audioRecorder) {
         return; // paranoia
     }
-    theOneAudioRecorder.bumpUp(whichPositionToBump);
+    audioRecorder.bumpUp(whichPositionToBump);
 }
 
 export function bumpDown(whichPositionToBump: number) {
-    if (!theOneAudioRecorder) {
+    const audioRecorder = getAudioRecorder();
+    if (!audioRecorder) {
         return; // paranoia
     }
-    theOneAudioRecorder.bumpDown(whichPositionToBump);
+    audioRecorder.bumpDown(whichPositionToBump);
 }
