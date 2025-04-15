@@ -2553,81 +2553,76 @@ export class CanvasElementManager {
             "canvas-element-control-frame"
         );
         let controlsAbove = false;
-        if (controlFrame && this.activeElement) {
-            if (
-                controlFrame.parentElement !== this.activeElement.parentElement
-            ) {
-                this.activeElement.parentElement?.appendChild(controlFrame);
-            }
-            controlFrame.classList.toggle(
-                "bloom-noAutoHeight",
-                this.activeElement.classList.contains("bloom-noAutoHeight")
-            );
-            // We want some special CSS rules for control frames on background images (e.g., no resize handles).
-            // But we give the class a different name so the control frame won't accidentally be affected
-            // by any CSS intended for the background image itself. That is, if the active element (the actual canvas
-            // element) has kbackgroundImageClass, which triggers its own CSS rules, we want the control frame
-            // to have this different class to trigger control frame background-specific CSS rules.
-            controlFrame.classList.toggle(
-                kBackgroundImageClass + "-control-frame",
-                this.activeElement.classList.contains(kBackgroundImageClass)
-            );
-            const hasText = controlFrame.classList.contains("has-text");
-            // We don't need to await these, they are just async so the handle titles can be updated
-            // once the localization manager retrieves them.
-            this.getHandleTitlesAsync(
-                controlFrame,
-                "bloom-ui-canvas-element-resize-handle",
-                "Resize"
-            );
-            this.getHandleTitlesAsync(
-                controlFrame,
-                "bloom-ui-canvas-element-side-handle",
-                hasText ? "ChangeShape" : "Crop",
-                // We don't need to change it while we're moving the frame, only if we're switching
-                // between text and image. And there's another state we want
-                // when cropping a background image and snapped.
-                !controlFrame.classList.contains("moving"),
-                "data-title"
-            );
-            this.getHandleTitlesAsync(
-                controlFrame,
-                "bloom-ui-canvas-element-move-crop-handle",
-                "Shift"
-            );
-            // Text boxes get a little extra padding, making the control frame bigger than
-            // the canvas element itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
-            // but one pixel less seems to be enough to prevent the side handles actually overlapping text,
-            // though maybe I've just been lucky and this should really be 4.
-            // Seems like it should be easy to do this in the .less file, but the control frame is not
-            // a child of the canvas element (for z-order reasons), so it's not easy for CSS to move it left
-            // when the style is already absolutely controlling style.left. It's easier to just tweak
-            // it here.
-            const extraPadding = hasText ? 3 : 0;
-            // using pxToNumber here because the position and size of the canvas element are often fractional.
-            // OTOH, clientWidth etc are whole numbers. If we allow that rounding in to affect where to
-            // place the control frame, we can end up with a 1 pixel gap between the canvas element and
-            // the control frame, which looks bad.
-            controlFrame.style.width =
-                CanvasElementManager.pxToNumber(
-                    this.activeElement.style.width
-                ) +
-                2 * extraPadding +
-                "px";
-            controlFrame.style.height = this.activeElement.style.height;
-            controlFrame.style.left =
-                CanvasElementManager.pxToNumber(this.activeElement.style.left) -
-                extraPadding +
-                "px";
-            controlFrame.style.top = this.activeElement.style.top;
-            const tails = Bubble.getBubbleSpec(this.activeElement).tails;
-            if (tails.length > 0) {
-                const tipY = tails[0].tipY;
-                controlsAbove =
-                    tipY >
-                    this.activeElement.clientHeight +
-                        this.activeElement.offsetTop;
-            }
+        if (!controlFrame || !this.activeElement) return;
+
+        if (controlFrame.parentElement !== this.activeElement.parentElement) {
+            this.activeElement.parentElement?.appendChild(controlFrame);
+        }
+        controlFrame.classList.toggle(
+            "bloom-noAutoHeight",
+            this.activeElement.classList.contains("bloom-noAutoHeight")
+        );
+        // We want some special CSS rules for control frames on background images (e.g., no resize handles).
+        // But we give the class a different name so the control frame won't accidentally be affected
+        // by any CSS intended for the background image itself. That is, if the active element (the actual canvas
+        // element) has kbackgroundImageClass, which triggers its own CSS rules, we want the control frame
+        // to have this different class to trigger control frame background-specific CSS rules.
+        controlFrame.classList.toggle(
+            kBackgroundImageClass + "-control-frame",
+            this.activeElement.classList.contains(kBackgroundImageClass)
+        );
+        const hasText = controlFrame.classList.contains("has-text");
+        // We don't need to await these, they are just async so the handle titles can be updated
+        // once the localization manager retrieves them.
+        this.getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-canvas-element-resize-handle",
+            "Resize"
+        );
+        this.getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-canvas-element-side-handle",
+            hasText ? "ChangeShape" : "Crop",
+            // We don't need to change it while we're moving the frame, only if we're switching
+            // between text and image. And there's another state we want
+            // when cropping a background image and snapped.
+            !controlFrame.classList.contains("moving"),
+            "data-title"
+        );
+        this.getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-canvas-element-move-crop-handle",
+            "Shift"
+        );
+        // Text boxes get a little extra padding, making the control frame bigger than
+        // the canvas element itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
+        // but one pixel less seems to be enough to prevent the side handles actually overlapping text,
+        // though maybe I've just been lucky and this should really be 4.
+        // Seems like it should be easy to do this in the .less file, but the control frame is not
+        // a child of the canvas element (for z-order reasons), so it's not easy for CSS to move it left
+        // when the style is already absolutely controlling style.left. It's easier to just tweak
+        // it here.
+        const extraPadding = hasText ? 3 : 0;
+        // using pxToNumber here because the position and size of the canvas element are often fractional.
+        // OTOH, clientWidth etc are whole numbers. If we allow that rounding in to affect where to
+        // place the control frame, we can end up with a 1 pixel gap between the canvas element and
+        // the control frame, which looks bad.
+        controlFrame.style.width =
+            CanvasElementManager.pxToNumber(this.activeElement.style.width) +
+            2 * extraPadding +
+            "px";
+        controlFrame.style.height = this.activeElement.style.height;
+        controlFrame.style.left =
+            CanvasElementManager.pxToNumber(this.activeElement.style.left) -
+            extraPadding +
+            "px";
+        controlFrame.style.top = this.activeElement.style.top;
+        const tails = Bubble.getBubbleSpec(this.activeElement).tails;
+        if (tails.length > 0) {
+            const tipY = tails[0].tipY;
+            controlsAbove =
+                tipY >
+                this.activeElement.clientHeight + this.activeElement.offsetTop;
         }
         this.adjustMoveCropHandleVisibility();
         this.adjustContextControlPosition(controlFrame, controlsAbove);
