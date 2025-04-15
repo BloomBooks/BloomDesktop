@@ -15,6 +15,7 @@ import {
     CanvasElementImageItem,
     CanvasElementItemRegion,
     CanvasElementItemRow,
+    CanvasElementRectangleItem,
     CanvasElementTextItem,
     CanvasElementVideoItem,
     setGeneratedDraggableId
@@ -1225,6 +1226,10 @@ const DragActivityControls: React.FunctionComponent<{
                                     makeTarget={false}
                                     color={kBloomBlue}
                                     strokeColor={kBloomBlue}
+                                />
+                                <CanvasElementRectangleItem
+                                    style="rectangle"
+                                    color={kBloomBlue}
                                 />
                                 {/* built in to current activities
                             <CanvasElementButtonItem

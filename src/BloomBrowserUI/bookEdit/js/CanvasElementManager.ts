@@ -2553,81 +2553,76 @@ export class CanvasElementManager {
             "canvas-element-control-frame"
         );
         let controlsAbove = false;
-        if (controlFrame && this.activeElement) {
-            if (
-                controlFrame.parentElement !== this.activeElement.parentElement
-            ) {
-                this.activeElement.parentElement?.appendChild(controlFrame);
-            }
-            controlFrame.classList.toggle(
-                "bloom-noAutoHeight",
-                this.activeElement.classList.contains("bloom-noAutoHeight")
-            );
-            // We want some special CSS rules for control frames on background images (e.g., no resize handles).
-            // But we give the class a different name so the control frame won't accidentally be affected
-            // by any CSS intended for the background image itself. That is, if the active element (the actual canvas
-            // element) has kbackgroundImageClass, which triggers its own CSS rules, we want the control frame
-            // to have this different class to trigger control frame background-specific CSS rules.
-            controlFrame.classList.toggle(
-                kBackgroundImageClass + "-control-frame",
-                this.activeElement.classList.contains(kBackgroundImageClass)
-            );
-            const hasText = controlFrame.classList.contains("has-text");
-            // We don't need to await these, they are just async so the handle titles can be updated
-            // once the localization manager retrieves them.
-            this.getHandleTitlesAsync(
-                controlFrame,
-                "bloom-ui-canvas-element-resize-handle",
-                "Resize"
-            );
-            this.getHandleTitlesAsync(
-                controlFrame,
-                "bloom-ui-canvas-element-side-handle",
-                hasText ? "ChangeShape" : "Crop",
-                // We don't need to change it while we're moving the frame, only if we're switching
-                // between text and image. And there's another state we want
-                // when cropping a background image and snapped.
-                !controlFrame.classList.contains("moving"),
-                "data-title"
-            );
-            this.getHandleTitlesAsync(
-                controlFrame,
-                "bloom-ui-canvas-element-move-crop-handle",
-                "Shift"
-            );
-            // Text boxes get a little extra padding, making the control frame bigger than
-            // the canvas element itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
-            // but one pixel less seems to be enough to prevent the side handles actually overlapping text,
-            // though maybe I've just been lucky and this should really be 4.
-            // Seems like it should be easy to do this in the .less file, but the control frame is not
-            // a child of the canvas element (for z-order reasons), so it's not easy for CSS to move it left
-            // when the style is already absolutely controlling style.left. It's easier to just tweak
-            // it here.
-            const extraPadding = hasText ? 3 : 0;
-            // using pxToNumber here because the position and size of the canvas element are often fractional.
-            // OTOH, clientWidth etc are whole numbers. If we allow that rounding in to affect where to
-            // place the control frame, we can end up with a 1 pixel gap between the canvas element and
-            // the control frame, which looks bad.
-            controlFrame.style.width =
-                CanvasElementManager.pxToNumber(
-                    this.activeElement.style.width
-                ) +
-                2 * extraPadding +
-                "px";
-            controlFrame.style.height = this.activeElement.style.height;
-            controlFrame.style.left =
-                CanvasElementManager.pxToNumber(this.activeElement.style.left) -
-                extraPadding +
-                "px";
-            controlFrame.style.top = this.activeElement.style.top;
-            const tails = Bubble.getBubbleSpec(this.activeElement).tails;
-            if (tails.length > 0) {
-                const tipY = tails[0].tipY;
-                controlsAbove =
-                    tipY >
-                    this.activeElement.clientHeight +
-                        this.activeElement.offsetTop;
-            }
+        if (!controlFrame || !this.activeElement) return;
+
+        if (controlFrame.parentElement !== this.activeElement.parentElement) {
+            this.activeElement.parentElement?.appendChild(controlFrame);
+        }
+        controlFrame.classList.toggle(
+            "bloom-noAutoHeight",
+            this.activeElement.classList.contains("bloom-noAutoHeight")
+        );
+        // We want some special CSS rules for control frames on background images (e.g., no resize handles).
+        // But we give the class a different name so the control frame won't accidentally be affected
+        // by any CSS intended for the background image itself. That is, if the active element (the actual canvas
+        // element) has kbackgroundImageClass, which triggers its own CSS rules, we want the control frame
+        // to have this different class to trigger control frame background-specific CSS rules.
+        controlFrame.classList.toggle(
+            kBackgroundImageClass + "-control-frame",
+            this.activeElement.classList.contains(kBackgroundImageClass)
+        );
+        const hasText = controlFrame.classList.contains("has-text");
+        // We don't need to await these, they are just async so the handle titles can be updated
+        // once the localization manager retrieves them.
+        this.getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-canvas-element-resize-handle",
+            "Resize"
+        );
+        this.getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-canvas-element-side-handle",
+            hasText ? "ChangeShape" : "Crop",
+            // We don't need to change it while we're moving the frame, only if we're switching
+            // between text and image. And there's another state we want
+            // when cropping a background image and snapped.
+            !controlFrame.classList.contains("moving"),
+            "data-title"
+        );
+        this.getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-canvas-element-move-crop-handle",
+            "Shift"
+        );
+        // Text boxes get a little extra padding, making the control frame bigger than
+        // the canvas element itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
+        // but one pixel less seems to be enough to prevent the side handles actually overlapping text,
+        // though maybe I've just been lucky and this should really be 4.
+        // Seems like it should be easy to do this in the .less file, but the control frame is not
+        // a child of the canvas element (for z-order reasons), so it's not easy for CSS to move it left
+        // when the style is already absolutely controlling style.left. It's easier to just tweak
+        // it here.
+        const extraPadding = hasText ? 3 : 0;
+        // using pxToNumber here because the position and size of the canvas element are often fractional.
+        // OTOH, clientWidth etc are whole numbers. If we allow that rounding in to affect where to
+        // place the control frame, we can end up with a 1 pixel gap between the canvas element and
+        // the control frame, which looks bad.
+        controlFrame.style.width =
+            CanvasElementManager.pxToNumber(this.activeElement.style.width) +
+            2 * extraPadding +
+            "px";
+        controlFrame.style.height = this.activeElement.style.height;
+        controlFrame.style.left =
+            CanvasElementManager.pxToNumber(this.activeElement.style.left) -
+            extraPadding +
+            "px";
+        controlFrame.style.top = this.activeElement.style.top;
+        const tails = Bubble.getBubbleSpec(this.activeElement).tails;
+        if (tails.length > 0) {
+            const tipY = tails[0].tipY;
+            controlsAbove =
+                tipY >
+                this.activeElement.clientHeight + this.activeElement.offsetTop;
         }
         this.adjustMoveCropHandleVisibility();
         this.adjustContextControlPosition(controlFrame, controlsAbove);
@@ -4423,6 +4418,13 @@ export class CanvasElementManager {
                 rightTopOffset
             );
         }
+        if (style === "rectangle") {
+            return this.addRectangleCanvasElement(
+                positionInViewport,
+                bloomCanvas,
+                rightTopOffset
+            );
+        }
         return this.addCanvasElementCore(
             positionInViewport,
             bloomCanvas,
@@ -4513,6 +4515,43 @@ export class CanvasElementManager {
         );
     }
 
+    private addRectangleCanvasElement(
+        location: Point,
+        bloomCanvasJQuery: JQuery,
+        rightTopOffset?: string
+    ): HTMLElement {
+        const html =
+            // The tabindex here is necessary to allow it to be focused.
+            "<div tabindex='0' class='bloom-rectangle'></div>";
+        const result = this.finishAddingCanvasElement(
+            bloomCanvasJQuery,
+            html,
+            location,
+            "none",
+            true,
+            rightTopOffset
+        );
+        // reorder it after the element with class kBackgroundImageClass. This puts it in front of
+        // the background but but behind the other canvas elements it is meant to frame.
+        const bloomCanvas = bloomCanvasJQuery.get(0);
+        const backgroundImage = bloomCanvas.getElementsByClassName(
+            kBackgroundImageClass
+        )[0] as HTMLElement;
+        if (backgroundImage) {
+            bloomCanvas.insertBefore(result, backgroundImage.nextSibling);
+            // Being first in document order gives it the right z-order, but it also has to be
+            // in the right sequence by ComicalJs Bubble level for the hit test to work right.
+            CanvasElementManager.putBubbleBefore(
+                result,
+                (Array.from(
+                    bloomCanvas.getElementsByClassName(kCanvasElementClass)
+                ) as HTMLElement[]).filter(x => x !== backgroundImage),
+                Bubble.getBubbleSpec(backgroundImage).level + 1
+            );
+        }
+        return result;
+    }
+
     private finishAddingCanvasElement(
         bloomCanvasJQuery: JQuery,
         internalHtml: string,
@@ -4581,7 +4620,10 @@ export class CanvasElementManager {
     // we want something a bit taller.
     private setDefaultWrapperBoxHeight(wrapperBox: JQuery) {
         const width = parseInt(wrapperBox.css("width"), 10);
-        if (wrapperBox.find(`.${kVideoContainerClass}`).length > 0) {
+        if (
+            wrapperBox.find(`.${kVideoContainerClass}`).length > 0 ||
+            wrapperBox.find(`.bloom-rectangle`).length > 0
+        ) {
             // Set the default video aspect to 4:3, the same as the sign language tool generates.
             wrapperBox.css("height", (width * 3) / 4);
         }
@@ -5681,29 +5723,12 @@ export class CanvasElementManager {
             // Set level so Comical will consider the new canvas element to be under the existing ones.
             const canvasElementElements = Array.from(
                 bloomCanvas.getElementsByClassName(kCanvasElementClass)
+            ) as HTMLElement[];
+            CanvasElementManager.putBubbleBefore(
+                bgCanvasElement,
+                canvasElementElements,
+                1
             );
-            let minLevel = Math.min(
-                ...canvasElementElements.map(
-                    b => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0
-                )
-            );
-            if (minLevel <= 1) {
-                // bump all the others up so we can insert one at level 1 below them all
-                // We don't want to use zero as a level...some Comical code complains that
-                // the canvas element doesn't have a level at all. And I'm nervous about using
-                // negative numbers...something that wants a level one higher might get zero.
-                canvasElementElements.forEach(b => {
-                    const bubble = new Bubble(b as HTMLElement);
-                    const spec = bubble.getBubbleSpec();
-                    // the one previously at minLevel will now be at 2, others higher in same sequence.
-                    spec.level += 2 - minLevel;
-                    bubble.persistBubbleSpec();
-                });
-                minLevel = 2;
-            }
-            const bubble = new Bubble(bgCanvasElement as HTMLElement);
-            bubble.getBubbleSpec().level = minLevel - 1;
-            bubble.persistBubbleSpec();
             bgCanvasElement.style.visibility = "none"; // hide it until we adjust its shape and position
             // consistent with level, we want it in front of the (new, placeholder) background image
             // and behind the other canvas elements.
@@ -5713,7 +5738,7 @@ export class CanvasElementManager {
                     oldBgImage.nextSibling
                 );
             } else {
-                var canvas = bloomCanvas.getElementsByTagName(
+                const canvas = bloomCanvas.getElementsByTagName(
                     "canvas"
                 )[0] as HTMLElement;
                 bloomCanvas.insertBefore(bgCanvasElement, canvas.nextSibling);
@@ -5735,6 +5760,39 @@ export class CanvasElementManager {
         if (oldBgImage) {
             oldBgImage.remove();
         }
+    }
+
+    // Adjust the levels of all the bubbles of all the listed canvas elements so that
+    // the one passed can be given the required level and all the others (keeping their
+    // current order) will be perceived by ComicalJs as having a higher level
+    private static putBubbleBefore(
+        canvasElement: HTMLElement,
+        canvasElementElements: HTMLElement[],
+        requiredLevel: number
+    ) {
+        let minLevel = Math.min(
+            ...canvasElementElements.map(
+                b => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0
+            )
+        );
+        if (minLevel <= requiredLevel) {
+            // bump all the others up so we can insert one at level 1 below them all
+            // We don't want to use zero as a level...some Comical code complains that
+            // the canvas element doesn't have a level at all. And I'm nervous about using
+            // negative numbers...something that wants a level one higher might get zero.
+            canvasElementElements.forEach(b => {
+                const bubble = new Bubble(b as HTMLElement);
+                const spec = bubble.getBubbleSpec();
+                // the one previously at minLevel will now be at requiredLevel+1, others higher in same sequence.
+                spec.level += requiredLevel - minLevel + 1;
+                bubble.persistBubbleSpec();
+            });
+            minLevel = 2;
+        }
+        const bubble = new Bubble(canvasElement as HTMLElement);
+        bubble.getBubbleSpec().level = requiredLevel;
+        bubble.persistBubbleSpec();
+        Comical.update(canvasElement.parentElement as HTMLElement);
     }
 
     private adjustBackgroundImageSize(

@@ -50,3 +50,25 @@ export const WrongImagePlaceholderIcon: React.FunctionComponent<ImagePlaceholder
         </svg>
     );
 };
+
+export const RectangleIcon: React.FunctionComponent<{
+    color?: string;
+}> = props => {
+    const { color, ...rest } = props;
+    return (
+        <svg
+            width="50"
+            height="40"
+            viewBox="0 0 50 40"
+            fill={"none"}
+            xmlns="http://www.w3.org/2000/svg"
+            {...rest}
+        >
+            <path
+                d="M0 0H50V40H0V0Z"
+                stroke={color ?? "black"}
+                strokeWidth={5}
+            />
+        </svg>
+    );
+};

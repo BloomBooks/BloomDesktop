@@ -12,6 +12,7 @@ import {
 } from "../games/GameTool";
 import {
     ImagePlaceholderIcon,
+    RectangleIcon,
     WrongImagePlaceholderIcon
 } from "../../../react_components/icons/ImagePlaceholderIcon";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -325,6 +326,29 @@ export const CanvasElementImageItem: React.FunctionComponent<{
                 `}
                 color={props.color}
                 strokeColor={props.strokeColor}
+            />
+        </CanvasElementSvgItem>
+    );
+};
+export const CanvasElementRectangleItem: React.FunctionComponent<{
+    style: string;
+    addClasses?: string;
+    color?: string;
+}> = props => {
+    return (
+        <CanvasElementSvgItem
+            style={props.style}
+            makeTarget={false}
+            makeMatchingTextBox={false}
+            addClasses={props.addClasses}
+        >
+            <RectangleIcon
+                css={css`
+                    width: 50px;
+                    margin-top: 5px;
+                    cursor: grab;
+                `}
+                color={props.color}
             />
         </CanvasElementSvgItem>
     );

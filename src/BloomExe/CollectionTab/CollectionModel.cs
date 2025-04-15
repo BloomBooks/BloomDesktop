@@ -189,6 +189,27 @@ namespace Bloom.CollectionTab
             }
         }
 
+        public void moveBookIntoThisCollection(Book.Book origBook, BookCollection origCollection)
+        {
+            var origBookFolderPath = origBook.FolderPath;
+            var bookFolderName = Path.GetFileName(origBookFolderPath);
+            var newCollectionDir = TheOneEditableCollection.PathToDirectory;
+            var newBookFolderPath = Path.Combine(newCollectionDir, bookFolderName);
+            SIL.IO.RobustIO.MoveDirectory(origBookFolderPath, newBookFolderPath);
+            origCollection.HandleBookDeletedFromCollection(origBookFolderPath);
+            ReloadEditableCollection();
+            var movedBookInfo = TheOneEditableCollection
+                .GetBookInfos()
+                .FirstOrDefault(info => info.FolderPath == newBookFolderPath);
+            var movedBook = GetBookFromBookInfo(movedBookInfo);
+            SelectBook(movedBook);
+            BookHistory.AddEvent(
+                movedBook,
+                BookHistoryEventType.Moved,
+                $"Moved book from collection \"{origCollection.Name}\" to collection \"{TheOneEditableCollection.Name}\""
+            );
+        }
+
         /// <summary>
         /// Eventually this might entirely replace ReloadCollections, since we probably never need to reload anything ut the first.
         /// For now it actually reloads them all, but at least allows clients that definitely only need the first reloaded to do so.

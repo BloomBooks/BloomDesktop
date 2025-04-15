@@ -344,6 +344,14 @@ namespace Bloom.web.controllers
                 false,
                 false
             );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "getCurrentEditableCollectionName",
+                request =>
+                {
+                    request.ReplyWithText(_collectionModel.CurrentEditableCollection.Name);
+                },
+                false
+            );
         }
 
         private void HandleRemoveSourceCollection(ApiRequest request)

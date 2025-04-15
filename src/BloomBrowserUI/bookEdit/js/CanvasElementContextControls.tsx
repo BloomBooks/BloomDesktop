@@ -63,6 +63,7 @@ import { useApiString } from "../../utils/bloomApi";
 import { MissingMetadataIcon } from "./MissingMetadataIcon";
 import { FillSpaceIcon } from "./FillSpaceIcon";
 import { kBloomDisabledOpacity } from "../../utils/colorUtils";
+import { Span } from "../../react_components/l10nComponents";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -88,6 +89,18 @@ const CanvasElementContextControls: React.FunctionComponent<{
         kImageContainerClass
     )[0];
     const hasImage = !!imgContainer;
+    const hasText =
+        props.canvasElement.getElementsByClassName("bloom-editable").length > 0;
+    const rectangles = props.canvasElement.getElementsByClassName(
+        "bloom-rectangle"
+    );
+    // This is only used by the menu option that toggles it. If the menu stayed up, we would need a state
+    // and useEffect. But since it closes when we choose an option, we can just get the current value to show
+    // in the current menu opening.
+    const hasRectangle = rectangles.length > 0;
+    const rectangleHasBackground = rectangles[0]?.classList.contains(
+        "bloom-theme-background"
+    );
     const img = imgContainer?.getElementsByTagName("img")[0];
     //const hasLicenseProblem = hasImage && !img.getAttribute("data-copyright");
     const videoContainer = props.canvasElement.getElementsByClassName(
@@ -175,7 +188,19 @@ const CanvasElementContextControls: React.FunctionComponent<{
             icon: <DuplicateIcon css={getMenuIconCss()} />
         });
     }
-    if (!hasImage && !hasVideo) {
+    if (hasRectangle) {
+        menuOptions.splice(0, 0, {
+            l10nId: "EditTab.Toolbox.ComicTool.Options.FillBackground",
+            english: "Fill Background",
+            onClick: () => {
+                props.canvasElement
+                    .getElementsByClassName("bloom-rectangle")[0]
+                    ?.classList.toggle("bloom-theme-background");
+            },
+            icon: rectangleHasBackground && <CheckIcon css={getMenuIconCss()} />
+        });
+    }
+    if (hasText) {
         menuOptions.splice(0, 0, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
             english: "Add Child Bubble",
@@ -780,11 +805,16 @@ function addImageMenuOptions(
         },
         divider,
         {
-            l10nId: "EditTab.PasteHyperLink",
+            l10nId: "EditTab.PasteHyperlink",
             english: "Paste Hyperlink",
-            generatedSubLabel:
-                "Currently: " + imgContainer.getAttribute("data-href") ||
-                undefined,
+            subLabel: imgContainer.getAttribute("data-href") && (
+                <Span
+                    l10nKey="EditTab.PasteHyperlink.Currently"
+                    l10nParam0={imgContainer.getAttribute("data-href") || ""}
+                >
+                    Currently: %0
+                </Span>
+            ),
             requiresAnySubscription: true,
             onClick: () => pasteLink(canvasElement)
 
