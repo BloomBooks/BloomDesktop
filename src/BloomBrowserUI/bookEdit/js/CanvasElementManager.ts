@@ -4677,9 +4677,21 @@ export class CanvasElementManager {
             const parts = rightTopOffset.split(",");
             right = parseInt(parts[0]);
             top = parseInt(parts[1]);
-            // Why -10? I have no idea. But visually most box types seem to come out
-            // in the position we want with that correction.
-            xOffset = xOffset + right - wrapperBox.width() - 10;
+            // The wrapperBox width seems to always be 140 at this point, but gets
+            // changed before the dropped item displays.  Images (including videos and
+            // GIFs) are positioned correctly if we assume their actual width is about 60
+            // instead, so we need to adjust the xOffset by 80 pixels.  Text boxes are
+            // positioned correctly if we assume their actual width is about 150 instead,
+            // so we adjust their xOFfset by -10.  This is a bit of a hack, but it works.
+            // I don't know how to get the actual width that will show up in the browser.
+            // (The displayed widths for fixed images, videos, and GIFs are really not 60,
+            // but they are positioned correctly if we treat them that way here.)
+            // See BL-14594.
+            let fudgeFactor = 80;
+            if (wrapperBox.find(".bloom-translationGroup").length > 0) {
+                fudgeFactor = -10;
+            }
+            xOffset = xOffset + right - wrapperBox.width() + fudgeFactor;
             yOffset = yOffset + top;
         }
 
