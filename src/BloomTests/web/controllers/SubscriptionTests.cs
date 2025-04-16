@@ -159,7 +159,7 @@ namespace BloomTests.Collection
         }
 
         [TestCase("", "0001-01-01")]
-        [TestCase("Legacy-LC-005809-2533", "2025-06-01")] //Subscription.kDefaultExpirationDate
+        [TestCase("Legacy-LC-005839-2533", "2025-07-01")] //Subscription.kDefaultExpirationDate
         [TestCase("Test-Expired-Code-005658-9576", "2025-01-01")]
         [TestCase("i-am-invalid", "0001-01-01")]
         public void GetExpirationDate_CalculatesCorrectly(string code, string expectedYYYYmmDD)
