@@ -4591,23 +4591,32 @@ export class CanvasElementManager {
         );
         // reorder it after the element with class kBackgroundImageClass. This puts it in front of
         // the background but but behind the other canvas elements it is meant to frame.
-        const bloomCanvas = bloomCanvasJQuery.get(0);
+        this.reorderRectangleCanvasElement(result, bloomCanvasJQuery.get(0));
+        return result;
+    }
+
+    // Put the rectangle in the right place in the DOM so it is behind the other canvas elements
+    // but in front of the background image.  Also adjust the ComicalJS bubble level so it is in
+    // front of the the background image.
+    private reorderRectangleCanvasElement(
+        rectangle: HTMLElement,
+        bloomCanvas: HTMLElement
+    ): void {
         const backgroundImage = bloomCanvas.getElementsByClassName(
             kBackgroundImageClass
         )[0] as HTMLElement;
         if (backgroundImage) {
-            bloomCanvas.insertBefore(result, backgroundImage.nextSibling);
+            bloomCanvas.insertBefore(rectangle, backgroundImage.nextSibling);
             // Being first in document order gives it the right z-order, but it also has to be
             // in the right sequence by ComicalJs Bubble level for the hit test to work right.
             CanvasElementManager.putBubbleBefore(
-                result,
+                rectangle,
                 (Array.from(
                     bloomCanvas.getElementsByClassName(kCanvasElementClass)
                 ) as HTMLElement[]).filter(x => x !== backgroundImage),
                 Bubble.getBubbleSpec(backgroundImage).level + 1
             );
         }
-        return result;
     }
 
     private finishAddingCanvasElement(
@@ -4863,7 +4872,14 @@ export class CanvasElementManager {
                 bubbleSpecToDuplicate,
                 sameLocation
             );
-
+            if (result) {
+                const isRectangle =
+                    result.getElementsByClassName("bloom-rectangle").length > 0;
+                if (isRectangle) {
+                    // adjust the new rectangle's z-order and comical level to match the original.
+                    this.reorderRectangleCanvasElement(result, bloomCanvas);
+                }
+            }
             // The JQuery resizable event handler needs to be removed after the duplicate canvas element
             // family is created, and then the over picture editing needs to be initialized again.
             // See BL-13617.
