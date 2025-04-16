@@ -391,20 +391,12 @@
         background-color: transparent;
     }
 }
-// And don't show them at all in play mode or the Wrong tab.
+// And don't show the dashed box at all in play mode or the Correct or Wrong tabs.
 .drag-activity-play,
+.drag-activity-correct,
 .drag-activity-wrong {
     .bloom-page[data-show-targets-during-play="false"] [data-target-of] {
-        // display:none would prevent the snap code from using them in play mode, since they would not have a location.
-        visibility: hidden;
-    }
-}
-// If we don't show targets during play, we don't want to show the dashed box in the Correct tab.
-.drag-activity-correct {
-    .bloom-page[data-show-targets-during-play="false"] [data-target-of] {
         border: none;
-        outline: none;
-        box-shadow: none;
     }
 }
 
@@ -597,4 +589,10 @@
 .Instructions-style {
     color: var(--header-color);
     background-color: var(--header-background-color);
+}
+
+.bloom-svg-rect-has-color {
+    svg rect {
+        fill: var(--draggable-background-color);
+    }
 }

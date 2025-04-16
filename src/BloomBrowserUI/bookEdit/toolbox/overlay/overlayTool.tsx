@@ -1,15 +1,12 @@
 /** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useState, useEffect } from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import * as ReactDOM from "react-dom";
 import "./overlayTool.less";
-import {
-    getEditablePageBundleExports,
-    getEditTabBundleExports
-} from "../../js/bloomFrames";
+import { getEditTabBundleExports } from "../../js/bloomFrames";
 import {
     CanvasElementManager,
     ITextColorInfo
@@ -18,7 +15,7 @@ import { BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import { Button, MenuItem, Typography } from "@mui/material";
+import { MenuItem, Typography } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { Div, Span } from "../../../react_components/l10nComponents";
 import InputLabel from "@mui/material/InputLabel";
@@ -27,8 +24,6 @@ import { ColorBar } from "./colorBar";
 import { IColorInfo } from "../../../react_components/color-picking/colorSwatch";
 import { IColorPickerDialogProps } from "../../../react_components/color-picking/colorPickerDialog";
 import * as tinycolor from "tinycolor2";
-import { showSignLanguageTool } from "../../js/bloomVideo";
-import { kBloomBlue } from "../../../bloomMaterialUITheme";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
 import { kOverlayToolId } from "../toolIds";
 import {
@@ -40,6 +35,7 @@ import {
 } from "../../../react_components/color-picking/bloomPalette";
 import { EnableAllImageEditing } from "../../js/bloomImages";
 import {
+    CanvasElementCaptionItem,
     CanvasElementImageItem,
     CanvasElementItem,
     CanvasElementItemRegion,
@@ -708,12 +704,12 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             <CanvasElementItemRow>
                                 <CanvasElementItem
                                     src="/bloom/bookEdit/toolbox/overlay/comic-icon.svg"
-                                    style="speech"
+                                    canvasElementType="speech"
                                 />
-                                <CanvasElementImageItem style="image" />
+                                <CanvasElementImageItem />
                                 <CanvasElementItem
                                     src="/bloom/bookEdit/toolbox/overlay/sign-language-overlay.svg"
-                                    style="video"
+                                    canvasElementType="video"
                                 />
                             </CanvasElementItemRow>
                             <CanvasElementItemRow secondRow={true}>
@@ -731,10 +727,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                         border: 1px dotted white;
                                     `}
                                     l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
-                                    style="none"
                                 />
 
-                                <CanvasElementTextItem
+                                <CanvasElementCaptionItem
                                     css={css`
                                         // Horizontal positioning / sizing of the element
                                         margin-left: 10px;
@@ -751,7 +746,6 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                         box-shadow: 3px 3px black;
                                     `}
                                     l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
-                                    style="caption"
                                 />
                             </CanvasElementItemRow>
                         </CanvasElementItemRegion>
