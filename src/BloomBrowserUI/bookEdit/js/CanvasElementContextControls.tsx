@@ -111,9 +111,12 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const videoSource = video?.getElementsByTagName("source")[0];
     const videoAlreadyChosen = !!videoSource?.getAttribute("src");
     const isPlaceHolder =
-        hasImage && img.getAttribute("src")?.startsWith("placeHolder.png");
+        hasImage && img?.getAttribute("src")?.startsWith("placeHolder.png");
     const missingMetadata =
-        hasImage && !isPlaceHolder && !img.getAttribute("data-copyright");
+        hasImage &&
+        !isPlaceHolder &&
+        img &&
+        !img.getAttribute("data-copyright");
     const setMenuOpen = (open: boolean, launchingDialog?: boolean) => {
         // Even though we've done our best to tell the MUI menu NOT to steal focus, it seems it still does...
         // or some other code somewhere is doing it when we choose a menu item. So we tell the CanvasElementManager
@@ -227,7 +230,16 @@ const CanvasElementContextControls: React.FunctionComponent<{
         );
     }
     if (hasImage) {
-        addImageMenuOptions(menuOptions, props.canvasElement, img, setMenuOpen);
+        const canModifyImage = !imgContainer.classList.contains(
+            "bloom-unmodifiable-image"
+        );
+        if (canModifyImage)
+            addImageMenuOptions(
+                menuOptions,
+                props.canvasElement,
+                img,
+                setMenuOpen
+            );
     }
     if (hasVideo) {
         addVideoMenuItems(menuOptions, videoContainer, setMenuOpen);
@@ -749,7 +761,7 @@ function addImageMenuOptions(
         kImageContainerClass
     )[0] as HTMLElement;
 
-    const isCropped = !!img.style.width;
+    const isCropped = !!img?.style.width;
 
     const runMetadataDialog = () => {
         if (!canvasElement) return;

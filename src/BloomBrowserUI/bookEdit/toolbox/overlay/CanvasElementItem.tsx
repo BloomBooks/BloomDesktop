@@ -1,15 +1,10 @@
 /** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
-import { OverlayTool } from "./overlayTool";
 import { Div, Span } from "../../../react_components/l10nComponents";
 import { kBloomBlue, kBloomGray } from "../../../utils/colorUtils";
-import {
-    adjustTarget,
-    enableDraggingTargets,
-    makeTargetForDraggable
-} from "../games/GameTool";
+import { makeTargetForDraggable } from "../games/GameTool";
 import {
     ImagePlaceholderIcon,
     RectangleIcon,
@@ -18,17 +13,24 @@ import {
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { SignLanguageIcon } from "../../../react_components/icons/SignLanguageIcon";
 import { GifIcon } from "../../../react_components/icons/GifIcon";
-import { theOneCanvasElementManager } from "../../js/CanvasElementManager";
-import { Bubble, Comical } from "comicaljs";
 import { Point } from "../../js/point";
 import { getCanvasElementManager } from "./canvasElementUtils";
-import { all } from "underscore";
 import { getTarget } from "bloom-player";
 import { doesContainingPageHaveSameSizeMode } from "../games/gameUtilities";
+import { AudioIcon } from "../../../react_components/icons/AudioIcon";
+
+export type CanvasElementType =
+    | "image"
+    | "video"
+    | "sound"
+    | "rectangle"
+    | "speech"
+    | "caption"
+    | "none";
 
 const ondragstart = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
-    style: string
+    canvasElementType: CanvasElementType
 ) => {
     // Here "text/x-bloom-canvas-element" is a unique, private data type recognised
     // by ondragover and ondragdrop methods that CanvasElementManager
@@ -43,7 +45,7 @@ const ondragstart = (
     // Note that these private mime types must be all lowercase.  If you mix in some
     // uppercase letters, the browser code silently converts them to lowercase.  See
     // BL-14490 for a mysterious symptom of what that can cause.
-    ev.dataTransfer.setData("text/x-bloom-canvas-element", style);
+    ev.dataTransfer.setData("text/x-bloom-canvas-element", canvasElementType);
     ev.dataTransfer.setData("text/x-bloomdraggable", "true");
     const target = ev.currentTarget as HTMLElement;
     const rect = target.getBoundingClientRect();
@@ -59,7 +61,7 @@ const ondragstart = (
 // When a template canvas element is dropped on the image, we create a new canvas element
 const ondragend = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
-    style: string,
+    canvasElementType: CanvasElementType,
     makeTarget: boolean,
     makeMatchingTextBox: boolean,
     addClasses?: string,
@@ -90,7 +92,7 @@ const ondragend = (
     const canvasElement = canvasElementManager.addCanvasElementWithScreenCoords(
         ev.screenX,
         ev.screenY,
-        style,
+        canvasElementType,
         userDefinedStyleName,
         rightTopOffset
     );
@@ -267,10 +269,10 @@ export const setGeneratedDraggableId = (draggable: HTMLElement): string => {
     return id;
 };
 
-// A wrapper for something that is an overlay source icon, typically an SVG.
+// A wrapper for something that is a canvas element source icon, typically an SVG.
 // Supports dragging it onto the canvas.
 export const CanvasElementSvgItem: React.FunctionComponent<{
-    style: string;
+    canvasElementType: CanvasElementType;
     makeTarget?: boolean;
     makeMatchingTextBox?: boolean;
     addClasses?: string;
@@ -284,11 +286,11 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
                 cursor: grab;
             `}
             draggable={true}
-            onDragStart={ev => ondragstart(ev, props.style)}
+            onDragStart={ev => ondragstart(ev, props.canvasElementType)}
             onDragEnd={ev =>
                 ondragend(
                     ev,
-                    props.style,
+                    props.canvasElementType,
                     props.makeTarget ?? false,
                     props.makeMatchingTextBox ?? false,
                     props.addClasses,
@@ -304,7 +306,6 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
 };
 
 export const CanvasElementImageItem: React.FunctionComponent<{
-    style: string;
     makeTarget?: boolean;
     makeMatchingTextBox?: boolean;
     addClasses?: string;
@@ -313,7 +314,7 @@ export const CanvasElementImageItem: React.FunctionComponent<{
 }> = props => {
     return (
         <CanvasElementSvgItem
-            style={props.style}
+            canvasElementType={"image"}
             makeTarget={props.makeTarget}
             makeMatchingTextBox={props.makeMatchingTextBox}
             addClasses={props.addClasses}
@@ -330,14 +331,32 @@ export const CanvasElementImageItem: React.FunctionComponent<{
         </CanvasElementSvgItem>
     );
 };
-export const CanvasElementRectangleItem: React.FunctionComponent<{
-    style: string;
+
+export const CanvasElementSoundItem: React.FunctionComponent<{
     addClasses?: string;
-    color?: string;
 }> = props => {
     return (
         <CanvasElementSvgItem
-            style={props.style}
+            canvasElementType="sound"
+            makeTarget={true}
+            addClasses={props.addClasses}
+        >
+            <AudioIcon
+                css={css`
+                    width: 50px;
+                    height: 50px;
+                    cursor: grab;
+                `}
+            />
+        </CanvasElementSvgItem>
+    );
+};
+export const CanvasElementRectangleItem: React.FunctionComponent<{
+    addClasses?: string;
+}> = props => {
+    return (
+        <CanvasElementSvgItem
+            canvasElementType="rectangle"
             makeTarget={false}
             makeMatchingTextBox={false}
             addClasses={props.addClasses}
@@ -348,24 +367,21 @@ export const CanvasElementRectangleItem: React.FunctionComponent<{
                     margin-top: 5px;
                     cursor: grab;
                 `}
-                color={props.color}
+                color={kBloomBlue}
             />
         </CanvasElementSvgItem>
     );
 };
 
 export const CanvasElementWrongImageItem: React.FunctionComponent<{
-    style: string;
     makeTarget?: boolean;
     makeMatchingTextBox?: boolean;
     addClasses?: string;
-    color?: string;
-    strokeColor?: string;
     extraAction?: (top: HTMLElement) => void;
 }> = props => {
     return (
         <CanvasElementSvgItem
-            style={props.style}
+            canvasElementType="image"
             makeTarget={props.makeTarget}
             makeMatchingTextBox={props.makeMatchingTextBox}
             addClasses={props.addClasses}
@@ -377,22 +393,19 @@ export const CanvasElementWrongImageItem: React.FunctionComponent<{
                     height: 50px;
                     cursor: grab;
                 `}
-                color={props.color}
-                strokeColor={props.strokeColor}
+                color="white"
+                strokeColor={kBloomBlue}
             />
         </CanvasElementSvgItem>
     );
 };
 
 export const CanvasElementGifItem: React.FunctionComponent<{
-    style: string;
     addClasses?: string;
-    color?: string;
-    strokeColor?: string;
 }> = props => {
     return (
         <CanvasElementSvgItem
-            style={props.style}
+            canvasElementType={"image"}
             makeTarget={false}
             addClasses={"bloom-gif " + (props.addClasses ?? "")}
         >
@@ -402,23 +415,20 @@ export const CanvasElementGifItem: React.FunctionComponent<{
                     height: 50px;
                     cursor: grab;
                 `}
-                color={props.color}
-                strokeColor={props.strokeColor}
+                strokeColor={kBloomBlue}
             />
         </CanvasElementSvgItem>
     );
 };
 
 export const CanvasElementVideoItem: React.FunctionComponent<{
-    style: string;
     makeTarget?: boolean;
     // We could easily add makeTarget?: boolean; but we don't want to allow video dragging in the finished book
     addClasses?: string;
-    color?: string;
 }> = props => {
     return (
         <CanvasElementSvgItem
-            style={props.style}
+            canvasElementType={"video"}
             addClasses={props.addClasses}
             makeTarget={props.makeTarget}
         >
@@ -428,8 +438,7 @@ export const CanvasElementVideoItem: React.FunctionComponent<{
                     height: 50px;
                     cursor: grab;
                 `}
-                color={props.color ?? "white"}
-                //strokeColor={props.strokeColor}
+                color={kBloomBlue}
             />
         </CanvasElementSvgItem>
     );
@@ -437,7 +446,7 @@ export const CanvasElementVideoItem: React.FunctionComponent<{
 
 export const CanvasElementItem: React.FunctionComponent<{
     src: string;
-    style: string;
+    canvasElementType: CanvasElementType;
     makeTarget?: boolean;
     addClasses?: string;
     userDefinedStyleName?: string;
@@ -451,11 +460,11 @@ export const CanvasElementItem: React.FunctionComponent<{
             `}
             src={props.src}
             draggable={true}
-            onDragStart={ev => ondragstart(ev, props.style)}
+            onDragStart={ev => ondragstart(ev, props.canvasElementType)}
             onDragEnd={ev =>
                 ondragend(
                     ev,
-                    props.style,
+                    props.canvasElementType,
                     props.makeTarget ?? false,
                     false, // don't make a matching text box
                     props.addClasses,
@@ -469,9 +478,9 @@ export const CanvasElementItem: React.FunctionComponent<{
     );
 };
 
-export const CanvasElementTextItem: React.FunctionComponent<{
+const CanvasElementBaseTextItem: React.FunctionComponent<{
     l10nKey: string;
-    style: string;
+    canvasElementType: CanvasElementType;
     className?: string;
     makeTarget?: boolean;
     addClasses?: string;
@@ -488,11 +497,11 @@ export const CanvasElementTextItem: React.FunctionComponent<{
             l10nKey={props.l10nKey}
             className={props.className}
             draggable={true}
-            onDragStart={ev => ondragstart(ev, props.style)}
+            onDragStart={ev => ondragstart(ev, props.canvasElementType)}
             onDragEnd={ev =>
                 ondragend(
                     ev,
-                    props.style,
+                    props.canvasElementType,
                     props.makeTarget ?? false,
                     false, // don't make a matching text box
                     props.addClasses,
@@ -504,6 +513,32 @@ export const CanvasElementTextItem: React.FunctionComponent<{
             }
         ></Span>
     );
+};
+
+export const CanvasElementTextItem: React.FunctionComponent<{
+    l10nKey: string;
+    className?: string;
+    makeTarget?: boolean;
+    addClasses?: string;
+    contentL10nKey?: string;
+    hintL10nKey?: string;
+    hide?: boolean; // If true, we don't want this item at all.
+    userDefinedStyleName?: string;
+}> = props => {
+    return <CanvasElementBaseTextItem {...props} canvasElementType="none" />;
+};
+
+export const CanvasElementCaptionItem: React.FunctionComponent<{
+    l10nKey: string;
+    className?: string;
+    makeTarget?: boolean;
+    addClasses?: string;
+    contentL10nKey?: string;
+    hintL10nKey?: string;
+    hide?: boolean; // If true, we don't want this item at all.
+    userDefinedStyleName?: string;
+}> = props => {
+    return <CanvasElementBaseTextItem {...props} canvasElementType="caption" />;
 };
 
 const buttonItemProps = css`
@@ -529,7 +564,6 @@ export const CanvasElementButtonItem: React.FunctionComponent<{
             l10nKey={props.l10nKey}
             addClasses={props.addClasses}
             makeTarget={false}
-            style="none"
             contentL10nKey={props.contentL10nKey}
             hintL10nKey={props.hintL10nKey}
             userDefinedStyleName={props.userDefinedStyleName}

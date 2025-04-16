@@ -47,10 +47,8 @@ import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
-import {
-    doesContainingPageHaveSameSizeMode,
-    needsToBeKeptSameSize
-} from "../toolbox/games/gameUtilities";
+import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
+import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
 
 export interface ITextColorInfo {
     color: string;
@@ -1205,6 +1203,13 @@ export class CanvasElementManager {
         } else {
             controlFrame.classList.remove("has-image");
         }
+        const hasSvg =
+            eltToPutControlsOn?.getElementsByClassName("bloom-svg")?.length > 0;
+        if (hasSvg) {
+            controlFrame.classList.add("has-svg");
+        } else {
+            controlFrame.classList.remove("has-svg");
+        }
         const hasText =
             eltToPutControlsOn?.getElementsByClassName(
                 "bloom-editable bloom-visibility-code-on"
@@ -1391,6 +1396,7 @@ export class CanvasElementManager {
         // If we're moving one of the other points we will negate it to get the slope of the line
         // from ne to sw
         let slope = imgOrVideo ? this.oldHeight / this.oldWidth : 0;
+        if (!slope && this.activeElement.querySelector(".bloom-svg")) slope = 1;
 
         // Default is all unchanged...we will adjust the appropriate ones depending on how far
         // the mouse moved and which corner is being dragged.
@@ -2565,7 +2571,7 @@ export class CanvasElementManager {
         // We want some special CSS rules for control frames on background images (e.g., no resize handles).
         // But we give the class a different name so the control frame won't accidentally be affected
         // by any CSS intended for the background image itself. That is, if the active element (the actual canvas
-        // element) has kbackgroundImageClass, which triggers its own CSS rules, we want the control frame
+        // element) has kBackgroundImageClass, which triggers its own CSS rules, we want the control frame
         // to have this different class to trigger control frame background-specific CSS rules.
         controlFrame.classList.toggle(
             kBackgroundImageClass + "-control-frame",
@@ -2892,8 +2898,12 @@ export class CanvasElementManager {
                     : "speech";
                 // If this got used, we'd want it to have a rightTopOffset value. But I think all our things that can
                 // be dragged are now using CanvasElementItem, and its dragStart sets text/x-bloomdraggable, so this
-                // code does't get used.
-                this.addCanvasElement(ev.clientX, ev.clientY, style);
+                // code doesn't get used.
+                this.addCanvasElement(
+                    ev.clientX,
+                    ev.clientY,
+                    style as CanvasElementType
+                );
             }
         };
     }
@@ -4289,7 +4299,7 @@ export class CanvasElementManager {
     public addCanvasElementWithScreenCoords(
         screenX: number,
         screenY: number,
-        style: string,
+        canvasElementType: CanvasElementType,
         userDefinedStyleName?: string,
         rightTopOffset?: string
     ): HTMLElement | undefined {
@@ -4298,7 +4308,7 @@ export class CanvasElementManager {
         return this.addCanvasElement(
             clientX,
             clientY,
-            style,
+            canvasElementType,
             userDefinedStyleName,
             rightTopOffset
         );
@@ -4383,12 +4393,12 @@ export class CanvasElementManager {
         return this.isVideoCanvasElement(this.activeElement);
     }
 
-    // This method is called when the user "drops" an element from the comicTool onto an image.
+    // This method is called when the user "drops" a canvas element from a tool onto an image.
     // It is also called by addChildInternal() and by the Linux version of dropping: "ondragend".
     public addCanvasElement(
         mouseX: number,
         mouseY: number,
-        style?: string,
+        canvasElementType?: CanvasElementType,
         userDefinedStyleName?: string,
         rightTopOffset?: string
     ): HTMLElement | undefined {
@@ -4404,21 +4414,28 @@ export class CanvasElementManager {
             PointScaling.Scaled,
             "Scaled Viewport coordinates"
         );
-        if (style === "video") {
+        if (canvasElementType === "video") {
             return this.addVideoCanvasElement(
                 positionInViewport,
                 bloomCanvas,
                 rightTopOffset
             );
         }
-        if (style === "image") {
+        if (canvasElementType === "image") {
             return this.addPictureCanvasElement(
                 positionInViewport,
                 bloomCanvas,
                 rightTopOffset
             );
         }
-        if (style === "rectangle") {
+        if (canvasElementType === "sound") {
+            return this.addSoundCanvasElement(
+                positionInViewport,
+                bloomCanvas,
+                rightTopOffset
+            );
+        }
+        if (canvasElementType === "rectangle") {
             return this.addRectangleCanvasElement(
                 positionInViewport,
                 bloomCanvas,
@@ -4428,7 +4445,7 @@ export class CanvasElementManager {
         return this.addCanvasElementCore(
             positionInViewport,
             bloomCanvas,
-            style,
+            canvasElementType,
             userDefinedStyleName,
             rightTopOffset
         );
@@ -4515,6 +4532,47 @@ export class CanvasElementManager {
         );
     }
 
+    private addSoundCanvasElement(
+        location: Point,
+        imageContainerJQuery: JQuery,
+        rightTopOffset?: string
+    ): HTMLElement {
+        const standardImageClasses =
+            kImageContainerClass + " bloom-leadingElement";
+        // This svg is basically the same as the one in AudioIcon.tsx.
+        // Likely, changes to one should be mirrored in the other.
+        const html = `<div tabindex='0' class='bloom-unmodifiable-image bloom-svg bloom-svg-rect-has-color ${standardImageClasses}'>
+    <svg
+        viewBox="0 0 31 31"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <rect
+            x="0.575684"
+            width="31"
+            height="31"
+            rx="1.81232"
+            fill="black"
+        />
+        <path
+            d="M23.0403 9.12744C24.8868 10.8177 25.9241 13.11 25.9241 15.5C25.9241 17.8901 24.8868 20.1823 23.0403 21.8726M19.5634 12.3092C20.4867 13.1544 21.0053 14.3005 21.0053 15.4955C21.0053 16.6906 20.4867 17.8367 19.5634 18.6818M15.0917 9.19054L10.1669 12.796H6.22705V18.2041H10.1669L15.0917 21.8095V9.19054Z"
+            stroke="white"
+            strokeWidth="1.15865"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+    </svg>
+</div>`;
+        return this.finishAddingCanvasElement(
+            imageContainerJQuery,
+            html,
+            location,
+            "none",
+            true,
+            rightTopOffset
+        );
+    }
+
     private addRectangleCanvasElement(
         location: Point,
         bloomCanvasJQuery: JQuery,
@@ -4556,7 +4614,7 @@ export class CanvasElementManager {
         bloomCanvasJQuery: JQuery,
         internalHtml: string,
         location: Point,
-        style?: string,
+        comicalBubbleStyle?: string,
         setElementActive?: boolean,
         rightTopOffset?: string
     ): HTMLElement {
@@ -4599,7 +4657,7 @@ export class CanvasElementManager {
         const bubble = new Bubble(contentElement);
         const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
             contentElement,
-            style || "speech"
+            comicalBubbleStyle || "speech"
         );
         bubble.setBubbleSpec(bubbleSpec);
         const bloomCanvas = bloomCanvasJQuery.get(0);

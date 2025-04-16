@@ -16,6 +16,7 @@ import {
     CanvasElementItemRegion,
     CanvasElementItemRow,
     CanvasElementRectangleItem,
+    CanvasElementSoundItem,
     CanvasElementTextItem,
     CanvasElementVideoItem,
     setGeneratedDraggableId
@@ -53,7 +54,6 @@ import GameIntroText, { Instructions } from "./GameIntroText";
 import { getGameType, isPageBloomGame } from "./GameInfo";
 import {
     getImageFromCanvasElement,
-    kImageContainerClass,
     kImageContainerSelector
 } from "../../js/bloomImages";
 import { doesContainingPageHaveSameSizeMode } from "./gameUtilities";
@@ -1125,7 +1125,6 @@ const DragActivityControls: React.FunctionComponent<{
                                     <CanvasElementTextItem
                                         css={textItemCss}
                                         l10nKey="EditTab.Toolbox.DragActivity.Letter"
-                                        style="none"
                                         makeTarget={true}
                                         addClasses="draggable-text"
                                         userDefinedStyleName="Letter"
@@ -1135,7 +1134,6 @@ const DragActivityControls: React.FunctionComponent<{
                                     <CanvasElementTextItem
                                         css={textItemCss}
                                         l10nKey="EditTab.Toolbox.DragActivity.Word"
-                                        style="none"
                                         makeTarget={true}
                                         addClasses="draggable-text"
                                         hide={
@@ -1152,7 +1150,6 @@ const DragActivityControls: React.FunctionComponent<{
                                 {showImageDraggable && (
                                     <Fragment>
                                         <CanvasElementImageItem
-                                            style="image"
                                             makeTarget={
                                                 activityType !==
                                                 "drag-word-chooser-slider"
@@ -1164,14 +1161,12 @@ const DragActivityControls: React.FunctionComponent<{
                                             color={kBloomBlue}
                                             strokeColor={kBloomBlue}
                                         />
+                                        <CanvasElementSoundItem />
                                         <CanvasElementVideoItem
-                                            style="video"
                                             makeTarget={
                                                 activityType !==
                                                 "drag-word-chooser-slider"
                                             }
-                                            color={kBloomBlue}
-                                            //strokeColor={kBloomBlue}
                                         />
                                     </Fragment>
                                 )}
@@ -1216,21 +1211,16 @@ const DragActivityControls: React.FunctionComponent<{
                                 <CanvasElementTextItem
                                     css={textItemCss}
                                     l10nKey="EditTab.Toolbox.DragActivity.InstructionsOrLabels"
-                                    style="none"
                                     makeTarget={false}
                                 />
                             </CanvasElementItemRow>
                             <CanvasElementItemRow>
                                 <CanvasElementImageItem
-                                    style="image"
                                     makeTarget={false}
                                     color={kBloomBlue}
                                     strokeColor={kBloomBlue}
                                 />
-                                <CanvasElementRectangleItem
-                                    style="rectangle"
-                                    color={kBloomBlue}
-                                />
+                                <CanvasElementRectangleItem />
                                 {/* built in to current activities
                             <CanvasElementButtonItem
                                 l10nKey="EditTab.Toolbox.DragActivity.CheckAnswer"
@@ -1241,14 +1231,8 @@ const DragActivityControls: React.FunctionComponent<{
                             /> */}
                             </CanvasElementItemRow>
                             <CanvasElementItemRow>
-                                <CanvasElementVideoItem
-                                    style="video"
-                                    color={kBloomBlue}
-                                />
-                                <CanvasElementGifItem
-                                    style="image"
-                                    strokeColor={kBloomBlue}
-                                />
+                                <CanvasElementVideoItem />
+                                <CanvasElementGifItem />
                             </CanvasElementItemRow>
                         </CanvasElementItemRegion>
                     )}
@@ -1410,20 +1394,13 @@ const CorrectWrongControls: React.FunctionComponent<{
             <CanvasElementItemRegion theme="blueOnTan" l10nKey="">
                 <CanvasElementItemRow>
                     <CanvasElementImageItem
-                        style="image"
                         makeTarget={false}
                         addClasses={props.classToAddToItems}
-                        color={kBloomBlue}
-                        strokeColor={kBloomBlue}
                     />
                     <CanvasElementVideoItem
-                        style="video"
-                        color={kBloomBlue}
                         addClasses={props.classToAddToItems}
                     />
                     <CanvasElementGifItem
-                        style="image"
-                        strokeColor={kBloomBlue}
                         addClasses={props.classToAddToItems}
                     />
                 </CanvasElementItemRow>
@@ -1431,7 +1408,6 @@ const CorrectWrongControls: React.FunctionComponent<{
                     <CanvasElementTextItem
                         css={textItemCss}
                         l10nKey="EditTab.Toolbox.DragActivity.TextToPutOnThePage"
-                        style="none"
                         makeTarget={false}
                         addClasses={props.classToAddToItems}
                     />
