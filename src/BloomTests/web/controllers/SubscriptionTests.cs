@@ -47,8 +47,8 @@ namespace BloomTests.Collection
 
         [TestCase("", "", false, "")]
         [TestCase(null, null, false, null)]
-        [TestCase(null, "Local Community", false, "Legacy-LC-005809-2533")] // migrate legacy branding only to a modern subscription code
-        [TestCase(null, "Local-Community", false, "Legacy-LC-005809-2533")] // migrate legacy branding only to a modern subscription code
+        [TestCase(null, "Local Community", false, "Legacy-LC-005839-2533")] // migrate legacy branding only to a modern subscription code
+        [TestCase(null, "Local-Community", false, "Legacy-LC-005839-2533")] // migrate legacy branding only to a modern subscription code
         [TestCase(
             "Test-Expiring-Soon-005779-1460",
             "Local-Community",
@@ -57,7 +57,7 @@ namespace BloomTests.Collection
         )] // ignore branding if we have a code
         [TestCase("foobar-***-***", "Default", false, "foobar-***-***")] // if the subscription and the branding are both provided and different, use the subscription
         [TestCase("foobar-***-***", "Default", true, "foobar-***-***")] // if the subscription and the branding are both provided and different, use the subscription
-        [TestCase("Local-Community-***-***", "Default", true, "Legacy-LC-005809-2533")] // migrate legacy subscription to a modern subscription code for editing from Blorg
+        [TestCase("Local-Community-***-***", "Default", true, "Legacy-LC-005839-2533")] // migrate legacy subscription to a modern subscription code for editing from Blorg
         public void FromSettingsXml_ReturnsCorrectValue(
             string code,
             string branding,
@@ -82,7 +82,7 @@ namespace BloomTests.Collection
 
         [TestCase(null, Subscription.SubscriptionTier.None)]
         [TestCase("", Subscription.SubscriptionTier.None)]
-        [TestCase("Legacy-LC-005809-2533", Subscription.SubscriptionTier.Community)]
+        [TestCase("Legacy-LC-005839-2533", Subscription.SubscriptionTier.Community)]
         [TestCase("Fake-006273-0501", Subscription.SubscriptionTier.Enterprise)]
         [TestCase("Fake-LC-006273-1463", Subscription.SubscriptionTier.Community)]
         [TestCase("Test-Expired-005691-4935", Subscription.SubscriptionTier.None)] // if expired, it's none
@@ -139,7 +139,7 @@ namespace BloomTests.Collection
         [TestCase(null, false)]
         [TestCase("", false)]
         [TestCase("Test-Expired-005691-4935", false)]
-        [TestCase("Legacy-LC-005809-2533", true)]
+        [TestCase("Legacy-LC-005839-2533", true)]
         [TestCase("Fake-006273-0501", true)]
         [TestCase("Fake-LC-006273-1463", true)]
         public void HaveActiveSubscription_ReturnsCorrectValue(string code, bool hasSubscription)
@@ -159,7 +159,7 @@ namespace BloomTests.Collection
         }
 
         [TestCase("", "0001-01-01")]
-        [TestCase("Legacy-LC-005809-2533", "2025-06-01")] //Subscription.kDefaultExpirationDate
+        [TestCase("Legacy-LC-005839-2533", "2025-07-01")] //Subscription.kDefaultExpirationDate
         [TestCase("Test-Expired-Code-005658-9576", "2025-01-01")]
         [TestCase("i-am-invalid", "0001-01-01")]
         public void GetExpirationDate_CalculatesCorrectly(string code, string expectedYYYYmmDD)
