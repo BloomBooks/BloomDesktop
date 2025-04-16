@@ -4541,7 +4541,7 @@ export class CanvasElementManager {
             kImageContainerClass + " bloom-leadingElement";
         // This svg is basically the same as the one in AudioIcon.tsx.
         // Likely, changes to one should be mirrored in the other.
-        const html = `<div tabindex='0' class='bloom-unmodifiable-image bloom-svg bloom-svg-rect-has-color ${standardImageClasses}'>
+        const html = `<div tabindex='0' class='bloom-unmodifiable-image bloom-svg bloom-svg-rect-fill-has-background-color bloom-svg-path-stroke-has-foreground-color ${standardImageClasses}'>
     <svg
         viewBox="0 0 31 31"
         fill="none"
