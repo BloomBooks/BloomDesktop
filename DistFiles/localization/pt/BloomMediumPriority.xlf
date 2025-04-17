@@ -48,9 +48,9 @@
         <target xml:lang="pt-PT" state="final">Adicione itens que demonstram que o aluno respondeu corretamente. Por exemplo, pode adicionar a palavra "Certo!" com um GIF de uma galinha dançando.</target>
         <note>ID: EditTab.Toolbox.DragActivity.CorrectInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Draggable" approved="yes">
-        <source xml:lang="en">Draggable</source>
-        <target xml:lang="pt-PT" state="final">Arrastável</target>
+      <trans-unit id="EditTab.Toolbox.DragActivity.Draggable">
+        <source xml:lang="en">Objects to Drag</source>
+        <target xml:lang="pt-PT" state="translated">Arrastável</target>
         <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading" approved="yes">
@@ -78,10 +78,15 @@
         <target xml:lang="pt-PT" state="final">Alvo Arrastável</target>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTarget</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.FixedInPlace" approved="yes">
-        <source xml:lang="en">Fixed In Place</source>
-        <target xml:lang="pt-PT" state="final">Fixo no local</target>
+      <trans-unit id="EditTab.Toolbox.DragActivity.FixedInPlace">
+        <source xml:lang="en">Objects that do not Move</source>
+        <target xml:lang="pt-PT" state="translated">Fixo no local</target>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.Header">
+        <source xml:lang="en">Header</source>
+        <target xml:lang="pt-PT" state="needs-translation">Header</target>
+        <note>ID: EditTab.Toolbox.DragActivity.Header</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions" approved="yes">
         <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
@@ -98,10 +103,10 @@
         <target xml:lang="pt-PT" state="final">Instruções</target>
         <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.InstructionsOrLabels" approved="yes">
-        <source xml:lang="en">Instructions or other labels</source>
-        <target xml:lang="pt-PT" state="final">Instruções ou outros rótulos</target>
-        <note>ID: EditTab.Toolbox.DragActivity.InstructionsOrLabels</note>
+      <trans-unit id="EditTab.Toolbox.DragActivity.TargetLabel">
+        <source xml:lang="en">Target Label</source>
+        <target xml:lang="pt-PT" state="needs-translation">Target Label</target>
+        <note>ID: EditTab.Toolbox.DragActivity.TargetLabel</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Letter" approved="yes">
         <source xml:lang="en">M</source>
