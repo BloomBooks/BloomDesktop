@@ -42,7 +42,7 @@
         <note>ID: EditTab.Toolbox.DragActivity.CorrectInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Draggable">
-        <source xml:lang="en">Draggable</source>
+        <source xml:lang="en">Objects to Drag</source>
         <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading">
@@ -66,8 +66,12 @@
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTarget</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.FixedInPlace">
-        <source xml:lang="en">Fixed In Place</source>
+        <source xml:lang="en">Objects that do not Move</source>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.Header">
+        <source xml:lang="en">Header</source>
+        <note>ID: EditTab.Toolbox.DragActivity.Header</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions">
         <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
@@ -81,9 +85,9 @@
         <source xml:lang="en">Instructions</source>
         <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.InstructionsOrLabels">
-        <source xml:lang="en">Instructions or other labels</source>
-        <note>ID: EditTab.Toolbox.DragActivity.InstructionsOrLabels</note>
+      <trans-unit id="EditTab.Toolbox.DragActivity.TargetLabel">
+        <source xml:lang="en">Target Label</source>
+        <note>ID: EditTab.Toolbox.DragActivity.TargetLabel</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Letter">
         <source xml:lang="en">M</source>

@@ -49,6 +49,7 @@ import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
 import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
+import { getTarget } from "bloom-player";
 
 export interface ITextColorInfo {
     color: string;
@@ -1733,6 +1734,7 @@ export class CanvasElementManager {
         theOneCanvasElementManager.adjustCanvasElementHeightToContentOrMarkOverflow(
             editable
         );
+        adjustTarget(this.activeElement, getTarget(this.activeElement));
         this.alignControlFrameWithActiveElement();
     }
 
