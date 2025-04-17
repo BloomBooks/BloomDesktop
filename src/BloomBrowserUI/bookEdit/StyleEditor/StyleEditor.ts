@@ -84,10 +84,12 @@ export function createStyleDefnIfUndefined(
 ): CSSStyleRule | null {
     const styleName = styleNamePlain + "-style";
     const styleEditor = new StyleEditor(supportFilesRoot);
+    const documentToUse = getPageIFrame()?.contentDocument ?? document;
     const rule = styleEditor.GetRuleForStyle(
         styleName,
         "",
-        false // don't create it if it doesn't exist
+        false, // don't create it if it doesn't exist
+        documentToUse
     );
     if (rule) {
         return null; // already exists, nothing to do
@@ -95,7 +97,8 @@ export function createStyleDefnIfUndefined(
     const newRule = styleEditor.GetRuleForStyle(
         styleName,
         "",
-        true // create it if it doesn't exist
+        true, // create it if it doesn't exist
+        documentToUse
     );
     if (newRule && styles.fontSize) {
         newRule.style.setProperty("font-size", styles.fontSize, "important");
@@ -298,8 +301,8 @@ export default class StyleEditor {
     // but not impossible to override with a custom definition.
     public getFormattingStyles(): FormattingStyle[] {
         const styles: FormattingStyle[] = [];
-        for (let i = 0; i < this.getDocument().styleSheets.length; i++) {
-            const sheet = this.getDocument().styleSheets[i] as CSSStyleSheet;
+        for (let i = 0; i < document.styleSheets.length; i++) {
+            const sheet = document.styleSheets[i] as CSSStyleSheet;
             let rules: CSSRuleList | null = null;
             try {
                 rules = sheet?.cssRules;
@@ -440,13 +443,13 @@ export default class StyleEditor {
      */
     private getBookNonInlineStyleSheets(): CSSStyleSheet[] {
         const styleSheets: CSSStyleSheet[] = [];
-        for (let i = 0; i < this.getDocument().styleSheets.length; ++i) {
-            styleSheets.push(this.getDocument().styleSheets[i]);
+        for (let i = 0; i < document.styleSheets.length; ++i) {
+            styleSheets.push(document.styleSheets[i]);
         }
 
         // We expect the document path to look like this:
         // http://localhost:8089/bloom/[pathToBook]/currentPage-memsim-Normal.html'
-        const lowercaseHref = this.getDocument().location.href.toLowerCase();
+        const lowercaseHref = document.location.href.toLowerCase();
         const expectedLowercaseEnding = "/currentpage-memsim-normal.html"; // Note: the actual page name has a couple capital letters; this is the lowercased version
         const isExpectedForm = lowercaseHref.endsWith(expectedLowercaseEnding);
         console.assert(
@@ -463,7 +466,7 @@ export default class StyleEditor {
 
         // Our searching / validation was case-insensitive (by converting to lowercase),
         // but now we want to resume with the properly-cased version.
-        const urlToBookDirectory = this.getDocument().location.href.substring(
+        const urlToBookDirectory = document.location.href.substring(
             0,
             endingStartIndex
         );
@@ -480,40 +483,39 @@ export default class StyleEditor {
         );
         return filteredArray;
     }
-    private getDocument(): Document {
-        return getPageIFrame()?.contentDocument ?? document;
-    }
 
-    private FindExistingUserModifiedStyleSheet(): CSSStyleSheet | null {
-        for (let i = 0; i < this.getDocument().styleSheets.length; i++) {
+    private FindExistingUserModifiedStyleSheet(
+        documentToUse: Document = document
+    ): CSSStyleSheet | null {
+        for (let i = 0; i < documentToUse.styleSheets.length; i++) {
             if (
-                (<HTMLElement>this.getDocument().styleSheets[i].ownerNode)
-                    .title === "userModifiedStyles"
+                (<HTMLElement>documentToUse.styleSheets[i].ownerNode).title ===
+                "userModifiedStyles"
             ) {
                 // alert("Found userModifiedStyles sheet: i= " + i + ", title= " +
-                //  (<StyleSheet>(<any>this.getDocument().styleSheets[i]).ownerNode).title + ", sheet= " +
-                //  this.getDocument().styleSheets[i].ownerNode.textContent);
-                return <CSSStyleSheet>this.getDocument().styleSheets[i];
+                //  (<StyleSheet>(<any>documentToUse.styleSheets[i]).ownerNode).title + ", sheet= " +
+                //  documentToUse.styleSheets[i].ownerNode.textContent);
+                return <CSSStyleSheet>documentToUse.styleSheets[i];
             }
         }
         return null;
     }
 
     //note, this currently just makes an element in the document, not a separate file
-    public GetOrCreateUserModifiedStyleSheet(): CSSStyleSheet | null {
-        let styleSheet = this.FindExistingUserModifiedStyleSheet();
+    public GetOrCreateUserModifiedStyleSheet(
+        documentToUse: Document = document
+    ): CSSStyleSheet | null {
+        let styleSheet = this.FindExistingUserModifiedStyleSheet(documentToUse);
         if (styleSheet == null) {
-            const newSheet = this.getDocument().createElement("style");
-            this.getDocument()
-                .getElementsByTagName("head")[0]
-                .appendChild(newSheet);
+            const newSheet = documentToUse.createElement("style");
+            documentToUse.getElementsByTagName("head")[0].appendChild(newSheet);
             newSheet.title = "userModifiedStyles";
             newSheet.type = "text/css";
 
             //at this point, we are tempted to just return newSheet, but in the FF29 we're using,
             //that is just an element at this point, not a really stylesheet.
             //so we just go searching for it again in the document.styleSheets array, and this time we will find it.
-            styleSheet = this.FindExistingUserModifiedStyleSheet();
+            styleSheet = this.FindExistingUserModifiedStyleSheet(documentToUse);
         }
         return styleSheet;
     }
@@ -557,9 +559,12 @@ export default class StyleEditor {
         // such as [lang='fr'] or span.ui-audioCurrent
         addToSelector: string,
         // If there is not already such a rule, should we create it, or return null?
-        create: boolean
+        create: boolean,
+        documentToUse: Document = document
     ): CSSStyleRule | null {
-        const styleSheet = this.GetOrCreateUserModifiedStyleSheet();
+        const styleSheet = this.GetOrCreateUserModifiedStyleSheet(
+            documentToUse
+        );
         if (styleSheet == null) {
             return null;
         }
@@ -696,11 +701,11 @@ export default class StyleEditor {
     }
 
     public ConvertPxToPt(pxSize: number, round = true): number {
-        const tempDiv = this.getDocument().createElement("div");
+        const tempDiv = document.createElement("div");
         tempDiv.style.width = "1000pt";
-        this.getDocument().body.appendChild(tempDiv);
+        document.body.appendChild(tempDiv);
         const ratio = 1000 / tempDiv.clientWidth;
-        this.getDocument().body.removeChild(tempDiv);
+        document.body.removeChild(tempDiv);
         if (round) {
             return Math.round(pxSize * ratio);
         } else {
@@ -1059,7 +1064,7 @@ export default class StyleEditor {
         }
         const parentBounds = parent.getBoundingClientRect();
         const bottom = eltBounds.bottom - parentBounds.top;
-        const fmtButton = this.getDocument().getElementById("formatButton");
+        const fmtButton = document.getElementById("formatButton");
 
         if (!fmtButton) {
             return; // should not happen
@@ -1125,7 +1130,7 @@ export default class StyleEditor {
                 // to patch a child component. I'm not sure which is worse.
                 popoverZindex: "60001"
             }),
-            this.getDocument().getElementById("fontSelectComponent")
+            document.getElementById("fontSelectComponent")
         );
     }
 
@@ -1162,7 +1167,7 @@ export default class StyleEditor {
             );
             return;
         }
-        const oldCog = this.getDocument().getElementById("formatButton");
+        const oldCog = document.getElementById("formatButton");
         if (oldCog && this._previousBox == targetBox) {
             return;
         }
@@ -1209,7 +1214,7 @@ export default class StyleEditor {
         );
         this._observer.observe(targetBox);
 
-        const formatButton = this.getDocument().getElementById("formatButton");
+        const formatButton = document.getElementById("formatButton");
         /* we removed this for BL-799, plus it was always getting in the way, once the format popup was opened
         const txt = theOneLocalizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
@@ -1849,7 +1854,7 @@ export default class StyleEditor {
     // }
 
     private setColorButtonColor(id: string, color: string) {
-        const colorButton = this.getDocument().getElementById(id);
+        const colorButton = document.getElementById(id);
         colorButton?.setAttribute("style", `background-color:${color}`);
     }
 
@@ -2004,9 +2009,7 @@ export default class StyleEditor {
         | "center"
         | "right"
         | "justify" {
-        const positionCenterButton = this.getDocument().getElementById(
-            "position-center"
-        );
+        const positionCenterButton = document.getElementById("position-center");
         if (
             positionCenterButton &&
             positionCenterButton.classList.contains("selectedIcon")
@@ -2014,7 +2017,7 @@ export default class StyleEditor {
             return "center";
         }
 
-        const positionJustifyButton = this.getDocument().getElementById(
+        const positionJustifyButton = document.getElementById(
             "position-justify"
         );
         if (
@@ -2024,9 +2027,7 @@ export default class StyleEditor {
             return "justify";
         }
 
-        const positionRightButton = this.getDocument().getElementById(
-            "position-right"
-        );
+        const positionRightButton = document.getElementById("position-right");
         if (
             positionRightButton &&
             positionRightButton.classList.contains("selectedIcon")
@@ -2257,9 +2258,7 @@ export default class StyleEditor {
 
     public runFormatDialog(targetBox: HTMLElement) {
         // BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
-        const suppress = $(this.getDocument()).find(
-            'meta[name="lockFormatting"]'
-        );
+        const suppress = $(document).find('meta[name="lockFormatting"]');
         const noFormatChange =
             suppress.length > 0 &&
             suppress.attr("content").toLowerCase() === "true";
@@ -2315,9 +2314,7 @@ export default class StyleEditor {
                         if (
                             !this.boxBeingEdited.closest(kCanvasElementSelector)
                         ) {
-                            this.getDocument()
-                                .getElementById("overlay-page")
-                                ?.remove();
+                            document.getElementById("overlay-page")?.remove();
                         }
 
                         const visibleTabs = $(".tab-page:visible");
