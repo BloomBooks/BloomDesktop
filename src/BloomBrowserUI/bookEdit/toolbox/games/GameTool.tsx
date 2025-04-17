@@ -1108,8 +1108,10 @@ const DragActivityControls: React.FunctionComponent<{
         activityType !== "drag-image-to-target";
     const showWordDraggable =
         activityType !== "drag-word-chooser-slider" &&
-        activityType !== "drag-letter-to-target" &&
-        activityType !== "drag-image-to-target";
+        activityType !== "drag-letter-to-target"; //&&
+    // For now we'll show for this game also. We probably want to add a generic game
+    // that shows all the options and go back to hiding it for this.
+    //activityType !== "drag-image-to-target";
     const showImageDraggable = activityType !== "drag-letter-to-target";
     return (
         <ThemeProvider theme={toolboxTheme}>
@@ -1123,30 +1125,13 @@ const DragActivityControls: React.FunctionComponent<{
                             <CanvasElementItemRow>
                                 {showLetterDraggable && (
                                     <CanvasElementTextItem
-                                        css={textItemCss}
+                                        css={draggableWordCss}
                                         l10nKey="EditTab.Toolbox.DragActivity.Letter"
                                         makeTarget={true}
                                         addClasses="draggable-text"
                                         userDefinedStyleName="Letter"
                                     />
                                 )}
-                                {showWordDraggable && (
-                                    <CanvasElementTextItem
-                                        css={textItemCss}
-                                        l10nKey="EditTab.Toolbox.DragActivity.Word"
-                                        makeTarget={true}
-                                        addClasses="draggable-text"
-                                        hide={
-                                            activityType ===
-                                                "drag-word-chooser-slider" ||
-                                            activityType ===
-                                                "drag-letter-to-target" ||
-                                            activityType ===
-                                                "drag-image-to-target"
-                                        }
-                                        userDefinedStyleName="Word"
-                                    />
-                                )}{" "}
                                 {showImageDraggable && (
                                     <Fragment>
                                         <CanvasElementImageItem
@@ -1160,16 +1145,35 @@ const DragActivityControls: React.FunctionComponent<{
                                             }
                                             color={kBloomBlue}
                                             strokeColor={kBloomBlue}
+                                            showOuterRectangle={true}
                                         />
-                                        <CanvasElementSoundItem />
                                         <CanvasElementVideoItem
                                             makeTarget={
                                                 activityType !==
                                                 "drag-word-chooser-slider"
                                             }
+                                            showOuterRectangle={true}
                                         />
                                     </Fragment>
                                 )}
+                            </CanvasElementItemRow>
+                            <CanvasElementItemRow>
+                                {showImageDraggable && (
+                                    <CanvasElementSoundItem />
+                                )}
+                                <CanvasElementTextItem
+                                    css={draggableWordCss}
+                                    l10nKey="EditTab.Toolbox.DragActivity.Word"
+                                    makeTarget={true}
+                                    addClasses="draggable-text"
+                                    hide={!showWordDraggable}
+                                    userDefinedStyleName="Word"
+                                    defaultStyleProps={{
+                                        fontSize: "45px",
+                                        lineHeight: "1"
+                                    }}
+                                />
+
                                 {/* Slider: rather than reinstating this item, make the "selected item is part of answer" control work.
                                 // Keeping this just as a reminder of what it might take to make that work.
                                  {activityType === "drag-word-chooser-slider" && (
@@ -1199,8 +1203,21 @@ const DragActivityControls: React.FunctionComponent<{
                                 addClasses="drag-item-order-sentence"
                             />
                         </CanvasElementItemRow> */}
+                            {anyFixedInPlace && (
+                                <div
+                                    css={css`
+                                        border-top: 3px solid ${kBloomBlue};
+                                        opacity: 0.15;
+                                        width: 100%;
+                                        margin-top: 10px;
+                                        //background-color: white;
+                                        //margin: 0 10px 0 10px;
+                                    `}
+                                ></div>
+                            )}
                         </CanvasElementItemRegion>
                     )}
+
                     {anyFixedInPlace && (
                         <CanvasElementItemRegion
                             // Items in this region are draggable in Start mode, but not in Play mode.
@@ -1208,31 +1225,34 @@ const DragActivityControls: React.FunctionComponent<{
                             theme="blueOnTan"
                         >
                             <CanvasElementItemRow>
-                                <CanvasElementTextItem
-                                    css={textItemCss}
-                                    l10nKey="EditTab.Toolbox.DragActivity.InstructionsOrLabels"
-                                    makeTarget={false}
-                                />
-                            </CanvasElementItemRow>
-                            <CanvasElementItemRow>
                                 <CanvasElementImageItem
                                     makeTarget={false}
                                     color={kBloomBlue}
                                     strokeColor={kBloomBlue}
                                 />
                                 <CanvasElementRectangleItem />
-                                {/* built in to current activities
-                            <CanvasElementButtonItem
-                                l10nKey="EditTab.Toolbox.DragActivity.CheckAnswer"
-                                addClasses="check-button"
-                                contentL10nKey="EditTab.Toolbox.DragActivity.Check"
-                                hintL10nKey="EditTab.Toolbox.DragActivity.CheckHint"
-                                userDefinedStyleName="GameButton"
-                            /> */}
+                                <CanvasElementVideoItem />
                             </CanvasElementItemRow>
                             <CanvasElementItemRow>
-                                <CanvasElementVideoItem />
                                 <CanvasElementGifItem />
+                            </CanvasElementItemRow>
+                            <CanvasElementItemRow>
+                                <CanvasElementTextItem
+                                    css={labelTextItemCss}
+                                    l10nKey="EditTab.Toolbox.DragActivity.TargetLabel"
+                                    makeTarget={false}
+                                    userDefinedStyleName="GameTargetLabel"
+                                    defaultStyleProps={{
+                                        fontSize: "45px",
+                                        lineHeight: "1"
+                                    }}
+                                />
+                                <CanvasElementTextItem
+                                    css={headerTextItemCss}
+                                    l10nKey="EditTab.Toolbox.DragActivity.Header"
+                                    makeTarget={false}
+                                    userDefinedStyleName="GameHeader"
+                                />
                             </CanvasElementItemRow>
                         </CanvasElementItemRegion>
                     )}
@@ -1365,15 +1385,28 @@ const DragActivityControls: React.FunctionComponent<{
     );
 };
 
-const textItemCss = css`
-    margin-left: 5px;
-    text-align: center; // Center the text horizontally
-    padding: 2px 0.5em;
-    vertical-align: middle;
-    color: "white";
-    background-color: ${kBloomBlue};
-    border: 1px dotted ${kBloomBlue};
-`;
+function textItemCss(
+    fontSize: string = "larger",
+    darkBackground: boolean = false,
+    radius: string = "0"
+) {
+    return css`
+        margin-left: 5px;
+        text-align: center; // Center the text horizontally
+        padding: 5px 0.5em;
+        vertical-align: middle;
+        color: ${darkBackground ? "white" : kBloomBlue};
+        background-color: ${darkBackground ? kBloomBlue : "white"};
+        border-radius: ${radius};
+        font-size: ${fontSize};
+    `;
+}
+
+const headerTextItemCss = textItemCss("larger", true);
+
+const labelTextItemCss = textItemCss("larger", false);
+
+const draggableWordCss = textItemCss("20px", true, "5px");
 
 const playAudioCss = css`
     margin-left: 10px;
@@ -1408,7 +1441,7 @@ const CorrectWrongControls: React.FunctionComponent<{
                 </CanvasElementItemRow>
                 <CanvasElementItemRow>
                     <CanvasElementTextItem
-                        css={textItemCss}
+                        css={headerTextItemCss}
                         l10nKey="EditTab.Toolbox.DragActivity.TextToPutOnThePage"
                         makeTarget={false}
                         addClasses={props.classToAddToItems}
