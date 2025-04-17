@@ -1,5 +1,15 @@
 // AlignmentManager.ts
 // A class that helps visually align elements during drag operations by showing red lines
+//
+// ALIGNMENT RULES:
+// 1. When a dragged element aligns with another element, show a red alignment line
+// 2. Alignment lines should extend through ALL elements that are aligned at the same position
+// 3. For horizontal alignment (top/middle/bottom), lines should span from the leftmost edge
+//    to the rightmost edge of any aligned elements
+// 4. For vertical alignment (left/center/right), lines should span from the topmost edge
+//    to the bottommost edge of any aligned elements
+// 5. Lines should NOT extend beyond the aligned elements to the edge of the screen
+// 6. Check for alignment within a threshold (currently 4px) to make alignment "snap" feel natural
 
 /**
  * Represents an alignment position (horizontal or vertical)
@@ -27,7 +37,7 @@ interface AlignmentLine {
 export class AlignmentManager {
     private elements: HTMLElement[] = [];
     private alignmentLines: AlignmentLine[] = [];
-    private readonly ALIGNMENT_THRESHOLD = 1;
+    private readonly ALIGNMENT_THRESHOLD = 4;
 
     constructor() {
         this.createAlignmentLines();
@@ -148,8 +158,7 @@ export class AlignmentManager {
      * Check for horizontal alignment (top, middle, bottom)
      * @param dragElement Element being dragged
      * @private
-     */
-    private checkHorizontalAlignment(dragElement: HTMLElement): void {
+     */ private checkHorizontalAlignment(dragElement: HTMLElement): void {
         const dragRect = dragElement.getBoundingClientRect();
         const dragTop = dragRect.top;
         const dragMiddle = dragTop + dragRect.height / 2;
@@ -436,7 +445,6 @@ export class AlignmentManager {
             }
         });
     }
-
     /**
      * Show an alignment line at the given position
      * @param position Alignment position
@@ -445,8 +453,7 @@ export class AlignmentManager {
      * @param dragElementEnd Drag element's end position (right for horizontal, bottom for vertical)
      * @param alignedElementCoord Aligned element's coordinate that matched
      * @private
-     */
-    private showAlignmentLine(
+     */ private showAlignmentLine(
         position: AlignmentPosition,
         coordinate: number,
         dragElementStart: number,
@@ -464,39 +471,110 @@ export class AlignmentManager {
             position === AlignmentPosition.Middle ||
             position === AlignmentPosition.Bottom;
 
+        // Get the element that initially triggered this alignment
+        const initialAlignedElement = this.elements.find(elem => {
+            const rect = elem.getBoundingClientRect();
+            if (isHorizontal) {
+                return (
+                    rect.left === alignedElementCoord ||
+                    rect.left + rect.width / 2 === alignedElementCoord ||
+                    rect.left + rect.width === alignedElementCoord
+                );
+            } else {
+                return (
+                    rect.top === alignedElementCoord ||
+                    rect.top + rect.height / 2 === alignedElementCoord ||
+                    rect.top + rect.height === alignedElementCoord
+                );
+            }
+        });
+
         if (isHorizontal) {
             // Horizontal line
             line.style.top = `${coordinate}px`;
 
-            // For horizontal lines, extend from the drag element to the aligned element
-            const left =
-                alignedElementCoord < dragElementStart
-                    ? alignedElementCoord
-                    : dragElementStart;
-            const right =
-                alignedElementCoord > dragElementEnd
-                    ? alignedElementCoord
-                    : dragElementEnd;
+            // Initialize with the dragged element and the initially aligned element
+            let mostLeftElement = dragElementStart;
+            let mostRightElement = dragElementEnd;
 
-            line.style.left = `${left}px`;
-            line.style.width = `${right - left}px`;
+            if (initialAlignedElement) {
+                const alignedRect = initialAlignedElement.getBoundingClientRect();
+                mostLeftElement = Math.min(mostLeftElement, alignedRect.left);
+                mostRightElement = Math.max(
+                    mostRightElement,
+                    alignedRect.right
+                );
+            }
+
+            // Check all elements for potential alignment at this coordinate
+            // This extends the line through ALL aligned elements
+            this.elements.forEach(elem => {
+                if (elem === initialAlignedElement) return; // Skip the initial element as we already processed it
+
+                const rect = elem.getBoundingClientRect();
+
+                // Check if this element also aligns horizontally at this coordinate
+                if (
+                    Math.abs(rect.top - coordinate) <=
+                        this.ALIGNMENT_THRESHOLD ||
+                    Math.abs(rect.top + rect.height / 2 - coordinate) <=
+                        this.ALIGNMENT_THRESHOLD ||
+                    Math.abs(rect.top + rect.height - coordinate) <=
+                        this.ALIGNMENT_THRESHOLD
+                ) {
+                    // Update the leftmost and rightmost coordinates if needed
+                    mostLeftElement = Math.min(mostLeftElement, rect.left);
+                    mostRightElement = Math.max(mostRightElement, rect.right);
+                }
+            });
+
+            line.style.left = `${mostLeftElement}px`;
+            line.style.width = `${mostRightElement - mostLeftElement}px`;
             line.style.height = "1px"; // 1px thin line
         } else {
             // Vertical line
             line.style.left = `${coordinate}px`;
 
-            // For vertical lines, extend from the drag element to the aligned element
-            const top =
-                alignedElementCoord < dragElementStart
-                    ? alignedElementCoord
-                    : dragElementStart;
-            const bottom =
-                alignedElementCoord > dragElementEnd
-                    ? alignedElementCoord
-                    : dragElementEnd;
+            // Initialize with the dragged element and the initially aligned element
+            let mostTopElement = dragElementStart;
+            let mostBottomElement = dragElementEnd;
 
-            line.style.top = `${top}px`;
-            line.style.height = `${bottom - top}px`;
+            if (initialAlignedElement) {
+                const alignedRect = initialAlignedElement.getBoundingClientRect();
+                mostTopElement = Math.min(mostTopElement, alignedRect.top);
+                mostBottomElement = Math.max(
+                    mostBottomElement,
+                    alignedRect.bottom
+                );
+            }
+
+            // Check all elements for potential alignment at this coordinate
+            // This extends the line through ALL aligned elements
+            this.elements.forEach(elem => {
+                if (elem === initialAlignedElement) return; // Skip the initial element as we already processed it
+
+                const rect = elem.getBoundingClientRect();
+
+                // Check if this element also aligns vertically at this coordinate
+                if (
+                    Math.abs(rect.left - coordinate) <=
+                        this.ALIGNMENT_THRESHOLD ||
+                    Math.abs(rect.left + rect.width / 2 - coordinate) <=
+                        this.ALIGNMENT_THRESHOLD ||
+                    Math.abs(rect.left + rect.width - coordinate) <=
+                        this.ALIGNMENT_THRESHOLD
+                ) {
+                    // Update the topmost and bottommost coordinates if needed
+                    mostTopElement = Math.min(mostTopElement, rect.top);
+                    mostBottomElement = Math.max(
+                        mostBottomElement,
+                        rect.bottom
+                    );
+                }
+            });
+
+            line.style.top = `${mostTopElement}px`;
+            line.style.height = `${mostBottomElement - mostTopElement}px`;
             line.style.width = "1px"; // 1px thin line
         }
     }
