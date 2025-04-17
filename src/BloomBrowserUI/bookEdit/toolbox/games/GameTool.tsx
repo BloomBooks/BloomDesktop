@@ -1396,6 +1396,8 @@ const CorrectWrongControls: React.FunctionComponent<{
                     <CanvasElementImageItem
                         makeTarget={false}
                         addClasses={props.classToAddToItems}
+                        color={kBloomBlue}
+                        strokeColor={kBloomBlue}
                     />
                     <CanvasElementVideoItem
                         addClasses={props.classToAddToItems}
