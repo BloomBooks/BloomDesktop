@@ -4552,6 +4552,7 @@ export class CanvasElementManager {
         xmlns="http://www.w3.org/2000/svg"
     >
         <rect
+            x="0.575684"
             width="31"
             height="31"
             rx="1.81232"
