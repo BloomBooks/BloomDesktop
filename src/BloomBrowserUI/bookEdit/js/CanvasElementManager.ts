@@ -41,7 +41,9 @@ import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
     kCanvasElementClass,
     kCanvasElementSelector,
-    kHasCanvasElementClass
+    kHasCanvasElementClass,
+    snapBoundsToGrid,
+    GRID_SIZE
 } from "../toolbox/overlay/canvasElementUtils";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
@@ -1519,10 +1521,24 @@ export class CanvasElementManager {
                     break;
             }
         }
-        style.width = newWidth + "px";
-        style.height = newHeight + "px";
-        style.top = newTop + "px";
-        style.left = newLeft + "px";
+
+        // Snap the final calculated bounds before applying
+        const snappedBounds = snapBoundsToGrid(
+            {
+                x: newLeft,
+                y: newTop,
+                width: newWidth,
+                height: newHeight
+            },
+            event.ctrlKey, // Pass CTRL key state
+            GRID_SIZE
+        );
+
+        style.width = snappedBounds.width + "px";
+        style.height = snappedBounds.height + "px";
+        style.top = snappedBounds.y + "px";
+        style.left = snappedBounds.x + "px";
+
         // Now, if the image is not cropped, it will resize automatically (width: 100% from
         // stylesheet, height unset so automatically scales with width). If it is cropped,
         // we need to resize it so that it stays the same amount cropped visually.
@@ -3453,14 +3469,34 @@ export class CanvasElementManager {
                 return;
             }
 
+            const rawX = this.lastMoveEvent.pageX - this.bubbleDragGrabOffset.x;
+            const rawY = this.lastMoveEvent.pageY - this.bubbleDragGrabOffset.y;
+            const draggedElement = this.bubbleToDrag.content;
+
+            // Snap bounds before creating the Point
+            // Note: We only snap the position (x, y) here. The dimensions (width, height)
+            // are passed just for the snapDimensionsToGrid check inside snapBoundsToGrid,
+            // but the returned width/height are ignored as dragging doesn't change size.
+            const snappedBounds = snapBoundsToGrid(
+                {
+                    x: rawX,
+                    y: rawY,
+                    width: draggedElement.offsetWidth,
+                    height: draggedElement.offsetHeight
+                },
+                this.lastMoveEvent.ctrlKey, // Pass CTRL key state
+                GRID_SIZE
+            );
+
             const newPosition = new Point(
-                this.lastMoveEvent.pageX - this.bubbleDragGrabOffset.x,
-                this.lastMoveEvent.pageY - this.bubbleDragGrabOffset.y,
+                snappedBounds.x, // Use snapped X
+                snappedBounds.y, // Use snapped Y
                 PointScaling.Scaled,
                 "Created by handleMouseMoveDragCanvasElement()"
             );
+
             this.adjustCanvasElementLocation(
-                this.bubbleToDrag.content,
+                draggedElement,
                 this.lastMoveContainer,
                 newPosition
             );

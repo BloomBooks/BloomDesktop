@@ -48,7 +48,10 @@ import {
     CanvasElementManager,
     kBackgroundImageClass
 } from "../../js/CanvasElementManager";
-import { getCanvasElementManager } from "../overlay/canvasElementUtils";
+import {
+    getCanvasElementManager,
+    snapPositionToGrid
+} from "../overlay/canvasElementUtils";
 import { ThemeChooser } from "./ThemeChooser";
 import GameIntroText, { Instructions } from "./GameIntroText";
 import { getGameType, isPageBloomGame } from "./GameInfo";
@@ -482,6 +485,14 @@ const dragTarget = (e: MouseEvent) => {
     // relative to the mouse.
     let x = e.clientX / scale - targetClickOffsetLeft;
     let y = e.clientY / scale - targetClickOffsetTop;
+
+    // If CTRL key is not pressed, snap to grid
+    if (!e.ctrlKey) {
+        const snapped = snapPositionToGrid(x, y);
+        x = snapped.x;
+        y = snapped.y;
+    }
+
     let deltaMin = Number.MAX_VALUE;
     let deltaRowMin = Number.MAX_VALUE;
     const width = targetBeingDragged.offsetWidth;
@@ -1968,8 +1979,11 @@ export const makeTargetForDraggable = (
     }
     // Review: can we do any more to make sure it's visible and not overlapping canvas element?
     // Should we try to avoid overlapping other canvas elements and/or targets?
-    target.style.left = `${newLeft}px`;
-    target.style.top = `${newTop}px`;
+
+    // Snap the target position to the grid
+    const snapped = snapPositionToGrid(newLeft, newTop);
+    target.style.left = `${snapped.x}px`;
+    target.style.top = `${snapped.y}px`;
     target.style.width = `${width}px`;
     target.style.height = `${height}px`;
     // This allows it to get focus, which allows it to get the shadow effect we want when
