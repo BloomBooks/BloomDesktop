@@ -44,6 +44,10 @@ import {
 import { splitIntoGraphemes } from "../../../utils/textUtils";
 import { kCanvasElementClass } from "../overlay/canvasElementUtils";
 import { kBloomCanvasSelector } from "../../js/bloomImages";
+import OverflowChecker from "../../OverflowChecker/OverflowChecker";
+import { doesContainingPageHaveSameSizeMode } from "./gameUtilities";
+import { max } from "underscore";
+import { _0 } from "../../../react_components/Progress/ProgressBar.stories";
 
 export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> = props => {
     const promptL10nId = props.prompt?.getAttribute("data-caption-l10nid");
@@ -357,6 +361,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         if (!promptEditable) {
             throw new Error("No promptEditable in dragActivity");
         }
+
         promptEditable.innerHTML = editable.innerHTML; // copy back to the permanent element so it gets saved.
         const promptText = editable.textContent ?? "";
         // Split the prompt text into letter groups consisting of a base letter and any combining marks.
@@ -368,77 +373,134 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         // any letters. (Can become display:none if we have no letters.)
         setDraggableText(draggables[0], letters[0]);
         draggables[0].classList.remove("bloom-unused-in-lang");
-        const separation = draggables[0].offsetWidth + 15; // enhance: may want to increase this
-        // How many can we fit in one row inside the parent?
-        const maxBubbles = Math.floor(
-            (draggables[0].parentElement?.offsetWidth ?? 0 - draggableX) /
-                separation
-        );
+        const separation = 15; // enhance: may want to increase this
+
         // truncate to the number of draggables we can display
         // This is important because (e.g., with autorepeat or paste) we can get a massive number of draggables
         // very quickly, and performance degrades badly, making it hard to recover. Also, until the page relaods,
         // ones beyond this would be off-page and difficult to deal with. And when it does reload they will all
         // be on top of each other and only just visible.
-        letters.splice(maxBubbles);
         const newBubbles: HTMLElement[] = [];
-        if (draggables.length < letters.length) {
+        const makeNewDraggable = () => {
             // We have more letters than draggables. We'll add more draggables.
             const lastDraggable = draggables[draggables.length - 1];
-            for (let i = draggables.length; i < letters.length; i++) {
-                const newDraggable = lastDraggable.cloneNode(
-                    true
-                ) as HTMLElement;
-                setGeneratedDraggableId(newDraggable);
-                // Ensure the new draggable starts out empty.  See BL-14348.
-                // (This covers all languages present, visible or not.)
-                const paras = newDraggable.querySelectorAll(
-                    "div.Letter-style>p"
-                );
-                paras.forEach(p => {
-                    p.textContent = "";
-                    GameTool.setBlankClass(p.parentElement as HTMLElement);
-                });
-                lastDraggable.parentElement?.appendChild(newDraggable);
-                makeTargetForDraggable(newDraggable);
-                // It's available to push letter groups into
-                draggables.push(newDraggable);
-                // It needs refreshBubbleEditing to be called on it later.
-                newBubbles.push(newDraggable);
-                // It should be removed if we Cancel. This list has a longer lifetime.
-                createdBubbles.push(newDraggable);
-            }
-        }
+            const newDraggable = lastDraggable.cloneNode(true) as HTMLElement;
+            setGeneratedDraggableId(newDraggable);
+            // Ensure the new draggable starts out empty.  See BL-14348.
+            // (This covers all languages present, visible or not.)
+            const paras = newDraggable.querySelectorAll("div.Letter-style>p");
+            paras.forEach(p => {
+                p.textContent = "";
+                GameTool.setBlankClass(p.parentElement as HTMLElement);
+            });
+            lastDraggable.parentElement?.appendChild(newDraggable);
+            makeTargetForDraggable(
+                newDraggable,
+                page.getElementsByClassName("bloom-target-row")[0] as
+                    | HTMLElement
+                    | undefined
+            );
+            // It's available to push letter groups into
+            draggables.push(newDraggable);
+            // It needs refreshBubbleEditing to be called on it later.
+            newBubbles.push(newDraggable);
+            // It should be removed if we Cancel. This list has a longer lifetime.
+            createdBubbles.push(newDraggable);
+        };
+        // We need this loop to run over all the draggables and all the letters.
+        // When there are more letters than draggables, we will add a new one if there is room.
+        // When there are more draggables, or no more room, the remaining ones will be set
+        // empty for this language.
+        const iterations = Math.max(letters.length, draggables.length);
+        const minHeight = 50; // Enhance: get from page somehow
+        const minWidth = 50; // Enhance: get from page somehow
+        let newHeight = minHeight;
         // We deliberately don't remove draggables we don't need for this word. They might be in use
         // in some other language. This loop, as well as making the ones we want have the right content,
         // makes the ones we don't want invisible and empty.
-        for (let i = 0; i < draggables.length; i++) {
-            setDraggableText(draggables[i], letters[i]);
-            // up to the number of letters we have, they should be visible; others, not.
-            draggables[i].classList.toggle(
-                "bloom-unused-in-lang",
-                i >= letters.length
-            );
-            getTarget(draggables[i])?.classList.toggle(
-                "bloom-unused-in-lang",
-                i >= letters.length
-            );
-            copyContentToTarget(draggables[i]);
-        }
-        const shuffledDraggables = draggables.slice();
-        shuffledDraggables.splice(letters.length); // don't want any invisible ones taking up space
-        shuffle(shuffledDraggables, isTheTextInDraggablesTheSame);
-        for (let i = 0; i < shuffledDraggables.length; i++) {
-            shuffledDraggables[i].style.left = `${draggableX +
-                i * separation}px`;
-            shuffledDraggables[i].style.top = `${draggableY}px`;
-            // Note that we use draggables, not shuffledDraggables, here. We want the targets
-            // in the correct order, not the random order.
-            const t = getTarget(draggables[i]);
-            if (t) {
-                t.style.left = `${targetX + i * separation}px`;
-                t.style.top = `${targetY}px`;
+        for (let i = 0; i < iterations; i++) {
+            if (i >= draggables.length) {
+                makeNewDraggable();
+            }
+            const draggable = draggables[i];
+            const target = getTarget(draggable) as HTMLElement;
+            let stopMakingLetters = false;
+            if (i < letters.length) {
+                draggable.classList.remove("bloom-unused-in-lang");
+                target.classList.remove("bloom-unused-in-lang");
+                setDraggableText(draggable, letters[i]);
+                copyContentToTarget(draggable);
+                target.style.width = `${minWidth}px`;
+                target.style.height = `${minHeight}px`;
+                // We'll measure the overflow of the target, because it has the extra border,
+                // so it can actually overflow when the draggable doesn't.
+                const editable = target?.getElementsByClassName(
+                    "bloom-visibility-code-on"
+                )[0] as HTMLElement;
+                // as currently implemented these indicate the overflow of the editable. But it may be bigger than the
+                // target, and certainly does not allow for a border on the target.
+                const [
+                    overflowX,
+                    overflowY
+                ] = OverflowChecker.getSelfOverflowAmounts(editable);
+                const row = target.parentElement as HTMLElement;
+                const bloomCanvas = row.parentElement as HTMLElement;
+                // The width the editable is currently, plus any overflow, plus the target border and padding in that direction.
+                const newWidth =
+                    overflowX +
+                    editable.offsetWidth +
+                    (target.offsetWidth - target.clientWidth);
+                if (
+                    row.offsetLeft + target.offsetLeft + newWidth >
+                    bloomCanvas.clientWidth
+                ) {
+                    // This one won't fit. We'll stop without adding it.
+                    stopMakingLetters = true;
+                } else {
+                    draggable.style.width = `${newWidth}px`;
+                    target.style.width = `${newWidth}px`;
+                    newHeight = Math.max(
+                        newHeight,
+                        // again, the actual height of the editable, plus our overflow estimate, plus any padding and border of the target.
+                        overflowY +
+                            editable.offsetHeight +
+                            (target.offsetHeight - target.clientHeight)
+                    );
+                }
+            } else {
+                stopMakingLetters = true;
+            }
+            if (stopMakingLetters) {
+                // either added them all or ran out of space
+                // We have more draggables than letters. Set the extra ones empty and invisible.
+                // (Don't delete them, because they might be in use in some other language.)
+                setDraggableText(draggable, "");
+                copyContentToTarget(draggable);
+                draggable.classList.add("bloom-unused-in-lang");
+                target.classList.add("bloom-unused-in-lang");
+                draggable.style.width = `${minWidth}px`;
+                draggable.style.height = `${minHeight}px`;
+                target.style.width = `${minWidth}px`;
+                target.style.height = `${minHeight}px`;
             }
         }
+        for (const d of draggables) {
+            d.style.height = `${newHeight}px`;
+            const target = getTarget(d) as HTMLElement;
+            target.style.height = `${newHeight}px`;
+        }
+        const shuffledDraggables = draggables.slice(
+            0,
+            letters.length
+        ) as HTMLElement[]; // don't want any invisible ones taking up space
+        shuffle(shuffledDraggables, isTheTextInDraggablesTheSame);
+        let left = draggableX;
+        for (let i = 0; i < shuffledDraggables.length; i++) {
+            shuffledDraggables[i].style.left = `${left}px`;
+            left += shuffledDraggables[i].offsetWidth + separation;
+            shuffledDraggables[i].style.top = `${draggableY}px`;
+        }
+        // Target shouldn't need adjusting, but we'll show the arrow for this one.
         adjustTarget(draggables[0], getTarget(draggables[0]), true);
         // Must do this AFTER we finish setting the content. Among many other things it does,
         // it will attach a ckeditor to the new editable. That does very complex things
@@ -453,6 +515,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 false // don't make it active.
             );
         });
+
         // This seems to at least somewhat reduce the likelihood of losing focus
         // after a keystroke, especially with Keyman multi-character inserts (BL-14098).
         // I think it is harmless, since I can't think of any case where the text in the
