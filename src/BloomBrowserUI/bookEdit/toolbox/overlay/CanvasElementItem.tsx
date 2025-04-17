@@ -18,6 +18,10 @@ import { getCanvasElementManager } from "./canvasElementUtils";
 import { getTarget } from "bloom-player";
 import { doesContainingPageHaveSameSizeMode } from "../games/gameUtilities";
 import { AudioIcon } from "../../../react_components/icons/AudioIcon";
+import {
+    StyleDefnProps,
+    createStyleDefnIfUnknown
+} from "../../StyleEditor/StyleEditor";
 
 export type CanvasElementType =
     | "image"
@@ -69,7 +73,11 @@ const ondragend = (
     hintL10nKey?: string,
     // Anything extra the client wants to do to the canvas element
     extraAction?: (top: HTMLElement) => void,
-    userDefinedStyleName?: string // canvas element should get this plus "-style" (or Bubble-style) in class list
+    // canvas element should get this plus "-style" (or Bubble-style) in class list
+    userDefinedStyleName?: string,
+    // If there is no existing definition for userDefinedStyleName (and that is non-empty),
+    // create one with these properties. If userDefinedStyleName is falsy, this is ignored.
+    undefinedStyleProps?: StyleDefnProps
 ) => {
     const canvasElementManager = getCanvasElementManager();
     if (!canvasElementManager) {
@@ -100,6 +108,10 @@ const ondragend = (
     if (extraAction) {
         extraAction(canvasElement);
     }
+    if (undefinedStyleProps && userDefinedStyleName) {
+        createStyleDefnIfUnknown(userDefinedStyleName, undefinedStyleProps);
+    }
+
     if (addClasses) {
         // trim because an exception is thrown if we try to add a class that is empty,
         // which we will otherwise do if there is a leading or trailing space.
@@ -277,13 +289,27 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
     makeMatchingTextBox?: boolean;
     addClasses?: string;
     extraAction?: (top: HTMLElement) => void;
+    // Objects to drag during play (ones that don't have an opaque background) want a shadow rectangle
+    // around them. If it didn't depend on the particular icon, we could just make this depend on
+    // makeTarget, but as it is, it seems better to have a separate prop.
+    showOuterRectangle?: boolean;
 }> = props => {
+    const buttonBorder = `&:after {content: "";
+    border: 2px solid ${kBloomBlue};
+    position: absolute;
+    top:-5px; left: -5px; right: -5px; bottom: -5px;
+    border-radius: 5px;
+    pointer-events: none;
+    opacity: 0.15;}`;
+    const size = props.showOuterRectangle ? "40px" : "50px";
     return (
         <div // infuriatingly, svgs don't support draggable, so we have to wrap.
             css={css`
-                width: 50px;
-                height: 50px;
+                width: ${size};
+                height: ${size};
                 cursor: grab;
+                position: relative;
+                ${props.showOuterRectangle ? buttonBorder : ""}
             `}
             draggable={true}
             onDragStart={ev => ondragstart(ev, props.canvasElementType)}
@@ -311,6 +337,7 @@ export const CanvasElementImageItem: React.FunctionComponent<{
     addClasses?: string;
     color?: string;
     strokeColor?: string;
+    showOuterRectangle?: boolean;
 }> = props => {
     return (
         <CanvasElementSvgItem
@@ -318,11 +345,12 @@ export const CanvasElementImageItem: React.FunctionComponent<{
             makeTarget={props.makeTarget}
             makeMatchingTextBox={props.makeMatchingTextBox}
             addClasses={props.addClasses}
+            showOuterRectangle={props.showOuterRectangle}
         >
             <ImagePlaceholderIcon
                 css={css`
-                    width: 50px;
-                    height: 50px;
+                    width: 100%;
+                    height: 100%;
                     cursor: grab;
                 `}
                 color={props.color}
@@ -425,17 +453,19 @@ export const CanvasElementVideoItem: React.FunctionComponent<{
     makeTarget?: boolean;
     // We could easily add makeTarget?: boolean; but we don't want to allow video dragging in the finished book
     addClasses?: string;
+    showOuterRectangle?: boolean;
 }> = props => {
     return (
         <CanvasElementSvgItem
             canvasElementType={"video"}
             addClasses={props.addClasses}
             makeTarget={props.makeTarget}
+            showOuterRectangle={props.showOuterRectangle}
         >
             <SignLanguageIcon
                 css={css`
-                    width: 50px;
-                    height: 50px;
+                    width: 100%;
+                    height: 100%;
                     cursor: grab;
                 `}
                 color={kBloomBlue}
@@ -488,6 +518,7 @@ const CanvasElementBaseTextItem: React.FunctionComponent<{
     hintL10nKey?: string;
     hide?: boolean; // If true, we don't want this item at all.
     userDefinedStyleName?: string;
+    undefinedStyleProps?: StyleDefnProps;
 }> = props => {
     if (props.hide) {
         return null;
@@ -508,7 +539,8 @@ const CanvasElementBaseTextItem: React.FunctionComponent<{
                     props.contentL10nKey,
                     props.hintL10nKey,
                     undefined,
-                    props.userDefinedStyleName
+                    props.userDefinedStyleName,
+                    props.undefinedStyleProps
                 )
             }
         ></Span>
@@ -524,6 +556,7 @@ export const CanvasElementTextItem: React.FunctionComponent<{
     hintL10nKey?: string;
     hide?: boolean; // If true, we don't want this item at all.
     userDefinedStyleName?: string;
+    undefinedStyleProps?: StyleDefnProps;
 }> = props => {
     return <CanvasElementBaseTextItem {...props} canvasElementType="none" />;
 };
@@ -586,7 +619,7 @@ export const CanvasElementItemRow: React.FunctionComponent<{
                 width: 100%;
                 height: 50px;
                 align-items: center; // vertical
-                justify-content: space-around; // horizontal
+                justify-content: space-evenly; // horizontal
                 margin-right: 4px; // matches the space on the left
 
                 // Each row gets a little vertical cushion
@@ -622,6 +655,7 @@ export const CanvasElementItemRegion: React.FunctionComponent<{
                     css={css`
                         color: ${fgColor};
                         font-weight: bold;
+                        font-size: 14px;
                     `}
                     l10nKey={
                         props.l10nKey ??
