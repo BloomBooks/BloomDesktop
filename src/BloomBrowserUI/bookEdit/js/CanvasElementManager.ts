@@ -4541,7 +4541,9 @@ export class CanvasElementManager {
             kImageContainerClass + " bloom-leadingElement";
         // This svg is basically the same as the one in AudioIcon.tsx.
         // Likely, changes to one should be mirrored in the other.
-        const html = `<div tabindex='0' class='bloom-unmodifiable-image bloom-svg bloom-svg-rect-has-color ${standardImageClasses}'>
+        //
+        // The data-icon-type is so we can, in the future, find these and migrate/update them.
+        const html = `<div tabindex='0' class='bloom-unmodifiable-image bloom-svg ${standardImageClasses}' data-icon-type='audio'>
     <svg
         viewBox="0 0 31 31"
         fill="none"
@@ -4552,11 +4554,11 @@ export class CanvasElementManager {
             width="31"
             height="31"
             rx="1.81232"
-            fill="black"
+            fill="var(--draggable-background-color, black)"
         />
         <path
             d="M23.0403 9.12744C24.8868 10.8177 25.9241 13.11 25.9241 15.5C25.9241 17.8901 24.8868 20.1823 23.0403 21.8726M19.5634 12.3092C20.4867 13.1544 21.0053 14.3005 21.0053 15.4955C21.0053 16.6906 20.4867 17.8367 19.5634 18.6818M15.0917 9.19054L10.1669 12.796H6.22705V18.2041H10.1669L15.0917 21.8095V9.19054Z"
-            stroke="white"
+            stroke="var(--draggable-color, white)"
             strokeWidth="1.15865"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -4591,23 +4593,32 @@ export class CanvasElementManager {
         );
         // reorder it after the element with class kBackgroundImageClass. This puts it in front of
         // the background but but behind the other canvas elements it is meant to frame.
-        const bloomCanvas = bloomCanvasJQuery.get(0);
+        this.reorderRectangleCanvasElement(result, bloomCanvasJQuery.get(0));
+        return result;
+    }
+
+    // Put the rectangle in the right place in the DOM so it is behind the other canvas elements
+    // but in front of the background image.  Also adjust the ComicalJS bubble level so it is in
+    // front of the the background image.
+    private reorderRectangleCanvasElement(
+        rectangle: HTMLElement,
+        bloomCanvas: HTMLElement
+    ): void {
         const backgroundImage = bloomCanvas.getElementsByClassName(
             kBackgroundImageClass
         )[0] as HTMLElement;
         if (backgroundImage) {
-            bloomCanvas.insertBefore(result, backgroundImage.nextSibling);
+            bloomCanvas.insertBefore(rectangle, backgroundImage.nextSibling);
             // Being first in document order gives it the right z-order, but it also has to be
             // in the right sequence by ComicalJs Bubble level for the hit test to work right.
             CanvasElementManager.putBubbleBefore(
-                result,
+                rectangle,
                 (Array.from(
                     bloomCanvas.getElementsByClassName(kCanvasElementClass)
                 ) as HTMLElement[]).filter(x => x !== backgroundImage),
                 Bubble.getBubbleSpec(backgroundImage).level + 1
             );
         }
-        return result;
     }
 
     private finishAddingCanvasElement(
@@ -4863,7 +4874,14 @@ export class CanvasElementManager {
                 bubbleSpecToDuplicate,
                 sameLocation
             );
-
+            if (result) {
+                const isRectangle =
+                    result.getElementsByClassName("bloom-rectangle").length > 0;
+                if (isRectangle) {
+                    // adjust the new rectangle's z-order and comical level to match the original.
+                    this.reorderRectangleCanvasElement(result, bloomCanvas);
+                }
+            }
             // The JQuery resizable event handler needs to be removed after the duplicate canvas element
             // family is created, and then the over picture editing needs to be initialized again.
             // See BL-13617.
