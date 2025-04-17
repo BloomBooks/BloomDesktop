@@ -36,6 +36,7 @@ import { RenderRoot } from "./AudioHilitePage";
 import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
 import { CanvasElementManager } from "../js/CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
+import { getPageIFrame } from "../../utils/shared";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -64,6 +65,51 @@ interface IFormattingValues {
     hiliteTextColor: string | undefined;
     hiliteBgColor: string;
     padding: string;
+}
+
+// Props we know how to set in creating a user-defined style.
+// I just did the ones we needed. More can easily be added.
+// These currently apply to all languages. This means that font-family should NOT be added.
+export interface StyleDefnProps {
+    fontSize?: string;
+    lineHeight?: string;
+}
+
+// If the document doesn't already have a user-defined style with the specified name,
+// (which should not include the -style suffix), create one with the specified styles.
+export function createStyleDefnIfUnDefined(
+    styleNamePlain: string,
+    styles: StyleDefnProps,
+    supportFilesRoot: string = ""
+): CSSStyleRule | null {
+    const styleName = styleNamePlain + "-style";
+    const styleEditor = new StyleEditor(supportFilesRoot);
+    const rule = styleEditor.GetRuleForStyle(
+        styleName,
+        "",
+        false // don't create it if it doesn't exist
+    );
+    if (rule) {
+        return null; // already exists, nothing to do
+    }
+    const newRule = styleEditor.GetRuleForStyle(
+        styleName,
+        "",
+        true // create it if it doesn't exist
+    );
+    if (newRule && styles.fontSize) {
+        newRule.style.setProperty("font-size", styles.fontSize, "important");
+    }
+    if (newRule && styles.lineHeight) {
+        newRule.style.setProperty(
+            "line-height",
+            styles.lineHeight,
+            "important"
+        );
+    }
+    // As you add to this,some props may need to be applied to the paragraph inside.
+    // Pay attention to the setter for the corresponding properry in the dialog event handlers.
+    return newRule;
 }
 
 // Class provides a convenient way to group a style id and display name
@@ -252,8 +298,8 @@ export default class StyleEditor {
     // but not impossible to override with a custom definition.
     public getFormattingStyles(): FormattingStyle[] {
         const styles: FormattingStyle[] = [];
-        for (let i = 0; i < document.styleSheets.length; i++) {
-            const sheet = document.styleSheets[i] as CSSStyleSheet;
+        for (let i = 0; i < this.getDocument().styleSheets.length; i++) {
+            const sheet = this.getDocument().styleSheets[i] as CSSStyleSheet;
             let rules: CSSRuleList | null = null;
             try {
                 rules = sheet?.cssRules;
@@ -394,13 +440,13 @@ export default class StyleEditor {
      */
     private getBookNonInlineStyleSheets(): CSSStyleSheet[] {
         const styleSheets: CSSStyleSheet[] = [];
-        for (let i = 0; i < document.styleSheets.length; ++i) {
-            styleSheets.push(document.styleSheets[i]);
+        for (let i = 0; i < this.getDocument().styleSheets.length; ++i) {
+            styleSheets.push(this.getDocument().styleSheets[i]);
         }
 
         // We expect the document path to look like this:
         // http://localhost:8089/bloom/[pathToBook]/currentPage-memsim-Normal.html'
-        const lowercaseHref = document.location.href.toLowerCase();
+        const lowercaseHref = this.getDocument().location.href.toLowerCase();
         const expectedLowercaseEnding = "/currentpage-memsim-normal.html"; // Note: the actual page name has a couple capital letters; this is the lowercased version
         const isExpectedForm = lowercaseHref.endsWith(expectedLowercaseEnding);
         console.assert(
@@ -417,7 +463,7 @@ export default class StyleEditor {
 
         // Our searching / validation was case-insensitive (by converting to lowercase),
         // but now we want to resume with the properly-cased version.
-        const urlToBookDirectory = document.location.href.substring(
+        const urlToBookDirectory = this.getDocument().location.href.substring(
             0,
             endingStartIndex
         );
@@ -434,17 +480,20 @@ export default class StyleEditor {
         );
         return filteredArray;
     }
+    private getDocument(): Document {
+        return getPageIFrame()?.contentDocument ?? document;
+    }
 
     private FindExistingUserModifiedStyleSheet(): CSSStyleSheet | null {
-        for (let i = 0; i < document.styleSheets.length; i++) {
+        for (let i = 0; i < this.getDocument().styleSheets.length; i++) {
             if (
-                (<HTMLElement>document.styleSheets[i].ownerNode).title ===
-                "userModifiedStyles"
+                (<HTMLElement>this.getDocument().styleSheets[i].ownerNode)
+                    .title === "userModifiedStyles"
             ) {
                 // alert("Found userModifiedStyles sheet: i= " + i + ", title= " +
-                //  (<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title + ", sheet= " +
-                //  document.styleSheets[i].ownerNode.textContent);
-                return <CSSStyleSheet>document.styleSheets[i];
+                //  (<StyleSheet>(<any>this.getDocument().styleSheets[i]).ownerNode).title + ", sheet= " +
+                //  this.getDocument().styleSheets[i].ownerNode.textContent);
+                return <CSSStyleSheet>this.getDocument().styleSheets[i];
             }
         }
         return null;
@@ -454,8 +503,10 @@ export default class StyleEditor {
     public GetOrCreateUserModifiedStyleSheet(): CSSStyleSheet | null {
         let styleSheet = this.FindExistingUserModifiedStyleSheet();
         if (styleSheet == null) {
-            const newSheet = document.createElement("style");
-            document.getElementsByTagName("head")[0].appendChild(newSheet);
+            const newSheet = this.getDocument().createElement("style");
+            this.getDocument()
+                .getElementsByTagName("head")[0]
+                .appendChild(newSheet);
             newSheet.title = "userModifiedStyles";
             newSheet.type = "text/css";
 
@@ -645,11 +696,11 @@ export default class StyleEditor {
     }
 
     public ConvertPxToPt(pxSize: number, round = true): number {
-        const tempDiv = document.createElement("div");
+        const tempDiv = this.getDocument().createElement("div");
         tempDiv.style.width = "1000pt";
-        document.body.appendChild(tempDiv);
+        this.getDocument().body.appendChild(tempDiv);
         const ratio = 1000 / tempDiv.clientWidth;
-        document.body.removeChild(tempDiv);
+        this.getDocument().body.removeChild(tempDiv);
         if (round) {
             return Math.round(pxSize * ratio);
         } else {
@@ -1008,7 +1059,7 @@ export default class StyleEditor {
         }
         const parentBounds = parent.getBoundingClientRect();
         const bottom = eltBounds.bottom - parentBounds.top;
-        const fmtButton = document.getElementById("formatButton");
+        const fmtButton = this.getDocument().getElementById("formatButton");
 
         if (!fmtButton) {
             return; // should not happen
@@ -1074,7 +1125,7 @@ export default class StyleEditor {
                 // to patch a child component. I'm not sure which is worse.
                 popoverZindex: "60001"
             }),
-            document.getElementById("fontSelectComponent")
+            this.getDocument().getElementById("fontSelectComponent")
         );
     }
 
@@ -1111,7 +1162,7 @@ export default class StyleEditor {
             );
             return;
         }
-        const oldCog = document.getElementById("formatButton");
+        const oldCog = this.getDocument().getElementById("formatButton");
         if (oldCog && this._previousBox == targetBox) {
             return;
         }
@@ -1158,7 +1209,7 @@ export default class StyleEditor {
         );
         this._observer.observe(targetBox);
 
-        const formatButton = document.getElementById("formatButton");
+        const formatButton = this.getDocument().getElementById("formatButton");
         /* we removed this for BL-799, plus it was always getting in the way, once the format popup was opened
         const txt = theOneLocalizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
@@ -1798,7 +1849,7 @@ export default class StyleEditor {
     // }
 
     private setColorButtonColor(id: string, color: string) {
-        const colorButton = document.getElementById(id);
+        const colorButton = this.getDocument().getElementById(id);
         colorButton?.setAttribute("style", `background-color:${color}`);
     }
 
@@ -1953,7 +2004,9 @@ export default class StyleEditor {
         | "center"
         | "right"
         | "justify" {
-        const positionCenterButton = document.getElementById("position-center");
+        const positionCenterButton = this.getDocument().getElementById(
+            "position-center"
+        );
         if (
             positionCenterButton &&
             positionCenterButton.classList.contains("selectedIcon")
@@ -1961,7 +2014,7 @@ export default class StyleEditor {
             return "center";
         }
 
-        const positionJustifyButton = document.getElementById(
+        const positionJustifyButton = this.getDocument().getElementById(
             "position-justify"
         );
         if (
@@ -1971,7 +2024,9 @@ export default class StyleEditor {
             return "justify";
         }
 
-        const positionRightButton = document.getElementById("position-right");
+        const positionRightButton = this.getDocument().getElementById(
+            "position-right"
+        );
         if (
             positionRightButton &&
             positionRightButton.classList.contains("selectedIcon")
@@ -2202,7 +2257,9 @@ export default class StyleEditor {
 
     public runFormatDialog(targetBox: HTMLElement) {
         // BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
-        const suppress = $(document).find('meta[name="lockFormatting"]');
+        const suppress = $(this.getDocument()).find(
+            'meta[name="lockFormatting"]'
+        );
         const noFormatChange =
             suppress.length > 0 &&
             suppress.attr("content").toLowerCase() === "true";
@@ -2258,7 +2315,9 @@ export default class StyleEditor {
                         if (
                             !this.boxBeingEdited.closest(kCanvasElementSelector)
                         ) {
-                            document.getElementById("overlay-page")?.remove();
+                            this.getDocument()
+                                .getElementById("overlay-page")
+                                ?.remove();
                         }
 
                         const visibleTabs = $(".tab-page:visible");
