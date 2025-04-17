@@ -73,7 +73,7 @@ public class Subscription
             if (code == "Local-Community-***-***")
             {
                 // Migrate the downloaded book to the new code and descriptor.
-                code = "Legacy-LC-005809-2533"; // expires on 1 July 2025
+                code = "Legacy-LC-005839-2533"; // expires on 1 July 2025
                 descriptor = "Legacy-LC";
             }
             else
@@ -85,7 +85,7 @@ public class Subscription
         if (string.IsNullOrWhiteSpace(code) && (brandingProjectName == "Local-Community"))
         {
             // Migrate the local collection to the new code and descriptor.
-            code = "Legacy-LC-005809-2533"; // expires on 1 July 2025
+            code = "Legacy-LC-005839-2533"; // expires on 1 July 2025
             descriptor = "Legacy-LC";
         }
 

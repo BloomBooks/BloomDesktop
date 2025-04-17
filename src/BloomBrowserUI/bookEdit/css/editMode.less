@@ -1411,7 +1411,8 @@ canvas.moving {
             display: block;
         }
     }
-    &.has-image:not(.moving) .bloom-ui-canvas-element-side-handle {
+    &.has-image:not(.moving):not(.has-svg)
+        .bloom-ui-canvas-element-side-handle {
         display: block;
     }
 

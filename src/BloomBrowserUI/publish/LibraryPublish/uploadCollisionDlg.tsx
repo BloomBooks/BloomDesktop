@@ -97,7 +97,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
     const kAskForHelpColor = "#D65649";
     const kDarkerSecondaryTextColor = "#555555";
 
-    const canUpload = props.permissions?.reupload ?? false;
+    const hasOverwritePermission = props.permissions?.reupload ?? false;
     const canBecomeUploader = props.permissions?.becomeUploader ?? false;
 
     const sameBook = useL10n(
@@ -110,7 +110,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
         "PublishTab.UploadCollisionDialog.SameBookNotMine",
         "This is the dialog title when this user is not allowed to upload"
     );
-    const mainTitle = canUpload ? sameBook : sameBookNotMine;
+    const mainTitle = hasOverwritePermission ? sameBook : sameBookNotMine;
 
     const bloomLibraryHasOne = useL10n(
         "BloomLibrary.org already has a book with this ID.",
@@ -233,7 +233,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
             `}
         >
             <Typography color="textSecondary">
-                {canUpload ? (
+                {hasOverwritePermission ? (
                     <TextWithEmbeddedLink
                         className="embeddedLink"
                         l10nKey="PublishTab.UploadCollisionDialog.Radio.SameBook2.Commentary"
@@ -328,7 +328,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                 <DialogTitle
                     title={mainTitle}
                     icon={
-                        canUpload ? (
+                        hasOverwritePermission ? (
                             "/bloom/publish/LibraryPublish/BookIdCollision.svg"
                         ) : (
                             <WarningIcon color="warning" />
@@ -340,7 +340,9 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                     // If this happens at all often, we should probably build the subtitle into the title
                     // component so it can share a parent with the title text.
                     css={css`
-                        margin-left: ${canUpload ? "45px" : "31px"};
+                        margin-left: ${hasOverwritePermission
+                            ? "45px"
+                            : "31px"};
                         margin-top: -20px;
                     `}
                 >
@@ -453,7 +455,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                             lastUpdated={props.existingUpdatedDate}
                             uploadedBy={props.uploader}
                             userEmail={props.userEmail}
-                            canUpload={canUpload}
+                            canUpload={hasOverwritePermission}
                         ></BookInfoCard>
                     </div>
                     <div
@@ -501,14 +503,14 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                             buttonStateToMatch={RadioState.Same}
                             radioValue="Same"
                             radioLabel={
-                                canUpload
+                                hasOverwritePermission
                                     ? sameBookRadioLabel
                                     : sameBookCancelRadioLabel
                             }
                             ariaLabel="Same book radio button"
                             commentaryChildren={sameBookRadioCommentary()}
                         />
-                        {canUpload && needChangeSubscription && (
+                        {hasOverwritePermission && needChangeSubscription && (
                             <div css={cssForCheckboxes}>
                                 {/* The checkbox has an icon prop we could use instead of making it part of
                                 the label, but the mockup has it wrapping as part of the first line of the
@@ -549,7 +551,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                                 ></BloomCheckbox>
                             </div>
                         )}
-                        {canUpload &&
+                        {hasOverwritePermission &&
                             canBecomeUploader &&
                             props.uploader !== props.userEmail && (
                                 <div css={cssForCheckboxes}>
@@ -598,10 +600,11 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                 <BloomButton
                     l10nKey={"Common.Upload"}
                     enabled={
-                        // If we don't have permission to overwrite, we can only upload using a new ID
-                        buttonState !== RadioState.Indeterminate &&
-                        (canUpload || buttonState === RadioState.Different) &&
-                        (doChangeSubscription || !needChangeSubscription)
+                        buttonState === RadioState.Different ||
+                        (buttonState === RadioState.Same &&
+                            hasOverwritePermission &&
+                            // If we are changing the subscription, the user is required to check the acknowledgement box
+                            (doChangeSubscription || !needChangeSubscription))
                     }
                     size="large"
                     onClick={() => {
