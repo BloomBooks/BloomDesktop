@@ -69,6 +69,8 @@ type ResizeDirection = "ne" | "nw" | "sw" | "se";
 // and "bubble" is used in reference to ComicalJs, Source Bubbles, Hint Bubbles, and other qtips.
 // Some may have been missed. (It's even conceivable that some references to the other things were
 // accidentally renamed to "canvas element".)
+import { AlignmentManager } from "./AlignmentManager";
+
 export class CanvasElementManager {
     // The min width/height needs to be kept in sync with the corresponding values in overlayTool.less
     public minTextBoxWidthPx = 30;
@@ -81,16 +83,18 @@ export class CanvasElementManager {
         // right one when no longer needed, and prevent multiple notifiers to the same client.
         id: string;
         handler: (x: BubbleSpec | undefined) => void;
-    }[] = [];
-
-    // These variables are used by the canvas element's onmouse* event handlers
+    }[] = []; // These variables are used by the canvas element's onmouse* event handlers
     private bubbleToDrag: Bubble | undefined; // Use Undefined to indicate that there is no active drag in progress
     private bubbleDragGrabOffset: { x: number; y: number } = {
         x: 0,
         y: 0
     };
+    // constructor that instantiates AlignmentManager
+    private alignmentManager: AlignmentManager;
 
-    public initializeCanvasElementManager(): void {
+    public constructor() {
+        this.alignmentManager = new AlignmentManager();
+
         Comical.setSelectorForBubblesWhichTailMidpointMayOverlap(
             ".bloom-backgroundImage"
         );
@@ -1336,6 +1340,11 @@ export class CanvasElementManager {
             this.oldImageTop = imgOrVideo.offsetTop;
             this.oldImageLeft = imgOrVideo.offsetLeft;
         }
+        this.alignmentManager.startDrag(
+            Array.from(
+                document.querySelectorAll(kCanvasElementSelector)
+            ) as HTMLElement[]
+        );
         document.addEventListener("mousemove", this.continueResizeDrag, {
             capture: true
         });
@@ -1352,6 +1361,7 @@ export class CanvasElementManager {
             capture: true
         });
         this.currentDragControl?.classList.remove("active-control");
+        this.alignmentManager.endDrag();
     };
 
     private minWidth = 30; // @MinTextBoxWidth in overlayTool.less
@@ -1381,6 +1391,7 @@ export class CanvasElementManager {
         // we're handling this event, we don't want (e.g.) Comical to do so as well.
         event.stopPropagation();
         event.preventDefault();
+
         // We seem to get an initial no-op mouse move right after the mouse down.
         // It would be harmless to go through all the steps for it, but it's quite annoying when
         // try to debug an actual move.
@@ -1536,6 +1547,8 @@ export class CanvasElementManager {
         // Finally, adjust various things that are affected by the new size.
         this.alignControlFrameWithActiveElement();
         this.adjustTarget(this.activeElement);
+
+        this.alignmentManager.duringDrag(this.activeElement);
     };
     private startSideDragX: number;
     private startSideDragY: number;
@@ -3228,6 +3241,12 @@ export class CanvasElementManager {
             // in case this is somehow left from earlier, we want a fresh start for the new move.
             this.animationFrame = 0;
 
+            this.alignmentManager.startDrag(
+                Array.from(
+                    document.querySelectorAll(kCanvasElementSelector)
+                ) as HTMLElement[]
+            );
+
             // Remember the offset between the top-left of the content box and the initial
             // location of the mouse pointer.
             const deltaX = event.pageX - positionInfo.left;
@@ -3464,6 +3483,7 @@ export class CanvasElementManager {
                 this.lastMoveContainer,
                 newPosition
             );
+            this.alignmentManager.duringDrag(this.bubbleToDrag.content);
             this.lastCropControl = undefined; // move resets the basis for cropping
             this.animationFrame = 0;
         });
@@ -3523,6 +3543,7 @@ export class CanvasElementManager {
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseUp = (event: MouseEvent) => {
         this.mouseIsDown = false;
+        this.alignmentManager.endDrag();
         document.removeEventListener("mouseup", this.onMouseUp, {
             capture: true
         });
@@ -6488,7 +6509,6 @@ export let theOneCanvasElementManager: CanvasElementManager;
 export function initializeCanvasElementManager() {
     if (theOneCanvasElementManager) return;
     theOneCanvasElementManager = new CanvasElementManager();
-    theOneCanvasElementManager.initializeCanvasElementManager();
 }
 
 // This is a definition of the object we store as JSON in data-bubble-alternate.
