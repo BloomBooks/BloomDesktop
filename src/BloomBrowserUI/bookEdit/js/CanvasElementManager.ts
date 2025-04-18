@@ -49,6 +49,8 @@ import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
 import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
+import { SnapManager } from "./SnapManager";
+import { AlignmentManager } from "./AlignmentManager";
 
 export interface ITextColorInfo {
     color: string;
@@ -69,8 +71,6 @@ type ResizeDirection = "ne" | "nw" | "sw" | "se";
 // and "bubble" is used in reference to ComicalJs, Source Bubbles, Hint Bubbles, and other qtips.
 // Some may have been missed. (It's even conceivable that some references to the other things were
 // accidentally renamed to "canvas element".)
-import { AlignmentManager } from "./AlignmentManager";
-
 export class CanvasElementManager {
     // The min width/height needs to be kept in sync with the corresponding values in overlayTool.less
     public minTextBoxWidthPx = 30;
@@ -91,10 +91,11 @@ export class CanvasElementManager {
     };
     // constructor that instantiates AlignmentManager
     private alignmentManager: AlignmentManager;
+    private snapManager: SnapManager;
 
     public constructor() {
         this.alignmentManager = new AlignmentManager();
-
+        this.snapManager = new SnapManager();
         Comical.setSelectorForBubblesWhichTailMidpointMayOverlap(
             ".bloom-backgroundImage"
         );
@@ -3236,6 +3237,7 @@ export class CanvasElementManager {
             // Note: at this point we do NOT want to focus it. Only if we decide in mouse up that we want to text-edit it.
             this.setActiveElement(bubble.content);
             const positionInfo = bubble.content.getBoundingClientRect();
+            this.snapManager.startDrag();
 
             // Possible move action started
             this.bubbleToDrag = bubble;
@@ -3474,12 +3476,25 @@ export class CanvasElementManager {
                 return;
             }
 
-            const newPosition = new Point(
+            let newPosition = new Point(
                 this.lastMoveEvent.pageX - this.bubbleDragGrabOffset.x,
                 this.lastMoveEvent.pageY - this.bubbleDragGrabOffset.y,
                 PointScaling.Scaled,
                 "Created by handleMouseMoveDragCanvasElement()"
             );
+
+            const p = this.snapManager.getPosition(
+                event,
+                newPosition.getScaledX(),
+                newPosition.getScaledY()
+            );
+            newPosition = new Point(
+                p.x,
+                p.y,
+                PointScaling.Scaled,
+                "Created by handleMouseMoveDragCanvasElement()" // what is this about?
+            );
+
             this.adjustCanvasElementLocation(
                 this.bubbleToDrag.content,
                 this.lastMoveContainer,
@@ -3545,6 +3560,7 @@ export class CanvasElementManager {
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseUp = (event: MouseEvent) => {
         this.mouseIsDown = false;
+        this.snapManager.endDrag();
         this.alignmentManager.endDrag();
         document.removeEventListener("mouseup", this.onMouseUp, {
             capture: true
