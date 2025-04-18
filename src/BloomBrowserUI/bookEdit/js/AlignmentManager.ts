@@ -1,38 +1,36 @@
 // AlignmentManager.ts
 // A class that helps visually align elements during drag operations by showing red lines
-// and highlighting elements with equal dimensions
-//
+// and highlighting elements with equal dimensions during resize operations.
+
 // ALIGNMENT RULES:
-// 1. When a dragged element aligns with another element, show a red alignment line
-// 2. Alignment lines should extend through ALL elements that are aligned at the same position
-// 3. For horizontal alignment (top/middle/bottom), lines should span from the leftmost edge
-//    to the rightmost edge of any aligned elements
-// 4. For vertical alignment (left/center/right), lines should span from the topmost edge
-//    to the bottommost edge of any aligned elements
-// 5. Lines should NOT extend beyond the aligned elements to the edge of the screen
-// 6. Check for alignment within a threshold (currently 4px) to make alignment "snap" feel natural
+// 1. When a dragged element aligns horizontally (top/middle/bottom) or vertically (left/center/right)
+//    with another element within a threshold, show a red alignment line.
+// 2. Alignment lines should extend through ALL elements that are aligned at the same position.
+// 3. Horizontal lines span from the leftmost edge to the rightmost edge of the aligned elements.
+// 4. Vertical lines span from the topmost edge to the bottommost edge of the aligned elements.
+// 5. Lines should NOT extend beyond the outermost edges of the aligned elements.
+// 6. Use a threshold (e.g., 4px) for alignment checks to provide a "snap" feel.
 //
-// EQUAL DIMENSION RULES:
-// 1. During resizing (when action == "resize"), identify elements with the same width and/or height as the element being dragged
-// 2. Display a line in the middle of all elements with matching dimensions
-// 3. For elements with the same width, show a horizontal line
-// 4. For elements with the same height, show a vertical line
-// 5. Use the same alignment threshold to determine if dimensions are equal
+// EQUAL DIMENSION RULES (during resize only):
+// 1. Identify elements with the same width and/or height as the element being resized (within the threshold).
+// 2. Display a thicker, semi-transparent line in the middle of all elements with matching dimensions.
+// 3. For elements with the same width, show a horizontal line through their vertical center.
+// 4. For elements with the same height, show a vertical line through their horizontal center.
 
 /**
- * Represents an alignment position (horizontal or vertical)
+ * Defines the possible alignment points on an element's edges or center.
  */
 enum AlignmentPosition {
     Top,
-    Middle,
+    Middle, // Vertical center
     Bottom,
     Left,
-    Center,
+    Center, // Horizontal center
     Right
 }
 
 /**
- * Represents an equal dimension type
+ * Defines the dimension types for equality checks.
  */
 enum EqualDimension {
     Width,
@@ -40,104 +38,148 @@ enum EqualDimension {
 }
 
 /**
- * Represents an alignment line with its position and DOM element
+ * Stores information about a pre-created alignment line DOM element.
  */
 interface AlignmentLine {
-    position: AlignmentPosition;
-    element: HTMLElement;
+    position: AlignmentPosition; // The type of alignment this line represents
+    element: HTMLElement; // The div element used as the visual line
 }
 
 /**
- * Represents an equal dimension indicator with its type and DOM element
+ * Stores information about a pre-created template for equal dimension indicators.
  */
 interface EqualDimensionIndicator {
-    type: EqualDimension;
-    element: HTMLElement;
+    type: EqualDimension; // The dimension this indicator represents (Width or Height)
+    element: HTMLElement; // The template div element (cloned for each matching element)
 }
 
 /**
- * Manages visual alignment guides during drag operations
+ * Represents the bounding box and center points of an element.
+ * Cached for performance during drag operations.
+ */
+interface ElementBounds {
+    element: HTMLElement;
+    rect: DOMRect;
+    top: number;
+    middle: number; // Vertical center
+    bottom: number;
+    left: number;
+    center: number; // Horizontal center
+    right: number;
+    width: number;
+    height: number;
+}
+
+/**
+ * Manages visual alignment guides (lines) and equal dimension indicators
+ * during drag-and-drop or resize operations.
  */
 export class AlignmentManager {
-    private elements: HTMLElement[] = [];
-    private alignmentLines: AlignmentLine[] = [];
-    private equalDimensionIndicators: EqualDimensionIndicator[] = [];
-    private dynamicEqualSigns: HTMLElement[] = []; // Track dynamically created equal signs
-    private currentAction: "resize" | "move" = "move"; // Track the current action type
-    private readonly ALIGNMENT_THRESHOLD = 4;
+    // --- Configuration ---
+    private readonly ALIGNMENT_THRESHOLD = 4; // Max distance in pixels for snapping
+    private readonly ALIGNMENT_COLOR = "#E54D2E"; // Typically red/orange
+    private readonly EQUAL_DIM_COLOR = "rgba(105, 150, 102, 0.7)"; // Greenish, semi-transparent
+    private readonly ALIGNMENT_LINE_THICKNESS = "1px";
+    private readonly EQUAL_DIM_LINE_THICKNESS = "3px";
+    private readonly ALIGNMENT_LINE_CLASS = "alignment-line";
+    private readonly EQUAL_DIM_INDICATOR_CLASS = "equal-dimension-indicator";
+    private readonly Z_INDEX = "10000"; // Ensure guides appear above most elements
 
+    // --- State ---
+    private targetElements: HTMLElement[] = []; // Elements to check alignment against
+    private alignmentLines: AlignmentLine[] = []; // Pool of alignment line elements
+    private equalDimensionIndicators: EqualDimensionIndicator[] = []; // Pool of template indicator elements
+    private dynamicEqualDimElements: HTMLElement[] = []; // Track dynamically created indicator clones
+    private currentAction: "resize" | "move" = "move"; // Type of operation
+
+    /**
+     * Initializes the AlignmentManager by creating the necessary guide elements.
+     */
     constructor() {
         this.createAlignmentLines();
         this.createEqualDimensionIndicators();
     }
+
     /**
-     * Set the elements to align with during a drag operation
-     * @param action The type of drag operation: "resize" or "move"
-     * @param elements Array of HTML elements to align with
+     * Prepares the manager for a new drag operation.
+     * @param action The type of operation ("move" or "resize").
+     * @param elementsToAlignAgainst An array of HTML elements to check for alignment against the dragged element.
+     *                               The dragged element itself should NOT be in this array.
      */
-    public startDrag(action: "resize" | "move", elements: HTMLElement[]): void {
+    public startDrag(
+        action: "resize" | "move",
+        elementsToAlignAgainst: HTMLElement[]
+    ): void {
         this.currentAction = action;
-        this.elements = elements || [];
-        this.hideAllAlignmentLines();
-        this.hideAllEqualDimensionIndicators();
+        // Filter out any null/undefined elements
+        this.targetElements = (elementsToAlignAgainst || []).filter(el => el);
+        // Ensure guides are hidden initially
+        this.hideAllGuides();
     }
+
     /**
-     * Show alignment lines during drag operations
-     * @param element The element being dragged
-     */ public duringDrag(element: HTMLElement): void {
-        if (!element || this.elements.length === 0) {
+     * Updates alignment guides based on the current position of the dragged element.
+     * Should be called repeatedly during a drag operation (e.g., on mousemove).
+     * @param draggedElement The HTML element currently being dragged or resized.
+     */
+    public duringDrag(draggedElement: HTMLElement): void {
+        if (!draggedElement || this.targetElements.length === 0) {
+            this.hideAllGuides(); // Hide if no element or targets
             return;
         }
 
-        // Hide all lines and clean up all equal signs first
-        this.hideAllAlignmentLines();
-        this.hideAllEqualDimensionIndicators();
-        this.removeDynamicEqualSigns();
+        // Always hide previous guides before calculating new ones
+        this.hideAllGuides();
 
-        // Check for horizontal alignments (top, middle, bottom)
-        this.checkHorizontalAlignment(element);
+        // Pre-calculate bounds for efficiency
+        const draggedBounds = this.getElementBounds(draggedElement);
+        const targetBounds = this.targetElements.map(el =>
+            this.getElementBounds(el)
+        );
 
-        // Check for vertical alignments (left, center, right)
-        this.checkVerticalAlignment(element);
+        // Check and display alignment lines
+        this.checkAndShowAlignments(draggedBounds, targetBounds);
 
-        // Only check for elements with equal dimensions during resize operations
+        // Check and display equal dimension indicators only during resize
         if (this.currentAction === "resize") {
-            this.checkEqualDimensions(element);
+            this.checkAndShowEqualDimensions(draggedBounds, targetBounds);
         }
     }
+
     /**
-     * Clean up after dragging is complete
+     * Cleans up all visual guides and resets the internal state after dragging ends.
      */
     public endDrag(): void {
-        this.hideAllAlignmentLines();
-        this.hideAllEqualDimensionIndicators();
-        this.removeDynamicEqualSigns(); // Remove all dynamic equal signs
-        this.elements = [];
+        this.hideAllGuides();
+        this.targetElements = []; // Clear the list of target elements
     }
 
     /**
-     * Dispose of resources
+     * Removes all guide elements from the DOM and cleans up resources.
+     * Call this when the AlignmentManager is no longer needed.
      */
     public dispose(): void {
-        this.hideAllAlignmentLines();
-        this.hideAllEqualDimensionIndicators();
-        this.elements = [];
+        this.hideAllGuides(); // Ensure dynamic elements are removed first
+        this.targetElements = [];
 
-        // Remove all alignment lines from the DOM
-        this.alignmentLines.forEach(line => {
-            if (line.element.parentNode) {
-                line.element.parentNode.removeChild(line.element);
-            }
-        });
+        // Remove template elements from the DOM
+        this.alignmentLines.forEach(line => line.element.remove());
+        this.equalDimensionIndicators.forEach(indicator =>
+            indicator.element.remove()
+        );
 
+        // Clear arrays
         this.alignmentLines = [];
-
-        // Remove all dynamically created equal signs from the DOM
-        this.removeDynamicEqualSigns();
+        this.equalDimensionIndicators = [];
+        this.dynamicEqualDimElements = []; // Should be empty already, but just in case
     }
 
+    // ==========================================================================
+    // Private Helper Methods
+    // ==========================================================================
+
     /**
-     * Create the alignment line DOM elements
+     * Creates the pool of alignment line DOM elements (initially hidden).
      * @private
      */
     private createAlignmentLines(): void {
@@ -151,637 +193,361 @@ export class AlignmentManager {
         ];
 
         positions.forEach(position => {
-            const line = document.createElement("div");
-            line.className = "alignment-line";
-            line.style.position = "absolute";
-            line.style.backgroundColor = "#96668F";
-            line.style.pointerEvents = "none"; // Make sure it doesn't interfere with mouse events
+            const line = this.createGuideElement(this.ALIGNMENT_LINE_CLASS);
+            line.style.backgroundColor = this.ALIGNMENT_COLOR;
 
-            // Set appropriate styles based on position
-            if (
+            // Set thickness based on orientation
+            const isHorizontal =
                 position === AlignmentPosition.Top ||
                 position === AlignmentPosition.Middle ||
-                position === AlignmentPosition.Bottom
-            ) {
-                // Horizontal line
-                line.style.height = "1px";
-            } else {
-                // Vertical line
-                line.style.width = "1px";
-            }
-
-            // Initially hide the line
-            line.style.display = "none";
-
-            // Add to document body
-            document.body.appendChild(line);
-
-            // Store the alignment line
-            this.alignmentLines.push({
-                position,
-                element: line
-            });
-        });
-    }
-
-    /**
-     * Hide all alignment lines
-     * @private
-     */
-    private hideAllAlignmentLines(): void {
-        this.alignmentLines.forEach(line => {
-            line.element.style.display = "none";
-        });
-    }
-
-    /**
-     * Check for horizontal alignment (top, middle, bottom)
-     * @param dragElement Element being dragged
-     * @private
-     */ private checkHorizontalAlignment(dragElement: HTMLElement): void {
-        const dragRect = dragElement.getBoundingClientRect();
-        const dragTop = dragRect.top;
-        const dragMiddle = dragTop + dragRect.height / 2;
-        const dragBottom = dragTop + dragRect.height;
-        const dragLeft = dragRect.left;
-        const dragRight = dragRect.right;
-
-        // Track which alignments we've detected to avoid duplicates
-        const detectedAlignments = {
-            [AlignmentPosition.Top]: false,
-            [AlignmentPosition.Middle]: false,
-            [AlignmentPosition.Bottom]: false
-        };
-
-        // Check alignment with each element
-        this.elements.forEach(element => {
-            if (element === dragElement) return;
-
-            const elementRect = element.getBoundingClientRect();
-            const elementTop = elementRect.top;
-            const elementMiddle = elementTop + elementRect.height / 2;
-            const elementBottom = elementTop + elementRect.height;
-            const elementLeft = elementRect.left;
-            const elementRight = elementRect.right;
-
-            // Check top alignment
-            if (Math.abs(dragTop - elementTop) <= this.ALIGNMENT_THRESHOLD) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Top,
-                    elementTop,
-                    dragLeft,
-                    dragRight,
-                    elementLeft
-                );
-                detectedAlignments[AlignmentPosition.Top] = true;
-            }
-
-            // Check top to middle alignment
-            if (Math.abs(dragTop - elementMiddle) <= this.ALIGNMENT_THRESHOLD) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Top,
-                    elementMiddle,
-                    dragLeft,
-                    dragRight,
-                    elementLeft
-                );
-                detectedAlignments[AlignmentPosition.Top] = true;
-            }
-
-            // Check top to bottom alignment
-            if (Math.abs(dragTop - elementBottom) <= this.ALIGNMENT_THRESHOLD) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Top,
-                    elementBottom,
-                    dragLeft,
-                    dragRight,
-                    elementLeft
-                );
-                detectedAlignments[AlignmentPosition.Top] = true;
-            }
-
-            // Check middle alignment
-            if (Math.abs(dragMiddle - elementTop) <= this.ALIGNMENT_THRESHOLD) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Middle,
-                    elementTop,
-                    dragLeft,
-                    dragRight,
-                    elementLeft
-                );
-                detectedAlignments[AlignmentPosition.Middle] = true;
-            }
-
-            if (
-                Math.abs(dragMiddle - elementMiddle) <= this.ALIGNMENT_THRESHOLD
-            ) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Middle,
-                    elementMiddle,
-                    dragLeft,
-                    dragRight,
-                    elementLeft
-                );
-                detectedAlignments[AlignmentPosition.Middle] = true;
-            }
-
-            if (
-                Math.abs(dragMiddle - elementBottom) <= this.ALIGNMENT_THRESHOLD
-            ) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Middle,
-                    elementBottom,
-                    dragLeft,
-                    dragRight,
-                    elementLeft
-                );
-                detectedAlignments[AlignmentPosition.Middle] = true;
-            }
-
-            // Check bottom alignment
-            if (Math.abs(dragBottom - elementTop) <= this.ALIGNMENT_THRESHOLD) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Bottom,
-                    elementTop,
-                    dragLeft,
-                    dragRight,
-                    elementLeft
-                );
-                detectedAlignments[AlignmentPosition.Bottom] = true;
-            }
-
-            if (
-                Math.abs(dragBottom - elementMiddle) <= this.ALIGNMENT_THRESHOLD
-            ) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Bottom,
-                    elementMiddle,
-                    dragLeft,
-                    dragRight,
-                    elementLeft
-                );
-                detectedAlignments[AlignmentPosition.Bottom] = true;
-            }
-
-            if (
-                Math.abs(dragBottom - elementBottom) <= this.ALIGNMENT_THRESHOLD
-            ) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Bottom,
-                    elementBottom,
-                    dragLeft,
-                    dragRight,
-                    elementLeft
-                );
-                detectedAlignments[AlignmentPosition.Bottom] = true;
-            }
-        });
-    }
-
-    /**
-     * Check for vertical alignment (left, center, right)
-     * @param dragElement Element being dragged
-     * @private
-     */
-    private checkVerticalAlignment(dragElement: HTMLElement): void {
-        const dragRect = dragElement.getBoundingClientRect();
-        const dragLeft = dragRect.left;
-        const dragCenter = dragLeft + dragRect.width / 2;
-        const dragRight = dragRect.left + dragRect.width;
-        const dragTop = dragRect.top;
-        const dragBottom = dragRect.bottom;
-
-        // Track which alignments we've detected to avoid duplicates
-        const detectedAlignments = {
-            [AlignmentPosition.Left]: false,
-            [AlignmentPosition.Center]: false,
-            [AlignmentPosition.Right]: false
-        };
-
-        // Check alignment with each element
-        this.elements.forEach(element => {
-            if (element === dragElement) return;
-            const elementRect = element.getBoundingClientRect();
-            const elementLeft = elementRect.left;
-            const elementCenter = elementLeft + elementRect.width / 2;
-            const elementRight = elementLeft + elementRect.width;
-            const elementTop = elementRect.top;
-
-            // Check left alignment
-            if (Math.abs(dragLeft - elementLeft) <= this.ALIGNMENT_THRESHOLD) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Left,
-                    elementLeft,
-                    dragTop,
-                    dragBottom,
-                    elementTop
-                );
-                detectedAlignments[AlignmentPosition.Left] = true;
-            }
-
-            // Check left to center alignment
-            if (
-                Math.abs(dragLeft - elementCenter) <= this.ALIGNMENT_THRESHOLD
-            ) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Left,
-                    elementCenter,
-                    dragTop,
-                    dragBottom,
-                    elementTop
-                );
-                detectedAlignments[AlignmentPosition.Left] = true;
-            }
-
-            // Check left to right alignment
-            if (Math.abs(dragLeft - elementRight) <= this.ALIGNMENT_THRESHOLD) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Left,
-                    elementRight,
-                    dragTop,
-                    dragBottom,
-                    elementTop
-                );
-                detectedAlignments[AlignmentPosition.Left] = true;
-            }
-
-            // Check center alignment
-            if (
-                Math.abs(dragCenter - elementLeft) <= this.ALIGNMENT_THRESHOLD
-            ) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Center,
-                    elementLeft,
-                    dragTop,
-                    dragBottom,
-                    elementTop
-                );
-                detectedAlignments[AlignmentPosition.Center] = true;
-            }
-
-            if (
-                Math.abs(dragCenter - elementCenter) <= this.ALIGNMENT_THRESHOLD
-            ) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Center,
-                    elementCenter,
-                    dragTop,
-                    dragBottom,
-                    elementTop
-                );
-                detectedAlignments[AlignmentPosition.Center] = true;
-            }
-
-            if (
-                Math.abs(dragCenter - elementRight) <= this.ALIGNMENT_THRESHOLD
-            ) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Center,
-                    elementRight,
-                    dragTop,
-                    dragBottom,
-                    elementTop
-                );
-                detectedAlignments[AlignmentPosition.Center] = true;
-            }
-
-            // Check right alignment
-            if (Math.abs(dragRight - elementLeft) <= this.ALIGNMENT_THRESHOLD) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Right,
-                    elementLeft,
-                    dragTop,
-                    dragBottom,
-                    elementTop
-                );
-                detectedAlignments[AlignmentPosition.Right] = true;
-            }
-
-            if (
-                Math.abs(dragRight - elementCenter) <= this.ALIGNMENT_THRESHOLD
-            ) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Right,
-                    elementCenter,
-                    dragTop,
-                    dragBottom,
-                    elementTop
-                );
-                detectedAlignments[AlignmentPosition.Right] = true;
-            }
-
-            if (
-                Math.abs(dragRight - elementRight) <= this.ALIGNMENT_THRESHOLD
-            ) {
-                this.showAlignmentLine(
-                    AlignmentPosition.Right,
-                    elementRight,
-                    dragTop,
-                    dragBottom,
-                    elementTop
-                );
-                detectedAlignments[AlignmentPosition.Right] = true;
-            }
-        });
-    }
-    /**
-     * Check for elements with equal dimensions to the dragged element
-     * @param dragElement Element being dragged
-     * @private
-     */
-    private checkEqualDimensions(dragElement: HTMLElement): void {
-        const dragRect = dragElement.getBoundingClientRect();
-        const dragWidth = Math.round(dragRect.width);
-        const dragHeight = Math.round(dragRect.height);
-
-        // Get the elements that match the width or height of the dragged element
-        const matchingWidthElements: HTMLElement[] = [];
-        const matchingHeightElements: HTMLElement[] = [];
-
-        this.elements.forEach(element => {
-            if (element === dragElement) return;
-
-            const elementRect = element.getBoundingClientRect();
-            const elementWidth = Math.round(elementRect.width);
-            const elementHeight = Math.round(elementRect.height);
-
-            // Check if width matches
-            if (
-                Math.abs(dragWidth - elementWidth) <= this.ALIGNMENT_THRESHOLD
-            ) {
-                matchingWidthElements.push(element);
-            }
-
-            // Check if height matches
-            if (
-                Math.abs(dragHeight - elementHeight) <= this.ALIGNMENT_THRESHOLD
-            ) {
-                matchingHeightElements.push(element);
-            }
-        });
-
-        // Only add the drag element to the arrays if at least one other element matches
-        if (matchingWidthElements.length > 0) {
-            matchingWidthElements.push(dragElement);
-        }
-
-        if (matchingHeightElements.length > 0) {
-            matchingHeightElements.push(dragElement);
-        }
-
-        // Show equal signs for elements with matching width
-        this.showEqualDimensionIndicators(
-            EqualDimension.Width,
-            matchingWidthElements
-        );
-
-        // Show equal signs for elements with matching height
-        this.showEqualDimensionIndicators(
-            EqualDimension.Height,
-            matchingHeightElements
-        );
-    }
-
-    /**
-     * Show equal dimension indicators for matching elements
-     * @param dimension The dimension type (width or height)
-     * @param elements Array of elements with matching dimensions
-     * @private
-     */ private showEqualDimensionIndicators(
-        dimension: EqualDimension,
-        elements: HTMLElement[]
-    ): void {
-        if (elements.length === 0) return;
-
-        // Find the indicator element for this dimension
-        const indicator = this.equalDimensionIndicators.find(
-            ind => ind.type === dimension
-        )?.element;
-        if (!indicator) return;
-
-        // Create clones of the indicator for each matching element
-        elements.forEach(element => {
-            // Always create a clone for each element
-            const line = indicator.cloneNode(true) as HTMLElement;
-
-            // Make line visible
-            line.style.display = "block";
-
-            // Get element bounds
-            const rect = element.getBoundingClientRect();
-
-            if (dimension === EqualDimension.Width) {
-                // Horizontal line for width - place at the center of element height
-                const centerY = rect.top + rect.height / 2;
-
-                // Position at the center of the element's height and extend to full width
-                line.style.left = `${rect.left}px`;
-                line.style.top = `${centerY - 1.5}px`; // Center the 3px line (-1.5px)
-                line.style.width = `${rect.width}px`;
-            } else {
-                // Vertical line for height - place at the center of element width
-                const centerX = rect.left + rect.width / 2;
-
-                // Position at the center of the element's width and extend to full height
-                line.style.left = `${centerX - 1.5}px`; // Center the 3px line (-1.5px)
-                line.style.top = `${rect.top}px`;
-                line.style.height = `${rect.height}px`;
-            }
-
-            // Add the element to the DOM and track it
-            document.body.appendChild(line);
-            this.dynamicEqualSigns.push(line);
-        });
-    }
-
-    /**
-     * Show an alignment line at the given position
-     * @param position Alignment position
-     * @param coordinate Coordinate for the line
-     * @param dragElementStart Drag element's start position (left for horizontal, top for vertical)
-     * @param dragElementEnd Drag element's end position (right for horizontal, bottom for vertical)
-     * @param alignedElementCoord Aligned element's coordinate that matched
-     * @private
-     */ private showAlignmentLine(
-        position: AlignmentPosition,
-        coordinate: number,
-        dragElementStart: number,
-        dragElementEnd: number,
-        alignedElementCoord: number
-    ): void {
-        const line = this.alignmentLines.find(l => l.position === position)
-            ?.element;
-        if (!line) return;
-
-        line.style.display = "block";
-
-        const isHorizontal =
-            position === AlignmentPosition.Top ||
-            position === AlignmentPosition.Middle ||
-            position === AlignmentPosition.Bottom;
-
-        // Get the element that initially triggered this alignment
-        const initialAlignedElement = this.elements.find(elem => {
-            const rect = elem.getBoundingClientRect();
+                position === AlignmentPosition.Bottom;
             if (isHorizontal) {
-                return (
-                    rect.left === alignedElementCoord ||
-                    rect.left + rect.width / 2 === alignedElementCoord ||
-                    rect.left + rect.width === alignedElementCoord
-                );
+                line.style.height = this.ALIGNMENT_LINE_THICKNESS;
+                line.style.width = "0"; // Width determined later
             } else {
-                return (
-                    rect.top === alignedElementCoord ||
-                    rect.top + rect.height / 2 === alignedElementCoord ||
-                    rect.top + rect.height === alignedElementCoord
-                );
+                line.style.width = this.ALIGNMENT_LINE_THICKNESS;
+                line.style.height = "0"; // Height determined later
             }
+
+            document.body.appendChild(line);
+            this.alignmentLines.push({ position, element: line });
         });
-
-        if (isHorizontal) {
-            // Horizontal line
-            line.style.top = `${coordinate}px`;
-
-            // Initialize with the dragged element and the initially aligned element
-            let mostLeftElement = dragElementStart;
-            let mostRightElement = dragElementEnd;
-
-            if (initialAlignedElement) {
-                const alignedRect = initialAlignedElement.getBoundingClientRect();
-                mostLeftElement = Math.min(mostLeftElement, alignedRect.left);
-                mostRightElement = Math.max(
-                    mostRightElement,
-                    alignedRect.right
-                );
-            }
-
-            // Check all elements for potential alignment at this coordinate
-            // This extends the line through ALL aligned elements
-            this.elements.forEach(elem => {
-                if (elem === initialAlignedElement) return; // Skip the initial element as we already processed it
-
-                const rect = elem.getBoundingClientRect();
-
-                // Check if this element also aligns horizontally at this coordinate
-                if (
-                    Math.abs(rect.top - coordinate) <=
-                        this.ALIGNMENT_THRESHOLD ||
-                    Math.abs(rect.top + rect.height / 2 - coordinate) <=
-                        this.ALIGNMENT_THRESHOLD ||
-                    Math.abs(rect.top + rect.height - coordinate) <=
-                        this.ALIGNMENT_THRESHOLD
-                ) {
-                    // Update the leftmost and rightmost coordinates if needed
-                    mostLeftElement = Math.min(mostLeftElement, rect.left);
-                    mostRightElement = Math.max(mostRightElement, rect.right);
-                }
-            });
-
-            line.style.left = `${mostLeftElement}px`;
-            line.style.width = `${mostRightElement - mostLeftElement}px`;
-            line.style.height = "1px"; // 1px thin line
-        } else {
-            // Vertical line
-            line.style.left = `${coordinate}px`;
-
-            // Initialize with the dragged element and the initially aligned element
-            let mostTopElement = dragElementStart;
-            let mostBottomElement = dragElementEnd;
-
-            if (initialAlignedElement) {
-                const alignedRect = initialAlignedElement.getBoundingClientRect();
-                mostTopElement = Math.min(mostTopElement, alignedRect.top);
-                mostBottomElement = Math.max(
-                    mostBottomElement,
-                    alignedRect.bottom
-                );
-            }
-
-            // Check all elements for potential alignment at this coordinate
-            // This extends the line through ALL aligned elements
-            this.elements.forEach(elem => {
-                if (elem === initialAlignedElement) return; // Skip the initial element as we already processed it
-
-                const rect = elem.getBoundingClientRect();
-
-                // Check if this element also aligns vertically at this coordinate
-                if (
-                    Math.abs(rect.left - coordinate) <=
-                        this.ALIGNMENT_THRESHOLD ||
-                    Math.abs(rect.left + rect.width / 2 - coordinate) <=
-                        this.ALIGNMENT_THRESHOLD ||
-                    Math.abs(rect.left + rect.width - coordinate) <=
-                        this.ALIGNMENT_THRESHOLD
-                ) {
-                    // Update the topmost and bottommost coordinates if needed
-                    mostTopElement = Math.min(mostTopElement, rect.top);
-                    mostBottomElement = Math.max(
-                        mostBottomElement,
-                        rect.bottom
-                    );
-                }
-            });
-
-            line.style.top = `${mostTopElement}px`;
-            line.style.height = `${mostBottomElement - mostTopElement}px`;
-            line.style.width = "1px"; // 1px thin line
-        }
     }
+
     /**
-     * Creates the equal dimension indicator DOM elements
+     * Creates the template DOM elements for equal dimension indicators (initially hidden).
      * @private
      */
     private createEqualDimensionIndicators(): void {
         const dimensions = [EqualDimension.Width, EqualDimension.Height];
 
         dimensions.forEach(dimension => {
-            // Create a line element for dimension indicators
-            const line = document.createElement("div");
-            line.className = "equal-dimension-indicator";
-            line.style.position = "absolute";
-            line.style.backgroundColor = "rgba(105, 150, 102, 0.2)";
-            line.style.pointerEvents = "none"; // Make sure it doesn't interfere with mouse events
-            line.style.zIndex = "1000";
-            line.style.display = "none";
+            const indicator = this.createGuideElement(
+                this.EQUAL_DIM_INDICATOR_CLASS
+            );
+            indicator.style.backgroundColor = this.EQUAL_DIM_COLOR;
 
-            // Set properties based on dimension type
+            // Set thickness based on dimension
             if (dimension === EqualDimension.Width) {
-                // Horizontal line for width indicators
-                line.style.height = "3px"; // 3px wide line
+                indicator.style.height = this.EQUAL_DIM_LINE_THICKNESS; // Thicker horizontal line
+                indicator.style.width = "0";
             } else {
-                // Vertical line for height indicators
-                line.style.width = "3px"; // 3px wide line
+                indicator.style.height = "0";
+                indicator.style.width = this.EQUAL_DIM_LINE_THICKNESS; // Thicker vertical line
             }
 
-            // Add to document body
-            document.body.appendChild(line);
-
-            // Store the indicator
+            document.body.appendChild(indicator);
             this.equalDimensionIndicators.push({
                 type: dimension,
-                element: line
+                element: indicator
             });
         });
     }
+
     /**
-     * Hide all equal dimension indicators
+     * Creates a standard div element used for visual guides.
+     * @param className CSS class name to apply.
+     * @returns The created HTMLElement.
      * @private
      */
-    private hideAllEqualDimensionIndicators(): void {
-        this.equalDimensionIndicators.forEach(indicator => {
-            indicator.element.style.display = "none";
-        });
+    private createGuideElement(className: string): HTMLElement {
+        const element = document.createElement("div");
+        element.className = className;
+        element.style.position = "absolute";
+        element.style.pointerEvents = "none"; // Prevent interference with mouse events
+        element.style.display = "none"; // Initially hidden
+        element.style.zIndex = this.Z_INDEX;
+        element.style.boxSizing = "border-box"; // Ensure border/padding are included if needed
+        return element;
     }
+
     /**
-     * Remove all dynamically created equal signs
+     * Hides all alignment lines and removes dynamic equal dimension indicators.
      * @private
      */
-    private removeDynamicEqualSigns(): void {
-        this.dynamicEqualSigns.forEach(equalSign => {
-            if (equalSign.parentNode) {
-                equalSign.parentNode.removeChild(equalSign);
+    private hideAllGuides(): void {
+        // Hide the reusable alignment lines
+        this.alignmentLines.forEach(line => {
+            line.element.style.display = "none";
+        });
+        // Remove the dynamically created clones for equal dimensions
+        this.dynamicEqualDimElements.forEach(element => element.remove());
+        this.dynamicEqualDimElements = []; // Clear the tracking array
+    }
+
+    /**
+     * Calculates and caches the bounding box and center points for an element.
+     * @param element The element to measure.
+     * @returns An ElementBounds object.
+     * @private
+     */
+    private getElementBounds(element: HTMLElement): ElementBounds {
+        const rect = element.getBoundingClientRect();
+        // Adjust for scroll position to get absolute document coordinates
+        const scrollX = window.scrollX || window.pageXOffset;
+        const scrollY = window.scrollY || window.pageYOffset;
+
+        return {
+            element: element,
+            rect: rect, // Keep original rect if needed elsewhere
+            top: rect.top + scrollY,
+            middle: rect.top + scrollY + rect.height / 2,
+            bottom: rect.top + scrollY + rect.height,
+            left: rect.left + scrollX,
+            center: rect.left + scrollX + rect.width / 2,
+            right: rect.left + scrollX + rect.width,
+            width: rect.width,
+            height: rect.height
+        };
+    }
+
+    /**
+     * Checks for alignments between the dragged element and target elements.
+     * @param draggedBounds Bounds of the element being dragged.
+     * @param targetBounds Array of bounds for the elements to align against.
+     * @private
+     */
+    private checkAndShowAlignments(
+        draggedBounds: ElementBounds,
+        targetBounds: ElementBounds[]
+    ): void {
+        const allBounds = [draggedBounds, ...targetBounds];
+
+        // --- Check Horizontal Alignments (Top, Middle, Bottom) ---
+        const horizontalPoints: { pos: AlignmentPosition; value: number }[] = [
+            { pos: AlignmentPosition.Top, value: draggedBounds.top },
+            { pos: AlignmentPosition.Middle, value: draggedBounds.middle },
+            { pos: AlignmentPosition.Bottom, value: draggedBounds.bottom }
+        ];
+
+        horizontalPoints.forEach(dragPoint => {
+            const alignedElements = this.findAlignedElements(
+                dragPoint.value,
+                ["top", "middle", "bottom"],
+                allBounds
+            );
+            if (alignedElements.length > 1) {
+                // Need dragged element + at least one target
+                this.showAlignmentLine(
+                    dragPoint.pos,
+                    dragPoint.value,
+                    alignedElements
+                );
             }
         });
-        this.dynamicEqualSigns = [];
+
+        // --- Check Vertical Alignments (Left, Center, Right) ---
+        const verticalPoints: { pos: AlignmentPosition; value: number }[] = [
+            { pos: AlignmentPosition.Left, value: draggedBounds.left },
+            { pos: AlignmentPosition.Center, value: draggedBounds.center },
+            { pos: AlignmentPosition.Right, value: draggedBounds.right }
+        ];
+
+        verticalPoints.forEach(dragPoint => {
+            const alignedElements = this.findAlignedElements(
+                dragPoint.value,
+                ["left", "center", "right"],
+                allBounds
+            );
+            if (alignedElements.length > 1) {
+                this.showAlignmentLine(
+                    dragPoint.pos,
+                    dragPoint.value,
+                    alignedElements
+                );
+            }
+        });
+    }
+
+    /**
+     * Finds all elements (including the dragged one) that align near a specific coordinate.
+     * @param coordinate The target coordinate (e.g., draggedBounds.top).
+     * @param axesToCheck The axes ('top', 'middle', 'bottom' OR 'left', 'center', 'right') to check on each element.
+     * @param allBounds An array containing the bounds of the dragged element and all target elements.
+     * @returns An array of ElementBounds for the aligned elements.
+     * @private
+     */
+    private findAlignedElements(
+        coordinate: number,
+        axesToCheck: Array<
+            "top" | "middle" | "bottom" | "left" | "center" | "right"
+        >,
+        allBounds: ElementBounds[]
+    ): ElementBounds[] {
+        const aligned: ElementBounds[] = [];
+        let bestAlignmentCoord = coordinate; // Use the dragged element's coord as the initial target
+
+        // First pass: Find the best matching coordinate among all elements
+        allBounds.forEach(bounds => {
+            axesToCheck.forEach(axis => {
+                const elementCoord = bounds[axis];
+                if (
+                    Math.abs(coordinate - elementCoord) <=
+                    this.ALIGNMENT_THRESHOLD
+                ) {
+                    // Potentially update the best alignment coordinate if this one is closer to others
+                    // (Simple approach: stick with the first match's coordinate)
+                    bestAlignmentCoord = elementCoord; // Snap to the target element's coordinate
+                    return; // Found a match for this element on one axis
+                }
+            });
+        });
+
+        // Second pass: Collect all elements aligning to the *best* coordinate found
+        allBounds.forEach(bounds => {
+            for (const axis of axesToCheck) {
+                const elementCoord = bounds[axis];
+                if (
+                    Math.abs(bestAlignmentCoord - elementCoord) <=
+                    this.ALIGNMENT_THRESHOLD
+                ) {
+                    aligned.push(bounds);
+                    break; // Only add element once per alignment group
+                }
+            }
+        });
+
+        return aligned;
+    }
+
+    /**
+     * Displays a specific alignment line based on the group of aligned elements.
+     * @param position The type of alignment (Top, Middle, Left, etc.).
+     * @param coordinate The exact coordinate (y for horizontal, x for vertical) to draw the line at.
+     * @param alignedElements An array of ElementBounds for the elements that are aligned.
+     * @private
+     */
+    private showAlignmentLine(
+        position: AlignmentPosition,
+        coordinate: number,
+        alignedElements: ElementBounds[]
+    ): void {
+        const line = this.alignmentLines.find(l => l.position === position)
+            ?.element;
+        if (!line || alignedElements.length < 2) return; // Need at least two elements to align
+
+        const isHorizontal =
+            position === AlignmentPosition.Top ||
+            position === AlignmentPosition.Middle ||
+            position === AlignmentPosition.Bottom;
+
+        if (isHorizontal) {
+            // Find the min left and max right edges among the aligned elements
+            const minLeft = Math.min(...alignedElements.map(b => b.left));
+            const maxRight = Math.max(...alignedElements.map(b => b.right));
+
+            line.style.top = `${coordinate -
+                parseFloat(this.ALIGNMENT_LINE_THICKNESS) / 2}px`; // Center line thickness
+            line.style.left = `${minLeft}px`;
+            line.style.width = `${maxRight - minLeft}px`;
+            line.style.height = this.ALIGNMENT_LINE_THICKNESS; // Ensure height is set correctly
+        } else {
+            // Vertical line
+            // Find the min top and max bottom edges among the aligned elements
+            const minTop = Math.min(...alignedElements.map(b => b.top));
+            const maxBottom = Math.max(...alignedElements.map(b => b.bottom));
+
+            line.style.left = `${coordinate -
+                parseFloat(this.ALIGNMENT_LINE_THICKNESS) / 2}px`; // Center line thickness
+            line.style.top = `${minTop}px`;
+            line.style.height = `${maxBottom - minTop}px`;
+            line.style.width = this.ALIGNMENT_LINE_THICKNESS; // Ensure width is set correctly
+        }
+
+        line.style.display = "block"; // Make the line visible
+    }
+
+    /**
+     * Checks for elements with dimensions equal to the dragged element during resize.
+     * @param draggedBounds Bounds of the element being resized.
+     * @param targetBounds Array of bounds for the potential matching elements.
+     * @private
+     */
+    private checkAndShowEqualDimensions(
+        draggedBounds: ElementBounds,
+        targetBounds: ElementBounds[]
+    ): void {
+        const dragWidth = draggedBounds.width;
+        const dragHeight = draggedBounds.height;
+
+        const matchingWidthElements: ElementBounds[] = [];
+        const matchingHeightElements: ElementBounds[] = [];
+
+        // Find target elements matching width or height
+        targetBounds.forEach(bounds => {
+            if (
+                Math.abs(dragWidth - bounds.width) <= this.ALIGNMENT_THRESHOLD
+            ) {
+                matchingWidthElements.push(bounds);
+            }
+            if (
+                Math.abs(dragHeight - bounds.height) <= this.ALIGNMENT_THRESHOLD
+            ) {
+                matchingHeightElements.push(bounds);
+            }
+        });
+
+        // If matches were found, add the dragged element itself to the list for visualization
+        if (matchingWidthElements.length > 0) {
+            matchingWidthElements.push(draggedBounds);
+            this.showEqualDimensionIndicators(
+                EqualDimension.Width,
+                matchingWidthElements
+            );
+        }
+        if (matchingHeightElements.length > 0) {
+            matchingHeightElements.push(draggedBounds);
+            this.showEqualDimensionIndicators(
+                EqualDimension.Height,
+                matchingHeightElements
+            );
+        }
+    }
+
+    /**
+     * Displays the equal dimension indicators for a set of matching elements.
+     * Clones the template indicator for each element.
+     * @param dimension The dimension type (Width or Height).
+     * @param matchingElements Array of ElementBounds with the matching dimension.
+     * @private
+     */
+    private showEqualDimensionIndicators(
+        dimension: EqualDimension,
+        matchingElements: ElementBounds[]
+    ): void {
+        const templateIndicator = this.equalDimensionIndicators.find(
+            ind => ind.type === dimension
+        )?.element;
+        if (!templateIndicator || matchingElements.length === 0) return;
+
+        const lineThickness = parseFloat(this.EQUAL_DIM_LINE_THICKNESS);
+
+        matchingElements.forEach(bounds => {
+            // Clone the template indicator for each matching element
+            const indicatorClone = templateIndicator.cloneNode(
+                true
+            ) as HTMLElement;
+
+            if (dimension === EqualDimension.Width) {
+                // Horizontal line centered vertically
+                indicatorClone.style.left = `${bounds.left}px`;
+                indicatorClone.style.top = `${bounds.middle -
+                    lineThickness / 2}px`; // Center the line
+                indicatorClone.style.width = `${bounds.width}px`;
+                indicatorClone.style.height = this.EQUAL_DIM_LINE_THICKNESS; // Ensure height is set
+            } else {
+                // Height
+                // Vertical line centered horizontally
+                indicatorClone.style.left = `${bounds.center -
+                    lineThickness / 2}px`; // Center the line
+                indicatorClone.style.top = `${bounds.top}px`;
+                indicatorClone.style.height = `${bounds.height}px`;
+                indicatorClone.style.width = this.EQUAL_DIM_LINE_THICKNESS; // Ensure width is set
+            }
+
+            indicatorClone.style.display = "block"; // Make visible
+            document.body.appendChild(indicatorClone); // Add to DOM
+            this.dynamicEqualDimElements.push(indicatorClone); // Track for removal later
+        });
     }
 }
