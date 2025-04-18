@@ -1341,6 +1341,7 @@ export class CanvasElementManager {
             this.oldImageLeft = imgOrVideo.offsetLeft;
         }
         this.alignmentManager.startDrag(
+            "resize",
             Array.from(
                 document.querySelectorAll(kCanvasElementSelector)
             ) as HTMLElement[]
@@ -3242,6 +3243,7 @@ export class CanvasElementManager {
             this.animationFrame = 0;
 
             this.alignmentManager.startDrag(
+                "move",
                 Array.from(
                     document.querySelectorAll(kCanvasElementSelector)
                 ) as HTMLElement[]
