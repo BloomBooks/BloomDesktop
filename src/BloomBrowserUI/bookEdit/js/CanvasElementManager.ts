@@ -1347,6 +1347,7 @@ export class CanvasElementManager {
                 document.querySelectorAll(kCanvasElementSelector)
             ) as HTMLElement[]
         );
+        this.snapManager.startDrag();
         document.addEventListener("mousemove", this.continueResizeDrag, {
             capture: true
         });
@@ -1364,6 +1365,7 @@ export class CanvasElementManager {
         });
         this.currentDragControl?.classList.remove("active-control");
         this.alignmentManager.endDrag();
+        this.snapManager.endDrag();
     };
 
     private minWidth = 30; // @MinTextBoxWidth in overlayTool.less
@@ -1417,29 +1419,87 @@ export class CanvasElementManager {
         let newHeight = this.oldHeight;
         let newTop = this.oldTop;
         let newLeft = this.oldLeft;
+
+        // Assume variables like newLeft, newTop, newWidth, newHeight are declared outside
+        // and potentially initialized with old values if needed.
+
+        let targetX, targetY;
+
+        // 1. Determine target coordinates based on corner and delta
+        //    These are the coordinates passed to the snapping function.
         switch (this.resizeDragCorner) {
             case "ne":
-                newWidth = Math.max(this.oldWidth + deltaX, this.minWidth);
-                newHeight = Math.max(this.oldHeight - deltaY, this.minHeight);
-                // Use the difference here rather than deltaY so the minWidth is respected.
-                newTop = this.oldTop + (this.oldHeight - newHeight);
+                targetX = this.oldLeft + this.oldWidth + deltaX; // Target Right
+                targetY = this.oldTop + deltaY; // Target Top
                 break;
             case "nw":
-                newWidth = Math.max(this.oldWidth - deltaX, this.minWidth);
-                newHeight = Math.max(this.oldHeight - deltaY, this.minHeight);
-                newTop = this.oldTop + (this.oldHeight - newHeight);
-                newLeft = this.oldLeft + (this.oldWidth - newWidth);
+                targetX = this.oldLeft + deltaX; // Target Left
+                targetY = this.oldTop + deltaY; // Target Top
                 break;
             case "se":
-                newWidth = Math.max(this.oldWidth + deltaX, this.minWidth);
-                newHeight = Math.max(this.oldHeight + deltaY, this.minHeight);
+                targetX = this.oldLeft + this.oldWidth + deltaX; // Target Right
+                targetY = this.oldTop + this.oldHeight + deltaY; // Target Bottom
                 break;
             case "sw":
-                newWidth = Math.max(this.oldWidth - deltaX, this.minWidth);
-                newHeight = Math.max(this.oldHeight + deltaY, this.minHeight);
-                newLeft = this.oldLeft + (this.oldWidth - newWidth);
+                targetX = this.oldLeft + deltaX; // Target Left
+                targetY = this.oldTop + this.oldHeight + deltaY; // Target Bottom
                 break;
+            default:
+                // Handle unexpected corner or return
+                console.error("Invalid resize corner:", this.resizeDragCorner);
+                return; // Or throw an error
         }
+
+        // 2. Get snapped coordinates
+        const { x: snappedX, y: snappedY } = this.snapManager.getPosition(
+            event,
+            targetX,
+            targetY
+        );
+
+        // 3. Calculate potential dimensions and update position based on snapped coordinates
+        //    Note: We calculate dimensions *before* enforcing minimums.
+        let potentialWidth, potentialHeight;
+
+        if (this.resizeDragCorner.includes("n")) {
+            // Top edge is moving
+            newTop = snappedY;
+            potentialHeight = this.oldTop + this.oldHeight - newTop; // oldBottom - newTop
+        } else {
+            // Bottom edge is moving ('s')
+            potentialHeight = snappedY - this.oldTop; // newBottom - oldTop
+        }
+
+        if (this.resizeDragCorner.includes("w")) {
+            // Left edge is moving
+            newLeft = snappedX;
+            potentialWidth = this.oldLeft + this.oldWidth - newLeft; // oldRight - newLeft
+        } else {
+            // Right edge is moving ('e')
+            potentialWidth = snappedX - this.oldLeft; // newRight - oldLeft
+        }
+
+        // 4. Apply minimum dimension constraints
+        newWidth = Math.max(potentialWidth, this.minWidth);
+        newHeight = Math.max(potentialHeight, this.minHeight);
+
+        // 5. Adjust position if minimum constraints changed the size *and* the top/left edge was the one moving.
+        //    If the bottom/right edge was moving, the size clamp doesn't require adjusting top/left.
+        if (
+            newWidth !== potentialWidth &&
+            this.resizeDragCorner.includes("w")
+        ) {
+            // Width was clamped, and we were dragging the left edge, so adjust left position
+            newLeft = this.oldLeft + this.oldWidth - newWidth;
+        }
+        if (
+            newHeight !== potentialHeight &&
+            this.resizeDragCorner.includes("n")
+        ) {
+            // Height was clamped, and we were dragging the top edge, so adjust top position
+            newTop = this.oldTop + this.oldHeight - newHeight;
+        }
+
         if (slope) {
             // We want to keep the aspect ratio of the image. So the possible places to move
             // the moving corner must be on a line through the opposite corner
@@ -3961,42 +4021,6 @@ export class CanvasElementManager {
         }
 
         return Number(numberStr);
-    }
-
-    // Returns a string representing which style of resize to use
-    // This is based on where the mouse event is relative to the center of the element
-    //
-    // The returned string is the directional prefix to the *-resize cursor values
-    // e.g., if "ne-resize" would be appropriate, this function will return the "ne" prefix
-    // e.g. "ne" = Northeast, "nw" = Northwest", "sw" = Southwest, "se" = Southeast"
-    private getResizeMode(
-        element: HTMLElement,
-        event: MouseEvent
-    ): ResizeDirection {
-        // Convert into a coordinate system where the origin is the center of the element (rather than the top-left of the page)
-        const center = this.getCenterPosition(element);
-        const clickCoordinates = { x: event.pageX, y: event.pageY };
-        const relativeCoordinates = {
-            x: clickCoordinates.x - center.x,
-            y: clickCoordinates.y - center.y
-        };
-
-        let resizeMode: ResizeDirection;
-        if (relativeCoordinates.y! < 0) {
-            if (relativeCoordinates.x! >= 0) {
-                resizeMode = "ne"; // NorthEast = top-right
-            } else {
-                resizeMode = "nw"; // NorthWest = top-left
-            }
-        } else {
-            if (relativeCoordinates.x! < 0) {
-                resizeMode = "sw"; // SouthWest = bottom-left
-            } else {
-                resizeMode = "se"; // SouthEast = bottom-right
-            }
-        }
-
-        return resizeMode;
     }
 
     // Calculates the center of an element

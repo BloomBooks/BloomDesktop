@@ -1,13 +1,12 @@
-type SnapPositionFunction = (
-    event: MouseEvent,
-    x: number,
-    y: number
-) => { x: number; y: number };
+// Manages snapping behavior for elements being dragged on the canvas.
+// Provides functionality for snapping to a grid and locking movement to a single axis (horizontal or vertical).
 const gridSize = 10;
 
 export class SnapManager {
     private snapFunctions: SnapPositionFunction[] = [];
-    private dragMemory: {
+
+    // a place functions can store data between calls, reset when drag starts and ends
+    private dragContext: {
         startX: number | undefined;
         startY: number | undefined;
         axis: "horizontal" | "vertical" | undefined;
@@ -19,14 +18,14 @@ export class SnapManager {
         ];
     }
     public startDrag() {
-        this.dragMemory = {
+        this.dragContext = {
             startX: undefined,
             startY: undefined,
             axis: undefined
         };
     }
     public endDrag() {
-        this.dragMemory = {
+        this.dragContext = {
             startX: undefined,
             startY: undefined,
             axis: undefined
@@ -37,9 +36,9 @@ export class SnapManager {
         x: number,
         y: number
     ): { x: number; y: number } {
-        if (this.dragMemory.startX === undefined) {
-            this.dragMemory.startX = x;
-            this.dragMemory.startY = y;
+        if (this.dragContext.startX === undefined) {
+            this.dragContext.startX = x;
+            this.dragContext.startY = y;
         }
 
         let snappedPosition = { x, y };
@@ -84,39 +83,45 @@ export class SnapManager {
         const axisLockThreshold = 5;
         if (event.shiftKey) {
             // Calculate the distance moved in each direction
-            const xDistance = Math.abs(x - this.dragMemory.startX!);
-            const yDistance = Math.abs(y - this.dragMemory.startY!);
+            const xDistance = Math.abs(x - this.dragContext.startX!);
+            const yDistance = Math.abs(y - this.dragContext.startY!);
 
-            if (this.dragMemory.axis === undefined) {
+            if (this.dragContext.axis === undefined) {
                 // Only determine the axis if movement exceeds the threshold in at least one direction
                 if (
                     xDistance > axisLockThreshold ||
                     yDistance > axisLockThreshold
                 ) {
-                    this.dragMemory.axis =
+                    this.dragContext.axis =
                         xDistance > yDistance ? "horizontal" : "vertical";
                     console.log(
-                        `x=${x}, y=${y}, startX=${this.dragMemory.startX}, startY=${this.dragMemory.startY}, XChange=${xDistance}, YChange=${yDistance}`
+                        `x=${x}, y=${y}, startX=${this.dragContext.startX}, startY=${this.dragContext.startY}, XChange=${xDistance}, YChange=${yDistance}`
                     );
-                    console.log("axis", this.dragMemory.axis);
+                    console.log("axis", this.dragContext.axis);
                 } else {
                     // If movement is below threshold, allow free movement
                     return { x, y };
                 }
             } // Apply axis constraint if axis is determined
-            if (this.dragMemory.axis === "horizontal") {
-                return { x, y: this.dragMemory.startY! };
-            } else if (this.dragMemory.axis === "vertical") {
-                return { x: this.dragMemory.startX!, y };
+            if (this.dragContext.axis === "horizontal") {
+                return { x, y: this.dragContext.startY! };
+            } else if (this.dragContext.axis === "vertical") {
+                return { x: this.dragContext.startX!, y };
             }
             // Default fallback (should not normally happen)
             return { x, y };
         } else {
             // Reset axis when shift key is released
-            if (this.dragMemory.axis !== undefined) {
-                this.dragMemory.axis = undefined;
+            if (this.dragContext.axis !== undefined) {
+                this.dragContext.axis = undefined;
             }
             return { x, y };
         }
     }
 }
+
+type SnapPositionFunction = (
+    event: MouseEvent,
+    x: number,
+    y: number
+) => { x: number; y: number };

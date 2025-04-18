@@ -739,7 +739,7 @@ export class AlignmentManager {
             const line = document.createElement("div");
             line.className = "equal-dimension-indicator";
             line.style.position = "absolute";
-            line.style.backgroundColor = "rgba(150, 102, 143, 0.2)";
+            line.style.backgroundColor = "rgba(105, 150, 102, 0.2)";
             line.style.pointerEvents = "none"; // Make sure it doesn't interfere with mouse events
             line.style.zIndex = "1000";
             line.style.display = "none";
