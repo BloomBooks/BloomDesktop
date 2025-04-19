@@ -23,7 +23,7 @@ interface DragContext {
     axis: "horizontal" | "vertical" | undefined; // The determined axis for single-axis snapping (if Shift is held).
 }
 
-export class SnapManager {
+export class CanvasSnapProvider {
     // Array of functions to apply snapping logic. Order matters.
     private snapFunctions: SnapPositionFunction[] = [];
 

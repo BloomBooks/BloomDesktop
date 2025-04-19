@@ -49,8 +49,8 @@ import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
 import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
-import { SnapManager } from "./SnapManager";
-import { AlignmentManager } from "./AlignmentManager";
+import { CanvasSnapProvider } from "./CanvasSnapProvider";
+import { CanvasGuideProvider } from "./CanvasGuideProvider";
 
 export interface ITextColorInfo {
     color: string;
@@ -89,13 +89,13 @@ export class CanvasElementManager {
         x: 0,
         y: 0
     };
-    // constructor that instantiates AlignmentManager
-    private alignmentManager: AlignmentManager;
-    private snapManager: SnapManager;
+
+    private guideProvider: CanvasGuideProvider;
+    private snapProvider: CanvasSnapProvider;
 
     public constructor() {
-        this.alignmentManager = new AlignmentManager();
-        this.snapManager = new SnapManager();
+        this.guideProvider = new CanvasGuideProvider();
+        this.snapProvider = new CanvasSnapProvider();
         Comical.setSelectorForBubblesWhichTailMidpointMayOverlap(
             ".bloom-backgroundImage"
         );
@@ -1341,13 +1341,13 @@ export class CanvasElementManager {
             this.oldImageTop = imgOrVideo.offsetTop;
             this.oldImageLeft = imgOrVideo.offsetLeft;
         }
-        this.alignmentManager.startDrag(
+        this.guideProvider.startDrag(
             "resize",
             Array.from(
                 document.querySelectorAll(kCanvasElementSelector)
             ) as HTMLElement[]
         );
-        this.snapManager.startDrag();
+        this.snapProvider.startDrag();
         document.addEventListener("mousemove", this.continueResizeDrag, {
             capture: true
         });
@@ -1364,8 +1364,8 @@ export class CanvasElementManager {
             capture: true
         });
         this.currentDragControl?.classList.remove("active-control");
-        this.alignmentManager.endDrag();
-        this.snapManager.endDrag();
+        this.guideProvider.endDrag();
+        this.snapProvider.endDrag();
     };
 
     private minWidth = 30; // @MinTextBoxWidth in overlayTool.less
@@ -1451,7 +1451,7 @@ export class CanvasElementManager {
         }
 
         // 2. Get snapped coordinates
-        const { x: snappedX, y: snappedY } = this.snapManager.getPosition(
+        const { x: snappedX, y: snappedY } = this.snapProvider.getPosition(
             event,
             targetX,
             targetY
@@ -1610,7 +1610,7 @@ export class CanvasElementManager {
         this.alignControlFrameWithActiveElement();
         this.adjustTarget(this.activeElement);
 
-        this.alignmentManager.duringDrag(this.activeElement);
+        this.guideProvider.duringDrag(this.activeElement);
     };
     private startSideDragX: number;
     private startSideDragY: number;
@@ -3297,14 +3297,14 @@ export class CanvasElementManager {
             // Note: at this point we do NOT want to focus it. Only if we decide in mouse up that we want to text-edit it.
             this.setActiveElement(bubble.content);
             const positionInfo = bubble.content.getBoundingClientRect();
-            this.snapManager.startDrag();
+            this.snapProvider.startDrag();
 
             // Possible move action started
             this.bubbleToDrag = bubble;
             // in case this is somehow left from earlier, we want a fresh start for the new move.
             this.animationFrame = 0;
 
-            this.alignmentManager.startDrag(
+            this.guideProvider.startDrag(
                 "move",
                 Array.from(
                     document.querySelectorAll(kCanvasElementSelector)
@@ -3543,7 +3543,7 @@ export class CanvasElementManager {
                 "Created by handleMouseMoveDragCanvasElement()"
             );
 
-            const p = this.snapManager.getPosition(
+            const p = this.snapProvider.getPosition(
                 event,
                 newPosition.getScaledX(),
                 newPosition.getScaledY()
@@ -3560,7 +3560,7 @@ export class CanvasElementManager {
                 this.lastMoveContainer,
                 newPosition
             );
-            this.alignmentManager.duringDrag(this.bubbleToDrag.content);
+            this.guideProvider.duringDrag(this.bubbleToDrag.content);
             this.lastCropControl = undefined; // move resets the basis for cropping
             this.animationFrame = 0;
         });
@@ -3620,8 +3620,8 @@ export class CanvasElementManager {
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseUp = (event: MouseEvent) => {
         this.mouseIsDown = false;
-        this.snapManager.endDrag();
-        this.alignmentManager.endDrag();
+        this.snapProvider.endDrag();
+        this.guideProvider.endDrag();
         document.removeEventListener("mouseup", this.onMouseUp, {
             capture: true
         });

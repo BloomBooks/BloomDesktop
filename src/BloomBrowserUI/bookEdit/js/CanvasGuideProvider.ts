@@ -1,5 +1,4 @@
-// AlignmentManager.ts
-// A class that helps visually align elements during drag operations by showing red lines
+// This class that helps visually align elements during drag operations by showing red lines
 // and highlighting elements with equal dimensions during resize operations.
 
 // ALIGNMENT RULES:
@@ -74,15 +73,16 @@ interface ElementBounds {
  * Manages visual alignment guides (lines) and equal dimension indicators
  * during drag-and-drop or resize operations.
  */
-export class AlignmentManager {
+export class CanvasGuideProvider {
     // --- Configuration ---
-    private readonly ALIGNMENT_THRESHOLD = 4; // Max distance in pixels for snapping
-    private readonly ALIGNMENT_COLOR = "#E54D2E"; // Typically red/orange
+    private readonly PROXIMITY_THRESHOLD = 4; // Max distance in pixels for snapping
+    private readonly GUIDE_COLOR = "#E54D2E"; // Typically red/orange
     private readonly EQUAL_DIM_COLOR = "rgba(105, 150, 102, 0.7)"; // Greenish, semi-transparent
-    private readonly ALIGNMENT_LINE_THICKNESS = "1px";
+    private readonly GUIDE_LINE_THICKNESS = "1px";
     private readonly EQUAL_DIM_LINE_THICKNESS = "3px";
-    private readonly ALIGNMENT_LINE_CLASS = "alignment-line";
-    private readonly EQUAL_DIM_INDICATOR_CLASS = "equal-dimension-indicator";
+    private readonly GUIDE_LINE_CLASS = "bloom-ui-canvas-guide-line";
+    private readonly EQUAL_DIM_INDICATOR_CLASS =
+        "bloom-ui-canvas-equal-dimension-indicator";
     private readonly Z_INDEX = "10000"; // Ensure guides appear above most elements
 
     // --- State ---
@@ -96,7 +96,7 @@ export class AlignmentManager {
      * Initializes the AlignmentManager by creating the necessary guide elements.
      */
     constructor() {
-        this.createAlignmentLines();
+        this.createGuides();
         this.createEqualDimensionIndicators();
     }
 
@@ -138,7 +138,7 @@ export class AlignmentManager {
         );
 
         // Check and display alignment lines
-        this.checkAndShowAlignments(draggedBounds, targetBounds);
+        this.checkAndShowGuides(draggedBounds, targetBounds);
 
         // Check and display equal dimension indicators only during resize
         if (this.currentAction === "resize") {
@@ -180,9 +180,8 @@ export class AlignmentManager {
 
     /**
      * Creates the pool of alignment line DOM elements (initially hidden).
-     * @private
      */
-    private createAlignmentLines(): void {
+    private createGuides(): void {
         const positions = [
             AlignmentPosition.Top,
             AlignmentPosition.Middle,
@@ -193,8 +192,8 @@ export class AlignmentManager {
         ];
 
         positions.forEach(position => {
-            const line = this.createGuideElement(this.ALIGNMENT_LINE_CLASS);
-            line.style.backgroundColor = this.ALIGNMENT_COLOR;
+            const line = this.createGuideElement(this.GUIDE_LINE_CLASS);
+            line.style.backgroundColor = this.GUIDE_COLOR;
 
             // Set thickness based on orientation
             const isHorizontal =
@@ -202,10 +201,10 @@ export class AlignmentManager {
                 position === AlignmentPosition.Middle ||
                 position === AlignmentPosition.Bottom;
             if (isHorizontal) {
-                line.style.height = this.ALIGNMENT_LINE_THICKNESS;
+                line.style.height = this.GUIDE_LINE_THICKNESS;
                 line.style.width = "0"; // Width determined later
             } else {
-                line.style.width = this.ALIGNMENT_LINE_THICKNESS;
+                line.style.width = this.GUIDE_LINE_THICKNESS;
                 line.style.height = "0"; // Height determined later
             }
 
@@ -216,7 +215,6 @@ export class AlignmentManager {
 
     /**
      * Creates the template DOM elements for equal dimension indicators (initially hidden).
-     * @private
      */
     private createEqualDimensionIndicators(): void {
         const dimensions = [EqualDimension.Width, EqualDimension.Height];
@@ -248,7 +246,6 @@ export class AlignmentManager {
      * Creates a standard div element used for visual guides.
      * @param className CSS class name to apply.
      * @returns The created HTMLElement.
-     * @private
      */
     private createGuideElement(className: string): HTMLElement {
         const element = document.createElement("div");
@@ -263,7 +260,6 @@ export class AlignmentManager {
 
     /**
      * Hides all alignment lines and removes dynamic equal dimension indicators.
-     * @private
      */
     private hideAllGuides(): void {
         // Hide the reusable alignment lines
@@ -279,7 +275,7 @@ export class AlignmentManager {
      * Calculates and caches the bounding box and center points for an element.
      * @param element The element to measure.
      * @returns An ElementBounds object.
-     * @private
+
      */
     private getElementBounds(element: HTMLElement): ElementBounds {
         const rect = element.getBoundingClientRect();
@@ -305,9 +301,8 @@ export class AlignmentManager {
      * Checks for alignments between the dragged element and target elements.
      * @param draggedBounds Bounds of the element being dragged.
      * @param targetBounds Array of bounds for the elements to align against.
-     * @private
      */
-    private checkAndShowAlignments(
+    private checkAndShowGuides(
         draggedBounds: ElementBounds,
         targetBounds: ElementBounds[]
     ): void {
@@ -328,7 +323,7 @@ export class AlignmentManager {
             );
             if (alignedElements.length > 1) {
                 // Need dragged element + at least one target
-                this.showAlignmentLine(
+                this.showGuideLine(
                     dragPoint.pos,
                     dragPoint.value,
                     alignedElements
@@ -350,7 +345,7 @@ export class AlignmentManager {
                 allBounds
             );
             if (alignedElements.length > 1) {
-                this.showAlignmentLine(
+                this.showGuideLine(
                     dragPoint.pos,
                     dragPoint.value,
                     alignedElements
@@ -365,7 +360,6 @@ export class AlignmentManager {
      * @param axesToCheck The axes ('top', 'middle', 'bottom' OR 'left', 'center', 'right') to check on each element.
      * @param allBounds An array containing the bounds of the dragged element and all target elements.
      * @returns An array of ElementBounds for the aligned elements.
-     * @private
      */
     private findAlignedElements(
         coordinate: number,
@@ -383,7 +377,7 @@ export class AlignmentManager {
                 const elementCoord = bounds[axis];
                 if (
                     Math.abs(coordinate - elementCoord) <=
-                    this.ALIGNMENT_THRESHOLD
+                    this.PROXIMITY_THRESHOLD
                 ) {
                     // Potentially update the best alignment coordinate if this one is closer to others
                     // (Simple approach: stick with the first match's coordinate)
@@ -399,7 +393,7 @@ export class AlignmentManager {
                 const elementCoord = bounds[axis];
                 if (
                     Math.abs(bestAlignmentCoord - elementCoord) <=
-                    this.ALIGNMENT_THRESHOLD
+                    this.PROXIMITY_THRESHOLD
                 ) {
                     aligned.push(bounds);
                     break; // Only add element once per alignment group
@@ -415,9 +409,8 @@ export class AlignmentManager {
      * @param position The type of alignment (Top, Middle, Left, etc.).
      * @param coordinate The exact coordinate (y for horizontal, x for vertical) to draw the line at.
      * @param alignedElements An array of ElementBounds for the elements that are aligned.
-     * @private
      */
-    private showAlignmentLine(
+    private showGuideLine(
         position: AlignmentPosition,
         coordinate: number,
         alignedElements: ElementBounds[]
@@ -437,10 +430,10 @@ export class AlignmentManager {
             const maxRight = Math.max(...alignedElements.map(b => b.right));
 
             line.style.top = `${coordinate -
-                parseFloat(this.ALIGNMENT_LINE_THICKNESS) / 2}px`; // Center line thickness
+                parseFloat(this.GUIDE_LINE_THICKNESS) / 2}px`; // Center line thickness
             line.style.left = `${minLeft}px`;
             line.style.width = `${maxRight - minLeft}px`;
-            line.style.height = this.ALIGNMENT_LINE_THICKNESS; // Ensure height is set correctly
+            line.style.height = this.GUIDE_LINE_THICKNESS; // Ensure height is set correctly
         } else {
             // Vertical line
             // Find the min top and max bottom edges among the aligned elements
@@ -448,10 +441,10 @@ export class AlignmentManager {
             const maxBottom = Math.max(...alignedElements.map(b => b.bottom));
 
             line.style.left = `${coordinate -
-                parseFloat(this.ALIGNMENT_LINE_THICKNESS) / 2}px`; // Center line thickness
+                parseFloat(this.GUIDE_LINE_THICKNESS) / 2}px`; // Center line thickness
             line.style.top = `${minTop}px`;
             line.style.height = `${maxBottom - minTop}px`;
-            line.style.width = this.ALIGNMENT_LINE_THICKNESS; // Ensure width is set correctly
+            line.style.width = this.GUIDE_LINE_THICKNESS; // Ensure width is set correctly
         }
 
         line.style.display = "block"; // Make the line visible
@@ -461,7 +454,6 @@ export class AlignmentManager {
      * Checks for elements with dimensions equal to the dragged element during resize.
      * @param draggedBounds Bounds of the element being resized.
      * @param targetBounds Array of bounds for the potential matching elements.
-     * @private
      */
     private checkAndShowEqualDimensions(
         draggedBounds: ElementBounds,
@@ -476,12 +468,12 @@ export class AlignmentManager {
         // Find target elements matching width or height
         targetBounds.forEach(bounds => {
             if (
-                Math.abs(dragWidth - bounds.width) <= this.ALIGNMENT_THRESHOLD
+                Math.abs(dragWidth - bounds.width) <= this.PROXIMITY_THRESHOLD
             ) {
                 matchingWidthElements.push(bounds);
             }
             if (
-                Math.abs(dragHeight - bounds.height) <= this.ALIGNMENT_THRESHOLD
+                Math.abs(dragHeight - bounds.height) <= this.PROXIMITY_THRESHOLD
             ) {
                 matchingHeightElements.push(bounds);
             }
@@ -509,7 +501,6 @@ export class AlignmentManager {
      * Clones the template indicator for each element.
      * @param dimension The dimension type (Width or Height).
      * @param matchingElements Array of ElementBounds with the matching dimension.
-     * @private
      */
     private showEqualDimensionIndicators(
         dimension: EqualDimension,
