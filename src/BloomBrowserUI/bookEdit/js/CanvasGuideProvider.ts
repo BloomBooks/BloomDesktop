@@ -12,7 +12,8 @@
 //
 // EQUAL DIMENSION RULES (during resize only):
 // 1. Identify elements with the same width and/or height as the element being resized (within the threshold).
-// 2. Display a thicker, semi-transparent line in the middle of all elements with matching dimensions.
+// 2. If at least one *other* element matches a dimension, display a thicker, semi-transparent line
+//    in the middle of the resized element AND all other elements with that matching dimension.
 // 3. For elements with the same width, show a horizontal line through their vertical center.
 // 4. For elements with the same height, show a vertical line through their horizontal center.
 
@@ -133,7 +134,11 @@ export class CanvasGuideProvider {
 
         // Pre-calculate bounds for efficiency
         const draggedBounds = this.getElementBounds(draggedElement);
-        const targetBounds = this.targetElements.map(el =>
+        // Ensure targetElements does not include the draggedElement itself (safeguard)
+        const filteredTargetElements = this.targetElements.filter(
+            el => el !== draggedElement
+        );
+        const targetBounds = filteredTargetElements.map(el =>
             this.getElementBounds(el)
         );
 
@@ -452,6 +457,8 @@ export class CanvasGuideProvider {
 
     /**
      * Checks for elements with dimensions equal to the dragged element during resize.
+     * Displays indicators on all matching elements (including the dragged element itself)
+     * *if* at least one target element matches the dimension.
      * @param draggedBounds Bounds of the element being resized.
      * @param targetBounds Array of bounds for the potential matching elements.
      */
@@ -479,8 +486,10 @@ export class CanvasGuideProvider {
             }
         });
 
-        // If matches were found, add the dragged element itself to the list for visualization
+        // Only show indicators if at least one *other* element matches.
+        // If matches were found, add the dragged element itself to the list for visualization.
         if (matchingWidthElements.length > 0) {
+            // Add the dragged element ONLY if there are other matches
             matchingWidthElements.push(draggedBounds);
             this.showEqualDimensionIndicators(
                 EqualDimension.Width,
@@ -488,6 +497,7 @@ export class CanvasGuideProvider {
             );
         }
         if (matchingHeightElements.length > 0) {
+            // Add the dragged element ONLY if there are other matches
             matchingHeightElements.push(draggedBounds);
             this.showEqualDimensionIndicators(
                 EqualDimension.Height,
