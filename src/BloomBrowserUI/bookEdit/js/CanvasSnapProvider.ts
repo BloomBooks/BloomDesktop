@@ -8,7 +8,7 @@ const gridSize = 10;
 
 // Type definition for functions that modify a position based on snapping rules.
 type SnapPositionFunction = (
-    event: MouseEvent,
+    event: MouseEvent | KeyboardEvent,
     x: number,
     y: number
 ) => { x: number; y: number };
@@ -76,7 +76,7 @@ export class CanvasSnapProvider {
      * @returns The potentially snapped {x, y} coordinates.
      */
     public getPosition(
-        event: MouseEvent,
+        event: MouseEvent | KeyboardEvent,
         x: number,
         y: number
     ): { x: number; y: number } {
@@ -113,7 +113,7 @@ export class CanvasSnapProvider {
      * @returns The grid-snapped {x, y} coordinates.
      */
     private snapToGrid(
-        _event: MouseEvent,
+        _event: MouseEvent | KeyboardEvent,
         x: number,
         y: number
     ): { x: number; y: number } {
@@ -134,7 +134,7 @@ export class CanvasSnapProvider {
      * @returns The axis-snapped {x, y} coordinates if Shift is held and axis is locked, otherwise the input {x, y}.
      */
     private snapToOneAxis(
-        event: MouseEvent,
+        event: MouseEvent | KeyboardEvent,
         x: number,
         y: number
     ): { x: number; y: number } {
@@ -180,5 +180,21 @@ export class CanvasSnapProvider {
             return { x: this.dragContext.startX!, y };
         }
         // Note: The logic guarantees axis is either "horizontal" or "vertical" here if shift is pressed.
+    }
+
+    /**
+     * Returns the minimum step size for keyboard movements based on whether CTRL key is pressed.
+     * When CTRL is pressed, returns a precision movement (1 pixel).
+     * When CTRL is not pressed, returns the grid size for snapping to grid positions.
+     * @param event The keyboard event to check for modifier keys
+     * @returns The step size in pixels
+     */
+    public getMinimumStepSize(event: KeyboardEvent): number {
+        // If CTRL key is pressed, use precise movement (1 pixel)
+        if (event.ctrlKey) {
+            return 1;
+        }
+        // Otherwise, use grid size for snapping
+        return gridSize;
     }
 }
