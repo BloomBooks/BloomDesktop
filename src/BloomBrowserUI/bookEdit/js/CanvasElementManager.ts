@@ -3627,6 +3627,10 @@ export class CanvasElementManager {
             // Game in play mode...no edit mode functionality is relevant
             return true;
         }
+        if (targetElement.classList.contains("changeImageButton")) {
+            // The change image button should handle the mouse event itself.  See BL-14614.
+            return true;
+        }
         if (targetElement.classList.contains("bloom-dragHandle")) {
             // The drag handle is outside the canvas element, so dragging it with the mouse
             // events we handle doesn't work. Returning true lets its own event handler
