@@ -21,6 +21,12 @@
     #titlePageTitleBlock {
         margin-bottom: @MarginBetweenMajorItems;
     }
+    // scrunch as necessary to fit
+    &.Device16x9Landscape {
+        #titlePageTitleBlock {
+            margin-bottom: 0.5em;
+        }
+    }
     // shrink things down even more if it's a small paper size
     &.A6Landscape,
     &.A6Portrait,
@@ -47,6 +53,13 @@
         display: block;
         margin-bottom: @MarginBetweenMajorItems;
         margin-top: @MarginBetweenMajorItems;
+    }
+    // scrunch as necessary to fit
+    &.Device16x9Landscape {
+        .OriginalContributions-style.bloom-contentNational1 {
+            margin-bottom: 1em;
+            margin-top: 1em;
+        }
     }
     // default values for the Funding section
     .Funding-style.bloom-contentNational1 {
@@ -76,6 +89,12 @@
             margin-bottom: 0.75em;
         }
     }
+    // scrunch as necessary to fit
+    &.Device16x9Landscape {
+        .NationalLanguage-style.bloom-contentNational1 {
+            margin-bottom: 1em;
+        }
+    }
     // default values for the Localized Acknowledgments section
     .LocalizedAcknowledgments-style.bloom-contentNational1 {
         font-size: @creditsPageFontSize;
@@ -83,6 +102,13 @@
         display: block;
         margin-bottom: @MarginBetweenMajorItems;
     }
+    // scrunch as necessary to fit
+    &.Device16x9Landscape {
+        .LocalizedAcknowledgments-style.bloom-contentNational1 {
+            margin-bottom: 1em;
+        }
+    }
+
     #originalAcknowledgments {
         // The spec says to "add a line space" between the copyright/license block and
         // the original acknowledgments, but they also shrank the text at the same time, so "a line space"
