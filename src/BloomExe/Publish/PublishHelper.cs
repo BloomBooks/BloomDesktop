@@ -960,6 +960,8 @@ namespace Bloom.Publish
                 // Preserve links if they exist (BL-14318)
                 if (imgContainer.AttributeNames.Contains("data-href"))
                     bloomCanvas.SetAttribute("data-href", imgContainer.GetAttribute("data-href"));
+                if (canvasElement.AttributeNames.Contains("data-sound"))
+                    bloomCanvas.SetAttribute("data-sound", canvasElement.GetAttribute("data-sound"));
                 canvasElement.ParentNode.RemoveChild(canvasElement);
                 if (
                     !bloomCanvas.ChildNodes.Any(
