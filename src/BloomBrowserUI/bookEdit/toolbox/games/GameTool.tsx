@@ -1090,6 +1090,7 @@ const DragActivityControls: React.FunctionComponent<{
     if (
         activityType === "drag-letter-to-target" ||
         activityType === "drag-image-to-target" ||
+        activityType === "drag-image-to-shadow" ||
         // anticipating
         activityType === "drag-to-destination"
     ) {
@@ -1105,14 +1106,20 @@ const DragActivityControls: React.FunctionComponent<{
     // which controls to show?
     const showLetterDraggable =
         activityType !== "drag-word-chooser-slider" &&
+        activityType !== "drag-image-to-shadow" &&
         activityType !== "drag-image-to-target";
     const showWordDraggable =
+        activityType !== "drag-image-to-shadow" &&
         activityType !== "drag-word-chooser-slider" &&
         activityType !== "drag-letter-to-target"; //&&
     // For now we'll show for this game also. We probably want to add a generic game
     // that shows all the options and go back to hiding it for this.
     //activityType !== "drag-image-to-target";
     const showImageDraggable = activityType !== "drag-letter-to-target";
+    const showVideoDraggable = activityType !== "drag-image-to-shadow";
+    const showSoundDraggable =
+        activityType !== "drag-letter-to-target" &&
+        activityType !== "drag-image-to-shadow";
     return (
         <ThemeProvider theme={toolboxTheme}>
             {props.activeTab === startTabIndex && (
@@ -1147,18 +1154,20 @@ const DragActivityControls: React.FunctionComponent<{
                                             strokeColor={kBloomBlue}
                                             showOuterRectangle={true}
                                         />
-                                        <CanvasElementVideoItem
-                                            makeTarget={
-                                                activityType !==
-                                                "drag-word-chooser-slider"
-                                            }
-                                            showOuterRectangle={true}
-                                        />
+                                        {showVideoDraggable && (
+                                            <CanvasElementVideoItem
+                                                makeTarget={
+                                                    activityType !==
+                                                    "drag-word-chooser-slider"
+                                                }
+                                                showOuterRectangle={true}
+                                            />
+                                        )}
                                     </Fragment>
                                 )}
                             </CanvasElementItemRow>
                             <CanvasElementItemRow>
-                                {showImageDraggable && (
+                                {showSoundDraggable && (
                                     <CanvasElementSoundItem />
                                 )}
                                 <CanvasElementTextItem

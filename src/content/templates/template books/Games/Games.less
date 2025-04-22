@@ -414,6 +414,17 @@
     pointer-events: none;
 }
 
+// In the drag-image-to-shadow game, we want to show the shadows of the target images everywhere.
+.bloom-page[data-activity="drag-image-to-shadow"] [data-target-of] {
+    background-color: unset;
+
+    .bloom-targetWrapper {
+        filter: grayscale(100%) brightness(0%);
+        mix-blend-mode: normal;
+        opacity: 100%;
+    }
+}
+
 .bloom-targetWrapper {
     height: 100%;
     width: 100%;

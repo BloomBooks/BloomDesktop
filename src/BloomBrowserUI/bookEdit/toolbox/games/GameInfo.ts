@@ -3,6 +3,7 @@ export enum GameType {
     DragLetterToTarget,
     DragSortSentence,
     DragImageToTarget,
+    DragImageToShadow,
     ChooseImageFromWord,
     ChooseWordFromImage,
     CheckboxQuiz
@@ -16,6 +17,8 @@ export function getGameType(activityType: string, page: HTMLElement): GameType {
             return GameType.DragSortSentence;
         case "drag-image-to-target":
             return GameType.DragImageToTarget;
+        case "drag-image-to-shadow":
+            return GameType.DragImageToShadow;
         case "simple-dom-choice":
             if (page?.getElementsByClassName("wordThenChoices")?.length > 0) {
                 return GameType.ChooseImageFromWord;
@@ -37,6 +40,7 @@ const activityTypesForGames = [
     "drag-sort-sentence",
     "drag-letter-to-target",
     "drag-image-to-target",
+    "drag-image-to-shadow",
 
     "simple-dom-choice",
     "simple-checkbox-quiz",
