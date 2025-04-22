@@ -100,30 +100,35 @@ export class BubbleManager {
     // to fit it.
     // (Caller may wish to do box.scrollTop = 0 to make sure the whole content shows now there
     // is room for it all.)
-    // Returns true if successful; it will currently fail if box is not
-    // inside a valid OverPicture element or if the OverPicture element can't grow this much while
-    // remaining inside the image container. If it returns false, it makes no changes at all.
+    // Returns 0 if totally successful, with the box adjusted to the desired height; if nothing can be
+    // done, it will return the input overflowY value.
+    // If doNotShrink is true and overflowY is negative, it will not shrink the box and will return the
+    // original overflowY value.
+    // If growAsMuchAsPossible is false, and there is not enough room to grow the box, it will return the
+    // original overflowY value without changing the box.  If growAsMuchAsPossible is true, it will grow
+    // the box as much as possible and return the amount of positive overflow that remains.  See BL-14632.
     public growOverflowingBox(
         box: HTMLElement,
         overflowY: number,
-        doNotShrink?: boolean
-    ): boolean {
+        doNotShrink?: boolean,
+        growAsMuchAsPossible?: boolean
+    ): number {
         const wrapperBox = box.closest(kTextOverPictureSelector) as HTMLElement;
         if (
             !wrapperBox ||
             wrapperBox.classList.contains("bloom-noAutoHeight")
         ) {
-            return false; // we can't fix it
+            return overflowY; // we can't fix it
         }
         if (doNotShrink && overflowY < 0) {
-            return false; // we don't want to change the box's size
+            return overflowY; // we don't want to change the box's size
         }
 
         const container = BubbleManager.getTopLevelImageContainerElement(
             wrapperBox
         );
         if (!container) {
-            return false; // paranoia; OverPicture element should always be in image container
+            return overflowY; // paranoia; OverPicture element should always be in image container
         }
 
         // The +4 is based on experiment. It may relate to a couple of 'fudge factors'
@@ -138,7 +143,7 @@ export class BubbleManager {
             newHeight < wrapperBox.clientHeight &&
             newHeight > wrapperBox.clientHeight - 4
         ) {
-            return false; // near enough, avoid jitter making it a tiny bit smaller.
+            return overflowY; // near enough, avoid jitter making it a tiny bit smaller.
         }
 
         // If a lot of text is pasted, the container will scroll down.
@@ -150,17 +155,19 @@ export class BubbleManager {
 
         // Check if required height exceeds available height
         if (newHeight + wrapperBox.offsetTop > container.clientHeight) {
-            // ENHANCE: Would be nice if this set the height up to the max
-            //          But it probably requires some changes to what the return value represents and how the caller should deal.
-            //          Maybe we should return an adjusted overflowY instead of a boolean.
-            return false;
+            if (growAsMuchAsPossible) {
+                // If we are allowed to grow as much as possible, we can set the height to the max available height.
+                newHeight = container.clientHeight - wrapperBox.offsetTop;
+            } else {
+                return overflowY;
+            }
         }
 
         wrapperBox.style.height = newHeight + "px"; // next line will change to percent
         BubbleManager.convertTextboxPositionToAbsolute(wrapperBox, container);
         this.adjustTarget(wrapperBox);
         this.alignControlFrameWithActiveElement();
-        return true;
+        return 0; // success; we fixed it
     }
 
     public updateAutoHeight(): void {
@@ -189,14 +196,10 @@ export class BubbleManager {
             this.activeElement.offsetHeight;
 
         // This mimics the relevant part of OverflowChecker.MarkOverflowInternal
-        if (
-            theOneBubbleManager.growOverflowingBox(
-                this.activeElement,
-                overflowY
-            )
-        ) {
-            overflowY = 0;
-        }
+        overflowY = theOneBubbleManager.growOverflowingBox(
+            this.activeElement,
+            overflowY
+        );
         editable.classList.toggle("overflow", overflowY > 0);
     }
 
