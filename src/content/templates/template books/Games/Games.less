@@ -27,6 +27,8 @@
 
 @import "gamesThemes.less";
 
+@target-border-width: 2px;
+
 // These ones show in the Correct tab, or when the user has given a correct answer.
 .drag-item-correct,
 .drag-item-wrong {
@@ -418,6 +420,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    top: @target-border-width;
 }
 
 .drag-item-order-sentence .bloom-editable {
@@ -503,7 +506,7 @@
 }
 
 [data-target-of] {
-    border: dashed 2px var(--draggable-background-color);
+    border: dashed @target-border-width var(--draggable-background-color);
     // If we ever want targets to have a background color (except when hidden), here's the place.
     //background-color: var(--target-color);
 
@@ -586,7 +589,11 @@
     visibility: unset;
 }
 
-.Instructions-style {
+.GameHeader-style {
     color: var(--header-color);
     background-color: var(--header-background-color);
+}
+.GameTargetLabel-style {
+    color: var(--button-color);
+    background-color: var(--page-background-color);
 }

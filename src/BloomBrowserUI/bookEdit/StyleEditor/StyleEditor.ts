@@ -36,6 +36,7 @@ import { RenderRoot } from "./AudioHilitePage";
 import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
 import { CanvasElementManager } from "../js/CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
+import { getPageIFrame } from "../../utils/shared";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -64,6 +65,54 @@ interface IFormattingValues {
     hiliteTextColor: string | undefined;
     hiliteBgColor: string;
     padding: string;
+}
+
+// Props we know how to set in creating a user-defined style.
+// I just did the ones we needed. More can easily be added.
+// These currently apply to all languages. This means that font-family should NOT be added.
+export interface StyleDefnProps {
+    fontSize?: string;
+    lineHeight?: string;
+}
+
+// If the document doesn't already have a user-defined style with the specified name,
+// (which should not include the -style suffix), create one with the specified styles.
+export function createStyleDefnIfUndefined(
+    styleNamePlain: string,
+    styles: StyleDefnProps,
+    supportFilesRoot: string = ""
+): CSSStyleRule | null {
+    const styleName = styleNamePlain + "-style";
+    const styleEditor = new StyleEditor(supportFilesRoot);
+    const documentToUse = getPageIFrame()?.contentDocument ?? document;
+    const rule = styleEditor.GetRuleForStyle(
+        styleName,
+        "",
+        false, // don't create it if it doesn't exist
+        documentToUse
+    );
+    if (rule) {
+        return null; // already exists, nothing to do
+    }
+    const newRule = styleEditor.GetRuleForStyle(
+        styleName,
+        "",
+        true, // create it if it doesn't exist
+        documentToUse
+    );
+    if (newRule && styles.fontSize) {
+        newRule.style.setProperty("font-size", styles.fontSize, "important");
+    }
+    if (newRule && styles.lineHeight) {
+        newRule.style.setProperty(
+            "line-height",
+            styles.lineHeight,
+            "important"
+        );
+    }
+    // As you add to this,some props may need to be applied to the paragraph inside.
+    // Pay attention to the setter for the corresponding properry in the dialog event handlers.
+    return newRule;
 }
 
 // Class provides a convenient way to group a style id and display name
@@ -435,34 +484,38 @@ export default class StyleEditor {
         return filteredArray;
     }
 
-    private FindExistingUserModifiedStyleSheet(): CSSStyleSheet | null {
-        for (let i = 0; i < document.styleSheets.length; i++) {
+    private FindExistingUserModifiedStyleSheet(
+        documentToUse: Document = document
+    ): CSSStyleSheet | null {
+        for (let i = 0; i < documentToUse.styleSheets.length; i++) {
             if (
-                (<HTMLElement>document.styleSheets[i].ownerNode).title ===
+                (<HTMLElement>documentToUse.styleSheets[i].ownerNode).title ===
                 "userModifiedStyles"
             ) {
                 // alert("Found userModifiedStyles sheet: i= " + i + ", title= " +
-                //  (<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title + ", sheet= " +
-                //  document.styleSheets[i].ownerNode.textContent);
-                return <CSSStyleSheet>document.styleSheets[i];
+                //  (<StyleSheet>(<any>documentToUse.styleSheets[i]).ownerNode).title + ", sheet= " +
+                //  documentToUse.styleSheets[i].ownerNode.textContent);
+                return <CSSStyleSheet>documentToUse.styleSheets[i];
             }
         }
         return null;
     }
 
     //note, this currently just makes an element in the document, not a separate file
-    public GetOrCreateUserModifiedStyleSheet(): CSSStyleSheet | null {
-        let styleSheet = this.FindExistingUserModifiedStyleSheet();
+    public GetOrCreateUserModifiedStyleSheet(
+        documentToUse: Document = document
+    ): CSSStyleSheet | null {
+        let styleSheet = this.FindExistingUserModifiedStyleSheet(documentToUse);
         if (styleSheet == null) {
-            const newSheet = document.createElement("style");
-            document.getElementsByTagName("head")[0].appendChild(newSheet);
+            const newSheet = documentToUse.createElement("style");
+            documentToUse.getElementsByTagName("head")[0].appendChild(newSheet);
             newSheet.title = "userModifiedStyles";
             newSheet.type = "text/css";
 
             //at this point, we are tempted to just return newSheet, but in the FF29 we're using,
             //that is just an element at this point, not a really stylesheet.
             //so we just go searching for it again in the document.styleSheets array, and this time we will find it.
-            styleSheet = this.FindExistingUserModifiedStyleSheet();
+            styleSheet = this.FindExistingUserModifiedStyleSheet(documentToUse);
         }
         return styleSheet;
     }
@@ -506,9 +559,12 @@ export default class StyleEditor {
         // such as [lang='fr'] or span.ui-audioCurrent
         addToSelector: string,
         // If there is not already such a rule, should we create it, or return null?
-        create: boolean
+        create: boolean,
+        documentToUse: Document = document
     ): CSSStyleRule | null {
-        const styleSheet = this.GetOrCreateUserModifiedStyleSheet();
+        const styleSheet = this.GetOrCreateUserModifiedStyleSheet(
+            documentToUse
+        );
         if (styleSheet == null) {
             return null;
         }
