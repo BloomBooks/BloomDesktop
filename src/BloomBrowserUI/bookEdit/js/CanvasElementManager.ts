@@ -107,17 +107,22 @@ export class CanvasElementManager {
     // adjust the size of the canvas element to fit it.
     // (We also call editable.scrollTop = 0 to make sure the whole content shows now there
     // is room for it all.)
-    // Returns true if successful; it will currently fail if editable is not
-    // inside a valid canvas element or if the canvas element can't grow this much while
-    // remaining inside the bloom-canvas. If it returns false, it makes no changes at all.
+    // Returns 0 if totally successful, with the editable adjusted to the desired height; if nothing can be
+    // done, it will return the input overflowY value.
+    // If doNotShrink is true and overflowY is negative, it will not shrink the editable and will return the
+    // original overflowY value.
+    // If growAsMuchAsPossible is false, and there is not enough room to grow the editable, it will return the
+    // original overflowY value without changing the box.  If growAsMuchAsPossible is true, it will grow
+    // the editable as much as possible and return the amount of positive overflow that remains.  See BL-14632.
     public adjustSizeOfContainingCanvasElementToMatchContent(
         editable: HTMLElement,
         overflowY: number,
-        doNotShrink?: boolean
-    ): boolean {
+        doNotShrink?: boolean,
+        growAsMuchAsPossible?: boolean
+    ): number {
         if (editable instanceof HTMLTextAreaElement) {
             // Calendars still use textareas, but we don't do anything with them here.
-            return false;
+            return overflowY;
         }
 
         console.assert(
@@ -132,15 +137,15 @@ export class CanvasElementManager {
             !canvasElement ||
             canvasElement.classList.contains("bloom-noAutoHeight")
         ) {
-            return false; // we can't fix it
+            return overflowY; // we can't fix it
         }
         if (doNotShrink && overflowY < 0) {
-            return false; // we don't want to change the box's size
+            return overflowY; // we don't want to change the box's size
         }
 
         const bloomCanvas = CanvasElementManager.getBloomCanvas(canvasElement);
         if (!bloomCanvas) {
-            return false; // paranoia; canvas element should always be in bloom-canvas
+            return overflowY; // paranoia; canvas element should always be in bloom-canvas
         }
 
         // The +4 is based on experiment. It may relate to a couple of 'fudge factors'
@@ -161,7 +166,7 @@ export class CanvasElementManager {
             newHeight < canvasElement.clientHeight &&
             newHeight > canvasElement.clientHeight - 4
         ) {
-            return false; // near enough, avoid jitter making it a tiny bit smaller.
+            return overflowY; // near enough, avoid jitter making it a tiny bit smaller.
         }
         if (
             newHeight < canvasElement.clientHeight &&
@@ -169,7 +174,7 @@ export class CanvasElementManager {
         ) {
             // Shrinking might cause other boxes in the group to overflow.
             // for now we just don't do it.
-            return false;
+            return overflowY;
         }
 
         // If a lot of text is pasted, the bloom-canvas will scroll down.
@@ -181,10 +186,12 @@ export class CanvasElementManager {
 
         // Check if required height exceeds available height
         if (newHeight + canvasElement.offsetTop > bloomCanvas.clientHeight) {
-            // ENHANCE: Would be nice if this set the height up to the max
-            //          But it probably requires some changes to what the return value represents and how the caller should deal.
-            //          Maybe we should return an adjusted overflowY instead of a boolean.
-            return false;
+            if (growAsMuchAsPossible) {
+                // If we are allowed to grow as much as possible, we can set the height to the max available height.
+                newHeight = bloomCanvas.clientHeight - canvasElement.offsetTop;
+            } else {
+                return overflowY;
+            }
         }
 
         canvasElement.style.height = newHeight + "px";
@@ -196,7 +203,7 @@ export class CanvasElementManager {
         );
         this.adjustTarget(canvasElement);
         this.alignControlFrameWithActiveElement();
-        return true;
+        return 0; // success; we fixed it
     }
 
     private getMaxVisibleSiblingHeight(
@@ -258,14 +265,10 @@ export class CanvasElementManager {
             this.activeElement.offsetHeight;
 
         // This mimics the relevant part of OverflowChecker.MarkOverflowInternal
-        if (
-            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
-                editable,
-                overflowY
-            )
-        ) {
-            overflowY = 0;
-        }
+        overflowY = theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
+            editable,
+            overflowY
+        );
         editable.classList.toggle("overflow", overflowY > 0);
     }
 
@@ -3625,6 +3628,10 @@ export class CanvasElementManager {
         }
         if (CanvasElementManager.inPlayMode(targetElement)) {
             // Game in play mode...no edit mode functionality is relevant
+            return true;
+        }
+        if (targetElement.classList.contains("changeImageButton")) {
+            // The change image button should handle the mouse event itself.  See BL-14614.
             return true;
         }
         if (targetElement.classList.contains("bloom-dragHandle")) {
