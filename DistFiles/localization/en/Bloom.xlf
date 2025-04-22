@@ -5382,19 +5382,21 @@ Do you want to go ahead?</note>
 is mostly status, which shows on the Collection Tab -->
 
       <trans-unit id="SubscriptionStatus.RenewalMessage">
-        <source xml:lang="en">Please [contact us](%0) to renew.</source>
+        <source xml:lang="en">Please email [subscriptions@bloomlibrary.org](%0) to renew.</source>
         <note>ID: SubscriptionStatus.RenewalMessage</note>
-        <note>%0 will be replaced with a contact email link</note>
+        <note>Make sure to keep the brackets around [subscriptions@bloomlibrary.org] and do not change it at all.  Do not change the (%0) part either. The %0 will become a hyperlink that opens an email program to the correct email address.  To repeat, the text starting from the opening bracket [ and ending with the closing parenthesis ) should not be translated or changed in any way.</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
         <source xml:lang="en">Your {0} subscription expires on {1}.</source>
         <note>ID: SubscriptionStatus.ExpiringSoonMessage</note>
-        <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
+        <note>{0} is the subscription descriptor, {1} is the formatted expiration date.</note>
+        <note>Note that {0} will sometimes be blank, so if possible, please use a translation which allows for that.</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiredMessage">
         <source xml:lang="en">Your {0} subscription expired on {1}.</source>
         <note>ID: SubscriptionStatus.ExpiredMessage</note>
-        <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
+        <note>{0} is the subscription descriptor, {1} is the formatted expiration date.</note>
+        <note>Note that {0} will sometimes be blank, so if possible, please use a translation which allows for that.</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.DefaultMessage">
         <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
