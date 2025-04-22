@@ -63,7 +63,13 @@ export default class OverflowChecker {
             // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
             //        At first I was concerned that this might slow typing, but it doesn't seem to.
             setTimeout(() => {
-                OverflowChecker.MarkOverflowInternal(editable);
+                if (e.type === "paste") {
+                    // If we're pasting, show as much of the text as possible even it can't all be shown.
+                    // See BL-14632.
+                    OverflowChecker.MarkOverflowInternal(editable, false, true);
+                } else {
+                    OverflowChecker.MarkOverflowInternal(editable);
+                }
 
                 //REVIEW: why is this here, in the overflow detection?
 
@@ -332,7 +338,8 @@ export default class OverflowChecker {
     // but is also called from within StyleEditor (and therefore public)
     public static MarkOverflowInternal(
         editable: HTMLElement,
-        doNotShrink?: boolean
+        doNotShrink?: boolean,
+        growAsMuchAsPossible?: boolean
     ) {
         // There are two types of overflow that we need to check.
         // 1-When we're called by a handler on an element, we need to check that that element
@@ -386,15 +393,12 @@ export default class OverflowChecker {
         );
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
-        if (
-            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
-                editable,
-                overflowY,
-                doNotShrink
-            )
-        ) {
-            overflowY = 0;
-        }
+        overflowY = theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
+            editable,
+            overflowY,
+            doNotShrink,
+            growAsMuchAsPossible
+        );
         if (preventOverflowY) {
             // The usual fairly crude calculation may indicate it's overflowing, but
             // above we did a much more precise calculation and gave it just enough padding
