@@ -1113,6 +1113,8 @@ const DragActivityControls: React.FunctionComponent<{
     // that shows all the options and go back to hiding it for this.
     //activityType !== "drag-image-to-target";
     const showImageDraggable = activityType !== "drag-letter-to-target";
+    const showVideoDraggable = true;
+    const showSoundDraggable = activityType !== "drag-letter-to-target";
     return (
         <ThemeProvider theme={toolboxTheme}>
             {props.activeTab === startTabIndex && (
@@ -1147,18 +1149,20 @@ const DragActivityControls: React.FunctionComponent<{
                                             strokeColor={kBloomBlue}
                                             showOuterRectangle={true}
                                         />
-                                        <CanvasElementVideoItem
-                                            makeTarget={
-                                                activityType !==
-                                                "drag-word-chooser-slider"
-                                            }
-                                            showOuterRectangle={true}
-                                        />
+                                        {showVideoDraggable && (
+                                            <CanvasElementVideoItem
+                                                makeTarget={
+                                                    activityType !==
+                                                    "drag-word-chooser-slider"
+                                                }
+                                                showOuterRectangle={true}
+                                            />
+                                        )}
                                     </Fragment>
                                 )}
                             </CanvasElementItemRow>
                             <CanvasElementItemRow>
-                                {showImageDraggable && (
+                                {showSoundDraggable && (
                                     <CanvasElementSoundItem />
                                 )}
                                 <CanvasElementTextItem
