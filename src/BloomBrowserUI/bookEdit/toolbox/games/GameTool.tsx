@@ -1439,7 +1439,12 @@ const CorrectWrongControls: React.FunctionComponent<{
                     <CanvasElementVideoItem
                         addClasses={props.classToAddToItems}
                     />
+                </CanvasElementItemRow>
+                <CanvasElementItemRow>
                     <CanvasElementGifItem
+                        addClasses={props.classToAddToItems}
+                    />
+                    <CanvasElementRectangleItem
                         addClasses={props.classToAddToItems}
                     />
                 </CanvasElementItemRow>
