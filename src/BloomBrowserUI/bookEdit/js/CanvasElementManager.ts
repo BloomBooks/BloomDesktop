@@ -33,7 +33,10 @@ import {
     kBloomCanvasSelector,
     kBloomCanvasClass
 } from "./bloomImages";
-import { adjustTarget } from "../toolbox/games/GameTool";
+import {
+    adjustTarget,
+    makeTargetForDraggable
+} from "../toolbox/games/GameTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
@@ -48,7 +51,10 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
-import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
+import {
+    CanvasElementType,
+    setGeneratedDraggableId
+} from "../toolbox/overlay/CanvasElementItem";
 import { getTarget } from "bloom-player";
 
 export interface ITextColorInfo {
@@ -4855,6 +4861,12 @@ export class CanvasElementManager {
         if (!textElement || !textElement.parentElement) {
             return undefined;
         }
+        const draggableTargetId = textElement.getAttribute("data-draggable-id");
+        const draggableTargetElement = draggableTargetId
+            ? textElement.ownerDocument.querySelector(
+                  `[data-target-of="${draggableTargetId}"]`
+              )
+            : null;
         const bloomCanvas = textElement.parentElement;
         // Make sure comical is up-to-date before we clone things.
         if (
@@ -4888,6 +4900,12 @@ export class CanvasElementManager {
                 if (isRectangle) {
                     // adjust the new rectangle's z-order and comical level to match the original.
                     this.reorderRectangleCanvasElement(result, bloomCanvas);
+                }
+                if (draggableTargetId) {
+                    setGeneratedDraggableId(result);
+                    if (draggableTargetElement) {
+                        makeTargetForDraggable(result);
+                    }
                 }
             }
             // The JQuery resizable event handler needs to be removed after the duplicate canvas element
