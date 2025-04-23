@@ -37,6 +37,9 @@
 .drag-activity-correct .drag-item-correct,
 .drag-activity-wrong .drag-item-wrong {
     display: block;
+    // In front of targets ([data-target-of] has z-index=@convasElementCanvasZIndex+1),
+    // in case they overlap.  See BL-14627.
+    z-index: @canvasElementCanvasZIndex + 2;
 }
 // Hide draggable items in the Correct and Wrong tabs. See BL-14532.
 // The data-target-of elements will show the positions of the targets and
