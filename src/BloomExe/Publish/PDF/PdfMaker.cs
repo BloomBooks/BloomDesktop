@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Windows.Forms;
 
 namespace Bloom.Publish.PDF
@@ -100,6 +101,7 @@ namespace Bloom.Publish.PDF
                 // the file before manipulating it further. Just noting it in case there are unexpected issues.
                 var fixPdf = new ProcessPdfWithGhostscript(
                     ProcessPdfWithGhostscript.OutputType.DesktopPrinting,
+                    specs.ColorProfile,
                     worker,
                     doWorkEventArgs
                 );
@@ -207,7 +209,22 @@ namespace Bloom.Publish.PDF
             //Bloom.Utils.MemoryManagement.CheckMemory(true, "done checking for blank pages in full bleed PDF file", false);
         }
 
-        public class MakingPdfFailedException : Exception
+        public static string GetDistributedColorProfilesFolder()
+        {
+            var baseFolder = FileLocationUtilities.DirectoryOfApplicationOrSolution;
+			var distFolder = Path.Combine(baseFolder, "ColorProfiles", "CMYK");
+			if (!Directory.Exists(distFolder))
+				distFolder = Path.Combine(baseFolder, "DistFiles", "ColorProfiles", "CMYK");
+            return distFolder;
+		}
+
+        public static string GetUserColorProfilesFolder()
+        {
+			var baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+			return Path.Combine(baseFolder, "SIL", "Bloom", "ColorProfiles", "CMYK");
+		}
+
+		public class MakingPdfFailedException : Exception
         {
             private MakingPdfFailedException(string message)
                 : base(message) { }
