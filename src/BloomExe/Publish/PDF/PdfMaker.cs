@@ -33,6 +33,11 @@ namespace Bloom.Publish.PDF
         /// </remarks>
         public bool CompressPdf;
 
+        /// <summary>
+        /// If non-empty, this is the name of a CMYK color profile to use when making the PDF.
+        /// </summary>
+        public string ColorProfile;
+
         ///  <summary>
         ///
         ///  </summary>
@@ -100,6 +105,7 @@ namespace Bloom.Publish.PDF
                 // the file before manipulating it further. Just noting it in case there are unexpected issues.
                 var fixPdf = new ProcessPdfWithGhostscript(
                     ProcessPdfWithGhostscript.OutputType.DesktopPrinting,
+                    ColorProfile,
                     worker,
                     doWorkEventArgs
                 );

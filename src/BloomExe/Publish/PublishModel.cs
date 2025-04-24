@@ -323,6 +323,7 @@ namespace Bloom.Publish
                         "about to create PDF file",
                         false
                     );
+                    _pdfMaker.ColorProfile = BookSelection.CurrentSelection.UserPrefs.ColorProfileForPdf;
                     _pdfMaker.MakePdf(
                         new PdfMakingSpecs()
                         {
@@ -681,12 +682,13 @@ namespace Bloom.Publish
                 );
                 _lastDirectory = Path.GetDirectoryName(destFileName);
 
-                if (_currentlyLoadedBook.UserPrefs.CmykPdf)
+                if (!String.IsNullOrEmpty(_currentlyLoadedBook.UserPrefs.ColorProfileForPdf))
                 {
-                    // PDF for Printshop (CMYK US Web Coated V2)
+                    // PDF for Printshop (CMYK color conversion)
                     ProcessPdfFurtherAndSave(
                         PdfFilePath,
                         ProcessPdfWithGhostscript.OutputType.Printshop,
+                        _currentlyLoadedBook.UserPrefs.ColorProfileForPdf,
                         destFileName
                     );
                 }
@@ -723,6 +725,7 @@ namespace Bloom.Publish
         internal static void ProcessPdfFurtherAndSave(
             string pdfFilePath,
             ProcessPdfWithGhostscript.OutputType type,
+            string colorProfile,
             string outputPath
         )
         {
@@ -786,6 +789,7 @@ namespace Bloom.Publish
                 {
                     var pdfProcess = new ProcessPdfWithGhostscript(
                         type,
+                        colorProfile,
                         sender as BackgroundWorker,
                         e
                     );
