@@ -246,23 +246,20 @@
     z-index: @canvasElementCanvasZIndex + 1;
     box-sizing: border-box;
 
-    // We don't want this shadow effect in start mode for the drag image game because it makes it hard to see the image.
-    // We do want the shadow effect in the other modes if we are showing the target.
-    // See BL-14534.
-    .drag-activity-start
-        .bloom-page:not([data-activity="drag-image-to-target"])
-        &,
-    .drag-activity-play & {
+    > * {
+        // We want targets to show a shadow of what is supposed to go there.
+        opacity: 50%;
+    }
+    .drag-activity-correct & {
+        // In the correct tab, we want to see the target without transparency.
         > * {
-            // targets have children to show a shadow of what is supposed to go there.
-            // the contents are identical, this makes them a shadow.
-            opacity: 50%;
+            opacity: 1;
         }
     }
     .drag-activity-wrong & {
         // In the wrong tab, we don't want to see the target at all, but just the dashed box if it's visible.
         > * {
-            opacity: 0%;
+            opacity: 0;
         }
     }
 
