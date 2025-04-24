@@ -100,6 +100,7 @@ namespace Bloom.Publish.PDF
                 // the file before manipulating it further. Just noting it in case there are unexpected issues.
                 var fixPdf = new ProcessPdfWithGhostscript(
                     ProcessPdfWithGhostscript.OutputType.DesktopPrinting,
+                    specs.ColorProfile,
                     worker,
                     doWorkEventArgs
                 );

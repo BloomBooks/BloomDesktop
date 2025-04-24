@@ -14,7 +14,7 @@ namespace Bloom.Book
         private string _filePath;
         private int _mostRecentPage;
         private bool _reducePdfMemory;
-        private bool _cmykPdf;
+        private string _colorProfileForPdf;
         private bool _fullBleed;
         private string _spreadsheetFolder;
         private bool _uploadAgreementsAccepted;
@@ -84,13 +84,13 @@ namespace Bloom.Book
             }
         }
 
-        [JsonProperty("cmykPdf")]
-        public bool CmykPdf
+        [JsonProperty("colorProfileForPdf")]
+        public string ColorProfileForPdf
         {
-            get { return _cmykPdf; }
+            get { return _colorProfileForPdf; }
             set
             {
-                _cmykPdf = value;
+                _colorProfileForPdf = value;
                 Save();
             }
         }
