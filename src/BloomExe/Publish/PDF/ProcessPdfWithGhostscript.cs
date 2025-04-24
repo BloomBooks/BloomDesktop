@@ -40,15 +40,18 @@ namespace Bloom.Publish.PDF
         };
 
         private readonly OutputType _type;
+        private readonly string _colorProfile; // for CMYK conversion
         private DoWorkEventArgs _doWorkEventArgs;
 
         public ProcessPdfWithGhostscript(
             OutputType type,
+            string colorProfile,
             BackgroundWorker worker,
             DoWorkEventArgs doWorkEventArgs
         )
         {
             _type = type;
+            _colorProfile = colorProfile;
             _worker = worker;
             _doWorkEventArgs = doWorkEventArgs;
         }
@@ -249,7 +252,7 @@ namespace Bloom.Publish.PDF
                         "ColorProfiles/RGB/AdobeRGB1998.icc"
                     );
                     var cmykProfile = FileLocationUtilities.GetFileDistributedWithApplication(
-                        "ColorProfiles/CMYK/USWebCoatedSWOP.icc"
+                        $"ColorProfiles/CMYK/{_colorProfile}.icc"
                     );
                     bldr.AppendFormat(" -sDefaultRGBProfile=\"{0}\"", rgbProfile);
                     bldr.AppendFormat(" -sDefaultCMYKProfile=\"{0}\"", cmykProfile);
