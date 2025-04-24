@@ -4498,7 +4498,7 @@ export class CanvasElementManager {
 
     private addVideoCanvasElement(
         location: Point,
-        imageContainerJQuery: JQuery,
+        bloomCanvasJQuery: JQuery,
         rightTopOffset?: string
     ): HTMLElement {
         const standardVideoClasses =
@@ -4507,7 +4507,7 @@ export class CanvasElementManager {
         const videoContainerHtml =
             "<div class='" + standardVideoClasses + "' tabindex='0'></div>";
         return this.finishAddingCanvasElement(
-            imageContainerJQuery,
+            bloomCanvasJQuery,
             videoContainerHtml,
             location,
             "none",
@@ -4518,7 +4518,7 @@ export class CanvasElementManager {
 
     private addPictureCanvasElement(
         location: Point,
-        imageContainerJQuery: JQuery,
+        bloomCanvasJQuery: JQuery,
         rightTopOffset?: string
     ): HTMLElement {
         const standardImageClasses =
@@ -4532,7 +4532,7 @@ export class CanvasElementManager {
             imagePlaceHolderHtml +
             "</div>";
         return this.finishAddingCanvasElement(
-            imageContainerJQuery,
+            bloomCanvasJQuery,
             imageContainerHtml,
             location,
             "none",
@@ -4543,7 +4543,7 @@ export class CanvasElementManager {
 
     private addSoundCanvasElement(
         location: Point,
-        imageContainerJQuery: JQuery,
+        bloomCanvasJQuery: JQuery,
         rightTopOffset?: string
     ): HTMLElement {
         const standardImageClasses =
@@ -4574,7 +4574,7 @@ export class CanvasElementManager {
     </svg>
 </div>`;
         return this.finishAddingCanvasElement(
-            imageContainerJQuery,
+            bloomCanvasJQuery,
             html,
             location,
             "none",
@@ -4638,8 +4638,8 @@ export class CanvasElementManager {
         rightTopOffset?: string
     ): HTMLElement {
         // add canvas element as last child of .bloom-canvas (BL-7883)
-        const lastContainerChild = bloomCanvasJQuery.children().last();
-        const wrapperHtml =
+        const lastChildOfBloomCanvas = bloomCanvasJQuery.children().last();
+        const canvasElementHtml =
             "<div class='" +
             kCanvasElementClass +
             "'>" +
@@ -4649,11 +4649,13 @@ export class CanvasElementManager {
         // since that's all that keeps it on top of the image. We're deliberately not
         // using z-index so that the bloom-canvas is not a stacking context so we
         // can use z-index on the buttons inside it to put them above the comicaljs canvas.
-        const wrapperJQuery = $(wrapperHtml).insertAfter(lastContainerChild);
-        this.setDefaultWrapperBoxHeight(wrapperJQuery);
-        const contentElement = wrapperJQuery.get(0);
+        const canvasElementJQuery = $(canvasElementHtml).insertAfter(
+            lastChildOfBloomCanvas
+        );
+        const canvasElement = canvasElementJQuery.get(0);
+        this.setDefaultHeightFromWidth(canvasElement);
         this.placeElementAtPosition(
-            wrapperJQuery,
+            canvasElementJQuery,
             bloomCanvasJQuery.get(0),
             location,
             rightTopOffset
@@ -4669,13 +4671,13 @@ export class CanvasElementManager {
         // from being called, but that doesn't really matter since calling it does no good.
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-11620.
         if (setElementActive) {
-            this.activeElement = contentElement;
+            this.activeElement = canvasElement;
             this.doNotifyChange();
-            this.showCorrespondingTextBox(contentElement);
+            this.showCorrespondingTextBox(canvasElement);
         }
-        const bubble = new Bubble(contentElement);
+        const bubble = new Bubble(canvasElement);
         const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
-            contentElement,
+            canvasElement,
             comicalBubbleStyle || "speech"
         );
         bubble.setBubbleSpec(bubbleSpec);
@@ -4684,29 +4686,29 @@ export class CanvasElementManager {
         // (before we refreshBubbleEditing, since we may change some canvas elements here.)
         this.handleResizeAdjustments();
         this.refreshCanvasElementEditing(bloomCanvas, bubble, true, true);
-        const editable = contentElement.getElementsByClassName(
+        const editable = canvasElement.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on"
         )[0] as HTMLElement;
         editable?.focus();
-        return contentElement;
+        return canvasElement;
     }
 
-    // This 'wrapperBox' param has just been added to the DOM by JQuery before arriving here.
     // All of the text-based canvas elements' default heights are based on the min-height of 30px set
-    // in overlayTool.less for a .bloom-canvas-element element. For video or picture over pictures,
-    // we want something a bit taller.
-    private setDefaultWrapperBoxHeight(wrapperBox: JQuery) {
-        const width = parseInt(wrapperBox.css("width"), 10);
+    // in overlayTool.less for a .bloom-canvas-element. For other elements, we usually want something else.
+    public setDefaultHeightFromWidth(canvasElement: HTMLElement) {
+        const width = parseInt(getComputedStyle(canvasElement).width, 10);
+
         if (
-            wrapperBox.find(`.${kVideoContainerClass}`).length > 0 ||
-            wrapperBox.find(`.bloom-rectangle`).length > 0
+            canvasElement.querySelector(`.${kVideoContainerClass}`) !== null ||
+            canvasElement.querySelector(`.bloom-rectangle`) !== null
         ) {
             // Set the default video aspect to 4:3, the same as the sign language tool generates.
-            wrapperBox.css("height", (width * 3) / 4);
-        }
-        if (wrapperBox.find(kImageContainerSelector).length > 0) {
+            canvasElement.style.height = `${(width * 3) / 4}px`;
+        } else if (
+            canvasElement.querySelector(kImageContainerSelector) !== null
+        ) {
             // Set the default image aspect to square.
-            wrapperBox.css("height", width);
+            canvasElement.style.height = `${width}px`;
         }
     }
 
@@ -4733,7 +4735,7 @@ export class CanvasElementManager {
     // Then we position the new element so its top right is at that same point.
     // Note: I wish we could just make this adjustment in the dragEnd event handler
     // which receives both the point and the rightTopOffset data, but it does not
-    // have acess to the element being created to get its width. We could push it up
+    // have access to the element being created to get its width. We could push it up
     // one level into finishAddingCanvasElement, but it's simpler here where we're
     // already extracting and adjusting the offsets from positionInViewport
     private placeElementAtPosition(
