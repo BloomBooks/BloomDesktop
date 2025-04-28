@@ -2,7 +2,7 @@
 @vertical-space: 10px;
 
 .bloom-page.simple-comprehension-quiz {
-    color: var(--text-color);
+    color: var(--game-text-color);
     // These are usually defined under :root. But in bloom-player, any rules
     // using things above the "actual-page-preview" element where we attach the
     // 'scoped' style rules don't work. The rule will emerge as something like
@@ -20,8 +20,8 @@
     .QuizHeader-style {
         font-size: 20pt;
         text-align: center;
-        color: var(--header-color);
-        background-color: var(--header-background-color);
+        color: var(--game-header-color);
+        background-color: var(--game-header-bg-color);
         // Hide a problem where if there are multiple lines, the browser thinks there is overflow.
         // https://issues.bloomlibrary.org/youtrack/issue/BL-9021
         // We can make the scroll bar go away in at least 3 ways:
@@ -44,7 +44,7 @@
             z-index: 11; // in front of the :before, :after etc, so it can really get clicked
             // We want to be able to click on it anywhere in the 40px square that holds the
             // active circle around the check box. So make the actual input that big, and adjust its
-            // position so it occupies the space that the higlight circle does.
+            // position so it occupies the space that the highlight circle does.
             display: block;
             left: -10px;
             top: -8px;
@@ -62,7 +62,7 @@
             z-index: -1; // Behind the checkbox and check mark
             // Same size and position as the input (checkbox).
             // Properties make it a circle.
-            // When no overrides are applied, it is 60% red, but entirely hidden by scale:0
+            // When no overrides are applied, it is 60% opacity, but entirely hidden by scale:0
             // Various combinations of hover, focus, active, and checked
             // cause it to appear, sometimes with transition.
             position: absolute;
@@ -73,7 +73,9 @@
             border-radius: 50%;
             width: 40px;
             height: 40px;
-            background-color: rgba(var(--button-color-rgb), 0.6);
+            background-color: rgb(
+                from var(--game-selected-checkbox-bg-color) r g b / 0.6
+            );
             box-shadow: none;
             outline: none;
             opacity: 1;
@@ -84,7 +86,7 @@
 
         // We make the box of the check box as a before element on the div.
         // (NOT on the placeToPutVariableCircle, though it's tempting to put
-        // all the magic on the extra element, because its before: and after:
+        // all the magic on the extra element, because its :before and :after
         // get hidden when it does.)
         & > input + div:before {
             content: "";
@@ -94,7 +96,7 @@
             left: -30px;
             top: 3px;
             border: solid 2px;
-            border-color: var(--unselected-checkbox-border-color);
+            border-color: var(--game-checkbox-outline-color);
             border-radius: 2px;
             width: 18px;
             height: 18px;
@@ -117,21 +119,22 @@
         }
 
         // When the check box is checked, the starting point for coloring the circle
-        // is the red. This changes the effect of all the opacities that might be
+        // is the --game-selected-checkbox-bg-color.
+        // This changes the effect of all the opacities that might be
         // used in hover, focus, active.
         & > input:checked ~ .placeToPutVariableCircle {
-            background-color: rgb(var(--button-color-rgb));
+            background-color: var(--game-selected-checkbox-bg-color);
         }
 
         // When checked, the box (and its border) take on these colors.
         & > input:checked + div::before {
-            border-color: var(--selected-checkbox-border-color);
-            background-color: var(--selected-checkbox-background-color);
+            border-color: var(--game-selected-checkbox-outline-color);
+            background-color: var(--game-selected-checkbox-bg-color);
         }
 
         // When checked, the check mark goes from transparent to the appropriate color
         > input:checked + div::after {
-            border-color: var(--checkbox-checkmark-color);
+            border-color: var(--game-selected-checkbox-color);
         }
 
         // This makes the circle faintly visible when hovered over.
@@ -212,7 +215,7 @@ body.editMode
     }
     // page number
     &.numberedPage::after {
-        color: var(--page-foreground-color);
+        color: var(--game-page-number-color);
         --pageNumber-background-color: var(
             --page-background-color
         ); // appearance system

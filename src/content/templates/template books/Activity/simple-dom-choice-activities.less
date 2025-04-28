@@ -32,7 +32,7 @@
 
         .player-button {
             display: block;
-            border: 1px solid var(--button-choice-border-color);
+            border: 1px solid var(--game-button-outline-color);
             margin-bottom: 11px;
             margin-right: 7px; // need room to show any button shadows
 
@@ -271,18 +271,18 @@
     // page
 
     & {
-        color: var(--page-foreground-color);
+        color: var(--game-text-color);
         // in previous versions, a definition of Prompt-style set color:white.
         // Migrating this causes a problem if the book is opened using an older Bloom.
         // So, this stronger rule defeats that one.
         .bloom-editable.Prompt-style {
-            color: var(--header-color);
-            background-color: var(--header-background-color);
+            color: var(--game-header-color);
+            background-color: var(--game-header-bg-color);
         }
     }
     // page number
     &.numberedPage::after {
-        color: var(--page-foreground-color);
+        color: var(--game-page-number-color);
         --pageNumber-background-color: var(
             --page-background-color
         ); // appearance system
@@ -295,17 +295,17 @@
         border-radius: 10px;
         background-color: white;
 
-        color: var(--button-choice-color);
-        background-color: var(--button-choice-background-color);
+        color: var(--game-button-text-color);
+        background-color: var(--game-button-bg-color);
 
         &.chosen-correct {
-            color: var(--button-correct-color);
-            background-color: var(--button-correct-background-color);
+            color: var(--game-button-correct-color);
+            background-color: var(--game-button-correct-bg-color);
         }
 
         &.chosen-wrong {
-            color: var(--button-wrong-color);
-            background-color: var(--button-wrong-background-color);
+            color: var(--game-button-wrong-color);
+            background-color: var(--game-button-wrong-bg-color);
         }
 
         // when the button is depressed
@@ -326,7 +326,7 @@
 
     .wordThenChoices {
         .TextToMatch-style {
-            color: var(--page-foreground-color);
+            color: var(--game-text-color);
         }
 
         .bloom-canvas {

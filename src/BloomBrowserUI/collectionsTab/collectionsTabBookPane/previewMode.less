@@ -169,3 +169,15 @@ and as a result, the labels are shifted to this many pixels to the width. This s
         display: block;
     }
 }
+
+// Hide game elements which shouldn't be shown in preview/pdf mode.
+.bloom-page[class*="game-theme-"] {
+    .game-button,
+    .page-turn-button {
+        display: none;
+    }
+
+    // Mask the correct answers by styling their buttons like regular buttons.
+    --game-button-correct-bg-color: var(--game-button-bg-color);
+    --game-button-correct-color: var(--game-button-text-color);
+}
