@@ -6967,6 +6967,11 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="zh-CN" state="needs-translation">Drag Images to Shadows</target>
         <note>ID: TemplateBooks.PageLabel.DragImagesShadows</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.MatchWordsWithImages" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Match Words with Images</source>
+        <target xml:lang="zh-CN" state="needs-translation">Match Words with Images</target>
+        <note>ID: TemplateBooks.PageLabel.MatchWordsWithImages</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog" approved="yes">
         <source xml:lang="en">Setup</source>
         <target xml:lang="zh-CN" state="final">设置</target>
