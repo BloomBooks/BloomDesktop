@@ -118,7 +118,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
     const [defaultPageId, setDefaultPageId] = useState<string | undefined>(
         undefined
     );
-    const [orientation, setOrientation] = useState("Portrait");
+    const [orientation, setOrientation] = useState("portrait");
     const [templateBooks, setTemplateBooks] = useState<ITemplateBookInfo[]>([]);
     const [selectedTemplatePageDiv, setSelectedTemplatePageDiv] = useState<
         HTMLDivElement | undefined
@@ -221,6 +221,15 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                             .querySelector("div[data-book='bookTitle']")
                             ?.textContent?.trim() ?? "";
                     pages = Array.from(dom.querySelectorAll(".bloom-page"));
+                    pages = pages.filter(
+                        page =>
+                            !page.getAttribute(
+                                "data-initial-page-orientation"
+                            ) ||
+                            page.getAttribute(
+                                "data-initial-page-orientation"
+                            ) === orientation
+                    );
                     id =
                         fullDom.head
                             .querySelector(`meta[name="bloomBookId"]`)
