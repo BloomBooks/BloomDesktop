@@ -152,8 +152,10 @@
 .drag-activity-play {
     .drag-item-wrong,
     .drag-item-correct {
-        // In front of targets, in case they overlap
-        z-index: @canvasElementCanvasZIndex + 2;
+        // In front of targets ([data-target-of] has z-index=@convasElementCanvasZIndex+1),
+        // in case they overlap. Also in front of [data-draggable-id] elements, which are
+        // in front of the targets with z-index=@canvasElementCanvasZIndex+2.  See BL-14627.
+        z-index: @canvasElementCanvasZIndex + 3;
     }
 }
 // In the play tab we don't even have the concept of a video element being selected.
