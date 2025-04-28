@@ -85,7 +85,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Header">
         <source xml:lang="en">Header</source>
-        <target xml:lang="fr" state="needs-translation">Header</target>
+        <target xml:lang="fr" state="translated">En-tête</target>
         <note>ID: EditTab.Toolbox.DragActivity.Header</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions">
