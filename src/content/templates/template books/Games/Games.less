@@ -419,15 +419,17 @@
 // In the drag-image-to-target game, we want to show shadows of target images everywhere
 // except the Correct tab if data-show-target-as-shadow is set to true.
 :not(.drag-activity-correct)
-    > .bloom-page[data-activity="drag-image-to-target"][data-show-target-as-shadow="true"]
-    [data-target-of]:has(img) {
-    background-color: unset;
+    > .bloom-page[data-activity="drag-image-to-target"][data-show-target-as-shadow="true"],
+.bloom-page.data-activity-play[data-show-target-as-shadow="true"][data-show-answers-in-targets="true"] {
+    [data-target-of] {
+        background-color: unset;
 
-    .bloom-targetWrapper {
-        filter: grayscale(100%) brightness(0%);
-        mix-blend-mode: normal;
-        opacity: 100%;
-        top: 0px; // Override so that the dragged image is exactly on top of the target wrapper.
+        .bloom-targetWrapper {
+            filter: grayscale(100%) brightness(0%);
+            mix-blend-mode: normal;
+            opacity: 100%;
+            top: 0px; // Override so that the dragged image is exactly on top of the target wrapper.
+        }
     }
 }
 
