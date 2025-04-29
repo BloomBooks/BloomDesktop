@@ -3,7 +3,7 @@
 // This file contains the definitions of our game themes.
 
 // defaults for all themes
-[class*="game-theme-"] {
+.bloom-page[class*="game-theme-"] {
     --game-primary-color: black;
     --game-secondary-color: white;
 
@@ -55,17 +55,17 @@
     --page-background-color: var(--game-page-bg-color);
 }
 
-.game-theme-blue-on-white {
+.bloom-page.game-theme-blue-on-white {
     --game-primary-color: #2980bb;
     --game-secondary-color: white;
 }
 
-.game-theme-red-on-white {
+.bloom-page.game-theme-red-on-white {
     --game-primary-color: @bloom-red;
     --game-secondary-color: white;
 }
 
-.game-theme-white-on-blue {
+.bloom-page.game-theme-white-and-orange-on-blue {
     // from an old rule in simple-dom-choice-activities.less; a slightly lighter blue
     @legacy-blue: #539eff;
     @legacy-orange: #ffb453;
@@ -83,6 +83,7 @@
     --game-button-text-color: black;
     --game-button-bg-color: white;
     --game-button-correct-color: var(--game-text-color);
+    --game-button-outline-color: var(--game-page-bg-color);
 
     --game-checkbox-outline-color: #848484;
 }
