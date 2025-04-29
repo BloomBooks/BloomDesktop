@@ -14,7 +14,12 @@ function doesPageHaveSameSizeMode(
     if (!page) {
         return false;
     }
-    return page.getAttribute("data-same-size") !== "false";
+    // Don't support same-size mode for this game. The new source page sets this false, but earlier
+    // ones just didn't have it, since same-size is usually the default.
+    return (
+        page.getAttribute("data-same-size") !== "false" &&
+        page.getAttribute("data-activity") !== "drag-letter-to-target"
+    );
 }
 
 // Returns true if we need to take into account that this element must be kept the same size

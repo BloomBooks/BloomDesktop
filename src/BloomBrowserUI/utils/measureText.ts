@@ -77,9 +77,10 @@ export class MeasureText {
             .bottom;
         const baselineOfTextWithDefaultLineSpace = block.getBoundingClientRect()
             .bottom;
-        const fontDescent =
+        const fontDescent = Math.ceil(
             bottomOfTextWithDefaultLineSpace -
-            baselineOfTextWithDefaultLineSpace;
+                baselineOfTextWithDefaultLineSpace
+        );
 
         if (lineHeight !== null) div.style.lineHeight = lineHeight;
         const bottomOfTextWithActualLineSpace = div.getBoundingClientRect()
@@ -103,7 +104,9 @@ export class MeasureText {
         // line, but we decided it was not worth the effort to be that perfectionistic.
 
         // We only need enough space to draw what the browser thinks is the descent.
-        const canvasHeight = fontDescent;
+        // Plus a little extra because sometimes the font descent is not actually enough
+        // for the lowest possible descenders.
+        const canvasHeight = fontDescent + 4;
         const testingCanvas = this.createCanvas(width, canvasHeight);
         // The number of pixels of descent is one more than the index of
         // the bottom line on which we found part of a descender.
@@ -200,8 +203,11 @@ export class MeasureText {
         fontSize: number
     ): void {
         const context = canvas.getContext("2d");
-        if (context != null) {
+        if (context !== null) {
             context.textAlign = "start"; // was "top", which is not a valid choice
+            // means that the baseline of the text will align with the y coordinate passed
+            // as the last argument to fillText, which is zero, so basically we draw just
+            // the descenders at the top of the canvas.
             context.textBaseline = "alphabetic";
             context.font = `${fontSize}px '${fontFamily}'`;
             context.fillStyle = "white";

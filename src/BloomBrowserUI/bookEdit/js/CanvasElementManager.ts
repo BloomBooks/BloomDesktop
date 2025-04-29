@@ -1739,6 +1739,7 @@ export class CanvasElementManager {
         );
         adjustTarget(this.activeElement, getTarget(this.activeElement));
         this.alignControlFrameWithActiveElement();
+        this.adjustTarget(this.activeElement);
     }
 
     // Determine which of the side handles, if any, should have the class "bloom-currently-cropped"

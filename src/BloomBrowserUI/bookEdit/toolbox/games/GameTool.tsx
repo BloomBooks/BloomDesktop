@@ -278,31 +278,37 @@ const makeArrowShape = (
     // These values make a line from the center of the draggable to the center of the target.
     const startX = draggable.offsetLeft + draggable.offsetWidth / 2;
     const startY = draggable.offsetTop + draggable.offsetHeight / 2;
-    const endXCenter = target.offsetLeft + target.offsetWidth / 2;
-    const endYCenter = target.offsetTop + target.offsetHeight / 2;
+    let targetLeft = target.offsetLeft;
+    let targetTop = target.offsetTop;
+    if (target.parentElement !== draggable.parentElement) {
+        targetLeft += target.parentElement!.offsetLeft;
+        targetTop += target.parentElement!.offsetTop;
+    }
+    const endXCenter = targetLeft + target.offsetWidth / 2;
+    const endYCenter = targetTop + target.offsetHeight / 2;
 
     // Figure out where the tip of the arrow should be. At least one of these will be changed,
     // so that we end up at a corner or side midpoint of the target.
     // (This assumes the two don't overlap. If they do, we don't make an arrow at all.)
     let endX = endXCenter;
     let endY = endYCenter;
-    if (target.offsetLeft > startX) {
+    if (targetLeft > startX) {
         // The target is entirely to the right of the center of the draggable.
         // We will go for one of the points on the left of the target.
-        endX = target.offsetLeft;
-    } else if (target.offsetLeft + target.offsetWidth < startX) {
+        endX = targetLeft;
+    } else if (targetLeft + target.offsetWidth < startX) {
         // The target is entirely to the left of the center of the draggable.
         // We will go for one of the points on the right of the target.
-        endX = target.offsetLeft + target.offsetWidth;
+        endX = targetLeft + target.offsetWidth;
     }
-    if (target.offsetTop > startY) {
+    if (targetTop > startY) {
         // The target is entirely below the center of the draggable.
         // We will go for one of the points on the top of the target.
-        endY = target.offsetTop;
-    } else if (target.offsetTop + target.offsetHeight < startY) {
+        endY = targetTop;
+    } else if (targetTop + target.offsetHeight < startY) {
         // The target is entirely above the center of the draggable.
         // We will go for one of points on the bottom of the target.
-        endY = target.offsetTop + target.offsetHeight;
+        endY = targetTop + target.offsetHeight;
     }
 
     if (!arrow) {
@@ -1989,7 +1995,8 @@ function pxToNumber(dimension: string): number {
 }
 
 export const makeTargetForDraggable = (
-    canvasElement: HTMLElement
+    canvasElement: HTMLElement,
+    parentForTarget?: HTMLElement
 ): HTMLElement => {
     const id = canvasElement.getAttribute("data-draggable-id");
     if (!id) {
@@ -1998,28 +2005,35 @@ export const makeTargetForDraggable = (
     // don't simplify to 'document.createElement'; may be in a different iframe
     const target = canvasElement.ownerDocument.createElement("div");
     target.setAttribute("data-target-of", id);
-    const left = pxToNumber(canvasElement.style.left);
-    const top = pxToNumber(canvasElement.style.top);
     const width = pxToNumber(canvasElement.style.width);
     const height = pxToNumber(canvasElement.style.height);
-    let newLeft = left + 20;
-    let newTop = top + height + 30;
-    if (newTop + height > canvasElement.parentElement!.clientHeight) {
-        newTop = Math.max(0, top - height - 30);
+    if (!parentForTarget) {
+        // if we're putting it in some other parent, then positioning it relative to the
+        // thing for which it's a target doesn't make sense. It definitely isn't wanted for
+        // the current application, making a row of them in the letter game.
+        const left = pxToNumber(canvasElement.style.left);
+        const top = pxToNumber(canvasElement.style.top);
+
+        let newLeft = left + 20;
+        let newTop = top + height + 30;
+        if (newTop + height > canvasElement.parentElement!.clientHeight) {
+            newTop = Math.max(0, top - height - 30);
+        }
+        if (newLeft + width > canvasElement.parentElement!.clientWidth) {
+            newLeft = Math.max(0, left - width - 30);
+        }
+
+        // Review: can we do any more to make sure it's visible and not overlapping canvas element?
+        // Should we try to avoid overlapping other canvas elements and/or targets?
+        target.style.left = `${newLeft}px`;
+        target.style.top = `${newTop}px`;
     }
-    if (newLeft + width > canvasElement.parentElement!.clientWidth) {
-        newLeft = Math.max(0, left - width - 30);
-    }
-    // Review: can we do any more to make sure it's visible and not overlapping canvas element?
-    // Should we try to avoid overlapping other canvas elements and/or targets?
-    target.style.left = `${newLeft}px`;
-    target.style.top = `${newTop}px`;
     target.style.width = `${width}px`;
     target.style.height = `${height}px`;
     // This allows it to get focus, which allows it to get the shadow effect we want when
     // clicked. But is that really right? We can't actually type there.
     target.setAttribute("tabindex", "0");
-    canvasElement.parentElement!.appendChild(target);
+    (parentForTarget ?? canvasElement.parentElement)!.appendChild(target);
     enableDraggingTargets(target);
     adjustTarget(canvasElement, target);
     return target;
