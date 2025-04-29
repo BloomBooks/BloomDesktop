@@ -164,19 +164,31 @@ export class CanvasGuideProvider {
      * Call this when the AlignmentManager is no longer needed.
      */
     public dispose(): void {
-        this.hideAllGuides(); // Ensure dynamic elements are removed first
-        this.targetElements = [];
+        // First clean up the dynamic elements that are created during drag operations
+        this.dynamicEqualDimElements.forEach(element => {
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        });
+        this.dynamicEqualDimElements = [];
 
         // Remove template elements from the DOM
-        this.alignmentLines.forEach(line => line.element.remove());
-        this.equalDimensionIndicators.forEach(indicator =>
-            indicator.element.remove()
-        );
+        this.alignmentLines.forEach(line => {
+            if (line.element && line.element.parentNode) {
+                line.element.parentNode.removeChild(line.element);
+            }
+        });
 
-        // Clear arrays
+        this.equalDimensionIndicators.forEach(indicator => {
+            if (indicator.element && indicator.element.parentNode) {
+                indicator.element.parentNode.removeChild(indicator.element);
+            }
+        });
+
+        // Clear all references to help garbage collection
+        this.targetElements = [];
         this.alignmentLines = [];
         this.equalDimensionIndicators = [];
-        this.dynamicEqualDimElements = []; // Should be empty already, but just in case
     }
 
     // ==========================================================================
