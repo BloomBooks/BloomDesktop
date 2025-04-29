@@ -93,9 +93,6 @@ export class CanvasGuideProvider {
     private dynamicEqualDimElements: HTMLElement[] = []; // Track dynamically created indicator clones
     private currentAction: "resize" | "move" = "move"; // Type of operation
 
-    /**
-     * Initializes the AlignmentManager by creating the necessary guide elements.
-     */
     constructor() {
         this.createGuides();
         this.createEqualDimensionIndicators();
@@ -105,7 +102,6 @@ export class CanvasGuideProvider {
      * Prepares the manager for a new drag operation.
      * @param action The type of operation ("move" or "resize").
      * @param elementsToAlignAgainst An array of HTML elements to check for alignment against the dragged element.
-     *                               The dragged element itself should NOT be in this array.
      */
     public startDrag(
         action: "resize" | "move",
@@ -134,7 +130,7 @@ export class CanvasGuideProvider {
 
         // Pre-calculate bounds for efficiency
         const draggedBounds = this.getElementBounds(draggedElement);
-        // Ensure targetElements does not include the draggedElement itself (safeguard)
+        // Don't include the draggedElement itself
         const filteredTargetElements = this.targetElements.filter(
             el => el !== draggedElement
         );
@@ -159,10 +155,6 @@ export class CanvasGuideProvider {
         this.targetElements = []; // Clear the list of target elements
     }
 
-    /**
-     * Removes all guide elements from the DOM and cleans up resources.
-     * Call this when the AlignmentManager is no longer needed.
-     */
     public dispose(): void {
         // First clean up the dynamic elements that are created during drag operations
         this.dynamicEqualDimElements.forEach(element => {
@@ -392,30 +384,32 @@ export class CanvasGuideProvider {
         allBounds: ElementBounds[]
     ): ElementBounds[] {
         const aligned: ElementBounds[] = [];
-        let bestAlignmentCoord = coordinate; // Use the dragged element's coord as the initial target
+        let firstMatchCoord = coordinate; // Use the dragged element's coord as the initial target
+        let foundMatch = false;
 
-        // First pass: Find the best matching coordinate among all elements
-        allBounds.forEach(bounds => {
-            axesToCheck.forEach(axis => {
+        // First pass: Find the first matching coordinate among all elements
+        for (const bounds of allBounds) {
+            for (const axis of axesToCheck) {
                 const elementCoord = bounds[axis];
                 if (
                     Math.abs(coordinate - elementCoord) <=
                     this.PROXIMITY_THRESHOLD
                 ) {
-                    // Potentially update the best alignment coordinate if this one is closer to others
-                    // (Simple approach: stick with the first match's coordinate)
-                    bestAlignmentCoord = elementCoord; // Snap to the target element's coordinate
-                    return; // Found a match for this element on one axis
+                    // Use the first match's coordinate (more efficient)
+                    firstMatchCoord = elementCoord;
+                    foundMatch = true;
+                    break; // Stop at first match for this element
                 }
-            });
-        });
+            }
+            if (foundMatch) break; // Stop after finding first match overall
+        }
 
-        // Second pass: Collect all elements aligning to the *best* coordinate found
+        // Second pass: Collect all elements aligning to the found coordinate
         allBounds.forEach(bounds => {
             for (const axis of axesToCheck) {
                 const elementCoord = bounds[axis];
                 if (
-                    Math.abs(bestAlignmentCoord - elementCoord) <=
+                    Math.abs(firstMatchCoord - elementCoord) <=
                     this.PROXIMITY_THRESHOLD
                 ) {
                     aligned.push(bounds);
