@@ -151,7 +151,7 @@ namespace BloomTests.Book
 		  </div>
 	  </div>
 	</div>
-	
+
 </body></html>"
             );
             var collectionSettings = new CollectionSettings(
@@ -1857,7 +1857,7 @@ These are similar but already have game-theme classes
             var choice = storage.Dom.SelectSingleNode("//*[@data-activity='simple-dom-choice']");
             Assert.That(choice, Is.Not.Null);
             Assert.That(choice.GetAttribute("data-tool-id"), Is.EqualTo("game"));
-            Assert.That(choice.HasClass("game-theme-white-on-blue"));
+            Assert.That(choice.HasClass("game-theme-white-and-orange-on-blue"));
 
             var quiz2 = storage.Dom.SelectSingleNode(
                 "//*[@id='5cae7a40-358c-47ad-a76f-9cab976ea5a9']"
@@ -1869,7 +1869,7 @@ These are similar but already have game-theme classes
                 "//*[@id='1c79ce8d-e7c5-4be6-b32f-7f8c5cc3045e']"
             );
             Assert.That(choice2.HasClass("game-theme-red-on-white"));
-            Assert.That(choice2.HasClass("game-theme-white-on-blue"), Is.False);
+            Assert.That(choice2.HasClass("game-theme-white-and-orange-on-blue"), Is.False);
         }
 
         [Test]

@@ -233,9 +233,9 @@
         <source xml:lang="en">Blue on white</source>
         <note>ID: EditTab.Toolbox.Games.Themes.blue-on-white</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.white-on-blue" translate="no">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.white-and-orange-on-blue" translate="no">
         <source xml:lang="en">White and orange on blue</source>
-        <note>ID: EditTab.Toolbox.Games.Themes.white-on-blue</note>
+        <note>ID: EditTab.Toolbox.Games.Themes.white-and-orange-on-blue</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.red-on-white" translate="no">
         <source xml:lang="en">Red on white</source>

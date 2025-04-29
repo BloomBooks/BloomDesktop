@@ -3912,7 +3912,7 @@ namespace Bloom.Book
         {
             //if (GetMaintenanceLevel() <= kMaintenanceLevel)
             //    return;
-            //var breakingFeatureRequirements = GetBreakingFeatureRequirements();            
+            //var breakingFeatureRequirements = GetBreakingFeatureRequirements();
             // Handle the back migrations this version of Bloom knows about, in the proper reverse order.
             // Back migrations should not be merged to later versions.
             // If you add a new back migration, you must also modify GetHtmlMessageIfFeatureIncompatibility
@@ -4025,7 +4025,7 @@ namespace Bloom.Book
             }
 
             MigrateList(quizzes, "game-theme-red-on-white");
-            MigrateList(choices, "game-theme-white-on-blue");
+            MigrateList(choices, "game-theme-white-and-orange-on-blue");
             Dom.UpdateMetaElement("maintenanceLevel", "6");
         }
 
