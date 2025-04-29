@@ -279,20 +279,10 @@
         <target xml:lang="fr" state="final">Bleu sur blanc</target>
         <note>ID: EditTab.Toolbox.Games.Themes.blue-on-white</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.default" translate="no">
-        <source xml:lang="en">Default</source>
-        <target xml:lang="fr" state="needs-translation">Default</target>
-        <note>ID: EditTab.Toolbox.Games.Themes.default</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.white-on-blue" translate="no" approved="yes">
-        <source xml:lang="en">White on blue</source>
-        <target xml:lang="fr" state="final">Blanc sur bleu</target>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.white-on-blue" translate="no">
+        <source xml:lang="en">White and orange on blue</source>
+        <target xml:lang="fr" state="translated">Blanc sur bleu</target>
         <note>ID: EditTab.Toolbox.Games.Themes.white-on-blue</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.monochrome-PDF" translate="no">
-        <source xml:lang="en">Monochrome PDF</source>
-        <target xml:lang="fr" state="needs-translation">Monochrome PDF</target>
-        <note>ID: EditTab.Toolbox.Games.Themes.monochrome-PDF</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.red-on-white" translate="no" approved="yes">
         <source xml:lang="en">Red on white</source>
