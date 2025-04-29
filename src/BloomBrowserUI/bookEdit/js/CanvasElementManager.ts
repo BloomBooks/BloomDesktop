@@ -51,6 +51,7 @@ import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
 import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
 import { getTarget } from "bloom-player";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
+import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 
 export interface ITextColorInfo {
     color: string;
@@ -93,12 +94,77 @@ export class CanvasElementManager {
     };
 
     private guideProvider: CanvasGuideProvider;
+    private keyboardProvider: CanvasElementKeyboardProvider;
 
     public constructor() {
         this.guideProvider = new CanvasGuideProvider();
+        this.keyboardProvider = new CanvasElementKeyboardProvider(
+            {
+                deleteCurrentCanvasElement: this.deleteCurrentCanvasElement.bind(
+                    this
+                ),
+                moveActiveCanvasElement: this.moveActiveCanvasElement.bind(this)
+            }
+            //this.snapProvider
+        );
         Comical.setSelectorForBubblesWhichTailMidpointMayOverlap(
             ".bloom-backgroundImage"
         );
+    }
+
+    public moveActiveCanvasElement(
+        dx: number,
+        dy: number,
+        event: KeyboardEvent
+    ): void {
+        if (!this.activeElement) return;
+
+        Should i use this instead?
+
+        this.placeElementAtPosition(jQuery(this.activeElement), dx, dy, event);
+        // // Get current position and calculate new position
+        // const currentLeft = CanvasElementManager.pxToNumber(
+        //     this.activeElement.style.left
+        // );
+        // const currentTop = CanvasElementManager.pxToNumber(
+        //     this.activeElement.style.top
+        // );
+
+        // // Start a snap drag operation
+        // //this.snapProvider.startDrag();
+
+        // // Calculate the target position (current position + delta)
+        // const targetX = currentLeft + dx;
+        // const targetY = currentTop + dy;
+
+        // // TODO give the snap provider the final say
+        // // Get the snapped position using the CanvasSnapProvider
+        // // const { x: snappedX, y: snappedY } = this.snapProvider.getPosition(
+        // //     event,
+        // //     targetX,
+        // //     targetY
+        // // );
+
+        // const snappedX = targetX; // Placeholder for snapped X position
+        // const snappedY = targetY; // Placeholder for snapped Y position
+
+        // // Apply movement with snapped coordinates
+        // this.activeElement.style.left = `${snappedX}px`;
+        // this.activeElement.style.top = `${snappedY}px`;
+
+        // // Update the control frame to match the new position
+        // this.alignControlFrameWithActiveElement();
+
+        // // If we have moved the canvas element, ensure it stays within its parent container
+        // const bloomCanvas = CanvasElementManager.getBloomCanvas(
+        //     this.activeElement
+        // );
+        // if (bloomCanvas) {
+        //     this.ensureCanvasElementsIntersectParent(bloomCanvas);
+        // }
+
+        // // Notify any listeners that the element has changed position
+        // this.doNotifyChange();
     }
 
     public getIsCanvasElementEditingOn(): boolean {
