@@ -50,6 +50,7 @@ import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
 import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
 import { getTarget } from "bloom-player";
+import { CanvasGuideProvider } from "./CanvasGuideProvider";
 
 export interface ITextColorInfo {
     color: string;
@@ -91,7 +92,10 @@ export class CanvasElementManager {
         y: 0
     };
 
-    public initializeCanvasElementManager(): void {
+    private guideProvider: CanvasGuideProvider;
+
+    public constructor() {
+        this.guideProvider = new CanvasGuideProvider();
         Comical.setSelectorForBubblesWhichTailMidpointMayOverlap(
             ".bloom-backgroundImage"
         );
@@ -1340,6 +1344,12 @@ export class CanvasElementManager {
             this.oldImageTop = imgOrVideo.offsetTop;
             this.oldImageLeft = imgOrVideo.offsetLeft;
         }
+        this.guideProvider.startDrag(
+            "resize",
+            Array.from(
+                document.querySelectorAll(kCanvasElementSelector)
+            ) as HTMLElement[]
+        );
         document.addEventListener("mousemove", this.continueResizeDrag, {
             capture: true
         });
@@ -1356,6 +1366,7 @@ export class CanvasElementManager {
             capture: true
         });
         this.currentDragControl?.classList.remove("active-control");
+        this.guideProvider.endDrag();
     };
 
     private minWidth = 30; // @MinTextBoxWidth in overlayTool.less
@@ -1540,6 +1551,8 @@ export class CanvasElementManager {
         // Finally, adjust various things that are affected by the new size.
         this.alignControlFrameWithActiveElement();
         this.adjustTarget(this.activeElement);
+
+        this.guideProvider.duringDrag(this.activeElement);
     };
     private startSideDragX: number;
     private startSideDragY: number;
@@ -3233,6 +3246,13 @@ export class CanvasElementManager {
             // in case this is somehow left from earlier, we want a fresh start for the new move.
             this.animationFrame = 0;
 
+            this.guideProvider.startDrag(
+                "move",
+                Array.from(
+                    document.querySelectorAll(kCanvasElementSelector)
+                ) as HTMLElement[]
+            );
+
             // Remember the offset between the top-left of the content box and the initial
             // location of the mouse pointer.
             const deltaX = event.pageX - positionInfo.left;
@@ -3469,6 +3489,7 @@ export class CanvasElementManager {
                 this.lastMoveContainer,
                 newPosition
             );
+            this.guideProvider.duringDrag(this.bubbleToDrag.content);
             this.lastCropControl = undefined; // move resets the basis for cropping
             this.animationFrame = 0;
         });
@@ -3522,6 +3543,7 @@ export class CanvasElementManager {
         );
         this.adjustMoveCropHandleVisibility();
         this.alignControlFrameWithActiveElement();
+        this.guideProvider.endDrag();
     }
 
     // MUST be defined this way, rather than as a member function, so that it can
@@ -6498,7 +6520,6 @@ export let theOneCanvasElementManager: CanvasElementManager;
 export function initializeCanvasElementManager() {
     if (theOneCanvasElementManager) return;
     theOneCanvasElementManager = new CanvasElementManager();
-    theOneCanvasElementManager.initializeCanvasElementManager();
 }
 
 // This is a definition of the object we store as JSON in data-bubble-alternate.
