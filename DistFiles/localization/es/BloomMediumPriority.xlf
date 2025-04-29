@@ -279,20 +279,10 @@
         <target xml:lang="es-ES" state="translated">Azul en blanco</target>
         <note>ID: EditTab.Toolbox.Games.Themes.blue-on-white</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.default" translate="no">
-        <source xml:lang="en">Default</source>
-        <target xml:lang="es-ES" state="translated">Predeterminado</target>
-        <note>ID: EditTab.Toolbox.Games.Themes.default</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.white-on-blue" translate="no">
-        <source xml:lang="en">White on blue</source>
+        <source xml:lang="en">White and orange on blue</source>
         <target xml:lang="es-ES" state="translated">Blanco en azul</target>
         <note>ID: EditTab.Toolbox.Games.Themes.white-on-blue</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.monochrome-PDF" translate="no">
-        <source xml:lang="en">Monochrome PDF</source>
-        <target xml:lang="es-ES" state="translated">PDF monocromático</target>
-        <note>ID: EditTab.Toolbox.Games.Themes.monochrome-PDF</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.red-on-white" translate="no">
         <source xml:lang="en">Red on white</source>
