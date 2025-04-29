@@ -246,8 +246,8 @@
     position: absolute;
     // above canvas element canvas so we can drag it when the canvas is active
     z-index: @canvasElementCanvasZIndex + 1;
-    box-sizing: border-box;
-
+    // we set the size appropriately for the draggable element, and this should be the size inside of the border we may add to the target
+    box-sizing: content-box;
     > * {
         // We want targets to show a shadow of what is supposed to go there.
         opacity: 50%;
@@ -437,7 +437,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    top: @target-border-width;
 }
 
 .drag-item-order-sentence .bloom-editable {
