@@ -145,6 +145,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                     overflow-y: auto;
                     margin-right: ${previewPaneLeftPadding}px;
                     margin-left: ${previewPaneLeftPadding}px;
+                    margin-top: 1em;
                     align-self: flex-start;
                 `}
                 id="previewDescriptionTextContainer"
