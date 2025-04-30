@@ -172,8 +172,9 @@ export default class OverflowChecker {
             0
         );
 
-        const overflowY =
-            this.contentHeight(element) -
+        const contentHeight = this.contentHeight(element);
+        let overflowY =
+            contentHeight -
             fontFudgeFactor -
             (element.clientHeight + shortBoxFudgeFactor);
         // console.log(
@@ -188,6 +189,17 @@ export default class OverflowChecker {
         //         " shortBoxFudgeFactor: " +
         //         shortBoxFudgeFactor
         // );
+
+        // If a specified min-height is greater than the content height, we don't want to
+        // shrink the box to fit the content.  See BL-14643.
+        const minHeight = parseFloat(element.style.minHeight ?? "0");
+        if (
+            minHeight > 0 &&
+            overflowY < 0 &&
+            minHeight > contentHeight - fontFudgeFactor
+        ) {
+            overflowY = 0;
+        }
         const overflowX = element.scrollWidth - element.clientWidth;
 
         return [overflowX, overflowY];
