@@ -6962,6 +6962,16 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="az" state="needs-translation">Drag Images to Targets</target>
         <note>ID: TemplateBooks.PageLabel.DragImagesTargets</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag Sound to Word Target</source>
+        <target xml:lang="az" state="needs-translation">Drag Sound to Word Target</target>
+        <note>ID: TemplateBooks.PageLabel.Drag Sound to Word Target</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Sounds to Word Targets" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag Sounds to Word Targets</source>
+        <target xml:lang="az" state="needs-translation">Drag Sounds to Word Targets</target>
+        <note>ID: TemplateBooks.PageLabel.Drag Sounds to Word Targets</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.DragImagesShadows" sil:dynamic="true" translate="no">
         <source xml:lang="en">Drag Images to Shadows</source>
         <target xml:lang="az" state="needs-translation">Drag Images to Shadows</target>
