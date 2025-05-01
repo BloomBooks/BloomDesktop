@@ -1179,6 +1179,14 @@ export class CanvasElementManager {
                     if (event.buttons !== 1 || !this.activeElement) {
                         return;
                     }
+                    const target = event.currentTarget as HTMLElement;
+                    if (
+                        target.closest(
+                            `.${kBackgroundImageClass}-control-frame-no-image`
+                        )
+                    ) {
+                        return; // don't crop empty background image container
+                    }
                     this.startSideControlDrag(event, side);
                 });
             });
@@ -2595,6 +2603,20 @@ export class CanvasElementManager {
             kBackgroundImageClass + "-control-frame",
             this.activeElement.classList.contains(kBackgroundImageClass)
         );
+        let backgroundImageExists = true;
+        if (this.activeElement.classList.contains(kBackgroundImageClass)) {
+            const img = getImageFromCanvasElement(this.activeElement);
+            if (img && img.getAttribute("src") === "placeHolder.png") {
+                backgroundImageExists = false;
+            }
+        }
+        // mark empty background images in games with a special class (BL-14703)
+        controlFrame.classList.toggle(
+            kBackgroundImageClass + "-control-frame-no-image",
+            !backgroundImageExists &&
+                !!this.activeElement.closest(".bloom-page[data-tool-id='game']")
+        );
+
         const hasText = controlFrame.classList.contains("has-text");
         // We don't need to await these, they are just async so the handle titles can be updated
         // once the localization manager retrieves them.

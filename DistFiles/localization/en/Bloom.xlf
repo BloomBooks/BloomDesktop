@@ -1807,6 +1807,10 @@
         <note>ID: EditTab.Image.AltMsg</note>
         <note>The {0} is replaced by the filename of the picture.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.BackgroundImage" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Background Image</source>
+        <note>ID: EditTab.Image.BackgroundImage</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
         <source xml:lang="en">Change image</source>
         <note>ID: EditTab.Image.ChangeImage</note>
