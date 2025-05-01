@@ -178,6 +178,10 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const isBackgroundImage = props.canvasElement.classList.contains(
         kBackgroundImageClass
     );
+    const backgroundImageText = useL10n(
+        "Background Image",
+        "EditTab.Image.BackgroundImage"
+    );
     const canExpandBackgroundImage = theOneCanvasElementManager?.canExpandToFillSpace();
 
     // These commands apply to all canvas elements (currently none!).
@@ -331,6 +335,16 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     pointer-events: all;
                 `}
             >
+                {isBackgroundImage && (
+                    <div
+                        css={css`
+                            color: ${kBloomBlue};
+                            text-align: center;
+                        `}
+                    >
+                        <strong>{backgroundImageText}</strong>
+                    </div>
+                )}
                 <div
                     css={css`
                         display: flex;
