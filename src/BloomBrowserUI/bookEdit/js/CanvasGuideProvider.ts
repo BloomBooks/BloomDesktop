@@ -76,7 +76,7 @@ interface ElementBounds {
  */
 export class CanvasGuideProvider {
     // --- Configuration ---
-    private readonly PROXIMITY_THRESHOLD = 1; // Max distance in pixels for snapping
+    private readonly PROXIMITY_THRESHOLD = 0; // TODO: change to grid size (or 1/2 grid size?) when we get a grid. Max distance in pixels for snapping
     private readonly GUIDE_COLOR = "#E54D2E"; // Typically red/orange
     private readonly EQUAL_DIM_COLOR = "rgba(139, 255, 131, 0.7)"; // Greenish, semi-transparent
     private readonly GUIDE_LINE_THICKNESS = "1px";
