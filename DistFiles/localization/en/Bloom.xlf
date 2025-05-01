@@ -6104,6 +6104,14 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Drag Images to Targets</source>
         <note>ID: TemplateBooks.PageLabel.DragImagesTargets</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag Sound to Word Target</source>
+        <note>ID: TemplateBooks.PageLabel.Drag Sound to Word Target</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Sounds to Word Targets" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag Sounds to Word Targets</source>
+        <note>ID: TemplateBooks.PageLabel.Drag Sounds to Word Targets</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.DragImagesShadows" sil:dynamic="true" translate="no">
         <source xml:lang="en">Drag Images to Shadows</source>
         <note>ID: TemplateBooks.PageLabel.DragImagesShadows</note>
