@@ -177,7 +177,9 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
     // won't be visible. But then the  bluish one can be seen.)  See BL-14193.
     // A rule in base-page.less suppresses these (along with other borders) for canvas elements
     // that are have natural borders to make them visible (i.e., comic style is not 'none')
-    .bloom-canvas-element:not([data-bloom-active="true"])
+    // The :not(.drag-activity-play *) prevents this from showing up when playing a game (BL-14678).
+    .bloom-canvas-element:not([data-bloom-active="true"]):not(.drag-activity-play
+            *)
         div.bloom-editable:before {
         content: " ";
         position: absolute;
