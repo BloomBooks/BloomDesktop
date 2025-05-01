@@ -1174,7 +1174,8 @@ const DragActivityControls: React.FunctionComponent<{
                                     userDefinedStyleName="Word"
                                     defaultStyleProps={{
                                         fontSize: "45px",
-                                        lineHeight: "1"
+                                        lineHeight: "1",
+                                        textAlign: "center"
                                     }}
                                 />
 
