@@ -1658,12 +1658,9 @@ function SetupBookLinkGrids(container: HTMLElement) {
                                 link.page.pageId.toString()
                             );
                         }
-                        // create elements for the thumbnail
-                        const bloomCanvas = document.createElement("div");
-                        button.appendChild(bloomCanvas);
-                        bloomCanvas.className = "bloom-canvas";
+                        // create img for the thumbnail
                         const img = document.createElement("img");
-                        bloomCanvas.appendChild(img);
+                        button.appendChild(img);
 
                         const desiredFileNameWithoutExtension = `bookButton-${link.book.id}`;
 

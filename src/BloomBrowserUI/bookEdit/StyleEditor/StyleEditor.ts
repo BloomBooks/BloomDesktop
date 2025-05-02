@@ -73,6 +73,7 @@ interface IFormattingValues {
 export interface StyleDefnProps {
     fontSize?: string;
     lineHeight?: string;
+    textAlign?: string;
 }
 
 // If the document doesn't already have a user-defined style with the specified name,
@@ -100,19 +101,27 @@ export function createStyleDefnIfUndefined(
         true, // create it if it doesn't exist
         documentToUse
     );
-    if (newRule && styles.fontSize) {
-        newRule.style.setProperty("font-size", styles.fontSize, "important");
-    }
-    if (newRule && styles.lineHeight) {
-        newRule.style.setProperty(
-            "line-height",
-            styles.lineHeight,
-            "important"
-        );
-    }
+    applyStyleDefnToRule(newRule, styles);
+
     // As you add to this,some props may need to be applied to the paragraph inside.
-    // Pay attention to the setter for the corresponding properry in the dialog event handlers.
+    // Pay attention to the setter for the corresponding property in the dialog event handlers.
     return newRule;
+}
+
+function applyStyleDefnToRule(
+    rule: CSSStyleRule | null,
+    styles: StyleDefnProps
+): void {
+    if (!rule) return;
+
+    // Iterate through all properties in the styles object
+    for (const [key, value] of Object.entries(styles)) {
+        if (value !== undefined) {
+            // Convert camelCase to kebab-case (e.g., fontSize -> font-size)
+            const cssProperty = key.replace(/([A-Z])/g, "-$1").toLowerCase();
+            rule.style.setProperty(cssProperty, value, "important");
+        }
+    }
 }
 
 // Class provides a convenient way to group a style id and display name
@@ -121,8 +130,8 @@ class FormattingStyle {
     public englishDisplayName: string;
     public localizedName: string;
 
-    constructor(namestr: string, displayStr: string) {
-        this.styleId = namestr;
+    constructor(nameStr: string, displayStr: string) {
+        this.styleId = nameStr;
         this.englishDisplayName = displayStr;
     }
 

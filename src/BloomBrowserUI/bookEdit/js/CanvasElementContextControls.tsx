@@ -187,7 +187,10 @@ const CanvasElementContextControls: React.FunctionComponent<{
         menuOptions.unshift({
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",
-            onClick: theOneCanvasElementManager?.duplicateCanvasElement,
+            onClick: () => {
+                if (!props.canvasElement) return;
+                makeDuplicateOfDragBubble();
+            },
             icon: <DuplicateIcon css={getMenuIconCss()} />
         });
     }

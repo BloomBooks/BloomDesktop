@@ -191,6 +191,19 @@ namespace Bloom.CollectionTab
 
         public void moveBookIntoThisCollection(Book.Book origBook, BookCollection origCollection)
         {
+            var possibleTCFilePath = TeamCollectionManager.GetTcLinkPathFromLcPath(
+                origCollection.PathToDirectory
+            );
+            if (RobustFile.Exists(possibleTCFilePath))
+            {
+                // Original collection is a TC.
+                // To remove a book from a TC, we would have "load up" the collection to check that the book is checked
+                // out, the tc is connected, etc. So for now we don't allow it
+                throw new ApplicationException(
+                    $"{origCollection.Name} is a Team Collection. Cannot move a book that is currently in a Team Collection."
+                );
+            }
+
             var origBookFolderPath = origBook.FolderPath;
             var bookFolderName = Path.GetFileName(origBookFolderPath);
             var newCollectionDir = TheOneEditableCollection.PathToDirectory;

@@ -450,6 +450,12 @@ namespace Bloom.Publish
                 PublishHelper.RemoveUnpublishableContent(page);
             PublishHelper.RemoveUnpublishableBookData(dom.RawDom);
 
+            // Show any game pages in the "play" mode.  See BL-14620.
+            // During editing, this class is added to the #page-scaling-container element
+            // which sits above the page.  That doesn't exist in the PDF's HTML, so we
+            // use the body element instead.
+            dom.Body.AddClass("drag-activity-play");
+
             return BloomServer.MakeInMemoryHtmlFileInBookFolder(
                 dom,
                 source: InMemoryHtmlFileSource.Pub

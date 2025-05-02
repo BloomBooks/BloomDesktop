@@ -37,6 +37,9 @@
 .drag-activity-correct .drag-item-correct,
 .drag-activity-wrong .drag-item-wrong {
     display: block;
+    // In front of targets ([data-target-of] has z-index=@convasElementCanvasZIndex+1),
+    // in case they overlap.  See BL-14627.
+    z-index: @canvasElementCanvasZIndex + 2;
 }
 // Hide draggable items in the Correct and Wrong tabs. See BL-14532.
 // The data-target-of elements will show the positions of the targets and
@@ -111,7 +114,7 @@
 // }
 
 // .drag-activity-correct .bloom-page:not([data-activity="drag-word-chooser-slider"]) {
-//     .bloom-canvas-element:not(.drag-item-correct):not(.bloom-change-page-button),
+//     .bloom-canvas-element:not(.drag-item-correct),
 //     [data-target-of],
 //     .drag-item-random-sentence {
 //         opacity: 30%;
@@ -125,7 +128,7 @@
 // .drag-activity-wrong .bloom-page:not([data-activity="drag-word-chooser-slider"]) {
 //     // Review: we want the change-page buttons to be visible and clickable always.
 //     // Should we have a distinct class for this, like bloom-all-tabs?
-//     .bloom-canvas-element:not(.drag-item-wrong):not(.bloom-change-page-button),
+//     .bloom-canvas-element:not(.drag-item-wrong),
 //     [data-target-of],
 //     .drag-item-random-sentence {
 //         opacity: 30%;
@@ -149,8 +152,10 @@
 .drag-activity-play {
     .drag-item-wrong,
     .drag-item-correct {
-        // In front of targets, in case they overlap
-        z-index: @canvasElementCanvasZIndex + 2;
+        // In front of targets ([data-target-of] has z-index=@convasElementCanvasZIndex+1),
+        // in case they overlap. Also in front of [data-draggable-id] elements, which are
+        // in front of the targets with z-index=@canvasElementCanvasZIndex+2.  See BL-14627.
+        z-index: @canvasElementCanvasZIndex + 3;
     }
 }
 // In the play tab we don't even have the concept of a video element being selected.
@@ -241,25 +246,22 @@
     position: absolute;
     // above canvas element canvas so we can drag it when the canvas is active
     z-index: @canvasElementCanvasZIndex + 1;
-    box-sizing: border-box;
-
-    // We don't want this shadow effect in start mode for the drag image game because it makes it hard to see the image.
-    // We do want the shadow effect in the other modes if we are showing the target.
-    // See BL-14534.
-    .drag-activity-start
-        .bloom-page:not([data-activity="drag-image-to-target"])
-        &,
-    .drag-activity-play & {
+    // we set the size appropriately for the draggable element, and this should be the size inside of the border we may add to the target
+    box-sizing: content-box;
+    > * {
+        // We want targets to show a shadow of what is supposed to go there.
+        opacity: 50%;
+    }
+    .drag-activity-correct & {
+        // In the correct tab, we want to see the target without transparency.
         > * {
-            // targets have children to show a shadow of what is supposed to go there.
-            // the contents are identical, this makes them a shadow.
-            opacity: 50%;
+            opacity: 1;
         }
     }
     .drag-activity-wrong & {
         // In the wrong tab, we don't want to see the target at all, but just the dashed box if it's visible.
         > * {
-            opacity: 0%;
+            opacity: 0;
         }
     }
 
@@ -414,13 +416,29 @@
     pointer-events: none;
 }
 
+// In the drag-image-to-target game, we want to show shadows of target images everywhere
+// except the Correct tab if data-show-target-as-shadow is set to true.
+:not(.drag-activity-correct)
+    > .bloom-page[data-activity="drag-image-to-target"][data-show-target-as-shadow="true"],
+.bloom-page.data-activity-play[data-show-target-as-shadow="true"][data-show-answers-in-targets="true"] {
+    [data-target-of] {
+        background-color: unset;
+
+        .bloom-targetWrapper {
+            filter: grayscale(100%) brightness(0%);
+            mix-blend-mode: normal;
+            opacity: 100%;
+            top: 0px; // Override so that the dragged image is exactly on top of the target wrapper.
+        }
+    }
+}
+
 .bloom-targetWrapper {
     height: 100%;
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    top: @target-border-width;
 }
 
 .drag-item-order-sentence .bloom-editable {
@@ -483,8 +501,8 @@
 //     }
 // }
 .bloom-canvas-element.draggable-text {
-    background-color: var(--draggable-background-color);
-    color: var(--draggable-color);
+    background-color: var(--game-draggable-bg-color);
+    color: var(--game-draggable-color);
     &.bloom-unused-in-lang {
         display: none;
     }
@@ -493,44 +511,31 @@
 .drag-item-wrong {
     .bloom-translationGroup {
         background-color: transparent;
-        color: var(--fixed-color);
+        color: var(--game-text-color);
     }
 }
 .drag-item-order-word,
 .drag-item-order-sentence p {
-    background-color: var(--draggable-background-color);
-    color: var(--draggable-color);
+    background-color: var(--game-draggable-bg-color);
+    color: var(--game-draggable-color);
     border-radius: 10px;
     padding: 0px 11px;
     margin-right: 5px;
 }
 
 [data-target-of] {
-    border: dashed @target-border-width var(--draggable-background-color);
+    border: dashed @target-border-width
+        var(--game-draggable-target-outline-color);
     // If we ever want targets to have a background color (except when hidden), here's the place.
-    //background-color: var(--target-color);
+    //background-color: var(--game-draggable-target-bg-color);
 
     &:focus {
         box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
-            0 0 8px var(--draggable-background-color);
+            0 0 8px var(--game-draggable-target-outline-color);
     }
     &.bloom-unused-in-lang {
         display: none;
     }
-}
-
-.bloom-change-page-button {
-    background-color: var(--draggable-background-color);
-    color: var(--draggable-color);
-    border-radius: 10px;
-    padding: 3px 2px 2px 10px;
-    box-sizing: border-box;
-    // This puts it in front of other things so it can actually be clicked.
-    z-index: @canvasElementZIndex;
-    // In bloom-player, cursor seems to be auto, which here gives us a text editing cursor.
-    // Not sure why that doesn't happen in play mode in Bloom desktop.
-    // But anyway, we don't want it.
-    cursor: default;
 }
 
 // We could add another common class to these three elements, but other themes
@@ -552,14 +557,20 @@
     min-height: 36px;
 }
 .game-button {
-    background-color: var(--draggable-background-color);
+    background-color: var(--game-control-button-bg-color);
 }
 
 .activeButton {
     &:hover {
-        border-color: var(--hover-button-border);
+        // In case we are in a browser which doesn't support color-mix, use gray as a fallback.
+        border-color: #848484;
+        border-color: color-mix(
+            in srgb,
+            var(--game-control-button-bg-color),
+            white 30%
+        );
         &:active {
-            border-color: var(--active-button-border);
+            border-color: black;
         }
     }
 }
@@ -590,10 +601,10 @@
 }
 
 .GameHeader-style {
-    color: var(--header-color);
-    background-color: var(--header-background-color);
+    color: var(--game-header-color);
+    background-color: var(--game-header-bg-color);
 }
 .GameTargetLabel-style {
-    color: var(--button-color);
-    background-color: var(--page-background-color);
+    color: var(--game-target-label-color);
+    background-color: transparent;
 }

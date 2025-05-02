@@ -232,7 +232,12 @@ const ondragend = (
         addBubbles(); // Do now if we can, if not, sometime when we've gotten all the localizations.
     }
     if (makeTarget) {
-        canvasElement.style.width = ev.currentTarget.clientWidth + "px"; // may be changed below
+        const defaultWidth = getDefaultDraggableWidth(canvasElementType);
+        if (defaultWidth > 0) {
+            canvasElement.style.width = defaultWidth + "px";
+            canvasElementManager.setDefaultHeightFromWidth(canvasElement);
+        }
+
         if (doesContainingPageHaveSameSizeMode(canvasElement)) {
             // We want to adjust the new one to the existing ones (if any), not the other way around.
             // By default, since the new one is about to be selected, its size will win.
@@ -262,6 +267,20 @@ const ondragend = (
     // it's one of the ones that should be ordered to the end.
     canvasElementManager.adjustCanvasElementOrdering();
 };
+
+function getDefaultDraggableWidth(
+    canvasElementType: CanvasElementType
+): number {
+    switch (canvasElementType) {
+        case "image":
+        case "sound":
+            return 60;
+        case "video":
+            return 80; // 80 = 60 * 4/3
+        default:
+            return -1;
+    }
+}
 
 // Make a unique id for the canvas element, and set it on the canvas element.
 // It's good enough to be unique within the current page, and will very probably

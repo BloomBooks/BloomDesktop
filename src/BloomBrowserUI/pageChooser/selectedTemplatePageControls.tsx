@@ -108,8 +108,8 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                             border: 1px solid #b0dee4;
                             max-width: 98%;
                             max-height: 232px;
-                            width: ${props.isLandscape ? "unset" : "auto"};
-                            height: ${props.isLandscape ? "150px" : "auto"};
+                            width: ${props.isLandscape ? "unset" : "150px"};
+                            height: ${props.isLandscape ? "150px" : "unset"};
                         `}
                         src={props.imageSource}
                     />
@@ -145,6 +145,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                     overflow-y: auto;
                     margin-right: ${previewPaneLeftPadding}px;
                     margin-left: ${previewPaneLeftPadding}px;
+                    margin-top: 1em;
                     align-self: flex-start;
                 `}
                 id="previewDescriptionTextContainer"

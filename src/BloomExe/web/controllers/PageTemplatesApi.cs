@@ -116,7 +116,8 @@ namespace Bloom.web.controllers
             // need for cross-domain communication between the dialog and the page that launches it.
             addPageSettings.forChooseLayout = ForPageLayout;
 
-            request.ReplyWithJson(JsonConvert.SerializeObject(addPageSettings));
+            var json = JsonConvert.SerializeObject(addPageSettings);
+            request.ReplyWithJson(json);
         }
 
         /// <summary>
