@@ -69,10 +69,6 @@
         <source xml:lang="en">Objects that do not Move</source>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Header">
-        <source xml:lang="en">Header</source>
-        <note>ID: EditTab.Toolbox.DragActivity.Header</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions">
         <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
@@ -85,9 +81,9 @@
         <source xml:lang="en">Instructions</source>
         <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.TargetLabel">
-        <source xml:lang="en">Target Label</source>
-        <note>ID: EditTab.Toolbox.DragActivity.TargetLabel</note>
+      <trans-unit id="EditTab.Toolbox.DragActivity.Text" translate="no">
+        <source xml:lang="en">Text</source>
+        <note>ID: EditTab.Toolbox.DragActivity.Text</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Letter">
         <source xml:lang="en">M</source>
@@ -181,10 +177,6 @@
       <trans-unit id="EditTab.Toolbox.DragActivity.TestInstructions">
         <source xml:lang="en">Try it out!</source>
         <note>ID: EditTab.Toolbox.DragActivity.TestInstructions</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.TextToPutOnThePage">
-        <source xml:lang="en">Text to put on the page</source>
-        <note>ID: EditTab.Toolbox.DragActivity.TextToPutOnThePage</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TryAgain">
         <source xml:lang="en">Try Again</source>
