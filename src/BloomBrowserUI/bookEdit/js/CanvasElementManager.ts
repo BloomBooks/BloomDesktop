@@ -52,6 +52,7 @@ import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
 import { getTarget } from "bloom-player";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
+import { CanvasSnapProvider } from "./CanvasSnapProvider";
 
 export interface ITextColorInfo {
     color: string;
@@ -95,8 +96,10 @@ export class CanvasElementManager {
 
     private guideProvider: CanvasGuideProvider;
     private keyboardProvider: CanvasElementKeyboardProvider;
+    private snapProvider: CanvasSnapProvider;
 
     public constructor() {
+        this.snapProvider = new CanvasSnapProvider();
         this.guideProvider = new CanvasGuideProvider();
         this.keyboardProvider = new CanvasElementKeyboardProvider(
             {
@@ -131,40 +134,42 @@ export class CanvasElementManager {
         );
 
         // Start a snap drag operation
-        //this.snapProvider.startDrag();
+        this.snapProvider.startDrag();
 
         // Calculate the target position (current position + delta)
         const targetX = currentLeft + dx;
         const targetY = currentTop + dy;
 
-        // TODO give the snap provider the final say
         // Get the snapped position using the CanvasSnapProvider
-        // const { x: snappedX, y: snappedY } = this.snapProvider.getPosition(
-        //     event,
-        //     targetX,
-        //     targetY
-        // );
-        // Note that adjustCanvasElementLocationRelativeToParent will constrain the
-        // movement to keep the element at least slightly visible. So we don't need
-        // to take care here that it doesn't move off the screen. However,
-        // currently adjustCanvasElementLocationRelativeToParent will not make sure
-        // it is on the grid. We may want to change that, or add a check here to
-        // make sure it ends up both visible AND on the grid.
-
-        const snappedX = targetX; // Placeholder for snapped X position
-        const snappedY = targetY; // Placeholder for snapped Y position
+        const { x: snappedX, y: snappedY } = this.snapProvider.getPosition(
+            event,
+            targetX,
+            targetY
+        );
 
         // Apply movement with snapped coordinates
-        const where = new Point(
-            snappedX,
-            snappedY,
-            PointScaling.Unscaled,
-            "moveActiveCanvasElement"
+        this.activeElement.style.left = `${snappedX}px`;
+        this.activeElement.style.top = `${snappedY}px`;
+
+        // End the snap drag operation
+        this.snapProvider.endDrag();
+
+        // // Update any targets that need to be notified of this change
+        // this.adjustTarget(this.activeElement);
+
+        // // Update the control frame to match the new position
+        // this.alignControlFrameWithActiveElement();
+
+        // If we have moved the canvas element, ensure it stays within its parent container
+        const bloomCanvas = CanvasElementManager.getBloomCanvas(
+            this.activeElement
         );
-        this.adjustCanvasElementLocationRelativeToParent(
-            this.activeElement,
-            where
-        );
+        if (bloomCanvas) {
+            this.ensureCanvasElementsIntersectParent(bloomCanvas);
+        }
+
+        // Notify any listeners that the element has changed position
+        this.doNotifyChange();
     }
 
     public getIsCanvasElementEditingOn(): boolean {
@@ -1424,6 +1429,7 @@ export class CanvasElementManager {
                 document.querySelectorAll(kCanvasElementSelector)
             ) as HTMLElement[]
         );
+        this.snapProvider.startDrag();
         document.addEventListener("mousemove", this.continueResizeDrag, {
             capture: true
         });
@@ -1441,6 +1447,7 @@ export class CanvasElementManager {
         });
         this.currentDragControl?.classList.remove("active-control");
         this.guideProvider.endDrag();
+        this.snapProvider.endDrag();
     };
 
     private minWidth = 30; // @MinTextBoxWidth in overlayTool.less
@@ -1493,29 +1500,87 @@ export class CanvasElementManager {
         let newHeight = this.oldHeight;
         let newTop = this.oldTop;
         let newLeft = this.oldLeft;
+
+        // Assume variables like newLeft, newTop, newWidth, newHeight are declared outside
+        // and potentially initialized with old values if needed.
+
+        let targetX, targetY;
+
+        // 1. Determine target coordinates based on corner and delta
+        //    These are the coordinates passed to the snapping function.
         switch (this.resizeDragCorner) {
             case "ne":
-                newWidth = Math.max(this.oldWidth + deltaX, this.minWidth);
-                newHeight = Math.max(this.oldHeight - deltaY, this.minHeight);
-                // Use the difference here rather than deltaY so the minWidth is respected.
-                newTop = this.oldTop + (this.oldHeight - newHeight);
+                targetX = this.oldLeft + this.oldWidth + deltaX; // Target Right
+                targetY = this.oldTop + deltaY; // Target Top
                 break;
             case "nw":
-                newWidth = Math.max(this.oldWidth - deltaX, this.minWidth);
-                newHeight = Math.max(this.oldHeight - deltaY, this.minHeight);
-                newTop = this.oldTop + (this.oldHeight - newHeight);
-                newLeft = this.oldLeft + (this.oldWidth - newWidth);
+                targetX = this.oldLeft + deltaX; // Target Left
+                targetY = this.oldTop + deltaY; // Target Top
                 break;
             case "se":
-                newWidth = Math.max(this.oldWidth + deltaX, this.minWidth);
-                newHeight = Math.max(this.oldHeight + deltaY, this.minHeight);
+                targetX = this.oldLeft + this.oldWidth + deltaX; // Target Right
+                targetY = this.oldTop + this.oldHeight + deltaY; // Target Bottom
                 break;
             case "sw":
-                newWidth = Math.max(this.oldWidth - deltaX, this.minWidth);
-                newHeight = Math.max(this.oldHeight + deltaY, this.minHeight);
-                newLeft = this.oldLeft + (this.oldWidth - newWidth);
+                targetX = this.oldLeft + deltaX; // Target Left
+                targetY = this.oldTop + this.oldHeight + deltaY; // Target Bottom
                 break;
+            default:
+                // Handle unexpected corner or return
+                console.error("Invalid resize corner:", this.resizeDragCorner);
+                return; // Or throw an error
         }
+
+        // 2. Get snapped coordinates
+        const { x: snappedX, y: snappedY } = this.snapProvider.getPosition(
+            event,
+            targetX,
+            targetY
+        );
+
+        // 3. Calculate potential dimensions and update position based on snapped coordinates
+        //    Note: We calculate dimensions *before* enforcing minimums.
+        let potentialWidth, potentialHeight;
+
+        if (this.resizeDragCorner.includes("n")) {
+            // Top edge is moving
+            newTop = snappedY;
+            potentialHeight = this.oldTop + this.oldHeight - newTop; // oldBottom - newTop
+        } else {
+            // Bottom edge is moving ('s')
+            potentialHeight = snappedY - this.oldTop; // newBottom - oldTop
+        }
+
+        if (this.resizeDragCorner.includes("w")) {
+            // Left edge is moving
+            newLeft = snappedX;
+            potentialWidth = this.oldLeft + this.oldWidth - newLeft; // oldRight - newLeft
+        } else {
+            // Right edge is moving ('e')
+            potentialWidth = snappedX - this.oldLeft; // newRight - oldLeft
+        }
+
+        // 4. Apply minimum dimension constraints
+        newWidth = Math.max(potentialWidth, this.minWidth);
+        newHeight = Math.max(potentialHeight, this.minHeight);
+
+        // 5. Adjust position if minimum constraints changed the size *and* the top/left edge was the one moving.
+        //    If the bottom/right edge was moving, the size clamp doesn't require adjusting top/left.
+        if (
+            newWidth !== potentialWidth &&
+            this.resizeDragCorner.includes("w")
+        ) {
+            // Width was clamped, and we were dragging the left edge, so adjust left position
+            newLeft = this.oldLeft + this.oldWidth - newWidth;
+        }
+        if (
+            newHeight !== potentialHeight &&
+            this.resizeDragCorner.includes("n")
+        ) {
+            // Height was clamped, and we were dragging the top edge, so adjust top position
+            newTop = this.oldTop + this.oldHeight - newHeight;
+        }
+
         if (slope) {
             // We want to keep the aspect ratio of the image. So the possible places to move
             // the moving corner must be on a line through the opposite corner
@@ -1824,7 +1889,7 @@ export class CanvasElementManager {
         theOneCanvasElementManager.adjustCanvasElementHeightToContentOrMarkOverflow(
             editable
         );
-        adjustTarget(this.activeElement, getTarget(this.activeElement));
+        // review; adjustTarget(this.activeElement, getTarget(this.activeElement));
         this.alignControlFrameWithActiveElement();
     }
 
@@ -3350,6 +3415,7 @@ export class CanvasElementManager {
             // Note: at this point we do NOT want to focus it. Only if we decide in mouse up that we want to text-edit it.
             this.setActiveElement(bubble.content);
             const positionInfo = bubble.content.getBoundingClientRect();
+            this.snapProvider.startDrag();
 
             // Possible move action started
             this.bubbleToDrag = bubble;
@@ -3588,17 +3654,32 @@ export class CanvasElementManager {
                 return;
             }
 
-            const newPosition = new Point(
+            let newPosition = new Point(
                 this.lastMoveEvent.pageX - this.bubbleDragGrabOffset.x,
                 this.lastMoveEvent.pageY - this.bubbleDragGrabOffset.y,
                 PointScaling.Scaled,
                 "Created by handleMouseMoveDragCanvasElement()"
             );
+
+            const p = this.snapProvider.getPosition(
+                event,
+                newPosition.getScaledX(),
+                newPosition.getScaledY()
+            );
+            newPosition = new Point(
+                p.x,
+                p.y,
+                PointScaling.Scaled,
+                "Created by handleMouseMoveDragCanvasElement()" // what is this about?
+            );
+
+            /* review which one to use?*/
             this.adjustCanvasElementLocationRelativeToViewport(
                 this.bubbleToDrag.content,
                 this.lastMoveContainer,
                 newPosition
             );
+
             this.guideProvider.duringDrag(this.bubbleToDrag.content);
             this.lastCropControl = undefined; // move resets the basis for cropping
             this.animationFrame = 0;
@@ -3653,13 +3734,14 @@ export class CanvasElementManager {
         );
         this.adjustMoveCropHandleVisibility();
         this.alignControlFrameWithActiveElement();
-        this.guideProvider.endDrag();
     }
 
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseUp = (event: MouseEvent) => {
         this.mouseIsDown = false;
+        this.snapProvider.endDrag();
+        this.guideProvider.endDrag();
         document.removeEventListener("mouseup", this.onMouseUp, {
             capture: true
         });
