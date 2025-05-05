@@ -1240,24 +1240,7 @@ const DragActivityControls: React.FunctionComponent<{
                             </CanvasElementItemRow>
                             <CanvasElementItemRow>
                                 <CanvasElementGifItem />
-                            </CanvasElementItemRow>
-                            <CanvasElementItemRow>
-                                <CanvasElementTextItem
-                                    css={labelTextItemCss}
-                                    l10nKey="EditTab.Toolbox.DragActivity.TargetLabel"
-                                    makeTarget={false}
-                                    userDefinedStyleName="GameTargetLabel"
-                                    defaultStyleProps={{
-                                        fontSize: "45px",
-                                        lineHeight: "1"
-                                    }}
-                                />
-                                <CanvasElementTextItem
-                                    css={headerTextItemCss}
-                                    l10nKey="EditTab.Toolbox.DragActivity.Header"
-                                    makeTarget={false}
-                                    userDefinedStyleName="GameHeader"
-                                />
+                                <GameTextItem />
                             </CanvasElementItemRow>
                         </CanvasElementItemRegion>
                     )}
@@ -1390,6 +1373,25 @@ const DragActivityControls: React.FunctionComponent<{
     );
 };
 
+const GameTextItem: React.FunctionComponent<{
+    addClasses?: string;
+}> = props => {
+    return (
+        <CanvasElementTextItem
+            css={textItemCss("14pt")}
+            l10nKey="EditTab.Toolbox.DragActivity.Text"
+            makeTarget={false}
+            addClasses={props.addClasses}
+            userDefinedStyleName="GameTextMediumCenter"
+            defaultStyleProps={{
+                fontSize: "24pt",
+                lineHeight: "1",
+                textAlign: "center"
+            }}
+        />
+    );
+};
+
 function textItemCss(
     fontSize: string = "larger",
     darkBackground: boolean = false,
@@ -1406,10 +1408,6 @@ function textItemCss(
         font-size: ${fontSize};
     `;
 }
-
-const headerTextItemCss = textItemCss("larger", true);
-
-const labelTextItemCss = textItemCss("larger", false);
 
 const draggableWordCss = textItemCss("20px", true, "5px");
 
@@ -1450,12 +1448,7 @@ const CorrectWrongControls: React.FunctionComponent<{
                     />
                 </CanvasElementItemRow>
                 <CanvasElementItemRow>
-                    <CanvasElementTextItem
-                        css={headerTextItemCss}
-                        l10nKey="EditTab.Toolbox.DragActivity.TextToPutOnThePage"
-                        makeTarget={false}
-                        addClasses={props.classToAddToItems}
-                    />
+                    <GameTextItem addClasses={props.classToAddToItems} />
                 </CanvasElementItemRow>
             </CanvasElementItemRegion>
             <div
