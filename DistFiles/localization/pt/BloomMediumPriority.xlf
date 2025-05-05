@@ -48,9 +48,9 @@
         <target xml:lang="pt-PT" state="final">Adicione itens que demonstram que o aluno respondeu corretamente. Por exemplo, pode adicionar a palavra "Certo!" com um GIF de uma galinha dançando.</target>
         <note>ID: EditTab.Toolbox.DragActivity.CorrectInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Draggable">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Draggable" approved="yes">
         <source xml:lang="en">Objects to Drag</source>
-        <target xml:lang="pt-PT" state="translated">Arrastável</target>
+        <target xml:lang="pt-PT" state="final">Arrastável</target>
         <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading" approved="yes">
@@ -78,9 +78,9 @@
         <target xml:lang="pt-PT" state="final">Alvo Arrastável</target>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTarget</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.FixedInPlace">
+      <trans-unit id="EditTab.Toolbox.DragActivity.FixedInPlace" approved="yes">
         <source xml:lang="en">Objects that do not Move</source>
-        <target xml:lang="pt-PT" state="translated">Fixo no local</target>
+        <target xml:lang="pt-PT" state="final">Fixo no local</target>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Header">
@@ -118,9 +118,9 @@
         <target xml:lang="pt-PT" state="final">Nenhum</target>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceHeading">
+      <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceHeading" approved="yes">
         <source xml:lang="en">Order Sentence</source>
-        <target xml:lang="pt-PT" state="translated">por frase</target>
+        <target xml:lang="pt-PT" state="final">por frase</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderSentenceHeading</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceInstructions" approved="yes">
@@ -133,14 +133,14 @@
         <target xml:lang="pt-PT" state="final">Opções</target>
         <note>ID: EditTab.Toolbox.DragActivity.Options</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle">
+      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle" approved="yes">
         <source xml:lang="en">Order Circle</source>
-        <target xml:lang="pt-PT" state="translated">Círculo de pedidos</target>
+        <target xml:lang="pt-PT" state="final">Círculo de pedidos</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircle</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircleInstructions">
+      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircleInstructions" approved="yes">
         <source xml:lang="en">Put the Order Circles in the correct order. Bloom will shuffle them when it is time to play.</source>
-        <target xml:lang="pt-PT" state="translated">Coloque a Ordem dos Círculos na ordem correta. Florescer irá embaralhá-los quando for hora de jogar.</target>
+        <target xml:lang="pt-PT" state="final">Coloque a Ordem dos Círculos na ordem correta. Bloom irá embaralhá-los quando for hora de jogar.</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircleInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswer" approved="yes">
@@ -197,9 +197,9 @@
         <target xml:lang="pt-PT" state="final">Mostrar alvos de arrastar durante o jogo</target>
         <note>ID: EditTab.Toolbox.DragActivity.ShowTargetsPlay</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle">
+      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle" approved="yes">
         <source xml:lang="en">Order Circle</source>
-        <target xml:lang="pt-PT" state="translated">Círculo de pedidos</target>
+        <target xml:lang="pt-PT" state="final">Círculo de pedidos</target>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircle</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ShowAnswersInTargets" approved="yes">
@@ -875,9 +875,9 @@
         <target xml:lang="pt-PT" state="final">Layout avançado</target>
         <note>BookSettings.AdvancedLayoutLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.TopLevelTextPaddingLabel" sil:dynamic="true">
+      <trans-unit id="BookSettings.TopLevelTextPaddingLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Padding</source>
-        <target xml:lang="pt-PT" state="translated">Enchimento de texto</target>
+        <target xml:lang="pt-PT" state="final">Enchimento de texto</target>
         <note>BookSettings.TopLevelTextPaddingLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPadding.Description" sil:dynamic="true" approved="yes">
