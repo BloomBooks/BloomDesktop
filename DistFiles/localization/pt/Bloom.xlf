@@ -2079,6 +2079,11 @@
         <target xml:lang="pt-PT" state="final">Falta esta imagem, {0}, ou estava carregando muito lento.</target>
         <note>ID: EditTab.Image.AltMsg</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.BackgroundImage" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Background Image</source>
+        <target xml:lang="pt-PT" state="needs-translation">Background Image</target>
+        <note>ID: EditTab.Image.BackgroundImage</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change image</source>
         <target xml:lang="pt-PT" state="final">Mudar imagem</target>
@@ -6979,6 +6984,11 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Match Words with Images</source>
         <target xml:lang="pt-PT" state="needs-translation">Match Words with Images</target>
         <note>ID: TemplateBooks.PageLabel.MatchWordsWithImages</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Custom Game" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Custom Game</source>
+        <target xml:lang="pt-PT" state="needs-translation">Custom Game</target>
+        <note>ID: TemplateBooks.PageLabel.Custom Game</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog" approved="yes">
         <source xml:lang="en">Setup</source>
