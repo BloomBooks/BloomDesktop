@@ -5424,9 +5424,9 @@
         <target xml:lang="pt-PT" state="final">Já está na Biblioteca Bloom</target>
         <note>ID: PublishTab.UploadCollisionDialog.AlreadyIn</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeSubscription">
+      <trans-unit id="PublishTab.UploadCollisionDialog.ChangeSubscription" approved="yes">
         <source xml:lang="en">The subscription was "{0}" but is now "{1}". This may change logos and other material. Check this box if this is what you want.</source>
-        <target xml:lang="pt-PT" state="translated">A assinatura foi "{0}", mas agora é "{1}". Isto pode alterar logotipos e outros materiais. Marque esta caixa se é isso que você quer.</target>
+        <target xml:lang="pt-PT" state="final">A assinatura foi "{0}", mas agora é "{1}". Isto pode alterar logotipos e outros materiais. Marque esta caixa se é isso que você quer.</target>
         <note>ID: PublishTab.UploadCollisionDialog.ChangeSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.ChangeUploader" approved="yes">
@@ -6153,9 +6153,9 @@
       </trans-unit>
       <!-- Most subscription labels are in the BloomLowPriority. What we want here
 is mostly status, which shows on the Collection Tab -->
-      <trans-unit id="SubscriptionStatus.RenewalMessage">
+      <trans-unit id="SubscriptionStatus.RenewalMessage" approved="yes">
         <source xml:lang="en">Please email [subscriptions@bloomlibrary.org](%0) to renew.</source>
-        <target xml:lang="pt-PT" state="translated">Por favor [entre em contato conosco](%0) para renovar.</target>
+        <target xml:lang="pt-PT" state="final">Por favor, entre em contato connosco [subscriptions@bloomlibrary.org](%0) para renovar.</target>
         <note>ID: SubscriptionStatus.RenewalMessage</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage" approved="yes">
