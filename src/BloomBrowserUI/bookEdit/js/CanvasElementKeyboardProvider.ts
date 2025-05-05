@@ -30,10 +30,18 @@ export class CanvasElementKeyboardProvider {
     }
 
     private handleKeyDown = (event: KeyboardEvent): void => {
-        const stepSize = 10; // TODO: this.snapProvider.getMinimumStepSize(event);
+        const stepSize = 1; // TODO: this.snapProvider.getMinimumStepSize(event);
 
         // Check if the event target is an input field or textarea, or contenteditable.
         // If so, we don't want to interfere with typing.
+        // (For canvas elements containing text, the target element will be something
+        // inside the contentEditable bloom-editable if it's in text edit mode, so
+        // the check for isContentEditable will prevent interfering with typing.
+        // When the text element is selected but not in edit mode, the target will be the
+        // canvas element itself, which is not contentEditable, so we can move it.
+        // We don't currently have inputs or textareas in canvas elements, but the event
+        // handler for this is applied to the whole document, so we need to avoid
+        // doing preventDefault anywhere we might be typing.)
 
         const targetElement = event.target as HTMLElement;
         if (

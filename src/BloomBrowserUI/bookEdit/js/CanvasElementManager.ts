@@ -144,27 +144,27 @@ export class CanvasElementManager {
         //     targetX,
         //     targetY
         // );
+        // Note that adjustCanvasElementLocationRelativeToParent will constrain the
+        // movement to keep the element at least slightly visible. So we don't need
+        // to take care here that it doesn't move off the screen. However,
+        // currently adjustCanvasElementLocationRelativeToParent will not make sure
+        // it is on the grid. We may want to change that, or add a check here to
+        // make sure it ends up both visible AND on the grid.
 
         const snappedX = targetX; // Placeholder for snapped X position
         const snappedY = targetY; // Placeholder for snapped Y position
 
         // Apply movement with snapped coordinates
-        this.activeElement.style.left = `${snappedX}px`;
-        this.activeElement.style.top = `${snappedY}px`;
-
-        // Update the control frame to match the new position
-        this.alignControlFrameWithActiveElement();
-
-        // If we have moved the canvas element, ensure it stays within its parent container
-        const bloomCanvas = CanvasElementManager.getBloomCanvas(
-            this.activeElement
+        const where = new Point(
+            snappedX,
+            snappedY,
+            PointScaling.Unscaled,
+            "moveActiveCanvasElement"
         );
-        if (bloomCanvas) {
-            this.ensureCanvasElementsIntersectParent(bloomCanvas);
-        }
-
-        // Notify any listeners that the element has changed position
-        this.doNotifyChange();
+        this.adjustCanvasElementLocationRelativeToParent(
+            this.activeElement,
+            where
+        );
     }
 
     public getIsCanvasElementEditingOn(): boolean {
@@ -3067,7 +3067,7 @@ export class CanvasElementManager {
             const canvasElementRect = canvasElement.getBoundingClientRect();
             // If the canvas element is not visible, its width will be 0. Don't try to adjust it.
             if (canvasElementRect.width === 0) return;
-            this.adjustCanvasElementLocation(
+            this.adjustCanvasElementLocationRelativeToViewport(
                 canvasElement as HTMLElement,
                 parentContainer,
                 new Point(
@@ -3147,21 +3147,43 @@ export class CanvasElementManager {
     //   which means a canvas element might need to move as a result of changing its bubble type.
     private minCanvasElementVisible = 10;
 
+    private adjustCanvasElementLocationRelativeToParent(
+        canvasElement: HTMLElement,
+        // relative to the parent bloomCanvas, like the coords stored in the canvas element
+        location: Point
+    ) {
+        const bloomCanvas = CanvasElementManager.getBloomCanvas(
+            canvasElement
+        ) as HTMLElement;
+        const bounds = bloomCanvas.getBoundingClientRect();
+        const relativeToViewport = new Point(
+            location.getScaledX() + bounds.left,
+            location.getScaledY() + bounds.top,
+            PointScaling.Scaled,
+            "adjustCanvasElementLocationRelativeToParent"
+        );
+        this.adjustCanvasElementLocationRelativeToViewport(
+            canvasElement,
+            bloomCanvas,
+            relativeToViewport
+        );
+    }
+
     // Conceptually, move the canvas element to the specified location (which may be where it is already).
     // However, first adjust the location to make sure at least a little of the canvas element is visible
     // within the specified container. (This means the method may be used both to constrain moving
     // the canvas element, and also, by passing its current location, to ensure it becomes visible if
     // it somehow stopped being.)
-    private adjustCanvasElementLocation(
+    private adjustCanvasElementLocationRelativeToViewport(
         canvasElement: HTMLElement,
         container: HTMLElement,
-        location: Point
+        positionInViewport: Point
     ) {
         const canvasElementRect = canvasElement.getBoundingClientRect();
         const parentRect = container.getBoundingClientRect();
-        const left = location.getScaledX();
+        const left = positionInViewport.getScaledX();
         const right = left + canvasElementRect.width;
-        const top = location.getScaledY();
+        const top = positionInViewport.getScaledY();
         const bottom = top + canvasElementRect.height;
         let x = left;
         let y = top;
@@ -3572,7 +3594,7 @@ export class CanvasElementManager {
                 PointScaling.Scaled,
                 "Created by handleMouseMoveDragCanvasElement()"
             );
-            this.adjustCanvasElementLocation(
+            this.adjustCanvasElementLocationRelativeToViewport(
                 this.bubbleToDrag.content,
                 this.lastMoveContainer,
                 newPosition
