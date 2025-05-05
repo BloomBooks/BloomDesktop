@@ -1240,8 +1240,6 @@ const DragActivityControls: React.FunctionComponent<{
                             </CanvasElementItemRow>
                             <CanvasElementItemRow>
                                 <CanvasElementGifItem />
-                            </CanvasElementItemRow>
-                            <CanvasElementItemRow>
                                 <CanvasElementTextItem
                                     css={labelTextItemCss}
                                     l10nKey="EditTab.Toolbox.DragActivity.TargetLabel"
@@ -1251,12 +1249,6 @@ const DragActivityControls: React.FunctionComponent<{
                                         fontSize: "45px",
                                         lineHeight: "1"
                                     }}
-                                />
-                                <CanvasElementTextItem
-                                    css={headerTextItemCss}
-                                    l10nKey="EditTab.Toolbox.DragActivity.Header"
-                                    makeTarget={false}
-                                    userDefinedStyleName="GameHeader"
                                 />
                             </CanvasElementItemRow>
                         </CanvasElementItemRegion>
