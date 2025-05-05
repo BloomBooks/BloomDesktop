@@ -30,7 +30,7 @@ export class CanvasElementKeyboardProvider {
     }
 
     private handleKeyDown = (event: KeyboardEvent): void => {
-        const stepSize = 1; // TODO: this.snapProvider.getMinimumStepSize(event);
+        const stepSize = 10; // TODO: this.snapProvider.getMinimumStepSize(event);
 
         // Check if the event target is an input field or textarea, or contenteditable.
         // If so, we don't want to interfere with typing.
