@@ -119,52 +119,52 @@ export class CanvasElementManager {
     ): void {
         if (!this.activeElement) return;
 
-        Should i use this instead?
+        //Should i use this instead?
 
-        this.placeElementAtPosition(jQuery(this.activeElement), dx, dy, event);
+        //this.placeElementAtPosition(jQuery(this.activeElement), dx, dy, event);
         // // Get current position and calculate new position
-        // const currentLeft = CanvasElementManager.pxToNumber(
-        //     this.activeElement.style.left
+        const currentLeft = CanvasElementManager.pxToNumber(
+            this.activeElement.style.left
+        );
+        const currentTop = CanvasElementManager.pxToNumber(
+            this.activeElement.style.top
+        );
+
+        // Start a snap drag operation
+        //this.snapProvider.startDrag();
+
+        // Calculate the target position (current position + delta)
+        const targetX = currentLeft + dx;
+        const targetY = currentTop + dy;
+
+        // TODO give the snap provider the final say
+        // Get the snapped position using the CanvasSnapProvider
+        // const { x: snappedX, y: snappedY } = this.snapProvider.getPosition(
+        //     event,
+        //     targetX,
+        //     targetY
         // );
-        // const currentTop = CanvasElementManager.pxToNumber(
-        //     this.activeElement.style.top
-        // );
 
-        // // Start a snap drag operation
-        // //this.snapProvider.startDrag();
+        const snappedX = targetX; // Placeholder for snapped X position
+        const snappedY = targetY; // Placeholder for snapped Y position
 
-        // // Calculate the target position (current position + delta)
-        // const targetX = currentLeft + dx;
-        // const targetY = currentTop + dy;
+        // Apply movement with snapped coordinates
+        this.activeElement.style.left = `${snappedX}px`;
+        this.activeElement.style.top = `${snappedY}px`;
 
-        // // TODO give the snap provider the final say
-        // // Get the snapped position using the CanvasSnapProvider
-        // // const { x: snappedX, y: snappedY } = this.snapProvider.getPosition(
-        // //     event,
-        // //     targetX,
-        // //     targetY
-        // // );
+        // Update the control frame to match the new position
+        this.alignControlFrameWithActiveElement();
 
-        // const snappedX = targetX; // Placeholder for snapped X position
-        // const snappedY = targetY; // Placeholder for snapped Y position
+        // If we have moved the canvas element, ensure it stays within its parent container
+        const bloomCanvas = CanvasElementManager.getBloomCanvas(
+            this.activeElement
+        );
+        if (bloomCanvas) {
+            this.ensureCanvasElementsIntersectParent(bloomCanvas);
+        }
 
-        // // Apply movement with snapped coordinates
-        // this.activeElement.style.left = `${snappedX}px`;
-        // this.activeElement.style.top = `${snappedY}px`;
-
-        // // Update the control frame to match the new position
-        // this.alignControlFrameWithActiveElement();
-
-        // // If we have moved the canvas element, ensure it stays within its parent container
-        // const bloomCanvas = CanvasElementManager.getBloomCanvas(
-        //     this.activeElement
-        // );
-        // if (bloomCanvas) {
-        //     this.ensureCanvasElementsIntersectParent(bloomCanvas);
-        // }
-
-        // // Notify any listeners that the element has changed position
-        // this.doNotifyChange();
+        // Notify any listeners that the element has changed position
+        this.doNotifyChange();
     }
 
     public getIsCanvasElementEditingOn(): boolean {
