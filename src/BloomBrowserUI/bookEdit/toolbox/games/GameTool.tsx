@@ -245,7 +245,11 @@ export const adjustTarget = (
             targetWidth = Math.max(...draggables.map(x => getWidth(x)));
         }
 
-        otherDraggables.concat(targets).forEach((elt: HTMLElement) => {
+        // from BL-14646 we decided to limit this "same size" behavior to the targets only
+        // on the idea that with the grid, it's easy to get all the draggables the same size if you want,
+        // but the targets can't be manipulated directly so doing this automatically makes sense.
+        //otherDraggables.concat(targets).forEach((elt: HTMLElement) => {
+        targets.forEach((elt: HTMLElement) => {
             if (getHeight(elt) !== targetHeight) {
                 elt.style.height = `${targetHeight}px`;
             }
