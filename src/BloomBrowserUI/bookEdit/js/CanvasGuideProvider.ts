@@ -76,7 +76,13 @@ interface ElementBounds {
  */
 export class CanvasGuideProvider {
     // --- Configuration ---
-    private readonly PROXIMITY_THRESHOLD = 0; // TODO: change to grid size (or 1/2 grid size?) when we get a grid. Max distance in pixels for snapping
+    // Max distance in pixels for snapping.
+    // Review: does this want to be related to the grid size? A previous ToDo suggested that,  but if things are on
+    // the grid, they will be closely aligned or not at all, except possibly for elements positioned using ctrl
+    // or before we had the grid. I think it's better not to pretend such things are aligned. We seem to
+    // need a non-zero value so that rounding errors don't cause us to miss things that are very close.
+    // Maybe 0.5 would be even better?
+    private readonly PROXIMITY_THRESHOLD = 1;
     private readonly GUIDE_COLOR = "#E54D2E"; // Typically red/orange
     private readonly EQUAL_DIM_COLOR = "rgba(139, 255, 131, 0.7)"; // Greenish, semi-transparent
     private readonly GUIDE_LINE_THICKNESS = "1px";
