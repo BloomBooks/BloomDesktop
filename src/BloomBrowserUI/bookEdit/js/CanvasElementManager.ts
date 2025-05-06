@@ -52,6 +52,7 @@ import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
 import { getTarget } from "bloom-player";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
+import { postData, postJson } from "../../utils/bloomApi";
 
 export interface ITextColorInfo {
     color: string;
@@ -5092,6 +5093,11 @@ export class CanvasElementManager {
                 sourceDataSound
             );
         }
+        // copy any sound files found in an editable div
+        this.copyAnySoundFileAndAttributesForEditable(
+            sourceElement,
+            patriarchDuplicateElement
+        );
 
         this.setActiveElement(patriarchDuplicateElement);
         this.matchSizeOfSource(sourceElement, patriarchDuplicateElement);
@@ -5148,6 +5154,44 @@ export class CanvasElementManager {
             Comical.convertBubbleJsonToCanvas(container as HTMLElement);
         });
         return patriarchDuplicateElement;
+    }
+
+    private copyAnySoundFileAndAttributesForEditable(
+        sourceElement: HTMLElement,
+        copiedElement: HTMLElement
+    ): void {
+        const sourceEditable = sourceElement.querySelector(".bloom-editable");
+        if (!sourceEditable) return;
+        const sourceId = sourceEditable.getAttribute("id");
+        if (!sourceId) return;
+        const copiedEditable = copiedElement.querySelector(".bloom-editable");
+        if (!copiedEditable) return;
+        const newId = this.createNewId();
+        copiedEditable.setAttribute("id", newId);
+        copyAudioFileAsync(sourceId, newId); // we don't need to wait for this to finish
+        const duration = sourceEditable.getAttribute("data-duration");
+        if (duration) {
+            copiedEditable.setAttribute("data-duration", duration);
+        }
+        const endTimes = sourceEditable.getAttribute(
+            "data-audiorecordingendtimes"
+        );
+        if (endTimes) {
+            copiedEditable.setAttribute(
+                "data-audiorecordingendtimes",
+                endTimes
+            );
+        }
+    }
+
+    private createNewId(): string {
+        const newId = crypto.randomUUID();
+        const ch = newId[0];
+        if (ch >= "0" && ch <= "9") {
+            // make sure it doesn't start with a number, or it will be invalid as an id.
+            return "i" + newId;
+        }
+        return newId;
     }
 
     private getAdjustedTailSpec(
@@ -5230,6 +5274,11 @@ export class CanvasElementManager {
         const sourceElement = childSourceBubble.content;
         newChildElement.innerHTML = this.safelyCloneHtmlStructure(
             sourceElement
+        );
+        // REVIEW: is this needed? or wanted?
+        this.copyAnySoundFileAndAttributesForEditable(
+            sourceElement,
+            newChildElement
         );
         // Preserve the Auto Height setting.  See BL-13931.
         if (sourceElement.classList.contains("bloom-noAutoHeight"))
@@ -6678,4 +6727,26 @@ export function canvasElementDescription(
         return result + "with text " + elt.innerText;
     }
     return result;
+}
+
+async function copyAudioFileAsync(
+    sourceId: string,
+    newId: string
+): Promise<void> {
+    const folderInfo = await postJson(
+        "fileIO/getSpecialLocation",
+        "CurrentBookAudioDirectory"
+    );
+    if (!folderInfo || !folderInfo.data) {
+        return; // huh??
+    }
+    const sourcePath = `${folderInfo.data}/${sourceId}.mp3`;
+    const targetPath = `${folderInfo.data}/${newId}.mp3`;
+    await postData("fileIO/copyFile", {
+        from: encodeURIComponent(sourcePath),
+        to: encodeURIComponent(targetPath)
+    });
+    // console.log(
+    //     `DEBUG copyAudioFileAsync: finished copying ${sourcePath} to ${targetPath}`
+    // );
 }
