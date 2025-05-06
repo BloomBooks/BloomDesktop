@@ -145,9 +145,9 @@
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
         <note>Used as the label of a button that is otherwise the name of a sound file, indicating that no sound has been chosen.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.SameSize">
-        <source xml:lang="en">Keep all items and targets the same size</source>
-        <note>ID: EditTab.Toolbox.DragActivity.SameSize</note>
+      <trans-unit id="EditTab.Toolbox.DragActivity.TargetsSameSize">
+        <source xml:lang="en">Keep all targets the same size so students can't use size as a clue.</source>
+        <note>ID: EditTab.Toolbox.DragActivity.TargetsSameSize</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SceneInstructions">
         <source xml:lang="en">Properties of the Scene</source>

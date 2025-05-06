@@ -1283,7 +1283,7 @@ const DragActivityControls: React.FunctionComponent<{
                                 id="sameSize"
                                 placement="top-end"
                                 tip={
-                                    <Div l10nKey="EditTab.Toolbox.DragActivity.SameSize"></Div>
+                                    <Div l10nKey="EditTab.Toolbox.DragActivity.TargetsSameSize"></Div>
                                 }
                             >
                                 <div
