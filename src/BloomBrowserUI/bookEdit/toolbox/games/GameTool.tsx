@@ -48,7 +48,10 @@ import {
     CanvasElementManager,
     kBackgroundImageClass
 } from "../../js/CanvasElementManager";
-import { getCanvasElementManager } from "../overlay/canvasElementUtils";
+import {
+    getCanvasElementManager,
+    kCanvasElementSelector
+} from "../overlay/canvasElementUtils";
 import { ThemeChooser } from "./ThemeChooser";
 import GameIntroText, { Instructions } from "./GameIntroText";
 import { getGameType, isPageBloomGame } from "./GameInfo";
@@ -447,13 +450,25 @@ let snappedToExisting = false;
 // but in the Start tab they can be moved). Saves some initial state so we can do snapping,
 // and sets up the mousemove and mouseup handlers that do the actual dragging and snapping.
 const startDraggingTarget = (e: MouseEvent) => {
+    const canvasElementManager = getCanvasElementManager()!;
+    canvasElementManager.getSnapProvider()?.startDrag();
     // get the mouse cursor position at startup:
     const target = e.currentTarget as HTMLElement;
     targetBeingDragged = target;
     const page = target.closest(".bloom-page") as HTMLElement;
+    const targets = Array.from(
+        page.querySelectorAll("[data-target-of]")
+    ) as HTMLElement[];
+    const canvasElements = Array.from(
+        page.querySelectorAll(kCanvasElementSelector)
+    ) as HTMLElement[];
+    canvasElementManager
+        .getGuideProvider()
+        ?.startDrag("move", [...targets, ...canvasElements]);
+
     const scale = page.getBoundingClientRect().width / page.offsetWidth;
     targetInitialPositions = [];
-    page.querySelectorAll("[data-target-of]").forEach((elt: HTMLElement) => {
+    targets.forEach((elt: HTMLElement) => {
         const x = elt.offsetLeft;
         const y = elt.offsetTop;
         targetInitialPositions.push({ x, y, elt });
@@ -468,13 +483,16 @@ const startDraggingTarget = (e: MouseEvent) => {
     targetClickOffsetTop = e.clientY / scale - target.offsetTop;
     page.addEventListener("mouseup", stopDraggingTarget);
     page.addEventListener("mousemove", dragTarget);
-    getCanvasElementManager()!.setActiveElement(draggableOfTarget(target));
+    canvasElementManager.setActiveElement(draggableOfTarget(target));
     dragTarget(e); // some side effects like drawing the arrow we want even if no movement happens.
 };
 
 const snapDelta = 30; // review: how close do we want?
 const defaultGapBetweenTargets = 15;
 const dragTarget = (e: MouseEvent) => {
+    const canvasElementManager = getCanvasElementManager()!;
+    const snapProvider = canvasElementManager.getSnapProvider()!;
+    const guideProvider = canvasElementManager.getGuideProvider()!;
     const page = targetBeingDragged.closest(".bloom-page") as HTMLElement;
     const scale = page.getBoundingClientRect().width / page.offsetWidth;
     e.preventDefault();
@@ -486,61 +504,65 @@ const dragTarget = (e: MouseEvent) => {
     let deltaRowMin = Number.MAX_VALUE;
     const width = targetBeingDragged.offsetWidth;
     snappedToExisting = false;
-    for (let i = 0; i < targetInitialPositions.length; i++) {
-        const slot = targetInitialPositions[i];
-        const deltaX = slot.x - x;
-        const deltaY = slot.y - y;
-        const delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        // It's interesting if it is dropped on top of another target(or where it started),
-        // but only if that target is in a row.
-        let inRow = false;
-        if (i > 0 && targetInitialPositions[i - 1].y === slot.y) {
-            inRow = true;
-        }
-        if (
-            i < targetInitialPositions.length - 1 &&
-            targetInitialPositions[i + 1].y === slot.y
-        ) {
-            inRow = true;
-        }
-        if (inRow && delta < deltaMin) {
-            deltaMin = delta;
-            if (delta < snapDelta) {
-                x = slot.x;
-                y = slot.y;
-                snappedToExisting = true;
-            }
-        }
-        // It's also interesting if it is dropped to the right of another target
-        // Todo: possibly also if it is below another one?
-        // Right of it's own start position, which is likely in range initially, is not interesting.
-        if (slot.elt === targetBeingDragged) {
-            continue;
-        }
-        // By default look at a position a bit to the right of the current target.
-        let spacing = width + defaultGapBetweenTargets;
-        if (inRow) {
-            // if the current target is in a row, look at a position the same distance to the right as the row spacing.
-            const row = targetInitialPositions.filter(s => s.y === slot.y);
-            spacing = row[row.length - 1].x - row[row.length - 2].x;
-        }
-        const deltaXRow = slot.x + spacing - x;
-        const deltaRow = Math.sqrt(deltaXRow * deltaXRow + deltaY * deltaY);
-        if (deltaRow < deltaRowMin) {
-            deltaRowMin = deltaRow;
-            // For a "to the right of" position to be interesting, it must be closer to that
-            // position than to any other target
-            if (deltaRow < snapDelta && deltaRow < deltaMin) {
-                if (inRow) {
-                    // If there isn't already a row, we'd only be guessing at spacing
-                    // so don't snap in that direction.
-                    x = slot.x + spacing;
-                }
-                y = slot.y;
-                snappedToExisting = false;
-            }
-        }
-    }
+    // for (let i = 0; i < targetInitialPositions.length; i++) {
+    //     const slot = targetInitialPositions[i];
+    //     const deltaX = slot.x - x;
+    //     const deltaY = slot.y - y;
+    //     const delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    //     // It's interesting if it is dropped on top of another target(or where it started),
+    //     // but only if that target is in a row.
+    //     let inRow = false;
+    //     if (i > 0 && targetInitialPositions[i - 1].y === slot.y) {
+    //         inRow = true;
+    //     }
+    //     if (
+    //         i < targetInitialPositions.length - 1 &&
+    //         targetInitialPositions[i + 1].y === slot.y
+    //     ) {
+    //         inRow = true;
+    //     }
+    //     if (inRow && delta < deltaMin) {
+    //         deltaMin = delta;
+    //         if (delta < snapDelta) {
+    //             x = slot.x;
+    //             y = slot.y;
+    //             snappedToExisting = true;
+    //         }
+    //     }
+    //     // It's also interesting if it is dropped to the right of another target
+    //     // Todo: possibly also if it is below another one?
+    //     // Right of it's own start position, which is likely in range initially, is not interesting.
+    //     if (slot.elt === targetBeingDragged) {
+    //         continue;
+    //     }
+    //     // By default look at a position a bit to the right of the current target.
+    //     let spacing = width + defaultGapBetweenTargets;
+    //     if (inRow) {
+    //         // if the current target is in a row, look at a position the same distance to the right as the row spacing.
+    //         const row = targetInitialPositions.filter(s => s.y === slot.y);
+    //         spacing = row[row.length - 1].x - row[row.length - 2].x;
+    //     }
+    //     const deltaXRow = slot.x + spacing - x;
+    //     const deltaRow = Math.sqrt(deltaXRow * deltaXRow + deltaY * deltaY);
+    //     if (deltaRow < deltaRowMin) {
+    //         deltaRowMin = deltaRow;
+    //         // For a "to the right of" position to be interesting, it must be closer to that
+    //         // position than to any other target
+    //         if (deltaRow < snapDelta && deltaRow < deltaMin) {
+    //             if (inRow) {
+    //                 // If there isn't already a row, we'd only be guessing at spacing
+    //                 // so don't snap in that direction.
+    //                 x = slot.x + spacing;
+    //             }
+    //             y = slot.y;
+    //             snappedToExisting = false;
+    //         }
+    //     }
+    // }
+
+    const snappedPoint = snapProvider.getPosition(e, x, y);
+    x = snappedPoint.x;
+    y = snappedPoint.y;
 
     targetBeingDragged.style.top = y + "px";
     targetBeingDragged.style.left = x + "px";
@@ -549,6 +571,7 @@ const dragTarget = (e: MouseEvent) => {
     if (draggable) {
         adjustTarget(draggable, targetBeingDragged);
     }
+    guideProvider.duringDrag(targetBeingDragged);
 };
 
 const draggableOfTarget = (
@@ -567,6 +590,9 @@ const draggableOfTarget = (
 };
 
 const stopDraggingTarget = (_: MouseEvent) => {
+    const canvasElementManager = getCanvasElementManager()!;
+    canvasElementManager.getSnapProvider()?.endDrag();
+    canvasElementManager.getGuideProvider()?.endDrag();
     const page = targetBeingDragged.closest(".bloom-page") as HTMLElement;
     if (snappedToExisting) {
         // Move things around so we end up with an evenly spaced row again.

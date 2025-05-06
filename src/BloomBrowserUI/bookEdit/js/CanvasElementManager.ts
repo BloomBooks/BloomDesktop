@@ -116,6 +116,14 @@ export class CanvasElementManager {
         );
     }
 
+    public getGuideProvider(): CanvasGuideProvider {
+        return this.guideProvider;
+    }
+
+    public getSnapProvider(): CanvasSnapProvider {
+        return this.snapProvider;
+    }
+
     public moveActiveCanvasElement(
         dx: number,
         dy: number,
