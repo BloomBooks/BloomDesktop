@@ -3,12 +3,14 @@
  * Provides functionality for snapping to a grid and locking movement to a single axis (horizontal or vertical).
  */
 
+import { Point, PointScaling } from "./point";
+
 // The size of the grid cells for snapping.
-const gridSize = 50;
+const gridSize = 10;
 
 // Type definition for functions that modify a position based on snapping rules.
 type SnapPositionFunction = (
-    event: MouseEvent | KeyboardEvent,
+    event: MouseEvent | KeyboardEvent | undefined,
     x: number,
     y: number
 ) => { x: number; y: number };
@@ -76,7 +78,9 @@ export class CanvasSnapProvider {
      * @returns The potentially snapped {x, y} coordinates.
      */
     public getPosition(
-        event: MouseEvent | KeyboardEvent,
+        // Usually a mouseEvent, but when snapping a keyboard movement, ctrl still allows smaller movements.
+        // Should only be undefined for snaps that are very crude, like dropping a new element from the toolbox.
+        event: MouseEvent | KeyboardEvent | undefined,
         x: number,
         y: number
     ): { x: number; y: number } {
@@ -89,7 +93,7 @@ export class CanvasSnapProvider {
         let snappedPosition = { x, y };
 
         // If CTRL key is pressed, bypass all snapping.
-        if (event.ctrlKey) {
+        if (event && event.ctrlKey) {
             return snappedPosition;
         }
 
@@ -105,6 +109,41 @@ export class CanvasSnapProvider {
         return snappedPosition;
     }
 
+    public getSnappedPoint(
+        point: Point,
+        event: MouseEvent | KeyboardEvent | undefined
+    ): Point {
+        // Get the adjusted position based on the current event and point.
+        const adjustedPosition = this.getPosition(
+            event,
+            point.getUnscaledX(),
+            point.getUnscaledY()
+        );
+        return new Point(
+            adjustedPosition.x,
+            adjustedPosition.y,
+            PointScaling.Unscaled,
+            "snapped point"
+        );
+    }
+
+    public getSnappedX(
+        x: number,
+        event: MouseEvent | KeyboardEvent | undefined
+    ): number {
+        // Get the adjusted X position based on the current event and X coordinate.
+        const adjustedPosition = this.getPosition(event, x, 0);
+        return adjustedPosition.x;
+    }
+    public getSnappedY(
+        y: number,
+        event: MouseEvent | KeyboardEvent | undefined
+    ): number {
+        // Get the adjusted Y position based on the current event and Y coordinate.
+        const adjustedPosition = this.getPosition(event, 0, y);
+        return adjustedPosition.y;
+    }
+
     /**
      * Snaps the given coordinates to the nearest point on the defined grid.
      * @param _event The mouse event (unused in this function but part of the signature).
@@ -113,7 +152,7 @@ export class CanvasSnapProvider {
      * @returns The grid-snapped {x, y} coordinates.
      */
     private snapToGrid(
-        _event: MouseEvent | KeyboardEvent,
+        _event: MouseEvent | KeyboardEvent | undefined,
         x: number,
         y: number
     ): { x: number; y: number } {
@@ -134,14 +173,14 @@ export class CanvasSnapProvider {
      * @returns The axis-snapped {x, y} coordinates if Shift is held and axis is locked, otherwise the input {x, y}.
      */
     private snapToOneAxis(
-        event: MouseEvent | KeyboardEvent,
+        event: MouseEvent | KeyboardEvent | undefined,
         x: number,
         y: number
     ): { x: number; y: number } {
         // Minimum distance in pixels the mouse must move before locking to an axis.
         const axisLockThreshold = 5;
 
-        if (!event.shiftKey) {
+        if (!event || !event.shiftKey) {
             // If Shift key is not pressed, reset the locked axis (if any) and allow free movement.
             this.dragContext.axis = undefined;
             return { x, y };
