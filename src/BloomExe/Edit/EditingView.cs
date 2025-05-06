@@ -857,75 +857,7 @@ namespace Bloom.Edit
 
                     Cursor = Cursors.WaitCursor;
 
-                    //nb: Taglib# requires an extension that matches the file content type.
-                    if (ImageUtils.AppearsToBeJpeg(clipboardImage))
-                    {
-                        if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(clipboardImage))
-                            return;
-                        Logger.WriteMinorEvent(
-                            "[Paste Image] Pasting jpeg image {0}",
-                            clipboardImage.OriginalFilePath
-                        );
-                        _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
-                        pictureChanged = true;
-                    }
-                    else
-                    {
-                        //At this point, it could be a bmp, tiff, or PNG. We want it to be a PNG.
-                        if (clipboardImage.OriginalFilePath == null) //they pasted an image, not a path
-                        {
-                            Logger.WriteMinorEvent(
-                                "[Paste Image] Pasting image directly from clipboard (e.g. screenshot)"
-                            );
-                            _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
-                            pictureChanged = true;
-                        }
-                        //they pasted a path to a png
-                        else if (
-                            Path.GetExtension(clipboardImage.OriginalFilePath).ToLowerInvariant()
-                            == ".png"
-                        )
-                        {
-                            Logger.WriteMinorEvent(
-                                "[Paste Image] Pasting png file {0}",
-                                clipboardImage.OriginalFilePath
-                            );
-                            _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
-                            pictureChanged = true;
-                        }
-                        else // they pasted a path to some other bitmap format
-                        {
-                            var pathToPngVersion = Path.Combine(
-                                Path.GetTempPath(),
-                                Path.GetFileNameWithoutExtension(clipboardImage.FileName) + ".png"
-                            );
-                            Logger.WriteMinorEvent(
-                                "[Paste Image] Saving {0} ({1}) as {2} and converting to PNG",
-                                clipboardImage.FileName,
-                                clipboardImage.OriginalFilePath,
-                                pathToPngVersion
-                            );
-                            if (RobustFile.Exists(pathToPngVersion))
-                            {
-                                RobustFile.Delete(pathToPngVersion);
-                            }
-
-                            using (var temp = TempFile.TrackExisting(pathToPngVersion))
-                            {
-                                SIL.IO.RobustImageIO.SaveImage(
-                                    clipboardImage.Image,
-                                    pathToPngVersion,
-                                    ImageFormat.Png
-                                );
-
-                                using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
-                                {
-                                    _model.ChangePicture(imageId, priorImageSrc, palasoImage);
-                                    pictureChanged = true;
-                                }
-                            }
-                        }
-                    }
+                    pictureChanged = SetImage(clipboardImage, imageId, priorImageSrc);
                 }
                 catch (Exception error)
                 {
@@ -944,6 +876,78 @@ namespace Bloom.Edit
             }
 
             Cursor = Cursors.Default;
+        }
+
+        private bool SetImage(PalasoImage imageToSet, string imageId, UrlPathString priorImageSrc)
+        {
+            //nb: Taglib# requires an extension that matches the file content type.
+            if (ImageUtils.AppearsToBeJpeg(imageToSet))
+            {
+                if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageToSet))
+                    return false;
+                Logger.WriteMinorEvent(
+                    "[Paste Image] Pasting jpeg image {0}",
+                    imageToSet.OriginalFilePath
+                );
+                _model.ChangePicture(imageId, priorImageSrc, imageToSet);
+                return true;
+            }
+            else
+            {
+                //At this point, it could be a bmp, tiff, or PNG. We want it to be a PNG.
+                if (imageToSet.OriginalFilePath == null) //they pasted an image, not a path
+                {
+                    Logger.WriteMinorEvent(
+                        "[Paste Image] Pasting image directly from clipboard (e.g. screenshot)"
+                    );
+                    _model.ChangePicture(imageId, priorImageSrc, imageToSet);
+                    return true;
+                }
+                //they pasted a path to a png
+                else if (
+                    Path.GetExtension(imageToSet.OriginalFilePath).ToLowerInvariant() == ".png"
+                )
+                {
+                    Logger.WriteMinorEvent(
+                        "[Paste Image] Pasting png file {0}",
+                        imageToSet.OriginalFilePath
+                    );
+                    _model.ChangePicture(imageId, priorImageSrc, imageToSet);
+                    return true;
+                }
+                else // they pasted a path to some other bitmap format
+                {
+                    var pathToPngVersion = Path.Combine(
+                        Path.GetTempPath(),
+                        Path.GetFileNameWithoutExtension(imageToSet.FileName) + ".png"
+                    );
+                    Logger.WriteMinorEvent(
+                        "[Paste Image] Saving {0} ({1}) as {2} and converting to PNG",
+                        imageToSet.FileName,
+                        imageToSet.OriginalFilePath,
+                        pathToPngVersion
+                    );
+                    if (RobustFile.Exists(pathToPngVersion))
+                    {
+                        RobustFile.Delete(pathToPngVersion);
+                    }
+
+                    using (var temp = TempFile.TrackExisting(pathToPngVersion))
+                    {
+                        SIL.IO.RobustImageIO.SaveImage(
+                            imageToSet.Image,
+                            pathToPngVersion,
+                            ImageFormat.Png
+                        );
+
+                        using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
+                        {
+                            _model.ChangePicture(imageId, priorImageSrc, palasoImage);
+                            return true;
+                        }
+                    }
+                }
+            }
         }
 
         private static PalasoImage GetImageFromClipboard()
