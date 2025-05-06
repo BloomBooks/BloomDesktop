@@ -83,6 +83,10 @@
         outline-color: transparent;
         box-shadow: none;
     }
+    // if some overflow is present, no need to punish the user
+    .childOverflowingThis:after {
+        display: none;
+    }
 }
 
 // We want these only in the start tab, except for ones that are specific to the other tabs
@@ -94,7 +98,8 @@
         display: none;
     }
 }
-[data-draggable-id] {
+[data-draggable-id],
+[data-target-of] {
     display: flex;
     flex-direction: column;
     justify-content: center;
