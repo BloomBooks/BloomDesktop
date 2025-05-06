@@ -33,6 +33,11 @@
         <target xml:lang="ne-NP" state="needs-translation">Choose...</target>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound.Help" translate="no">
+        <source xml:lang="en">You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to “elevenlabs.io”.</source>
+        <target xml:lang="ne-NP" state="needs-translation">You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to “elevenlabs.io”.</target>
+        <note>ID: EditTab.Toolbox.DragActivity.ChooseSound.Help</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile">
         <source xml:lang="en">Choose Sound File</source>
         <target xml:lang="ne-NP" state="needs-translation">Choose Sound File</target>
@@ -83,11 +88,6 @@
         <target xml:lang="ne-NP" state="needs-translation">Objects that do not Move</target>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Header">
-        <source xml:lang="en">Header</source>
-        <target xml:lang="ne-NP" state="needs-translation">Header</target>
-        <note>ID: EditTab.Toolbox.DragActivity.Header</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions">
         <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
         <target xml:lang="ne-NP" state="needs-translation">Place the targets in the places needed for the correct answer.</target>
@@ -103,10 +103,10 @@
         <target xml:lang="ne-NP" state="needs-translation">Instructions</target>
         <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.TargetLabel">
-        <source xml:lang="en">Target Label</source>
-        <target xml:lang="ne-NP" state="needs-translation">Target Label</target>
-        <note>ID: EditTab.Toolbox.DragActivity.TargetLabel</note>
+      <trans-unit id="EditTab.Toolbox.DragActivity.Text" translate="no">
+        <source xml:lang="en">Text</source>
+        <target xml:lang="ne-NP" state="needs-translation">Text</target>
+        <note>ID: EditTab.Toolbox.DragActivity.Text</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Letter">
         <source xml:lang="en">M</source>
@@ -172,10 +172,10 @@
         <target xml:lang="ne-NP" state="needs-translation">None</target>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.SameSize">
-        <source xml:lang="en">Keep all items and targets the same size</source>
-        <target xml:lang="ne-NP" state="needs-translation">Keep all items and targets the same size</target>
-        <note>ID: EditTab.Toolbox.DragActivity.SameSize</note>
+      <trans-unit id="EditTab.Toolbox.DragActivity.TargetsSameSize">
+        <source xml:lang="en">Keep all targets the same size so students can't use size as a clue.</source>
+        <target xml:lang="ne-NP" state="needs-translation">Keep all targets the same size so students can't use size as a clue.</target>
+        <note>ID: EditTab.Toolbox.DragActivity.TargetsSameSize</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SceneInstructions">
         <source xml:lang="en">Properties of the Scene</source>
@@ -216,11 +216,6 @@
         <source xml:lang="en">Try it out!</source>
         <target xml:lang="ne-NP" state="needs-translation">Try it out!</target>
         <note>ID: EditTab.Toolbox.DragActivity.TestInstructions</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.TextToPutOnThePage">
-        <source xml:lang="en">Text to put on the page</source>
-        <target xml:lang="ne-NP" state="needs-translation">Text to put on the page</target>
-        <note>ID: EditTab.Toolbox.DragActivity.TextToPutOnThePage</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TryAgain">
         <source xml:lang="en">Try Again</source>
