@@ -1075,6 +1075,11 @@ export class CanvasElementManager {
     public static skipNextFocusChange: boolean;
 
     public setActiveElement(element: HTMLElement | undefined) {
+        if (element?.classList.contains("bloom-passive-element")) {
+            // A passive element cannot become the active element.  (BL-14685)
+            return;
+        }
+
         // Seems it should be sufficient to remove this from the old active element if any.
         // But there's at least one case where code that adds a new canvas element sets it as
         // this.activeElement before calling this method. It's safest to make sure this
@@ -3784,6 +3789,9 @@ export class CanvasElementManager {
             // Ignore clicks on the JQuery resize handles.
             return true;
         }
+        if (targetElement.classList.contains("bloom-passive-element")) {
+            return true;
+        }
         if (targetElement.closest("#canvas-element-control-frame")) {
             // New drag controls
             return true;
@@ -5690,6 +5698,10 @@ export class CanvasElementManager {
         unscaledRelativeLeft: number,
         unscaledRelativeTop: number
     ) {
+        if (canvasElement.hasClass("bloom-passive-element")) {
+            // Don't set possition for passive elements. They are not supposed to be moved. (BL-14685)
+            return;
+        }
         canvasElement
             .css("left", unscaledRelativeLeft + "px")
             .css("top", unscaledRelativeTop + "px")
