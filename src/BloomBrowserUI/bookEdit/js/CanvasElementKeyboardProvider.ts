@@ -1,7 +1,7 @@
 // Originally this was wired into CanvasSnapProvider.ts, but we're going to do that PR separately and later.
 // And the way it was wired in, just using the grid size, may not be enough. We may need to ask the snap provider
 // to give us the snap location. We'll see.
-//import { CanvasSnapProvider } from "./CanvasSnapProvider";
+import { CanvasSnapProvider } from "./CanvasSnapProvider";
 
 export interface ICanvasElementKeyboardActions {
     deleteCurrentCanvasElement: () => void;
@@ -14,14 +14,14 @@ export interface ICanvasElementKeyboardActions {
 
 export class CanvasElementKeyboardProvider {
     private actions: ICanvasElementKeyboardActions;
-    //    private snapProvider: CanvasSnapProvider;
+    private snapProvider: CanvasSnapProvider;
 
     constructor(
-        actions: ICanvasElementKeyboardActions
-        //        snapProvider: CanvasSnapProvider
+        actions: ICanvasElementKeyboardActions,
+        snapProvider: CanvasSnapProvider
     ) {
         this.actions = actions;
-        //        this.snapProvider = snapProvider;
+        this.snapProvider = snapProvider;
         document.addEventListener("keydown", this.handleKeyDown);
     }
 
@@ -30,7 +30,7 @@ export class CanvasElementKeyboardProvider {
     }
 
     private handleKeyDown = (event: KeyboardEvent): void => {
-        const stepSize = 1; // TODO: this.snapProvider.getMinimumStepSize(event);
+        const stepSize = this.snapProvider.getMinimumStepSize(event);
 
         // Check if the event target is an input field or textarea, or contenteditable.
         // If so, we don't want to interfere with typing.
