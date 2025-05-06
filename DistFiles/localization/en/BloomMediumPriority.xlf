@@ -28,6 +28,10 @@
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound.Help" translate="no">
+        <source xml:lang="en">You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to “elevenlabs.io”.</source>
+        <note>ID: EditTab.Toolbox.DragActivity.ChooseSound.Help</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile">
         <source xml:lang="en">Choose Sound File</source>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
