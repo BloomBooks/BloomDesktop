@@ -878,7 +878,7 @@ namespace Bloom.Edit
             Cursor = Cursors.Default;
         }
 
-        private bool SetImage(PalasoImage imageToSet, string imageId, UrlPathString priorImageSrc)
+        public bool SetImage(PalasoImage imageToSet, string imageId, UrlPathString priorImageSrc)
         {
             //nb: Taglib# requires an extension that matches the file content type.
             if (ImageUtils.AppearsToBeJpeg(imageToSet))

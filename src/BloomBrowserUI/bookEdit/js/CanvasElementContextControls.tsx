@@ -22,7 +22,8 @@ import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import {
     doImageCommand,
     getImageUrlFromImageContainer,
-    kImageContainerClass
+    kImageContainerClass,
+    modifyImage
 } from "./bloomImages";
 import {
     doVideoCommand,
@@ -790,6 +791,11 @@ function addImageMenuOptions(
     };
 
     menuOptions.unshift(
+        {
+            l10nId: "EditTab.Image.RemoveBackground",
+            english: "Invert image",
+            onClick: () => modifyImage(img)
+        },
         {
             l10nId: "EditTab.Image.ChooseImage",
             english: "Choose image from your computer...",

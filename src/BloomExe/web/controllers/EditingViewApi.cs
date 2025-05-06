@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,7 @@ using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
+using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom.web.controllers
@@ -194,10 +196,28 @@ namespace Bloom.web.controllers
         {
             var imageId = request.RequiredParam("imageId");
             byte[] imageBytes = request.RawPostData;
-            string contentType = request.Context.Request.ContentType; // e.g. "image/png" or "image/jpeg"
 
-            // We'll define View.SetImage later. It will handle saving the image and updating the DOM.
-            View.SetImage(imageId, imageBytes, contentType);
+            Image image = null;
+            try
+            {
+                using (var ms = new MemoryStream(imageBytes))
+                {
+                    image = Image.FromStream(ms);
+                }
+            }
+            catch (Exception ex)
+            {
+                request.Failed("Error setting image: " + ex.Message);
+                return;
+            }
+            var palasoImage = new PalasoImage(image);
+
+            var priorImageSrc = UrlPathString.CreateFromUrlEncodedString(
+                request.RequiredParam("priorImageSrc")
+            );
+
+            View.SetImage(palasoImage, imageId, priorImageSrc);
+
             request.PostSucceeded();
         }
 

@@ -2,7 +2,8 @@ import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import {
     getWithConfig,
     getWithConfigAsync,
-    postJson
+    postJson,
+    postDataWithConfigAsync
 } from "../../utils/bloomApi";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
@@ -194,6 +195,83 @@ export function doImageCommand(
         imageSrc,
         imageIsGif
     });
+}
+
+export function modifyImage(img: HTMLElement) {
+    if (!img) {
+        return;
+    }
+
+    // Get the image ID, setting one if needed
+    let imageId = img.getAttribute("id");
+    if (!imageId) {
+        imageId = EditableDivUtils.createUuid();
+        img.setAttribute("id", imageId);
+    }
+
+    const imageSrc = GetRawImageUrl(img);
+
+    // Create a canvas element to manipulate the image
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const imgElement = new Image();
+
+    imgElement.onload = function() {
+        // Set canvas dimensions to match the image
+        canvas.width = imgElement.width;
+        canvas.height = imgElement.height;
+
+        // Draw the image onto the canvas
+        ctx!.drawImage(imgElement, 0, 0);
+
+        // Get the image data
+        const imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        // Invert the colors as a simple test operation
+        for (let i = 0; i < data.length; i += 4) {
+            // Invert RGB values (skip alpha channel)
+            data[i] = 255 - data[i]; // R
+            data[i + 1] = 255 - data[i + 1]; // G
+            data[i + 2] = 255 - data[i + 2]; // B
+            // data[i + 3] stays the same (alpha)
+        }
+
+        // Put the modified image data back on the canvas
+        ctx!.putImageData(imageData, 0, 0);
+
+        // Convert canvas to blob and send to server
+        canvas.toBlob(async function(blob) {
+            if (blob) {
+                const arrayBuffer = await blob.arrayBuffer();
+                const uint8Array = new Uint8Array(arrayBuffer);
+
+                try {
+                    await postDataWithConfigAsync(
+                        `editView/setImage?imageId=${encodeURIComponent(
+                            imageId
+                        )}&priorImageSrc=${encodeURIComponent(imageSrc)}`,
+                        uint8Array,
+                        {
+                            headers: {
+                                "Content-Type": "application/octet-stream"
+                            }
+                        }
+                    );
+                    console.log(
+                        "Image successfully modified and sent to server"
+                    );
+                } catch (error) {
+                    console.error(
+                        "Failed to send modified image to server:",
+                        error
+                    );
+                }
+            }
+        }, "image/png");
+    };
+
+    imgElement.src = imageSrc;
 }
 
 export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {
