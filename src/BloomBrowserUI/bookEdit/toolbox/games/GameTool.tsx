@@ -2030,10 +2030,18 @@ export const makeTargetForDraggable = (
     if (newLeft + width > canvasElement.parentElement!.clientWidth) {
         newLeft = Math.max(0, left - width - 30);
     }
+    const canvasElementManager = getCanvasElementManager()!;
+    const snapProvider = canvasElementManager.getSnapProvider()!;
+    snapProvider.startDrag();
+    const { x: snapX, y: snapY } = snapProvider.getPosition(
+        undefined,
+        newLeft,
+        newTop
+    );
     // Review: can we do any more to make sure it's visible and not overlapping canvas element?
     // Should we try to avoid overlapping other canvas elements and/or targets?
-    target.style.left = `${newLeft}px`;
-    target.style.top = `${newTop}px`;
+    target.style.left = `${snapX}px`;
+    target.style.top = `${snapY}px`;
     target.style.width = `${width}px`;
     target.style.height = `${height}px`;
     // This allows it to get focus, which allows it to get the shadow effect we want when
