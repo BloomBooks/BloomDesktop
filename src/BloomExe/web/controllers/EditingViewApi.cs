@@ -78,6 +78,7 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler("editView/cutImage", HandleCutImage, true);
             apiHandler.RegisterEndpointHandler("editView/copyImage", HandleCopyImage, true);
             apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
+            apiHandler.RegisterEndpointHandler("editView/setImage", HandleSetImage, true); // New endpoint
             apiHandler.RegisterEndpointHandler(
                 "editView/sourceTextTab",
                 HandleSourceTextTab,
@@ -186,6 +187,17 @@ namespace Bloom.web.controllers
                     Settings.Default.Save();
                 }
             }
+            request.PostSucceeded();
+        }
+
+        private void HandleSetImage(ApiRequest request)
+        {
+            var imageId = request.RequiredParam("imageId");
+            byte[] imageBytes = request.RawPostData;
+            string contentType = request.Context.Request.ContentType; // e.g. "image/png" or "image/jpeg"
+
+            // We'll define View.SetImage later. It will handle saving the image and updating the DOM.
+            View.SetImage(imageId, imageBytes, contentType);
             request.PostSucceeded();
         }
 
