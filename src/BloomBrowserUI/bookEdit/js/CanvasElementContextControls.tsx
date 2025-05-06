@@ -1,4 +1,4 @@
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useState, useEffect, Fragment, useRef } from "react";
@@ -16,8 +16,6 @@ import { default as CircleIcon } from "@mui/icons-material/Circle";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
-// MUI thinks of this icon as "Texture", but we're using it for commands that affect the background image.
-import { default as BackgroundIcon } from "@mui/icons-material/Texture";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import {
     doImageCommand,
@@ -55,11 +53,7 @@ import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useL10n } from "../../react_components/l10nHooks";
 import { CogIcon } from "./CogIcon";
-import {
-    getHyperlinkFromClipboard,
-    tryProcessHyperlink
-} from "../bloomField/hyperlinks";
-import { useApiString } from "../../utils/bloomApi";
+import { getHyperlinkFromClipboard } from "../bloomField/hyperlinks";
 import { MissingMetadataIcon } from "./MissingMetadataIcon";
 import { FillSpaceIcon } from "./FillSpaceIcon";
 import { kBloomDisabledOpacity } from "../../utils/colorUtils";
@@ -316,6 +310,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
         );
     };
 
+    const maxMenuWidth = 260;
+
     return (
         <ThemeProvider theme={lightTheme}>
             <div
@@ -504,7 +500,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     <Menu
                         css={css`
                             ul {
-                                max-width: 260px;
+                                max-width: ${maxMenuWidth}px;
                                 li {
                                     display: flex;
                                     align-items: flex-start;
@@ -518,7 +514,6 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             }
                         `}
                         open={props.menuOpen}
-                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                         anchorEl={menuEl.current!}
                         anchorReference={
                             props.menuAnchorPosition
@@ -548,12 +543,33 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                         truncateMainLabel={true}
                                     >
                                         {option.subMenu.map(
-                                            (subOption, subIndex) => (
-                                                <LocalizableMenuItem
-                                                    key={subIndex}
-                                                    {...subOption}
-                                                />
-                                            )
+                                            (subOption, subIndex) => {
+                                                if (subOption.l10nId === "-") {
+                                                    return (
+                                                        <Divider
+                                                            key={subIndex}
+                                                            variant="middle"
+                                                            component="li"
+                                                        />
+                                                    );
+                                                }
+                                                return (
+                                                    <LocalizableMenuItem
+                                                        key={subIndex}
+                                                        {...subOption}
+                                                        css={css`
+                                                            max-width: ${maxMenuWidth}px;
+                                                            white-space: wrap;
+                                                            // Styles for subLabels
+                                                            p {
+                                                                // Determined empirically...
+                                                                // Styling in NestedMenuItem is impossibly difficult.
+                                                                left: -8px;
+                                                            }
+                                                        `}
+                                                    />
+                                                );
+                                            }
                                         )}
                                     </LocalizableNestedMenuItem>
                                 );
@@ -960,6 +976,16 @@ function addAudioMenuItems(
                 setMenuOpen(false, true);
                 updateSoundShowingDialog();
             }
+        },
+        divider,
+        {
+            l10nId: null,
+            english: "",
+            subLabelL10nId: "EditTab.Toolbox.DragActivity.ChooseSound.Help",
+            subLabel:
+                "You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to “elevenlabs.io”.",
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            onClick: () => {}
         }
     ];
     menuOptions.push(divider, {
@@ -977,11 +1003,7 @@ function addAudioMenuItems(
             l10nId: null,
             english: imageSoundLabel,
             onClick: () => {
-                playSound(
-                    imageSound,
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    canvasElement.closest(".bloom-page")!
-                );
+                playSound(imageSound, canvasElement.closest(".bloom-page")!);
                 setMenuOpen(false);
             },
             icon: <CheckIcon css={getMenuIconCss()} />

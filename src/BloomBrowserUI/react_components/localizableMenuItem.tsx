@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css, SerializedStyles } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { Fragment, ReactNode, useEffect, useState } from "react";
@@ -61,6 +60,7 @@ export interface ILocalizableMenuItemProps
     requiresEnterpriseTier?: boolean;
     dontGiveAffordanceForCheckbox?: boolean;
     subscriptionTooltipOverride?: string;
+    className?: string;
 }
 
 interface ILocalizableCheckboxMenuItemProps
@@ -187,6 +187,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                 //     font-size: 14pt;
                 // `}
                 disabled={props.disabled}
+                className={props.className}
             >
                 <React.Fragment>
                     {iconElement}
