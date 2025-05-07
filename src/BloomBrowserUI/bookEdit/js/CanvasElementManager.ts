@@ -1084,6 +1084,13 @@ export class CanvasElementManager {
     // change. This flag allows us to ignore the next focus change.  See BL-14123.
     public static skipNextFocusChange: boolean;
 
+    public setActiveElementToClosest(element: HTMLElement) {
+        this.setActiveElement(
+            (element.closest(kCanvasElementSelector) as HTMLElement) ??
+                undefined
+        );
+    }
+
     public setActiveElement(element: HTMLElement | undefined) {
         // Seems it should be sufficient to remove this from the old active element if any.
         // But there's at least one case where code that adds a new canvas element sets it as
