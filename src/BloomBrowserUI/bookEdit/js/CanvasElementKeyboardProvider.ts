@@ -1,6 +1,7 @@
 // Originally this was wired into CanvasSnapProvider.ts, but we're going to do that PR separately and later.
 // And the way it was wired in, just using the grid size, may not be enough. We may need to ask the snap provider
 // to give us the snap location. We'll see.
+import { kBackgroundImageClass } from "./CanvasElementManager";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 
 export interface ICanvasElementKeyboardActions {
@@ -10,6 +11,7 @@ export interface ICanvasElementKeyboardActions {
         dy: number,
         event?: KeyboardEvent
     ) => void;
+    getActiveCanvasElement: () => HTMLElement | null;
 }
 
 export class CanvasElementKeyboardProvider {
@@ -48,6 +50,15 @@ export class CanvasElementKeyboardProvider {
             targetElement.tagName === "INPUT" ||
             targetElement.tagName === "TEXTAREA" ||
             targetElement.isContentEditable
+        ) {
+            return;
+        }
+        // If the active element is a background image, we don't want to use the keyboard
+        // to delete it or move it.  (BL-14737)
+        const activeElement = this.actions.getActiveCanvasElement();
+        if (
+            activeElement &&
+            activeElement.classList.contains(kBackgroundImageClass)
         ) {
             return;
         }

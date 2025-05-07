@@ -109,7 +109,10 @@ export class CanvasElementManager {
                 deleteCurrentCanvasElement: this.deleteCurrentCanvasElement.bind(
                     this
                 ),
-                moveActiveCanvasElement: this.moveActiveCanvasElement.bind(this)
+                moveActiveCanvasElement: this.moveActiveCanvasElement.bind(
+                    this
+                ),
+                getActiveCanvasElement: this.getActiveElement.bind(this)
             },
             this.snapProvider
         );
