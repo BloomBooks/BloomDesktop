@@ -64,7 +64,10 @@ import {
     showImageDescriptions
 } from "../imageDescription/imageDescriptionUtils";
 import { IAudioRecorder } from "./IAudioRecorder";
-import { kCanvasElementClass } from "../overlay/canvasElementUtils";
+import {
+    getCanvasElementManager,
+    kCanvasElementClass
+} from "../overlay/canvasElementUtils";
 import { RecordingMode } from "./recordingMode";
 
 enum Status {
@@ -985,6 +988,9 @@ export default class AudioRecording implements IAudioRecorder {
             // especially if the caller doesn't await this function.
             // This allows us to generally represent the correct current element immediately.
             newElement.classList.add(kAudioCurrent);
+            getCanvasElementManager()?.setActiveElementToClosest(
+                newElement as HTMLElement
+            );
             if (visible) {
                 // This is a workaround for a Chromium bug; see BL-11633. We'd like our style rules
                 // to just put the icon on the element that has kAudioCurrent. But that element
@@ -1954,7 +1960,7 @@ export default class AudioRecording implements IAudioRecorder {
         const current = this.getCurrentHighlight();
         if (page && current && !this.isVisible(current)) {
             this.removeAudioCurrent(page);
-            await this.setCurrentAudioElementToFirstAudioElementAsync();
+            await this.setCurrentAudioElementToDefaultAsync();
         }
         // Whether or not we had to move the selection, some button states may need to change.
         // For example, perhaps there was previously nowhere for the 'next' button to take us,
@@ -2097,7 +2103,7 @@ export default class AudioRecording implements IAudioRecorder {
             element.parentElement!.removeChild(element);
         });
         this.setDisableEverythingMode(false);
-        this.setCurrentAudioElementToFirstAudioElementAsync();
+        this.setCurrentAudioElementToDefaultAsync();
     }
 
     private getVisibleTranslationGroups(
@@ -2278,7 +2284,7 @@ export default class AudioRecording implements IAudioRecorder {
         // ENHANCE: I don't think this really needs to be here?
         if (page.length <= 0) {
             // The first one is probably the right one when this case is triggered, but even if not, it's better than nothing.
-            this.setCurrentAudioElementToFirstAudioElementAsync();
+            this.setCurrentAudioElementToDefaultAsync();
             page = this.getPageDocBodyJQuery();
         }
 
@@ -2369,7 +2375,7 @@ export default class AudioRecording implements IAudioRecorder {
             // So, I've made two versions of this function.
             // 1) This original version (that includes the asynchronous fallback)
             // 2) Also a synchronous (but no fallback) version of this function called getCurrentTextBoxSync()
-            this.setCurrentAudioElementToFirstAudioElementAsync();
+            this.setCurrentAudioElementToDefaultAsync();
             audioCurrentElements = Array.from(
                 pageBody.getElementsByClassName(kAudioCurrent)
             ) as HTMLElement[];
@@ -2469,7 +2475,7 @@ export default class AudioRecording implements IAudioRecorder {
             if (currentTextBox) {
                 return currentTextBox;
             } else {
-                return await this.setCurrentAudioElementToFirstAudioElementAsync();
+                return await this.setCurrentAudioElementToDefaultAsync();
             }
         }
     }
@@ -2483,11 +2489,11 @@ export default class AudioRecording implements IAudioRecorder {
         // FYI, it is possible for handleNewPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
         this.initializeAudioRecordingMode();
+        const docBody = this.getPageDocBody();
 
         // This check needs to be before the check for recordable divs below (which may return immediately), because sometimes
         // we may have empty textboxes that should nevertheless show the playback order UI.
         if (this.inShowPlaybackOrderMode) {
-            const docBody = this.getPageDocBody();
             if (docBody) {
                 this.showPlaybackOrderUi(docBody);
             }
@@ -2499,6 +2505,13 @@ export default class AudioRecording implements IAudioRecorder {
 
         this.watchElementsThatMightChangeAffectingVisibility(); // before we might return early if there are none!
         const editable = this.getRecordableDivs(true, false);
+        docBody?.addEventListener(
+            "mousedown",
+            this.moveRecordingHighlightToClick,
+            {
+                capture: true
+            }
+        );
         if (editable.length === 0) {
             // no editable text on this page.
             this.haveAudio = false; // appropriately disables some advanced controls
@@ -2515,6 +2528,51 @@ export default class AudioRecording implements IAudioRecorder {
         }
 
         this.updateDisplay();
+    }
+
+    // Declared in this unusual way so we can use it as an event handler without messing with bind
+    // and still get the right 'this'.
+    private moveRecordingHighlightToClick = async (event: MouseEvent) => {
+        await this.moveRecordingHighlightToElement(event.target as HTMLElement);
+    };
+
+    // If we can somehow set audio recording to something associated with the argumennt, do so
+    // and return true. (If it's already the current highlight, do nothing and return true).
+    // If the element is something like a canvas element image that can't be recorded,
+    // highlight nothing and return false.
+    private async moveRecordingHighlightToElement(
+        target: HTMLElement
+    ): Promise<boolean> {
+        let boxToSelect = target.closest(kAudioSentenceClassSelector);
+        if (!boxToSelect) {
+            // if it isn't one and isn't inside one, see if it contains one
+            boxToSelect = target.getElementsByClassName(kAudioSentence)[0];
+        }
+        if (boxToSelect) {
+            const textBox = this.getTextBoxOfElement(boxToSelect);
+            if (
+                this.getRecordingModeOfTextBox(textBox) ===
+                RecordingMode.TextBox
+            ) {
+                boxToSelect = textBox;
+            }
+        }
+        const oldHighlight = this.getCurrentHighlight();
+        if (!boxToSelect) {
+            this.resetAudioIfPaused();
+            this.removeAudioCurrent(this.getPageDocBody()!);
+            return false;
+        }
+        if (boxToSelect !== oldHighlight) {
+            this.resetAudioIfPaused();
+
+            await this.setSoundAndHighlightAsync({
+                newElement: boxToSelect,
+                shouldScrollToElement: true
+            });
+            this.changeStateAndSetExpectedAsync("record");
+        }
+        return true;
     }
 
     private visibilityObserver: MutationObserver | null = null;
@@ -2611,6 +2669,13 @@ export default class AudioRecording implements IAudioRecorder {
         // Don't want to leave this markup around to confuse other things.
         this.removeAudioCurrentFromPageDocBody();
         this.removeVisibilityObserver();
+        this.getPageDocBody()?.removeEventListener(
+            "mousedown",
+            this.moveRecordingHighlightToClick,
+            {
+                capture: true
+            }
+        );
     }
 
     // Called upon handleNewPageReady(). Calls updateMarkup
@@ -2791,7 +2856,7 @@ export default class AudioRecording implements IAudioRecorder {
         }
 
         if (!currentTextBox) {
-            currentTextBox = await this.setCurrentAudioElementToFirstAudioElementAsync();
+            currentTextBox = await this.setCurrentAudioElementToDefaultAsync();
         } else {
             await this.setCurrentAudioElementBasedOnRecordingModeAsync(
                 currentTextBox
@@ -2939,9 +3004,16 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
-    public async setCurrentAudioElementToFirstAudioElementAsync(): Promise<HTMLElement | null> {
+    public async setCurrentAudioElementToDefaultAsync(): Promise<HTMLElement | null> {
         const pageDocBody = this.getPageDocBody();
         if (!pageDocBody) {
+            return null;
+        }
+        const activeCanvasElement = getCanvasElementManager()?.getActiveElement();
+        if (activeCanvasElement) {
+            await this.moveRecordingHighlightToElement(activeCanvasElement);
+            // That may or may not make a highlight. In either case, given that there's an active canvas element,
+            //  we don't want to highlight anything else.
             return null;
         }
 
@@ -3501,7 +3573,7 @@ export default class AudioRecording implements IAudioRecorder {
                 // loading which will be on the first element. Even if the first element is
                 // "wrong"... the alternative is it points to nothing and you are stuck.
                 // IMO pointing to the first element is less wrong than disabling the whole toolbox.
-                await this.setCurrentAudioElementToFirstAudioElementAsync();
+                await this.setCurrentAudioElementToDefaultAsync();
                 return this.changeStateAndSetExpectedAsync(
                     expectedVerb,
                     numRetriesRemaining - 1
