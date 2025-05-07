@@ -172,6 +172,10 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const isBackgroundImage = props.canvasElement.classList.contains(
         kBackgroundImageClass
     );
+    const children = props.canvasElement.parentElement?.querySelectorAll(
+        ".bloom-canvas-element"
+    );
+    const canvasHasMultipleElements = (children?.length ?? 0) > 1; // kBackgroundImageClass is also a canvas element
     const backgroundImageText = useL10n(
         "Background Image",
         "EditTab.Image.BackgroundImage"
@@ -331,7 +335,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     pointer-events: all;
                 `}
             >
-                {isBackgroundImage && (
+                {isBackgroundImage && canvasHasMultipleElements && (
                     <div
                         css={css`
                             color: ${kBloomBlue};
