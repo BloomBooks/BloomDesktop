@@ -172,9 +172,9 @@
         <target xml:lang="pt-PT" state="final">Nenhum</target>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.TargetsSameSize">
+      <trans-unit id="EditTab.Toolbox.DragActivity.TargetsSameSize" approved="yes">
         <source xml:lang="en">Keep all targets the same size so students can't use size as a clue.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Keep all targets the same size so students can't use size as a clue.</target>
+        <target xml:lang="pt-PT" state="final">Mantenha todas as metas do mesmo tamanho para que os alunos não possam usar o tamanho como pista.</target>
         <note>ID: EditTab.Toolbox.DragActivity.TargetsSameSize</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SceneInstructions" approved="yes">
