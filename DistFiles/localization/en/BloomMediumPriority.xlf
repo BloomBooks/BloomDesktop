@@ -846,6 +846,14 @@
         <source xml:lang="en">Paste Hyperlink</source>
         <note>ID: EditTab.PasteHyperlink</note>
       </trans-unit>
+      <trans-unit id="UseTalkingBookTool" translate="no">
+        <source xml:lang="en">Use Talking Book Tool</source>
+        <note>ID: UseTalkingBookTool</note>
+      </trans-unit>
+      <trans-unit id="ARecording" translate="no">
+        <source xml:lang="en">A Recording</source>
+        <note>ID: ARecording</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
