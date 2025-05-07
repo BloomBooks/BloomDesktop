@@ -1,4 +1,5 @@
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SubscriptionAndFeatures;
 
@@ -13,11 +14,13 @@ namespace Bloom.web.controllers
         public const string kApiUrlPart = "features/";
 
         private readonly CollectionSettings _collectionSettings;
+        private readonly BookSelection _bookSelection;
         private Subscription _subscription;
 
-        public FeatureStatusApi(CollectionSettings collectionSettings)
+        public FeatureStatusApi(CollectionSettings collectionSettings, BookSelection bookSelection)
         {
             _collectionSettings = collectionSettings;
+            _bookSelection = bookSelection;
             _subscription = collectionSettings.Subscription;
         }
 
@@ -33,7 +36,8 @@ namespace Bloom.web.controllers
                         var featureName = request.RequiredParam("featureName");
                         var featureStatus = FeatureStatus.GetFeatureStatus(
                             _subscription,
-                            featureName
+                            featureName,
+                            _bookSelection.CurrentSelection
                         );
 
                         request.ReplyWithJson(featureStatus.ToJson());

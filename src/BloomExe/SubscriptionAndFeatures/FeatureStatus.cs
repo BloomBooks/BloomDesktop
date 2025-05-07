@@ -69,11 +69,21 @@ namespace Bloom.SubscriptionAndFeatures
         public string FirstPageNumber;
 
         // using a string (from typescript)
-        public static FeatureStatus GetFeatureStatus(Subscription subscription, string featureName)
+        public static FeatureStatus GetFeatureStatus(
+            Subscription subscription,
+            string featureName,
+            Bloom.Book.Book book = null
+        )
         {
+            var subToUse = subscription;
+            if (book != null && book.IsPlayground)
+            {
+                subToUse = Subscription.ForUnitTestWithOverrideTier(SubscriptionTier.Enterprise);
+            }
+
             if (Enum.TryParse<FeatureName>(featureName, true, out FeatureName featureEnum))
             {
-                return GetFeatureUseStatus(subscription, featureEnum);
+                return GetFeatureUseStatus(subToUse, featureEnum);
             }
             Debug.Assert(false, $"Feature '{featureName}' not found in FeatureName enum.");
             return null;
