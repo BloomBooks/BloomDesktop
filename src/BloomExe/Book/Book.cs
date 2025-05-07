@@ -2019,6 +2019,19 @@ namespace Bloom.Book
                 IsPrimaryLanguageRtl
             );
 
+            // if in playground mode, add a "playground" class to the page divs
+            if (this.IsPlayground)
+            {
+                foreach (
+                    var pageDiv in OurHtmlDom
+                        .SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
+                        .Cast<SafeXmlElement>()
+                )
+                {
+                    pageDiv.AddClass("playground");
+                }
+            }
+
             UpdateTextsNewlyChangedToRequiresParagraph(OurHtmlDom);
 
             UpdateCharacterStyleMarkup(OurHtmlDom);
@@ -5826,6 +5839,11 @@ namespace Bloom.Book
         public string GetDefaultTemplatePageId()
         {
             return Storage.Dom.GetMetaValue("defaultTemplatePageId", null);
+        }
+
+        public bool IsPlayground
+        {
+            get { return BookInfo.BookLineage.Contains("aeb176bc-76fa-44e2-bb9d-6350698fce47"); }
         }
     }
 }
