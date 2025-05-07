@@ -1135,7 +1135,7 @@ const DragActivityControls: React.FunctionComponent<{
                                         l10nKey="EditTab.Toolbox.DragActivity.Letter"
                                         makeTarget={true}
                                         addClasses="draggable-text"
-                                        userDefinedStyleName="Letter"
+                                        userDefinedStyleName="GameDraggableLetterMediumCenter"
                                     />
                                 )}
                                 {showImageDraggable && (
@@ -1175,7 +1175,7 @@ const DragActivityControls: React.FunctionComponent<{
                                     makeTarget={true}
                                     addClasses="draggable-text"
                                     hide={!showWordDraggable}
-                                    userDefinedStyleName="Word"
+                                    userDefinedStyleName="GameDraggableWordMediumCenter"
                                     defaultStyleProps={{
                                         fontSize: "45px",
                                         lineHeight: "1",

@@ -1085,11 +1085,6 @@ export class CanvasElementManager {
     public static skipNextFocusChange: boolean;
 
     public setActiveElement(element: HTMLElement | undefined) {
-        if (element?.classList.contains("bloom-passive-element")) {
-            // A passive element cannot become the active element.  (BL-14685)
-            return;
-        }
-
         // Seems it should be sufficient to remove this from the old active element if any.
         // But there's at least one case where code that adds a new canvas element sets it as
         // this.activeElement before calling this method. It's safest to make sure this
@@ -2941,8 +2936,19 @@ export class CanvasElementManager {
                 top = bloomCanvasRect.bottom + 11;
             }
         }
-        contextControl.style.left = left + "px";
-        contextControl.style.top = top + "px";
+        if (
+            controlFrameRect.top === 0 &&
+            controlFrameRect.left === 0 &&
+            controlFrameRect.width === 0 &&
+            controlFrameRect.height === 0
+        ) {
+            // If the control frame is not visible, let CSS control the placement of the context control.
+            contextControl.style.left = "";
+            contextControl.style.top = "";
+        } else {
+            contextControl.style.left = left + "px";
+            contextControl.style.top = top + "px";
+        }
         // This is constant, so it could be in the CSS. But then it could not share a constant
         // with the computation of left above, so it would be harder to keep things consistent.
         contextControl.style.width = contextControlsWidth + "px";
@@ -3930,7 +3936,7 @@ export class CanvasElementManager {
             // Ignore clicks on the JQuery resize handles.
             return true;
         }
-        if (targetElement.classList.contains("bloom-passive-element")) {
+        if (targetElement.closest(".bloom-passive-element")) {
             return true;
         }
         if (targetElement.closest("#canvas-element-control-frame")) {
