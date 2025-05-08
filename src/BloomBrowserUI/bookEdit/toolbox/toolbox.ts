@@ -510,8 +510,7 @@ export class ToolBox {
                 "[data-toolid='" + ToolBox.addToolToString(toolId) + "']"
             ) as HTMLElement;
             if (toolHeader) {
-                // Review: do we want to force the tool to be current?
-                //setCurrentTool(toolId);
+                setCurrentTool(toolId);
             } else {
                 showOrHideTool("dummy", ToolBox.addToolToString(toolId), true);
             }

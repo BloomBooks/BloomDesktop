@@ -117,6 +117,8 @@ const kBloomVisibleClass = "bloom-visibility-code-on";
 
 const kAudioSplitId = "audio-split";
 
+const kTalkingBookToolId = "talkingBook";
+
 export const kPlaybackOrderContainerClass: string =
     "bloom-playbackOrderControlsContainer";
 
@@ -3594,8 +3596,21 @@ export default class AudioRecording implements IAudioRecorder {
         await Promise.all(promisesToAwait);
     }
 
+    public static async audioExistsForIdsAsync(
+        ids: string[]
+    ): Promise<boolean> {
+        try {
+            const response: AxiosResponse<any> = await axios.get(
+                `/bloom/api/audio/checkForAnyRecording?ids=${ids}`
+            );
+            return this.DoesNarrationExist(response);
+        } catch {
+            return false;
+        }
+    }
+
     // Given a response (from "/bloom/api/audio/checkForAnyRecording?ids=..."), determines whether the response indicates that narration audio exists for any of the specified IDs
-    private static DoesNarrationExist(response: AxiosResponse<any>) {
+    private static DoesNarrationExist(response: AxiosResponse<any>): boolean {
         // Note regarding Non-OK status codes: If there is no audio, it returns Request.Failed AKA it actually has Non-OK Status code!
         //       This doesn't mean you need to log an error though, since it is "normal" for failed requests to return.
         //       Just mark them as not-exist instead.
@@ -3824,6 +3839,12 @@ export default class AudioRecording implements IAudioRecorder {
     // Review: Where is the best place to put this function?
     public static ToCamelCaseFromPascalCase(text: string) {
         return text[0].toLowerCase() + text.slice(1);
+    }
+
+    public static showTalkingBookTool() {
+        getToolboxBundleExports()
+            ?.getTheOneToolbox()
+            .activateToolFromId(kTalkingBookToolId);
     }
 
     private removeExpectedStatusFromAll(): void {
