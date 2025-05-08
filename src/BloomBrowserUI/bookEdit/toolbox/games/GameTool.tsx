@@ -508,6 +508,11 @@ const dragTarget = (e: MouseEvent) => {
     let deltaRowMin = Number.MAX_VALUE;
     const width = targetBeingDragged.offsetWidth;
     snappedToExisting = false;
+    // This code tries to snap a dragged target so as to form a row with other targets at a uniform spacing,
+    // including moving others over if a new one gets dragged on top of an existing one.
+    // It conflicts with the new goal of making the targets snap to the grid, so we are not using it for now.
+    // There's probably other code we could delete or comment out that is only needed to support this, but for now,
+    // the main thing is not to have two conflicting snap behaviors.
     // for (let i = 0; i < targetInitialPositions.length; i++) {
     //     const slot = targetInitialPositions[i];
     //     const deltaX = slot.x - x;
