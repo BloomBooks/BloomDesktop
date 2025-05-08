@@ -1175,7 +1175,7 @@ const DragActivityControls: React.FunctionComponent<{
                                     makeTarget={true}
                                     addClasses="draggable-text"
                                     hide={!showWordDraggable}
-                                    userDefinedStyleName="GameDraggableWordMediumCenter"
+                                    userDefinedStyleName="GameDragMediumCenter"
                                     defaultStyleProps={{
                                         fontSize: "45px",
                                         lineHeight: "1",
