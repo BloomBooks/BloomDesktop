@@ -959,6 +959,16 @@
         <target xml:lang="ta" state="needs-translation">Paste Hyperlink</target>
         <note>ID: EditTab.PasteHyperlink</note>
       </trans-unit>
+      <trans-unit id="UseTalkingBookTool" translate="no">
+        <source xml:lang="en">Use Talking Book Tool</source>
+        <target xml:lang="ta" state="needs-translation">Use Talking Book Tool</target>
+        <note>ID: UseTalkingBookTool</note>
+      </trans-unit>
+      <trans-unit id="ARecording" translate="no">
+        <source xml:lang="en">A Recording</source>
+        <target xml:lang="ta" state="needs-translation">A Recording</target>
+        <note>ID: ARecording</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
