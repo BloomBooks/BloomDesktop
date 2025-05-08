@@ -1441,7 +1441,6 @@ export class CanvasElementManager {
                 document.querySelectorAll(kCanvasElementSelector)
             ) as HTMLElement[]
         );
-        this.snapProvider.startDrag();
         document.addEventListener("mousemove", this.continueResizeDrag, {
             capture: true
         });
@@ -1838,7 +1837,6 @@ export class CanvasElementManager {
                 document.querySelectorAll(kCanvasElementSelector)
             ) as HTMLElement[]
         );
-        this.snapProvider.startDrag();
         // move/up listeners are on the document so we can continue the drag even if it moves
         // outside the control clicked. I think something similar can be achieved
         // with mouse capture, but less portably.
@@ -3468,7 +3466,6 @@ export class CanvasElementManager {
         const startDraggingBubble = (bubble: Bubble) => {
             // Note: at this point we do NOT want to focus it. Only if we decide in mouse up that we want to text-edit it.
             this.setActiveElement(bubble.content);
-            this.snapProvider.startDrag();
 
             // Possible move action started
             this.bubbleToDrag = bubble;
