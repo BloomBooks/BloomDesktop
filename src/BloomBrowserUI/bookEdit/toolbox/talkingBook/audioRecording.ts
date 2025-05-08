@@ -1290,8 +1290,8 @@ export default class AudioRecording implements IAudioRecorder {
         return currToExamine ?? currentHighlight;
     }
 
-    public getCurrentPlaybackMode(): RecordingMode {
-        const currentTextBox = this.getCurrentTextBox();
+    public getCurrentPlaybackMode(maySetHighlight = true): RecordingMode {
+        const currentTextBox = this.getCurrentTextBox(maySetHighlight);
         if (!currentTextBox) {
             return RecordingMode.Sentence;
         }
@@ -2349,7 +2349,7 @@ export default class AudioRecording implements IAudioRecorder {
     // Returns the Text Box div with the Current Highlight on it (that is, the one with .ui-audioCurrent class applied)
     // One difference between this function and getCurrentHighlight is that if the currently-highlighted element is not a div, then getCurrentTextBox() walks up the tree to find its most recent ancestor div. (whereas getCurrentHighlight can return non-div elements)
     // This function will also attempt to set it in case no such Current Highlight exists (which is often an erroneous state arrived at by race condition)
-    public getCurrentTextBox(): HTMLElement | null {
+    public getCurrentTextBox(maySetHighlight = true): HTMLElement | null {
         const pageBody = this.getPageDocBody();
         if (
             !pageBody ||
@@ -2363,7 +2363,7 @@ export default class AudioRecording implements IAudioRecorder {
             pageBody.getElementsByClassName(kAudioCurrent)
         ) as HTMLElement[]).filter(x => this.isVisible(x));
 
-        if (audioCurrentElements.length === 0) {
+        if (audioCurrentElements.length === 0 && maySetHighlight) {
             // Oops, ui-audioCurrent not set on anything. Just going to have to stick it onto the first element.
 
             // ENHANCE: Theoretically, we should await this. (Or at least, the end of the function should await this promise
@@ -2561,6 +2561,8 @@ export default class AudioRecording implements IAudioRecorder {
         if (!boxToSelect) {
             this.resetAudioIfPaused();
             this.removeAudioCurrent(this.getPageDocBody()!);
+            this.changeStateAndSetExpectedAsync("");
+            this.updateDisplay(false);
             return false;
         }
         if (boxToSelect !== oldHighlight) {
@@ -4349,7 +4351,7 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
-    private updateDisplay(): void {
+    private updateDisplay(maySetHighlight = true): void {
         this.updateSplitButton();
 
         const container = document.getElementById(
@@ -4364,7 +4366,8 @@ export default class AudioRecording implements IAudioRecorder {
                 recordingMode: this.recordingMode,
                 haveACurrentTextboxModeRecording:
                     this.haveAudio &&
-                    this.getCurrentPlaybackMode() === RecordingMode.TextBox,
+                    this.getCurrentPlaybackMode(maySetHighlight) ===
+                        RecordingMode.TextBox,
                 setRecordingMode: async (recordingMode: RecordingMode) => {
                     this.setRecordingModeAsync(recordingMode);
                     this.updateDisplay();
