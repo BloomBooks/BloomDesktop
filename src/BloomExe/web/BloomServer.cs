@@ -215,6 +215,9 @@ namespace Bloom.Api
         {
             CurrentCollectionSettings = collectionSettings;
             ApiHandler.SetCollectionSettingsDuringInitialization(collectionSettings);
+
+            // Ensure we get the new file locator if the collection changes.
+            _fileLocator = null;
         }
 
         private static string _keyToCurrentPage;
