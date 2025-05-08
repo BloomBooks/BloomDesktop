@@ -17,7 +17,8 @@ type SnapPositionFunction = (
 
 /**
  * Stores temporary data related to a drag operation, used by snap functions.
- * This context is reset at the start and end of each drag.
+ * This context is reset at the end of each drag, or a client can simply
+ * make a new instance for each drag.
  */
 interface DragContext {
     startX: number | undefined; // Initial X position when dragging started.
@@ -56,14 +57,8 @@ export class CanvasSnapProvider {
     }
 
     /**
-     * Called when a drag operation begins. Initializes the drag context.
-     */
-    public startDrag(): void {
-        this.resetDragContext();
-    }
-
-    /**
-     * Called when a drag operation ends. Resets the drag context.
+     * Called when a drag operation ends, if the snap provider will be reused for other drags.
+     * If the snap provider will not be reused, it need not be called. Resets the drag context.
      */
     public endDrag(): void {
         this.resetDragContext();

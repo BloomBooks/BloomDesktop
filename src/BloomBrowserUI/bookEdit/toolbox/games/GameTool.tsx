@@ -60,6 +60,8 @@ import {
     kImageContainerSelector
 } from "../../js/bloomImages";
 import { doesContainingPageHaveSameSizeMode } from "./gameUtilities";
+import { CanvasSnapProvider } from "../../js/CanvasSnapProvider";
+import { CanvasGuideProvider } from "../../js/CanvasGuideProvider";
 
 // This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -455,7 +457,6 @@ let snappedToExisting = false;
 // and sets up the mousemove and mouseup handlers that do the actual dragging and snapping.
 const startDraggingTarget = (e: MouseEvent) => {
     const canvasElementManager = getCanvasElementManager()!;
-    canvasElementManager.getSnapProvider()?.startDrag();
     // get the mouse cursor position at startup:
     const target = e.currentTarget as HTMLElement;
     targetBeingDragged = target;
@@ -466,9 +467,7 @@ const startDraggingTarget = (e: MouseEvent) => {
     const canvasElements = Array.from(
         page.querySelectorAll(kCanvasElementSelector)
     ) as HTMLElement[];
-    canvasElementManager
-        .getGuideProvider()
-        ?.startDrag("move", [...targets, ...canvasElements]);
+    guideProvider.startDrag("move", [...targets, ...canvasElements]);
 
     const scale = page.getBoundingClientRect().width / page.offsetWidth;
     targetInitialPositions = [];
@@ -491,12 +490,12 @@ const startDraggingTarget = (e: MouseEvent) => {
     dragTarget(e); // some side effects like drawing the arrow we want even if no movement happens.
 };
 
+const snapProvider = new CanvasSnapProvider();
+const guideProvider = new CanvasGuideProvider();
+
 const snapDelta = 30; // review: how close do we want?
 const defaultGapBetweenTargets = 15;
 const dragTarget = (e: MouseEvent) => {
-    const canvasElementManager = getCanvasElementManager()!;
-    const snapProvider = canvasElementManager.getSnapProvider()!;
-    const guideProvider = canvasElementManager.getGuideProvider()!;
     const page = targetBeingDragged.closest(".bloom-page") as HTMLElement;
     const scale = page.getBoundingClientRect().width / page.offsetWidth;
     e.preventDefault();
@@ -599,9 +598,8 @@ const draggableOfTarget = (
 };
 
 const stopDraggingTarget = (_: MouseEvent) => {
-    const canvasElementManager = getCanvasElementManager()!;
-    canvasElementManager.getSnapProvider()?.endDrag();
-    canvasElementManager.getGuideProvider()?.endDrag();
+    snapProvider.endDrag();
+    guideProvider.endDrag();
     const page = targetBeingDragged.closest(".bloom-page") as HTMLElement;
     if (snappedToExisting) {
         // Move things around so we end up with an evenly spaced row again.
@@ -2039,9 +2037,6 @@ export const makeTargetForDraggable = (
     if (newLeft + width > canvasElement.parentElement!.clientWidth) {
         newLeft = Math.max(0, left - width - 30);
     }
-    const canvasElementManager = getCanvasElementManager()!;
-    const snapProvider = canvasElementManager.getSnapProvider()!;
-    snapProvider.startDrag();
     const { x: snapX, y: snapY } = snapProvider.getPosition(
         undefined,
         newLeft,
