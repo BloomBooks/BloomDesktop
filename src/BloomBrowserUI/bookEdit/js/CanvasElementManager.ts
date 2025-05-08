@@ -5895,8 +5895,9 @@ export class CanvasElementManager {
         );
     }
 
-    // Sets a text box's position permanently to where it is now.
-    // (Not sure if this ever changes anything, except when migrating. Earlier versions of Bloom
+    // Sets a canvas element's position to what is passed in.
+    // (This code also tries to update the canvas element's size if it's not already
+    // set as "px". Earlier versions of Bloom
     // stored the canvas element position and size as a percentage of the bloom-canvas size.
     // The reasons for that are lost in history; probably we thought that it would better
     // preserve the user's intent to keep in the same shape and position.
@@ -5917,26 +5918,36 @@ export class CanvasElementManager {
             // Don't set possition for passive elements. They are not supposed to be moved. (BL-14685)
             return;
         }
+        // We always want to set the position here.
         canvasElement
             .css("left", unscaledRelativeLeft + "px")
-            .css("top", unscaledRelativeTop + "px")
-            // FYI: The textBox width/height is rounded to the nearest whole pixel. Ideally we might like its more precise value...
+            .css("top", unscaledRelativeTop + "px");
+        // The width value should always end in "px" (even if it is 0px).
+        // In days of yore, we used %, but that turned out to be a bad idea, as
+        // discussed above.  We don't need to change the width/height if they're
+        // already in px.
+        const currentWidth = canvasElement.css("width");
+        if (!currentWidth.endsWith("px")) {
+            // canvasElement.width() and canvasElement.height() can give inaccurate values,
+            // sometimes causing the canvas element to shrink repeatedly.  See BL-14740.
+            const element = canvasElement.get(0) as HTMLElement;
+            const clientWidth = element.clientWidth;
+            const clientHeight = element.clientHeight;
             // But it's a huge performance hit to get its getBoundingClientRect()
             // It seems that getBoundingClientRect() may be internally cached under the hood,
             // since getting the bounding rect of the bloom-canvas once per mousemove event or even 100x per mousemove event caused no ill effect,
             // but getting this one is quite taxing on the CPU
-            .css("width", canvasElement.width() + "px")
-            .css("height", canvasElement.height() + "px");
-
-        //Slider: if (textBox.get(0).getAttribute("data-txt-img")) {
-        //     // Only one of these is ever visible; move them together.
-        //     Array.from(
-        //         textBox.get(0).ownerDocument.querySelectorAll("[data-txt-img]")
-        //     ).forEach((tbox: HTMLElement) => {
-        //         tbox.style.left = unscaledRelativeLeft + "px";
-        //         tbox.style.top = unscaledRelativeTop + "px";
-        //     });
-        // }
+            canvasElement
+                .css("width", canvasElement.width() + "px")
+                .css("height", canvasElement.height() + "px");
+            // if the width/height have changed in actuality, not just in representation,
+            // then we have a problem.
+            console.assert(
+                clientWidth === element.clientWidth &&
+                    clientHeight === element.clientHeight,
+                "CanvasElementManager.setCanvasElementPosition(): clientWidth/Height mismatch!"
+            );
+        }
     }
 
     // Determines the unrounded width/height of the content of an element (i.e, excluding its margin, border, padding)
