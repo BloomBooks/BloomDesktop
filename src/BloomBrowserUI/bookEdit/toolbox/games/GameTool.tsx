@@ -1206,7 +1206,7 @@ const DragActivityControls: React.FunctionComponent<{
                                     hide={!showWordDraggable}
                                     userDefinedStyleName="GameDragMediumCenter"
                                     defaultStyleProps={{
-                                        fontSize: "45px",
+                                        fontSize: "30pt",
                                         lineHeight: "1",
                                         textAlign: "center"
                                     }}
@@ -1417,7 +1417,7 @@ const GameTextItem: React.FunctionComponent<{
             addClasses={props.addClasses}
             userDefinedStyleName="GameTextMediumCenter"
             defaultStyleProps={{
-                fontSize: "24pt",
+                fontSize: "30pt",
                 lineHeight: "1",
                 textAlign: "center"
             }}
