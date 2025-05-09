@@ -929,6 +929,15 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
+    // I'm not sure why activeToolId falsy should count as "true" but that's how some old code
+    // in setSoundAndHighlightAsync was written. It might be because when we're first showing
+    // the toolbox, the default talking book tool starts being initialized before we actually
+    // set what getActiveToolId() is looking for.
+    private isTalkingBookToolActive(): boolean {
+        const activeToolId = getActiveToolId();
+        return activeToolId === "talkingBook" || !activeToolId;
+    }
+
     public async setSoundAndHighlightAsync(
         setHighlightParams: ISetHighlightParams
     ): Promise<void> {
@@ -938,9 +947,7 @@ export default class AudioRecording implements IAudioRecorder {
         // tool getting the "newPageReady" method called when the new page specifies a
         // different tool to be activated.  This is the simplest fix that I've found.
         // See BL-14434.
-        const activeToolId = getActiveToolId();
-        const notInTalkingBook = activeToolId && activeToolId !== "talkingBook";
-        if (notInTalkingBook) return;
+        if (!this.isTalkingBookToolActive()) return;
 
         // Note: setHighlightToAsync() should be run first so that ui-audioCurrent points to the correct element when setSoundFrom() is run.
         await this.setHighlightToAsync(setHighlightParams);
@@ -2543,6 +2550,10 @@ export default class AudioRecording implements IAudioRecorder {
     private async moveRecordingHighlightToElement(
         target: HTMLElement
     ): Promise<boolean> {
+        // Probably redundant, but some nasty things can happen when we try to changeStateAndSetExpectedAsync()
+        // when setSoundAndHighlightAsync() didn't actually set the highlight because we're in another tool.
+        // This makes things a little safer.
+        if (!this.isTalkingBookToolActive()) return false;
         let boxToSelect = target.closest(kAudioSentenceClassSelector);
         if (!boxToSelect) {
             // if it isn't one and isn't inside one, see if it contains one
@@ -2550,6 +2561,10 @@ export default class AudioRecording implements IAudioRecorder {
         }
         if (boxToSelect) {
             const textBox = this.getTextBoxOfElement(boxToSelect);
+            if (!this.isRecordableDiv(textBox)) {
+                // we just can't select anything here (probably it's empty)
+                boxToSelect = null;
+            }
             if (
                 this.getRecordingModeOfTextBox(textBox) ===
                 RecordingMode.TextBox
@@ -3007,6 +3022,18 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     public async setCurrentAudioElementToDefaultAsync(): Promise<HTMLElement | null> {
+        // Seems very strange that we would be doing this when the talking book tool is not active.
+        // Unfortunately there's a weird sequence of events that happens when we add a page that calls
+        // for a particular tool (e.g., Game) and the toolbox isn't open. In the process of opening
+        // the toolbox, we call newPageReady() for the (default) talking book tool. Various things
+        // get initiated but not awaited. Then we finish switching to the desired tool. Eventually,
+        // one of the async tasks completes and this gets called. On various paths it tries to
+        // select something, but setSoundAndHighlightAsync doesn't do it because the tool isn't active.
+        // Then there's a loop in changeStateAndSetExpectedAsync that keeps trying to get something
+        // selected...we can get into a recursive await/call stack that freezes Bloom.
+        // This is one of several places where we give up trying to select something if the tool
+        // isn't active to prevent such problems.
+        if (!this.isTalkingBookToolActive()) return null;
         const pageDocBody = this.getPageDocBody();
         if (!pageDocBody) {
             return null;
