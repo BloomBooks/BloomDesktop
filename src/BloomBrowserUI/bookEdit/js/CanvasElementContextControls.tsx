@@ -146,6 +146,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const [currentDraggableTarget, setCurrentDraggableTarget] = useState<
         HTMLElement | undefined
     >();
+    // After deleting a draggable, we may get rendered again, and page will be null.
     const page = props.canvasElement.closest(".bloom-page") as HTMLElement;
     useEffect(() => {
         if (!currentDraggableTargetId) {
@@ -165,7 +166,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     // The audio menu item states the audio will play when the item is touched.
     // That isn't true yet outside of games, so don't show it.
     const isInDraggableGame = page
-        .getAttribute("data-activity")
+        ?.getAttribute("data-activity")
         ?.startsWith("drag-");
     const canChooseAudioForElement = isInDraggableGame && (hasImage || hasText);
 
@@ -206,6 +207,12 @@ const CanvasElementContextControls: React.FunctionComponent<{
             });
         // Need to include menuOpen so we can re-evaluate if the user has added or removed audio.
     }, [props.canvasElement, props.menuOpen]);
+
+    if (!page) {
+        // Probably right after deleting the canvas element. Wish we could return early sooner,
+        // but has to be after all the hooks.
+        return null;
+    }
 
     // These commands apply to all canvas elements (currently none!).
     const menuOptions: IMenuItemWithSubmenu[] = [];
