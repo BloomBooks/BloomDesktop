@@ -16,18 +16,37 @@ interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
 }
 
+// logically a function of OverflowChecker, but it doesn't need any member variables, and with the
+// way the old JQuery code here is messing with 'this', it's easier to just call it as an independent function
+function getElementsThatCanOverflow(container: HTMLElement): HTMLElement[] {
+    //NB: for some historical reason in March 2014 the calendar still uses textareas
+    // I think .bloom-visibility-code-on is more reliable here than :visible;
+    // possibly this is set up before everything has been computed to be visible?
+    // Note: this can probably be done with querySelectorAll, but a simple substitution
+    // doesn't work (not a valid selector).  I think the problem is that querySelectorAll
+    // doesn't know how to handle the :visible selector. So sticking with JQuery for now.
+    const queryElementsThatCanOverflow =
+        ".bloom-editable.bloom-visibility-code-on, textarea:visible";
+    const potentialResults = $(container)
+        .find(queryElementsThatCanOverflow)
+        .toArray() as HTMLElement[];
+    const results: HTMLElement[] = potentialResults.filter((x: HTMLElement) => {
+        // Ignore things in game targets, they are duplicates that don't need to show overflow
+        if (x.closest("[data-target-of]")) {
+            return false;
+        }
+        return true;
+    });
+    return results;
+}
+
 export default class OverflowChecker {
+    private;
+
     // When a div is overfull, these handlers will add the overflow class so it gets a red background or something
     // But this function should just do some basic checks and ADD the HANDLERS!
     public AddOverflowHandlers(container: HTMLElement) {
-        //NB: for some historical reason in March 2014 the calendar still uses textareas
-        // I think .bloom-visibility-code-on is more reliable here than :visible;
-        // possibly this is set up before everything has been computed to be visible?
-        const queryElementsThatCanOverflow =
-            ".bloom-editable.bloom-visibility-code-on, textarea:visible";
-        const $editablePageElements = $(container).find(
-            queryElementsThatCanOverflow
-        );
+        const $editablePageElements = $(getElementsThatCanOverflow(container));
 
         // BL-1260: disable overflow checking for pages with too many elements
         if ($editablePageElements.length > 30) {
@@ -75,9 +94,9 @@ export default class OverflowChecker {
 
                 // This will make sure that any language tags on this div stay in position with editing.
                 // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
-                (<qtipInterface>$(queryElementsThatCanOverflow)).qtip(
-                    "reposition"
-                );
+                (<qtipInterface>(
+                    $(getElementsThatCanOverflow(document.body))
+                )).qtip("reposition");
             }, 100); // 100 milliseconds
             e.stopPropagation();
         });
@@ -87,7 +106,7 @@ export default class OverflowChecker {
             .find(".split-pane-component-inner")
             .bind("_splitpaneparentresize", function() {
                 const $this = $(this);
-                $this.find(queryElementsThatCanOverflow).each(function() {
+                $(getElementsThatCanOverflow($this[0])).each(function() {
                     OverflowChecker.CheckForOverflowSoon(this);
                 });
             });
@@ -451,11 +470,8 @@ export default class OverflowChecker {
 
         const container = $editable.closest(".marginBox");
         const quizPage = $(container).closest(".simple-comprehension-quiz");
-        //NB: for some historical reason in March 2014 the calendar still uses textareas
-        const queryElementsThatCanOverflow =
-            ".bloom-editable:visible, textarea:visible";
-        const editablePageElements = $(container).find(
-            queryElementsThatCanOverflow
+        const editablePageElements = $(
+            getElementsThatCanOverflow(container.get(0))
         );
 
         // Type 2 Overflow - We'll check ALL of these for overflow past any ancestor

@@ -117,7 +117,8 @@
                 min-height: @MinTextBoxHeight - 3 !important;
                 text-align: center;
 
-                // Move the format button and language tip out of the box, since we have a smaller-than-normal editable box here
+                // canvas elements usually do automatic vertical sizing, so hiding overflow is rarely helpful.
+                // and if line-height is small, may need overflow visible to show descenders.
                 overflow: visible;
             }
 
@@ -143,6 +144,18 @@
                         background-color: white;
                     }
                 }
+            }
+        }
+    }
+    [data-target-of] {
+        // We generally want things in the target to look like the things in the corresponding
+        // canvas element. But some of the above like z-index is UI things that may not apply.
+        // We also don't want to mess with the border of the target.
+        // So I'm just replicating what I think is needed here.
+        .bloom-translationGroup {
+            .bloom-editable {
+                text-align: center;
+                overflow: visible;
             }
         }
     }
