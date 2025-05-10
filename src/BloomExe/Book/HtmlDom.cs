@@ -1532,6 +1532,15 @@ namespace Bloom.Book
             return GetCompleteFilteredUserStylesInnerText(keysUsedOnPage);
         }
 
+        // Like GetUserModifiableStylesUsedOnPage, but unfiltered by use
+        public static string GetAllUserModifiableStylesInHead(SafeXmlElement head)
+        {
+            var userStyleElement = GetUserModifiedStyleElement(head);
+            if (userStyleElement == null)
+                return "";
+            return GetCompleteFilteredUserStylesInnerText(GetUserStyleKeyDict(userStyleElement));
+        }
+
         private static string GetStyleNameFromRuleSelector(string selector)
         {
             // Key.Substring(1) strips off initial period from class name
@@ -1630,11 +1639,11 @@ namespace Bloom.Book
         }
 
         private static string GetCompleteFilteredUserStylesInnerText(
-            IDictionary<string, string> desiredKeys
+            IDictionary<string, string> stylesDict
         )
         {
             var sb = new StringBuilder();
-            foreach (var keyPair in desiredKeys)
+            foreach (var keyPair in stylesDict)
             {
                 sb.AppendLine(keyPair.Value);
             }

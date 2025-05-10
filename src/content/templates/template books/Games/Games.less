@@ -612,88 +612,25 @@
     position: absolute;
 }
 
+.numberedPage::after {
+    color: var(--game-page-number-color);
+    --pageNumber-background-color: var(
+        --page-background-color
+    ); // appearance system
+}
+
+// These styles and more are set up in the Games.html template.
+// An attribute on the body (data-copy-all-styles) causes them
+// all to get added when any game page is added to a book.
 .GameHeader-style {
-    font-size: 16pt !important;
-    line-height: 1.5 !important;
-    text-align: center !important;
     color: var(--game-header-color);
     background-color: var(--game-header-bg-color);
 }
-.GameTextSmallStart-style {
-    font-size: 16pt !important;
-    line-height: 1 !important;
-    text-align: start !important;
-    color: var(--game-text-color);
-    background-color: transparent;
-}
-.GameTextSmallCenter-style {
-    font-size: 16pt !important;
-    line-height: 1 !important;
-    text-align: center !important;
-    color: var(--game-text-color);
-    background-color: transparent;
-}
-.GameTextMediumStart-style {
-    font-size: 30pt !important;
-    line-height: 1 !important;
-    text-align: start !important;
-    color: var(--game-text-color);
-    background-color: transparent;
-}
-.GameTextMediumCenter-style {
-    font-size: 30pt !important;
-    line-height: 1 !important;
-    text-align: center !important;
-    color: var(--game-text-color);
-    background-color: transparent;
-}
-.GameTextLargeStart-style {
-    font-size: 45pt !important;
-    line-height: 1 !important;
-    text-align: start !important;
-    color: var(--game-text-color);
-    background-color: transparent;
-}
+.GameTextSmallStart-style,
+.GameTextSmallCenter-style,
+.GameTextMediumStart-style,
+.GameTextMediumCenter-style,
+.GameTextLargeStart-style,
 .GameTextLargeCenter-style {
-    font-size: 45pt !important;
-    line-height: 1 !important;
-    text-align: center !important;
     color: var(--game-text-color);
-    background-color: transparent;
 }
-.GameDragSmallStart-style {
-    font-size: 16pt !important;
-    line-height: 1 !important;
-    text-align: start !important;
-}
-.GameDragSmallCenter-style {
-    font-size: 16pt !important;
-    line-height: 1 !important;
-    text-align: center !important;
-}
-.GameDragMediumStart-style {
-    font-size: 30pt !important;
-    line-height: 1 !important;
-    text-align: start !important;
-}
-.GameDragMediumCenter-style {
-    font-size: 30pt !important;
-    line-height: 1 !important;
-    text-align: center !important;
-}
-.GameDragLargeStart-style {
-    font-size: 45pt !important;
-    line-height: 1 !important;
-    text-align: start !important;
-}
-.GameDragLargeCenter-style {
-    font-size: 45pt !important;
-    line-height: 1 !important;
-    text-align: center !important;
-}
-//.GameDraggableLetterSmallStart-style { font-size: 16pt !important; line-height: 1 !important; text-align: start !important; }
-//.GameDraggableLetterSmallCenter-style { font-size: 16pt !important; line-height: 1 !important; text-align: center !important; }
-//.GameDraggableLetterMediumStart-style { font-size: 24pt !important; line-height: 1 !important; text-align: start !important; }
-//.GameDraggableLetterMediumCenter-style { font-size: 24pt !important; line-height: 1 !important; text-align: center !important; }
-//.GameDraggableLetterLargeStart-style { font-size: 34pt !important; line-height: 1 !important; text-align: start !important; }
-//.GameDraggableLetterLargeCenter-style { font-size: 34pt !important; line-height: 1 !important; text-align: center !important; }

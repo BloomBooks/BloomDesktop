@@ -11,46 +11,18 @@
         <meta name="pageTemplateSource" content="Basic Book" />
 
         <title>Game Templates</title>
-        <!-- GameTextMediumCenter-style is defined in code, since there is not always an instance in the page to cause it to get copied -->
+        <!-- In a typical template, a style here get added to the book when adding a page from the template
+             only if the page being added uses that style.
+             The data-copy-all-styles attribute on the body causes all the styles here to get added
+             when adding any page.
+             Our current parsing doesn't handle comments in the styles, so if you want to include
+             commented styles, add them below this style tag.
+        -->
         <style type="text/css" title="userModifiedStyles">
             /*<![CDATA[*/
             .BigWords-style {
                 font-size: 45pt !important;
                 text-align: center !important;
-            }
-
-            .GameOrderWordsMediumCenter-style[lang="qaa"] {
-                font-size: 24pt !important;
-            }
-
-            .GameOrderWordsMediumCenter-style {
-                font-size: 24pt !important;
-            }
-
-            .GameDraggableLetterMediumCenter-style[lang="qaa"] {
-                color: rgb(255, 255, 255);
-                font-size: 24pt !important;
-                line-height: 1.5 !important;
-                word-spacing: normal !important;
-                font-weight: normal !important;
-                font-style: normal !important;
-                text-decoration: none !important;
-            }
-
-            .GameDraggableLetterMediumCenter-style {
-                font-size: 24pt !important;
-                line-height: 1.5 !important;
-                word-spacing: normal !important;
-                font-weight: normal !important;
-                font-style: normal !important;
-                text-decoration: none !important;
-                text-align: center !important;
-            }
-
-            .GameDraggableLetterMediumCenter-style > p {
-                text-indent: 0px !important;
-                margin-left: 0px !important;
-                margin-bottom: 0em !important;
             }
 
             .GameHeader-style {
@@ -67,6 +39,67 @@
                 text-indent: 0px !important;
                 margin-left: 0px !important;
                 margin-bottom: 0em !important;
+            }
+
+            .GameTextSmallStart-style {
+                font-size: 16pt !important;
+                line-height: 1 !important;
+                text-align: start !important;
+            }
+            .GameTextSmallCenter-style {
+                font-size: 16pt !important;
+                line-height: 1 !important;
+                text-align: center !important;
+            }
+            .GameTextMediumStart-style {
+                font-size: 30pt !important;
+                line-height: 1 !important;
+                text-align: start !important;
+            }
+            .GameTextMediumCenter-style {
+                font-size: 30pt !important;
+                line-height: 1 !important;
+                text-align: center !important;
+            }
+            .GameTextLargeStart-style {
+                font-size: 45pt !important;
+                line-height: 1 !important;
+                text-align: start !important;
+            }
+            .GameTextLargeCenter-style {
+                font-size: 45pt !important;
+                line-height: 1 !important;
+                text-align: center !important;
+            }
+            .GameDragSmallStart-style {
+                font-size: 16pt !important;
+                line-height: 1 !important;
+                text-align: start !important;
+            }
+            .GameDragSmallCenter-style {
+                font-size: 16pt !important;
+                line-height: 1 !important;
+                text-align: center !important;
+            }
+            .GameDragMediumStart-style {
+                font-size: 30pt !important;
+                line-height: 1 !important;
+                text-align: start !important;
+            }
+            .GameDragMediumCenter-style {
+                font-size: 30pt !important;
+                line-height: 1 !important;
+                text-align: center !important;
+            }
+            .GameDragLargeStart-style {
+                font-size: 45pt !important;
+                line-height: 1 !important;
+                text-align: start !important;
+            }
+            .GameDragLargeCenter-style {
+                font-size: 45pt !important;
+                line-height: 1 !important;
+                text-align: center !important;
             }
 
             /*]]>*/
@@ -92,6 +125,7 @@
         data-l1="en"
         data-l2=""
         data-l3=""
+        data-copy-all-styles="true"
     >
         <div id="bloomDataDiv">
             <div data-book="bookTitle" lang="en">Games Pages</div>
