@@ -47,6 +47,7 @@ namespace Bloom.CollectionTab
         private readonly BloomWebSocketServer _webSocketServer;
         private LocalizationChangedEvent _localizationChangedEvent;
         private BookCollectionHolder _bookCollectionHolder;
+        private readonly BookRenamedEvent _bookRenamedEvent;
 
         public CollectionModel(
             string pathToCollection,
@@ -62,7 +63,8 @@ namespace Bloom.CollectionTab
             TeamCollectionManager tcManager,
             BloomWebSocketServer webSocketServer,
             BookCollectionHolder bookCollectionHolder,
-            LocalizationChangedEvent localizationChangedEvent
+            LocalizationChangedEvent localizationChangedEvent,
+            BookRenamedEvent bookRenamedEvent
         )
         {
             _bookSelection = bookSelection;
@@ -78,6 +80,7 @@ namespace Bloom.CollectionTab
             _webSocketServer = webSocketServer;
             _bookCollectionHolder = bookCollectionHolder;
             _localizationChangedEvent = localizationChangedEvent;
+            _bookRenamedEvent = bookRenamedEvent;
 
             createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
         }
@@ -194,14 +197,48 @@ namespace Bloom.CollectionTab
             var possibleTCFilePath = TeamCollectionManager.GetTcLinkPathFromLcPath(
                 origCollection.PathToDirectory
             );
-            if (RobustFile.Exists(possibleTCFilePath))
+            var origCollectionIsTC = RobustFile.Exists(possibleTCFilePath);
+            if (origCollectionIsTC)
             {
-                // Original collection is a TC.
-                // To remove a book from a TC, we would have "load up" the collection to check that the book is checked
-                // out, the tc is connected, etc. So for now we don't allow it
-                throw new ApplicationException(
-                    $"{origCollection.Name} is a Team Collection. Cannot move a book that is currently in a Team Collection."
+                // Original collection is a TC. We should only allow the move if the current collection is also a tc, the
+                // book is already checked out in its original tc, and the original tc is connected so we can properly delete it there
+
+                if (_tcManager.CollectionStatus == TeamCollectionStatus.None)
+                {
+                    throw new ApplicationException(
+                        $"{origCollection.Name} is a Team Collection but {TheOneEditableCollection.Name} is not. Cannot move a book from a Team Collection to a non-Team Collection."
+                    );
+                }
+
+                var settingsFilePath = Path.Combine(
+                    origCollection.PathToDirectory,
+                    Path.ChangeExtension(
+                        Path.GetFileName(origCollection.PathToDirectory),
+                        "bloomCollection"
+                    )
                 );
+                var tcManager = new TeamCollectionManager(
+                    settingsFilePath,
+                    _webSocketServer,
+                    _bookRenamedEvent,
+                    null,
+                    null,
+                    null,
+                    null
+                );
+                if (tcManager.CannotDeleteBecauseDisconnected(origBook))
+                {
+                    throw new ApplicationException(
+                        $"{origCollection.Name} is a Team Collection which is currently disconnected. Please connect the Team Collection before moving books that are part of it."
+                    );
+                }
+                var tc = tcManager.CurrentCollection;
+                if (tc == null || !tc.CanSaveChanges(origBook.BookInfo))
+                {
+                    throw new ApplicationException(
+                        $"{origCollection.Name} is a Team Collection. Please open {origCollection.Name} and check out {origBook.BookInfo.Title} before moving it."
+                    );
+                }
             }
 
             var origBookFolderPath = origBook.FolderPath;
@@ -209,6 +246,14 @@ namespace Bloom.CollectionTab
             var newCollectionDir = TheOneEditableCollection.PathToDirectory;
             var newBookFolderPath = Path.Combine(newCollectionDir, bookFolderName);
             SIL.IO.RobustIO.MoveDirectory(origBookFolderPath, newBookFolderPath);
+            if (origCollectionIsTC)
+            {
+                _tcManager.CurrentCollection.DeleteBookFromRepo(origBookFolderPath);
+
+                // Get rid of any TC status we copied over
+                BookStorage.RemoveLocalOnlyFiles(newBookFolderPath);
+            }
+            Logger.WriteEvent("After BookStorage.DeleteBook({0})", origBook.BookInfo.FolderPath);
             origCollection.HandleBookDeletedFromCollection(origBookFolderPath);
             ReloadEditableCollection();
             var movedBookInfo = TheOneEditableCollection

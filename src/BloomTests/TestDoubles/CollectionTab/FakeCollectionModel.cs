@@ -41,7 +41,8 @@ namespace BloomTests.TestDoubles.CollectionTab
                 ),
                 null,
                 null,
-                null
+                null,
+                new BookRenamedEvent()
             )
         {
             TestFolderPath = testFolder.Path;
