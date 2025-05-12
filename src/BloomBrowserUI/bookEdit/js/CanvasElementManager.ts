@@ -257,6 +257,21 @@ export class CanvasElementManager {
             return overflowY;
         }
 
+        // Some weird things happen to when the bloom-editable is empty and line-height is small
+        // (e.g., less than 1.3 for Andika). In this case, a paragraph whose height is unconstrained
+        // will not be high enough to show the font descenders, resulting in a scrollHeight larger than
+        // the clientHeight. When the text has no actual descenders, we compute a large overflowY and
+        // which corrects for the excessive scrollHeight to give us a good height for the canvas element.
+        // However, if the text is empty, we don't get the extra scrollHeight, but still compute a large
+        // excess descent, and can easily make the canvas element so small that our overflow checker
+        // reports that a child is overflowing. This fudge makes sure that we at least don't make it
+        // small enough to cause that problem. There may be a better fix (currently in at least one case
+        // we're making an empty box a pixel shorter than one with some content), but I think this might
+        // be good enough for 6.2.
+        if (newHeight < canvasElement.clientHeight && !editable.textContent) {
+            newHeight = Math.max(newHeight, editable.clientHeight);
+        }
+
         // If a lot of text is pasted, the bloom-canvas will scroll down.
         // (This can happen even if the text doesn't necessarily go out the bottom of the bloom-canvas).
         // The children of the bloom-canvas (e.g. img and canvas elements) will be offset above the bloom-canvas.
