@@ -1164,7 +1164,7 @@ const DragActivityControls: React.FunctionComponent<{
                                         l10nKey="EditTab.Toolbox.DragActivity.Letter"
                                         makeTarget={true}
                                         addClasses="draggable-text"
-                                        userDefinedStyleName="GameDraggableLetterMediumCenter"
+                                        userDefinedStyleName="GameDragMediumCenter"
                                     />
                                 )}
                                 {showImageDraggable && (
@@ -1205,11 +1205,6 @@ const DragActivityControls: React.FunctionComponent<{
                                     addClasses="draggable-text"
                                     hide={!showWordDraggable}
                                     userDefinedStyleName="GameDragMediumCenter"
-                                    defaultStyleProps={{
-                                        fontSize: "30pt",
-                                        lineHeight: "1",
-                                        textAlign: "center"
-                                    }}
                                 />
 
                                 {/* Slider: rather than reinstating this item, make the "selected item is part of answer" control work.
@@ -1416,11 +1411,6 @@ const GameTextItem: React.FunctionComponent<{
             makeTarget={false}
             addClasses={props.addClasses}
             userDefinedStyleName="GameTextMediumCenter"
-            defaultStyleProps={{
-                fontSize: "30pt",
-                lineHeight: "1",
-                textAlign: "center"
-            }}
         />
     );
 };
@@ -1832,8 +1822,6 @@ export class GameTool extends ToolboxToolReactAdaptor {
         const page = GameTool.getBloomPage();
         if (page) {
             undoPrepareActivity(page);
-            // May as well save a little space in the stored version.
-            doShowAnswersInTargets(false, page);
         }
     }
 }

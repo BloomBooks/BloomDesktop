@@ -252,6 +252,16 @@ export default class OverflowChecker {
             // scrollHeight is a reliable way to get the information if it is greater than the clientHeight,
             // and means we don't have to worry about scroll position.  (scrollHeight is never less than
             // clientHeight.  See https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight.)
+            // (One odd situation is when lineHeight is small, e.g., less than 1.3 for Andika. In that
+            // situation, a paragraph whose height is otherwise unconstrained is not high enough to show
+            // descenders, and even with a single line of text its scrollHeight is greater than clientHeight.
+            // Our auto-sizing code handles this, making a canvas element big enough to show the descenders
+            // (if any are actually present).
+            // However, when the bloom-editable is empty, we don't get the extra scrollHeight we are adjusting
+            // for. There's a kludge to partly handle this in adjustSizeOfContainingCanvasElementToMatchContent,
+            // but there may be a better way to handle things. I think part of the problem may be that if there
+            // is no actual text, the browser can't really pick a font to display it, so some measurements
+            // can't be precisely made.)
             result = elementClone.scrollHeight;
             if (elementClone.scrollHeight <= elementClone.clientHeight) {
                 // But if scrollHeight is less than or equal to clientHeight, we use our own algorithm.

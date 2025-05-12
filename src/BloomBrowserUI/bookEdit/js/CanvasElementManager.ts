@@ -257,6 +257,21 @@ export class CanvasElementManager {
             return overflowY;
         }
 
+        // Some weird things happen to when the bloom-editable is empty and line-height is small
+        // (e.g., less than 1.3 for Andika). In this case, a paragraph whose height is unconstrained
+        // will not be high enough to show the font descenders, resulting in a scrollHeight larger than
+        // the clientHeight. When the text has no actual descenders, we compute a large overflowY and
+        // which corrects for the excessive scrollHeight to give us a good height for the canvas element.
+        // However, if the text is empty, we don't get the extra scrollHeight, but still compute a large
+        // excess descent, and can easily make the canvas element so small that our overflow checker
+        // reports that a child is overflowing. This fudge makes sure that we at least don't make it
+        // small enough to cause that problem. There may be a better fix (currently in at least one case
+        // we're making an empty box a pixel shorter than one with some content), but I think this might
+        // be good enough for 6.2.
+        if (newHeight < canvasElement.clientHeight && !editable.textContent) {
+            newHeight = Math.max(newHeight, editable.clientHeight);
+        }
+
         // If a lot of text is pasted, the bloom-canvas will scroll down.
         // (This can happen even if the text doesn't necessarily go out the bottom of the bloom-canvas).
         // The children of the bloom-canvas (e.g. img and canvas elements) will be offset above the bloom-canvas.
@@ -385,7 +400,7 @@ export class CanvasElementManager {
                     // by pixel. Don't want to do this if we don't have to, because there could be rounding
                     // errors that would move it very slightly.
                     this.setCanvasElementPosition(
-                        $(wrapperBox as HTMLElement),
+                        wrapperBox,
                         wrapperBox.offsetLeft - container.offsetLeft,
                         wrapperBox.offsetTop - container.offsetTop
                     );
@@ -5097,7 +5112,7 @@ export class CanvasElementManager {
         wrapperBox.css("top", yOffset); // assumes numbers are in pixels
 
         CanvasElementManager.setCanvasElementPosition(
-            wrapperBox,
+            wrapperBox.get(0) as HTMLElement,
             xOffset,
             yOffset
         );
@@ -5886,7 +5901,7 @@ export class CanvasElementManager {
             unscaledRelativeTop = pos.top / scale;
         }
         this.setCanvasElementPosition(
-            $(canvasElement),
+            canvasElement,
             unscaledRelativeLeft,
             unscaledRelativeTop
         );
@@ -5907,41 +5922,32 @@ export class CanvasElementManager {
     // its position relative to the image itself, but that is much harder to do since the canvas element
     // isn't (can't be) a child of the img.)
     private static setCanvasElementPosition(
-        canvasElement: JQuery,
+        canvasElement: HTMLElement,
         unscaledRelativeLeft: number,
         unscaledRelativeTop: number
     ) {
-        if (canvasElement.hasClass("bloom-passive-element")) {
+        if (canvasElement.classList.contains("bloom-passive-element")) {
             // Don't set possition for passive elements. They are not supposed to be moved. (BL-14685)
             return;
         }
         // We always want to set the position here.
-        canvasElement
-            .css("left", unscaledRelativeLeft + "px")
-            .css("top", unscaledRelativeTop + "px");
+        canvasElement.style.left = unscaledRelativeLeft + "px";
+        canvasElement.style.top = unscaledRelativeTop + "px";
         // The width value should always end in "px" (even if it is 0px).
         // In days of yore, we used %, but that turned out to be a bad idea, as
         // discussed above.  We don't need to change the width/height if they're
         // already in px.
-        const currentWidth = canvasElement.css("width");
-        if (!currentWidth.endsWith("px")) {
-            // canvasElement.width() and canvasElement.height() can give inaccurate values,
-            // sometimes causing the canvas element to shrink repeatedly.  See BL-14740.
-            const element = canvasElement.get(0) as HTMLElement;
-            const clientWidth = element.clientWidth;
-            const clientHeight = element.clientHeight;
-            // But it's a huge performance hit to get its getBoundingClientRect()
-            // It seems that getBoundingClientRect() may be internally cached under the hood,
-            // since getting the bounding rect of the bloom-canvas once per mousemove event or even 100x per mousemove event caused no ill effect,
-            // but getting this one is quite taxing on the CPU
-            canvasElement
-                .css("width", canvasElement.width() + "px")
-                .css("height", canvasElement.height() + "px");
+        const currentWidth = canvasElement.style.width;
+        if (!currentWidth || !currentWidth.endsWith("px")) {
+            const clientWidth = canvasElement.clientWidth;
+            const clientHeight = canvasElement.clientHeight;
+            canvasElement.style.width = clientWidth + "px";
+            canvasElement.style.height = clientHeight + "px";
             // if the width/height have changed in actuality, not just in representation,
             // then we have a problem.
             console.assert(
-                clientWidth === element.clientWidth &&
-                    clientHeight === element.clientHeight,
+                clientWidth === canvasElement.clientWidth &&
+                    clientHeight === canvasElement.clientHeight,
                 "CanvasElementManager.setCanvasElementPosition(): clientWidth/Height mismatch!"
             );
         }
