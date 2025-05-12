@@ -3784,7 +3784,6 @@ namespace Bloom.Book
         /// different book, we may need to copy user-defined styles from that book to our own.
         /// </summary>
         /// <returns>true if anything added</returns>
-        /// <param name="templatePage"></param>
         private bool AddMissingStylesFromTemplatePage(IPage templatePage)
         {
             if (templatePage.Book.FolderPath != FolderPath)
@@ -3792,11 +3791,14 @@ namespace Bloom.Book
                 var domForPage = templatePage.Book.GetEditableHtmlDomForPage(templatePage);
                 if (domForPage != null) // possibly null only in unit tests?
                 {
-                    var userStylesOnPage = HtmlDom.GetUserModifiableStylesUsedOnPage(domForPage); // could be empty
+                    var userStylesToAddIfMissing = GetUserModifiedStylesToAddIfMissing(
+                        templatePage,
+                        domForPage
+                    ); // could be empty
                     var existingUserStyles = GetOrCreateUserModifiedStyleElementFromStorage();
                     var newMergedUserStyleXml = HtmlDom.MergeUserStylesOnInsertion(
                         existingUserStyles,
-                        userStylesOnPage,
+                        userStylesToAddIfMissing,
                         out bool didAdd
                     );
                     existingUserStyles.InnerXml = newMergedUserStyleXml;
@@ -3805,6 +3807,14 @@ namespace Bloom.Book
             }
 
             return false;
+        }
+
+        private string GetUserModifiedStylesToAddIfMissing(IPage templatePage, HtmlDom domForPage)
+        {
+            var templateDom = templatePage.Book.OurHtmlDom;
+            if (templateDom.Body.HasAttribute("data-copy-all-styles"))
+                return HtmlDom.GetAllUserModifiableStylesInHead(templateDom.Head);
+            return HtmlDom.GetUserModifiableStylesUsedOnPage(domForPage);
         }
 
         public static string CollectionKind(Book book)
