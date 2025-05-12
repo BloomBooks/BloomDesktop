@@ -10,7 +10,6 @@
     .apply-game-theme();
 
     // defaults which don't follow the primary/secondary pattern
-    --game-text-color: black;
     --game-button-wrong-color: white;
     --game-button-wrong-bg-color: #848484; // mid-gray
 }
@@ -32,19 +31,18 @@
 
     --game-draggable-color: var(--game-secondary-color);
     --game-draggable-bg-color: var(--game-primary-bg-color);
-
     --game-draggable-target-outline-color: var(--game-draggable-bg-color);
-    --game-target-label-color: var(--game-draggable-bg-color);
 
     --game-header-color: var(--game-secondary-color);
     --game-header-bg-color: var(--game-primary-bg-color);
 
     --game-control-button-color: var(
         --game-secondary-color
-    ); // This doesn't work yet. Can't change svg color.
+    ); // This doesn't work yet. Can't change svg color because they are files, not inline.
     --game-control-button-bg-color: var(--game-primary-bg-color);
 
-    --game-checkbox-outline-color: var(--game-text-color);
+    --game-checkbox-text-color: var(--game-text-color);
+    --game-checkbox-outline-color: var(--game-checkbox-text-color);
     --game-selected-checkbox-color: var(--game-button-correct-color);
     --game-selected-checkbox-bg-color: var(--game-button-correct-bg-color);
     --game-selected-checkbox-outline-color: var(

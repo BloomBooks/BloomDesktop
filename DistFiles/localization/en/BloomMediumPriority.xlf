@@ -28,6 +28,10 @@
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound.Help" translate="no">
+        <source xml:lang="en">You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to “elevenlabs.io”.</source>
+        <note>ID: EditTab.Toolbox.DragActivity.ChooseSound.Help</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile">
         <source xml:lang="en">Choose Sound File</source>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
@@ -69,10 +73,6 @@
         <source xml:lang="en">Objects that do not Move</source>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Header">
-        <source xml:lang="en">Header</source>
-        <note>ID: EditTab.Toolbox.DragActivity.Header</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions">
         <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
@@ -85,9 +85,9 @@
         <source xml:lang="en">Instructions</source>
         <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.TargetLabel">
-        <source xml:lang="en">Target Label</source>
-        <note>ID: EditTab.Toolbox.DragActivity.TargetLabel</note>
+      <trans-unit id="EditTab.Toolbox.DragActivity.Text" translate="no">
+        <source xml:lang="en">Text</source>
+        <note>ID: EditTab.Toolbox.DragActivity.Text</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Letter">
         <source xml:lang="en">M</source>
@@ -145,9 +145,9 @@
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
         <note>Used as the label of a button that is otherwise the name of a sound file, indicating that no sound has been chosen.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.SameSize">
-        <source xml:lang="en">Keep all items and targets the same size</source>
-        <note>ID: EditTab.Toolbox.DragActivity.SameSize</note>
+      <trans-unit id="EditTab.Toolbox.DragActivity.TargetsSameSize">
+        <source xml:lang="en">Keep all targets the same size so students can't use size as a clue.</source>
+        <note>ID: EditTab.Toolbox.DragActivity.TargetsSameSize</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SceneInstructions">
         <source xml:lang="en">Properties of the Scene</source>
@@ -181,10 +181,6 @@
       <trans-unit id="EditTab.Toolbox.DragActivity.TestInstructions">
         <source xml:lang="en">Try it out!</source>
         <note>ID: EditTab.Toolbox.DragActivity.TestInstructions</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.TextToPutOnThePage">
-        <source xml:lang="en">Text to put on the page</source>
-        <note>ID: EditTab.Toolbox.DragActivity.TextToPutOnThePage</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TryAgain">
         <source xml:lang="en">Try Again</source>
@@ -849,6 +845,14 @@
       <trans-unit id="EditTab.PasteHyperlink" translate="no">
         <source xml:lang="en">Paste Hyperlink</source>
         <note>ID: EditTab.PasteHyperlink</note>
+      </trans-unit>
+      <trans-unit id="UseTalkingBookTool" translate="no">
+        <source xml:lang="en">Use Talking Book Tool</source>
+        <note>ID: UseTalkingBookTool</note>
+      </trans-unit>
+      <trans-unit id="ARecording" translate="no">
+        <source xml:lang="en">A Recording</source>
+        <note>ID: ARecording</note>
       </trans-unit>
     </body>
   </file>

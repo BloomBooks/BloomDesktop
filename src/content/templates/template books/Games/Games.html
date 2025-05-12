@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html>
     <head>
@@ -11,7 +11,7 @@
         <meta name="pageTemplateSource" content="Basic Book" />
 
         <title>Game Templates</title>
-        <!-- GameTargetLabel-style is defined in code, since there is not always an instance in the page to cause it to get copied -->
+        <!-- GameTextMediumCenter-style is defined in code, since there is not always an instance in the page to cause it to get copied -->
         <style type="text/css" title="userModifiedStyles">
             /*<![CDATA[*/
             .BigWords-style {
@@ -19,21 +19,15 @@
                 text-align: center !important;
             }
 
-            .ButtonText-style {
-                font-size: 31pt !important;
-                text-align: center !important;
-                line-height: 1.3 !important;
-            }
-
-            .Order_Words-style[lang="qaa"] {
+            .GameOrderWordsMediumCenter-style[lang="qaa"] {
                 font-size: 24pt !important;
             }
 
-            .Order_Words-style {
+            .GameOrderWordsMediumCenter-style {
                 font-size: 24pt !important;
             }
 
-            .Letter-style[lang="qaa"] {
+            .GameDraggableLetterMediumCenter-style[lang="qaa"] {
                 color: rgb(255, 255, 255);
                 font-size: 24pt !important;
                 line-height: 1.5 !important;
@@ -43,7 +37,7 @@
                 text-decoration: none !important;
             }
 
-            .Letter-style {
+            .GameDraggableLetterMediumCenter-style {
                 font-size: 24pt !important;
                 line-height: 1.5 !important;
                 word-spacing: normal !important;
@@ -53,7 +47,7 @@
                 text-align: center !important;
             }
 
-            .Letter-style > p {
+            .GameDraggableLetterMediumCenter-style > p {
                 text-indent: 0px !important;
                 margin-left: 0px !important;
                 margin-bottom: 0em !important;
@@ -70,33 +64,6 @@
             }
 
             .GameHeader-style > p {
-                text-indent: 0px !important;
-                margin-left: 0px !important;
-                margin-bottom: 0em !important;
-            }
-
-            .Button-style[lang="qaa"] {
-                color: rgb(255, 255, 255);
-                font-size: 24pt !important;
-                line-height: 1.5 !important;
-                word-spacing: normal !important;
-                font-weight: bold !important;
-                font-style: normal !important;
-                text-decoration: none !important;
-                font-family: Roboto !important;
-            }
-
-            .Button-style {
-                font-size: 24pt !important;
-                line-height: 1.5 !important;
-                word-spacing: normal !important;
-                font-weight: bold !important;
-                font-style: normal !important;
-                text-decoration: none !important;
-                text-align: center !important;
-            }
-
-            .Button-style > p {
                 text-indent: 0px !important;
                 margin-left: 0px !important;
                 margin-bottom: 0em !important;
@@ -327,7 +294,28 @@
                         data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                         title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                     >
-                        <img src="placeHolder.png" alt="" />
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="width: 672px; top: -141.088px; left: 0px;"
+                                    alt=""
+                                />
+                            </div>
+                        </div>
 
                         <div
                         class="bloom-canvas-element draggable-text ui-resizable ui-draggable bloom-noAutoHeight"
@@ -347,7 +335,7 @@
                             data-hasqtip="true"
                         >
                             <div
-                                class="bloom-editable Letter-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                class="bloom-editable GameDraggableLetterMediumCenter-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                                 lang="en"
                                 tabindex="0"
                                 spellcheck="false"
@@ -374,10 +362,10 @@
                     <div
                         class="bloom-canvas-element bloom-gif drag-item-correct ui-resizable ui-draggable"
                         style="
-                            height: 223.898px;
-                            left: 373.297px;
-                            top: 73.0508px;
-                            width: 233px;
+                            height: 220px;
+                            left: 370px;
+                            top: 70px;
+                            width: 230px;
                             position: absolute;
                         "
                         data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -398,20 +386,12 @@
                     </div>
 
                     <div
-                        class="bloom-canvas-element ui-resizable ui-draggable"
-                        style="
-                            left: 0px;
-                            top: 0px;
-                            width: 672px;
-                            height: 36px;
-                            position: absolute;
-                        "
+                        class="bloom-canvas-element bloom-passive-element"
                         data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                     >
                         <div
                             class="bloom-translationGroup bloom-leadingElement bloom-show-en-when-blank"
                             data-default-languages="V"
-                            style="font-size: 21.3333px"
                             data-hasqtip="true"
                         >
                             <div
@@ -460,10 +440,10 @@
                     <div
                         class="bloom-canvas-element bloom-gif drag-item-wrong ui-resizable ui-draggable"
                         style="
-                            height: 260px;
-                            left: 360.333px;
-                            top: 22px;
-                            width: 260px;
+                            height: 220px;
+                            left: 370px;
+                            top: 70px;
+                            width: 220px;
                             position: absolute;
                         "
                         data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -548,7 +528,28 @@
                         data-title="For the current paper size: • The image container is 652 x 328 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1025 dots would fill this container at 300 DPI."
                         title="For the current paper size: • The image container is 652 x 328 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1025 dots would fill this container at 300 DPI."
                     >
-                        <img src="placeHolder.png" alt="" />
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="width: 672px; top: -141.088px; left: 0px;"
+                                    alt=""
+                                />
+                            </div>
+                        </div>
 
                         <div
                             class="bloom-canvas-element bloom-allowAutoShrink drag-item-order-sentence ui-resizable ui-draggable"
@@ -565,7 +566,7 @@
                                 style="font-size: 32px;"
                             >
                                 <div
-                                    class="bloom-editable Order_Words-style bloom-contentNational1"
+                                    class="bloom-editable GameOrderWordsMediumCenter-style bloom-contentNational1"
                                     lang="en"
                                     contenteditable="true"
                                     data-languagetipcontent="English"
@@ -578,7 +579,7 @@
                         </div>
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-correct ui-resizable ui-draggable"
-                            style="height: 223.898px; left: 373.297px; top: 73.0508px; width: 233px; position: absolute;"
+                            style="height: 220px; left: 370px; top: 70px; width: 230px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
                             <div
@@ -597,7 +598,7 @@
                         </div>
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-wrong ui-resizable ui-draggable"
-                            style="height: 260px; left: 360.333px; top: 22px; width: 260px; position: absolute;"
+                            style="height: 220px; left: 370px; top: 70px; width: 220px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
                             <div
@@ -679,15 +680,39 @@
                         data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                         title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                     >
-                        <img src="placeHolder.png" alt="" />
-
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
+                            </div>
+                        </div>
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-correct ui-resizable ui-draggable"
                             style="
-                                height: 223.898px;
-                                left: 373.297px;
-                                top: 73.0508px;
-                                width: 233px;
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 230px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -708,20 +733,12 @@
                         </div>
 
                         <div
-                            class="bloom-canvas-element ui-resizable ui-draggable"
-                            style="
-                                left: 0px;
-                                top: 0px;
-                                width: 672px;
-                                height: 36px;
-                                position: absolute;
-                            "
+                            class="bloom-canvas-element bloom-passive-element"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
                             <div
                                 class="bloom-translationGroup bloom-leadingElement bloom-show-en-when-blank"
                                 data-default-languages="V"
-                                style="font-size: 21.3333px"
                                 data-hasqtip="true"
                             >
                                 <div
@@ -742,10 +759,10 @@
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-wrong ui-resizable ui-draggable"
                             style="
-                                height: 260px;
-                                left: 360.333px;
-                                top: 22px;
-                                width: 260px;
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 220px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -768,9 +785,9 @@
                         <div
                             class="bloom-canvas-element ui-resizable ui-draggable"
                             style="
-                                left: 147.578px;
-                                top: 109.766px;
-                                width: 61px;
+                                left: 270px;
+                                top: 110px;
+                                width: 60px;
                                 height: 60px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -795,9 +812,9 @@
                             data-target-of="b12rlzh"
                             tabindex="0"
                             style="
-                                left: 60px;
-                                top: 264px;
-                                width: 61px;
+                                left: 160px;
+                                top: 230px;
+                                width: 60px;
                                 height: 60px;
                             "
                         ></div>
@@ -805,9 +822,9 @@
                         <div
                             class="bloom-canvas-element ui-resizable ui-draggable"
                             style="
-                                left: 239.313px;
-                                top: 86.75px;
-                                width: 61px;
+                                left: 400px;
+                                top: 110px;
+                                width: 60px;
                                 height: 60px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:12,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -832,9 +849,9 @@
                             data-target-of="muozas1"
                             tabindex="0"
                             style="
-                                left: 153.32px;
-                                top: 264px;
-                                width: 61px;
+                                left: 270px;
+                                top: 230px;
+                                width: 60px;
                                 height: 60px;
                             "
                         ></div>
@@ -842,9 +859,9 @@
                         <div
                             class="bloom-canvas-element ui-resizable ui-draggable"
                             style="
-                                left: 49px;
-                                top: 90.6563px;
-                                width: 61px;
+                                left: 140px;
+                                top: 110px;
+                                width: 60px;
                                 height: 60px;
                                 position: absolute;
                             "
@@ -870,9 +887,9 @@
                             data-target-of="lkbg233"
                             tabindex="0"
                             style="
-                                left: 246px;
-                                top: 264px;
-                                width: 61px;
+                                left: 380px;
+                                top: 230px;
+                                width: 60px;
                                 height: 60px;
                             "
                         ></div>
@@ -946,15 +963,39 @@
                         data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                         title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                     >
-                        <img src="placeHolder.png" alt="" />
-
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 378px;
+                                top: 0px;
+                                left: 0px;
+                                height: 672px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 378px;
+                                        left: -141.088px;
+                                        top: 0px;
+                                    "
+                                    alt=""
+                                />
+                            </div>
+                        </div>
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-correct ui-resizable ui-draggable"
                             style="
-                                height: 223.898px;
-                                left: 373.297px;
-                                top: 73.0508px;
-                                width: 233px;
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 230px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -975,20 +1016,12 @@
                         </div>
 
                         <div
-                            class="bloom-canvas-element ui-resizable ui-draggable"
-                            style="
-                                left: 0px;
-                                top: 0px;
-                                width: 378px;
-                                height: 36px;
-                                position: absolute;
-                            "
+                            class="bloom-canvas-element bloom-passive-element"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
                             <div
                                 class="bloom-translationGroup bloom-leadingElement bloom-show-en-when-blank"
                                 data-default-languages="V"
-                                style="font-size: 21.3333px"
                                 data-hasqtip="true"
                             >
                                 <div
@@ -1009,10 +1042,10 @@
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-wrong ui-resizable ui-draggable"
                             style="
-                                height: 260px;
-                                left: 360.333px;
-                                top: 22px;
-                                width: 260px;
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 220px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -1035,9 +1068,9 @@
                         <div
                             class="bloom-canvas-element ui-resizable ui-draggable"
                             style="
-                                left: 147.578px;
-                                top: 109.766px;
-                                width: 61px;
+                                left: 160px;
+                                top: 100px;
+                                width: 60px;
                                 height: 60px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -1062,9 +1095,9 @@
                             data-target-of="b12rlzh"
                             tabindex="0"
                             style="
-                                left: 60px;
-                                top: 264px;
-                                width: 61px;
+                                left: 80px;
+                                top: 270px;
+                                width: 60px;
                                 height: 60px;
                             "
                         ></div>
@@ -1072,9 +1105,9 @@
                         <div
                             class="bloom-canvas-element ui-resizable ui-draggable"
                             style="
-                                left: 239.313px;
-                                top: 86.75px;
-                                width: 61px;
+                                left: 260px;
+                                top: 100px;
+                                width: 60px;
                                 height: 60px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:12,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -1099,9 +1132,9 @@
                             data-target-of="muozas1"
                             tabindex="0"
                             style="
-                                left: 153.32px;
-                                top: 264px;
-                                width: 61px;
+                                left: 160px;
+                                top: 270px;
+                                width: 60px;
                                 height: 60px;
                             "
                         ></div>
@@ -1109,9 +1142,9 @@
                         <div
                             class="bloom-canvas-element ui-resizable ui-draggable"
                             style="
-                                left: 49px;
-                                top: 90.6563px;
-                                width: 61px;
+                                left: 60px;
+                                top: 100px;
+                                width: 60px;
                                 height: 60px;
                                 position: absolute;
                             "
@@ -1137,9 +1170,9 @@
                             data-target-of="lkbg233"
                             tabindex="0"
                             style="
-                                left: 246px;
-                                top: 264px;
-                                width: 61px;
+                                left: 240px;
+                                top: 270px;
+                                width: 60px;
                                 height: 60px;
                             "
                         ></div>
@@ -1212,15 +1245,39 @@
                         data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                         title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                     >
-                        <img src="placeHolder.png" alt="" />
-
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
+                            </div>
+                        </div>
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-correct ui-resizable ui-draggable"
                             style="
-                                height: 223.898px;
-                                left: 400px;
-                                top: 50px;
-                                width: 233px;
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 230px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -1241,20 +1298,12 @@
                         </div>
 
                         <div
-                            class="bloom-canvas-element ui-resizable ui-draggable"
-                            style="
-                                left: 0px;
-                                top: 0px;
-                                width: 672px;
-                                height: 36px;
-                                position: absolute;
-                            "
+                            class="bloom-canvas-element bloom-passive-element"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
                             <div
                                 class="bloom-translationGroup bloom-leadingElement bloom-show-en-when-blank"
                                 data-default-languages="V"
-                                style="font-size: 21.3333px"
                                 data-hasqtip="true"
                             >
                                 <div
@@ -1275,10 +1324,10 @@
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-wrong ui-resizable ui-draggable"
                             style="
-                                height: 260px;
-                                left: 390px;
-                                top: 20px;
-                                width: 260px;
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 220px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -1303,7 +1352,7 @@
                             style="
                                 left: 50px;
                                 top: 180px;
-                                width: 61px;
+                                width: 60px;
                                 height: 60px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -1330,7 +1379,7 @@
                             style="
                                 left: 310px;
                                 top: 280px;
-                                width: 61px;
+                                width: 60px;
                                 height: 60px;
                             "
                         ></div>
@@ -1340,7 +1389,7 @@
                             style="
                                 left: 50px;
                                 top: 280px;
-                                width: 61px;
+                                width: 60px;
                                 height: 60px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:12,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -1367,7 +1416,7 @@
                             style="
                                 left: 310px;
                                 top: 80px;
-                                width: 61px;
+                                width: 60px;
                                 height: 60px;
                             "
                         ></div>
@@ -1377,7 +1426,7 @@
                             style="
                                 left: 50px;
                                 top: 80px;
-                                width: 61px;
+                                width: 60px;
                                 height: 60px;
                                 position: absolute;
                             "
@@ -1405,7 +1454,7 @@
                             style="
                                 left: 310px;
                                 top: 180px;
-                                width: 61px;
+                                width: 60px;
                                 height: 60px;
                             "
                         ></div>
@@ -1468,17 +1517,14 @@
                     <div
                         class="bloom-canvas bloom-has-canvas-element"
                         data-title="For the current paper size: • The image container is 672 x 378 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2100 x 1182 dots would fill this container at 300 DPI."
-                        title=""
-                        data-imgsizebasedon="672,378"
-                        style=""
                     >
                         <div
                             class="bloom-canvas-element bloom-backgroundImage"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                             style="
-                                width: 384.77px;
+                                width: 672px;
                                 top: 0px;
-                                left: 143.615px;
+                                left: 0px;
                                 height: 378px;
                             "
                         >
@@ -1487,15 +1533,23 @@
                                 data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                                 title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                             >
-                                <img src="placeHolder.png" alt="" />
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
                             </div>
                         </div>
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 125px;
+                                left: 120px;
                                 top: 240px;
-                                width: 290px;
+                                width: 300px;
                                 height: 110px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:3,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -1505,10 +1559,10 @@
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-correct"
                             style="
-                                height: 223.898px;
-                                left: 373.297px;
-                                top: 73.0508px;
-                                width: 233px;
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 230px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -1528,24 +1582,16 @@
                             </div>
                         </div>
                         <div
-                            class="bloom-canvas-element"
-                            style="
-                                left: 0px;
-                                top: 0px;
-                                width: 672px;
-                                height: 36px;
-                                position: absolute;
-                            "
+                            class="bloom-canvas-element bloom-passive-element"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
                             <div
                                 class="bloom-translationGroup bloom-leadingElement bloom-show-en-when-blank"
                                 data-default-languages="V"
-                                style="font-size: 21.3333px"
                                 data-hasqtip="true"
                             >
                                 <div
-                                    class="bloom-editable GameHeader-style audio-sentence bloom-visibility-code-on bloom-content1"
+                                    class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1"
                                     lang="en"
                                     tabindex="0"
                                     spellcheck="false"
@@ -1562,10 +1608,10 @@
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-wrong"
                             style="
-                                height: 260px;
-                                left: 360.333px;
-                                top: 22px;
-                                width: 260px;
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 220px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:20,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -1588,10 +1634,10 @@
                             data-target-of="jgcdref"
                             tabindex="0"
                             style="
-                                left: 145px;
+                                left: 140px;
                                 top: 260px;
                                 width: 160px;
-                                height: 70px;
+                                height: 60px;
                             "
                         ></div>
                         <div
@@ -1599,7 +1645,7 @@
                             style="
                                 height: 80px;
                                 left: 320px;
-                                top: 255px;
+                                top: 250px;
                                 width: 80px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:28,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -1615,9 +1661,9 @@
                             class="bloom-canvas-element draggable-text"
                             style="
                                 left: 30px;
-                                top: 105px;
+                                top: 100px;
                                 width: 160px;
-                                height: 70px;
+                                height: 60px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:30,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                             data-draggable-id="jgcdref"
@@ -1630,7 +1676,7 @@
                                 style="font-size: 45px"
                             >
                                 <div
-                                    class="bloom-editable Word-style bloom-visibility-code-on bloom-content1"
+                                    class="bloom-editable GameDragMediumCenter-style bloom-visibility-code-on bloom-content1"
                                     lang="en"
                                     contenteditable="true"
                                     tabindex="0"
@@ -1642,7 +1688,7 @@
                                     data-languagetipcontent="English"
                                 ></div>
                                 <div
-                                    class="bloom-editable Word-style bloom-contentNational1"
+                                    class="bloom-editable GameDragMediumCenter-style bloom-contentNational1"
                                     lang="fr"
                                     contenteditable="true"
                                     tabindex="0"
@@ -1659,9 +1705,9 @@
                             class="bloom-canvas-element draggable-text"
                             style="
                                 left: 230px;
-                                top: 105px;
+                                top: 100px;
                                 width: 160px;
-                                height: 70px;
+                                height: 60px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:31,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                             data-draggable-id="7hmlixy"
@@ -1673,7 +1719,7 @@
                                 style="font-size: 45px"
                             >
                                 <div
-                                    class="bloom-editable Word-style bloom-visibility-code-on bloom-content1"
+                                    class="bloom-editable GameDragMediumCenter-style bloom-visibility-code-on bloom-content1"
                                     lang="en"
                                     contenteditable="true"
                                     tabindex="0"
@@ -1685,7 +1731,7 @@
                                     data-languagetipcontent="English"
                                 ></div>
                                 <div
-                                    class="bloom-editable Word-style bloom-contentNational1"
+                                    class="bloom-editable GameDragMediumCenter-style bloom-contentNational1"
                                     lang="fr"
                                     contenteditable="true"
                                     tabindex="0"
@@ -1702,9 +1748,9 @@
                             class="bloom-canvas-element draggable-text"
                             style="
                                 left: 430px;
-                                top: 105px;
+                                top: 100px;
                                 width: 160px;
-                                height: 70px;
+                                height: 60px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:32,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                             data-draggable-id="89ogfih"
@@ -1716,7 +1762,7 @@
                                 style="font-size: 45px"
                             >
                                 <div
-                                    class="bloom-editable Word-style bloom-visibility-code-on bloom-content1"
+                                    class="bloom-editable GameDragMediumCenter-style bloom-visibility-code-on bloom-content1"
                                     lang="en"
                                     contenteditable="true"
                                     tabindex="0"
@@ -1728,7 +1774,7 @@
                                     data-languagetipcontent="English"
                                 ></div>
                                 <div
-                                    class="bloom-editable Word-style bloom-contentNational1"
+                                    class="bloom-editable GameDragMediumCenter-style bloom-contentNational1"
                                     lang="fr"
                                     contenteditable="true"
                                     tabindex="0"
@@ -1837,18 +1883,40 @@
                     <div
                         class="bloom-canvas bloom-has-canvas-element"
                         data-title="For the current paper size: • The image container is 672 x 378 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2100 x 1182 dots would fill this container at 300 DPI."
-                        title=""
-                        data-imgsizebasedon="672,378"
-                        style=""
                     >
-                        <img src="placeHolder.png" alt="" />
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
+                            </div>
+                        </div>
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-correct"
                             style="
-                                height: 102px;
-                                left: 284.268px;
-                                top: 57.2308px;
-                                width: 106px;
+                                height: 110px;
+                                left: 290px;
+                                top: 50px;
+                                width: 110px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -1868,25 +1936,17 @@
                             </div>
                         </div>
                         <div
-                            class="bloom-canvas-element"
-                            style="
-                                left: 0px;
-                                top: 0px;
-                                width: 672px;
-                                height: 36px;
-                                position: absolute;
-                            "
+                            class="bloom-canvas-element bloom-passive-element"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                             data-bloom-active="true"
                         >
                             <div
                                 class="bloom-translationGroup bloom-leadingElement bloom-show-en-when-blank"
                                 data-default-languages="V"
-                                style="font-size: 21.3333px"
                                 data-hasqtip="true"
                             >
                                 <div
-                                    class="bloom-editable GameHeader-style audio-sentence ui-suppressHighlight bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                                     lang="en"
                                     tabindex="0"
                                     spellcheck="false"
@@ -1903,10 +1963,10 @@
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-wrong"
                             style="
-                                height: 105px;
-                                left: 296.615px;
-                                top: 57px;
-                                width: 105px;
+                                height: 110px;
+                                left: 290px;
+                                top: 50px;
+                                width: 110px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -1929,10 +1989,10 @@
                             data-target-of="b12rlzh"
                             tabindex="0"
                             style="
-                                left: 110px;
+                                left: 100px;
                                 top: 190px;
-                                width: 84px;
-                                height: 83px;
+                                width: 60px;
+                                height: 60px;
                             "
                         >
                             <div class="bloom-targetWrapper">
@@ -1956,10 +2016,10 @@
                             data-target-of="muozas1"
                             tabindex="0"
                             style="
-                                left: 300px;
+                                left: 310px;
                                 top: 190px;
-                                width: 84px;
-                                height: 83px;
+                                width: 60px;
+                                height: 60px;
                             "
                         >
                             <div class="bloom-targetWrapper">
@@ -1983,10 +2043,10 @@
                             data-target-of="lkbg233"
                             tabindex="0"
                             style="
-                                left: 490px;
+                                left: 520px;
                                 top: 190px;
-                                width: 84px;
-                                height: 83px;
+                                width: 60px;
+                                height: 60px;
                             "
                         >
                             <div class="bloom-targetWrapper">
@@ -2009,9 +2069,9 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 80px;
+                                left: 50px;
                                 top: 270px;
-                                width: 150px;
+                                width: 160px;
                                 height: 44px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:19,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2022,15 +2082,14 @@
                                 style="font-size: 32px"
                             >
                                 <div
-                                    class="bloom-editable Bubble-style audio-sentence ui-suppressHighlight bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    class="bloom-editable GameTextMediumCenter-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                                     lang="en"
                                     tabindex="0"
                                     spellcheck="false"
                                     role="textbox"
                                     aria-label="false"
                                     style="min-height: 48.01px"
-                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 80px; top: 270px; width: 150px; height: 44px;`,`tails`:[]}"
-                                    data-audiorecordingmode="TextBox"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 50px; top: 270px; width: 160px; height: 44px;`,`tails`:[]}"
                                     id="i1e76084c-b93a-4840-9b50-9ed5dac889e4"
                                     contenteditable="true"
                                     data-languagetipcontent="English"
@@ -2042,9 +2101,9 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 451px;
-                                top: 172px;
-                                width: 167px;
+                                left: 460px;
+                                top: 170px;
+                                width: 180px;
                                 height: 153px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:28,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2054,9 +2113,9 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 270px;
+                                left: 260px;
                                 top: 270px;
-                                width: 150px;
+                                width: 160px;
                                 height: 44px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:30,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2067,15 +2126,14 @@
                                 style="font-size: 32px"
                             >
                                 <div
-                                    class="bloom-editable Bubble-style audio-sentence ui-suppressHighlight bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    class="bloom-editable GameTextMediumCenter-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                                     lang="en"
                                     tabindex="0"
                                     spellcheck="false"
                                     role="textbox"
                                     aria-label="false"
                                     style="min-height: 48.01px"
-                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 270px; top: 270px; width: 150px; height: 44px;`,`tails`:[]}"
-                                    data-audiorecordingmode="TextBox"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 260px; top: 270px; width: 160px; height: 44px;`,`tails`:[]}"
                                     id="a7fc688b-a6c3-4738-bbd7-af446ddd6e46"
                                     contenteditable="true"
                                     data-languagetipcontent="English"
@@ -2087,9 +2145,9 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 460px;
+                                left: 470px;
                                 top: 270px;
-                                width: 150px;
+                                width: 160px;
                                 height: 44px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:31,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2100,15 +2158,14 @@
                                 style="font-size: 32px"
                             >
                                 <div
-                                    class="bloom-editable Bubble-style audio-sentence ui-suppressHighlight bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    class="bloom-editable GameTextMediumCenter-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                                     lang="en"
                                     tabindex="0"
                                     spellcheck="false"
                                     role="textbox"
                                     aria-label="false"
                                     style="min-height: 48.01px"
-                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 460px; top: 270px; width: 150px; height: 44px;`,`tails`:[]}"
-                                    data-audiorecordingmode="TextBox"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 470px; top: 270px; width: 160px; height: 44px;`,`tails`:[]}"
                                     id="f3ed2f3e-f492-4f2c-85eb-09e35e6aa750"
                                     contenteditable="true"
                                     data-languagetipcontent="English"
@@ -2120,9 +2177,9 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 261px;
-                                top: 172px;
-                                width: 167px;
+                                left: 250px;
+                                top: 170px;
+                                width: 180px;
                                 height: 153px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:32,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2132,9 +2189,9 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 71px;
-                                top: 172px;
-                                width: 167px;
+                                left: 40px;
+                                top: 170px;
+                                width: 180px;
                                 height: 153px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:33,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2144,10 +2201,10 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 146px;
-                                top: 63px;
-                                width: 84px;
-                                height: 83px;
+                                left: 290px;
+                                top: 70px;
+                                width: 60px;
+                                height: 60px;
                                 touch-action: none;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:34,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2171,10 +2228,10 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 256px;
-                                top: 63px;
-                                width: 84px;
-                                height: 83px;
+                                left: 410px;
+                                top: 70px;
+                                width: 60px;
+                                height: 60px;
                                 touch-action: none;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:35,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2198,10 +2255,10 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 36px;
-                                top: 63px;
-                                width: 84px;
-                                height: 83px;
+                                left: 170px;
+                                top: 70px;
+                                width: 60px;
+                                height: 60px;
                                 position: absolute;
                                 touch-action: none;
                             "
@@ -2288,18 +2345,15 @@
                     <div
                         class="bloom-canvas bloom-has-canvas-element"
                         data-title="For the current paper size: • The image container is 666 x 372 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2082 x 1163 dots would fill this container at 300 DPI."
-                        title=""
-                        data-imgsizebasedon="666,372"
-                        style=""
                     >
                         <div
                             class="bloom-canvas-element bloom-backgroundImage"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:10,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                             style="
-                                width: 378.663px;
+                                width: 672px;
                                 top: 0px;
-                                left: 143.669px;
-                                height: 372px;
+                                left: 0px;
+                                height: 378px;
                             "
                         >
                             <div
@@ -2307,17 +2361,25 @@
                                 data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                                 title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                             >
-                                <img src="placeHolder.png" alt="" />
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
                             </div>
                         </div>
 
                         <div
                             class="bloom-canvas-element drag-item-wrong"
                             style="
-                                height: 244px;
-                                left: 79px;
-                                top: 66px;
-                                width: 448px;
+                                height: 260px;
+                                left: 70px;
+                                top: 60px;
+                                width: 440px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -2330,10 +2392,10 @@
                         <div
                             class="bloom-canvas-element drag-item-correct"
                             style="
-                                height: 264px;
-                                left: 89px;
-                                top: 48px;
-                                width: 440px;
+                                height: 270px;
+                                left: 90px;
+                                top: 50px;
+                                width: 450px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:12,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -2347,8 +2409,8 @@
                             class="bloom-canvas-element"
                             style="
                                 height: 120px;
-                                left: 122px;
-                                top: 168.875px;
+                                left: 120px;
+                                top: 170px;
                                 width: 400px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:13,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2359,10 +2421,10 @@
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-correct"
                             style="
-                                height: 224px;
-                                left: 193.297px;
-                                top: 62.0469px;
-                                width: 233px;
+                                height: 220px;
+                                left: 20px;
+                                top: 70px;
+                                width: 230px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:17,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2385,10 +2447,10 @@
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-wrong"
                             style="
-                                height: 182px;
-                                left: 204px;
-                                top: 105px;
-                                width: 182px;
+                                height: 180px;
+                                left: 200px;
+                                top: 100px;
+                                width: 180px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:21,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2411,10 +2473,10 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 225px;
-                                top: 182.875px;
-                                width: 264px;
-                                height: 79px;
+                                left: 230px;
+                                top: 200px;
+                                width: 260px;
+                                height: 64px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:22,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -2424,15 +2486,14 @@
                                 style="font-size: 60px"
                             >
                                 <div
-                                    class="bloom-editable TargetLabel-style audio-sentence ui-suppressHighlight bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    class="bloom-editable GameTextLargeStart-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                                     lang="en"
                                     tabindex="0"
                                     spellcheck="false"
                                     role="textbox"
                                     aria-label="false"
-                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 225px; top: 182.875px; width: 264px; height: 79px;`,`tails`:[]}"
-                                    style="min-height: 90.01px"
-                                    data-audiorecordingmode="TextBox"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 230px; top: 200px; width: 260px; height: 64px;`,`tails`:[]}"
+                                    style="min-height: 60.01px"
                                     id="i10b7e0dd-9084-4c2a-9dfc-ddb6c315067d"
                                     data-languagetipcontent="English"
                                     contenteditable="true"
@@ -2445,27 +2506,20 @@
                             data-target-of="zjla6ss"
                             tabindex="0"
                             style="
-                                left: 140.997px;
-                                top: 202.006px;
+                                left: 140px;
+                                top: 200px;
                                 width: 60px;
                                 height: 60px;
                             "
                         ></div>
 
                         <div
-                            class="bloom-canvas-element"
-                            style="
-                                left: -8px;
-                                top: -6px;
-                                width: 692px;
-                                height: 33.5px;
-                            "
+                            class="bloom-canvas-element bloom-passive-element"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:26,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
                             <div
                                 class="bloom-translationGroup bloom-leadingElement"
                                 data-default-languages="V"
-                                style="font-size: 21.3333px"
                             >
                                 <div
                                     class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
@@ -2488,8 +2542,8 @@
                             class="bloom-canvas-element"
                             style="
                                 height: 60px;
-                                left: 139px;
-                                top: 66px;
+                                left: 140px;
+                                top: 70px;
                                 width: 60px;
                                 touch-action: none;
                             "
@@ -2527,8 +2581,8 @@
                             class="bloom-canvas-element"
                             style="
                                 height: 60px;
-                                left: 228px;
-                                top: 67px;
+                                left: 220px;
+                                top: 70px;
                                 width: 60px;
                                 touch-action: none;
                             "
@@ -2566,8 +2620,8 @@
                             class="bloom-canvas-element"
                             style="
                                 height: 60px;
-                                left: 316px;
-                                top: 67px;
+                                left: 300px;
+                                top: 70px;
                                 width: 60px;
                                 touch-action: none;
                             "
@@ -2694,18 +2748,15 @@
                     <div
                         class="bloom-canvas bloom-has-canvas-element"
                         data-title="For the current paper size: • The image container is 666 x 372 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2082 x 1163 dots would fill this container at 300 DPI."
-                        title=""
-                        data-imgsizebasedon="666,372"
-                        style=""
                     >
                         <div
                             class="bloom-canvas-element bloom-backgroundImage"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:10,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                             style="
-                                width: 378.663px;
+                                width: 672px;
                                 top: 0px;
-                                left: 143.669px;
-                                height: 372px;
+                                left: 0px;
+                                height: 378px;
                             "
                         >
                             <div
@@ -2713,17 +2764,25 @@
                                 data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                                 title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                             >
-                                <img src="placeHolder.png" alt="" />
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
                             </div>
                         </div>
 
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 297.891px;
-                                top: 146px;
-                                width: 221px;
-                                height: 77px;
+                                left: 300px;
+                                top: 140px;
+                                width: 230px;
+                                height: 80px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -2733,10 +2792,10 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 297px;
-                                top: 242px;
-                                width: 221px;
-                                height: 77px;
+                                left: 300px;
+                                top: 240px;
+                                width: 230px;
+                                height: 80px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:12,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -2746,10 +2805,10 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 47px;
-                                top: 241px;
-                                width: 221px;
-                                height: 77px;
+                                left: 40px;
+                                top: 240px;
+                                width: 230px;
+                                height: 80px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:13,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -2759,10 +2818,10 @@
                         <div
                             class="bloom-canvas-element drag-item-wrong"
                             style="
-                                height: 244px;
-                                left: 79px;
-                                top: 66px;
-                                width: 448px;
+                                height: 260px;
+                                left: 70px;
+                                top: 60px;
+                                width: 440px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -2775,10 +2834,10 @@
                         <div
                             class="bloom-canvas-element drag-item-correct"
                             style="
-                                height: 264px;
-                                left: 89px;
-                                top: 48px;
-                                width: 440px;
+                                height: 270px;
+                                left: 90px;
+                                top: 50px;
+                                width: 450px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:15,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -2791,10 +2850,10 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                height: 77px;
-                                left: 47px;
-                                top: 145px;
-                                width: 221px;
+                                height: 80px;
+                                left: 40px;
+                                top: 140px;
+                                width: 230px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
@@ -2804,10 +2863,10 @@
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-correct"
                             style="
-                                height: 224px;
-                                left: 193.297px;
-                                top: 62.0469px;
-                                width: 233px;
+                                height: 220px;
+                                left: 200px;
+                                top: 70px;
+                                width: 230px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:20,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2830,10 +2889,10 @@
                         <div
                             class="bloom-canvas-element bloom-gif drag-item-wrong"
                             style="
-                                height: 182px;
-                                left: 204px;
-                                top: 105px;
-                                width: 182px;
+                                height: 180px;
+                                left: 200px;
+                                top: 100px;
+                                width: 180px;
                                 position: absolute;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:24,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2856,9 +2915,9 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 117px;
-                                top: 155.875px;
-                                width: 130px;
+                                left: 120px;
+                                top: 170px;
+                                width: 140px;
                                 height: 44px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:25,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2869,15 +2928,14 @@
                                 style="font-size: 32px"
                             >
                                 <div
-                                    class="bloom-editable audio-sentence ui-suppressHighlight ui-audioCurrent GameTargetLabelMedium-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    class="bloom-editable GameTextMediumStart-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                                     lang="en"
                                     tabindex="0"
                                     spellcheck="false"
                                     role="textbox"
                                     aria-label="false"
-                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 117px; top: 155.875px; width: 130px; height: 44px;`,`tails`:[]}"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 120px; top: 170px; width: 140px; height: 44px;`,`tails`:[]}"
                                     style="min-height: 48.01px"
-                                    data-audiorecordingmode="TextBox"
                                     id="fd38768e-a762-4c9f-a5b6-95bd9c12082a"
                                     contenteditable="true"
                                     data-languagetipcontent="English"
@@ -2890,27 +2948,20 @@
                             data-target-of="zjla6ss"
                             tabindex="0"
                             style="
-                                left: 313px;
-                                top: 257px;
+                                left: 320px;
+                                top: 260px;
                                 width: 45px;
                                 height: 45px;
                             "
                         ></div>
 
                         <div
-                            class="bloom-canvas-element"
-                            style="
-                                left: -8px;
-                                top: -6px;
-                                width: 692px;
-                                height: 33.5px;
-                            "
+                            class="bloom-canvas-element bloom-passive-element"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:29,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
                             <div
                                 class="bloom-translationGroup bloom-leadingElement"
                                 data-default-languages="V"
-                                style="font-size: 21.3333px"
                             >
                                 <div
                                     class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
@@ -2932,9 +2983,9 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 118px;
-                                top: 250.875px;
-                                width: 130px;
+                                left: 120px;
+                                top: 270px;
+                                width: 140px;
                                 height: 44px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:33,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -2945,15 +2996,14 @@
                                 style="font-size: 32px"
                             >
                                 <div
-                                    class="bloom-editable audio-sentence ui-suppressHighlight ui-audioCurrent TargetLabelMedium-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    class="bloom-editable GameTextMediumStart-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                                     lang="en"
                                     tabindex="0"
                                     spellcheck="false"
                                     role="textbox"
                                     aria-label="false"
-                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 118px; top: 250.875px; width: 130px; height: 44px;`,`tails`:[]}"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 120px; top: 270px; width: 140px; height: 44px;`,`tails`:[]}"
                                     style="min-height: 48.01px"
-                                    data-audiorecordingmode="TextBox"
                                     contenteditable="true"
                                     id="a87cc709-93de-43d3-bac0-291334ff11c0"
                                     data-languagetipcontent="English"
@@ -2966,8 +3016,8 @@
                             data-target-of="0oavr61"
                             tabindex="0"
                             style="
-                                left: 62px;
-                                top: 160.999px;
+                                left: 60px;
+                                top: 160px;
                                 width: 45px;
                                 height: 45px;
                             "
@@ -2976,8 +3026,8 @@
                             data-target-of="s3b0hfa"
                             tabindex="0"
                             style="
-                                left: 63px;
-                                top: 256px;
+                                left: 60px;
+                                top: 260px;
                                 width: 45px;
                                 height: 45px;
                             "
@@ -2986,8 +3036,8 @@
                             data-target-of="9a4tagc"
                             tabindex="0"
                             style="
-                                left: 315px;
-                                top: 161px;
+                                left: 320px;
+                                top: 160px;
                                 width: 45px;
                                 height: 45px;
                             "
@@ -2996,9 +3046,9 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 374px;
-                                top: 250.875px;
-                                width: 130px;
+                                left: 380px;
+                                top: 270px;
+                                width: 140px;
                                 height: 44px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:40,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -3009,15 +3059,14 @@
                                 style="font-size: 32px"
                             >
                                 <div
-                                    class="bloom-editable audio-sentence ui-suppressHighlight ui-audioCurrent TargetLabelMedium-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    class="bloom-editable GameTextMediumStart-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                                     lang="en"
                                     tabindex="0"
                                     spellcheck="false"
                                     role="textbox"
                                     aria-label="false"
-                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 374px; top: 250.875px; width: 130px; height: 44px;`,`tails`:[]}"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 380px; top: 270px; width: 140px; height: 44px;`,`tails`:[]}"
                                     style="min-height: 48.01px"
-                                    data-audiorecordingmode="TextBox"
                                     contenteditable="true"
                                     id="i6fa7f25f-6a51-4ab4-b99b-70ffa3bd8490"
                                     data-languagetipcontent="English"
@@ -3030,9 +3079,9 @@
                         <div
                             class="bloom-canvas-element"
                             style="
-                                left: 374px;
-                                top: 156.875px;
-                                width: 130px;
+                                left: 380px;
+                                top: 170px;
+                                width: 140px;
                                 height: 44px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:41,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -3043,15 +3092,14 @@
                                 style="font-size: 32px"
                             >
                                 <div
-                                    class="bloom-editable audio-sentence ui-suppressHighlight ui-audioCurrent TargetLabelMedium-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    class="bloom-editable GameTextMediumStart-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                                     lang="en"
                                     tabindex="0"
                                     spellcheck="false"
                                     role="textbox"
                                     aria-label="false"
-                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 374px; top: 156.875px; width: 130px; height: 44px;`,`tails`:[]}"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 380px; top: 170px; width: 140px; height: 44px;`,`tails`:[]}"
                                     style="min-height: 48.01px"
-                                    data-audiorecordingmode="TextBox"
                                     contenteditable="true"
                                     id="db2118d8-a7e5-446d-a50a-7a7d7346d67c"
                                     data-languagetipcontent="English"
@@ -3065,8 +3113,8 @@
                             class="bloom-canvas-element"
                             style="
                                 height: 45px;
-                                left: 47px;
-                                top: 62px;
+                                left: 50px;
+                                top: 60px;
                                 width: 45px;
                                 touch-action: none;
                             "
@@ -3104,8 +3152,8 @@
                             class="bloom-canvas-element"
                             style="
                                 height: 45px;
-                                left: 120px;
-                                top: 61px;
+                                left: 110px;
+                                top: 60px;
                                 width: 45px;
                                 touch-action: none;
                             "
@@ -3143,7 +3191,7 @@
                             class="bloom-canvas-element"
                             style="
                                 height: 45px;
-                                left: 276px;
+                                left: 230px;
                                 top: 60px;
                                 width: 45px;
                             "
@@ -3181,8 +3229,8 @@
                             class="bloom-canvas-element"
                             style="
                                 height: 45px;
-                                left: 196px;
-                                top: 61px;
+                                left: 170px;
+                                top: 60px;
                                 width: 45px;
                             "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:45,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
@@ -3275,6 +3323,205 @@
                         data-creator=""
                         data-license=""
                     />
+                </button>
+            </div>
+        </div>
+
+        <div
+            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage side-right Device16x9Landscape bloom-monolingual"
+            id="82330919-7ed8-4684-bc4a-d6b53cdb5b74"
+            data-page="extra"
+            data-analyticscategories="drag-activity"
+            data-activity="drag-image-to-target"
+            data-tool-id="game"
+            data-pagelineage=""
+            data-page-number="1"
+            lang=""
+            data-correct-sound="correct_tada-fanfare-a_pixabay.webm"
+            data-wrong-sound="wrong_twoDownElectronic2_pixabay.webm"
+        >
+            <div
+                class="pageLabel"
+                lang="en"
+                data-i18n="TemplateBooks.PageLabel.Custom Game"
+            >
+                Custom Game
+            </div>
+            <div class="pageDescription" lang="en"></div>
+
+            <div class="marginBox">
+                <div class="split-pane-component-inner">
+                    <div
+                        class="bloom-canvas bloom-has-canvas-element"
+                        data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                        title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                    >
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:10,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-passive-element"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement bloom-show-en-when-blank"
+                                data-default-languages="V"
+                                data-hasqtip="true"
+                            >
+                                <div
+                                    class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="en"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 32.01px"
+                                    contenteditable="true"
+                                    data-languagetipcontent="English"
+                                >
+                                    <p>Put instructions here</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element drag-item-wrong"
+                            style="
+                                height: 260px;
+                                left: 70px;
+                                top: 60px;
+                                width: 440px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-rectangle bloom-theme-background"
+                            ></div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element drag-item-correct"
+                            style="
+                                height: 270px;
+                                left: 90px;
+                                top: 50px;
+                                width: 450px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:15,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-rectangle bloom-theme-background"
+                            ></div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-correct"
+                            style="
+                                height: 220px;
+                                left: 200px;
+                                top: 70px;
+                                width: 230px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:20,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="smiling-flowers.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2025, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-wrong"
+                            style="
+                                height: 180px;
+                                left: 200px;
+                                top: 100px;
+                                width: 180px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:24,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="sad-face.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2025, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button
+                    class="check-button page-content game-button"
+                    style="right: 10px; bottom: 10px"
+                >
+                    <img src="Check Answer Symbol.svg" />
+                </button>
+                <button
+                    class="try-again-button page-content game-button"
+                    style="right: 130px; bottom: 10px"
+                >
+                    <img src="Try Again Symbol.svg" />
+                </button>
+                <button
+                    class="show-correct-button page-content game-button"
+                    style="right: 70px; bottom: 10px"
+                >
+                    <img src="Show Answer Symbol.svg" />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-right"
+                    style="right: 10px; top: calc(50% - 12px)"
+                >
+                    <img src="Page Nav.svg" />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-left"
+                    style="left: 10px; top: calc(50% - 12px)"
+                >
+                    <img src="Page Nav.svg" />
                 </button>
             </div>
         </div>
