@@ -1832,8 +1832,6 @@ export class GameTool extends ToolboxToolReactAdaptor {
         const page = GameTool.getBloomPage();
         if (page) {
             undoPrepareActivity(page);
-            // May as well save a little space in the stored version.
-            doShowAnswersInTargets(false, page);
         }
     }
 }
