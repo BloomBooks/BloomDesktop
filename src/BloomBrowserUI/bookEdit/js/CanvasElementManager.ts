@@ -257,6 +257,21 @@ export class CanvasElementManager {
             return overflowY;
         }
 
+        // Some weird things happen to when the bloom-editable is empty and line-height is small
+        // (e.g., less than 1.3 for Andika). In this case, a paragraph whose height is unconstrained
+        // will not be high enough to show the font descenders, resulting in a scrollHeight larger than
+        // the clientHeight. When the text has no actual descenders, we compute a large overflowY and
+        // which corrects for the excessive scrollHeight to give us a good height for the canvas element.
+        // However, if the text is empty, we don't get the extra scrollHeight, but still compute a large
+        // excess descent, and can easily make the canvas element so small that our overflow checker
+        // reports that a child is overflowing. This fudge makes sure that we at least don't make it
+        // small enough to cause that problem. There may be a better fix (currently in at least one case
+        // we're making an empty box a pixel shorter than one with some content), but I think this might
+        // be good enough for 6.2.
+        if (newHeight < canvasElement.clientHeight && !editable.textContent) {
+            newHeight = Math.max(newHeight, editable.clientHeight);
+        }
+
         // If a lot of text is pasted, the bloom-canvas will scroll down.
         // (This can happen even if the text doesn't necessarily go out the bottom of the bloom-canvas).
         // The children of the bloom-canvas (e.g. img and canvas elements) will be offset above the bloom-canvas.
@@ -5922,8 +5937,11 @@ export class CanvasElementManager {
         // The width value should always end in "px" (even if it is 0px).
         // In days of yore, we used %, but that turned out to be a bad idea, as
         // discussed above.  We don't need to change the width/height if they're
-        // already in px.
-        const currentWidth = canvasElement.css("width");
+        // already in px. Also, newly created elements may initially not have a width/height set
+        // explicitly, and we need them to.
+        // Note: don't use jquery css("width") here, because that returns a value ending in px when
+        // no explicit width is set.
+        const currentWidth = canvasElement.get(0).style.width;
         if (!currentWidth.endsWith("px")) {
             // canvasElement.width() and canvasElement.height() can give inaccurate values,
             // sometimes causing the canvas element to shrink repeatedly.  See BL-14740.
