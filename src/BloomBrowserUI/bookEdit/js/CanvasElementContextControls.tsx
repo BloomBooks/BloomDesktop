@@ -1,4 +1,4 @@
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useState, useEffect, Fragment, useRef } from "react";
@@ -16,8 +16,6 @@ import { default as CircleIcon } from "@mui/icons-material/Circle";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
-// MUI thinks of this icon as "Texture", but we're using it for commands that affect the background image.
-import { default as BackgroundIcon } from "@mui/icons-material/Texture";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import {
     doImageCommand,
@@ -55,15 +53,13 @@ import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useL10n } from "../../react_components/l10nHooks";
 import { CogIcon } from "./CogIcon";
-import {
-    getHyperlinkFromClipboard,
-    tryProcessHyperlink
-} from "../bloomField/hyperlinks";
-import { useApiString } from "../../utils/bloomApi";
+import { getHyperlinkFromClipboard } from "../bloomField/hyperlinks";
 import { MissingMetadataIcon } from "./MissingMetadataIcon";
 import { FillSpaceIcon } from "./FillSpaceIcon";
 import { kBloomDisabledOpacity } from "../../utils/colorUtils";
 import { Span } from "../../react_components/l10nComponents";
+import AudioRecording from "../toolbox/talkingBook/audioRecording";
+import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -141,8 +137,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
 
     const menuEl = useRef<HTMLElement | null>();
 
-    // Menu item names for 'none' and "Choose...", options.
     const noneLabel = useL10n("None", "EditTab.Toolbox.DragActivity.None", "");
+    const aRecordingLabel = useL10n("A Recording", "ARecording", "");
 
     const currentDraggableTargetId = props.canvasElement?.getAttribute(
         "data-draggable-id"
@@ -150,12 +146,14 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const [currentDraggableTarget, setCurrentDraggableTarget] = useState<
         HTMLElement | undefined
     >();
+    // After deleting a draggable, we may get rendered again, and page will be null.
+    const page = props.canvasElement.closest(".bloom-page") as HTMLElement;
     useEffect(() => {
         if (!currentDraggableTargetId) {
             setCurrentDraggableTarget(undefined);
             return;
         }
-        const page = props.canvasElement.closest(".bloom-page") as HTMLElement;
+
         setCurrentDraggableTarget(
             page?.querySelector(
                 `[data-target-of="${currentDraggableTargetId}"]`
@@ -165,11 +163,12 @@ const CanvasElementContextControls: React.FunctionComponent<{
         // on a new page has the same currentDraggableTargetId.
     }, [currentDraggableTargetId]);
 
-    // Currently we only allow associating an extra audio with images (and gifs), which have
-    // no other audio (except possibly image descriptions?). If we get an actual user request
-    // it may be clearer how attaching one to a text or video would work, given that they
-    // can already have narration or an audio channel.
-    const canChooseAudioForElement = hasImage;
+    // The audio menu item states the audio will play when the item is touched.
+    // That isn't true yet outside of games, so don't show it.
+    const isInDraggableGame = page
+        ?.getAttribute("data-activity")
+        ?.startsWith("drag-");
+    const canChooseAudioForElement = isInDraggableGame && (hasImage || hasText);
 
     const [imageSound, setImageSound] = useState("none");
     useEffect(() => {
@@ -178,7 +177,42 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const isBackgroundImage = props.canvasElement.classList.contains(
         kBackgroundImageClass
     );
+    const children = props.canvasElement.parentElement?.querySelectorAll(
+        ".bloom-canvas-element"
+    );
+    const canvasHasMultipleElements = (children?.length ?? 0) > 1; // kBackgroundImageClass is also a canvas element
+    const backgroundImageText = useL10n(
+        "Background Image",
+        "EditTab.Image.BackgroundImage"
+    );
     const canExpandBackgroundImage = theOneCanvasElementManager?.canExpandToFillSpace();
+
+    const [textHasAudio, setTextHasAudio] = useState(true);
+    useEffect(() => {
+        if (!props.menuOpen || !props.canvasElement) return;
+
+        const audioSentences = getAudioSentencesOfVisibleEditables(
+            props.canvasElement
+        );
+        const ids = audioSentences.map(sentence => sentence.id);
+        AudioRecording.audioExistsForIdsAsync(ids)
+            .then(audioExists => {
+                setTextHasAudio(audioExists);
+            })
+            .catch(err => {
+                console.error(
+                    "Error checking for existing of audio for IDs: ",
+                    err
+                );
+            });
+        // Need to include menuOpen so we can re-evaluate if the user has added or removed audio.
+    }, [props.canvasElement, props.menuOpen]);
+
+    if (!page) {
+        // Probably right after deleting the canvas element. Wish we could return early sooner,
+        // but has to be after all the hooks.
+        return null;
+    }
 
     // These commands apply to all canvas elements (currently none!).
     const menuOptions: IMenuItemWithSubmenu[] = [];
@@ -223,14 +257,12 @@ const CanvasElementContextControls: React.FunctionComponent<{
         );
     }
     if (canChooseAudioForElement) {
-        addAudioMenuItems(
-            menuOptions,
-            props.canvasElement,
-            imageSound,
-            noneLabel,
-            setImageSound,
-            setMenuOpen
-        );
+        const audioMenuItem = hasText
+            ? getAudioMenuItemForTextItem(textHasAudio, setMenuOpen)
+            : getAudioMenuItemForImage(imageSound, setImageSound, setMenuOpen);
+
+        menuOptions.push(divider);
+        menuOptions.push(audioMenuItem);
     }
     if (hasImage) {
         const canModifyImage = !imgContainer.classList.contains(
@@ -312,6 +344,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
         );
     };
 
+    const maxMenuWidth = 260;
+
     return (
         <ThemeProvider theme={lightTheme}>
             <div
@@ -331,6 +365,17 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     pointer-events: all;
                 `}
             >
+                {isBackgroundImage && canvasHasMultipleElements && (
+                    <div
+                        css={css`
+                            color: ${kBloomBlue};
+                            text-align: center;
+                            font-size: 8pt;
+                        `}
+                    >
+                        <strong>{backgroundImageText}</strong>
+                    </div>
+                )}
                 <div
                     css={css`
                         display: flex;
@@ -489,7 +534,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     <Menu
                         css={css`
                             ul {
-                                max-width: 260px;
+                                max-width: ${maxMenuWidth}px;
                                 li {
                                     display: flex;
                                     align-items: flex-start;
@@ -503,7 +548,6 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             }
                         `}
                         open={props.menuOpen}
-                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                         anchorEl={menuEl.current!}
                         anchorReference={
                             props.menuAnchorPosition
@@ -533,12 +577,33 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                         truncateMainLabel={true}
                                     >
                                         {option.subMenu.map(
-                                            (subOption, subIndex) => (
-                                                <LocalizableMenuItem
-                                                    key={subIndex}
-                                                    {...subOption}
-                                                />
-                                            )
+                                            (subOption, subIndex) => {
+                                                if (subOption.l10nId === "-") {
+                                                    return (
+                                                        <Divider
+                                                            key={subIndex}
+                                                            variant="middle"
+                                                            component="li"
+                                                        />
+                                                    );
+                                                }
+                                                return (
+                                                    <LocalizableMenuItem
+                                                        key={subIndex}
+                                                        {...subOption}
+                                                        css={css`
+                                                            max-width: ${maxMenuWidth}px;
+                                                            white-space: wrap;
+                                                            // Styles for subLabels
+                                                            p {
+                                                                // Determined empirically...
+                                                                // Styling in NestedMenuItem is impossibly difficult.
+                                                                left: -8px;
+                                                            }
+                                                        `}
+                                                    />
+                                                );
+                                            }
                                         )}
                                     </LocalizableNestedMenuItem>
                                 );
@@ -572,6 +637,112 @@ const CanvasElementContextControls: React.FunctionComponent<{
             </div>
         </ThemeProvider>
     );
+
+    function getAudioMenuItem(
+        english: string,
+        subMenu: ILocalizableMenuItemProps[]
+    ) {
+        return {
+            l10nId: null,
+            english,
+            subLabelL10nId: "EditTab.Image.PlayWhenTouched",
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            onClick: () => {},
+            icon: <VolumeUpIcon css={getMenuIconCss(1, "left:2px;")} />,
+            requiresAnySubscription: true,
+            subMenu
+        };
+    }
+
+    function getAudioMenuItemForTextItem(
+        textHasAudio: boolean,
+        setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
+    ) {
+        return getAudioMenuItem(textHasAudio ? aRecordingLabel : noneLabel, [
+            {
+                l10nId: "UseTalkingBookTool",
+                english: "Use Talking Book Tool",
+                onClick: () => {
+                    setMenuOpen(false);
+                    AudioRecording.showTalkingBookTool();
+                }
+            }
+        ]);
+    }
+
+    function getAudioMenuItemForImage(
+        imageSound: string,
+        setImageSound: (sound: string) => void,
+        setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
+    ) {
+        // This is uncomfortably similar to the method by the same name in GameTool.
+        // And indeed that method has a case for handling an image sound, which is no longer
+        // handled on the toolbox side. But both methods make use of component state in
+        // ways that make sharing code difficult.
+        const updateSoundShowingDialog = async () => {
+            const newSoundId = await showDialogToChooseSoundFileAsync();
+            if (!newSoundId) {
+                return;
+            }
+
+            const page = props.canvasElement.closest(
+                ".bloom-page"
+            ) as HTMLElement;
+            const copyBuiltIn = false; // already copied, and not in our sounds folder
+            props.canvasElement.setAttribute("data-sound", newSoundId);
+            setImageSound(newSoundId);
+            copyAndPlaySoundAsync(newSoundId, page, copyBuiltIn);
+        };
+
+        const imageSoundLabel = imageSound.replace(/.mp3$/, "");
+        const subMenu: ILocalizableMenuItemProps[] = [
+            {
+                l10nId: "EditTab.Toolbox.DragActivity.None",
+                english: "None",
+                onClick: () => {
+                    props.canvasElement.removeAttribute("data-sound");
+                    setImageSound("none");
+                    setMenuOpen(false);
+                }
+            },
+            {
+                l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
+                english: "Choose...",
+                onClick: () => {
+                    setMenuOpen(false, true);
+                    updateSoundShowingDialog();
+                }
+            },
+            divider,
+            {
+                l10nId: null,
+                english: "",
+                subLabelL10nId: "EditTab.Toolbox.DragActivity.ChooseSound.Help",
+                subLabel:
+                    "You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to “elevenlabs.io”.",
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                onClick: () => {}
+            }
+        ];
+        if (imageSound !== "none") {
+            subMenu.splice(1, 0, {
+                l10nId: null,
+                english: imageSoundLabel,
+                onClick: () => {
+                    playSound(
+                        imageSound,
+                        props.canvasElement.closest(".bloom-page")!
+                    );
+                    setMenuOpen(false);
+                },
+                icon: <CheckIcon css={getMenuIconCss()} />
+            });
+        }
+        return getAudioMenuItem(
+            imageSound === "none" ? noneLabel : imageSoundLabel,
+            subMenu
+        );
+    }
 };
 
 const buttonWidth = "22px";
@@ -900,76 +1071,4 @@ function addMenuItemsForDraggable(
             undefined
         )
     });
-}
-
-function addAudioMenuItems(
-    menuOptions: IMenuItemWithSubmenu[],
-    canvasElement: HTMLElement,
-    imageSound: string,
-    noneLabel: string,
-    setImageSound: (sound: string) => void,
-    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
-) {
-    // This is uncomfortably similar to the method by the same name in dragActivityTool.
-    // And indeed that method has a case for handling an image sound, which is no longer
-    // handled on the toolbox side. But both methods make use of component state in
-    // ways that make sharing code difficult.
-    const updateSoundShowingDialog = async () => {
-        const newSoundId = await showDialogToChooseSoundFileAsync();
-        if (!newSoundId) {
-            return;
-        }
-
-        const page = canvasElement.closest(".bloom-page") as HTMLElement;
-        const copyBuiltIn = false; // already copied, and not in our sounds folder
-        canvasElement.setAttribute("data-sound", newSoundId);
-        setImageSound(newSoundId);
-        copyAndPlaySoundAsync(newSoundId, page, copyBuiltIn);
-    };
-    const imageSoundLabel = imageSound.replace(/.mp3$/, "");
-    const mainLabel = imageSound === "none" ? noneLabel : imageSoundLabel;
-    const subMenu: ILocalizableMenuItemProps[] = [
-        {
-            l10nId: "EditTab.Toolbox.DragActivity.None",
-            english: "None",
-            onClick: () => {
-                canvasElement.removeAttribute("data-sound");
-                setImageSound("none");
-                setMenuOpen(false);
-            }
-        },
-        {
-            l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
-            english: "Choose...",
-            onClick: () => {
-                setMenuOpen(false, true);
-                updateSoundShowingDialog();
-            }
-        }
-    ];
-    menuOptions.push(divider, {
-        l10nId: null,
-        english: mainLabel,
-        subLabelL10nId: "EditTab.Image.PlayWhenTouched",
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        onClick: () => {},
-        icon: <VolumeUpIcon css={getMenuIconCss(1, "left:2px;")} />,
-        requiresAnySubscription: true,
-        subMenu
-    });
-    if (imageSound !== "none") {
-        subMenu.splice(1, 0, {
-            l10nId: null,
-            english: imageSoundLabel,
-            onClick: () => {
-                playSound(
-                    imageSound,
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    canvasElement.closest(".bloom-page")!
-                );
-                setMenuOpen(false);
-            },
-            icon: <CheckIcon css={getMenuIconCss()} />
-        });
-    }
 }

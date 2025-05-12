@@ -51,6 +51,10 @@ import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
 import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
 import { getTarget } from "bloom-player";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
+import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
+import { CanvasSnapProvider } from "./CanvasSnapProvider";
+import { postData, postJson } from "../../utils/bloomApi";
+import AudioRecording from "../toolbox/talkingBook/audioRecording";
 
 export interface ITextColorInfo {
     color: string;
@@ -87,17 +91,89 @@ export class CanvasElementManager {
 
     // These variables are used by the canvas element's onmouse* event handlers
     private bubbleToDrag: Bubble | undefined; // Use Undefined to indicate that there is no active drag in progress
+    // unscaled offset from top left of canvas element being dragged to the point of the mouseDown where we started dragging it
     private bubbleDragGrabOffset: { x: number; y: number } = {
         x: 0,
         y: 0
     };
 
     private guideProvider: CanvasGuideProvider;
+    private keyboardProvider: CanvasElementKeyboardProvider;
+    private snapProvider: CanvasSnapProvider;
 
     public constructor() {
+        this.snapProvider = new CanvasSnapProvider();
         this.guideProvider = new CanvasGuideProvider();
+        this.keyboardProvider = new CanvasElementKeyboardProvider(
+            {
+                deleteCurrentCanvasElement: this.deleteCurrentCanvasElement.bind(
+                    this
+                ),
+                moveActiveCanvasElement: this.moveActiveCanvasElement.bind(
+                    this
+                ),
+                getActiveCanvasElement: this.getActiveElement.bind(this)
+            },
+            this.snapProvider
+        );
         Comical.setSelectorForBubblesWhichTailMidpointMayOverlap(
             ".bloom-backgroundImage"
+        );
+    }
+
+    public moveActiveCanvasElement(
+        dx: number,
+        dy: number,
+        event: KeyboardEvent
+    ): void {
+        if (!this.activeElement) return;
+
+        //Should i use this instead?
+
+        //this.placeElementAtPosition(jQuery(this.activeElement), dx, dy, event);
+        // // Get current position and calculate new position
+        const currentLeft = CanvasElementManager.pxToNumber(
+            this.activeElement.style.left
+        );
+        const currentTop = CanvasElementManager.pxToNumber(
+            this.activeElement.style.top
+        );
+
+        // Start a snap drag operation
+        //this.snapProvider.startDrag();
+
+        // Calculate the target position (current position + delta)
+        const targetX = currentLeft + dx;
+        const targetY = currentTop + dy;
+
+        // TODO give the snap provider the final say
+        // Get the snapped position using the CanvasSnapProvider
+        // const { x: snappedX, y: snappedY } = this.snapProvider.getPosition(
+        //     event,
+        //     targetX,
+        //     targetY
+        // );
+        // Note that adjustCanvasElementLocationRelativeToParent will constrain the
+        // movement to keep the element at least slightly visible. So we don't need
+        // to take care here that it doesn't move off the screen. However,
+        // currently adjustCanvasElementLocationRelativeToParent will not make sure
+        // it is on the grid. We may want to change that, or add a check here to
+        // make sure it ends up both visible AND on the grid.
+
+        const snappedX = targetX; // Placeholder for snapped X position
+        const snappedY = targetY; // Placeholder for snapped Y position
+
+        // Apply movement with snapped coordinates
+        const where = new Point(
+            snappedX,
+            snappedY,
+            PointScaling.Unscaled,
+            "moveActiveCanvasElement"
+        );
+        this.adjustCanvasElementLocation(
+            this.activeElement,
+            this.activeElement.parentElement!,
+            where
         );
     }
 
@@ -1008,6 +1084,13 @@ export class CanvasElementManager {
     // change. This flag allows us to ignore the next focus change.  See BL-14123.
     public static skipNextFocusChange: boolean;
 
+    public setActiveElementToClosest(element: HTMLElement) {
+        this.setActiveElement(
+            (element.closest(kCanvasElementSelector) as HTMLElement) ??
+                undefined
+        );
+    }
+
     public setActiveElement(element: HTMLElement | undefined) {
         // Seems it should be sufficient to remove this from the old active element if any.
         // But there's at least one case where code that adds a new canvas element sets it as
@@ -1178,6 +1261,14 @@ export class CanvasElementManager {
                 sideControl.addEventListener("mousedown", event => {
                     if (event.buttons !== 1 || !this.activeElement) {
                         return;
+                    }
+                    const target = event.currentTarget as HTMLElement;
+                    if (
+                        target.closest(
+                            `.${kBackgroundImageClass}-control-frame-no-image`
+                        )
+                    ) {
+                        return; // don't crop empty background image container
                     }
                     this.startSideControlDrag(event, side);
                 });
@@ -1367,6 +1458,7 @@ export class CanvasElementManager {
         });
         this.currentDragControl?.classList.remove("active-control");
         this.guideProvider.endDrag();
+        this.snapProvider.endDrag();
     };
 
     private minWidth = 30; // @MinTextBoxWidth in overlayTool.less
@@ -1419,29 +1511,103 @@ export class CanvasElementManager {
         let newHeight = this.oldHeight;
         let newTop = this.oldTop;
         let newLeft = this.oldLeft;
+
+        // Assume variables like newLeft, newTop, newWidth, newHeight are declared outside
+        // and potentially initialized with old values if needed.
+
+        let targetX, targetY;
+
+        // 1. Determine target coordinates based on corner and delta
+        //    These are the coordinates passed to the snapping function.
         switch (this.resizeDragCorner) {
             case "ne":
-                newWidth = Math.max(this.oldWidth + deltaX, this.minWidth);
-                newHeight = Math.max(this.oldHeight - deltaY, this.minHeight);
-                // Use the difference here rather than deltaY so the minWidth is respected.
-                newTop = this.oldTop + (this.oldHeight - newHeight);
+                targetX = this.oldLeft + this.oldWidth + deltaX; // Target Right
+                targetY = this.oldTop + deltaY; // Target Top
                 break;
             case "nw":
-                newWidth = Math.max(this.oldWidth - deltaX, this.minWidth);
-                newHeight = Math.max(this.oldHeight - deltaY, this.minHeight);
-                newTop = this.oldTop + (this.oldHeight - newHeight);
-                newLeft = this.oldLeft + (this.oldWidth - newWidth);
+                targetX = this.oldLeft + deltaX; // Target Left
+                targetY = this.oldTop + deltaY; // Target Top
                 break;
             case "se":
-                newWidth = Math.max(this.oldWidth + deltaX, this.minWidth);
-                newHeight = Math.max(this.oldHeight + deltaY, this.minHeight);
+                targetX = this.oldLeft + this.oldWidth + deltaX; // Target Right
+                targetY = this.oldTop + this.oldHeight + deltaY; // Target Bottom
                 break;
             case "sw":
-                newWidth = Math.max(this.oldWidth - deltaX, this.minWidth);
-                newHeight = Math.max(this.oldHeight + deltaY, this.minHeight);
-                newLeft = this.oldLeft + (this.oldWidth - newWidth);
+                targetX = this.oldLeft + deltaX; // Target Left
+                targetY = this.oldTop + this.oldHeight + deltaY; // Target Bottom
                 break;
+            default:
+                // Handle unexpected corner or return
+                console.error("Invalid resize corner:", this.resizeDragCorner);
+                return; // Or throw an error
         }
+
+        // 2. Get snapped coordinates (snap relative to top left of element, so the result does not
+        // depend on where the element is located)
+        // Enhance: the current algorithm is fine for rectangles, but for images, the aspect ratio
+        // adjustment typically means that neither the height nor the width is exactly on the grid,
+        // so the grid is no help making images with different aspect ratios match in either height
+        // or width. (With different aspect ratios, they can't match both ways.)
+        // Ideas:
+        // - Fix the aspect ratio by changing height or width, but not both. Possibly keep the width
+        // if deltaX is larger than deltaY, otherwise the height. This might be an improvement even
+        // without snapping; the current behavior when the mouse is not near the correct diagonal
+        // is not very intuitive.
+        // - Possibly we want to keep topLeft on the grid, whichever corner is being moved?
+        // (JohnT: I'm dubious about this, it would be strange to see the bottom right corner move
+        // while dragging the top left one, and if the user wants to keep the top left on the grid,
+        // all they have to do is resize using the bottom right corner.)
+        let { x: snappedX, y: snappedY } = this.snapProvider.getPosition(
+            event,
+            targetX - this.oldLeft,
+            targetY - this.oldTop
+        );
+        snappedX += this.oldLeft;
+        snappedY += this.oldTop;
+
+        // 3. Calculate potential dimensions and update position based on snapped coordinates
+        //    Note: We calculate dimensions *before* enforcing minimums.
+        let potentialWidth, potentialHeight;
+
+        if (this.resizeDragCorner.includes("n")) {
+            // Top edge is moving
+            newTop = snappedY;
+            potentialHeight = this.oldTop + this.oldHeight - newTop; // oldBottom - newTop
+        } else {
+            // Bottom edge is moving ('s')
+            potentialHeight = snappedY - this.oldTop; // newBottom - oldTop
+        }
+
+        if (this.resizeDragCorner.includes("w")) {
+            // Left edge is moving
+            newLeft = snappedX;
+            potentialWidth = this.oldLeft + this.oldWidth - newLeft; // oldRight - newLeft
+        } else {
+            // Right edge is moving ('e')
+            potentialWidth = snappedX - this.oldLeft; // newRight - oldLeft
+        }
+
+        // 4. Apply minimum dimension constraints
+        newWidth = Math.max(potentialWidth, this.minWidth);
+        newHeight = Math.max(potentialHeight, this.minHeight);
+
+        // 5. Adjust position if minimum constraints changed the size *and* the top/left edge was the one moving.
+        //    If the bottom/right edge was moving, the size clamp doesn't require adjusting top/left.
+        if (
+            newWidth !== potentialWidth &&
+            this.resizeDragCorner.includes("w")
+        ) {
+            // Width was clamped, and we were dragging the left edge, so adjust left position
+            newLeft = this.oldLeft + this.oldWidth - newWidth;
+        }
+        if (
+            newHeight !== potentialHeight &&
+            this.resizeDragCorner.includes("n")
+        ) {
+            // Height was clamped, and we were dragging the top edge, so adjust top position
+            newTop = this.oldTop + this.oldHeight - newHeight;
+        }
+
         if (slope) {
             // We want to keep the aspect ratio of the image. So the possible places to move
             // the moving corner must be on a line through the opposite corner
@@ -1665,6 +1831,12 @@ export class CanvasElementManager {
                 // to Kyrgyzstan and messes up cropping horribly, so that won't work.
             }
         }
+        this.guideProvider.startDrag(
+            "resize",
+            Array.from(
+                document.querySelectorAll(kCanvasElementSelector)
+            ) as HTMLElement[]
+        );
         // move/up listeners are on the document so we can continue the drag even if it moves
         // outside the control clicked. I think something similar can be achieved
         // with mouse capture, but less portably.
@@ -1679,6 +1851,8 @@ export class CanvasElementManager {
         this.startMoving();
     }
     private stopSideDrag = () => {
+        this.guideProvider.endDrag();
+        this.snapProvider.endDrag();
         document.removeEventListener("mousemove", this.continueSideDrag, {
             capture: true
         });
@@ -1722,7 +1896,10 @@ export class CanvasElementManager {
         switch (this.currentDragSide) {
             case "e":
                 newCanvasElementWidth = Math.max(
-                    this.oldWidth + deltaX,
+                    this.snapProvider.getSnappedX(
+                        this.oldWidth + deltaX,
+                        event
+                    ),
                     this.minWidth
                 );
                 deltaX = newCanvasElementWidth - this.oldWidth;
@@ -1730,7 +1907,10 @@ export class CanvasElementManager {
                 break;
             case "w":
                 newCanvasElementWidth = Math.max(
-                    this.oldWidth - deltaX,
+                    this.snapProvider.getSnappedX(
+                        this.oldWidth - deltaX,
+                        event
+                    ),
                     this.minWidth
                 );
                 deltaX = this.oldWidth - newCanvasElementWidth;
@@ -1739,7 +1919,10 @@ export class CanvasElementManager {
                 break;
             case "s":
                 newCanvasElementHeight = Math.max(
-                    this.oldHeight + deltaY,
+                    this.snapProvider.getSnappedY(
+                        this.oldHeight + deltaY,
+                        event
+                    ),
                     this.minHeight
                 );
                 deltaY = newCanvasElementHeight - this.oldHeight;
@@ -1750,8 +1933,9 @@ export class CanvasElementManager {
         theOneCanvasElementManager.adjustCanvasElementHeightToContentOrMarkOverflow(
             editable
         );
-        adjustTarget(this.activeElement, getTarget(this.activeElement));
+        // review; adjustTarget(this.activeElement, getTarget(this.activeElement));
         this.alignControlFrameWithActiveElement();
+        this.guideProvider.duringDrag(this.activeElement);
     }
 
     // Determine which of the side handles, if any, should have the class "bloom-currently-cropped"
@@ -2499,21 +2683,46 @@ export class CanvasElementManager {
             }
         }
         const oldHeight = canvasElement.clientHeight;
-        if (Math.abs(oldHeight - newHeight) > 0.1) {
+        if (Math.abs(oldHeight - newHeight) <= 0.1) {
             // don't let small rounding errors accumulate
+            newHeight = oldHeight;
+        } else {
             canvasElement.style.height = `${newHeight}px`;
         }
         // and move container down so image does not move
         const oldTop = canvasElement.offsetTop;
-        canvasElement.style.top = `${oldTop + (oldHeight - newHeight) / 2}px`;
+        let newTop = oldTop + (oldHeight - newHeight) / 2;
+
         const oldWidth = canvasElement.clientWidth;
-        canvasElement.style.width = `${newWidth}px`;
+        if (Math.abs(oldWidth - newWidth) <= 0.1) {
+            newWidth = oldWidth;
+        } else {
+            canvasElement.style.width = `${newWidth}px`;
+        }
         // and move container right so image does not move
         const oldLeft = canvasElement.offsetLeft;
-        if (Math.abs(oldWidth - newWidth) > 0.1) {
-            canvasElement.style.left = `${oldLeft +
-                (oldWidth - newWidth) / 2}px`;
+        let newLeft = oldLeft + (oldWidth - newWidth) / 2;
+
+        // except, if it was "on the grid" before, such as a newly added placeholder,
+        // or we just changed the image, we want to keep it on the grid.
+        const adjustedOld = this.snapProvider.getPosition(
+            undefined,
+            oldLeft,
+            oldTop
+        );
+        if (adjustedOld.x === oldLeft && adjustedOld.y === oldTop) {
+            // it was on the grid, so we want to keep it there.
+            const adjustedNew = this.snapProvider.getPosition(
+                undefined,
+                newLeft,
+                newTop
+            );
+            newLeft = adjustedNew.x;
+            newTop = adjustedNew.y;
         }
+
+        canvasElement.style.left = `${newLeft}px`;
+        canvasElement.style.top = `${newTop}px`;
         this.alignControlFrameWithActiveElement();
     }
 
@@ -2595,6 +2804,20 @@ export class CanvasElementManager {
             kBackgroundImageClass + "-control-frame",
             this.activeElement.classList.contains(kBackgroundImageClass)
         );
+        let backgroundImageExists = true;
+        if (this.activeElement.classList.contains(kBackgroundImageClass)) {
+            const img = getImageFromCanvasElement(this.activeElement);
+            if (img && img.getAttribute("src") === "placeHolder.png") {
+                backgroundImageExists = false;
+            }
+        }
+        // mark empty background images in games with a special class (BL-14703)
+        controlFrame.classList.toggle(
+            kBackgroundImageClass + "-control-frame-no-image",
+            !backgroundImageExists &&
+                !!this.activeElement.closest(".bloom-page[data-tool-id='game']")
+        );
+
         const hasText = controlFrame.classList.contains("has-text");
         // We don't need to await these, they are just async so the handle titles can be updated
         // once the localization manager retrieves them.
@@ -2718,8 +2941,19 @@ export class CanvasElementManager {
                 top = bloomCanvasRect.bottom + 11;
             }
         }
-        contextControl.style.left = left + "px";
-        contextControl.style.top = top + "px";
+        if (
+            controlFrameRect.top === 0 &&
+            controlFrameRect.left === 0 &&
+            controlFrameRect.width === 0 &&
+            controlFrameRect.height === 0
+        ) {
+            // If the control frame is not visible, let CSS control the placement of the context control.
+            contextControl.style.left = "";
+            contextControl.style.top = "";
+        } else {
+            contextControl.style.left = left + "px";
+            contextControl.style.top = top + "px";
+        }
         // This is constant, so it could be in the CSS. But then it could not share a constant
         // with the computation of left above, so it would be harder to keep things consistent.
         contextControl.style.width = contextControlsWidth + "px";
@@ -2973,19 +3207,18 @@ export class CanvasElementManager {
     public ensureCanvasElementsIntersectParent(parentContainer: HTMLElement) {
         const canvasElements = Array.from(
             parentContainer.getElementsByClassName(kCanvasElementClass)
-        );
+        ) as HTMLElement[];
         let changed = false;
         canvasElements.forEach(canvasElement => {
-            const canvasElementRect = canvasElement.getBoundingClientRect();
             // If the canvas element is not visible, its width will be 0. Don't try to adjust it.
-            if (canvasElementRect.width === 0) return;
+            if (canvasElement.clientWidth === 0) return;
             this.adjustCanvasElementLocation(
                 canvasElement as HTMLElement,
                 parentContainer,
                 new Point(
-                    canvasElementRect.left,
-                    canvasElementRect.top,
-                    PointScaling.Scaled,
+                    CanvasElementManager.pxToNumber(canvasElement.style.left),
+                    CanvasElementManager.pxToNumber(canvasElement.style.top),
+                    PointScaling.Unscaled,
                     "ensureCanvasElementsIntersectParent"
                 )
             );
@@ -3067,33 +3300,27 @@ export class CanvasElementManager {
     private adjustCanvasElementLocation(
         canvasElement: HTMLElement,
         container: HTMLElement,
-        location: Point
+        positionInBloomCanvas: Point
     ) {
-        const canvasElementRect = canvasElement.getBoundingClientRect();
-        const parentRect = container.getBoundingClientRect();
-        const left = location.getScaledX();
-        const right = left + canvasElementRect.width;
-        const top = location.getScaledY();
-        const bottom = top + canvasElementRect.height;
+        const parentWidth = container.clientWidth;
+        const parentHeight = container.clientHeight;
+        const left = positionInBloomCanvas.getUnscaledX();
+        const right = left + canvasElement.clientWidth;
+        const top = positionInBloomCanvas.getUnscaledY();
+        const bottom = top + canvasElement.clientHeight;
         let x = left;
         let y = top;
-        if (right < parentRect.left + this.minCanvasElementVisible) {
-            x =
-                parentRect.left +
-                this.minCanvasElementVisible -
-                canvasElementRect.width;
+        if (right < this.minCanvasElementVisible) {
+            x = this.minCanvasElementVisible - canvasElement.clientWidth;
         }
-        if (left > parentRect.right - this.minCanvasElementVisible) {
-            x = parentRect.right - this.minCanvasElementVisible;
+        if (left > parentWidth - this.minCanvasElementVisible) {
+            x = parentWidth - this.minCanvasElementVisible;
         }
-        if (bottom < parentRect.top + this.minCanvasElementVisible) {
-            y =
-                parentRect.top +
-                this.minCanvasElementVisible -
-                canvasElementRect.height;
+        if (bottom < this.minCanvasElementVisible) {
+            y = this.minCanvasElementVisible - canvasElement.clientHeight;
         }
-        if (top > parentRect.bottom - this.minCanvasElementVisible) {
-            y = parentRect.bottom - this.minCanvasElementVisible;
+        if (top > parentHeight - this.minCanvasElementVisible) {
+            y = parentHeight - this.minCanvasElementVisible;
         }
         // The 0.1 here is rather arbitrary. On the one hand, I don't want to do all the work
         // of placeElementAtPosition in the rather common case that we're just checking canvas element
@@ -3102,13 +3329,13 @@ export class CanvasElementManager {
         // is noticeable. I'm compromizing on a discrepancy that is less than a pixel at our highest
         // zoom.
         if (
-            Math.abs(x - canvasElementRect.left) > 0.1 ||
-            Math.abs(y - canvasElementRect.top) > 0.1
+            Math.abs(x - canvasElement.offsetLeft) > 0.1 ||
+            Math.abs(y - canvasElement.offsetTop) > 0.1
         ) {
             const moveTo = new Point(
                 x,
                 y,
-                PointScaling.Scaled,
+                PointScaling.Unscaled,
                 "AdjustCanvasElementLocation"
             );
             this.placeElementAtPosition($(canvasElement), container, moveTo);
@@ -3239,7 +3466,6 @@ export class CanvasElementManager {
         const startDraggingBubble = (bubble: Bubble) => {
             // Note: at this point we do NOT want to focus it. Only if we decide in mouse up that we want to text-edit it.
             this.setActiveElement(bubble.content);
-            const positionInfo = bubble.content.getBoundingClientRect();
 
             // Possible move action started
             this.bubbleToDrag = bubble;
@@ -3253,11 +3479,22 @@ export class CanvasElementManager {
                 ) as HTMLElement[]
             );
 
-            // Remember the offset between the top-left of the content box and the initial
+            // Remember the offset between the top-left of the canvas element we're dragging and the initial
             // location of the mouse pointer.
-            const deltaX = event.pageX - positionInfo.left;
-            const deltaY = event.pageY - positionInfo.top;
-            this.bubbleDragGrabOffset = { x: deltaX, y: deltaY };
+            const pointRelativeToViewport = new Point(
+                event.clientX,
+                event.clientY,
+                PointScaling.Scaled,
+                "MouseEvent Client (Relative to viewport)"
+            );
+            const relativePoint = CanvasElementManager.convertPointFromViewportToElementFrame(
+                pointRelativeToViewport,
+                bubble.content
+            );
+            this.bubbleDragGrabOffset = {
+                x: relativePoint.getUnscaledX(),
+                y: relativePoint.getUnscaledY()
+            };
         };
 
         if (bubble) {
@@ -3478,17 +3715,45 @@ export class CanvasElementManager {
                 return;
             }
 
-            const newPosition = new Point(
-                this.lastMoveEvent.pageX - this.bubbleDragGrabOffset.x,
-                this.lastMoveEvent.pageY - this.bubbleDragGrabOffset.y,
+            const pointRelativeToViewport = new Point(
+                event.clientX,
+                event.clientY,
                 PointScaling.Scaled,
+                "MouseEvent Client (Relative to viewport)"
+            );
+            const bloomCanvas = this.bubbleToDrag.content.parentElement?.closest(
+                kBloomCanvasSelector
+            ) as HTMLElement;
+            const relativePoint = CanvasElementManager.convertPointFromViewportToElementFrame(
+                pointRelativeToViewport,
+                bloomCanvas
+            );
+
+            let newPosition = new Point(
+                relativePoint.getUnscaledX() - this.bubbleDragGrabOffset.x,
+                relativePoint.getUnscaledY() - this.bubbleDragGrabOffset.y,
+                PointScaling.Unscaled,
                 "Created by handleMouseMoveDragCanvasElement()"
             );
+
+            const p = this.snapProvider.getPosition(
+                event,
+                newPosition.getUnscaledX(),
+                newPosition.getUnscaledY()
+            );
+            newPosition = new Point(
+                p.x,
+                p.y,
+                PointScaling.Unscaled,
+                "Created by handleMouseMoveDragCanvasElement()"
+            );
+
             this.adjustCanvasElementLocation(
                 this.bubbleToDrag.content,
                 this.lastMoveContainer,
                 newPosition
             );
+
             this.guideProvider.duringDrag(this.bubbleToDrag.content);
             this.lastCropControl = undefined; // move resets the basis for cropping
             this.animationFrame = 0;
@@ -3543,13 +3808,14 @@ export class CanvasElementManager {
         );
         this.adjustMoveCropHandleVisibility();
         this.alignControlFrameWithActiveElement();
-        this.guideProvider.endDrag();
     }
 
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseUp = (event: MouseEvent) => {
         this.mouseIsDown = false;
+        this.snapProvider.endDrag();
+        this.guideProvider.endDrag();
         document.removeEventListener("mouseup", this.onMouseUp, {
             capture: true
         });
@@ -3672,6 +3938,9 @@ export class CanvasElementManager {
         }
         if (targetElement.classList.contains("ui-resizable-handle")) {
             // Ignore clicks on the JQuery resize handles.
+            return true;
+        }
+        if (targetElement.closest(".bloom-passive-element")) {
             return true;
         }
         if (targetElement.closest("#canvas-element-control-frame")) {
@@ -4363,21 +4632,31 @@ export class CanvasElementManager {
             PointScaling.Scaled,
             "Scaled Viewport coordinates"
         );
+        const positionInBloomCanvas = this.snapProvider.getSnappedPoint(
+            this.adjustRelativePointToBloomCanvas(
+                bloomCanvas,
+                positionInViewport
+            ),
+            // There's no obvious event from which to deduce that ctrl is down, and I don't see any
+            // advantage in supporting the slightly different position that the duplicate would
+            // end up in if we knew that.
+            undefined
+        );
         // Detect if the original is a picture over picture or video over picture element.
         if (this.isPictureCanvasElement(originalElement)) {
             return this.addPictureCanvasElement(
-                positionInViewport,
+                positionInBloomCanvas,
                 $(bloomCanvas)
             );
         }
         if (this.isVideoCanvasElement(originalElement)) {
             return this.addVideoCanvasElement(
-                positionInViewport,
+                positionInBloomCanvas,
                 $(bloomCanvas)
             );
         }
         return this.addCanvasElementCore(
-            positionInViewport,
+            positionInBloomCanvas,
             $(bloomCanvas),
             style
         );
@@ -4445,36 +4724,40 @@ export class CanvasElementManager {
             PointScaling.Scaled,
             "Scaled Viewport coordinates"
         );
+        const positionInBloomCanvas = this.adjustRelativePointToBloomCanvas(
+            bloomCanvas[0],
+            positionInViewport
+        );
         if (canvasElementType === "video") {
             return this.addVideoCanvasElement(
-                positionInViewport,
+                positionInBloomCanvas,
                 bloomCanvas,
                 rightTopOffset
             );
         }
         if (canvasElementType === "image") {
             return this.addPictureCanvasElement(
-                positionInViewport,
+                positionInBloomCanvas,
                 bloomCanvas,
                 rightTopOffset
             );
         }
         if (canvasElementType === "sound") {
             return this.addSoundCanvasElement(
-                positionInViewport,
+                positionInBloomCanvas,
                 bloomCanvas,
                 rightTopOffset
             );
         }
         if (canvasElementType === "rectangle") {
             return this.addRectangleCanvasElement(
-                positionInViewport,
+                positionInBloomCanvas,
                 bloomCanvas,
                 rightTopOffset
             );
         }
         return this.addCanvasElementCore(
-            positionInViewport,
+            positionInBloomCanvas,
             bloomCanvas,
             canvasElementType,
             userDefinedStyleName,
@@ -4749,11 +5032,11 @@ export class CanvasElementManager {
     }
 
     // This method is used both for creating new elements and in dragging/resizing.
-    // positionInViewport and rightTopOffset determine where to place the element.
-    // If rightTopOffset is falsy, we put the element's top left at positionInViewPort.
+    // positionInBloomCanvas and rightTopOffset determine where to place the element.
+    // If rightTopOffset is falsy, we put the element's top left at positionInBloomCanvas.
     // If rightTopOffset is truthy, it is a string like "10,-20" which are values to
-    // add to positionInViewport (which in this case is the mouse position where
-    // something was dropped) to get the top right of the visual object that was dropped.
+    // add to positionInBloomCanvas (which in this case is the mouse position where
+    // something was dropped, relative to canvas) to get the top right of the visual object that was dropped.
     // Then we position the new element so its top right is at that same point.
     // Note: I wish we could just make this adjustment in the dragEnd event handler
     // which receives both the point and the rightTopOffset data, but it does not
@@ -4763,15 +5046,11 @@ export class CanvasElementManager {
     private placeElementAtPosition(
         wrapperBox: JQuery,
         container: Element,
-        positionInViewport: Point,
+        positionInBloomCanvas: Point,
         rightTopOffset?: string
     ) {
-        const newPoint = CanvasElementManager.convertPointFromViewportToElementFrame(
-            positionInViewport,
-            container
-        );
-        let xOffset = newPoint.getUnscaledX();
-        let yOffset = newPoint.getUnscaledY();
+        let xOffset = positionInBloomCanvas.getUnscaledX();
+        let yOffset = positionInBloomCanvas.getUnscaledY();
         let right = 0;
         let top = 0;
         if (rightTopOffset) {
@@ -4794,6 +5073,20 @@ export class CanvasElementManager {
             }
             xOffset = xOffset + right - wrapperBox.width() + fudgeFactor;
             yOffset = yOffset + top;
+            // This is a bit of a kludge, but we want the position snapped here in exactly the cases
+            // (dragging from the toolbox) where snapping has not already been handled...and can't easily
+            // be handled at a higher level because we want the snap to take effect AFTER we adjust for
+            // rightTopOffset, that is, the final position should be snapped.
+            // It's conceivable that somewhere in the call stack there's an event we could use to see
+            // whether the ctrl key is down, but initial placement of new elements is so inexact that
+            // I don't see any point in allowing it to be unsnapped.
+            const { x, y } = this.snapProvider.getPosition(
+                undefined,
+                xOffset,
+                yOffset
+            );
+            xOffset = x;
+            yOffset = y;
         }
 
         // Note: This code will not clear out the rest of the style properties... they are preserved.
@@ -4974,6 +5267,11 @@ export class CanvasElementManager {
                 sourceDataSound
             );
         }
+        // copy any sound files found in an editable div
+        this.copyAnySoundFileAndAttributesForEditable(
+            sourceElement,
+            patriarchDuplicateElement
+        );
 
         this.setActiveElement(patriarchDuplicateElement);
         this.matchSizeOfSource(sourceElement, patriarchDuplicateElement);
@@ -5030,6 +5328,34 @@ export class CanvasElementManager {
             Comical.convertBubbleJsonToCanvas(container as HTMLElement);
         });
         return patriarchDuplicateElement;
+    }
+
+    private copyAnySoundFileAndAttributesForEditable(
+        sourceElement: HTMLElement,
+        copiedElement: HTMLElement
+    ): void {
+        const sourceEditable = sourceElement.querySelector(".bloom-editable");
+        if (!sourceEditable) return;
+        const sourceId = sourceEditable.getAttribute("id");
+        if (!sourceId) return;
+        const copiedEditable = copiedElement.querySelector(".bloom-editable");
+        if (!copiedEditable) return;
+        const newId = AudioRecording.createValidXhtmlUniqueId();
+        copiedEditable.setAttribute("id", newId);
+        copyAudioFileAsync(sourceId, newId); // we don't need to wait for this to finish
+        const duration = sourceEditable.getAttribute("data-duration");
+        if (duration) {
+            copiedEditable.setAttribute("data-duration", duration);
+        }
+        const endTimes = sourceEditable.getAttribute(
+            "data-audiorecordingendtimes"
+        );
+        if (endTimes) {
+            copiedEditable.setAttribute(
+                "data-audiorecordingendtimes",
+                endTimes
+            );
+        }
     }
 
     private getAdjustedTailSpec(
@@ -5112,6 +5438,10 @@ export class CanvasElementManager {
         const sourceElement = childSourceBubble.content;
         newChildElement.innerHTML = this.safelyCloneHtmlStructure(
             sourceElement
+        );
+        this.copyAnySoundFileAndAttributesForEditable(
+            sourceElement,
+            newChildElement
         );
         // Preserve the Auto Height setting.  See BL-13931.
         if (sourceElement.classList.contains("bloom-noAutoHeight"))
@@ -5562,8 +5892,9 @@ export class CanvasElementManager {
         );
     }
 
-    // Sets a text box's position permanently to where it is now.
-    // (Not sure if this ever changes anything, except when migrating. Earlier versions of Bloom
+    // Sets a canvas element's position to what is passed in.
+    // (This code also tries to update the canvas element's size if it's not already
+    // set as "px". Earlier versions of Bloom
     // stored the canvas element position and size as a percentage of the bloom-canvas size.
     // The reasons for that are lost in history; probably we thought that it would better
     // preserve the user's intent to keep in the same shape and position.
@@ -5580,26 +5911,40 @@ export class CanvasElementManager {
         unscaledRelativeLeft: number,
         unscaledRelativeTop: number
     ) {
+        if (canvasElement.hasClass("bloom-passive-element")) {
+            // Don't set possition for passive elements. They are not supposed to be moved. (BL-14685)
+            return;
+        }
+        // We always want to set the position here.
         canvasElement
             .css("left", unscaledRelativeLeft + "px")
-            .css("top", unscaledRelativeTop + "px")
-            // FYI: The textBox width/height is rounded to the nearest whole pixel. Ideally we might like its more precise value...
+            .css("top", unscaledRelativeTop + "px");
+        // The width value should always end in "px" (even if it is 0px).
+        // In days of yore, we used %, but that turned out to be a bad idea, as
+        // discussed above.  We don't need to change the width/height if they're
+        // already in px.
+        const currentWidth = canvasElement.css("width");
+        if (!currentWidth.endsWith("px")) {
+            // canvasElement.width() and canvasElement.height() can give inaccurate values,
+            // sometimes causing the canvas element to shrink repeatedly.  See BL-14740.
+            const element = canvasElement.get(0) as HTMLElement;
+            const clientWidth = element.clientWidth;
+            const clientHeight = element.clientHeight;
             // But it's a huge performance hit to get its getBoundingClientRect()
             // It seems that getBoundingClientRect() may be internally cached under the hood,
             // since getting the bounding rect of the bloom-canvas once per mousemove event or even 100x per mousemove event caused no ill effect,
             // but getting this one is quite taxing on the CPU
-            .css("width", canvasElement.width() + "px")
-            .css("height", canvasElement.height() + "px");
-
-        //Slider: if (textBox.get(0).getAttribute("data-txt-img")) {
-        //     // Only one of these is ever visible; move them together.
-        //     Array.from(
-        //         textBox.get(0).ownerDocument.querySelectorAll("[data-txt-img]")
-        //     ).forEach((tbox: HTMLElement) => {
-        //         tbox.style.left = unscaledRelativeLeft + "px";
-        //         tbox.style.top = unscaledRelativeTop + "px";
-        //     });
-        // }
+            canvasElement
+                .css("width", canvasElement.width() + "px")
+                .css("height", canvasElement.height() + "px");
+            // if the width/height have changed in actuality, not just in representation,
+            // then we have a problem.
+            console.assert(
+                clientWidth === element.clientWidth &&
+                    clientHeight === element.clientHeight,
+                "CanvasElementManager.setCanvasElementPosition(): clientWidth/Height mismatch!"
+            );
+        }
     }
 
     // Determines the unrounded width/height of the content of an element (i.e, excluding its margin, border, padding)
@@ -6556,4 +6901,26 @@ export function canvasElementDescription(
         return result + "with text " + elt.innerText;
     }
     return result;
+}
+
+async function copyAudioFileAsync(
+    sourceId: string,
+    newId: string
+): Promise<void> {
+    const folderInfo = await postJson(
+        "fileIO/getSpecialLocation",
+        "CurrentBookAudioDirectory"
+    );
+    if (!folderInfo || !folderInfo.data) {
+        return; // huh??
+    }
+    const sourcePath = `${folderInfo.data}/${sourceId}.mp3`;
+    const targetPath = `${folderInfo.data}/${newId}.mp3`;
+    await postData("fileIO/copyFile", {
+        from: encodeURIComponent(sourcePath),
+        to: encodeURIComponent(targetPath)
+    });
+    // console.log(
+    //     `DEBUG copyAudioFileAsync: finished copying ${sourcePath} to ${targetPath}`
+    // );
 }

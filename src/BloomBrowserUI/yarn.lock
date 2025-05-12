@@ -5393,10 +5393,10 @@ bindings@^1.5.0:
   dependencies:
     file-uri-to-path "1.0.0"
 
-bloom-player@^2.10.3:
-  version "2.10.3"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.10.3.tgz#edb546e935717e4ed0c313e6e328d33421e4a9a3"
-  integrity sha512-B0+M+k+t83EviH7Xrhse0XBxG7W59BlE7DFDgX/M+f8F5csK/9bdbg2IRT48YulbKt4pI0ffGVvgWO4Xvg1AqA==
+bloom-player@^2.11.0:
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.11.0.tgz#9526d2b23834fde0ad4b36bfca30b0d849b83f15"
+  integrity sha512-z7ORwGv9xnogOoTBgxK4kQkkbCV/vf5hiTykEfcf9piY0oOuprXG8tLRy5ME53GPfAusbq1DWiWNOx2UTILh8Q==
 
 body-parser@1.20.3:
   version "1.20.3"

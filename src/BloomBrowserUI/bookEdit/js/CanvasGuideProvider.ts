@@ -76,7 +76,13 @@ interface ElementBounds {
  */
 export class CanvasGuideProvider {
     // --- Configuration ---
-    private readonly PROXIMITY_THRESHOLD = 0; // TODO: change to grid size (or 1/2 grid size?) when we get a grid. Max distance in pixels for snapping
+    // Max distance in pixels for snapping.
+    // Review: does this want to be related to the grid size? A previous ToDo suggested that,  but if things are on
+    // the grid, they will be closely aligned or not at all, except possibly for elements positioned using ctrl
+    // or before we had the grid. I think it's better not to pretend such things are aligned. We seem to
+    // need a non-zero value so that rounding errors don't cause us to miss things that are very close.
+    // Maybe 0.5 would be even better?
+    private readonly PROXIMITY_THRESHOLD = 1;
     private readonly GUIDE_COLOR = "#E54D2E"; // Typically red/orange
     private readonly EQUAL_DIM_COLOR = "rgba(139, 255, 131, 0.7)"; // Greenish, semi-transparent
     private readonly GUIDE_LINE_THICKNESS = "1px";
@@ -93,10 +99,7 @@ export class CanvasGuideProvider {
     private dynamicEqualDimElements: HTMLElement[] = []; // Track dynamically created indicator clones
     private currentAction: "resize" | "move" = "move"; // Type of operation
 
-    constructor() {
-        this.createGuides();
-        this.createEqualDimensionIndicators();
-    }
+    constructor() {}
 
     /**
      * Prepares the manager for a new drag operation.
@@ -110,6 +113,10 @@ export class CanvasGuideProvider {
         this.currentAction = action;
         // Filter out any null/undefined elements
         this.targetElements = (elementsToAlignAgainst || []).filter(el => el);
+        this.createGuides();
+        if (action === "resize") {
+            this.createEqualDimensionIndicators(); // Create indicators for resize
+        }
         // Ensure guides are hidden initially
         this.hideAllGuides();
     }
@@ -153,9 +160,6 @@ export class CanvasGuideProvider {
     public endDrag(): void {
         this.hideAllGuides();
         this.targetElements = []; // Clear the list of target elements
-    }
-
-    public dispose(): void {
         // First clean up the dynamic elements that are created during drag operations
         this.dynamicEqualDimElements.forEach(element => {
             if (element && element.parentNode) {
@@ -199,9 +203,11 @@ export class CanvasGuideProvider {
             AlignmentPosition.HorizontalCenter,
             AlignmentPosition.Right
         ];
+        if (this.targetElements.length === 0) return; // No elements to align against
+        const doc = this.targetElements[0].ownerDocument || document; // make them in the right iframe
 
         positions.forEach(position => {
-            const line = this.createGuideElement(this.GUIDE_LINE_CLASS);
+            const line = this.createGuideElement(this.GUIDE_LINE_CLASS, doc);
             line.style.backgroundColor = this.GUIDE_COLOR;
 
             // Set thickness based on orientation
@@ -217,7 +223,7 @@ export class CanvasGuideProvider {
                 line.style.height = "0"; // Height determined later
             }
 
-            document.body.appendChild(line);
+            doc.body.appendChild(line);
             this.alignmentLines.push({ position, element: line });
         });
     }
@@ -227,10 +233,13 @@ export class CanvasGuideProvider {
      */
     private createEqualDimensionIndicators(): void {
         const dimensions = [EqualDimension.Width, EqualDimension.Height];
+        if (this.targetElements.length === 0) return; // No elements to align against
+        const doc = this.targetElements[0].ownerDocument || document; // make them in the right iframe
 
         dimensions.forEach(dimension => {
             const indicator = this.createGuideElement(
-                this.EQUAL_DIM_INDICATOR_CLASS
+                this.EQUAL_DIM_INDICATOR_CLASS,
+                doc
             );
             indicator.style.backgroundColor = this.EQUAL_DIM_COLOR;
 
@@ -243,7 +252,7 @@ export class CanvasGuideProvider {
                 indicator.style.width = this.EQUAL_DIM_LINE_THICKNESS; // Thicker vertical line
             }
 
-            document.body.appendChild(indicator);
+            doc.body.appendChild(indicator);
             this.equalDimensionIndicators.push({
                 type: dimension,
                 element: indicator
@@ -256,8 +265,8 @@ export class CanvasGuideProvider {
      * @param className CSS class name to apply.
      * @returns The created HTMLElement.
      */
-    private createGuideElement(className: string): HTMLElement {
-        const element = document.createElement("div");
+    private createGuideElement(className: string, doc: Document): HTMLElement {
+        const element = doc.createElement("div");
         element.className = className;
         element.style.position = "absolute";
         element.style.pointerEvents = "none"; // Prevent interference with mouse events
@@ -559,7 +568,7 @@ export class CanvasGuideProvider {
             }
 
             indicatorClone.style.display = "block"; // Make visible
-            document.body.appendChild(indicatorClone); // Add to DOM
+            templateIndicator.ownerDocument.body.appendChild(indicatorClone); // Add to DOM
             this.dynamicEqualDimElements.push(indicatorClone); // Track for removal later
         });
     }
