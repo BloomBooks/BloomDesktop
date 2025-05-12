@@ -678,8 +678,7 @@ namespace Bloom.Edit
             }
         }
 
-        /// <returns>return true iff we did a successful, normal (non-libpalaso toolbox) save of a normal image
-        /// and therefore should check whether to update the other images in the book</returns>
+        /// <returns>false if saving via libpalaso image toolbox or saving failed; true otherwise</returns>
         public bool SaveImageMetadata(Metadata metadata)
         {
             if (_saveNewImageMetadataActionForImageToolbox != null)
@@ -704,10 +703,10 @@ namespace Bloom.Edit
                 );
                 return false;
             }
-            return ImageUpdater.IsNormalImagePath(_fileNameOfImageBeingModified);
+            return true;
         }
 
-        private void UpdateMetadataForCurrentImage()
+        public void UpdateMetadataForCurrentImage()
         {
             _model.UpdateMetaData(_fileNameOfImageBeingModified);
         }
@@ -734,7 +733,7 @@ namespace Bloom.Edit
             }
         }
 
-        public void AskUserToCopyImageMetadataToAllImages(Metadata metadata)
+        public bool AskUserIfCopyImageMetadataToAllImages(Metadata metadata)
         {
             var answer = MessageBox.Show(
                 LocalizationManager.GetString(
@@ -750,7 +749,11 @@ namespace Bloom.Edit
                 MessageBoxIcon.Question,
                 MessageBoxDefaultButton.Button2
             );
-            if (answer == DialogResult.Yes)
+            return answer == DialogResult.Yes;
+        }
+
+        public void CopyImageMetadataToAllImages(Metadata metadata)
+        {
             {
                 Cursor = Cursors.WaitCursor;
 
@@ -761,10 +764,6 @@ namespace Bloom.Edit
                 _model.RefreshDisplayOfCurrentPage();
 
                 Cursor = Cursors.Default;
-            }
-            else
-            {
-                UpdateMetadataForCurrentImage(); // Need to get things up to date on the current page.
             }
         }
 
