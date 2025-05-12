@@ -221,12 +221,12 @@ namespace Bloom
                                     new TeamCollectionManager(
                                         projectSettingsPath,
                                         c.Resolve<BloomWebSocketServer>(),
-                                        c.Resolve<BookRenamedEvent>(),
                                         c.Resolve<BookStatusChangeEvent>(),
                                         c.Resolve<BookSelection>(),
                                         c.Resolve<CollectionClosing>(),
                                         c.Resolve<BookCollectionHolder>(),
-                                        _collectionLock
+                                        _collectionLock,
+                                        c.Resolve<BookRenamedEvent>()
                                     )
                             )
                             .InstancePerLifetimeScope();
