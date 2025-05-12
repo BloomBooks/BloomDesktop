@@ -264,7 +264,8 @@ namespace Bloom
                                     c.Resolve<TeamCollectionManager>(),
                                     c.Resolve<BloomWebSocketServer>(),
                                     c.Resolve<BookCollectionHolder>(),
-                                    c.Resolve<LocalizationChangedEvent>()
+                                    c.Resolve<LocalizationChangedEvent>(),
+                                    c.Resolve<BookRenamedEvent>()
                                 )
                         )
                         .InstancePerLifetimeScope();
