@@ -385,7 +385,7 @@ export class CanvasElementManager {
                     // by pixel. Don't want to do this if we don't have to, because there could be rounding
                     // errors that would move it very slightly.
                     this.setCanvasElementPosition(
-                        $(wrapperBox as HTMLElement),
+                        wrapperBox,
                         wrapperBox.offsetLeft - container.offsetLeft,
                         wrapperBox.offsetTop - container.offsetTop
                     );
@@ -5097,7 +5097,7 @@ export class CanvasElementManager {
         wrapperBox.css("top", yOffset); // assumes numbers are in pixels
 
         CanvasElementManager.setCanvasElementPosition(
-            wrapperBox,
+            wrapperBox.get(0) as HTMLElement,
             xOffset,
             yOffset
         );
@@ -5886,7 +5886,7 @@ export class CanvasElementManager {
             unscaledRelativeTop = pos.top / scale;
         }
         this.setCanvasElementPosition(
-            $(canvasElement),
+            canvasElement,
             unscaledRelativeLeft,
             unscaledRelativeTop
         );
@@ -5907,41 +5907,35 @@ export class CanvasElementManager {
     // its position relative to the image itself, but that is much harder to do since the canvas element
     // isn't (can't be) a child of the img.)
     private static setCanvasElementPosition(
-        canvasElement: JQuery,
+        canvasElement: HTMLElement,
         unscaledRelativeLeft: number,
         unscaledRelativeTop: number
     ) {
-        if (canvasElement.hasClass("bloom-passive-element")) {
+        // Depending on jquery's .css() method can result in not having the width not actually
+        // set even though canvasElement.css("width") returns a value.  (See BL-14750.)  So we
+        // use the actual HTMLElement .style property, and pass in the actual HTML element.
+        if (canvasElement.classList.contains("bloom-passive-element")) {
             // Don't set possition for passive elements. They are not supposed to be moved. (BL-14685)
             return;
         }
         // We always want to set the position here.
-        canvasElement
-            .css("left", unscaledRelativeLeft + "px")
-            .css("top", unscaledRelativeTop + "px");
+        canvasElement.style.left = unscaledRelativeLeft + "px";
+        canvasElement.style.top = unscaledRelativeTop + "px";
         // The width value should always end in "px" (even if it is 0px).
         // In days of yore, we used %, but that turned out to be a bad idea, as
         // discussed above.  We don't need to change the width/height if they're
         // already in px.
-        const currentWidth = canvasElement.css("width");
-        if (!currentWidth.endsWith("px")) {
-            // canvasElement.width() and canvasElement.height() can give inaccurate values,
-            // sometimes causing the canvas element to shrink repeatedly.  See BL-14740.
-            const element = canvasElement.get(0) as HTMLElement;
-            const clientWidth = element.clientWidth;
-            const clientHeight = element.clientHeight;
-            // But it's a huge performance hit to get its getBoundingClientRect()
-            // It seems that getBoundingClientRect() may be internally cached under the hood,
-            // since getting the bounding rect of the bloom-canvas once per mousemove event or even 100x per mousemove event caused no ill effect,
-            // but getting this one is quite taxing on the CPU
-            canvasElement
-                .css("width", canvasElement.width() + "px")
-                .css("height", canvasElement.height() + "px");
+        const currentWidth = canvasElement.style.width;
+        if (!currentWidth || !currentWidth.endsWith("px")) {
+            const clientWidth = canvasElement.clientWidth;
+            const clientHeight = canvasElement.clientHeight;
+            canvasElement.style.width = clientWidth + "px";
+            canvasElement.style.height = clientHeight + "px";
             // if the width/height have changed in actuality, not just in representation,
             // then we have a problem.
             console.assert(
-                clientWidth === element.clientWidth &&
-                    clientHeight === element.clientHeight,
+                clientWidth === canvasElement.clientWidth &&
+                    clientHeight === canvasElement.clientHeight,
                 "CanvasElementManager.setCanvasElementPosition(): clientWidth/Height mismatch!"
             );
         }
