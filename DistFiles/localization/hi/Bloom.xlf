@@ -5417,11 +5417,6 @@
         <target xml:lang="hi" state="final">अपलोड हो रहा है</target>
         <note>ID: PublishTab.Upload.UploadProgress</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadingBookMetadata" approved="yes">
-        <source xml:lang="en">Uploading book metadata</source>
-        <target xml:lang="hi" state="final">पुस्तक मेटाडेटा अपलोड हो रहा है</target>
-        <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingStatus" approved="yes">
         <source xml:lang="en">Uploading {0}</source>
         <target xml:lang="hi" state="final">{0} अपलोड हो रहा है</target>
@@ -7102,11 +7097,6 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Science</source>
         <target xml:lang="hi" state="final">विज्ञान</target>
         <note>ID: Topics.Science</note>
-      </trans-unit>
-      <trans-unit id="Topics.Spiritual" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Spiritual</source>
-        <target xml:lang="hi" state="final">आत्मिक</target>
-        <note>ID: Topics.Spiritual</note>
       </trans-unit>
       <trans-unit id="Topics.Story Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Story Book</source>
