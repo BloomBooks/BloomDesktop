@@ -4745,12 +4745,6 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Upload Progress</source>
         <note>ID: PublishTab.Upload.UploadProgress</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadingBookMetadata">
-        <source xml:lang="en">Uploading book metadata</source>
-        <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
-        <note>In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.</note>
-        <note>Obsolete as of Bloom 5.6</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingStatus">
         <source xml:lang="en">Uploading {0}</source>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
@@ -6235,12 +6229,6 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Science</source>
         <note>ID: Topics.Science</note>
         <note>shows in the topics chooser in the edit tab</note>
-      </trans-unit>
-      <trans-unit id="Topics.Spiritual" sil:dynamic="true">
-        <source xml:lang="en">Spiritual</source>
-        <note>ID: Topics.Spiritual</note>
-        <note>shows in the topics chooser in the edit tab</note>
-        <note>Obsolete as of Bloom 5.6</note>
       </trans-unit>
       <trans-unit id="Topics.Story Book" sil:dynamic="true">
         <source xml:lang="en">Story Book</source>
