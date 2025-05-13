@@ -240,7 +240,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             icon: rectangleHasBackground && <CheckIcon css={getMenuIconCss()} />
         });
     }
-    if (hasText) {
+    if (hasText && !isInDraggableGame) {
         menuOptions.splice(0, 0, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
             english: "Add Child Bubble",
