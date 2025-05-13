@@ -5415,11 +5415,6 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Hali ya kuendelea kuweka</target>
         <note>ID: PublishTab.Upload.UploadProgress</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadingBookMetadata" approved="yes">
-        <source xml:lang="en">Uploading book metadata</source>
-        <target xml:lang="sw" state="final">Kuweka metadata ya kitabu</target>
-        <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingStatus" approved="yes">
         <source xml:lang="en">Uploading {0}</source>
         <target xml:lang="sw" state="final">Kuweka {0}</target>
@@ -7100,11 +7095,6 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Science</source>
         <target xml:lang="sw" state="final">Sayansi</target>
         <note>ID: Topics.Science</note>
-      </trans-unit>
-      <trans-unit id="Topics.Spiritual" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Spiritual</source>
-        <target xml:lang="sw" state="final">Kiroho</target>
-        <note>ID: Topics.Spiritual</note>
       </trans-unit>
       <trans-unit id="Topics.Story Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Story Book</source>
