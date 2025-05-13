@@ -3227,19 +3227,24 @@ export class CanvasElementManager {
         canvasElements.forEach(canvasElement => {
             // If the canvas element is not visible, its width will be 0. Don't try to adjust it.
             if (canvasElement.clientWidth === 0) return;
+
+            // Careful. For older books, left and top might be percentages.
+            const canvasElementRect = canvasElement.getBoundingClientRect();
+            const parentRect = parentContainer.getBoundingClientRect();
+
             this.adjustCanvasElementLocation(
-                canvasElement as HTMLElement,
+                canvasElement,
                 parentContainer,
                 new Point(
-                    CanvasElementManager.pxToNumber(canvasElement.style.left),
-                    CanvasElementManager.pxToNumber(canvasElement.style.top),
-                    PointScaling.Unscaled,
+                    canvasElementRect.left - parentRect.left,
+                    canvasElementRect.top - parentRect.top,
+                    PointScaling.Scaled,
                     "ensureCanvasElementsIntersectParent"
                 )
             );
             changed = this.ensureTailsInsideParent(
                 parentContainer,
-                canvasElement as HTMLElement,
+                canvasElement,
                 changed
             );
         });
