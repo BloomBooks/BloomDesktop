@@ -117,9 +117,23 @@ namespace Bloom.web.controllers
                     View.Model.SaveThen(
                         () =>
                         { // Saved DOM must be up to date with possibly new imageUrl
-                            bool askUserToCopyToAllImages = View.SaveImageMetadata(metadata);
-                            if (askUserToCopyToAllImages)
-                                View.AskUserToCopyImageMetadataToAllImages(metadata);
+                            bool wasNormalSuccessfulSave = View.SaveImageMetadata(metadata);
+                            bool isNormalImageType = ImageUpdater.IsNormalImagePath(
+                                View.FileNameOfImageBeingModified
+                            );
+                            bool shouldAskUserIfCopyMetadataToAllImages =
+                                wasNormalSuccessfulSave && isNormalImageType;
+                            bool copyMetadataToAllImages = shouldAskUserIfCopyMetadataToAllImages
+                                ? View.AskUserIfCopyImageMetadataToAllImages(metadata)
+                                : false;
+                            if (copyMetadataToAllImages)
+                            {
+                                View.CopyImageMetadataToAllImages(metadata);
+                            }
+                            else if (wasNormalSuccessfulSave)
+                            {
+                                View.UpdateMetadataForCurrentImage(); // Need to get things up to date on the current page.
+                            }
                             return View.Model.CurrentPage.Id;
                         },
                         () => { } // wrong state, do nothing
