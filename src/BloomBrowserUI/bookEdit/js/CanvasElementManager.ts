@@ -347,6 +347,17 @@ export class CanvasElementManager {
         this.alignControlFrameWithActiveElement();
     }
 
+    // May 2025, just before trying to release 6.2a, JT and I decided we would be better off
+    // either being able to get rid of this function completely and just call MarkOverflowInternal,
+    // or have MarkOverflowInternal call this function.
+    // It would be better to have this logic live in one place as evidenced by the fact that we had a bug
+    // in this version which wasn't in MarkOverflowInternal. See BL-14771.
+    // Note that when we experimented with just calling MarkOverflowInternal, we ran into issues with
+    // nicescroll being turned on and off while the canvas element was being resized. This caused
+    // flickering of the text extending beyond the canvas element.
+    // Note that we *would* actually like nicescroll to be updated when resizing the element, otherwise
+    // the scrollbar can end up out of position horizontally. But maybe that should happen on some
+    // kind of timeout, e.g. if we stop calling MarkOverflowInternal for a second.
     public adjustCanvasElementHeightToContentOrMarkOverflow(
         editable: HTMLElement
     ): void {
@@ -354,10 +365,7 @@ export class CanvasElementManager {
         const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(
             editable
         );
-        let overflowY =
-            overflowAmounts[1] +
-            editable.offsetHeight -
-            this.activeElement.offsetHeight;
+        let overflowY = overflowAmounts[1];
 
         // This mimics the relevant part of OverflowChecker.MarkOverflowInternal
         overflowY = theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
