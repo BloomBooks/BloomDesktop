@@ -505,11 +505,16 @@
 //         background-color: var(--slider-text-background);
 //     }
 // }
+
 .bloom-canvas-element.draggable-text {
     background-color: var(--game-draggable-bg-color);
     color: var(--game-draggable-color);
     &.bloom-unused-in-lang {
         display: none;
+    }
+    &:not(.bloom-noAutoHeight) {
+        padding-bottom: var(--game-draggable-padding-bottom);
+        padding-top: var(--game-draggable-padding-top);
     }
 }
 .drag-item-correct,

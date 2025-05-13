@@ -166,46 +166,47 @@ export default class OverflowChecker {
         // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
         const shortBoxFudgeFactor = 0;
 
-        // Fonts like Andika New Basic have internal metric data that indicates
-        // a descent a bit larger than what letters typically have...I think
-        // intended to leave room for diacritics. Gecko calculates the space
-        // needed to render the text as including this, so it is part of the
-        // element.scrollHeight. But in the absence of such diacritics, the extra
-        // space is not needed. This is particularly annoying for auto-sized elements
-        // like the front cover title, which (due to line-height specs) may auto-size
-        // to leave room for the actually visible text, but not the extra white space
-        // the font calls for (and which we reduced the line height to hide).
-        // To avoid spuriously reporting overflow in such cases (BL-6338), we adjust
-        // for the discrepancy.
-        const measurements = MeasureText.getDescentMeasurementsOfBox(element);
-        // console.log(
-        //     "actual descent: " +
-        //         measurements.actualDescent +
-        //         " layout descent: " +
-        //         measurements.layoutDescent +
-        //         " font descent: " +
-        //         measurements.fontDescent
-        // );
-        const fontFudgeFactor = Math.max(
-            measurements.fontDescent - measurements.actualDescent,
-            0
-        );
+        let fontFudgeFactor = 0;
+        const canvasElement = element.closest(".bloom-canvas-element");
+        if (
+            !canvasElement ||
+            canvasElement.classList.contains("bloom-noAutoSize")
+        ) {
+            // Fonts like Andika New Basic have internal metric data that indicates
+            // a descent a bit larger than what letters typically have...I think
+            // intended to leave room for diacritics. Gecko calculates the space
+            // needed to render the text as including this, so it is part of the
+            // element.scrollHeight. But in the absence of such diacritics, the extra
+            // space is not needed. This is particularly annoying for auto-sized elements
+            // like the front cover title, which (due to line-height specs) may auto-size
+            // to leave room for the actually visible text, but not the extra white space
+            // the font calls for (and which we reduced the line height to hide).
+            // To avoid spuriously reporting overflow in such cases (BL-6338), we adjust
+            // for the discepancy.
+            const measurements = MeasureText.getDescentMeasurementsOfBox(
+                element
+            );
+            // console.log(
+            //     "actual descent: " +
+            //         measurements.actualDescent +
+            //         " layout descent: " +
+            //         measurements.layoutDescent +
+            //         " font descent: " +
+            //         measurements.fontDescent
+            // );
+            fontFudgeFactor = Math.max(
+                measurements.fontDescent - measurements.actualDescent,
+                0
+            );
+        }
 
+        const elementHeight = this.contentHeight(element);
         const overflowY =
-            this.contentHeight(element) -
+            elementHeight -
             fontFudgeFactor -
             (element.clientHeight + shortBoxFudgeFactor);
         // console.log(
-        //     "overflowY: " +
-        //         overflowY +
-        //         " contentHeight: " +
-        //         this.contentHeight(element) +
-        //         " fontFudgeFactor: " +
-        //         fontFudgeFactor +
-        //         " clientHeight: " +
-        //         element.clientHeight +
-        //         " shortBoxFudgeFactor: " +
-        //         shortBoxFudgeFactor
+        //     `DEBUG getSelfOverflowAmounts("${element.innerText}"): height=${elementHeight}, fontFudgeFactor=${fontFudgeFactor}, clientHeight=${element.clientHeight}, overflowY=${overflowY}`
         // );
         const overflowX = element.scrollWidth - element.clientWidth;
 
