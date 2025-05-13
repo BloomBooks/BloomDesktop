@@ -307,3 +307,18 @@
     height: 100%;
     width: 100%;
 }
+
+// vertical padding for canvas elements (BL-14770)
+// If the element is automatically sized we may want to add a little padding
+// to the top and bottom of the element. The automatic sizing has a tendency
+// to try to squeeze the text into a minimal height. The tight calcuations are
+// okay for fixed origami sections, but for canvas elements we usually have
+// enough space to not look cramped.
+.bloom-page {
+    --canvas-element-padding-top: 0px; // not sure we need padding at the top
+    --canvas-element-padding-bottom: 4px;
+}
+.bloom-canvas-element:not(.bloom-noAutoHeight) {
+    padding-top: var(--canvas-element-padding-top);
+    padding-bottom: var(--canvas-element-padding-bottom);
+}
