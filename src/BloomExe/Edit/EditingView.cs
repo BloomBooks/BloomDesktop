@@ -631,11 +631,7 @@ namespace Bloom.Edit
 
         private string _fileNameOfImageBeingModified;
 
-        public string FileNameOfImageBeingModified
-        {
-            get { return _fileNameOfImageBeingModified; }
-            set { }
-        }
+        public string FileNameOfImageBeingModified => _fileNameOfImageBeingModified;
 
         public Metadata PrepareToEditImageMetadata(string fileName)
         {
