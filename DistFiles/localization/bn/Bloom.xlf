@@ -5416,11 +5416,6 @@
         <target xml:lang="bn" state="final">আপলোডের অগ্রগতি</target>
         <note>ID: PublishTab.Upload.UploadProgress</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadingBookMetadata" approved="yes">
-        <source xml:lang="en">Uploading book metadata</source>
-        <target xml:lang="bn" state="final">বইয়ের মেটাডাটা আপলোড হচ্ছে</target>
-        <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingStatus" approved="yes">
         <source xml:lang="en">Uploading {0}</source>
         <target xml:lang="bn" state="final">আপলোড হচ্ছে {0}</target>
@@ -7101,11 +7096,6 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Science</source>
         <target xml:lang="bn" state="final">বিজ্ঞান</target>
         <note>ID: Topics.Science</note>
-      </trans-unit>
-      <trans-unit id="Topics.Spiritual" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Spiritual</source>
-        <target xml:lang="bn" state="final">আধ্যাত্মিক</target>
-        <note>ID: Topics.Spiritual</note>
       </trans-unit>
       <trans-unit id="Topics.Story Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Story Book</source>
