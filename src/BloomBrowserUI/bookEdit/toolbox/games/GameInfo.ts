@@ -33,6 +33,11 @@ export function isPageBloomGame(page: HTMLElement): boolean {
     return activityTypesForGames.indexOf(activityType) >= 0;
 }
 
+export function isInDragActivity(element: HTMLElement): boolean {
+    const page = element.closest(".bloom-page");
+    return page?.getAttribute("data-activity")?.startsWith("drag-") ?? false;
+}
+
 const activityTypesForGames = [
     "drag-sort-sentence",
     "drag-letter-to-target",
