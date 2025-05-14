@@ -260,7 +260,7 @@ export class LocalizationManager {
         );
     }
 
-    private asyncGetTextInLangCommon(
+    public asyncGetTextInLangCommon(
         id: string,
         englishText: string,
         langId: string,
