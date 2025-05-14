@@ -4970,11 +4970,21 @@ export class CanvasElementManager {
         setElementActive?: boolean,
         rightTopOffset?: string
     ): HTMLElement {
+        // We don't want game text elements to be auto sized by default. (BL-14779)
+        let additionalClass = "";
+        if (
+            internalHtml.includes("bloom-editable") &&
+            bloomCanvasJQuery.closest(".bloom-page[data-tool-id='game']")
+                .length > 0
+        ) {
+            additionalClass = " bloom-noAutoHeight";
+        }
         // add canvas element as last child of .bloom-canvas (BL-7883)
         const lastChildOfBloomCanvas = bloomCanvasJQuery.children().last();
         const canvasElementHtml =
             "<div class='" +
             kCanvasElementClass +
+            additionalClass +
             "'>" +
             internalHtml +
             "</div>";
