@@ -248,6 +248,15 @@
         <source>Drag the pictures to their shadows</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions">
+        <source>Match Sounds to Words</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions
+        </note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions">
+        <source>Drag Sound to Word Target</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions">
         <source>Drag Word to Image</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions</note>
