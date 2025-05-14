@@ -9,6 +9,8 @@ const GameIntroText: React.FunctionComponent<{
     let gameDetails = { instructionsL10nKey: "", headingL10nKey: "" };
     switch (props.gameType) {
         case GameType.DragLetterToTarget:
+            // These are currently commented out in the .xlf since this
+            // template is turned off for now.
             gameDetails = {
                 instructionsL10nKey:
                     "EditTab.Toolbox.DragActivity.DragLetterInstructions",
@@ -16,6 +18,8 @@ const GameIntroText: React.FunctionComponent<{
             };
             break;
         case GameType.DragSortSentence:
+            // These are currently commented out in the .xlf since this
+            // template is turned off for now.
             gameDetails = {
                 instructionsL10nKey:
                     "EditTab.Toolbox.DragActivity.OrderSentenceInstructions",
@@ -24,11 +28,16 @@ const GameIntroText: React.FunctionComponent<{
             };
             break;
         case GameType.DragImageToTarget:
-            gameDetails = {
-                instructionsL10nKey:
-                    "EditTab.Toolbox.DragActivity.DragImageInstructions",
-                headingL10nKey: "EditTab.Toolbox.DragActivity.DragImageHeading"
-            };
+            // For now, we just aren't displaying instructions for this game.
+            // It is actually a whole set of game templates now, and
+            // "DragImageToTarget" is a misnomer for most.
+            // Thus, the header and instructions are also not correct for most.
+            // (The strings are commented out in the .xlf file.)
+            // gameDetails = {
+            //     instructionsL10nKey:
+            //         "EditTab.Toolbox.DragActivity.DragImageInstructions",
+            //     headingL10nKey: "EditTab.Toolbox.DragActivity.DragImageHeading"
+            // };
             break;
         case GameType.ChooseImageFromWord:
             gameDetails = {
