@@ -1893,6 +1893,8 @@ namespace Bloom.Api
                 // Files missing in the book-preview folder are really missing from the book folder.  See the comment above for checking localPath
                 // against the currentBookFolderPath.
                 "book-preview/",
+                // Bogus file that webview2 has been asking for when launching the debugger
+                ".well-known/appspecific/com.chrome.devtools.json",
                 // This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
                 // of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
                 EpubMaker.kEPUBExportFolder.ToLowerInvariant(),
