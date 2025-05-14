@@ -249,20 +249,20 @@
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions">
-        <source>Match Sounds to Words</source>
+        <source>Match sounds with their words</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions
         </note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions">
-        <source>Drag Sound to Word Target</source>
+        <source>Drag the correct sound to matching word</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions">
-        <source>Drag Word to Image</source>
+        <source>Drag the word to the matching image</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions">
-        <source>Match Each Image to a Word</source>
+        <source>Match each image to a word</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.CustomGameInstructions">
