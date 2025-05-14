@@ -232,6 +232,34 @@
         <source xml:lang="en">Red on white</source>
         <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DraggableLetter">
+        <source></source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DraggableLetter</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragLettersInstructions">
+        <source>Drag the letters where they go</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragLettersInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions">
+        <source>Drag the pictures where they go</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions">
+        <source>Drag the pictures to their shadows</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions">
+        <source>Drag Word to Image</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions">
+        <source>Match Each Image to a Word</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.CustomGameInstructions">
+        <source>Put instructions here</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.CustomGameInstructions</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool">
         <source xml:lang="en">Game Tool</source>
         <note>ID: EditTab.Toolbox.GameTool</note>

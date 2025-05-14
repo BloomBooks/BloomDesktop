@@ -49,12 +49,12 @@ import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
 import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
-import { getTarget } from "bloom-player";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { postData, postJson } from "../../utils/bloomApi";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
+import PlaceholderProvider from "./PlaceholderProvider";
 
 export interface ITextColorInfo {
     color: string;
@@ -681,6 +681,10 @@ export class CanvasElementManager {
             divsThatHaveSourceBubbles,
             bubbleDivs
         );
+
+        // at the moment (6.2) we aren't using this for any draggable things, but we could.
+        PlaceholderProvider.addPlaceholders(translationGroup.parentElement!);
+
         if (divsThatHaveSourceBubbles.length > 0) {
             BloomSourceBubbles.MakeSourceBubblesIntoQtips(
                 divsThatHaveSourceBubbles[0],
