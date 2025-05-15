@@ -6347,114 +6347,180 @@ export class CanvasElementManager {
             bgCanvasElement.clientWidth / bgCanvasElement.clientHeight;
         const img = getImageFromCanvasElement(bgCanvasElement);
         let failedImage = false;
-        // We don't ever expect there not to be an img. If it happens, we'll just go
-        // ahead and adjust based on the current shape of the canvas element (as set above).
-        if (img) {
-            // The image may not have loaded yet or may have failed to load.  If either of these
-            // cases is true, then the naturalHeight and naturalWidth will be zero.  If the image
-            // failed to load, a special class is added to the image to indicate this fact (if all
-            // goes well).  However, we may know that this is called in response to a new image, in
-            // which case the class may not have been added yet.
-            // We conclude that the image has truly failed if 1) we don't have natural dimensions set
-            // to something other than zero, 2) we are not waiting for new dimensions, and 3) the
-            // image has the special class indicating that it failed to load.  (The class is supposed
-            // to be removed when we change the src attribute, which leads to a new load attempt.)
-            failedImage =
-                img.naturalHeight === 0 && // not loaded successfully (yet)
-                !useSizeOfNewImage && // not waiting for new dimensions
-                img.classList.contains("bloom-imageLoadError"); // error occurred while trying to load
-            if (failedImage) {
-                // If the image failed to load, just use the container aspect ratio to fill up
-                // the container with the error message (alt attribute string).
-                imgAspectRatio = bloomCanvasWidth / bloomCanvasHeight;
-            } else if (
-                img.naturalHeight === 0 ||
-                img.naturalWidth === 0 ||
-                useSizeOfNewImage
-            ) {
-                // if we don't have a height and width, or we know the image src changed
-                // and have not yet waited for new dimensions, go ahead and wait.
-                // We set up this timeout
-                const handle = (setTimeout(
-                    () =>
-                        this.adjustBackgroundImageSizeToFit(
-                            bloomCanvas,
-                            bgCanvasElement,
-                            // after the timeout we don't consider that we MUST wait if we have dimensions
-                            false,
-                            0 // when we get this call, we're responding to the timeout, so don't need to cancel.
-                        ),
-                    // I think this is long enough that we won't be seeing obsolete data (from a previous src).
-                    // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
-                    // If by any chance this happens when the image really isn't loaded enough to
-                    // have naturalHeight/Width, the zero checks above will force another iteration.
-                    100
-                    // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
-                ) as unknown) as number;
-                // preferably we update when we are loaded.
-                img.addEventListener(
-                    "load",
-                    () =>
-                        this.adjustBackgroundImageSizeToFit(
-                            bloomCanvas,
-                            bgCanvasElement,
-                            false, // when this call happens we have the new dimensions.
-                            handle // if this callback happens we can cancel the timeout.
-                        ),
-                    { once: true }
-                );
-                return; // try again once we have valid image data
-            } else if (img.style.width) {
-                // there is established cropping. Use the cropped size to determine the
-                // aspect ratio.
-                imgAspectRatio =
-                    CanvasElementManager.pxToNumber(
-                        bgCanvasElement.style.width
-                    ) /
-                    CanvasElementManager.pxToNumber(
-                        bgCanvasElement.style.height
-                    );
-            } else {
-                // not cropped, so we can use the natural dimensions
-                imgAspectRatio = img.naturalWidth / img.naturalHeight;
-            }
+        // We don't ever expect there not to be an img. If it happens, we'll just do nothing.
+        if (!img) {
+            return;
+        }
+        // The image may not have loaded yet or may have failed to load.  If either of these
+        // cases is true, then the naturalHeight and naturalWidth will be zero.  If the image
+        // failed to load, a special class is added to the image to indicate this fact (if all
+        // goes well).  However, we may know that this is called in response to a new image, in
+        // which case the class may not have been added yet.
+        // We conclude that the image has truly failed if 1) we don't have natural dimensions set
+        // to something other than zero, 2) we are not waiting for new dimensions, and 3) the
+        // image has the special class indicating that it failed to load.  (The class is supposed
+        // to be removed when we change the src attribute, which leads to a new load attempt.)
+        failedImage =
+            img.naturalHeight === 0 && // not loaded successfully (yet)
+            !useSizeOfNewImage && // not waiting for new dimensions
+            img.classList.contains("bloom-imageLoadError"); // error occurred while trying to load
+        if (failedImage) {
+            // If the image failed to load, just use the container aspect ratio to fill up
+            // the container with the error message (alt attribute string).
+            imgAspectRatio = bloomCanvasWidth / bloomCanvasHeight;
+        } else if (
+            img.naturalHeight === 0 ||
+            img.naturalWidth === 0 ||
+            useSizeOfNewImage
+        ) {
+            // if we don't have a height and width, or we know the image src changed
+            // and have not yet waited for new dimensions, go ahead and wait.
+            // We set up this timeout
+            const handle = (setTimeout(
+                () =>
+                    this.adjustBackgroundImageSizeToFit(
+                        bloomCanvas,
+                        bgCanvasElement,
+                        // after the timeout we don't consider that we MUST wait if we have dimensions
+                        false,
+                        0 // when we get this call, we're responding to the timeout, so don't need to cancel.
+                    ),
+                // I think this is long enough that we won't be seeing obsolete data (from a previous src).
+                // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
+                // If by any chance this happens when the image really isn't loaded enough to
+                // have naturalHeight/Width, the zero checks above will force another iteration.
+                100
+                // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
+            ) as unknown) as number;
+            // preferably we update when we are loaded.
+            img.addEventListener(
+                "load",
+                () =>
+                    this.adjustBackgroundImageSizeToFit(
+                        bloomCanvas,
+                        bgCanvasElement,
+                        false, // when this call happens we have the new dimensions.
+                        handle // if this callback happens we can cancel the timeout.
+                    ),
+                { once: true }
+            );
+            return; // try again once we have valid image data
+        } else if (img.style.width) {
+            // there is established cropping. Use the cropped size to determine the
+            // aspect ratio.
+            imgAspectRatio =
+                CanvasElementManager.pxToNumber(bgCanvasElement.style.width) /
+                CanvasElementManager.pxToNumber(bgCanvasElement.style.height);
+        } else {
+            // not cropped, so we can use the natural dimensions
+            imgAspectRatio = img.naturalWidth / img.naturalHeight;
         }
 
-        const oldWidth = bgCanvasElement.clientWidth;
+        const oldCeWidth = bgCanvasElement.clientWidth;
+        const oldCeHeight = bgCanvasElement.clientHeight;
         const containerAspectRatio = bloomCanvasWidth / bloomCanvasHeight;
         const fitCoverMode = img?.classList.contains(
             "bloom-imageObjectFit-cover"
         );
         let matchWidthOfContainer = imgAspectRatio > containerAspectRatio;
         if (fitCoverMode) {
-            matchWidthOfContainer = !matchWidthOfContainer;
-        }
-
-        if (matchWidthOfContainer) {
-            // size of image is width-limited
+            const oldCanvasElementWidth = CanvasElementManager.pxToNumber(
+                bgCanvasElement.style.width
+            );
+            const oldCanvasElementHeight = CanvasElementManager.pxToNumber(
+                bgCanvasElement.style.height
+            );
+            // make the canvas element fill the container
             bgCanvasElement.style.width = bloomCanvasWidth + "px";
-            bgCanvasElement.style.left = "0px";
-            const imgHeight = bloomCanvasWidth / imgAspectRatio;
-            bgCanvasElement.style.top =
-                (bloomCanvasHeight - imgHeight) / 2 + "px";
-            bgCanvasElement.style.height = imgHeight + "px";
-        } else {
-            const imgWidth = bloomCanvasHeight * imgAspectRatio;
-            bgCanvasElement.style.width = imgWidth + "px";
-            bgCanvasElement.style.top = "0px";
-            bgCanvasElement.style.left =
-                (bloomCanvasWidth - imgWidth) / 2 + "px";
             bgCanvasElement.style.height = bloomCanvasHeight + "px";
-        }
-        if (!useSizeOfNewImage && img?.style.width) {
-            // need to adjust image settings to preserve cropping
-            const scale = bgCanvasElement.clientWidth / oldWidth;
-            img.style.width =
-                CanvasElementManager.pxToNumber(img.style.width) * scale + "px";
-            img.style.left =
-                CanvasElementManager.pxToNumber(img.style.left) * scale + "px";
-            img.style.top =
-                CanvasElementManager.pxToNumber(img.style.top) * scale + "px";
+            bgCanvasElement.style.left = "0px";
+            bgCanvasElement.style.top = "0px";
+            //
+            matchWidthOfContainer = !matchWidthOfContainer;
+            const oldImgWidth =
+                CanvasElementManager.pxToNumber(img.style.width) ||
+                img.clientWidth;
+            // This is the height it would be if not cropped.
+            const oldImgHeight =
+                (oldImgWidth * img.naturalHeight) / img.naturalWidth;
+            const oldImgLeft =
+                CanvasElementManager.pxToNumber(img.style.left) || 0;
+            const oldImgTop =
+                CanvasElementManager.pxToNumber(img.style.top) || 0; // negative
+            // crop the image (or adjust its cropping) to fill the container
+            if (matchWidthOfContainer) {
+                // image is taller than a perfect fit, so it will fill the width and be cropped
+                // (more than before) in height.
+                const ceScale = bgCanvasElement.clientWidth / oldCeWidth;
+                const minScale = bgCanvasElement.clientWidth / oldImgWidth;
+                const scale = Math.max(ceScale, minScale);
+                img.style.width = oldImgWidth * scale + "px";
+                img.style.left = oldImgLeft * scale + "px"; //same fraction cropped in width
+                const previouslyHiddenAtTop = -oldImgTop * scale;
+                const previouslyHiddenAtBottom =
+                    (oldImgHeight + oldImgTop - oldCanvasElementHeight) * scale;
+                // this might be negative, if the container got shorter in aspect ratio.
+                // That is, possibly keeping the same top cropping would leave space at the bottom
+                const excessHeight =
+                    oldImgHeight * scale -
+                    bloomCanvasHeight -
+                    previouslyHiddenAtTop -
+                    previouslyHiddenAtBottom;
+                img.style.top =
+                    Math.min(-previouslyHiddenAtTop - excessHeight / 2, 0) +
+                    "px";
+            } else {
+                // image is wider than a perfect fit, so it will fill the height and be cropped
+                // (more than before) in width.
+                const ceScale = bgCanvasElement.clientHeight / oldCeHeight;
+                // we must scale it up enough to fill the height of the container.
+                const minScale = bgCanvasElement.clientHeight / oldImgHeight;
+                const scale = Math.max(ceScale, minScale);
+                img.style.width = oldImgWidth * scale + "px";
+                img.style.top = oldImgTop * scale + "px"; //same fraction cropped in height
+                const previouslyHiddenAtLeft = -oldImgLeft * scale;
+                const previouslyHiddenAtRight =
+                    (oldImgWidth + oldImgLeft - oldCanvasElementWidth) * scale;
+                const excessWidth =
+                    oldImgWidth * scale -
+                    bloomCanvasWidth -
+                    previouslyHiddenAtLeft -
+                    previouslyHiddenAtRight;
+                img.style.left =
+                    Math.min(-previouslyHiddenAtLeft - excessWidth / 2, 0) +
+                    "px";
+            }
+        } else {
+            if (matchWidthOfContainer) {
+                // size of image is width-limited: image is wider than a perfect fit,
+                // so it will fill the width of the container and have a smaller height.
+                bgCanvasElement.style.width = bloomCanvasWidth + "px";
+                bgCanvasElement.style.left = "0px";
+                const imgHeight = bloomCanvasWidth / imgAspectRatio;
+                bgCanvasElement.style.top =
+                    (bloomCanvasHeight - imgHeight) / 2 + "px";
+                bgCanvasElement.style.height = imgHeight + "px";
+            } else {
+                const imgWidth = bloomCanvasHeight * imgAspectRatio;
+                bgCanvasElement.style.width = imgWidth + "px";
+                bgCanvasElement.style.top = "0px";
+                bgCanvasElement.style.left =
+                    (bloomCanvasWidth - imgWidth) / 2 + "px";
+                bgCanvasElement.style.height = bloomCanvasHeight + "px";
+            }
+            if (!useSizeOfNewImage && img?.style.width) {
+                // need to adjust image settings to preserve cropping
+                const scale = bgCanvasElement.clientWidth / oldCeWidth;
+                img.style.width =
+                    CanvasElementManager.pxToNumber(img.style.width) * scale +
+                    "px";
+                img.style.left =
+                    CanvasElementManager.pxToNumber(img.style.left) * scale +
+                    "px";
+                img.style.top =
+                    CanvasElementManager.pxToNumber(img.style.top) * scale +
+                    "px";
+            }
         }
         // Ensure that the missing image message is displayed without being cropped.
         // See BL-14241.
