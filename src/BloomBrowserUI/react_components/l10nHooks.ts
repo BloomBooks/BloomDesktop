@@ -60,37 +60,44 @@ export function useL10n2(options: {
         params: l10nParams,
         temporarilyDisableI18nWarning
     } = options;
+    const stringifiedParams = JSON.stringify(l10nParams);
     const [localizedText, setLocalizedText] = React.useState(english);
-    React.useEffect(() => {
-        if (l10nKey === null || l10nKey === "already-localized") {
-            window.setTimeout(() => setLocalizedText(english), 0);
-        } else {
-            getLocalization({
-                english: english || "", // no need actually to duplicate the English when we have to put it in the XLF anyways
-                l10nKey,
-                l10nComment,
-                l10nParams,
-                temporarilyDisableI18nWarning,
-                // Enhance: if lookupSuccessful is false AND we're in the debug/alpha etc (see l10ncomponents), prefix with *** or something.
-                callback: (t, lookupSuccessful) => {
-                    if (lookupSuccessful) {
-                        setLocalizedText(t);
-                    } else {
-                        // Enhance: maybe we should do something here if temporarilyDisableI18nWarning is false?
-                        // But we should also check for being in debug or possibly alpha...how?
-                        // In any case, if we don't set the text to the output of getLocalization(), we don't
-                        // get param insertion, which makes things broken even in English
-                        setLocalizedText(t);
+    React.useEffect(
+        () => {
+            if (l10nKey === null || l10nKey === "already-localized") {
+                window.setTimeout(() => setLocalizedText(english), 0);
+            } else {
+                getLocalization({
+                    english: english || "", // no need actually to duplicate the English when we have to put it in the XLF anyways
+                    l10nKey,
+                    l10nComment,
+                    l10nParams,
+                    temporarilyDisableI18nWarning,
+                    // Enhance: if lookupSuccessful is false AND we're in the debug/alpha etc (see l10ncomponents), prefix with *** or something.
+                    callback: (t, lookupSuccessful) => {
+                        if (lookupSuccessful) {
+                            setLocalizedText(t);
+                        } else {
+                            // Enhance: maybe we should do something here if temporarilyDisableI18nWarning is false?
+                            // But we should also check for being in debug or possibly alpha...how?
+                            // In any case, if we don't set the text to the output of getLocalization(), we don't
+                            // get param insertion, which makes things broken even in English
+                            setLocalizedText(t);
+                        }
                     }
-                }
-            });
-        }
-    }, [
-        l10nKey,
-        english,
-        l10nComment,
-        l10nParams,
-        temporarilyDisableI18nWarning
-    ]); // often the params are coming in later, via an api call. So we need to re-do the localization when that happens.
+                });
+            }
+        },
+        // Use JSON.stringify(l10nParams) as a dep instead of l10nParams
+        // so we don't have to rerun whenever we don't memoize the params
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [
+            l10nKey,
+            english,
+            l10nComment,
+            stringifiedParams,
+            temporarilyDisableI18nWarning
+        ]
+    ); // often the params are coming in later, via an api call. So we need to re-do the localization when that happens.
     return localizedText || "";
 }
