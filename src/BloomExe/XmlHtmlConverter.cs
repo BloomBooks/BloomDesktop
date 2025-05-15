@@ -508,6 +508,46 @@ namespace Bloom
 
             html = html.Replace(BrPlaceholder, "<br />");
             html = RemoveFillerInEmptyElements(html);
+            html = FixVoidElementEndTags(html);
+            return html;
+        }
+
+        /// <summary>
+        /// Void elements are elements that are not allowed to have any child nodes.  They are not
+        /// allowed to have an end tag: they only have a start tag.  Self-closing tags are not a concept
+        /// in HTML, but XHTML allows them.  HTML5 allows void element tags to be self-closing, because
+        /// it just ignores a slash at the end of a tag.  This method fixes up void elements that have
+        /// been given a full end tag, like <img...></img> or <meta...></meta>, to be self-closing.  This
+        /// form is acceptable to both HTML and XML parsers.
+        /// </summary>
+        /// <remarks>
+        /// See BL-14695.  Also see https://developer.mozilla.org/en-US/docs/Glossary/Void_element.
+        /// </remarks>
+        static string FixVoidElementEndTags(string html)
+        {
+            // list of tags taken from https://developer.mozilla.org/en-US/docs/Glossary/Void_element
+            string[] voidEndTags = new string[] {
+                "></area>",
+                "></base>",
+                "></br>",   // handled separately above, but here for completeness
+                "></col>",
+                "></embed>",
+                "></hr>",
+                "></img>",
+                "></input>",
+                "></link>",
+                "></meta>",
+                "></param>",
+                "></source>",
+                "></track>",
+                "></wbr>",
+            };
+            foreach (var tag in voidEndTags)
+            {
+                // The space before the / is important, otherwise the / may be interpreted as part
+                // of an attribute value.
+                html = html.Replace(tag, " />");
+            }
             return html;
         }
 
