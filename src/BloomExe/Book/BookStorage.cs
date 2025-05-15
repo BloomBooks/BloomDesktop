@@ -3786,6 +3786,7 @@ namespace Bloom.Book
                 return;
             var breakingFeatureRequirements = GetBreakingFeatureRequirements();
             // Handle the back migrations this version of Bloom knows about, in the proper reverse order.
+            MigrateBackfromDataFeatureAttributes();
             // This should not be merged to 6.2, though it may be a useful model of how to handle future
             // back migrations.
             // If you add a new back migration, you must also modify GetHtmlMessageIfFeatureIncompatibility
@@ -3800,6 +3801,34 @@ namespace Bloom.Book
             if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "canvasElement"))
             {
                 MigrateBackFromLevel5CanvasElement();
+            }
+        }
+
+        /// <summary>
+        /// Only for 6.0 and 6.1! Do not merge to 6.2.
+        /// </summary>
+        /// <remarks>
+        /// Possibly merge to 6.2a if that branch lasts long enough.
+        /// </remarks>
+        public void MigrateBackfromDataFeatureAttributes()
+        {
+            if (!Program.RunningUnitTests)
+                Guard.Against(
+                    !BookInfo.IsSaveable,
+                    "We should not even think about migrating a book that is not Saveable"
+                );
+            foreach (
+                XmlElement pageDiv in Dom.SafeSelectNodes(
+                    "//body/div[contains(@class, 'bloom-page')]"
+                )
+            )
+            {
+                var dataFeature = pageDiv.GetAttribute("data-feature");
+                if (!string.IsNullOrEmpty(dataFeature))
+                {
+                    pageDiv.RemoveAttribute("data-feature");
+                    HtmlDom.AddClass(pageDiv, "enterprise-only");
+                }
             }
         }
 
