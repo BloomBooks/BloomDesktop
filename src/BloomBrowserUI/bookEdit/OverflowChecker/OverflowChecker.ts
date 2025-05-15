@@ -143,7 +143,7 @@ export default class OverflowChecker {
     }
 
     // Actual testable determination of Type I overflow or not
-    // 'public' for testing (2 types of overflow are defined in MarkOverflowInternal below)
+    // 'public' for testing (2 types of overflow are defined in AdjustSizeOrMarkOverflow below)
     public static IsOverflowingSelf(element: HTMLElement): boolean {
         const [overflowX, overflowY] = OverflowChecker.getSelfOverflowAmounts(
             element
@@ -299,7 +299,7 @@ export default class OverflowChecker {
     }
 
     // Actual testable determination of Type II overflow or not
-    // 'public' for testing (2 types of overflow are defined in MarkOverflowInternal below)
+    // 'public' for testing (2 types of overflow are defined in AdjustSizeOrMarkOverflow below)
     // returns nearest ancestor that this element overflows
     public static overflowingAncestor(
         element: HTMLElement
@@ -452,6 +452,7 @@ export default class OverflowChecker {
             overflowY = 0;
         }
 
+        let skipType2Overflow = false;
         if (isInDragActivity(editable)) {
             // We decided that overflow was just causing too many problems as we tried to wrap
             // up drag activities. So for now, we are just turning off overflow reporting completely
@@ -460,6 +461,7 @@ export default class OverflowChecker {
             // point, it is integrated with the code which resizes the canvas element.
             // That's also why we can't just filter out these elements in getElementsThatCanOverflowOrNeedToBeResized.
             overflowY = 0;
+            skipType2Overflow = true;
         }
 
         if (overflowY > 0 || overflowX > 0) {
@@ -500,6 +502,8 @@ export default class OverflowChecker {
                 cleanupNiceScroll();
             }
         }
+
+        if (skipType2Overflow) return;
 
         const container = $editable.closest(".marginBox");
         const quizPage = $(container).closest(".simple-comprehension-quiz");
@@ -591,7 +595,7 @@ export default class OverflowChecker {
             }
         });
         OverflowChecker.UpdatePageOverflow(container.closest(".bloom-page"));
-    } // end MarkOverflowInternal
+    } // end AdjustSizeOrMarkOverflow
 
     // Destroy any qtip on this element that marks overflow, but leave other qtips alone.
     // This restriction is an attempt not to remove bloom hint and source bubbles.
