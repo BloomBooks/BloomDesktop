@@ -164,7 +164,7 @@
       </trans-unit>
       <trans-unit id="Subscription.Tier.LocalCommunity">
         <source xml:lang="en">Local Community</source>
-        <target xml:lang="es-ES" state="needs-translation">Local Community</target>
+        <target xml:lang="es-ES" state="translated">Comunidad local</target>
         <note>ID: Subscription.Tier.LocalCommunity</note>
       </trans-unit>
       <trans-unit id="Subscription.Tier.Pro">
@@ -174,7 +174,7 @@
       </trans-unit>
       <trans-unit id="Subscription.Tier.Enterprise">
         <source xml:lang="en">Enterprise</source>
-        <target xml:lang="es-ES" state="needs-translation">Enterprise</target>
+        <target xml:lang="es-ES" state="translated">Empresarial</target>
         <note>ID: Subscription.Tier.Enterprise</note>
       </trans-unit>
       <!-- Other -->
@@ -187,7 +187,7 @@
       <!-- TODO connect with/normalize other places that refer to these things -->
       <trans-unit id="Feature.Overlay">
         <source xml:lang="en">Overlay</source>
-        <target xml:lang="es-ES" state="needs-translation">Overlay</target>
+        <target xml:lang="es-ES" state="translated">Superposición</target>
         <note>ID: Feature.Overlay</note>
       </trans-unit>
       <trans-unit id="Feature.Spreadsheet">
