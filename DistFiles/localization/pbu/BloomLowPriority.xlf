@@ -156,6 +156,46 @@
         <target xml:lang="pbu" state="needs-translation">What's This?</target>
         <note>ID: Settings.Subscription.WhatsThis</note>
       </trans-unit>
+      <!-- Tiers -->
+      <trans-unit id="Subscription.Tier.Basic">
+        <source xml:lang="en">Basic</source>
+        <target xml:lang="pbu" state="needs-translation">Basic</target>
+        <note>ID: Subscription.Tier.Basic</note>
+      </trans-unit>
+      <trans-unit id="Subscription.Tier.LocalCommunity">
+        <source xml:lang="en">Local Community</source>
+        <target xml:lang="pbu" state="needs-translation">Local Community</target>
+        <note>ID: Subscription.Tier.LocalCommunity</note>
+      </trans-unit>
+      <trans-unit id="Subscription.Tier.Pro">
+        <source xml:lang="en">Pro</source>
+        <target xml:lang="pbu" state="needs-translation">Pro</target>
+        <note>ID: Subscription.Tier.Pro</note>
+      </trans-unit>
+      <trans-unit id="Subscription.Tier.Enterprise">
+        <source xml:lang="en">Enterprise</source>
+        <target xml:lang="pbu" state="needs-translation">Enterprise</target>
+        <note>ID: Subscription.Tier.Enterprise</note>
+      </trans-unit>
+      <!-- Other -->
+      <trans-unit id="Subscription.OpenSettings">
+        <source xml:lang="en">Subscription Settings</source>
+        <target xml:lang="pbu" state="needs-translation">Subscription Settings</target>
+        <note>ID: Subscription.OpenSettings</note>
+      </trans-unit>
+      <!-- Features -->
+      <!-- TODO connect with/normalize other places that refer to these things -->
+      <trans-unit id="Feature.Overlay">
+        <source xml:lang="en">Overlay</source>
+        <target xml:lang="pbu" state="needs-translation">Overlay</target>
+        <note>ID: Feature.Overlay</note>
+      </trans-unit>
+      <trans-unit id="Feature.Spreadsheet">
+        <source xml:lang="en">Spreadsheet Import/Export</source>
+        <target xml:lang="pbu" state="needs-translation">Spreadsheet Import/Export</target>
+        <note>ID: Feature.Spreadsheet</note>
+      </trans-unit>
+      <!-- TODO: add other features -->
       <trans-unit id="Spreadsheet.DataDivConflictWarning">
         <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
         <target xml:lang="pbu" state="needs-translation">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</target>
