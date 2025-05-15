@@ -49,12 +49,13 @@ import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
 import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
-import { getTarget } from "bloom-player";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { postData, postJson } from "../../utils/bloomApi";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
+import PlaceholderProvider from "./PlaceholderProvider";
+import { isInDragActivity } from "../toolbox/games/GameInfo";
 
 export interface ITextColorInfo {
     color: string;
@@ -372,7 +373,13 @@ export class CanvasElementManager {
             editable,
             overflowY
         );
-        editable.classList.toggle("overflow", overflowY > 0);
+
+        // We decided that overflow was just causing too many problems as we tried to wrap
+        // up drag activities. So for now, we are just turning off overflow reporting completely
+        // in drag activities. See BL-14783.
+        if (!isInDragActivity(editable)) {
+            editable.classList.toggle("overflow", overflowY > 0);
+        }
     }
 
     // When the format dialog changes the amount of padding for canvas elements, adjust their sizes
@@ -681,6 +688,10 @@ export class CanvasElementManager {
             divsThatHaveSourceBubbles,
             bubbleDivs
         );
+
+        // at the moment (6.2) we aren't using this for any draggable things, but we could.
+        PlaceholderProvider.addPlaceholders(translationGroup.parentElement!);
+
         if (divsThatHaveSourceBubbles.length > 0) {
             BloomSourceBubbles.MakeSourceBubblesIntoQtips(
                 divsThatHaveSourceBubbles[0],
