@@ -1967,7 +1967,7 @@ export class CanvasElementManager {
         theOneCanvasElementManager.adjustCanvasElementHeightToContentOrMarkOverflow(
             editable
         );
-        // review; adjustTarget(this.activeElement, getTarget(this.activeElement));
+        this.adjustTarget(this.activeElement);
         this.alignControlFrameWithActiveElement();
         this.guideProvider.duringDrag(this.activeElement);
     }
