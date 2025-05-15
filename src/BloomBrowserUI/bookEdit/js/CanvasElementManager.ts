@@ -6516,6 +6516,7 @@ export class CanvasElementManager {
         const newWidth = bloomCanvas.clientWidth;
         const newHeight = bloomCanvas.clientHeight;
         if (oldWidth === newWidth && oldHeight === newHeight) return; // allow small discrepancy?
+        this.updateBloomCanvasSizeData(bloomCanvas); // remember the new size, whatever path we take adjusting things.
         // Leave out of this calculation the canvas and any image descriptions or controls.
         const children = (Array.from(
             bloomCanvas.children
@@ -6545,10 +6546,16 @@ export class CanvasElementManager {
             const childLeft = child.offsetLeft;
             if (child.classList.contains(kBackgroundImageClass)) {
                 const img = getImageFromCanvasElement(child);
-                if (!img || img.getAttribute("src") === "placeHolder.png") {
-                    // No image, or placeholder. Not visible (unless it's the only thing there).
-                    // Don't include this in the calculations.
-                    // But in case it gets selected, or is the only one, adjust it independently
+                if (
+                    !img ||
+                    img.getAttribute("src") === "placeHolder.png" ||
+                    children.length === 1
+                ) {
+                    // If there's no image or it's a placeholder, and there are other overlays, it won't be visible,
+                    // so we'll exclude it from the calculations, but still adjust it in case it becomes visible.
+                    // If it's the only child, we want to do the normal positioning of it.
+                    // In particular, this is important when switching "fill the front cover" on or off,
+                    // since  the code here does not properly allow for that mode.
                     this.adjustBackgroundImageSize(bloomCanvas, child, false);
                     if (children.length > 1) {
                         // we'll process the others ignoring the invisible BG image
@@ -6752,7 +6759,6 @@ export class CanvasElementManager {
                 }
             }
         });
-        this.updateBloomCanvasSizeData(bloomCanvas);
     }
 
     public static adjustCanvasElementAlternates(
