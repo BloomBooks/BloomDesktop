@@ -243,6 +243,9 @@ namespace Bloom
             {
                 additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
             }
+            #region DEBUG
+            additionalBrowserArgs += " --remote-debugging-port=9222 "; // allow external inspector connect
+            #endregion
 
             var op = new CoreWebView2EnvironmentOptions(additionalBrowserArgs);
 

@@ -571,6 +571,7 @@
         <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
         <note>ID: CollectionSettingsDialog.RequiresSubscription_ToolTip_</note>
         <note>Same as the text for "EditTab.RequiresSubscription"</note>
+        <note>Obsolete as of 6.2</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart">
         <source xml:lang="en">Restart</source>
@@ -952,6 +953,11 @@
       <trans-unit id="Common.SubscriptionRequired">
         <source xml:lang="en">Subscription Required</source>
         <note>ID: Common.SubscriptionRequired</note>
+        <note>Obsolete as of 6.2</note>
+      </trans-unit>
+      <trans-unit id="Common.HigherSubscriptionTierRequired">
+        <source xml:lang="en">Feature Requires Higher Subscription Tier</source>
+        <note>ID: Common.HigherSubscriptionTierRequired</note>
       </trans-unit>
       <trans-unit id="Common.Error">
         <source xml:lang="en">Error</source>
@@ -1441,6 +1447,7 @@
         <source xml:lang="en">Your subscription includes this feature.</source>
         <note>ID: EditTab.SubscriptionEnabled</note>
         <note>Appears in a tooltip on the Subscription button when the user DOES have a subcription (cf EditTab.RequiresSubscription).</note>
+        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="EditTab.SubscriptionSettingsButton" sil:dynamic="true">
         <source xml:lang="en">Bloom Subscription Settings</source>
@@ -1970,11 +1977,6 @@
       <trans-unit id="EditTab.PastePage">
         <source xml:lang="en">Paste Page</source>
         <note>ID: EditTab.PastePage</note>
-      </trans-unit>
-      <trans-unit id="EditTab.RequiresSubscription" sil:dynamic="true">
-        <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
-        <note>ID: EditTab.RequiresSubscription</note>
-        <note>Appears in notice (possibly obscuring other controls when they may not be used) because no Bloom Subcription project has been selected.</note>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
@@ -4276,18 +4278,18 @@
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage">
-        <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
-        <note>ID: PublishTab.PublishRequiresSubscription.FirstOverlayPage</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage">
+        <source xml:lang="en">Page {0} is the first page that uses this feature.</source>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage</note>
         <note>The {0} will be replaced by a page number.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.Options">
-        <source xml:lang="en">In order to publish your book, you need to either have an active Bloom Subscription, or remove the Overlay elements from your book.</source>
-        <note>ID: PublishTab.PublishRequiresSubscription.Options</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.Options">
+        <source xml:lang="en">In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.</source>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.Options</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.ProblemExplanation">
-        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Subscription feature.</source>
-        <note>ID: PublishTab.PublishRequiresSubscription.ProblemExplanation</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation">
+        <source xml:lang="en">The book titled "{0}" uses the "{1}" feature.</source>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation</note>
         <note>{0} will be replaced with the book's title.</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute">
@@ -5396,14 +5398,22 @@ Do you want to go ahead?</note>
         <note>ID: Common.BloomSubscription</note>
         <note>This is paid subscription for advanced features.</note>
       </trans-unit>
-
-<!-- Most subscription labels are in the BloomLowPriority. What we want here
+      <!-- Most subscription labels are in the BloomLowPriority. What we want here
 is mostly status, which shows on the Collection Tab -->
-
       <trans-unit id="SubscriptionStatus.RenewalMessage">
         <source xml:lang="en">Please email [subscriptions@bloomlibrary.org](%0) to renew.</source>
         <note>ID: SubscriptionStatus.RenewalMessage</note>
         <note>Make sure to keep the brackets around [subscriptions@bloomlibrary.org] and do not change it at all.  Do not change the (%0) part either. The %0 will become a hyperlink that opens an email program to the correct email address.  To repeat, the text starting from the opening bracket [ and ending with the closing parenthesis ) should not be translated or changed in any way.</note>
+      </trans-unit>
+      <trans-unit id="Subscription.RequiredTierForFeatureSentence">
+        <source xml:lang="en">This feature requires a Bloom subscription tier of at least "{0}".</source>
+        <note>ID: Subscription.RequiredTierForFeatureSentence</note>
+        <note>{0} is will be filled in with name of the tier. e.g "Pro" or "Enterprise"</note>
+      </trans-unit>
+      <trans-unit id="Subscription.FeatureIsIncludedSentence">
+        <source xml:lang="en">This feature is included in your {0} subscription.</source>
+        <note>ID: Subscription.FeatureIsIncludedSentence</note>
+        <note>{0} is will be filled in with name of the tier. e.g "Pro" or "Enterprise"</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
         <source xml:lang="en">Your {0} subscription expires on {1}.</source>
@@ -5422,10 +5432,6 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: SubscriptionStatus.DefaultMessage</note>
         <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
       </trans-unit>
-
-
-
-
       <trans-unit id="TeamCollection.TeamCollection">
         <source xml:lang="en">Team Collection</source>
         <note>ID: TeamCollection.TeamCollection</note>
@@ -6127,7 +6133,6 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
         <note>This is the dialog used to set up the wall calendar</note>
       </trans-unit>
-
       <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true">
         <source xml:lang="en">Put a possible answer here. Check it if it is correct.</source>
         <note>ID: TemplateBooks.Quiz.HintBubble.Answer</note>

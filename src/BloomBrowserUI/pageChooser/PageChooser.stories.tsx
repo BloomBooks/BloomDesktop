@@ -123,7 +123,6 @@ export const NormalPreview = () => {
                     pageLabel,
                     orientation
                 )}
-                enterpriseAvailable={true}
                 pageIsDigitalOnly={false}
                 pageId="1235"
                 templateBookPath="somePath"
@@ -153,8 +152,7 @@ export const PreviewRequiresEnterprise = () => {
                     pageLabel,
                     orientation
                 )}
-                pageIsEnterpriseOnly={true}
-                enterpriseAvailable={false}
+                featureName="foobar"
                 pageIsDigitalOnly={true}
                 pageId="1235"
                 templateBookPath="somePath"
@@ -186,7 +184,7 @@ export const PreviewChangeLayoutWillLoseData = () => {
                 )}
                 caption="Just Text"
                 pageDescription="This page has space for only text. But I want to put a bigger description in here to make sure."
-                enterpriseAvailable={true}
+                featureName="foobar"
                 pageIsDigitalOnly={false}
                 pageId="1235"
                 templateBookPath="somePath"

@@ -103,8 +103,8 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
         ? pageData.map((currentPageDiv: IPageData, index) => {
               // Process each page and create a pageThumbnail div containing a page thumbnail image and data
               // and a clickable overlay.
-              const pageIsEnterpriseOnly = currentPageDiv.page.classList.contains(
-                  "enterprise-only"
+              const requiresSubscription = currentPageDiv.page.hasAttribute(
+                  "data-feature"
               );
               const pageIsMarkedBilingual =
                   currentPageDiv.page.getAttribute("data-ui-mark-bilingual") ===
@@ -113,7 +113,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
               const thisPageIsSelected =
                   currentPageDiv.page.id === selectedPageId;
 
-              const enterpriseOnlyRules = pageIsEnterpriseOnly
+              const subscriptionOnlyRules = requiresSubscription
                   ? `:after {
                         content: "${enterpriseMarkerChar}";
                         cursor: default;
@@ -153,7 +153,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                           // The absolutely positioned blue overlay child needs to be placed relative to
                           // this, not an ancestor. This keeps them together during scrolling, etc.
                           position: relative;
-                          ${enterpriseOnlyRules}
+                          ${subscriptionOnlyRules}
                           ${markedBilingualRules}
                       `}
                   >

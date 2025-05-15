@@ -227,15 +227,25 @@ export function useCanModifyCurrentBook(): boolean {
     return canModifyCurrentBook;
 }
 
-export function useApiObject<T>(urlSuffix: string, defaultValue: T): T {
+export function useApiObject<T>(
+    urlSuffix: string,
+    defaultValue: T,
+    // Set to true to skip making the API query and just return defaultValue.
+    // This is useful when certain conditions are met where we don't need the data.
+    skipQuery: boolean = false
+): T {
     const [value, setValue] = useState<T>(defaultValue);
     useEffect(() => {
-        get(urlSuffix, c => {
-            if (typeof c.data === "string") {
-                setValue(JSON.parse(c.data as string));
-            } else setValue(c.data);
-        });
-    }, [urlSuffix]);
+        if (skipQuery) {
+            setValue(defaultValue);
+        } else {
+            get(urlSuffix, c => {
+                if (typeof c.data === "string") {
+                    setValue(JSON.parse(c.data as string));
+                } else setValue(c.data);
+            });
+        }
+    }, [urlSuffix, skipQuery, defaultValue]);
     return value;
 }
 

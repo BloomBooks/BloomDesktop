@@ -16,13 +16,13 @@ import NestedMenuItem from "mui-nested-menu-item";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import { getBoolean, post, postBoolean } from "../utils/bloomApi";
-import {
-    useHaveSubscription,
-    useGetSubscriptionTier
-} from "./requiresSubscription";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
 import { kUiFontStack } from "../bloomMaterialUITheme";
 import { Variant } from "@mui/material/styles/createTypography";
+import {
+    useGetFeatureStatus,
+    useGetFeatureAvailabilityMessage
+} from "./featureStatus";
 
 interface IBaseLocalizableMenuItemProps {
     english: string;
@@ -44,6 +44,7 @@ interface IBaseLocalizableMenuItemProps {
     generatedSubLabel?: string;
     subLabelL10nId?: string;
     tooltip?: string;
+    featureName?: string;
 }
 
 export interface INestedMenuItemProps extends IBaseLocalizableMenuItemProps {
@@ -56,8 +57,7 @@ export interface ILocalizableMenuItemProps
     onClick: React.MouseEventHandler;
     icon?: ReactNode;
     addEllipsis?: boolean;
-    requiresAnySubscription?: boolean;
-    requiresEnterpriseTier?: boolean;
+
     dontGiveAffordanceForCheckbox?: boolean;
     subscriptionTooltipOverride?: string;
     className?: string;
@@ -91,22 +91,8 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
         undefined,
         props.l10nParam0
     );
-
-    const subscriptionAvailable = useHaveSubscription();
-    let subscriptionStatus = useGetSubscriptionTier();
-    if (!subscriptionAvailable) {
-        subscriptionStatus = "None"; // (years later) I don't know why we don't trust the useGetSubscriptionStatus() to return this
-    }
-
-    let meetsSubscriptionRequirement = true;
-
-    // If requires subscription, check for "Subscription" status
-    if (props.requiresEnterpriseTier) {
-        meetsSubscriptionRequirement = subscriptionStatus !== "None";
-    } else if (props.requiresAnySubscription) {
-        meetsSubscriptionRequirement = subscriptionAvailable;
-    }
-    // Otherwise, keep the default true value
+    const featureStatus = useGetFeatureStatus(props.featureName);
+    const enabled = featureStatus === undefined ? true : featureStatus.enabled;
 
     const iconElement = props.icon ? (
         <ListItemIcon
@@ -117,9 +103,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                 // We can't use the disabled prop because it prevents the click from opening settings.
                 // So we just make it look disabled (using the same setting as Mui-disabled).
                 // And we only do it on the icon and text --not on the menu item-- so the enterprise icon doesn't look disabled.
-                opacity: ${meetsSubscriptionRequirement
-                    ? undefined
-                    : kBloomDisabledOpacity};
+                opacity: ${enabled ? undefined : kBloomDisabledOpacity};
             `}
         >
             {props.icon}
@@ -136,44 +120,36 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
 
     const ellipsis = props.addEllipsis ? "..." : "";
 
-    const requiresSubscriptionTooltip = useL10n(
-        "To use this feature, you'll need a Bloom Subscription.",
-        "CollectionSettingsDialog.RequiresSubscription_ToolTip_"
-    );
+    const requiredTierMessage = useGetFeatureAvailabilityMessage(featureStatus);
 
-    const subscriptionElement =
-        props.requiresAnySubscription || props.requiresEnterpriseTier ? (
-            <img
-                css={css`
-                    width: ${kEnterpriseStickerAffordance}px !important;
-                    margin-left: 12px;
-                `}
-                src="/bloom/images/bloom-enterprise-badge.svg"
-                title={
-                    meetsSubscriptionRequirement
-                        ? undefined
-                        : props.subscriptionTooltipOverride ||
-                          requiresSubscriptionTooltip
-                }
-            />
-        ) : (
-            <div
-                css={css`
-                    width: ${kEnterpriseStickerAffordance}px !important;
-                `}
-            />
-        );
+    const subscriptionElement = featureStatus?.subscriptionTier ? (
+        <img
+            css={css`
+                width: ${kEnterpriseStickerAffordance}px !important;
+                margin-left: 12px;
+            `}
+            src="/bloom/images/bloom-enterprise-badge.svg" // Enhance currently we only have one icon for all tiers
+            title={
+                enabled
+                    ? undefined
+                    : props.subscriptionTooltipOverride || requiredTierMessage
+            }
+        />
+    ) : (
+        <div
+            css={css`
+                width: ${kEnterpriseStickerAffordance}px !important;
+            `}
+        />
+    );
 
     const localizedSubLabel = useL10n("", props.subLabelL10nId ?? null);
     const subLabel =
         props.subLabel ?? props.generatedSubLabel ?? localizedSubLabel;
-
-    const openCollectionSettings = () =>
+    const openSubscriptionSettings = () =>
         post("common/showSettingsDialog?tab=subscription");
 
-    const menuClickHandler = meetsSubscriptionRequirement
-        ? props.onClick
-        : openCollectionSettings;
+    const menuClickHandler = enabled ? props.onClick : openSubscriptionSettings;
 
     // The "div" wrapper is necessary to get the tooltip to work on a disabled MenuItem.
     return (
@@ -201,7 +177,7 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                                 // We can't use the disabled prop because it prevents the click from opening settings and
                                 // prevents the tooltip. So we just make it look disabled (using the same setting as Mui-disabled).
                                 // And we only do it on the icon and text so the enterprise icon doesn't look disabled.
-                                opacity: ${meetsSubscriptionRequirement
+                                opacity: ${enabled
                                     ? undefined
                                     : kBloomDisabledOpacity};
                             }

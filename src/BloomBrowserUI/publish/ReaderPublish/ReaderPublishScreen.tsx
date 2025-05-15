@@ -233,7 +233,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 `}
             />
             <CommandsGroup>
-                <RequiresSubscriptionAdjacentIconWrapper>
+                <RequiresSubscriptionAdjacentIconWrapper featureName="BulkBloomPub">
                     <LinkWithDisabledStyles
                         l10nKey="PublishTab.BulkBloomPub.MakeAllBloomPubs"
                         onClick={() => {
