@@ -1110,6 +1110,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="needs-translation">Subscription Required</target>
         <note>ID: Common.SubscriptionRequired</note>
       </trans-unit>
+      <trans-unit id="Common.HigherSubscriptionTierRequired">
+        <source xml:lang="en">Feature Requires Higher Subscription Tier</source>
+        <target xml:lang="sw" state="needs-translation">Feature Requires Higher Subscription Tier</target>
+        <note>ID: Common.HigherSubscriptionTierRequired</note>
+      </trans-unit>
       <trans-unit id="Common.Error" approved="yes">
         <source xml:lang="en">Error</source>
         <target xml:lang="sw" state="final">Kosa</target>
@@ -2269,11 +2274,6 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">Paste Page</source>
         <target xml:lang="sw" state="final">Bandika Ukurasa</target>
         <note>ID: EditTab.PastePage</note>
-      </trans-unit>
-      <trans-unit id="EditTab.RequiresSubscription" sil:dynamic="true">
-        <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
-        <target xml:lang="sw" state="needs-translation">To use this feature, you'll need a Bloom Subscription.</target>
-        <note>ID: EditTab.RequiresSubscription</note>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Saving...</source>
@@ -4862,20 +4862,20 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Chapisha</target>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage">
-        <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
-        <target xml:lang="sw" state="needs-translation">Page {0} is the first page that uses Overlay elements.</target>
-        <note>ID: PublishTab.PublishRequiresSubscription.FirstOverlayPage</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage">
+        <source xml:lang="en">Page {0} is the first page that uses this feature.</source>
+        <target xml:lang="sw" state="needs-translation">Page {0} is the first page that uses this feature.</target>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.Options">
-        <source xml:lang="en">In order to publish your book, you need to either have an active Bloom Subscription, or remove the Overlay elements from your book.</source>
-        <target xml:lang="sw" state="needs-translation">In order to publish your book, you need to either have an active Bloom Subscription, or remove the Overlay elements from your book.</target>
-        <note>ID: PublishTab.PublishRequiresSubscription.Options</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.Options">
+        <source xml:lang="en">In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.</source>
+        <target xml:lang="sw" state="needs-translation">In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.</target>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.Options</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.ProblemExplanation">
-        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Subscription feature.</source>
-        <target xml:lang="sw" state="needs-translation">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Subscription feature.</target>
-        <note>ID: PublishTab.PublishRequiresSubscription.ProblemExplanation</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation">
+        <source xml:lang="en">The book titled "{0}" uses the "{1}" feature.</source>
+        <target xml:lang="sw" state="needs-translation">The book titled "{0}" uses the "{1}" feature.</target>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute">
         <source xml:lang="en">less than one minute</source>
@@ -6158,6 +6158,16 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Please email [subscriptions@bloomlibrary.org](%0) to renew.</source>
         <target xml:lang="sw" state="needs-translation">Please email [subscriptions@bloomlibrary.org](%0) to renew.</target>
         <note>ID: SubscriptionStatus.RenewalMessage</note>
+      </trans-unit>
+      <trans-unit id="Subscription.RequiredTierForFeatureSentence">
+        <source xml:lang="en">This feature requires a Bloom subscription tier of at least "{0}".</source>
+        <target xml:lang="sw" state="needs-translation">This feature requires a Bloom subscription tier of at least "{0}".</target>
+        <note>ID: Subscription.RequiredTierForFeatureSentence</note>
+      </trans-unit>
+      <trans-unit id="Subscription.FeatureIsIncludedSentence">
+        <source xml:lang="en">This feature is included in your {0} subscription.</source>
+        <target xml:lang="sw" state="needs-translation">This feature is included in your {0} subscription.</target>
+        <note>ID: Subscription.FeatureIsIncludedSentence</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
         <source xml:lang="en">Your {0} subscription expires on {1}.</source>
