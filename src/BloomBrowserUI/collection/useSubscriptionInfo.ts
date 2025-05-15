@@ -80,7 +80,6 @@ export const useSubscriptionInfo = () => {
 export function useLocalizedTier(tier: string) {
     return useL10n2({
         english: tier,
-        key: "Subscription.Tier." + tier,
-        params: []
+        key: "Subscription.Tier." + tier
     });
 }
