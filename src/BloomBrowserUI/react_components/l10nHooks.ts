@@ -22,9 +22,11 @@ export function useL10n(
     temporarilyDisableI18nWarning?: boolean
 ): string {
     // Create an array of parameters, filtering out undefined values
-    const l10nParams: string[] = [l10nParam0, l10nParam1].filter(
-        (param): param is string => !!param
-    );
+    const l10nParams: string[] = React.useMemo(() => {
+        return [l10nParam0, l10nParam1].filter(
+            (param): param is string => !!param
+        );
+    }, [l10nParam0, l10nParam1]);
 
     // Use useL10n2 internally with the object parameter format
     return useL10n2({
