@@ -16,14 +16,21 @@ export const PublishingBookRequiresHigherTierNotice: React.FunctionComponent<{
     titleForDisplay: string;
     featurePreventingPublishing: FeatureStatus;
 }> = props => {
+    const nameTheFeatureMessageL10nParams = React.useMemo(
+        () => [
+            props.titleForDisplay,
+            props.featurePreventingPublishing.localizedFeature
+        ],
+        [
+            props.titleForDisplay,
+            props.featurePreventingPublishing.localizedFeature
+        ]
+    );
     const nameTheFeatureMessage = useL10n2({
         english: 'The book titled "{0}" uses the "{1}" feature.',
         key:
             "PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation",
-        params: [
-            props.titleForDisplay,
-            props.featurePreventingPublishing.localizedFeature
-        ]
+        params: nameTheFeatureMessageL10nParams
     });
     const requiredTierMessage = useGetFeatureAvailabilityMessage(
         props.featurePreventingPublishing
@@ -35,11 +42,15 @@ export const PublishingBookRequiresHigherTierNotice: React.FunctionComponent<{
         key: "PublishTab.PublishingBookRequiresHigherTierNotice.Options"
     });
 
+    const firstPageMessageL10nParams = React.useMemo(
+        () => [props.featurePreventingPublishing.firstPageNumber ?? "?"],
+        [props.featurePreventingPublishing.firstPageNumber]
+    );
     const firstPageMessage = useL10n2({
         english: "Page {0} is the first page that uses this feature.",
         key:
             "PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage",
-        params: [props.featurePreventingPublishing.firstPageNumber ?? "?"]
+        params: firstPageMessageL10nParams
     });
 
     return (

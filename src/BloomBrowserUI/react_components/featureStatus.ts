@@ -1,5 +1,6 @@
 // See also: the backend version of this in FeatureStatus.cs
 
+import { useMemo } from "react";
 import { post, useApiObject, get } from "../utils/bloomApi";
 import { useL10n2 } from "./l10nHooks";
 
@@ -57,16 +58,19 @@ export function useGetFeatureAvailabilityMessage(
     featureStatus: FeatureStatus | undefined
 ): string {
     // Get localized strings first
+    const params = useMemo(() => [featureStatus?.localizedFeature || ""], [
+        featureStatus?.localizedFeature
+    ]);
     const featureNotInTierMessage = useL10n2({
         english:
             'This feature requires a Bloom subscription tier of at least "{0}".',
         key: "Subscription.RequiredTierForFeatureSentence",
-        params: [featureStatus?.localizedTier || ""]
+        params: params
     });
     const featureEnabledMessage = useL10n2({
         english: "This feature is included in your {0} subscription.",
         key: "Subscription.FeatureIsIncludedSentence",
-        params: [featureStatus?.localizedTier || ""]
+        params: params
     });
 
     // Calculate and return the message directly
