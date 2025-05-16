@@ -1109,9 +1109,9 @@
         <target xml:lang="fr" state="final">Abonnement Requis</target>
         <note>ID: Common.SubscriptionRequired</note>
       </trans-unit>
-      <trans-unit id="Common.HigherSubscriptionTierRequired">
+      <trans-unit id="Common.HigherSubscriptionTierRequired" approved="yes">
         <source xml:lang="en">Feature Requires Higher Subscription Tier</source>
-        <target xml:lang="fr" state="needs-translation">Feature Requires Higher Subscription Tier</target>
+        <target xml:lang="fr" state="final">Cette fonctionnalité nécessite un niveau d'abonnement supérieur</target>
         <note>ID: Common.HigherSubscriptionTierRequired</note>
       </trans-unit>
       <trans-unit id="Common.Error" approved="yes">
@@ -4863,19 +4863,19 @@
         <target xml:lang="fr" state="final">Publier</target>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage">
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage" approved="yes">
         <source xml:lang="en">Page {0} is the first page that uses this feature.</source>
-        <target xml:lang="fr" state="needs-translation">Page {0} is the first page that uses this feature.</target>
+        <target xml:lang="fr" state="final">La page {0} est la première page qui utilise cette fonctionnalité.</target>
         <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.Options">
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.Options" approved="yes">
         <source xml:lang="en">In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.</source>
-        <target xml:lang="fr" state="needs-translation">In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.</target>
+        <target xml:lang="fr" state="final">Afin de publier votre livre, il faut soit obtenir un abonnement Bloom avec le niveau nécessaire, ou supprimer l'utilisation de cette fonctionnalité dans ce livre.</target>
         <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.Options</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation">
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation" approved="yes">
         <source xml:lang="en">The book titled "{0}" uses the "{1}" feature.</source>
-        <target xml:lang="fr" state="needs-translation">The book titled "{0}" uses the "{1}" feature.</target>
+        <target xml:lang="fr" state="final">Le livre intitulé "{0}" utilise la fonctionnalité "{1}".</target>
         <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute" approved="yes">
@@ -6160,14 +6160,14 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="translated">Veuillez [nous contacter](%0) pour renouveler.</target>
         <note>ID: SubscriptionStatus.RenewalMessage</note>
       </trans-unit>
-      <trans-unit id="Subscription.RequiredTierForFeatureSentence">
+      <trans-unit id="Subscription.RequiredTierForFeatureSentence" approved="yes">
         <source xml:lang="en">This feature requires a Bloom subscription tier of at least "{0}".</source>
-        <target xml:lang="fr" state="needs-translation">This feature requires a Bloom subscription tier of at least "{0}".</target>
+        <target xml:lang="fr" state="final">Cette fonctionnalité nécessite un niveau d'abonnement Bloom d'au moins "{0}".</target>
         <note>ID: Subscription.RequiredTierForFeatureSentence</note>
       </trans-unit>
-      <trans-unit id="Subscription.FeatureIsIncludedSentence">
+      <trans-unit id="Subscription.FeatureIsIncludedSentence" approved="yes">
         <source xml:lang="en">This feature is included in your {0} subscription.</source>
-        <target xml:lang="fr" state="needs-translation">This feature is included in your {0} subscription.</target>
+        <target xml:lang="fr" state="final">Cette fonctionnalité est déjà incluse dans votre abonnement {0}.</target>
         <note>ID: Subscription.FeatureIsIncludedSentence</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage" approved="yes">
