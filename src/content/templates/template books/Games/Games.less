@@ -269,6 +269,15 @@
             opacity: 0;
         }
     }
+    .drag-activity-play
+    // Note, data-show-answers-in-targets might not be set. Default is false.
+        .bloom-page:not([data-show-answers-in-targets="true"])
+        & {
+        // Only show the target contents in play mode if the game creator decided to show them.
+        > * {
+            opacity: 0;
+        }
+    }
 
     // in targets, as in image canvas elements, we want the height to be derived from the width.
     .bloom-imageContainer img {

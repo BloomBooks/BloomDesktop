@@ -3915,6 +3915,7 @@ namespace Bloom.Book
             //var breakingFeatureRequirements = GetBreakingFeatureRequirements();
             // Handle the back migrations this version of Bloom knows about, in the proper reverse order.
             // Back migrations should not be merged to later versions.
+            MigrateBackfromDataFeatureAttributes();
             // If you add a new back migration, you must also modify GetHtmlMessageIfFeatureIncompatibility
             // to not complain if the only breaking changes are ones we can back-migrate.
             // Also, each back migration has the potential to cause problems since the corresponding forward
@@ -3953,6 +3954,34 @@ namespace Bloom.Book
             {
                 element.SetAttribute(newAttrName, element.GetAttribute(oldAttrName));
                 element.RemoveAttribute(oldAttrName);
+            }
+        }
+
+        /// <summary>
+        /// Only for 6.0 and 6.1! Do not merge to 6.2.
+        /// </summary>
+        /// <remarks>
+        /// Possibly merge to 6.2a if that branch lasts long enough.
+        /// </remarks>
+        public void MigrateBackfromDataFeatureAttributes()
+        {
+            if (!Program.RunningUnitTests)
+                Guard.Against(
+                    !BookInfo.IsSaveable,
+                    "We should not even think about migrating a book that is not Saveable"
+                );
+            foreach (
+                SafeXmlElement pageDiv in Dom.SafeSelectNodes(
+                    "//body/div[contains(@class, 'bloom-page')]"
+                )
+            )
+            {
+                var dataFeature = pageDiv.GetAttribute("data-feature");
+                if (!string.IsNullOrEmpty(dataFeature))
+                {
+                    pageDiv.RemoveAttribute("data-feature");
+                    pageDiv.AddClass("enterprise-only");
+                }
             }
         }
 

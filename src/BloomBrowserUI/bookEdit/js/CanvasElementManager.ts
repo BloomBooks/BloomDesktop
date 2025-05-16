@@ -49,12 +49,13 @@ import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
 import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
-import { getTarget } from "bloom-player";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { postData, postJson } from "../../utils/bloomApi";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
+import PlaceholderProvider from "./PlaceholderProvider";
+import { isInDragActivity } from "../toolbox/games/GameInfo";
 
 export interface ITextColorInfo {
     color: string;
@@ -347,6 +348,17 @@ export class CanvasElementManager {
         this.alignControlFrameWithActiveElement();
     }
 
+    // May 2025, just before trying to release 6.2a, JT and I decided we would be better off
+    // either being able to get rid of this function completely and just call AdjustSizeOrMarkOverflow,
+    // or have AdjustSizeOrMarkOverflow call this function.
+    // It would be better to have this logic live in one place as evidenced by the fact that we had a bug
+    // in this version which wasn't in AdjustSizeOrMarkOverflow. See BL-14771.
+    // Note that when we experimented with just calling AdjustSizeOrMarkOverflow, we ran into issues with
+    // nicescroll being turned on and off while the canvas element was being resized. This caused
+    // flickering of the text extending beyond the canvas element.
+    // Note that we *would* actually like nicescroll to be updated when resizing the element, otherwise
+    // the scrollbar can end up out of position horizontally. But maybe that should happen on some
+    // kind of timeout, e.g. if we stop calling AdjustSizeOrMarkOverflow for a second.
     public adjustCanvasElementHeightToContentOrMarkOverflow(
         editable: HTMLElement
     ): void {
@@ -354,17 +366,20 @@ export class CanvasElementManager {
         const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(
             editable
         );
-        let overflowY =
-            overflowAmounts[1] +
-            editable.offsetHeight -
-            this.activeElement.offsetHeight;
+        let overflowY = overflowAmounts[1];
 
-        // This mimics the relevant part of OverflowChecker.MarkOverflowInternal
+        // This mimics the relevant part of OverflowChecker.AdjustSizeOrMarkOverflow
         overflowY = theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
             editable,
             overflowY
         );
-        editable.classList.toggle("overflow", overflowY > 0);
+
+        // We decided that overflow was just causing too many problems as we tried to wrap
+        // up drag activities. So for now, we are just turning off overflow reporting completely
+        // in drag activities. See BL-14783.
+        if (!isInDragActivity(editable)) {
+            editable.classList.toggle("overflow", overflowY > 0);
+        }
     }
 
     // When the format dialog changes the amount of padding for canvas elements, adjust their sizes
@@ -673,6 +688,10 @@ export class CanvasElementManager {
             divsThatHaveSourceBubbles,
             bubbleDivs
         );
+
+        // at the moment (6.2) we aren't using this for any draggable things, but we could.
+        PlaceholderProvider.addPlaceholders(translationGroup.parentElement!);
+
         if (divsThatHaveSourceBubbles.length > 0) {
             BloomSourceBubbles.MakeSourceBubblesIntoQtips(
                 divsThatHaveSourceBubbles[0],
@@ -1948,7 +1967,7 @@ export class CanvasElementManager {
         theOneCanvasElementManager.adjustCanvasElementHeightToContentOrMarkOverflow(
             editable
         );
-        // review; adjustTarget(this.activeElement, getTarget(this.activeElement));
+        this.adjustTarget(this.activeElement);
         this.alignControlFrameWithActiveElement();
         this.guideProvider.duringDrag(this.activeElement);
     }
@@ -3227,19 +3246,24 @@ export class CanvasElementManager {
         canvasElements.forEach(canvasElement => {
             // If the canvas element is not visible, its width will be 0. Don't try to adjust it.
             if (canvasElement.clientWidth === 0) return;
+
+            // Careful. For older books, left and top might be percentages.
+            const canvasElementRect = canvasElement.getBoundingClientRect();
+            const parentRect = parentContainer.getBoundingClientRect();
+
             this.adjustCanvasElementLocation(
-                canvasElement as HTMLElement,
+                canvasElement,
                 parentContainer,
                 new Point(
-                    CanvasElementManager.pxToNumber(canvasElement.style.left),
-                    CanvasElementManager.pxToNumber(canvasElement.style.top),
-                    PointScaling.Unscaled,
+                    canvasElementRect.left - parentRect.left,
+                    canvasElementRect.top - parentRect.top,
+                    PointScaling.Scaled,
                     "ensureCanvasElementsIntersectParent"
                 )
             );
             changed = this.ensureTailsInsideParent(
                 parentContainer,
-                canvasElement as HTMLElement,
+                canvasElement,
                 changed
             );
         });

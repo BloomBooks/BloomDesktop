@@ -74,6 +74,7 @@ import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { showLinkGridSetupsDialog } from "../bookLinkSetup/LinkGridSetupDialog";
 import { Link } from "../bookLinkSetup/BookLinkTypes";
+import PlaceholderProvider from "./PlaceholderProvider";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -732,6 +733,8 @@ export function SetupElements(
         divsThatHaveSourceBubbles,
         bubbleDivs
     );
+
+    PlaceholderProvider.addPlaceholders(container);
 
     // We seem to need a delay to get a reliable result in BloomSourceBubbles.MakeSourceBubblesIntoQtips()
     // as it calls BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(), which ends by calling

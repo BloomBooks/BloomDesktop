@@ -214,20 +214,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         return null;
     }
 
-    // These commands apply to all canvas elements (currently none!).
-    const menuOptions: IMenuItemWithSubmenu[] = [];
-    // These to everything except background images
-    if (!isBackgroundImage) {
-        menuOptions.unshift({
-            l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
-            english: "Duplicate",
-            onClick: () => {
-                if (!props.canvasElement) return;
-                makeDuplicateOfDragBubble();
-            },
-            icon: <DuplicateIcon css={getMenuIconCss()} />
-        });
-    }
+    let menuOptions: IMenuItemWithSubmenu[] = [];
     if (hasRectangle) {
         menuOptions.splice(0, 0, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.FillBackground",
@@ -240,7 +227,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             icon: rectangleHasBackground && <CheckIcon css={getMenuIconCss()} />
         });
     }
-    if (hasText) {
+    if (hasText && !isInDraggableGame) {
         menuOptions.splice(0, 0, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
             english: "Add Child Bubble",
@@ -279,6 +266,21 @@ const CanvasElementContextControls: React.FunctionComponent<{
     if (hasVideo) {
         addVideoMenuItems(menuOptions, videoContainer, setMenuOpen);
     }
+
+    menuOptions.push(divider);
+
+    if (!isBackgroundImage) {
+        menuOptions.push({
+            l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
+            english: "Duplicate",
+            onClick: () => {
+                if (!props.canvasElement) return;
+                makeDuplicateOfDragBubble();
+            },
+            icon: <DuplicateIcon css={getMenuIconCss()} />
+        });
+    }
+
     let deleteEnabled = true;
     if (isBackgroundImage) {
         const fillItem = {
@@ -309,7 +311,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     }
 
     // last one
-    menuOptions.push(divider, {
+    menuOptions.push({
         l10nId: "Common.Delete",
         english: "Delete",
         disabled: !deleteEnabled,
@@ -343,6 +345,13 @@ const CanvasElementContextControls: React.FunctionComponent<{
             getImageUrlFromImageContainer(imgContainer as HTMLElement)
         );
     };
+
+    // I don't particularly like this, but the logic of when to add items is
+    // so convoluted with most things being added at the beginning of the list instead
+    // the end, that it is almost impossible to reason about. It would be great to
+    // give it a more linear flow, but we're not taking that on just before releasing 6.2a.
+    // But this is also future-proof.
+    menuOptions = cleanUpDividers(menuOptions);
 
     const maxMenuWidth = 260;
 
@@ -1071,4 +1080,23 @@ function addMenuItemsForDraggable(
             undefined
         )
     });
+}
+
+// Make sure we don't start/end with a divider, and there aren't two in a row.
+function cleanUpDividers(menuItems: IMenuItemWithSubmenu[]) {
+    let lastDividerIndex = -1;
+    const cleanMenuItems = menuItems.filter((option, index) => {
+        if (option === divider) {
+            if (
+                lastDividerIndex === index - 1 ||
+                index === menuItems.length - 1
+            ) {
+                return false;
+            } else {
+                lastDividerIndex = index;
+            }
+        }
+        return true;
+    });
+    return cleanMenuItems;
 }

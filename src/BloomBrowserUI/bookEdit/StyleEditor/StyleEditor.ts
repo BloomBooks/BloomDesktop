@@ -2203,7 +2203,7 @@ export default class StyleEditor {
         if (!styleName) {
             return; // bizarre, since we put up the dialog
         }
-        OverflowChecker.MarkOverflowInternal(editable, doNotShrink);
+        OverflowChecker.AdjustSizeOrMarkOverflow(editable, doNotShrink);
         this.updateLabelsWithStyleName();
         this.getParagraphTabDescription();
 

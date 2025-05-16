@@ -49,7 +49,7 @@
         <source xml:lang="en">Objects to Drag</source>
         <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading">
+      <!-- <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading">
         <source xml:lang="en">Drag Images to Targets</source>
         <note>ID: EditTab.Toolbox.DragActivity.DragImageHeading</note>
       </trans-unit>
@@ -64,7 +64,7 @@
       <trans-unit id="EditTab.Toolbox.DragActivity.DragImageInstructions">
         <source xml:lang="en">Place the images anywhere on the scene, and the targets where the student should put them.</source>
         <note>ID: EditTab.Toolbox.DragActivity.DragImageInstructions</note>
-      </trans-unit>
+      </trans-unit> -->
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTarget">
         <source xml:lang="en">Draggable Target</source>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTarget</note>
@@ -99,26 +99,26 @@
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
         <note>Used as the label of a button that is otherwise the name of a sound file, indicating that no sound has been chosen.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceHeading">
+      <!-- <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceHeading">
         <source xml:lang="en">Order Sentence</source>
         <note>ID: EditTab.Toolbox.DragActivity.OrderSentenceHeading</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceInstructions">
         <source xml:lang="en">Type a sentence. Bloom will shuffle the words for the student to fix.</source>
         <note>ID: EditTab.Toolbox.DragActivity.OrderSentenceInstructions</note>
-      </trans-unit>
+      </trans-unit> -->
       <trans-unit id="EditTab.Toolbox.DragActivity.Options">
         <source xml:lang="en">Options</source>
         <note>ID: EditTab.Toolbox.DragActivity.Options</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle">
+      <!-- <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle">
         <source xml:lang="en">Order Circle</source>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircle</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircleInstructions">
         <source xml:lang="en">Put the Order Circles in the correct order. Bloom will shuffle them when it is time to play.</source>
         <note>ID: EditTab.Toolbox.DragActivity.OrderCircleInstructions</note>
-      </trans-unit>
+      </trans-unit> -->
       <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswer">
         <source xml:lang="en">Part of the right answer</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswer</note>
@@ -165,10 +165,6 @@
         <source xml:lang="en">Show drag targets during Play</source>
         <note>ID: EditTab.Toolbox.DragActivity.ShowTargetsPlay</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle">
-        <source xml:lang="en">Order Circle</source>
-        <note>ID: EditTab.Toolbox.DragActivity.OrderCircle</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ShowAnswersInTargets">
         <source xml:lang="en">Show Answer even during Play</source>
         <note>ID: EditTab.Toolbox.DragActivity.ShowAnswersInTargets</note>
@@ -209,8 +205,7 @@
         <note>Label of a button that puts the Bloom Game tool into its the mode for adding elements that should show when the reader gets the answer wrong.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WrongInstructions">
-        <source xml:lang="en">
-          Add items that will show when the learner gets the wrong answer. For example, you might add a text that says “Try Again!”.\nIt is OK to have no correct or wrong answers. Just give the same positive reinforcement, like “Looks Nice!”.</source>
+        <source xml:lang="en">Add items that will show when the learner gets the wrong answer. For example, you might add a text that says “Try Again!”.\nIt is OK to have no correct or wrong answers. Just give the same positive reinforcement, like “Looks Nice!”.</source>
         <note>ID: EditTab.Toolbox.DragActivity.WrongInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsDecodable" sil:dynamic="true">
@@ -236,6 +231,43 @@
       <trans-unit id="EditTab.Toolbox.Games.Themes.red-on-white" translate="no">
         <source xml:lang="en">Red on white</source>
         <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DraggableLetter">
+        <source></source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DraggableLetter</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragLettersInstructions">
+        <source>Drag the letters where they go</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragLettersInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions">
+        <source>Drag the pictures where they go</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions">
+        <source>Drag the pictures to their shadows</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions">
+        <source>Match sounds with their words</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions
+        </note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions">
+        <source>Drag the correct sound to matching word</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions">
+        <source>Drag the word to the matching image</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions">
+        <source>Match each image to a word</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.CustomGameInstructions">
+        <source>Put instructions here</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.CustomGameInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool">
         <source xml:lang="en">Game Tool</source>

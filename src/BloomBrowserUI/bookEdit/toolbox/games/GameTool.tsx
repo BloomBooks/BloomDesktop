@@ -1163,7 +1163,7 @@ const DragActivityControls: React.FunctionComponent<{
                                         css={draggableWordCss}
                                         l10nKey="EditTab.Toolbox.DragActivity.Letter"
                                         makeTarget={true}
-                                        addClasses="draggable-text"
+                                        addClasses="draggable-text bloom-noAutoHeight"
                                         userDefinedStyleName="GameDragMediumCenter"
                                     />
                                 )}
@@ -1202,7 +1202,7 @@ const DragActivityControls: React.FunctionComponent<{
                                     css={draggableWordCss}
                                     l10nKey="EditTab.Toolbox.DragActivity.Word"
                                     makeTarget={true}
-                                    addClasses="draggable-text"
+                                    addClasses="draggable-text bloom-noAutoHeight"
                                     hide={!showWordDraggable}
                                     userDefinedStyleName="GameDragMediumCenter"
                                 />
@@ -1404,12 +1404,17 @@ const DragActivityControls: React.FunctionComponent<{
 const GameTextItem: React.FunctionComponent<{
     addClasses?: string;
 }> = props => {
+    // We don't want game text items to autosize, so we add this class to them. (BL-14779)
+    let classesToAdd = props.addClasses ?? "";
+    if (!classesToAdd.includes("bloom-noAutoHeight")) {
+        classesToAdd = classesToAdd + " bloom-noAutoHeight";
+    }
     return (
         <CanvasElementTextItem
             css={textItemCss("14pt")}
             l10nKey="EditTab.Toolbox.DragActivity.Text"
             makeTarget={false}
-            addClasses={props.addClasses}
+            addClasses={classesToAdd.trim()}
             userDefinedStyleName="GameTextMediumCenter"
         />
     );
