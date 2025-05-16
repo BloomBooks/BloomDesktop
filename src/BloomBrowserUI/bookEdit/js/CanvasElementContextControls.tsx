@@ -541,6 +541,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         <MenuIcon color="primary" />
                     </button>
                     <Menu
+                        keepMounted
                         css={css`
                             ul {
                                 max-width: ${maxMenuWidth}px;
