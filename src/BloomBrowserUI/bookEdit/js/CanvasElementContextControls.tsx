@@ -663,7 +663,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             onClick: () => {},
             icon: <VolumeUpIcon css={getMenuIconCss(1, "left:2px;")} />,
-            featureName: "overlays",
+            featureName: "overlay",
             subMenu
         };
     }
@@ -1015,7 +1015,7 @@ function addImageMenuOptions(
                     Currently: %0
                 </Span>
             ),
-            featureName: "overlays",
+            featureName: "overlay",
             onClick: () => pasteLink(canvasElement)
 
             /*
