@@ -1522,6 +1522,36 @@ namespace Bloom.Book
                 }
                 result.Add(Tuple.Create(attr.Name, XmlString.FromUnencoded(attr.Value)));
             }
+            // if the node is an img, save some extra data
+            if (node.Name == "img")
+            {
+                var ce = node.ParentElement?.ParentElement;
+                if (ce != null)
+                {
+                    if (ce.HasClass(HtmlDom.kCanvasElementClass))
+                    {
+                        result.Add(
+                            Tuple.Create(
+                                "data-canvas-element-style",
+                                XmlString.FromUnencoded(ce.GetAttribute("style"))
+                            )
+                        );
+                    }
+
+                    var bloomCanvas = ce.ParentElement;
+                    if (bloomCanvas != null && bloomCanvas.HasClass(HtmlDom.kBloomCanvasClass))
+                    {
+                        result.Add(
+                            Tuple.Create(
+                                "data-canvas-imgsizebasedon",
+                                XmlString.FromUnencoded(
+                                    bloomCanvas.GetAttribute("data-imgsizebasedon")
+                                )
+                            )
+                        );
+                    }
+                }
+            }
             return result;
         }
 
@@ -1823,7 +1853,7 @@ namespace Bloom.Book
         /// blank xmatter, then push the values back into the xmatter.
         /// </summary>
         /// <returns>true if this node is an image holder of some sort.</returns>
-        private bool UpdateImageFromDataSet(DataSet data, SafeXmlElement node, string key)
+        internal bool UpdateImageFromDataSet(DataSet data, SafeXmlElement node, string key)
         {
             if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
                 return false;
@@ -1875,21 +1905,86 @@ namespace Bloom.Book
             // that wasn't sufficient so we need to keep using width/height. We indicate that we're in this situation with this
             // class on the parent imageContainer. See BL-9460
 
+            // Also, if we're restoring a cropped (or potentially cropped) image, we need to keep the style;
+            // this is indicated by finding these two attributes used to contain data about a background image
+            // represented as a canvas element.
+            var canvasElementStyleTuple = otherAttributes?.Find(
+                x => x.Item1 == "data-canvas-element-style"
+            );
+            var sizeBasedOnTuple = otherAttributes?.Find(
+                x => x.Item1 == "data-canvas-imgsizebasedon"
+            );
+            var hasCanvasElementData = canvasElementStyleTuple != null && sizeBasedOnTuple != null;
+
             // Note that these attributes were already run through the _attributesNotToCopy filter.
             otherAttributes
-                ?.Where(a => a.Item1 != "src")
+                ?.Where(
+                    a =>
+                        a.Item1 != "src"
+                        && a.Item1 != "data-canvas-element-style"
+                        && a.Item1 != "data-canvas-element-style"
+                )
                 .ForEach(a =>
                 {
                     if (
                         a.Item1 == "style"
-                        && node.ParentNode
-                            .GetOptionalStringAttribute("class", "")
-                            .Contains("bloom-scale-with-code")
+                        && (
+                            node.ParentNode
+                                .GetOptionalStringAttribute("class", "")
+                                .Contains("bloom-scale-with-code") || hasCanvasElementData
+                        )
                     )
                     {
                         imgOrDivWithBackgroundImage.SetAttribute(a.Item1, a.Item2.Unencoded);
                     }
                 });
+
+            // If we find data related to a containing canvas element, restore that whole structure.
+            if (hasCanvasElementData)
+            {
+                // The situation we want to establish is that the image is inside an imageContainer
+                // inside a canvasElement inside a bloomCanvas. That may not be true initially.
+                var imageContainer = node.ParentElement;
+                var canvasElement = imageContainer?.ParentElement;
+                var bloomCanvas = canvasElement?.ParentElement;
+                if (imageContainer.HasClass(HtmlDom.kBloomCanvasClass))
+                {
+                    // Often, the image starts out directly inside a bloomCanvas and we have to create the two
+                    // intermediate levels. (We have retained the simpler structure in our various xmatter templates,
+                    // because when we don't have this extra data saved, we can do a better job of positioning
+                    // the image when we let the TS code convert it to the new structure. So that's what we'll
+                    // find if we are copying data from the data-div to an updated xmatter element.)
+                    bloomCanvas = imageContainer;
+                    imageContainer = node.OwnerDocument.CreateElement("div");
+                    imageContainer.SetAttribute("class", HtmlDom.kImageContainerClass);
+                    canvasElement = node.OwnerDocument.CreateElement("div");
+                    // Currently this only works for images that are, in fact, background canvas images. If we use this for
+                    // something that is not it will need adjusting.
+                    canvasElement.SetAttribute(
+                        "class",
+                        HtmlDom.kCanvasElementClass + " " + HtmlDom.kBackgroundImageClass
+                    );
+                    canvasElement.AppendChild(imageContainer);
+                    bloomCanvas.InsertAfter(canvasElement, node); // before we move node!
+                    imageContainer.AppendChild(node); // move it
+                }
+                else if (
+                    bloomCanvas == null
+                    || !bloomCanvas.HasClass(HtmlDom.kBloomCanvasClass)
+                    || !canvasElement.HasClass(HtmlDom.kCanvasElementClass)
+                    || !imageContainer.HasClass(HtmlDom.kImageContainerClass)
+                )
+                {
+                    // If it's not an xmatter situation, we expect to already have the correct structure.
+                    // If that's not true, we don't have either of the situations we can handle. Safest to do
+                    // nothing.
+                    return true;
+                }
+                // Either pre-existing or just created, we have the expected structure.
+                bloomCanvas.AddClass("bloom-has-canvas-element"); // probably only necessary if we added the canvas element
+                bloomCanvas.SetAttribute("data-imgsizebasedon", sizeBasedOnTuple.Item2.Unencoded);
+                canvasElement.SetAttribute("style", canvasElementStyleTuple.Item2.Unencoded);
+            }
             return true;
         }
 
@@ -2341,12 +2436,12 @@ namespace Bloom.Book
             }
         }
 
-		/// <summary>
-		/// If we have "{personalization}" in the subscription's HTML template, fill in the
-		/// personalization from the subscription code.  If the personalization is empty,
-		/// throw an exception because it should always exist if it's in the template.
-		/// </summary>
-		private string MergeInPersonalization(string content)
+        /// <summary>
+        /// If we have "{personalization}" in the subscription's HTML template, fill in the
+        /// personalization from the subscription code.  If the personalization is empty,
+        /// throw an exception because it should always exist if it's in the template.
+        /// </summary>
+        private string MergeInPersonalization(string content)
         {
             // if the CollectionSettings has a Subscription Personalization, replace any instances of
             // {personalization} with that value.
@@ -2356,7 +2451,8 @@ namespace Bloom.Book
                 if (string.IsNullOrEmpty(personalization))
                 {
                     throw new ApplicationException(
-                        "Branding personalization is not set, but the branding template contains {personalization}.");
+                        "Branding personalization is not set, but the branding template contains {personalization}."
+                    );
                 }
                 return content.Replace("{personalization}", personalization);
             }

@@ -1556,15 +1556,6 @@ canvas.moving {
     }
 }
 
-// Temporarily (we hope) cropping does not work on the cover. But the handles are part of the
-// expected look of a selected canvas element. This rule dims and disables them.
-.outsideFrontCover
-    #canvas-element-control-frame
-    .bloom-ui-canvas-element-side-handle {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
 #canvas-element-context-controls {
     position: absolute;
     transform-origin: top left;

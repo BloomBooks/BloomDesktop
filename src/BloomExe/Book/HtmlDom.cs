@@ -612,6 +612,7 @@ namespace Bloom.Book
         public static string kBloomCanvasClass = "bloom-canvas";
         public static string kBloomCanvasSelector = "." + kBloomCanvasClass;
         public static string kBackgroundImageClass = "bloom-backgroundImage";
+        public static string kImageContainerClass = "bloom-imageContainer";
 
         public static bool HasBackgroundImage(SafeXmlElement imageContainer)
         {
