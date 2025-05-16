@@ -33,7 +33,6 @@ namespace BloomTests.TestDoubles.CollectionTab
                 new TeamCollectionManager(
                     testFolder.Path,
                     null,
-                    new BookRenamedEvent(),
                     new BookStatusChangeEvent(),
                     new BookSelection(),
                     null,

@@ -211,12 +211,12 @@ namespace Bloom.TeamCollection
         public TeamCollectionManager(
             string localCollectionPath,
             BloomWebSocketServer webSocketServer,
-            BookRenamedEvent bookRenamedEvent,
             BookStatusChangeEvent bookStatusChangeEvent,
             BookSelection bookSelection,
             CollectionClosing collectionClosingEvent,
             BookCollectionHolder bookCollectionHolder,
-            CollectionLock theLock = null
+            CollectionLock theLock = null,
+            BookRenamedEvent bookRenamedEvent = null
         )
         {
             Lock = theLock;
@@ -306,13 +306,16 @@ namespace Bloom.TeamCollection
                     }
                 }
             );
-            bookRenamedEvent.Subscribe(pair =>
+            if (bookRenamedEvent != null)
             {
-                CurrentCollectionEvenIfDisconnected?.HandleBookRename(
-                    Path.GetFileName(pair.Key),
-                    Path.GetFileName(pair.Value)
-                );
-            });
+                bookRenamedEvent.Subscribe(pair =>
+                {
+                    CurrentCollectionEvenIfDisconnected?.HandleBookRename(
+                        Path.GetFileName(pair.Key),
+                        Path.GetFileName(pair.Value)
+                    );
+                });
+            }
             var impersonatePath = Path.Combine(_localCollectionFolder, "impersonate.txt");
             if (RobustFile.Exists(impersonatePath))
             {

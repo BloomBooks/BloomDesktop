@@ -42,7 +42,6 @@ namespace BloomTests.TeamCollection
             _tcManager = new TeamCollectionManager(
                 collectionPath,
                 new BloomWebSocketServer(),
-                new BookRenamedEvent(),
                 null,
                 null,
                 null,
