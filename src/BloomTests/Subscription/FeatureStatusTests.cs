@@ -17,15 +17,20 @@ namespace BloomTests.FeatureStatusTests
         [TestCase(
             SubscriptionTier.Basic,
             SubscriptionTier.LocalCommunity,
-            FeatureName.Overlay,
+            FeatureName.TeamCollection,
             false
-        )] // Basic subscription cannot access Proa tier feature
-        [TestCase(SubscriptionTier.Basic, SubscriptionTier.Enterprise, FeatureName.Overlay, false)] // Basic subscription cannot access Enterprise tier feature
+        )] // Basic subscription cannot access LocalCommunity tier feature
+        [TestCase(
+            SubscriptionTier.Basic,
+            SubscriptionTier.Enterprise,
+            FeatureName.PrintShopReady,
+            false
+        )] // Basic subscription cannot access Enterprise tier feature
         [TestCase(SubscriptionTier.Pro, SubscriptionTier.Pro, FeatureName.Overlay, true)] // Pro subscription can access Pro tier feature
         [TestCase(
             SubscriptionTier.Enterprise,
             SubscriptionTier.LocalCommunity,
-            FeatureName.Overlay,
+            FeatureName.TeamCollection,
             true
         )] // Enterprise can access LocalCommunity tier feature
         [TestCase(SubscriptionTier.Enterprise, SubscriptionTier.Pro, FeatureName.Overlay, true)] // Enterprise subscription can access Pro tier feature
