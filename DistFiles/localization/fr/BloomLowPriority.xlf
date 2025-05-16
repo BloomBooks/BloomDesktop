@@ -157,42 +157,42 @@
         <note>ID: Settings.Subscription.WhatsThis</note>
       </trans-unit>
       <!-- Tiers -->
-      <trans-unit id="Subscription.Tier.Basic">
+      <trans-unit id="Subscription.Tier.Basic" approved="yes">
         <source xml:lang="en">Basic</source>
-        <target xml:lang="fr" state="needs-translation">Basic</target>
+        <target xml:lang="fr" state="final">Simple</target>
         <note>ID: Subscription.Tier.Basic</note>
       </trans-unit>
-      <trans-unit id="Subscription.Tier.LocalCommunity">
+      <trans-unit id="Subscription.Tier.LocalCommunity" approved="yes">
         <source xml:lang="en">Local Community</source>
-        <target xml:lang="fr" state="needs-translation">Local Community</target>
+        <target xml:lang="fr" state="final">Communauté Locale</target>
         <note>ID: Subscription.Tier.LocalCommunity</note>
       </trans-unit>
-      <trans-unit id="Subscription.Tier.Pro">
+      <trans-unit id="Subscription.Tier.Pro" approved="yes">
         <source xml:lang="en">Pro</source>
-        <target xml:lang="fr" state="needs-translation">Pro</target>
+        <target xml:lang="fr" state="final">Pro</target>
         <note>ID: Subscription.Tier.Pro</note>
       </trans-unit>
-      <trans-unit id="Subscription.Tier.Enterprise">
+      <trans-unit id="Subscription.Tier.Enterprise" approved="yes">
         <source xml:lang="en">Enterprise</source>
-        <target xml:lang="fr" state="needs-translation">Enterprise</target>
+        <target xml:lang="fr" state="final">Enterprise</target>
         <note>ID: Subscription.Tier.Enterprise</note>
       </trans-unit>
       <!-- Other -->
-      <trans-unit id="Subscription.OpenSettings">
+      <trans-unit id="Subscription.OpenSettings" approved="yes">
         <source xml:lang="en">Subscription Settings</source>
-        <target xml:lang="fr" state="needs-translation">Subscription Settings</target>
+        <target xml:lang="fr" state="final">Paramètres d'Abonnement</target>
         <note>ID: Subscription.OpenSettings</note>
       </trans-unit>
       <!-- Features -->
       <!-- TODO connect with/normalize other places that refer to these things -->
-      <trans-unit id="Feature.Overlay">
+      <trans-unit id="Feature.Overlay" approved="yes">
         <source xml:lang="en">Overlay</source>
-        <target xml:lang="fr" state="needs-translation">Overlay</target>
+        <target xml:lang="fr" state="final">Superposition</target>
         <note>ID: Feature.Overlay</note>
       </trans-unit>
       <trans-unit id="Feature.Spreadsheet">
         <source xml:lang="en">Spreadsheet Import/Export</source>
-        <target xml:lang="fr" state="needs-translation">Spreadsheet Import/Export</target>
+        <target xml:lang="fr" state="translated">Importer/Exporter la Feuille de Calcul</target>
         <note>ID: Feature.Spreadsheet</note>
       </trans-unit>
       <!-- TODO: add other features -->
