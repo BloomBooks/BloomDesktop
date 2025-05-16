@@ -541,6 +541,11 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         <MenuIcon color="primary" />
                     </button>
                     <Menu
+                        // if we don't keep the menu mounted, then whenever the menu opens it calculates its size and
+                        // the localizations aren't done yet at that point so it positions itself incorrectly (BL-14549).
+                        // The other option would be to put a resize observer on the menu, and use an action prop and
+                        // call updatePosition() whenever it resizes
+                        keepMounted
                         css={css`
                             ul {
                                 max-width: ${maxMenuWidth}px;
