@@ -42,7 +42,8 @@ export const DragActivityTabControl: React.FunctionComponent<{
     const prompt = document.getElementsByClassName(
         "bloom-game-prompt"
     )[0] as HTMLElement;
-    const promptL10nId = prompt?.getAttribute("data-prompt-button-l10nid");
+    const promptL10nId =
+        prompt?.getAttribute("data-prompt-button-l10nid") ?? null;
     const promptButtonContent = useL10n("", promptL10nId);
 
     return (
