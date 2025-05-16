@@ -37,6 +37,7 @@ namespace BloomTests.TeamCollection
                 Path.ChangeExtension(
                     Path.GetFileName(_localCollection.FolderPath),
                     ".bloomCollection"
+                //
                 )
             );
             _tcManager = new TeamCollectionManager(

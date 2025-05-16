@@ -469,6 +469,7 @@ namespace Bloom.WebLibraryIntegration
                     var collectionFilePath = Path.Combine(
                         collectionPath,
                         collectionName + ".bloomCollection"
+                    //
                     );
                     RobustFile.Move(
                         Path.Combine(

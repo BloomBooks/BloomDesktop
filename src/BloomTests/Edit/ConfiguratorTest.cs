@@ -52,6 +52,7 @@ namespace BloomTests.Edit
             var projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
             var collectionSettings = new CollectionSettings(
                 Path.Combine(projectFolder.Path, "test.bloomCollection")
+            //
             );
 
             _starter = new BookStarter(
@@ -309,6 +310,7 @@ namespace BloomTests.Edit
             //review
             var collectionSettings = new CollectionSettings(
                 Path.Combine(projectFolder.Path, "test.bloomCollection")
+            //
             );
 
             var bs = new BookStorage(

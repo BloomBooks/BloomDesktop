@@ -1035,6 +1035,7 @@ namespace Bloom.TeamCollection
             var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(parentFolder));
             // Avoiding use of ChangeExtension as it's just possible the collectionName could have period.
             var collectionPath = Path.Combine(parentFolder, collectionName + ".bloomCollection");
+            //
             if (RobustFile.Exists(collectionPath))
                 return collectionPath;
             // occasionally, mainly when making a temp folder during joining, the bloomCollection file may not

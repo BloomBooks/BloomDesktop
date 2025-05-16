@@ -41,6 +41,7 @@ namespace BloomTests.Book
             _projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
             var collectionSettings = new CollectionSettings(
                 Path.Combine(_projectFolder.Path, "test.bloomCollection")
+            //
             );
 
             var xmatterFinder = new XMatterPackFinder(

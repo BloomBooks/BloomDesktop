@@ -446,6 +446,7 @@ namespace BloomTests.Collection
             var collectionSettingsPath = Path.Combine(
                 _folder.Path,
                 $"{collectionName}.bloomCollection"
+            //
             );
             if (RobustFile.Exists(collectionSettingsPath))
             {
@@ -489,6 +490,7 @@ namespace BloomTests.Collection
                 _folder.Path,
                 collectionName,
                 $"{collectionName}.bloomCollection"
+            //
             );
             if (RobustFile.Exists(collectionSettingsPath))
                 RobustFile.Delete(collectionSettingsPath);
@@ -560,6 +562,7 @@ namespace BloomTests.Collection
                 _folder.Path,
                 collectionName,
                 $"{collectionName}.bloomCollection"
+            //
             );
             if (RobustFile.Exists(collectionSettingsPath))
                 RobustFile.Delete(collectionSettingsPath);

@@ -1543,6 +1543,7 @@ namespace Bloom.web.controllers
                     var newCollectionPath = Path.Combine(
                         collectionFolder,
                         issueId.Value<string>() + ".bloomCollection"
+                        //
                     );
                     RobustFile.Move(collectionPath, newCollectionPath);
                     return newCollectionPath;

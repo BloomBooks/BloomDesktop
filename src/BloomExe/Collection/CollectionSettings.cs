@@ -389,14 +389,22 @@ namespace Bloom.Collection
             return sb.ToString();
         }
 
+        public static string GetSettingsFilePath(string collectionFolder, bool tcCheck = false)
+        {
+            var collectionName = tcCheck
+                ? TeamCollection.TeamCollection.GetLocalCollectionNameFromTcName(collectionFolder)
+                : Path.GetFileName(collectionFolder);
+            return Path.Combine(
+                collectionFolder,
+                Path.ChangeExtension(collectionName, "bloomCollection")
+            );
+        }
+
         public static string CollectionIdFromCollectionFolder(string collectionFolder)
         {
             try
             {
-                var settingsFilePath = Path.Combine(
-                    collectionFolder,
-                    Path.ChangeExtension(Path.GetFileName(collectionFolder), "bloomCollection")
-                );
+                var settingsFilePath = GetSettingsFilePath(collectionFolder);
                 if (!RobustFile.Exists(settingsFilePath))
                 {
                     // When we're joining a TC, we extract settings in to a temp folder whose name does not
@@ -893,6 +901,7 @@ namespace Bloom.Collection
             string newCollectionName
         )
         {
+            //
             return parentFolderPath.CombineForPath(
                 newCollectionName,
                 newCollectionName + ".bloomCollection"
@@ -937,6 +946,7 @@ namespace Bloom.Collection
                 //we now make a default name based on the name of the directory
                 string destinationPath = Path.Combine(
                     toDirectory,
+                    //
                     Path.GetFileName(toDirectory) + ".bloomCollection"
                 );
                 if (!RobustFile.Exists(destinationPath))

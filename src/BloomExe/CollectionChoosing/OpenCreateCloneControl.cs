@@ -79,9 +79,7 @@ namespace Bloom.CollectionChoosing
                         .GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
                         .Select(
                             d =>
-                                Path.Combine(
-                                    d,
-                                    Path.ChangeExtension(Path.GetFileName(d), "bloomCollection")
+                            CollectionSettings.GetSettingsFilePath(d)
                                 )
                         )
                         .Where(c => RobustFile.Exists(c) && !collectionsToShow.Contains(c))

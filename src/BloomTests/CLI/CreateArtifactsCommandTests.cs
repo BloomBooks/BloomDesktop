@@ -119,6 +119,7 @@ namespace BloomTests.CLI
                 var collectionFilePath = Path.Combine(
                     collectionFolderPath,
                     "collection.bloomCollection"
+                //
                 );
                 var settings = new CollectionSettings(collectionFilePath);
                 settings.XMatterPackName = "ABC-Reader";
@@ -202,6 +203,7 @@ namespace BloomTests.CLI
                 var collectionFilePath = Path.Combine(
                     collectionFolderPath,
                     "collection.bloomCollection"
+                //
                 );
                 var settings = new CollectionSettings(collectionFilePath);
                 settings.XMatterPackName = "unit-test-project-specific";
@@ -268,6 +270,7 @@ namespace BloomTests.CLI
                 var collectionFilePath = Path.Combine(
                     collectionFolderPath,
                     "collection.bloomCollection"
+                    //
                 );
                 var settings = new CollectionSettings(collectionFilePath);
                 settings.Save();

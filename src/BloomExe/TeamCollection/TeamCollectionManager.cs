@@ -121,6 +121,7 @@ namespace Bloom.TeamCollection
                     var projectSettingsPath = Path.Combine(
                         _localCollectionFolder,
                         Path.GetFileName(_localCollectionFolder) + ".bloomCollection"
+                    //
                     );
                     settings = ProjectContext.GetCollectionSettings(projectSettingsPath);
                 }

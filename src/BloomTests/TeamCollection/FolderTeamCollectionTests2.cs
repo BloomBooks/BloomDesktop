@@ -48,6 +48,7 @@ namespace BloomTests.TeamCollection
                     var settingsFileName = Path.ChangeExtension(
                         Path.GetFileName(collectionFolder.FolderPath),
                         "bloomCollection"
+                    //
                     );
                     var settingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
 
@@ -153,6 +154,7 @@ namespace BloomTests.TeamCollection
                     var bcPath = Path.Combine(
                         collectionFolder.FolderPath,
                         "mybooks.bloomCollection"
+                    //
                     );
                     File.WriteAllText(bcPath, "something");
                     var files = tc.FilesToMonitorForCollection();
@@ -247,6 +249,7 @@ namespace BloomTests.TeamCollection
                     var settingsFileName = Path.ChangeExtension(
                         Path.GetFileName(collectionFolder.FolderPath),
                         "bloomCollection"
+                    //
                     );
                     var settingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
                     var tcManager = new TeamCollectionManager(
@@ -740,6 +743,8 @@ namespace BloomTests.TeamCollection
                     var otherPath = Path.Combine(
                         collectionFolder.FolderPath,
                         Path.GetFileName(collectionFolder.FolderPath) + ".bloomCollection"
+                    //
+                    //
                     );
                     Directory.CreateDirectory(Path.GetDirectoryName(otherPath));
                     // this test doesn't need this folder except that StartMonitoring does.
@@ -834,6 +839,7 @@ namespace BloomTests.TeamCollection
                     var otherPath = Path.Combine(
                         collectionFolder.FolderPath,
                         Path.GetFileName(collectionFolder.FolderPath) + ".bloomCollection"
+                    //
                     );
                     // this test doesn't need this folder except that StartMonitoring does.
                     Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
