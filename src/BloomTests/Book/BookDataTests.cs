@@ -244,19 +244,19 @@ namespace BloomTests.Book
         {
             var dom = new HtmlDom(
                 @"<html ><head></head><body>
-				<div id='bloomDataDiv'>
-					
-				</div>
-				<div class='bloom-page' id='guid2'>
-					<div class=""bloom-canvas bloom-has-canvas-element"" data-imgsizebasedon=""649,231"" >
+                <div id='bloomDataDiv'>
+                    
+                </div>
+                <div class='bloom-page' id='guid2'>
+                    <div class=""bloom-canvas bloom-has-canvas-element"" data-imgsizebasedon=""649,231"" >
                         <div class=""bloom-canvas-element bloom-backgroundImage"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style=""width: 254.663px; top: 0px; left: 197.168px; height: 231px;"" data-bloom-active=""true"">
                             <div class=""bloom-imageContainer"">
                                 <img data-book=""coverImage"" src=""macaw-parrot-sitting-on-a-tree-branch-4c6a4.jpg"" onerror=""this.classList.add('bloom-imageLoadError')"" style=""width: 308.031px; left: 0px; top: -29.3363px;""/>
                             </div>
                         </div>
                     </div>
-				</div>
-			 </body></html>"
+                </div>
+             </body></html>"
             );
             DataSet data = new DataSet();
             var itemsToDelete = new HashSet<Tuple<string, string>>();
@@ -301,13 +301,13 @@ namespace BloomTests.Book
             var htmlDom = new HtmlDom(
                 @"
 <html><body>
-	<div id='bloomDataDiv'>
-	</div>
-	<div class='bloom-page' id='guid2'>
-		<div class=""bloom-canvas"" >
+    <div id='bloomDataDiv'>
+    </div>
+    <div class='bloom-page' id='guid2'>
+        <div class=""bloom-canvas"" >
             <img data-book=""coverImage"" src=""placeHolder.png""/>
         </div>
-	</div>
+    </div>
 
 </body></html>"
             );

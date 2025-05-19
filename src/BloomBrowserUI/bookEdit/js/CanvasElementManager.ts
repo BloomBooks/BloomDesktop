@@ -433,9 +433,12 @@ export class CanvasElementManager {
     }
 
     // Convert string ending in pixels to a number
-    public static pxToNumber(px: string): number {
+    public static pxToNumber(px: string, fallback: number = NaN): number {
         if (!px) return 0;
-        return parseFloat(px.replace("px", ""));
+        if (px.endsWith("px")) {
+            return parseFloat(px.replace("px", ""));
+        }
+        return fallback;
     }
 
     // A visible, editable div is generally focusable, but sometimes (e.g. in Bloom games),
@@ -6416,20 +6419,20 @@ export class CanvasElementManager {
             imgAspectRatio = img.naturalWidth / img.naturalHeight;
         }
 
-        const oldCeWidth = bgCanvasElement.clientWidth;
-        const oldCeHeight = bgCanvasElement.clientHeight;
+        const oldCeWidth = CanvasElementManager.pxToNumber(
+            bgCanvasElement.style.width,
+            bgCanvasElement.clientWidth
+        );
+        const oldCeHeight = CanvasElementManager.pxToNumber(
+            bgCanvasElement.style.height,
+            bgCanvasElement.clientHeight
+        );
         const containerAspectRatio = bloomCanvasWidth / bloomCanvasHeight;
         const fitCoverMode = img?.classList.contains(
             "bloom-imageObjectFit-cover"
         );
         let matchWidthOfContainer = imgAspectRatio > containerAspectRatio;
         if (fitCoverMode) {
-            const oldCanvasElementWidth = CanvasElementManager.pxToNumber(
-                bgCanvasElement.style.width
-            );
-            const oldCanvasElementHeight = CanvasElementManager.pxToNumber(
-                bgCanvasElement.style.height
-            );
             // make the canvas element fill the container
             bgCanvasElement.style.width = bloomCanvasWidth + "px";
             bgCanvasElement.style.height = bloomCanvasHeight + "px";
@@ -6458,7 +6461,7 @@ export class CanvasElementManager {
                 img.style.left = oldImgLeft * scale + "px"; //same fraction cropped in width
                 const previouslyHiddenAtTop = -oldImgTop * scale;
                 const previouslyHiddenAtBottom =
-                    (oldImgHeight + oldImgTop - oldCanvasElementHeight) * scale;
+                    (oldImgHeight + oldImgTop - oldCeHeight) * scale;
                 // this might be negative, if the container got shorter in aspect ratio.
                 // That is, possibly keeping the same top cropping would leave space at the bottom
                 const excessHeight =
@@ -6480,7 +6483,7 @@ export class CanvasElementManager {
                 img.style.top = oldImgTop * scale + "px"; //same fraction cropped in height
                 const previouslyHiddenAtLeft = -oldImgLeft * scale;
                 const previouslyHiddenAtRight =
-                    (oldImgWidth + oldImgLeft - oldCanvasElementWidth) * scale;
+                    (oldImgWidth + oldImgLeft - oldCeWidth) * scale;
                 const excessWidth =
                     oldImgWidth * scale -
                     bloomCanvasWidth -

@@ -1525,31 +1525,10 @@ namespace Bloom.Book
             // if the node is an img, save some extra data
             if (node.Name == "img")
             {
-                var ce = node.ParentElement?.ParentElement;
-                if (ce != null)
+                var extras = HtmlDom.GetDataForReconstructingBackgroundImgWrapper(node);
+                foreach (var extra in extras)
                 {
-                    if (ce.HasClass(HtmlDom.kCanvasElementClass))
-                    {
-                        result.Add(
-                            Tuple.Create(
-                                "data-canvas-element-style",
-                                XmlString.FromUnencoded(ce.GetAttribute("style"))
-                            )
-                        );
-                    }
-
-                    var bloomCanvas = ce.ParentElement;
-                    if (bloomCanvas != null && bloomCanvas.HasClass(HtmlDom.kBloomCanvasClass))
-                    {
-                        result.Add(
-                            Tuple.Create(
-                                "data-canvas-imgsizebasedon",
-                                XmlString.FromUnencoded(
-                                    bloomCanvas.GetAttribute("data-imgsizebasedon")
-                                )
-                            )
-                        );
-                    }
+                    result.Add(Tuple.Create(extra.Item1, XmlString.FromUnencoded(extra.Item2)));
                 }
             }
             return result;
@@ -1906,24 +1885,24 @@ namespace Bloom.Book
             // class on the parent imageContainer. See BL-9460
 
             // Also, if we're restoring a cropped (or potentially cropped) image, we need to keep the style;
-            // this is indicated by finding these two attributes used to contain data about a background image
+            // this is indicated by finding special attributes used to contain data about a background image
             // represented as a canvas element.
-            var canvasElementStyleTuple = otherAttributes?.Find(
-                x => x.Item1 == "data-canvas-element-style"
-            );
-            var sizeBasedOnTuple = otherAttributes?.Find(
-                x => x.Item1 == "data-canvas-imgsizebasedon"
-            );
-            var hasCanvasElementData = canvasElementStyleTuple != null && sizeBasedOnTuple != null;
+            var backgroundImgTupleNames = HtmlDom.BackgroundImgTupleNames;
+            var backgroundImgValues = new string[backgroundImgTupleNames.Length];
+            for (var i = 0; i < backgroundImgTupleNames.Length; i++)
+            {
+                backgroundImgValues[i] = otherAttributes
+                    ?.Find(x => x.Item1 == backgroundImgTupleNames[i])
+                    ?.Item2.Unencoded;
+            }
 
-            // Note that these attributes were already run through the _attributesNotToCopy filter.
+            var hasBackgroundImgData = backgroundImgValues.All(x => x != null);
+
+            // Note that these attributes were already run through the _attributesNotToCopy filter, which wipes out the ones
+            // we don't ever want restored. The style attribute is special, for a series of historical reasons,
+            // and the BackgroundImgTupleNames ones are kept so we can use them below, but not copied back to the img.
             otherAttributes
-                ?.Where(
-                    a =>
-                        a.Item1 != "src"
-                        && a.Item1 != "data-canvas-element-style"
-                        && a.Item1 != "data-canvas-element-style"
-                )
+                ?.Where(a => a.Item1 != "src" && !backgroundImgTupleNames.Contains(a.Item1))
                 .ForEach(a =>
                 {
                     if (
@@ -1931,7 +1910,7 @@ namespace Bloom.Book
                         && (
                             node.ParentNode
                                 .GetOptionalStringAttribute("class", "")
-                                .Contains("bloom-scale-with-code") || hasCanvasElementData
+                                .Contains("bloom-scale-with-code") || hasBackgroundImgData
                         )
                     )
                     {
@@ -1939,51 +1918,10 @@ namespace Bloom.Book
                     }
                 });
 
-            // If we find data related to a containing canvas element, restore that whole structure.
-            if (hasCanvasElementData)
+            // If we find data related to a background image, restore that whole structure.
+            if (hasBackgroundImgData)
             {
-                // The situation we want to establish is that the image is inside an imageContainer
-                // inside a canvasElement inside a bloomCanvas. That may not be true initially.
-                var imageContainer = node.ParentElement;
-                var canvasElement = imageContainer?.ParentElement;
-                var bloomCanvas = canvasElement?.ParentElement;
-                if (imageContainer.HasClass(HtmlDom.kBloomCanvasClass))
-                {
-                    // Often, the image starts out directly inside a bloomCanvas and we have to create the two
-                    // intermediate levels. (We have retained the simpler structure in our various xmatter templates,
-                    // because when we don't have this extra data saved, we can do a better job of positioning
-                    // the image when we let the TS code convert it to the new structure. So that's what we'll
-                    // find if we are copying data from the data-div to an updated xmatter element.)
-                    bloomCanvas = imageContainer;
-                    imageContainer = node.OwnerDocument.CreateElement("div");
-                    imageContainer.SetAttribute("class", HtmlDom.kImageContainerClass);
-                    canvasElement = node.OwnerDocument.CreateElement("div");
-                    // Currently this only works for images that are, in fact, background canvas images. If we use this for
-                    // something that is not it will need adjusting.
-                    canvasElement.SetAttribute(
-                        "class",
-                        HtmlDom.kCanvasElementClass + " " + HtmlDom.kBackgroundImageClass
-                    );
-                    canvasElement.AppendChild(imageContainer);
-                    bloomCanvas.InsertAfter(canvasElement, node); // before we move node!
-                    imageContainer.AppendChild(node); // move it
-                }
-                else if (
-                    bloomCanvas == null
-                    || !bloomCanvas.HasClass(HtmlDom.kBloomCanvasClass)
-                    || !canvasElement.HasClass(HtmlDom.kCanvasElementClass)
-                    || !imageContainer.HasClass(HtmlDom.kImageContainerClass)
-                )
-                {
-                    // If it's not an xmatter situation, we expect to already have the correct structure.
-                    // If that's not true, we don't have either of the situations we can handle. Safest to do
-                    // nothing.
-                    return true;
-                }
-                // Either pre-existing or just created, we have the expected structure.
-                bloomCanvas.AddClass("bloom-has-canvas-element"); // probably only necessary if we added the canvas element
-                bloomCanvas.SetAttribute("data-imgsizebasedon", sizeBasedOnTuple.Item2.Unencoded);
-                canvasElement.SetAttribute("style", canvasElementStyleTuple.Item2.Unencoded);
+                HtmlDom.ReconstructBackgroundImgWrapper(node, backgroundImgValues);
             }
             return true;
         }
