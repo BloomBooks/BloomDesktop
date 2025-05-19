@@ -11,7 +11,7 @@
 
     // defaults which don't follow the primary/secondary pattern
     --game-button-wrong-color: white;
-    --game-button-wrong-bg-color: #848484; // mid-gray
+    --game-button-wrong-bg-color: #707070;
 }
 
 // This is a single place to push the general variables down into the more specific ones.
@@ -54,33 +54,29 @@
 }
 
 .bloom-page.game-theme-blue-on-white {
-    --game-primary-color: #2980bb;
+    --game-primary-color: #0058cc;
     --game-secondary-color: white;
 }
 
 .bloom-page.game-theme-red-on-white {
-    --game-primary-color: @bloom-red;
+    --game-primary-color: #da1b1b; // bloom red is too low contrast
     --game-secondary-color: white;
 }
 
 .bloom-page.game-theme-white-and-orange-on-blue {
-    // from an old rule in simple-dom-choice-activities.less; a slightly lighter blue
-    @legacy-blue: #539eff;
-    @legacy-orange: #ffb453;
-
-    --game-primary-color: @legacy-orange;
-    --game-secondary-color: @legacy-blue;
+    --game-primary-color: #ffb453;
+    --game-secondary-color: #0068f0;
 
     --game-text-color: white;
 
-    --game-draggable-color: white;
+    --game-draggable-color: black;
 
-    --game-header-color: var(--game-text-color);
+    --game-header-color: white;
     --game-header-bg-color: var(--game-secondary-color);
 
     --game-button-text-color: black;
     --game-button-bg-color: white;
-    --game-button-correct-color: var(--game-text-color);
+    --game-button-correct-color: black;
     --game-button-outline-color: var(--game-page-bg-color);
 
     --game-checkbox-outline-color: #848484;
