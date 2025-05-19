@@ -345,12 +345,8 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
             return;
         }
         p.textContent = text ?? "";
-        // And we need to make sure the blank class is set correctly, otherwise,
-        // we can get shadow English letters in canvas elements that have content in the
-        // current language. This is usually handled by a mutation observer, but
-        // it doesn't get attached to extra letters we create here. Their content
-        // mainly gets changed by this method, so I think this is good enough.
-        GameTool.setBlankClass(ed);
+        // We're not putting any placeholder attrs on the letters, so we don't need
+        // to handle those.
     };
     // Set up an observer to keep the draggables in sync with the prompt during typing.
     const promptObserver = new MutationObserver(() => {
@@ -396,7 +392,6 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 );
                 paras.forEach(p => {
                     p.textContent = "";
-                    GameTool.setBlankClass(p.parentElement as HTMLElement);
                 });
                 lastDraggable.parentElement?.appendChild(newDraggable);
                 makeTargetForDraggable(newDraggable);
