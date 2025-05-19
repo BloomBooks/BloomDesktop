@@ -58,8 +58,8 @@ export function useGetFeatureAvailabilityMessage(
     featureStatus: FeatureStatus | undefined
 ): string {
     // Get localized strings first
-    const params = useMemo(() => [featureStatus?.localizedFeature || ""], [
-        featureStatus?.localizedFeature
+    const params = useMemo(() => [featureStatus?.localizedTier || ""], [
+        featureStatus?.localizedTier
     ]);
     const featureNotInTierMessage = useL10n2({
         english:
