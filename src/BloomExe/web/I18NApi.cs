@@ -6,6 +6,7 @@ using System.Threading;
 using Bloom.Collection;
 using L10NSharp;
 using Newtonsoft.Json;
+using Sentry;
 
 namespace Bloom.Api
 {
@@ -25,6 +26,12 @@ namespace Bloom.Api
                 false
             );
             apiHandler.RegisterEndpointHandler("i18n/translate", HandleI18nTranslate, false, false);
+            apiHandler.RegisterEndpointHandler(
+                "i18n/getStringInLang",
+                HandleGetStringInLang,
+                false,
+                false
+            );
             apiHandler.RegisterEndpointHandler("i18n/uilang", HandleI18nUiLang, false, false);
         }
 
@@ -57,6 +64,41 @@ namespace Bloom.Api
                 }
             }
             request.ReplyWithJson(JsonConvert.SerializeObject(d));
+        }
+
+        /// <summary>
+        /// Try to get the string in the language requested. Failing that, try the book languages,
+        /// the current UI language, the current fallback languages, and finally English.
+        /// Returns a json giving a result and the language it is actually in.
+        /// </summary>
+        /// <param name="request"></param>
+        private void HandleGetStringInLang(ApiRequest request)
+        {
+            var parameters = request.Parameters;
+            string id = parameters["key"];
+            string langId = parameters["langId"];
+            var langsToTry = new List<string>(new[] { langId });
+            void addLangIfMissing(string lang)
+            {
+                if (!string.IsNullOrEmpty(lang) && !langsToTry.Contains(lang))
+                {
+                    langsToTry.Add(lang);
+                }
+            }
+            if (request.CurrentBook != null)
+            {
+                addLangIfMissing(request.CurrentBook.BookData.Language1Tag);
+                addLangIfMissing(request.CurrentBook.BookData.MetadataLanguage1Tag);
+                addLangIfMissing(request.CurrentBook.BookData.MetadataLanguage2Tag);
+            }
+            addLangIfMissing(LocalizationManager.UILanguageId);
+            foreach (var lang in LocalizationManager.FallbackLanguageIds)
+            {
+                addLangIfMissing(lang);
+            }
+            addLangIfMissing("en");
+            var text = GetTranslationInLang(id, langsToTry, out string langFound);
+            request.ReplyWithJson(new { text, langFound });
         }
 
         public void HandleI18nTranslate(ApiRequest request)
@@ -152,6 +194,26 @@ namespace Bloom.Api
             request.ReplyWithText(LocalizationManager.UILanguageId);
         }
 
+        static string GetTranslationInLang(string id, List<string> langsToTry, out string langFound)
+        {
+            var result = LocalizationManager.GetString(
+                id,
+                "whatever",
+                "no comment",
+                langsToTry,
+                out langFound
+            );
+            if (langFound == "en")
+            {
+                // The stupid GetString method refuses to return the English from the XLF, even if
+                // we ask for it. Even if we pass null as the English, it asserts rather than getting it from the xlf.
+                // Have to try another way.
+                return GetLocalizedStringInOneLanguage(id, "en");
+            }
+            Debug.Assert(!string.IsNullOrEmpty(result), "No localization entry for " + id);
+            return result;
+        }
+
         // Get a translation of the specified string, in the specified language,
         // or the closest fallback language (other than English).
         // Needs to use something from the GetDynamicString method family, because GetString is only
@@ -176,41 +238,46 @@ namespace Bloom.Api
             {
                 if (LocalizationManager.GetIsStringAvailableForLangId(id, langId))
                 {
-                    // tricky. It might be in Bloom, or BloomMediumPriority, or BloomLowPriority. Must be somewhere, because
-                    // we know it's available. Can't use GetString, because it's not a literal string. So, we try in one,
-                    // using null as the English, so we won't get anything if not in that one. Then try the next.
-                    // We don't need to pass English (in fact, it's not passed to this method) because we only come
-                    // here if LM DOES have a translation in the requested language (which we've made sure is not English)
-                    var localizedString = LocalizationManager.GetDynamicStringOrEnglish(
-                        "Bloom",
-                        id,
-                        null,
-                        null,
-                        langId
-                    );
-                    if (string.IsNullOrEmpty(localizedString))
-                        localizedString = LocalizationManager.GetDynamicStringOrEnglish(
-                            "BloomMediumPriority",
-                            id,
-                            null,
-                            null,
-                            langId
-                        );
-                    if (string.IsNullOrEmpty(localizedString))
-                        localizedString = LocalizationManager.GetDynamicStringOrEnglish(
-                            "BloomLowPriority",
-                            id,
-                            null,
-                            null,
-                            langId
-                        );
-                    val = localizedString;
+                    val = GetLocalizedStringInOneLanguage(id, langId);
                     return true;
                 }
             }
 
             val = null;
             return false;
+        }
+
+        private static string GetLocalizedStringInOneLanguage(string id, string langId)
+        {
+            // tricky. It might be in Bloom, or BloomMediumPriority, or BloomLowPriority.
+            // Can't use most of the LocalizationManager methods, because they demand
+            // an English default, and we don't have one (and typically don't want to have ... if langId is English,
+            // or no other localization is available, we want the English in the XLF). So, we try in one,
+            // using null as the English, so we won't get anything if not in that one. Then try the next...
+            var localizedString = LocalizationManager.GetDynamicStringOrEnglish(
+                "Bloom",
+                id,
+                null,
+                null,
+                langId
+            );
+            if (string.IsNullOrEmpty(localizedString))
+                localizedString = LocalizationManager.GetDynamicStringOrEnglish(
+                    "BloomMediumPriority",
+                    id,
+                    null,
+                    null,
+                    langId
+                );
+            if (string.IsNullOrEmpty(localizedString))
+                localizedString = LocalizationManager.GetDynamicStringOrEnglish(
+                    "BloomLowPriority",
+                    id,
+                    null,
+                    null,
+                    langId
+                );
+            return localizedString;
         }
 
         private static bool IsTemplateBookKey(string key)

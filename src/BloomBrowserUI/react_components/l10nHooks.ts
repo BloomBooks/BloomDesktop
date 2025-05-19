@@ -66,7 +66,7 @@ export function useL10n2(options: {
     const [localizedText, setLocalizedText] = React.useState(english);
     React.useEffect(
         () => {
-            if (l10nKey === null || l10nKey === "already-localized") {
+            if (!l10nKey || l10nKey === "already-localized") {
                 window.setTimeout(() => setLocalizedText(english), 0);
             } else {
                 getLocalization({
