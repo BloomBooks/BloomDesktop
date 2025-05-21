@@ -234,7 +234,7 @@ function getStatus(
         subscriptionCode,
         subscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD,
-        haveBrandingFiles
+        missingBrandingFiles
     );
     // I'm not 100% sure this is the best way to handle EditingBlorgBook,
     // but I'm following 6.0 which treats a full, normal subscription as normal
@@ -252,7 +252,7 @@ function getStatusSansEditingBlorgBook(
     subscriptionCode: string,
     subscriptionCodeIntegrity: SubscriptionCodeIntegrity,
     expiryDateStringAsYYYYMMDD: string,
-    haveBrandingFiles: boolean
+    missingBrandingFiles: boolean
 ): Status {
     const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
     if (subscriptionCode === "" || subscriptionCodeIntegrity === "none") {
