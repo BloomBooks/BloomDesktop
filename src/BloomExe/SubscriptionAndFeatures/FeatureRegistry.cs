@@ -52,7 +52,7 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.Motion,
                 SubscriptionTier = SubscriptionTier.Pro,
-                ExistsInPageXPath = "foobar", // TODO what is the way to know?
+                ExistsInPageXPath = ".//div[contains(@class,'bloom-canvas') and @data-initial-rect]",
                 SupportedMediums = PublishingMediums.BloomPub | PublishingMediums.Video,
                 RestrictionInDerivativeBooks = PublicationRestrictions.None,
                 RestrictionInOriginalBooks = PublicationRestrictions.Remove
@@ -60,7 +60,8 @@ namespace Bloom.SubscriptionAndFeatures
             new FeatureInfo
             {
                 Feature = FeatureName.Music,
-                SubscriptionTier = SubscriptionTier.Pro
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExistsInPageXPath = "self::div[@data-backgroundaudio and string-length(@data-backgroundaudio)!=0]",
             },
             //new FeatureInfo
             //{
@@ -87,7 +88,7 @@ namespace Bloom.SubscriptionAndFeatures
                 // HTML5 Widgets
                 Feature = FeatureName.Widget,
                 SubscriptionTier = SubscriptionTier.Pro,
-                ExistsInPageXPath = ".//div[contains(@class,'custom-widget-page')]",
+                ExistsInPageXPath = "self::div[contains(@class,'custom-widget-page')]",
             },
             new FeatureInfo
             {
@@ -97,7 +98,7 @@ namespace Bloom.SubscriptionAndFeatures
                 RestrictionInDerivativeBooks = PublicationRestrictions.None,
                 RestrictionInOriginalBooks = PublicationRestrictions.Block,
                 ExistsInPageXPath =
-                    ".//div[contains(@class,'" + Bloom.Book.HtmlDom.kCanvasElementClass + "')]"
+                    ".//div[contains(@class,'" + Bloom.Book.HtmlDom.kCanvasElementClass + "') and not(contains(@class,'" + Bloom.Book.HtmlDom.kBackgroundImageClass + "'))]"
             },
             new FeatureInfo
             {
@@ -105,7 +106,7 @@ namespace Bloom.SubscriptionAndFeatures
                 SubscriptionTier = SubscriptionTier.Pro,
                 RestrictionInDerivativeBooks = PublicationRestrictions.Remove,
                 RestrictionInOriginalBooks = PublicationRestrictions.Remove,
-                ExistsInPageXPath = ".//div[contains(@data-activity,'game')]"
+                ExistsInPageXPath = "self::div[@data-tool-id='game']"
             },
             // ----------------------------------------
             // LocalCommunity Tier Features
