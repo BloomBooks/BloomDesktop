@@ -13,6 +13,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Moq;
 using NUnit.Framework;
 using SIL.Extensions;
@@ -2291,6 +2292,379 @@ These are similar but already have game-theme classes
             //Assert.That(metaData2.CurrentTool, Is.EqualTo("canvasElementTool"));
             //Assert.That(metaData2.ToolStates.Count, Is.EqualTo(1));
             //Assert.That(metaData2.ToolStates[0].ToolId, Is.EqualTo("canvasElement"));
+        }
+
+        [Test]
+        public void MigrateToDataFeatureAttribute_FindsGame()
+        {
+            var threeGamesHtml = @"<html>
+  <head></head>
+  <body>
+    <div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage game-theme-red-on-white side-left Device16x9Landscape bloom-monolingual"" id=""2578f51a-d48c-458e-b658-892963b242a8"" data-page="""" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""1"" lang="""" 
+         data-analyticscategories=""comprehension"" data-activity=""simple-checkbox-quiz"" data-tool-id=""game"">
+      <div class=""marginBox"">
+        <div class=""quiz"">
+          <div class=""bloom-translationGroup bloom-ignoreChildrenForBookLanguageList"" data-default-languages=""auto"" style=""font-size: 26.6667px;"" data-hasqtip=""true"" aria-describedby=""qtip-0"">
+            <div class=""bloom-editable QuizHeader-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" data-collection=""simpleComprehensionQuizHeading"" data-languagetipcontent=""English"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"">
+              <p>Check Your Understanding</p>
+            </div>
+          </div>
+          <div class=""bloom-translationGroup"" data-default-languages=""auto"" data-hint=""Put a comprehension question here"" style=""font-size: 16px;"" data-hasqtip=""true"" aria-describedby=""qtip-1"">
+            <div class=""bloom-editable QuizQuestion-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" data-languagetipcontent=""English"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"">
+              <p>Why is there air?</p>
+            </div>
+          </div>
+          <div class=""checkbox-and-textbox-choice"">
+            <input class=""styled-check-box"" type=""checkbox"" name=""Correct"" />
+            <div class=""bloom-translationGroup"" data-default-languages=""auto"" data-hint=""Put a possible answer here. Check it if it is correct."" style=""font-size: 16px;"" data-hasqtip=""true"" aria-describedby=""qtip-2"">
+              <div class=""bloom-editable QuizAnswer-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" data-languagetipcontent=""English"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"">
+                <p>To inflate basketballs</p>
+              </div>
+            </div>
+            <div class=""placeToPutVariableCircle""></div>
+          </div>
+          <div class=""checkbox-and-textbox-choice"">
+            <input class=""styled-check-box"" type=""checkbox"" name=""Correct"" />
+            <div class=""bloom-translationGroup"" data-default-languages=""auto"" data-hint=""Put a possible answer here. Check it if it is correct."" style=""font-size: 16px;"" data-hasqtip=""true"" aria-describedby=""qtip-7"">
+              <div class=""bloom-editable QuizAnswer-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" data-languagetipcontent=""English"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"">
+                <p>None of the above</p>
+              </div>
+            </div>
+            <div class=""placeToPutVariableCircle""></div>
+          </div><script src=""simpleComprehensionQuiz.js""></script>
+        </div>
+      </div>
+    </div>
+    <div class=""bloom-page bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage game-theme-white-and-orange-on-blue side-left Device16x9Landscape bloom-monolingual"" id=""52ed6f1e-0e04-4147-b7cd-84cf8bc5d084"" data-page="""" data-pagelineage=""3325A8B6-EA15-4FB7-9F8D-271D7B3C8D33"" data-page-number=""3"" lang=""""
+         data-analyticscategories=""simple-dom-choice"" data-activity=""simple-dom-choice"" data-tool-id=""game"">
+      <div class=""marginBox"">
+        <div class=""bloom-translationGroup disableHighlight"" style=""font-size: 24px;"">
+          <div class=""bloom-editable Prompt-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"">
+            <p>Choose the matching word</p>
+          </div>
+        </div>
+        <div class=""imageThenChoices"">
+          <div class=""bloom-canvas bloom-has-canvas-element"" data-title=""Name: aor_Cat3.png"" title="""" data-imgsizebasedon=""321,220"">
+            <div class=""bloom-canvas-element bloom-backgroundImage"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style=""width: 264.423px; top: 0px; left: 28.2885px; height: 220px;"">
+              <div class=""bloom-imageContainer""><img src=""aor_Cat3.png"" alt="""" data-copyright=""Copyright SIL International 2009"" data-creator="""" data-license=""cc-by-sa"" /></div>
+            </div>
+          </div>
+          <div class=""choices player-shuffle-buttons"">
+            <div class=""player-button chosen-correct"" data-activityrole=""correct-answer"">
+              <div class=""bloom-translationGroup bloom-ignoreOverflow"" data-default-languages=""L1"" style=""font-size: 41.3333px;"" data-hasqtip=""true"">
+                <label class=""bubble"" data-i18n=""SimpleChoiceActivity.CorrectAnswerIndicator"">Put the correct answer in this button. Bloom will shuffle the order later.</label>
+                <div class=""bloom-editable ButtonText-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"">
+                  <p>cat</p>
+                </div>
+              </div>
+            </div>
+            <div class=""player-button"" data-activityrole=""wrong-answer"">
+              <div class=""bloom-translationGroup bloom-ignoreOverflow"" data-default-languages=""L1"" style=""font-size: 41.3333px;"">
+                <div class=""bloom-editable ButtonText-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"">
+                  <p>dog</p>
+                </div>
+              </div>
+            </div>
+            <div class=""player-button"" data-activityrole=""wrong-answer"">
+              <div class=""bloom-translationGroup bloom-ignoreOverflow"" data-default-languages=""L1"" style=""font-size: 41.3333px;"">
+                <div class=""bloom-editable ButtonText-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"">
+                  <p>cow</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class=""bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage game-theme-blue-on-white side-left Device16x9Landscape bloom-monolingual"" id=""99006de3-9651-4e54-959b-195063ccb5be"" data-page="""" data-pagelineage=""3325A8B6-EA15-4FB7-9F8D-271D7B3C8D57;B902D56E-8AF7-43CF-9F2A-E473D0971CC7;F1F4090B-3383-4F36-870B-437B5CF84EA6"" data-page-number=""5"" lang="""" data-correct-sound=""correct_tada-fanfare-a_pixabay.webm"" data-wrong-sound=""wrong_twoDownElectronic2_pixabay.webm"" data-initial-page-orientation=""landscape""
+         data-analyticscategories=""drag-activity"" data-activity=""drag-image-to-target"" data-tool-id=""game"">
+      <div class=""marginBox"">
+        <div class=""split-pane-component-inner"">
+          <div class=""bloom-canvas bloom-has-canvas-element"" data-title=""For the current paper size: • The image container is 672 x 378 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2100 x 1182 dots would fill this container at 300 DPI."" title="""" data-imgsizebasedon=""672,378"">
+            <div class=""bloom-canvas-element bloom-backgroundImage"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style="" width: 672px; top: 0px; left: 0px; height: 378px;"">
+              <div class=""bloom-imageContainer"" data-title=""For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."" title=""For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI.""><img src=""placeHolder.png"" style="" width: 672px; top: -141.088px; left: 0px;"" alt="""" /></div>
+            </div>
+            <div class=""bloom-canvas-element bloom-gif drag-item-correct"" style="" height: 220px; left: 370px; top: 70px; width: 230px; position: absolute;"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"">
+              <div tabindex=""0"" class=""bloom-imageContainer"" title=""""><img src=""smiling-flowers.gif"" alt="""" data-copyright=""Copyright © 2025, Ilona Spaeder"" data-creator=""Ilona Spaeder"" data-license=""Custom License"" /></div>
+            </div>
+            <div class=""bloom-canvas-element bloom-passive-element"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style=""height: 35.5px;"" data-bloom-active=""true"">
+              <div class=""bloom-translationGroup bloom-leadingElement"" data-default-languages=""V"" data-hasqtip=""true"" data-eager-placeholder-l10n-id=""EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions"" style=""font-size: 21.3333px;"" aria-describedby=""qtip-0"">
+                <div class=""bloom-editable GameHeader-style"" lang=""z"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" style=""min-height: 32.01px;"" contenteditable=""true"">
+                  <p></p>
+                </div>
+                <div class=""bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1"" lang=""en"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" style=""min-height: 32.01px;"" contenteditable=""true"" data-bubble-alternate=""{`lang`:`en`,`style`:`height: 35.5px;`,`tails`:[]}"" data-languagetipcontent=""English"">
+                  <p>Custom Game Instructions/Description</p>
+                </div>
+              </div>
+            </div>
+            <div class=""bloom-canvas-element bloom-gif drag-item-wrong"" style="" height: 220px; left: 370px; top: 70px; width: 220px; position: absolute;"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"">
+              <div tabindex=""0"" class=""bloom-imageContainer"" title=""""><img src=""sad-face.gif"" alt="""" data-copyright=""Copyright © 2025, Ilona Spaeder"" data-creator=""Ilona Spaeder"" data-license=""Custom License"" /></div>
+            </div>
+          </div>
+        </div>
+        <button class=""check-button page-content game-button"" style=""right: 10px; bottom: 10px"">
+          <img src=""Check%20Answer%20Symbol.svg"" alt="""" data-copyright="""" data-creator="""" data-license="""" />
+        </button>
+        <button class=""try-again-button page-content game-button"" style=""right: 130px; bottom: 10px"">
+          <img src=""Try%20Again%20Symbol.svg"" alt="""" data-copyright="""" data-creator="""" data-license="""" />
+        </button>
+        <button class=""show-correct-button page-content game-button"" style=""right: 70px; bottom: 10px"">
+          <img src=""Show%20Answer%20Symbol.svg"" alt="""" data-copyright="""" data-creator="""" data-license="""" />
+        </button>
+        <button class=""page-content page-turn-button turn-right"" style=""right: 10px; top: calc(50% - 12px)"">
+          <img src=""Page%20Nav.svg"" alt="""" data-copyright="""" data-creator="""" data-license="""" />
+        </button>
+        <button class=""page-content page-turn-button turn-left"" style=""left: 10px; top: calc(50% - 12px)"">
+          <img src=""Page%20Nav.svg"" alt="""" data-copyright="""" data-creator="""" data-license="""" />
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
+";
+
+            var storage = GetInitialStorageWithCustomHtml(threeGamesHtml);
+            var assertThatDom = AssertThatXmlIn.Dom(storage.Dom.RawDom);
+
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]",
+                3);
+            assertThatDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-page') and @data-feature]");
+
+            //SUT
+            storage.MigrateToLevel8DataFeatureAttribute();
+
+            assertThatDom.HasNoMatchForXpath(
+                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]");
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'bloom-page') and @data-feature='game']",
+                3);
+        }
+
+        [Test]
+        public void MigrateToDataFeatureAttribute_FindsOverlay()
+        {
+            // One overlay page is marked enterprise-only, but the other is not.
+            // This means that one page gets the data-feature attribute, and the other does not.
+            var twoOverlayPagesHtml = @"<html>
+  <head></head>
+  <body>
+    <div class=""bloom-page comic enterprise-only no-margin-page numberedPage customPage side-right Device16x9Landscape bloom-monolingual"" id=""f90e38ad-9c81-4c40-ad57-f5d0576aa2ae"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398385;cc25eed1-74af-4d31-9120-aefd8d17205c"" data-page-number=""6"" data-page="""" lang="""" data-tool-id=""overlay"">
+      <div class=""marginBox"">
+        <div class=""split-pane-component-inner"">
+          <div title="""" class=""bloom-has-canvas-element bloom-canvas"" data-title=""Name: Vacation 2010 481.jpg"" data-imgsizebasedon=""672,378"">
+            <svg version=""1.1"" ></svg>
+              <div class=""bloom-canvas-element bloom-backgroundImage"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style=""width: 504px; top: 0px; left: 84px; height: 378px;"">
+              <div title=""Name: Vacation 2010 481.jpg"" class=""bloom-imageContainer"" data-title=""Name: Vacation 2010 481.jpg""><img src=""Vacation%202010%20481.jpg"" alt="""" data-copyright="""" data-creator="""" data-license="""" /></div>
+            </div>
+              <div class=""bloom-canvas-element"" style=""left: 284px; top: 331px; width: 140px; height: 30px; position: absolute;"" data-bubble=""{`version`:`1.0`,`style`:`caption`,`tails`:[],`level`:2,`backgroundColors`:[`#FFFFFF`,`#DFB28B`],`shadowOffset`:5}"" data-bloom-active=""true"">
+              <div class=""bloom-translationGroup bloom-leadingElement"" data-default-languages=""V"" style=""font-size: 16px;"">
+                <div class=""bloom-editable Bubble-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-bubble-alternate=""{`lang`:`en`,`style`:`left: 284px; top: 331px; width: 140px; height: 30px; position: absolute;`,`tails`:[]}"" data-languagetipcontent=""English"">
+                  <p>Mount Rushmore</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class=""bloom-page numberedPage customPage bloom-combinedPage side-left Device16x9Landscape bloom-monolingual"" data-page="""" id=""956c0018-99b1-4277-9626-84282860875d"" data-pagelineage=""7b192144-527c-417c-a2cb-1fb5e78bf38a"" data-page-number=""7"" lang="""">
+      <div class=""marginBox"">
+        <div class=""split-pane vertical-percent"" style=""min-width: 0px;"">
+          <div class=""split-pane-component position-left"" style=""right: 32.6176%;"">
+            <div class=""split-pane-component-inner"" min-height=""60px 150px 250px"" min-width=""60px 150px"" style=""position: relative;"">
+              <div class=""bloom-canvas bloom-leadingElement bloom-has-canvas-element"" data-imgsizebasedon=""438,328"" data-title=""Name: 100_1243.jpg"" title="""">
+                <svg version=""1.1"" ></svg>
+                <div class=""bloom-canvas-element bloom-backgroundImage"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style=""width: 437.333px; left: 0.333333px; top: 0px; height: 328px;"">
+                  <div class=""bloom-leadingElement bloom-imageContainer""><img src=""100_1243.jpg"" alt="""" data-copyright=""Copyright © 2010, Stephen McConnel"" data-creator=""Stephen McConnel"" data-license=""cc-by"" /></div>
+                </div>
+                <div class=""bloom-canvas-element"" style=""left: 270px; top: 30px; width: 150px; height: 27px;"" data-bubble=""{`version`:`1.0`,`style`:`speech`,`tails`:[{`tipX`:282,`tipY`:121,`midpointX`:301.5,`midpointY`:89,`autoCurve`:false}],`level`:2}"">
+                  <div class=""bloom-translationGroup bloom-leadingElement"" data-default-languages=""V"" style=""font-size: 16px;"">
+                    <div class=""bloom-editable Bubble-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" data-languagetipcontent=""English"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-bubble-alternate=""{`lang`:`en`,`style`:`left: 270px; top: 30px; width: 150px; height: 27px;`,`tails`:[{`tipX`:282,`tipY`:121,`midpointX`:301.5,`midpointY`:89,`autoCurve`:false}]}"">
+                      <p>Look Ma, a human!</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class=""split-pane-divider vertical-divider snapped"" title=""CTRL for precision. Double click to match previous page."" data-splitter-label="" Fit image 67.4%"" style=""right: 32.6176%;""></div>
+          <div class=""split-pane-component position-right"" style=""width: 32.6176%;"">
+            <div class=""split-pane-component-inner"" min-height=""60px 150px 250px"" min-width=""60px 150px"" style=""position: relative;"">
+              <div class=""bloom-translationGroup bloom-trailingElement bloom-vertical-align-center"" data-default-languages=""auto"" style=""font-size: 16px;"">
+                <div class=""bloom-editable normal-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" style=""min-height: 24px;"" data-languagetipcontent=""English"">
+                  <p>Hiking along the trail in eastern Idaho a number of years ago...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+";
+            var storage = GetInitialStorageWithCustomHtml(twoOverlayPagesHtml);
+            var assertThatDom = AssertThatXmlIn.Dom(storage.Dom.RawDom);
+            var xpathOverlay = FeatureRegistry.Features.Find(f => f.Feature == FeatureName.Overlay).ExistsInPageXPath;
+
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]",
+                1);
+            assertThatDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-page') and @data-feature]");
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(xpathOverlay, 2);
+
+            //SUT
+            storage.MigrateToLevel8DataFeatureAttribute();
+
+            assertThatDom.HasNoMatchForXpath(
+                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]");
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'bloom-page') and @data-feature='overlay']",
+                1);
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(xpathOverlay, 2);
+        }
+
+        [Test]
+        public void MigrateToDataFeatureAttribute_FindsWidget()
+        {
+            var oneWidgetPageHtml = @"<html>
+  <head></head>
+  <body>
+    <div class=""bloom-page custom-widget-page customPage bloom-interactive-page enterprise-only no-margin-page numberedPage side-right Device16x9Landscape bloom-monolingual"" id=""4fdc1ae7-de23-47d4-8a1d-8e16d66d4682"" data-page="""" data-analyticscategories=""widget"" help-link=""https://docs.bloomlibrary.org/widgets"" data-pagelineage=""3a705ac1-c1f2-45cd-8a7d-011c009cf406"" data-page-number=""2"" lang="""">
+      <div class=""marginBox"">
+        <div class=""split-pane-component-inner"">
+          <div class=""bloom-widgetContainer bloom-noWidgetSelected bloom-leadingElement""></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+";
+            var storage = GetInitialStorageWithCustomHtml(oneWidgetPageHtml);
+            var assertThatDom = AssertThatXmlIn.Dom(storage.Dom.RawDom);
+
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]",
+                1);
+            assertThatDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-page') and @data-feature]");
+
+            //SUT
+            storage.MigrateToLevel8DataFeatureAttribute();
+
+            assertThatDom.HasNoMatchForXpath(
+                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]");
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'bloom-page') and @data-feature='widget']",
+                1);
+        }
+
+        [Test]
+        public void MigrateToDataFeatureAttribute_FindsOldActivitiesAsGames()
+        {
+            var twoOldActivitiesHtml = @"<html>
+  <head></head>
+  <body>
+    <div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage A5Portrait side-right bloom-monolingual"" id=""f4c1a8c0-1ffa-4527-a2ba-b1b69224fea3"" data-page="""" data-analyticscategories=""comprehension"" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""1"" lang="""">
+      <div class=""marginBox"">
+        <div class=""quiz"">
+          <div class=""bloom-translationGroup bloom-ignoreChildrenForBookLanguageList"" data-default-languages=""auto"" style=""font-size: 26.6667px;"" data-hasqtip=""true"" aria-describedby=""qtip-0"">
+            <div class=""bloom-editable QuizHeader-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" data-collection=""simpleComprehensionQuizHeading"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"">
+              <p>Check Your Understanding</p>
+            </div>
+          </div>
+          <div class=""bloom-translationGroup"" data-default-languages=""auto"" data-hint=""Put a comprehension question here"" style=""font-size: 16px;"" data-hasqtip=""true"" aria-describedby=""qtip-1"">
+            <div class=""bloom-editable QuizQuestion-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"">
+              <p>Why is there air?</p>
+            </div>
+          </div>
+          <div class=""checkbox-and-textbox-choice correct-answer"">
+            <input class=""styled-check-box"" type=""checkbox"" name=""Correct""></input>
+            <div class=""bloom-translationGroup"" data-default-languages=""auto"">
+              <div class=""bloom-editable QuizAnswer-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"">
+                <p>To blow up basketballs</p>
+              </div>
+            </div>
+            <div class=""placeToPutVariableCircle""></div>
+          </div>
+          <div class=""checkbox-and-textbox-choice"">
+            <input class=""styled-check-box"" type=""checkbox"" name=""Correct""></input>
+            <div class=""bloom-translationGroup"" data-default-languages=""auto"">
+              <div class=""bloom-editable QuizAnswer-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"">
+                <p>To blow down trees</p>
+              </div>
+            </div>
+            <div class=""placeToPutVariableCircle""></div>
+          </div>
+          <div class=""checkbox-and-textbox-choice"">
+            <input class=""styled-check-box"" type=""checkbox"" name=""Correct""></input>
+            <div class=""bloom-translationGroup"" data-default-languages=""auto"">
+              <div class=""bloom-editable QuizAnswer-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"">
+                <p>To hold up clouds</p>
+              </div>
+            </div>
+            <div class=""placeToPutVariableCircle""></div>
+          </div>
+          <script src=""simpleComprehensionQuiz.js""></script>
+        </div>
+      </div>
+    </div>
+    <div class=""bloom-page bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage A5Portrait side-left bloom-monolingual"" id=""d6d1d196-d521-4435-a517-c80b5c30453f"" data-page="""" data-analyticscategories=""simple-dom-choice"" data-activity=""simple-dom-choice"" data-pagelineage=""3325A8B6-EA15-4FB7-9F8D-271D7B3C8D33"" data-page-number=""4"" lang="""">
+      <div class=""marginBox"">
+        <div class=""bloom-translationGroup disableHighlight"" style=""font-size: 24px;"">
+          <div class=""bloom-editable Prompt-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"">
+            <p>Choose the matching word</p>
+          </div>
+        </div>
+        <div class=""imageThenChoices"">
+          <div class=""bloom-imageContainer"" title=""Name: aor_Cat3.png>
+            <img src=""aor_Cat3.png"" alt="""" data-copyright=""Copyright SIL International 2009"" data-creator="""" data-license=""cc-by-sa""></img>
+          </div>
+          <div class=""choices player-shuffle-buttons"">
+            <div class=""player-button chosen-correct"" data-activityrole=""correct-answer"">
+              <div class=""bloom-translationGroup bloom-ignoreOverflow"" data-default-languages=""L1"" style=""font-size: 41.3333px;"" data-hasqtip=""true"">
+                <div class=""bloom-editable ButtonText-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"">
+                  <p>cat</p>
+                </div>
+              </div>
+            </div>
+            <div class=""player-button"" data-activityrole=""wrong-answer"">
+              <div class=""bloom-translationGroup bloom-ignoreOverflow"" data-default-languages=""L1"" style=""font-size: 41.3333px;"">
+                <div class=""bloom-editable ButtonText-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"">
+                  <p>cow</p>
+                </div>
+              </div>
+            </div>
+            <div class=""player-button"" data-activityrole=""wrong-answer"">
+              <div class=""bloom-translationGroup bloom-ignoreOverflow"" data-default-languages=""L1"" style=""font-size: 41.3333px;"">
+                <div class=""bloom-editable ButtonText-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"">
+                  <p>dog</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+";
+            var storage = GetInitialStorageWithCustomHtml(twoOldActivitiesHtml);
+            var assertThatDom = AssertThatXmlIn.Dom(storage.Dom.RawDom);
+
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]",
+                2);
+            assertThatDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-page') and @data-feature]");
+
+            //SUT
+            storage.MigrateToLevel8DataFeatureAttribute();
+
+            assertThatDom.HasNoMatchForXpath(
+                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]");
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'bloom-page') and @data-feature='game']",
+                2);
         }
     }
 }

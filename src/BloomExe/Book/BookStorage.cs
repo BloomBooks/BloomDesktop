@@ -16,6 +16,7 @@ using Bloom.ErrorReporter;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
@@ -108,7 +109,7 @@ namespace Bloom.Book
         void MigrateToLevel5CanvasElement();
         void MigrateToLevel6LegacyActivities();
         void MigrateToLevel7BloomCanvas();
-
+        void MigrateToLevel8DataFeatureAttribute();
         void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
@@ -1118,6 +1119,16 @@ namespace Bloom.Book
                 BloomReaderMinVersion = "3.3",
                 // This is used for all images so will nearly always succeed fast.
                 XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
+            },
+            new Feature()
+            {
+                FeatureId = "dataFeature",
+                FeaturePhrase = "6.2 use of data-feature",
+                // Plan is to make a special exception to this for late releases of 6.1 and 6.0,
+                // which will know how to reverse the migration.
+                BloomDesktopMinVersion = "6.2",
+                BloomReaderMinVersion = "3.3",
+                XPath = $"//div[contains(@class,'bloom-page') and @data-feature]"
             }
         };
 
@@ -4027,6 +4038,55 @@ namespace Bloom.Book
             MigrateList(quizzes, "game-theme-red-on-white");
             MigrateList(choices, "game-theme-white-and-orange-on-blue");
             Dom.UpdateMetaElement("maintenanceLevel", "6");
+        }
+
+        /// <summary>
+        /// Ensure that the data-feature attribute is set on all pages that have an "enterprise-only" class,
+        /// and that the class is removed. This is needed for the new subscription system.
+        /// </summary>
+        public void MigrateToLevel8DataFeatureAttribute()
+        {
+            if (GetMaintenanceLevel() >= 8)
+                return;
+            var enterpriseOnlyPages = Dom.SafeSelectNodes("//div[contains(@class, 'enterprise-only')]");
+            var featureList = new List<FeatureName>();
+            foreach (SafeXmlElement page in enterpriseOnlyPages)
+            {
+                featureList.Clear();
+                foreach (var feature in FeatureRegistry.Features)
+                {
+                    if (string.IsNullOrEmpty(feature.ExistsInPageXPath))
+                        continue;
+                    var featureElements = page.SafeSelectNodes(feature.ExistsInPageXPath);
+                    if (featureElements.Length > 0)
+                        featureList.Add(feature.Feature);
+                }
+                Debug.Assert(featureList.Count > 0, "No feature found for enterprise-only page??");
+                if (featureList.Count > 1)
+                    ReduceToMainFeature(featureList);
+                if (featureList.Count > 0)
+                    page.SetAttribute("data-feature", featureList[0].ToString().ToLowerInvariant());
+                page.RemoveClass("enterprise-only");
+            }
+            Dom.UpdateMetaElement("maintenanceLevel", "8");
+        }
+
+        private void ReduceToMainFeature(List<FeatureName> featureList)
+        {
+            // Game overlaps with Overlay, but Game is more specific.
+            if (featureList.Contains(FeatureName.Game))
+            {
+                featureList.RemoveAll(x => x != FeatureName.Game);
+                return;
+            }
+            // If Overlay overlaps with anything else, choose Overlay.
+            if (featureList.Contains(FeatureName.Overlay))
+            {
+                featureList.RemoveAll(x => x != FeatureName.Overlay);
+                return;
+            }
+            // Not sure if this can happen or what to prioritize.
+            featureList.RemoveRange(1, featureList.Count - 1);
         }
 
         /// <summary>
