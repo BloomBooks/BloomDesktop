@@ -56,6 +56,7 @@ import { postData, postJson } from "../../utils/bloomApi";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
+import { getExactClientDimensions } from "../../utils/elementUtils";
 
 export interface ITextColorInfo {
     color: string;
@@ -6341,8 +6342,10 @@ export class CanvasElementManager {
         if (timeoutHandler) {
             clearTimeout(timeoutHandler);
         }
-        const bloomCanvasWidth = bloomCanvas.clientWidth;
-        const bloomCanvasHeight = bloomCanvas.clientHeight;
+        const {
+            width: bloomCanvasWidth,
+            height: bloomCanvasHeight
+        } = getExactClientDimensions(bloomCanvas);
         let imgAspectRatio =
             bgCanvasElement.clientWidth / bgCanvasElement.clientHeight;
         const img = getImageFromCanvasElement(bgCanvasElement);

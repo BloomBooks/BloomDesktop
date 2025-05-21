@@ -1,3 +1,5 @@
+import { EditableDivUtils } from "../bookEdit/js/editableDivUtils";
+
 /**
  * Like element.closest(), but instead finds the farthest element (starting from ${startElement}) that matches the selector
  * (self included)
@@ -23,4 +25,46 @@ export function farthest<E extends Element = Element>(
     }
 
     return patriarch;
+}
+
+export function getBorderThickness(element) {
+    const styles = window.getComputedStyle(element);
+    const borderTopWidth = parseFloat(
+        styles.getPropertyValue("border-top-width")
+    );
+    const borderBottomWidth = parseFloat(
+        styles.getPropertyValue("border-bottom-width")
+    );
+    const borderLeftWidth = parseFloat(
+        styles.getPropertyValue("border-left-width")
+    );
+    const borderRightWidth = parseFloat(
+        styles.getPropertyValue("border-right-width")
+    );
+    return {
+        top: borderTopWidth,
+        bottom: borderBottomWidth,
+        left: borderLeftWidth,
+        right: borderRightWidth
+    };
+}
+
+// .getClientHeight and .getClientWidth return integers, so if rounding errors are a problem we can
+// use this to get the exact fractional values
+export function getExactClientDimensions(
+    element: HTMLElement
+): { width: number; height: number } {
+    const scalingFactor = EditableDivUtils.getPageScale();
+    const boundingRect = element.getBoundingClientRect();
+    const borderThicknesses = getBorderThickness(element);
+    const exactClientHeight =
+        boundingRect.height / scalingFactor -
+        (borderThicknesses.top + borderThicknesses.bottom);
+    const exactClientWidth =
+        boundingRect.width / scalingFactor -
+        (borderThicknesses.left + borderThicknesses.right);
+    return {
+        width: exactClientWidth,
+        height: exactClientHeight
+    };
 }
