@@ -1522,6 +1522,15 @@ namespace Bloom.Book
                 }
                 result.Add(Tuple.Create(attr.Name, XmlString.FromUnencoded(attr.Value)));
             }
+            // if the node is an img, save some extra data
+            if (node.Name == "img")
+            {
+                var extras = HtmlDom.GetDataForReconstructingBackgroundImgWrapper(node);
+                foreach (var extra in extras)
+                {
+                    result.Add(Tuple.Create(extra.Item1, XmlString.FromUnencoded(extra.Item2)));
+                }
+            }
             return result;
         }
 
@@ -1823,7 +1832,7 @@ namespace Bloom.Book
         /// blank xmatter, then push the values back into the xmatter.
         /// </summary>
         /// <returns>true if this node is an image holder of some sort.</returns>
-        private bool UpdateImageFromDataSet(DataSet data, SafeXmlElement node, string key)
+        internal bool UpdateImageFromDataSet(DataSet data, SafeXmlElement node, string key)
         {
             if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
                 return false;
@@ -1875,21 +1884,45 @@ namespace Bloom.Book
             // that wasn't sufficient so we need to keep using width/height. We indicate that we're in this situation with this
             // class on the parent imageContainer. See BL-9460
 
-            // Note that these attributes were already run through the _attributesNotToCopy filter.
+            // Also, if we're restoring a cropped (or potentially cropped) image, we need to keep the style;
+            // this is indicated by finding special attributes used to contain data about a background image
+            // represented as a canvas element.
+            var backgroundImgTupleNames = HtmlDom.BackgroundImgTupleNames;
+            var backgroundImgValues = new string[backgroundImgTupleNames.Length];
+            for (var i = 0; i < backgroundImgTupleNames.Length; i++)
+            {
+                backgroundImgValues[i] = otherAttributes
+                    ?.Find(x => x.Item1 == backgroundImgTupleNames[i])
+                    ?.Item2.Unencoded;
+            }
+
+            var hasBackgroundImgData = backgroundImgValues.All(x => x != null);
+
+            // Note that these attributes were already run through the _attributesNotToCopy filter, which wipes out the ones
+            // we don't ever want restored. The style attribute is special, for a series of historical reasons,
+            // and the BackgroundImgTupleNames ones are kept so we can use them below, but not copied back to the img.
             otherAttributes
-                ?.Where(a => a.Item1 != "src")
+                ?.Where(a => a.Item1 != "src" && !backgroundImgTupleNames.Contains(a.Item1))
                 .ForEach(a =>
                 {
                     if (
                         a.Item1 == "style"
-                        && node.ParentNode
-                            .GetOptionalStringAttribute("class", "")
-                            .Contains("bloom-scale-with-code")
+                        && (
+                            node.ParentNode
+                                .GetOptionalStringAttribute("class", "")
+                                .Contains("bloom-scale-with-code") || hasBackgroundImgData
+                        )
                     )
                     {
                         imgOrDivWithBackgroundImage.SetAttribute(a.Item1, a.Item2.Unencoded);
                     }
                 });
+
+            // If we find data related to a background image, restore that whole structure.
+            if (hasBackgroundImgData)
+            {
+                HtmlDom.ReconstructBackgroundImgWrapper(node, backgroundImgValues);
+            }
             return true;
         }
 
@@ -2341,12 +2374,12 @@ namespace Bloom.Book
             }
         }
 
-		/// <summary>
-		/// If we have "{personalization}" in the subscription's HTML template, fill in the
-		/// personalization from the subscription code.  If the personalization is empty,
-		/// throw an exception because it should always exist if it's in the template.
-		/// </summary>
-		private string MergeInPersonalization(string content)
+        /// <summary>
+        /// If we have "{personalization}" in the subscription's HTML template, fill in the
+        /// personalization from the subscription code.  If the personalization is empty,
+        /// throw an exception because it should always exist if it's in the template.
+        /// </summary>
+        private string MergeInPersonalization(string content)
         {
             // if the CollectionSettings has a Subscription Personalization, replace any instances of
             // {personalization} with that value.
@@ -2356,7 +2389,8 @@ namespace Bloom.Book
                 if (string.IsNullOrEmpty(personalization))
                 {
                     throw new ApplicationException(
-                        "Branding personalization is not set, but the branding template contains {personalization}.");
+                        "Branding personalization is not set, but the branding template contains {personalization}."
+                    );
                 }
                 return content.Replace("{personalization}", personalization);
             }
