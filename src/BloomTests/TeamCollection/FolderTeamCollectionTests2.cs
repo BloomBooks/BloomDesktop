@@ -56,7 +56,6 @@ namespace BloomTests.TeamCollection
                     var tcManager = new TeamCollectionManager(
                         settingsPath,
                         null,
-                        new BookRenamedEvent(),
                         new BookStatusChangeEvent(),
                         null,
                         null,
@@ -78,7 +77,6 @@ namespace BloomTests.TeamCollection
                     tcManager = new TeamCollectionManager(
                         settingsPath,
                         null,
-                        new BookRenamedEvent(),
                         new BookStatusChangeEvent(),
                         null,
                         null,
@@ -254,7 +252,6 @@ namespace BloomTests.TeamCollection
                     var tcManager = new TeamCollectionManager(
                         settingsPath,
                         null,
-                        new BookRenamedEvent(),
                         new BookStatusChangeEvent(),
                         null,
                         null,
