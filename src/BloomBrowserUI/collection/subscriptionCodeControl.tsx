@@ -18,7 +18,7 @@ import {
     useLocalizedTier,
     useSubscriptionInfo
 } from "./useSubscriptionInfo";
-import { WarningBox } from "../react_components/boxes";
+import { NoteBox, WarningBox } from "../react_components/boxes";
 
 type Status =
     | "None"
@@ -96,6 +96,13 @@ export const SubscriptionControls: React.FC = () => {
                 flex-direction: column;
             `}
         >
+            {status === "EditingBlorgBook" && (
+                <NoteBox l10nKey="Settings.Subscription.DownloadForEdit">
+                    This collection is in "Download for Edit" mode. The book has
+                    the same subscription settings as when it was last uploaded.
+                </NoteBox>
+            )}
+
             <Editor status={status} />
 
             <StatusText
@@ -104,9 +111,10 @@ export const SubscriptionControls: React.FC = () => {
                 expiryDateStringAsYYYYMMDD={expiryDateStringAsYYYYMMDD}
             />
 
-            {status === "SubscriptionGood" && subscriptionSummary && (
-                <BrandingSummary summaryHtml={subscriptionSummary} />
-            )}
+            {["SubscriptionGood", "EditingBlorgBook"].includes(status) &&
+                subscriptionSummary && (
+                    <BrandingSummary summaryHtml={subscriptionSummary} />
+                )}
         </div>
     );
 };
@@ -222,6 +230,30 @@ function getStatus(
     editingBlorgBook: boolean,
     missingBrandingFiles: boolean
 ): Status {
+    let status = getStatusSansEditingBlorgBook(
+        subscriptionCode,
+        subscriptionCodeIntegrity,
+        expiryDateStringAsYYYYMMDD,
+        haveBrandingFiles
+    );
+    // I'm not 100% sure this is the best way to handle EditingBlorgBook,
+    // but I'm following 6.0 which treats a full, normal subscription as normal
+    // in this control, even if editingBlorgBook is true.
+    // The scenario of
+    //  editingBlorgBook && status === "SubscriptionGood"
+    // means the user has added the full subscription code
+    // since the download, either for the original subscription or another one.
+    if (editingBlorgBook && status !== "SubscriptionGood")
+        status = "EditingBlorgBook";
+
+    return status;
+}
+function getStatusSansEditingBlorgBook(
+    subscriptionCode: string,
+    subscriptionCodeIntegrity: SubscriptionCodeIntegrity,
+    expiryDateStringAsYYYYMMDD: string,
+    haveBrandingFiles: boolean
+): Status {
     const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
     if (subscriptionCode === "" || subscriptionCodeIntegrity === "none") {
         return "None";
@@ -237,9 +269,6 @@ function getStatus(
         return "SubscriptionIncomplete";
     }
 
-    if (editingBlorgBook) {
-        return "EditingBlorgBook";
-    }
     if (expiryDateStringAsYYYYMMDD < todayAsYYYYMMDD) {
         return "SubscriptionExpired";
     }
@@ -346,14 +375,20 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
                     id="subscriptionCodeInput"
                     //className="subscriptionCodeInput"
                     type="text"
-                    value={subscriptionCode}
+                    value={
+                        status === "EditingBlorgBook"
+                            ? getSubscriptionCodeToDisplayForEditingBlorgBook(
+                                  subscriptionCode
+                              )
+                            : subscriptionCode
+                    }
                     onChange={userTypedOrPastedCode}
                     css={css`
                         width: 260px;
                         margin-left: 5px;
                         padding-right: 20px; // clear of icon
                         flex-grow: 1;
-                        font-family: "Consolas"; // show zeros distinctly
+                        font-family: Consolas, monospace; // show zeros distinctly
                         padding: 5px;
                     `}
                 />
@@ -401,3 +436,11 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
         </div>
     );
 };
+
+function getSubscriptionCodeToDisplayForEditingBlorgBook(
+    subscriptionCode: string
+): string {
+    let result = subscriptionCode;
+    result = result.replace("-***-***", "");
+    return result === "Default" ? "" : result;
+}
