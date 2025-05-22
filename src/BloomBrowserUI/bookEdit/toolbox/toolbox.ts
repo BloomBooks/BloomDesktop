@@ -13,7 +13,7 @@ import {
     getPageIframeBody
 } from "../../utils/shared";
 import { EditableDivUtils } from "../js/editableDivUtils";
-import { DragActivityTool } from "./dragActivity/dragActivityTool";
+import { GameTool } from "./games/GameTool";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
@@ -28,7 +28,7 @@ let savedSettings: string;
 
 let keypressTimer: any = null;
 
-let showExperimentalTools: boolean; // set by Toolbox.initialize()
+let showExperimentalTools = false; // set by Toolbox.initialize()
 
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
@@ -92,6 +92,7 @@ export class ToolBox {
     private builtToolbox: boolean = false;
     public adjustToolListForPage(page: HTMLElement) {
         const requiredToolId = page.getAttribute("data-tool-id");
+        newToolId = requiredToolId || undefined;
 
         // This function is the main task of adjustToolListForPage. It may have to be postponed
         // until we've finished otherwise setting up the toolbox; in particular, we can't refresh
@@ -105,7 +106,7 @@ export class ToolBox {
                 return;
             }
             const toolbox = document.getElementById("toolbox") as HTMLElement;
-
+            let toolsAdjusted = false;
             for (let i = 0; i < masterToolList.length; i++) {
                 if (masterToolList[i].requiresToolId()) {
                     // We may need to add or remove the specified tool
@@ -130,8 +131,14 @@ export class ToolBox {
                             ToolBox.addToolToString(masterToolList[i].id()),
                             wantTool
                         );
+                        toolsAdjusted = wantTool;
                     }
                 }
+            }
+            // We haven't called showOrHideTool, so the active tool hasn't changed.
+            // See the later comments on BL-14434 (after the first PR link).
+            if (requiredToolId && !toolsAdjusted) {
+                setCurrentTool(requiredToolId);
             }
         };
         doAdjustment();
@@ -211,8 +218,8 @@ export class ToolBox {
         }
     }
 
-    public getTheOneDragActivityTool(): DragActivityTool | undefined {
-        return DragActivityTool.theOneDragActivityTool;
+    public getTheOneDragActivityTool(): GameTool | undefined {
+        return GameTool.theOneDragActivityTool;
     }
 
     // Append "Tool" to the tool name if it's not already there.
@@ -503,8 +510,7 @@ export class ToolBox {
                 "[data-toolid='" + ToolBox.addToolToString(toolId) + "']"
             ) as HTMLElement;
             if (toolHeader) {
-                // Review: do we want to force the tool to be current?
-                //setCurrentTool(toolId);
+                setCurrentTool(toolId);
             } else {
                 showOrHideTool("dummy", ToolBox.addToolToString(toolId), true);
             }
@@ -526,6 +532,11 @@ export function getTheOneToolbox() {
 // into this array in order to interact with the overall toolbox code.
 const masterToolList: ITool[] = [];
 let currentTool: ITool | undefined = undefined;
+
+let newToolId: string | undefined = undefined;
+export function getActiveToolId(): string | undefined {
+    return newToolId ? newToolId : currentTool?.id();
+}
 
 /**
  * Handles the click event of the divs in Settings.htm that are styled to be check boxes.
@@ -726,6 +737,7 @@ function switchTool(newToolName: string): void {
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-6720.
         currentTool = newTool ? newTool : undefined;
     }
+    newToolId = undefined;
 }
 
 function activateTool(newTool: ITool) {

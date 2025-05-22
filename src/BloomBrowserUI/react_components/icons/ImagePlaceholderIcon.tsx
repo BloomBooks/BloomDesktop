@@ -1,4 +1,4 @@
-import React = require("react");
+import * as React from "react";
 
 interface ImagePlaceholderIconProps extends React.SVGProps<SVGSVGElement> {
     color?: string;
@@ -46,6 +46,28 @@ export const WrongImagePlaceholderIcon: React.FunctionComponent<ImagePlaceholder
                 stroke="#FF0000"
                 strokeWidth="3"
                 d="M 1.1855431,44.069125 45.223702,1.2183955"
+            />
+        </svg>
+    );
+};
+
+export const RectangleIcon: React.FunctionComponent<{
+    color?: string;
+}> = props => {
+    const { color, ...rest } = props;
+    return (
+        <svg
+            width="50"
+            height="40"
+            viewBox="0 0 50 40"
+            fill={"none"}
+            xmlns="http://www.w3.org/2000/svg"
+            {...rest}
+        >
+            <path
+                d="M0 0H50V40H0V0Z"
+                stroke={color ?? "black"}
+                strokeWidth={5}
             />
         </svg>
     );

@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Bloom.Book;
 using Bloom.MiscUI;
 
 namespace BloomTests.TeamCollection
@@ -158,6 +159,74 @@ namespace BloomTests.TeamCollection
                     File.WriteAllText(bcPath, "something");
                     var files = tc.FilesToMonitorForCollection();
                     Assert.That(files, Contains.Item(bcPath));
+                }
+            }
+        }
+
+        [Test]
+        public void FixPossibleCaseChange_ChangesCase()
+        {
+            using (var collectionFolder = new TemporaryFolder("FixPossibleCaseChange_ChangesCase"))
+            {
+                using (
+                    var repoFolder = new TemporaryFolder("FixPossibleCaseChange_ChangesCase_Shared")
+                )
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    TeamCollectionManager.ForceCurrentUserForTests("me@somewhere.org");
+                    var tc = new FolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    var fakeMetaData = @"{""rubbish"":""this is phony""}";
+                    tc.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
+                    var oldFolderPath = SyncAtStartupTests.MakeFakeBook(
+                        collectionFolder.FolderPath,
+                        "old name",
+                        "book content",
+                        metaJsonIfDifferent: fakeMetaData
+                    );
+                    tc.PutBook(oldFolderPath);
+                    var repoBookPath = Path.Combine(
+                        repoFolder.FolderPath,
+                        "books",
+                        "old name.bloom"
+                    );
+                    Assert.That(File.Exists(repoBookPath));
+                    var repoBookPathChangeCase = Path.Combine(
+                        repoFolder.FolderPath,
+                        "books",
+                        "Old Name.bloom"
+                    );
+                    BookStorage.MoveFilePossiblyOnlyChangingCaseAllowReplace(
+                        repoBookPath,
+                        repoBookPathChangeCase
+                    );
+                    var metaDataPath = BookMetaData.MetaDataPath(oldFolderPath);
+                    RobustFile.WriteAllText(metaDataPath, new BookMetaData().Json);
+
+                    // sut 1: we made the case of the repo and local book differ, so this should be true.
+                    Assert.That(tc.DoLocalAndRemoteNamesDifferOnlyByCase("Old Name"), Is.True);
+
+                    // sut 2: fix it
+                    tc.EnsureConsistentCasingInLocalName("Old Name");
+
+                    // and that should have fixed it
+                    Assert.That(tc.DoLocalAndRemoteNamesDifferOnlyByCase("Old Name"), Is.False);
+
+                    var realRepoName = Path.GetFileNameWithoutExtension(
+                        Directory
+                            .EnumerateFiles(Path.GetDirectoryName(repoBookPath), "old name.bloom")
+                            .FirstOrDefault()
+                    );
+                    Assert.That(realRepoName, Is.EqualTo("Old Name"));
+                    var realLocalFileName = Path.GetFileNameWithoutExtension(
+                        Directory.EnumerateFiles(oldFolderPath, "old name.htm").FirstOrDefault()
+                    );
+                    Assert.That(realLocalFileName, Is.EqualTo("Old Name"));
+                    var updatedMetaData = RobustFile.ReadAllText(metaDataPath);
+                    Assert.That(updatedMetaData, Is.EqualTo(fakeMetaData));
                 }
             }
         }

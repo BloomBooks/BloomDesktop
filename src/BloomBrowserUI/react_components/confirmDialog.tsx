@@ -1,4 +1,4 @@
-import React = require("react");
+import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { useL10n } from "./l10nHooks";
 import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";

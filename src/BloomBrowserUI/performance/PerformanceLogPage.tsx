@@ -8,7 +8,7 @@ import {
     ScatterPlotDatum,
     ScatterPlotNodeProps
 } from "@nivo/scatterplot";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import { Button } from "@mui/material";
 import * as filesize from "filesize";
 

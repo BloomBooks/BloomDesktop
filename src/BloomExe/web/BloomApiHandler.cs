@@ -27,6 +27,10 @@ namespace Bloom.Api
         private Dictionary<string, BaseEndpointRegistration> _exactEndpointRegistrations =
             new Dictionary<string, BaseEndpointRegistration>();
 
+        // Endpoints that are registered by the application container rather than the project context
+        // and so should not get cleared when we switch project context
+        private HashSet<string> _applicationLevelRegistrationKeys = new HashSet<string>();
+
         // Special lock for making thumbnails. See discussion at the one point of usage.
         private object ThumbnailsAndPreviewsSyncObj = new object();
 
@@ -38,10 +42,42 @@ namespace Bloom.Api
 
         public CollectionSettings CurrentCollectionSettings { get; private set; }
 
-        public BloomApiHandler(BookSelection bookSelection, CollectionSettings collectionSettings)
+        public BloomApiHandler(BookSelection bookSelection)
         {
             _bookSelection = bookSelection;
+        }
+
+        /// <summary>
+        /// Only used in BloomServer.SetCollectionSettingsDuringInitialization. See comment there.
+        /// </summary>
+        /// <param name="collectionSettings"></param>
+        public void SetCollectionSettingsDuringInitialization(CollectionSettings collectionSettings)
+        {
             CurrentCollectionSettings = collectionSettings;
+        }
+
+        /// <summary>
+        /// Mark all already-registered handlers as application-level handlers.
+        /// </summary>
+        public void RecordApplicationLevelHandlers()
+        {
+            _applicationLevelRegistrationKeys = new HashSet<string>(
+                _exactEndpointRegistrations.Keys
+            );
+        }
+
+        /// <summary>
+        /// Clear all handlers that were not marked as application level handlers
+        /// </summary>
+        public void ClearProjectLevelHandlers()
+        {
+            foreach (var key in _exactEndpointRegistrations.Keys.ToList())
+            {
+                if (!_applicationLevelRegistrationKeys.Contains(key))
+                {
+                    _exactEndpointRegistrations.Remove(key);
+                }
+            }
         }
 
         public void ClearEndpointHandlers()

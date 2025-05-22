@@ -21,7 +21,7 @@
 
     --bloom-editMode-custom-image-border: none;
 
-    .bloom-imageContainer img {
+    .bloom-canvas img {
         object-fit: cover; /* let the rounded edges of the parent clip the img */
     }
 

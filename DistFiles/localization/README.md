@@ -132,7 +132,7 @@ in translations from Crowdin.  (If there were a separate repository just for loc
 a normal merge with all that history would probably be okay.)
 
 1. Before anything else, go to [SIL-Bloom Github
-   Settings](https://crowdin.com/project/sil-bloom/apps/system/github) and click on
+   Settings](https://crowdin.com/project/sil-bloom/integrations/system/github) and click on
    the "Pause Sync" button.  This prevents a flood of translation work continuing to be added to
    the pull request branch while you are trying to merge the pull request.
 

@@ -62,13 +62,13 @@ html
 				display: block;
 				clear: both;
 				height: 70px;
-				/* width is 0 because we want the space to go to text that we're going to wrap around the image-container */
+				/* width is 0 because we want the space to go to text that we're going to wrap around the bloom-canvas */
 				width: 0;
 				/* make room for the caption. Why is that?*/
 				padding-bottom: 20px;
 			}
 
-			.bloom-imageContainer {
+			.bloom-canvas {
 				width: 100px;
 				height: 100px;
 				float: left;
@@ -90,7 +90,7 @@ html
 			div
 				h4 Simple field
 				+field#simple
-				h4 Field with embedded image-pusher-downer, image-container, and caption, all with bloom-preventRemoval
+				h4 Field with embedded image-pusher-downer, bloom-canvas, and caption, all with bloom-preventRemoval
 				ul
 					li You should be able to type text that flows around the beaker.
 					li You should not be able to delete the image, or caption box.
@@ -98,7 +98,7 @@ html
 				+field#hasEmbeddedImage
 					.pinnedImage.bloom-keepFirstInField.bloom-preventRemoval
 						.imagePusherDowner.bloom-preventRemoval
-						.bloom-imageContainer.bloom-preventRemoval(contenteditable='false')
+						.bloom-canvas.bloom-preventRemoval(contenteditable='false')
 							img(src='../../images/experiment.png', contenteditable='true', alt='Could not load the picture', lang='teo')
 							.caption(contenteditable='true', lang='teo')
 								| Caption

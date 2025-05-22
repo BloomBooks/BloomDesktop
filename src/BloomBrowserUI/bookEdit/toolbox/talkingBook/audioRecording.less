@@ -198,13 +198,13 @@ div.ui-audioCurrent p {
         }
 
         #audio-split {
-            background-image: url(split_enabled.svg);
+            background-image: url(adjustTimings.svg);
             height: 45px;
             width: 45px; // visually same width as record button
 
-            &.expected {
-                background-image: url(split_expected.svg);
-            }
+            // &.expected {
+            //     background-image: url(adjustTimings_expected.svg);
+            // }
         }
 
         .audio-about {
@@ -444,7 +444,7 @@ body .cursor-progress {
 }
 
 .cursor-progress button {
-    // Deal with buttons on the image container, which will appear grabbable by default. Especially the on-hover buttons for the bloom-imageContainer, those are hard to modify in the JS layer.
+    // Deal with buttons on the bloom-canvas, which will appear grabbable by default. Especially the on-hover buttons for the bloom-canvas, those are hard to modify in the JS layer.
     cursor: progress;
 }
 
@@ -484,7 +484,7 @@ body .cursor-progress {
     right: 0;
     display: flex;
     justify-content: center;
-    z-index: 2001; // textOverPicture is 1001
+    z-index: 2001; // canvas element is 1001
 }
 
 .hiddenOverlay {

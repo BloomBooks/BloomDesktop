@@ -1,11 +1,11 @@
 // not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
 ///<reference path="../../lib/split-pane/split-pane.d.ts" />
-import { SetupImage } from "./bloomImages";
+import { kBloomCanvasClass, SetupImage } from "./bloomImages";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { get, post, postThatMightNavigate } from "../../utils/bloomApi";
 import { ElementQueries } from "css-element-queries";
-import { theOneBubbleManager } from "./bubbleManager";
+import { theOneCanvasElementManager } from "./CanvasElementManager";
 
 $(() => {
     $("div.split-pane").splitPane();
@@ -58,7 +58,7 @@ function isEmpty(el) {
     return temp === "";
 }
 function setupLayoutMode() {
-    theOneBubbleManager.suspendComicEditing("forTool");
+    theOneCanvasElementManager.suspendComicEditing("forTool");
     $(".split-pane-component-inner").each(function(): boolean {
         const $this = $(this);
         if ($this.find(".split-pane").length) {
@@ -85,8 +85,9 @@ function setupLayoutMode() {
     });
     // Text should not be editable in layout mode
     $(".bloom-editable[contentEditable=true]").removeAttr("contentEditable");
-    // Images cannot be changed (other than growing/shrinking with container) in layout mode
-    $(".bloom-imageContainer")
+    // Images cannot be changed (other than growing/shrinking with their containing bloom-canvas) in layout mode
+    // I'm not sure these handlers still do anything we wouldn't want in layout mode, but leaving the code just in case.
+    $(".bloom-canvas")
         .off("mouseenter")
         .off("mouseleave");
     // Attaching to html allows it to work even if nothing has focus.
@@ -104,8 +105,9 @@ function setupLayoutMode() {
 }
 
 // N.B. If you add/remove a container class, you'll likely need to modify 'createTypeSelectors()' too.
+// These are the top-level things, other than text, that an origami split can contain.
 const bloomContainerClasses =
-    ".bloom-imageContainer, .bloom-widgetContainer, .bloom-videoContainer,";
+    ".bloom-canvas, .bloom-widgetContainer, .bloom-videoContainer,";
 
 function isSplitPaneComponentInnerEmpty(spci: JQuery) {
     return !spci.find(
@@ -115,7 +117,7 @@ function isSplitPaneComponentInnerEmpty(spci: JQuery) {
 
 function doesSplitPaneComponentNeedTextBoxIdentifier(spci: JQuery) {
     // don't put the text box identifier in:
-    //   image container
+    //   bloom-canvas
     //   video container
     //   widget container,
     // or where we just put the "Picture, Video, Widget or Text" selector links
@@ -138,7 +140,7 @@ function layoutToggleClickHandler() {
     } else {
         // This line is currently redundant since we will reload the page, but in case we
         // stop doing that, it will be important.
-        theOneBubbleManager.resumeComicEditing();
+        theOneCanvasElementManager.resumeComicEditing();
 
         marginBox.removeClass("origami-layout-mode");
         marginBox.find(".textBox-identifier").remove();
@@ -195,6 +197,15 @@ function performSplit(
         );
     }
     newSplitPane.splitPane();
+    adjustModifiedChild(innerElement.get(0) as HTMLElement);
+    theOneCanvasElementManager.setupSplitterEventHandling();
+}
+
+function adjustModifiedChild(resizedElt: HTMLElement | undefined) {
+    const mainChild = resizedElt?.firstElementChild as HTMLElement;
+    if (mainChild?.classList.contains(kBloomCanvasClass)) {
+        theOneCanvasElementManager.AdjustChildrenIfSizeChanged(mainChild);
+    }
 }
 
 var origamiUndoStack: any[] = [];
@@ -281,6 +292,9 @@ function closeClickHandler() {
     });
     sibling.addClass(positionClass);
     sibling.attr("style", positionStyle);
+    adjustModifiedChild(
+        (sibling.get(0) as HTMLElement).firstElementChild as HTMLElement
+    );
 }
 
 function getSplitPaneHtml(verticalOrHorizontal) {
@@ -478,15 +492,15 @@ function makePictureFieldClickHandler(e) {
     e.preventDefault();
     const container = $(this).closest(".split-pane-component-inner");
     addUndoPoint();
-    const imageContainer = $(
-        "<div class='bloom-imageContainer bloom-leadingElement'></div>"
+    const bloomCanvas = $(
+        "<div class='bloom-canvas bloom-leadingElement'></div>"
     );
     const image = $(
         "<img src='placeHolder.png' alt='Could not load the picture'/>"
     );
-    imageContainer.append(image);
+    bloomCanvas.append(image);
     SetupImage(image); // Must attach it first so event handler gets added to parent
-    container.append(imageContainer);
+    container.append(bloomCanvas);
     $(this)
         .closest(".selector-links")
         .remove();

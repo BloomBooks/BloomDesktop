@@ -1,6 +1,6 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
-import React = require("react");
+import * as React from "react";
 import { get, post, postString } from "../utils/bloomApi";
 import { BooksOfCollection, IBookInfo } from "./BooksOfCollection";
 import { Transition } from "react-transition-group";
@@ -41,6 +41,7 @@ const kResizerSize = 10;
 
 type CollectionInfo = {
     id: string;
+    key?: string; // React key, defaults to id
     name: string;
     shouldLocalizeName: boolean;
     isLink: boolean;
@@ -48,7 +49,7 @@ type CollectionInfo = {
     filter?: (book: IBookInfo) => boolean;
 };
 
-export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
+export const CollectionsTabPane: React.FunctionComponent = () => {
     // This sort of duplicates useApiJson, but allows us to use the underlying state variable.
     // Which we really need.
     const [collections, setCollections] = useState<
@@ -150,10 +151,6 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     });
 
     const [draggingSplitter, setDraggingSplitter] = useState(false);
-    const [
-        isSpreadsheetFeatureActive,
-        setIsSpreadsheetFeatureActive
-    ] = useState(false);
 
     // Initially (when Bloom first starts, until we persist splitter settings) the vertical
     // splitter between the editable collection and the others is set to give them equal space.
@@ -176,16 +173,6 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         const manager = new BookSelectionManager();
         manager.initialize();
         return manager;
-    }, []);
-
-    useEffect(() => {
-        get("app/enabledExperimentalFeatures", result => {
-            const features: string = result.data; // This is a string containing the experimental feature names
-            const featureIsActive = Boolean(
-                features.includes("spreadsheet-import-export")
-            );
-            setIsSpreadsheetFeatureActive(featureIsActive);
-        });
     }, []);
 
     const [contextMousePoint, setContextMousePoint] = React.useState<
@@ -322,9 +309,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         // the collection menu commands don't actually use the ID of
         // a particular book
         "",
-        collections[0].id,
-        // Shouldn't be any at this level, but it works better to include this here too.
-        isSpreadsheetFeatureActive
+        collections[0].id
     );
 
     if (newCollection) {
@@ -348,14 +333,13 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     const collectionComponents = sourcesCollections.map(c => {
         return (
             <BooksOfCollectionWithHeading
-                key={c.id}
+                key={c.key ?? c.id}
                 name={c.name}
                 id={c.id}
                 shouldLocalizeName={c.shouldLocalizeName}
                 isLink={c.isLink}
                 isRemovableFolder={c.isRemovableFolder}
                 manager={manager}
-                isSpreadsheetFeatureActive={isSpreadsheetFeatureActive}
                 onRemoveSourceCollection={removeSourceCollection}
                 onRemoveSourceFolder={removeSourceFolder}
                 filter={c.filter}
@@ -498,9 +482,6 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                             isEditableCollection={true}
                             manager={manager}
                             lazyLoadCollection={false}
-                            isSpreadsheetFeatureActive={
-                                isSpreadsheetFeatureActive
-                            }
                             lockedToOneDownloadedBook={
                                 lockedToOneDownloadedBook
                             }
@@ -591,6 +572,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
 export interface MenuItemSpec {
     label: string;
     l10nId?: string;
+    l10nParam0?: string;
     // One of these two must be provided. If both are, onClick is used and command is ignored.
     // If only command is provided, the click action is to call handleBookCommand with that argument,
     // which invokes the corresponding API call to C# code.
@@ -625,7 +607,6 @@ export const makeMenuItems = (
     close: () => void,
     bookId: string,
     collectionId: string,
-    includeSpreadsheetItems: boolean,
     tooltipIfCannotSaveBook?: string
 ) => {
     const menuItemsT = menuItemsSpecs
@@ -641,13 +622,13 @@ export const makeMenuItems = (
                     close,
                     bookId,
                     collectionId,
-                    includeSpreadsheetItems,
                     tooltipIfCannotSaveBook
                 );
                 return submenuItems.length ? (
                     <LocalizableNestedMenuItem
                         english={spec.label}
                         l10nId={spec.l10nId!}
+                        l10nParam0={spec.l10nParam0}
                     >
                         {submenuItems}
                     </LocalizableNestedMenuItem>
@@ -673,6 +654,7 @@ export const makeMenuItems = (
                         key={index}
                         english={spec.label}
                         l10nId={spec.l10nId!}
+                        l10nParam0={spec.l10nParam0}
                         onClick={() => {
                             // We deliberately do NOT close the menu, so the user can see it really got checked.
                         }}
@@ -696,16 +678,12 @@ export const makeMenuItems = (
             if (spec.onClick) {
                 clickAction = spec.onClick;
             }
-            if (
-                !includeSpreadsheetItems &&
-                Boolean(spec.l10nId!.includes("Spreadsheet"))
-            )
-                return undefined;
             return (
                 <LocalizableMenuItem
                     key={spec.l10nId}
                     english={spec.label}
                     l10nId={spec.l10nId!}
+                    l10nParam0={spec.l10nParam0}
                     onClick={clickAction}
                     icon={spec.icon}
                     addEllipsis={spec.addEllipsis}
@@ -740,7 +718,6 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
     isLink: boolean;
     isRemovableFolder: boolean;
     manager: BookSelectionManager;
-    isSpreadsheetFeatureActive: boolean;
     onRemoveSourceCollection: (id: string) => void;
     onRemoveSourceFolder: (id: string) => void;
     filter?: (book: IBookInfo) => boolean;
@@ -782,7 +759,6 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
                 isEditableCollection={false}
                 manager={props.manager}
                 lazyLoadCollection={true}
-                isSpreadsheetFeatureActive={props.isSpreadsheetFeatureActive}
                 lockedToOneDownloadedBook={false}
                 filter={props.filter}
             />
@@ -866,7 +842,10 @@ function sanitize(id: string): string {
 function processTemplatesCollection(
     templatesCollection: CollectionInfo
 ): CollectionInfo[] {
-    const simpleTemplates = { ...templatesCollection };
+    const simpleTemplates = {
+        ...templatesCollection,
+        key: templatesCollection.id + "/Simple"
+    };
 
     // this "f" garbage is because TS refused to see that simpleTemplates.filter is never undefined
     const f = (book: IBookInfo) => {
@@ -878,6 +857,7 @@ function processTemplatesCollection(
     simpleTemplates.filter = f;
     const specializedTemplates = {
         ...templatesCollection,
+        key: templatesCollection.id + "/Specialized",
         name: "Specialized Templates"
     };
     specializedTemplates.filter = (book: IBookInfo) => {

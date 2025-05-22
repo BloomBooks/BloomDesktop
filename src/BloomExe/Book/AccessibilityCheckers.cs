@@ -40,22 +40,22 @@ namespace Bloom.web.controllers
             // Note that we intentionally are not dealing with unusual hypothetical situations like where
             // someone might want the language of the description to be something other than language1.
             foreach (
-                SafeXmlElement imageContainer in book.OurHtmlDom.SafeSelectNodes(
-                    "//div[contains(@class, 'bloom-imageContainer')]"
+                SafeXmlElement bloomCanvas in book.OurHtmlDom.SafeSelectNodes(
+                    $"//div[contains(@class, '{HtmlDom.kBloomCanvasClass}')]"
                 )
             )
             {
-                if (imageContainer.GetAttribute("aria-hidden") == "true")
+                if (bloomCanvas.GetAttribute("aria-hidden") == "true")
                     continue; // no description needed if hidden from accessibility
                 var visibleElements =
-                    imageContainer.SelectSingleNode(
+                    bloomCanvas.SelectSingleNode(
                         $@"./div[contains(@class,'bloom-imageDescription')]
 								/div[contains(@class,'bloom-editable')
 								and @lang='{book.BookData.Language1.Tag}']"
                     ) as SafeXmlElement;
                 if (visibleElements == null || (visibleElements.InnerText.Trim().Length == 0))
                 {
-                    var page = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(imageContainer);
+                    var page = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(bloomCanvas);
 
                     yield return new Problem() { message = string.Format(messageTemplate, page) };
                 }

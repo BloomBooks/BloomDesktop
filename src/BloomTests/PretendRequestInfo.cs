@@ -142,5 +142,15 @@ namespace Bloom.Api
         {
             return null;
         }
+
+        public NameValueCollection GetPostDataWhenSimpleJsonEncoded()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteRedirect(string url, bool permanent)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

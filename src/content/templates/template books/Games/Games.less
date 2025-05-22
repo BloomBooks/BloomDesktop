@@ -1,17 +1,17 @@
 @import (reference) "../../../../BloomBrowserUI/bloomUI.less";
 // Important classes and attributes that bloom game template pages contain or that
 // bloom maniupulates to run games (maybe the classes should all be bloom-X?):
-// drag-item-correct, drag-item-wrong: put on overlay items that should only show
+// drag-item-correct, drag-item-wrong: put on canvas element items that should only show
 //    in the correct or wrong tab, or the Play tab when the user has given an answer.
 // drag-activity-{start/correct/wrong/play/solution}: put on the div above the bloom-page
 //    to indicate state. One of the first four should always be present to indicate which
 //    tab we are in. When in the Play tab, one of drag-activity-{correct/wrong/solution} may
 //    also be present, indicating that we have checked an answer and found it correct (or wrong),
 //    or that we are showing the correct answer.
-// data-bubble-id attribute identifies an overlay that can be dragged in play mode. Except for distractors,
+// data-draggable-id attribute identifies an canvas element that can be dragged in play mode. Except for distractors,
 //    each has an associated 'target' that has the same id in its data-target-of attribute,
 //    indicating the correct place it should be dragged to.
-// drag-item-order-sentence is put on an overlay that, in Play mode, is replaced with a sequence
+// drag-item-order-sentence is put on a canvas element that, in Play mode, is replaced with a sequence
 //    of its words in random order.
 // drag-item-random-sentence is put on the div containing the randomized words in Play mode.
 // drag-item-order-word is put on the words that are part of such a sequence.
@@ -25,9 +25,9 @@
 //    (dimmed) when the L1 alternative is blank.
 // There are a few others, mostly containing 'slider' that relate to the incomplete drag-word-chooser-slider game.
 
-// When we really figure out how to do themes, we probably won't import this; instead, we'll generate
-// a css file for each theme and have the book import the one it wants.
-@import "blueOnTanTheme.less";
+@import "gamesThemes.less";
+
+@target-border-width: 2px;
 
 // These ones show in the Correct tab, or when the user has given a correct answer.
 .drag-item-correct,
@@ -37,26 +37,69 @@
 .drag-activity-correct .drag-item-correct,
 .drag-activity-wrong .drag-item-wrong {
     display: block;
+    // In front of targets ([data-target-of] has z-index=@convasElementCanvasZIndex+1),
+    // in case they overlap.  See BL-14627.
+    z-index: @canvasElementCanvasZIndex + 2;
 }
+// Hide draggable items in the Correct and Wrong tabs. See BL-14532.
+// The data-target-of elements will show the positions of the targets and
+// indicate the correct answer in the Correct tab.
+.drag-activity-correct,
+.drag-activity-wrong {
+    [data-draggable-id] {
+        display: none;
+    }
+}
+// The drag-activity-play and drag-activity-correct are both present when the user has
+// given a correct answer and clicked for it to be checked.  (The same goes for a wrong
+// answer and drag-activity-wrong.)  Show the user's answer, right or wrong,
+// via the [data-draggable-id] elements which have been dragged to the targets.
+// Unmoved [data-draggable-id] elements are hidden in showing the right answer.
+.drag-activity-play.drag-activity-correct,
+.drag-activity-play.drag-activity-wrong {
+    .bloom-canvas-element.bloom-draggedToTarget[data-draggable-id] {
+        display: block;
+    }
+}
+// Prevent unwanted interaction with the background images and other items that are not
+// supposed to be changed in the Correct and Wrong tabs.  See BL-14532.
+// Less doesn't appear to handle the :is() operator with a list of selectors, so we have
+// to use two rules to get the result we want.
+.drag-activity-correct .bloom-canvas-element:not(.drag-item-correct),
+.drag-activity-wrong .bloom-canvas-element:not(.drag-item-wrong) {
+    pointer-events: none;
+}
+.drag-activity-correct,
+.drag-activity-wrong {
+    [data-target-of] {
+        pointer-events: none;
+    }
+}
+
 // in play mode suppress these focus effects
 .drag-activity-play {
-    .bloom-imageContainer .bloom-textOverPicture div:focus,
-    .bloom-imageContainer .bloom-textOverPicture video:focus {
+    .bloom-canvas .bloom-canvas-element div:focus,
+    .bloom-canvas .bloom-canvas-element video:focus {
         outline-color: transparent;
         box-shadow: none;
+    }
+    // if some overflow is present, no need to punish the user
+    .childOverflowingThis:after {
+        display: none;
     }
 }
 
 // We want these only in the start tab, except for ones that are specific to the other tabs
-.drag-activity-correct .bloom-textOverPicture:not(.drag-item-correct),
-.drag-activity-wrong .bloom-textOverPicture:not(.drag-item-wrong),
-.drag-activity-play .bloom-textOverPicture,
-.drag-activity-solution .bloom-textOverPicture {
+.drag-activity-correct .bloom-canvas-element:not(.drag-item-correct),
+.drag-activity-wrong .bloom-canvas-element:not(.drag-item-wrong),
+.drag-activity-play .bloom-canvas-element,
+.drag-activity-solution .bloom-canvas-element {
     img[src="placeHolder.png"] {
         display: none;
     }
 }
-[data-bubble-id] {
+[data-draggable-id],
+[data-target-of] {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -76,7 +119,7 @@
 // }
 
 // .drag-activity-correct .bloom-page:not([data-activity="drag-word-chooser-slider"]) {
-//     .bloom-textOverPicture:not(.drag-item-correct):not(.bloom-change-page-button),
+//     .bloom-canvas-element:not(.drag-item-correct),
 //     [data-target-of],
 //     .drag-item-random-sentence {
 //         opacity: 30%;
@@ -90,7 +133,7 @@
 // .drag-activity-wrong .bloom-page:not([data-activity="drag-word-chooser-slider"]) {
 //     // Review: we want the change-page buttons to be visible and clickable always.
 //     // Should we have a distinct class for this, like bloom-all-tabs?
-//     .bloom-textOverPicture:not(.drag-item-wrong):not(.bloom-change-page-button),
+//     .bloom-canvas-element:not(.drag-item-wrong),
 //     [data-target-of],
 //     .drag-item-random-sentence {
 //         opacity: 30%;
@@ -114,8 +157,10 @@
 .drag-activity-play {
     .drag-item-wrong,
     .drag-item-correct {
-        // In front of targets, in case they overlap
-        z-index: @bubbleCanvasZIndex + 2;
+        // In front of targets ([data-target-of] has z-index=@convasElementCanvasZIndex+1),
+        // in case they overlap. Also in front of [data-draggable-id] elements, which are
+        // in front of the targets with z-index=@canvasElementCanvasZIndex+2.  See BL-14627.
+        z-index: @canvasElementCanvasZIndex + 3;
     }
 }
 // In the play tab we don't even have the concept of a video element being selected.
@@ -204,15 +249,37 @@
 
 [data-target-of] {
     position: absolute;
-    // above overlay canvas so we can drag it when the canvas is active
-    z-index: @bubbleCanvasZIndex + 1;
-    box-sizing: border-box;
+    // above canvas element canvas so we can drag it when the canvas is active
+    z-index: @canvasElementCanvasZIndex + 1;
+    // we set the size appropriately for the draggable element, and this should be the size inside of the border we may add to the target
+    box-sizing: content-box;
     > * {
-        // targets have children to show a shadow of what is supposed to go there.
-        // the contents are identical, this makes them a shadow.
+        // We want targets to show a shadow of what is supposed to go there.
         opacity: 50%;
     }
-    // in targets, as in image overlays, we want the height to be derived from the width.
+    .drag-activity-correct & {
+        // In the correct tab, we want to see the target without transparency.
+        > * {
+            opacity: 1;
+        }
+    }
+    .drag-activity-wrong & {
+        // In the wrong tab, we don't want to see the target at all, but just the dashed box if it's visible.
+        > * {
+            opacity: 0;
+        }
+    }
+    .drag-activity-play
+    // Note, data-show-answers-in-targets might not be set. Default is false.
+        .bloom-page:not([data-show-answers-in-targets="true"])
+        & {
+        // Only show the target contents in play mode if the game creator decided to show them.
+        > * {
+            opacity: 0;
+        }
+    }
+
+    // in targets, as in image canvas elements, we want the height to be derived from the width.
     .bloom-imageContainer img {
         height: unset;
     }
@@ -221,7 +288,7 @@
 // This might be more specific than it needs to be, but it roughly matches a rule that gives it a border and shadow,
 // and another that gives it an outline, that we don't want in play mode.
 .drag-activity-play {
-    .bloom-textOverPicture {
+    .bloom-canvas-element {
         .bloom-translationGroup {
             .bloom-editable.bloom-editable.bloom-editable {
                 // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
@@ -243,10 +310,10 @@
 // when testing we need to be able to drag the bubble over the target.
 // (But we don't want pictures that are just part of the background to be in front of targets.)
 .drag-activity-play {
-    .bloom-textOverPicture[data-bubble-id] {
-        z-index: @bubbleCanvasZIndex + 2;
+    .bloom-canvas-element[data-draggable-id] {
+        z-index: @canvasElementCanvasZIndex + 2;
         &.bloom-ui-dragging {
-            z-index: @bubbleCanvasZIndex + 3;
+            z-index: @canvasElementCanvasZIndex + 3;
         }
     }
     // Buttons for editing images and formatting text should not show in test mode.
@@ -292,7 +359,7 @@
 //         height: var(--slider-height);
 //         box-sizing: border-box;
 //         // Same as the canvas is enough to put in in front, since it comes later.
-//         z-index: @bubbleCanvasZIndex;
+//         z-index: @canvasElementCanvasZIndex;
 //         .bloom-activity-slider-content {
 //             display: flex;
 //             height: 100%;
@@ -322,7 +389,7 @@
 //             display: block;
 //         }
 //     }
-//     .bloom-textOverPicture {
+//     .bloom-canvas-element {
 //         transition: opacity 1s ease-in-out;
 //     }
 //     .bloom-hideSliderImage {
@@ -342,11 +409,41 @@
         background-color: transparent;
     }
 }
-// And don't show them at all in play mode.
-.drag-activity-play .bloom-page[data-show-targets-during-play="false"] {
+// And don't show the dashed box at all in play mode or the Correct or Wrong tabs.
+.drag-activity-play,
+.drag-activity-correct,
+.drag-activity-wrong {
+    .bloom-page[data-show-targets-during-play="false"] [data-target-of] {
+        border: none;
+    }
+}
+
+.drag-activity-play [data-target-of] {
+    // In case a target is over something else, such as a picture that has a click sound,
+    // we want the click to go right through.
+    // I spent a long time looking for something that was preventing propagation, but I
+    // think what is really happening is that once the target receives the click,
+    // it bubbles only to ancestors of the target; but other overlays on the page are
+    // not ancestors, so they don't receive it at all. Fortunately, in play mode we
+    // don't want any mouse behaviors for targets, so we can just prevent them from
+    // registering them at all.
+    pointer-events: none;
+}
+
+// In the drag-image-to-target game, we want to show shadows of target images everywhere
+// except the Correct tab if data-show-target-as-shadow is set to true.
+:not(.drag-activity-correct)
+    > .bloom-page[data-activity="drag-image-to-target"][data-show-target-as-shadow="true"],
+.bloom-page.data-activity-play[data-show-target-as-shadow="true"][data-show-answers-in-targets="true"] {
     [data-target-of] {
-        // display:none would prevent the snap code from using them, since they would not have a location.
-        visibility: hidden;
+        background-color: unset;
+
+        .bloom-targetWrapper {
+            filter: grayscale(100%) brightness(0%);
+            mix-blend-mode: normal;
+            opacity: 100%;
+            top: 0px; // Override so that the dragged image is exactly on top of the target wrapper.
+        }
     }
 }
 
@@ -405,64 +502,54 @@
     [data-txt-img] {
         border: 8px solid var(--slider-keyword-color) !important;
         border-radius: 18px;
-        background-color: var(--text-background);
+        background-color: var(--slider-text-background);
     }
 }
-&.bloom-page {
-    // need this for specificity
-    background-color: var(--page-color);
-}
+
 //Slider: .bloom-activity-slider {
 //     //background-color: yellow; // Todo
 //     background-image: linear-gradient(white, yellow);
 //     .bloom-activity-slider-item {
 //         border: 6px solid var(--slider-button-color);
-//         background-color: var(--text-background);
+//         background-color: var(--slider-text-background);
 //     }
 // }
-.bloom-textOverPicture.draggable-text {
-    background-color: var(--draggable-background-color);
-    color: var(--draggable-color);
+.bloom-canvas-element.draggable-text {
+    background-color: var(--game-draggable-bg-color);
+    color: var(--game-draggable-color);
+    &.bloom-unused-in-lang {
+        display: none;
+    }
 }
 .drag-item-correct,
 .drag-item-wrong {
     .bloom-translationGroup {
         background-color: transparent;
-        color: var(--fixed-color);
+        color: var(--game-text-color);
     }
 }
 .drag-item-order-word,
 .drag-item-order-sentence p {
-    background-color: var(--draggable-background-color);
-    color: var(--draggable-color);
+    background-color: var(--game-draggable-bg-color);
+    color: var(--game-draggable-color);
     border-radius: 10px;
     padding: 0px 11px;
     margin-right: 5px;
 }
 
 [data-target-of] {
-    border: dashed 2px var(--draggable-background-color);
+    border: dashed @target-border-width
+        var(--game-draggable-target-outline-color);
     // If we ever want targets to have a background color (except when hidden), here's the place.
-    //background-color: var(--target-color);
+    //background-color: var(--game-draggable-target-bg-color);
 
     &:focus {
         box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
-            0 0 8px var(--draggable-background-color);
+            0 0 8px var(--game-draggable-target-outline-color);
     }
-}
-
-.bloom-change-page-button {
-    background-color: var(--draggable-background-color);
-    color: var(--draggable-color);
-    border-radius: 10px;
-    padding: 3px 2px 2px 10px;
-    box-sizing: border-box;
-    // This puts it in front of other things so it can actually be clicked.
-    z-index: @textOverPictureZIndex;
-    // In bloom-player, cursor seems to be auto, which here gives us a text editing cursor.
-    // Not sure why that doesn't happen in play mode in Bloom desktop.
-    // But anyway, we don't want it.
-    cursor: default;
+    &.bloom-unused-in-lang {
+        display: none;
+    }
 }
 
 // We could add another common class to these three elements, but other themes
@@ -484,14 +571,80 @@
     min-height: 36px;
 }
 .game-button {
-    background-color: var(--draggable-background-color);
+    background-color: var(--game-control-button-bg-color);
 }
 
 .activeButton {
     &:hover {
-        border-color: var(--hover-button-border);
+        // In case we are in a browser which doesn't support color-mix, use gray as a fallback.
+        border-color: #848484;
+        border-color: color-mix(
+            in srgb,
+            var(--game-control-button-bg-color),
+            white 30%
+        );
         &:active {
-            border-color: var(--active-button-border);
+            border-color: black;
         }
     }
+}
+
+.bloom-game-prompt {
+    display: none;
+}
+
+// The format dialog is not relevant in a prompt dialog (and somehow comes up with the
+// wrong initial style), so just hide it.
+#promptInput #formatButton {
+    display: none;
+}
+
+// Tricky. We only want to see the prompt button in start mode, when it makes sense to be editing the
+// draggable content. I'd rather have the visibility (like everything else about the control) be handled
+// by the React code that manages the button. But that doesn't have any easy way to know whether we're
+// in Start mode. Even if we gave the root element another prop, it would be hard to set it correctly,
+// because we actually do the outer ReactDOM.render as we switch tabs and before the class we're looking
+// for gets set. So it seems easiest to let React give it an ID and use these rules to hide it.
+// I'm using visibility rather than display so that React can have control of the display mode (currently flex).
+#promptButton {
+    visibility: hidden;
+}
+
+.drag-activity-start #promptButton {
+    visibility: unset;
+}
+
+.bloom-canvas-element.bloom-passive-element:has(.GameHeader-style) {
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    position: absolute;
+}
+
+.numberedPage::after {
+    color: var(--game-page-number-color);
+    --pageNumber-background-color: var(
+        --page-background-color
+    ); // appearance system
+}
+
+// These styles and more are set up in the Games.html template.
+// An attribute on the body (data-copy-all-styles) causes them
+// all to get added when any game page is added to a book.
+// Technically, there is no reason we can't include these defaults
+// which use theme variables directly in the template, too, but by setting
+// the theme variable defaults here, we keep from storing the variable names
+// in the dom. In theory, that means we can change them more easily.
+// It also keeps more of the theming logic in one place.
+.GameHeader-style {
+    color: var(--game-header-color);
+    background-color: var(--game-header-bg-color);
+}
+.GameTextSmallStart-style,
+.GameTextSmallCenter-style,
+.GameTextMediumStart-style,
+.GameTextMediumCenter-style,
+.GameTextLargeStart-style,
+.GameTextLargeCenter-style {
+    color: var(--game-text-color);
 }

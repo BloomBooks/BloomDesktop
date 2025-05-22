@@ -1463,12 +1463,7 @@ namespace Bloom.Publish.Video
                 return; // nothing to save, this shouldn't have happened.
             var extension = _codec.ToExtension();
             var filename = GetSuggestedSaveFileNameBase(out string langTag);
-            var initialPath = OutputFilenames.GetOutputFilePath(
-                _book,
-                extension,
-                filename,
-                langTag
-            );
+            var initialPath = FilePathMemory.GetOutputFilePath(_book, extension, filename, langTag);
             var outputFileLabel = L10NSharp.LocalizationManager.GetString(
                 @"PublishTab.RecordVideo.VideoFile",
                 "Video File",
@@ -1491,7 +1486,7 @@ namespace Bloom.Publish.Video
             );
             if (!String.IsNullOrEmpty(destFileName))
             {
-                OutputFilenames.RememberOutputFilePath(_book, extension, destFileName, langTag);
+                FilePathMemory.RememberOutputFilePath(_book, extension, destFileName, langTag);
                 RobustFile.Copy(_finalVideo.Path, destFileName, true);
             }
 

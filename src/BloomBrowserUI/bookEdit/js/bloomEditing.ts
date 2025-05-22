@@ -4,7 +4,8 @@ import * as $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
-    SetOverlayForImagesWithoutMetadata,
+    HandleImageError,
+    SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
     doImageCommand
@@ -20,13 +21,14 @@ import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import {
-    bubbleDescription,
-    BubbleManager,
-    initializeBubbleManager,
-    kTextOverPictureClass,
-    kTextOverPictureSelector,
-    theOneBubbleManager
-} from "./bubbleManager";
+    CanvasElementManager,
+    initializeCanvasElementManager,
+    theOneCanvasElementManager
+} from "./CanvasElementManager";
+import {
+    kCanvasElementClass,
+    kCanvasElementSelector
+} from "../toolbox/overlay/canvasElementUtils";
 import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
@@ -50,6 +52,7 @@ import {
     post,
     postBoolean,
     postData,
+    postJson,
     postString,
     postThatMightNavigate
 } from "../../utils/bloomApi";
@@ -63,10 +66,15 @@ import {
 import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
 import { removeToolboxMarkup } from "../toolbox/toolbox";
-import { IBloomWebSocketEvent } from "../../utils/WebSocketManager";
-import { setupDragActivityTabControl } from "../toolbox/dragActivity/dragActivityTool";
+import WebSocketManager, {
+    IBloomWebSocketEvent
+} from "../../utils/WebSocketManager";
+import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
-import { addScrollbarsToPage, cleanupNiceScroll } from "./niceScrollBars";
+import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
+import { showLinkGridSetupsDialog } from "../bookLinkSetup/LinkGridSetupDialog";
+import { Link } from "../bookLinkSetup/BookLinkTypes";
+import PlaceholderProvider from "./PlaceholderProvider";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -131,6 +139,7 @@ function Cleanup() {
     $("div, figure").each(function() {
         $(this).removeClass("ui-draggable");
         $(this).removeClass("ui-resizable");
+        // obsolete, but we'll keep the cleanup for a while
         $(this).removeClass("hoverUp");
     });
     $("span").each(function() {
@@ -296,12 +305,9 @@ function AddLanguageTags(container) {
             // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
             // with each other, leading to flashing back and forth
             // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
-            // August 2024: for overlays, the language is now displayed in the context controls box, and isn't
+            // August 2024: for canvas elements, the language is now displayed in the context controls box, and isn't
             // a problem for small text boxes.
-            if (
-                $this.width() < 100 &&
-                !this.closest(kTextOverPictureSelector)
-            ) {
+            if ($this.width() < 100 && !this.closest(kCanvasElementSelector)) {
                 return;
             }
 
@@ -397,13 +403,23 @@ export function changeImage(imageInfo: {
         );
     }
     // I can't remember why, but what this is doing is saying that if the imageContainer
+    // ...or just possibly bloom-canvas in legacy or publication mode?...
     // has an <img> element, we're setting the src on that. But if it does not, we're
     // setting the background-image on the container itself.
     if (imgOrImageContainer.tagName === "IMG") {
+        // We need to reset the image load error flag for a new image.  We also want to
+        // install an error handler to set the flag if needed.  See BL-14241.
+        (imgOrImageContainer as HTMLImageElement).classList.remove(
+            "bloom-imageLoadError"
+        );
+        (imgOrImageContainer as HTMLImageElement).onerror = HandleImageError;
         (imgOrImageContainer as HTMLImageElement).src = imageInfo.src;
     }
-    // else if it has class bloom-imageContainer, we need to set the background-image on the container
-    else if (imgOrImageContainer.classList.contains("bloom-imageContainer")) {
+    // else if it has class bloom-imageContainer or bloom-canvas, we need to set the background-image on the container
+    else if (
+        imgOrImageContainer.classList.contains("bloom-imageContainer") ||
+        imgOrImageContainer.classList.contains("bloom-canvas")
+    ) {
         imgOrImageContainer.setAttribute(
             "style",
             "background-image:url('" + imageInfo.src + "')"
@@ -414,11 +430,13 @@ export function changeImage(imageInfo: {
     imgOrImageContainer.setAttribute("data-license", imageInfo.license);
     const ancestor = imgOrImageContainer.parentElement?.parentElement;
     if (ancestor) {
-        SetOverlayForImagesWithoutMetadata(ancestor);
+        SetupMetadataButton(ancestor);
     }
     // id is just a temporary expedient to find the right image easily in this method.
     imgOrImageContainer.removeAttribute("id");
-    theOneBubbleManager.updateBubbleForChangedImage(imgOrImageContainer);
+    theOneCanvasElementManager.updateCanvasElementForChangedImage(
+        imgOrImageContainer
+    );
 }
 
 // This origami checking business is related BL-13120
@@ -437,16 +455,17 @@ function hasOrigami(container: HTMLElement) {
 // REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
 export function SetupElements(
     container: HTMLElement,
-    elementToFocus?: HTMLElement
+    // undefined means it will do its best to find something to focus. "none" means don't focus anything.
+    elementToFocus?: HTMLElement | "none"
 ) {
     recordWhatThisPageLooksLikeForSanityCheck(container);
-    BubbleManager.recordInitialZoom(container);
+    CanvasElementManager.recordInitialZoom(container);
 
     SetupImagesInContainer(container);
 
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
-    initializeBubbleManager();
+    initializeCanvasElementManager();
 
     $(container)
         .find(".bloom-editable")
@@ -503,7 +522,7 @@ export function SetupElements(
             )[0] as HTMLElement;
             // When this is called initially on page load, container is the body,
             // and we will find a bloom-page and adjust the tool list.
-            // If it is called later to adjust something like an image container,
+            // If it is called later to adjust something like an image-container,
             // the toolbox should already be set for this page.
             // In that case we won't find a page inside it, which is fine since
             // we don't need to adjust the tool list again.
@@ -517,7 +536,7 @@ export function SetupElements(
 
     //CSS normally can't get at the text in order to, for example, show something different if it is empty.
     //This allows you to add .bloom-needs-data-text to a bloom-translationGroup in order to get
-    //its child bloom-editable's to have data-texts's on them
+    //its child bloom-editable's to have data-placeholders on them
     $(container)
         .find(".bloom-translationGroup.bloom-text-for-css .bloom-editable")
         .each(function() {
@@ -652,124 +671,6 @@ export function SetupElements(
 
     AddLanguageTags(container);
 
-    //Same thing for divs which are potentially editable, but via the contentEditable attribute instead of TextArea's ReadOnly attribute
-    // editTranslationMode.css/editOriginalMode.css can't get at the contentEditable (css can't do that), so
-    // so they set the cursor to "not-allowed", and we detect that and set the contentEditable appropriately
-    $(container)
-        .find("div.bloom-readOnlyInTranslationMode")
-        .focus(function() {
-            if ($(this).css("cursor") === "not-allowed") {
-                $(this).removeAttr("contentEditable");
-            } else {
-                $(this).attr("contentEditable", "true");
-            }
-        });
-
-    //first used in the Uganda SHRP Primer 1 template, on the image on day 1
-    $(container)
-        .find(".bloom-draggableLabel")
-        .each(function() {
-            // previous to June 2014, containment was not working, so some items may be
-            // out of bounds. Or the stylesheet could change the size of things. This gets any such back in bounds.
-            if ($(this).position().left < 0) {
-                $(this).css("left", 0);
-            }
-            if ($(this).position().top < 0) {
-                $(this).css("top", 0);
-            }
-            if (
-                $(this).position().left + $(this).width() >
-                $(this)
-                    .parent()
-                    .width()
-            ) {
-                $(this).css(
-                    "left",
-                    $(this)
-                        .parent()
-                        .width() - $(this).width()
-                );
-            }
-            if (
-                $(this).position().top >
-                $(this)
-                    .parent()
-                    .height()
-            ) {
-                $(this).css(
-                    "top",
-                    $(this)
-                        .parent()
-                        .height() - $(this).height()
-                );
-            }
-
-            $(this).draggable({
-                //NB: this containment is of the translation group, not the editable inside it. So avoid margins on the translation group.
-                containment: "parent",
-                handle: ".dragHandle"
-            });
-        });
-
-    $(container)
-        .find(".bloom-draggableLabel")
-        .mouseenter(function() {
-            $(this).prepend(" <div class='dragHandle'></div>");
-        });
-
-    $(container)
-        .find(".bloom-draggableLabel")
-        .mouseleave(function() {
-            $(this)
-                .find(".dragHandle")
-                .each(function() {
-                    $(this).remove();
-                });
-        });
-
-    bloomQtipUtils.repositionPictureDictionaryTooltips(container);
-
-    /* Support in page combo boxes that set a class on the parent, thus making some change in the layout of the pge.
-    Example:
-             <select name="Story Style" class="bloom-classSwitchingCombobox">
-                     <option value="Fictional">Fiction</option>
-                     <option value="Informative">Informative</option>
-     </select>
-     */
-    //First we select the initial value based on what class is currently set, or leave to the default if none of them
-    $(container)
-        .find(".bloom-classSwitchingCombobox")
-        .each(function() {
-            //look through the classes of the parent for any that match one of our combobox values
-            for (let i = 0; i < this.options.length; i++) {
-                const c = this.options[i].value;
-                if (
-                    $(this)
-                        .parent()
-                        .hasClass(c)
-                ) {
-                    $(this).val(c);
-                    break;
-                }
-            }
-        });
-    //And now we react to the user choosing a different value
-    $(container)
-        .find(".bloom-classSwitchingCombobox")
-        .change(function() {
-            //remove any of the values that might already be set
-            for (let i = 0; i < this.options.length; i++) {
-                const c = this.options[i].value;
-                $(this)
-                    .parent()
-                    .removeClass(c);
-            }
-            //add back in the one they just chose
-            $(this)
-                .parent()
-                .addClass(this.value);
-        });
-
     //only make things deletable if they have the deletable class *and* page customization is enabled
     $(container)
         .find(
@@ -787,7 +688,7 @@ export function SetupElements(
             SetupResizableElement(this);
         });
 
-    SetOverlayForImagesWithoutMetadata(container);
+    SetupMetadataButton(container);
 
     //note, the normal way is for the user to click the link on the bubble.
     //But clicking on the existing topic may be natural too, and this prevents
@@ -798,6 +699,8 @@ export function SetupElements(
             if ($(this).css("cursor") === "not-allowed") return;
             showTopicChooserDialog();
         });
+
+    SetupBookLinkGrids(container);
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
@@ -831,6 +734,8 @@ export function SetupElements(
         bubbleDivs
     );
 
+    PlaceholderProvider.addPlaceholders(container);
+
     // We seem to need a delay to get a reliable result in BloomSourceBubbles.MakeSourceBubblesIntoQtips()
     // as it calls BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(), which ends by calling
     // bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(); see the comment on this last method.
@@ -844,7 +749,7 @@ export function SetupElements(
             );
         }
         BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
-        if (theOneBubbleManager.isComicEditingOn) {
+        if (theOneCanvasElementManager.isCanvasElementEditingOn) {
             // If we saved the page with an indication that a particular element should be
             // active, and calling code is not specifying one, restore the one we saved.
             // This is especially useful when the page is unexpectedly reloaded, for example,
@@ -856,7 +761,7 @@ export function SetupElements(
                     ?.getAttribute("id");
                 if (currentPageId === (window.top as any).lastPageId) {
                     elementToFocus = Array.from(
-                        document.getElementsByClassName(kTextOverPictureClass)
+                        document.getElementsByClassName(kCanvasElementClass)
                     ).find(e =>
                         e.hasAttribute("data-bloom-active")
                     ) as HTMLElement;
@@ -865,13 +770,13 @@ export function SetupElements(
                     (window.top as any).lastPageId = currentPageId;
                 }
             }
-            // If we don't have some specific reason to focus on a particular overlay, we
+            // If we don't have some specific reason to focus on a particular canvas element, we
             // don't want to arbitrarily select one. It seems the browser will try
             // to focus something, and sometimes it doesn't make a good choice, especially after
             // changing zoom, which for some unknown reason seems to make it want to focus the
             // first thing on the page that CAN be focused. And usually we automatically activate
-            // an overlay that gets focus.
-            // Prior to /4d9ff2a0860d78ecd96771a93a839ce60ab7a8d3, we made a call here to bubbleManager
+            // a canvas element that gets focus.
+            // Prior to /4d9ff2a0860d78ecd96771a93a839ce60ab7a8d3, we made a call here to CanvasElementManager
             // to tell it to ignore the next focusIn event. That was dubious and fragile.
             // Then just prior to this commit, we were explicitly setting the active element to undefined
             // here, but (since this is in a timeout) that could undo (for example) the sign language tool's
@@ -889,75 +794,85 @@ export function SetupElements(
             // The sign language tool wants to be able to select a video (if any) on any page we load.
             // if (!elementToFocus) {
             //     // Make sure the active element is cleared if we're not setting it.
-            //     theOneBubbleManager.setActiveElement(undefined);
+            //     theOneCanvasElementManager.setActiveElement(undefined);
             // }
 
-            const focusable = elementToFocus
-                ? $(elementToFocus).find(":focusable")
-                : undefined;
-            // If we were passed an element to focus, it could be a new comic bubble, and we'd like to
-            // be all set to type in it. So we focus it.
-            // I'm not sure whether this is desirable when we found one from data-bloom-active,
-            // but there may be a case where the page gets reloaded while a text-editable bubble is active.
-            if (elementToFocus && focusable) {
-                focusable.focus();
-                // Ideally calling focus above has this as a side effect.
-                // However, the focusin event handler doesn't seem to get called at this point
-                // for image containers, even though we have set tabindex to zero,
-                // so make sure it becomes the active element at least.
-                theOneBubbleManager.setActiveElement(elementToFocus);
-                // see similar code below
-                BloomSourceBubbles.ShowSourceBubbleForElement(elementToFocus);
-            } else {
-                // It's OK not to focus anything.  The priority for focusing text boxes is:
-                // 1) empty overlay "Text Box" which has no border to indicate that it's there
-                // 2) empty text box, whether overlay or origami
-                // 3) origami text box, empty or not
-                // Note that image description text boxes are never focused here since we can't
-                // tell whether they're actually visible or not.
-                // See BL-14265 and the earlier BL-14109.
-                const allEditables = container.querySelectorAll(
-                    "textarea, div.bloom-editable.bloom-visibility-code-on"
-                ); // :visible and :not don't work in this context
-                if (allEditables.length === 0) {
-                    return;
-                }
-                const visibleEditables = Array.from(allEditables).filter(
-                    e =>
-                        e.closest(".box-header-off") === null && // these are invisible (BL-14109)
-                        e.closest(".bloom-imageDescription") === null // these may be invisible
-                );
-                if (visibleEditables.length === 0) {
-                    return;
-                }
-                const emptyEditables = visibleEditables.filter(
-                    e => !e.textContent?.trim()
-                );
-                if (emptyEditables.length) {
-                    const emptyTextBlockOverlay = emptyEditables.find(e => {
-                        const div = e.closest(".bloom-textOverPicture");
-                        if (div === null) return false;
-                        return div
-                            .getAttribute("data-bubble")
-                            ?.includes("`style`:`none`");
-                    });
-                    if (emptyTextBlockOverlay) {
-                        // We want to focus on the first empty overlay text with style "none".
-                        $(emptyTextBlockOverlay).focus();
-                        return;
-                    } else {
-                        // otherwise, focus on the first empty text box, whether overlay or origami.
-                        $(emptyEditables[0]).focus();
+            if (elementToFocus !== "none") {
+                // the check for visibility-code-on here prevents focusing a bloom-editable that we are just
+                // showing as a prompt.
+                const focusable = elementToFocus
+                    ? $(elementToFocus).find(
+                          ".bloom-visibility-code-on:focusable"
+                      )
+                    : undefined;
+                // If we were passed an element to focus, it could be a new canvas element, and we'd like to
+                // be all set to type in it. So we focus it.
+                // I'm not sure whether this is desirable when we found one from data-bloom-active,
+                // but there may be a case where the page gets reloaded while a text-editable canvas element is active.
+                if (elementToFocus && focusable) {
+                    focusable.focus();
+                    // Ideally calling focus above has this as a side effect.
+                    // However, the focusin event handler doesn't seem to get called at this point
+                    // for image containers, even though we have set tabindex to zero,
+                    // so make sure it becomes the active element at least.
+                    theOneCanvasElementManager.setActiveElement(elementToFocus);
+                    // see similar code below
+                    BloomSourceBubbles.ShowSourceBubbleForElement(
+                        elementToFocus
+                    );
+                } else {
+                    // It's OK not to focus anything.  The priority for focusing text boxes is:
+                    // 1) empty canvas element "Text Box" which has no border to indicate that it's there
+                    // 2) empty text box, whether canvas element or origami
+                    // 3) origami text box, empty or not
+                    // Note that image description text boxes are never focused here since we can't
+                    // tell whether they're actually visible or not.
+                    // See BL-14265 and the earlier BL-14109.
+                    const allEditables = container.querySelectorAll(
+                        "textarea, div.bloom-editable.bloom-visibility-code-on"
+                    ); // :visible and :not don't work in this context
+                    if (allEditables.length === 0) {
                         return;
                     }
-                }
-                // don't want overlays selected here
-                const editable = visibleEditables.find(
-                    e => e.closest(".bloom-textOverPicture") === null
-                );
-                if (editable) {
-                    // focus on the first available origami text box
-                    $(editable).focus();
+                    const visibleEditables = Array.from(allEditables).filter(
+                        e =>
+                            e.closest(".box-header-off") === null && // these are invisible (BL-14109)
+                            e.closest(".bloom-imageDescription") === null // these may be invisible
+                    );
+                    if (visibleEditables.length === 0) {
+                        return;
+                    }
+                    const emptyEditables = visibleEditables.filter(
+                        e => !e.textContent?.trim()
+                    );
+                    if (emptyEditables.length) {
+                        const emptyTextBlockCanvasElement = emptyEditables.find(
+                            e => {
+                                const div = e.closest(kCanvasElementSelector);
+                                if (div === null) return false;
+                                return div
+                                    .getAttribute("data-bubble")
+                                    ?.includes("`style`:`none`");
+                            }
+                        );
+                        if (emptyTextBlockCanvasElement) {
+                            // We want to focus on the first empty canvas element text with style "none".
+                            $(emptyTextBlockCanvasElement).focus();
+                            return;
+                        } else {
+                            // otherwise, focus on the first empty text box, whether canvas element or origami.
+                            $(emptyEditables[0]).focus();
+                            return;
+                        }
+                    }
+                    // don't want canvas elements selected here
+                    const editable = visibleEditables.find(
+                        e => e.closest(kCanvasElementSelector) === null
+                    );
+                    if (editable) {
+                        // focus on the first available origami text box
+                        $(editable).focus();
+                    }
                 }
             }
         }
@@ -985,11 +900,11 @@ export function SetupElements(
 
     const editableJQuery = $(container).find(".bloom-editable");
 
-    loadLongpressInstructions(editableJQuery);
+    activateLongPressFor(editableJQuery);
 
     // make any added over-picture elements draggable and clickable
-    if (theOneBubbleManager) {
-        theOneBubbleManager.initializeOverPictureEditing();
+    if (theOneCanvasElementManager) {
+        theOneCanvasElementManager.initializeCanvasElementEditing();
     }
 
     // focus on the first editable field
@@ -1181,7 +1096,7 @@ export function bootstrap() {
     if (typeof CKEDITOR === "undefined") return; // this happens during unit testing
     CKEDITOR.disableAutoInline = true;
 
-    if ($(this).find(".bloom-imageContainer").length) {
+    if ($(this).find(".bloom-canvas").length) {
         // We would *like* to wire up ckeditor, but would need to get it to stop interfering
         // with the embedded image. See https://silbloom.myjetbrains.com/youtrack/issue/BL-3125.
         // Currently this is only possible in the grade 4 Uganda books by SIL-LEAD.
@@ -1328,9 +1243,10 @@ export function getBodyContentForSavePage() {
         );
     }
 
-    const bubbleEditingOn = theOneBubbleManager.isComicEditingOn;
-    if (bubbleEditingOn) {
-        theOneBubbleManager.turnOffBubbleEditing();
+    const canvasElementEditingOn =
+        theOneCanvasElementManager.isCanvasElementEditingOn;
+    if (canvasElementEditingOn) {
+        theOneCanvasElementManager.turnOffCanvasElementEditing();
     }
     // Active element should be forced to blur
     if (document.activeElement instanceof HTMLElement) {
@@ -1356,8 +1272,8 @@ export function getBodyContentForSavePage() {
 
     const result = document.body.innerHTML;
 
-    if (bubbleEditingOn) {
-        theOneBubbleManager.turnOnBubbleEditing();
+    if (canvasElementEditingOn) {
+        theOneCanvasElementManager.turnOnCanvasElementEditing();
     }
 
     return result;
@@ -1376,10 +1292,10 @@ export const userStylesheetContent = () => {
 };
 
 export const pageUnloading = () => {
-    // It's just possible that 'theOneBubbleManager' hasn't been initialized.
+    // It's just possible that 'theOneCanvasElementManager' hasn't been initialized.
     // If not, just ignore this, since it's a no-op at this point anyway.
-    if (theOneBubbleManager) {
-        theOneBubbleManager.cleanUp();
+    if (theOneCanvasElementManager) {
+        theOneCanvasElementManager.cleanUp();
     }
 };
 
@@ -1398,17 +1314,19 @@ export const copySelection = () => {
 async function copyImpl() {
     const sel = document.getSelection();
     if (!sel?.toString()) {
-        const activeBubble = theOneBubbleManager?.getActiveElement();
-        const activeBubbleEditable = activeBubble?.getElementsByClassName(
+        const activeCanvasElement = theOneCanvasElementManager?.getActiveElement();
+        const activeCanvasElementEditable = activeCanvasElement?.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on"
         )[0] as HTMLElement;
 
-        // No active text selection to copy; copy the bubble's entire content.
+        // No active text selection to copy; copy the canvas element's entire content.
         // There's a slight chance that the user wanted to copy some trailing
         // whitespace. But there's a greater chance they **don't** want unintended
         // trailing line breaks. This ".trimEnd()" works around an issue where multiple
         // copy/pastes can result in an extra line break being added. See BL-14051.
-        navigator.clipboard.writeText(activeBubbleEditable.innerText.trimEnd());
+        navigator.clipboard.writeText(
+            activeCanvasElementEditable.innerText.trimEnd()
+        );
         return;
     }
     navigator.clipboard.writeText(sel.toString());
@@ -1443,10 +1361,10 @@ export const pasteClipboard = (imageAvailable: boolean) => {
 };
 
 async function pasteImpl(imageAvailable: boolean) {
-    const bubbleManager = theOneBubbleManager;
-    // Enhance: in what case would we consider a non-overlay image container to be the natural destination for pasting?
-    const activeBubble = bubbleManager?.getActiveElement();
-    const imageContainer = activeBubble?.getElementsByClassName(
+    const canvasElementManager = theOneCanvasElementManager;
+    // Enhance: in what case would we consider a bloom-canvas to be the natural destination for pasting?
+    const activeElement = canvasElementManager?.getActiveElement();
+    const imageContainer = activeElement?.getElementsByClassName(
         "bloom-imageContainer"
     )[0];
     if (imageContainer) {
@@ -1458,7 +1376,7 @@ async function pasteImpl(imageAvailable: boolean) {
             doImageCommand(img, "paste");
         } else {
             const imageIsGif =
-                activeBubble?.classList.contains("bloom-gif") ?? false;
+                activeElement?.classList.contains("bloom-gif") ?? false;
             BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
                 imageIsGif
                     ? "EditTab.NoGifFoundOnClipboard"
@@ -1467,19 +1385,19 @@ async function pasteImpl(imageAvailable: boolean) {
                 ""
             );
         }
-        return; // can't paste anything but an image into an image container overlay
+        return; // can't paste anything but an image into an image-container
     }
-    const activeBubbleEditable = activeBubble?.getElementsByClassName(
+    const activeCanvasElementEditable = activeElement?.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
 
     if (
-        activeBubbleEditable &&
-        activeBubble !== bubbleManager.theBubbleWeAreTextEditing
+        activeCanvasElementEditable &&
+        activeElement !== canvasElementManager.theCanvasElementWeAreTextEditing
     ) {
-        // We've issued a paste command on a bubble that isn't active for editing.
+        // We've issued a paste command on a canvas element that isn't active for editing.
         // Replace its entire content with what's on the clipboard.
-        const editor = (activeBubbleEditable as any).bloomCkEditor;
+        const editor = (activeCanvasElementEditable as any).bloomCkEditor;
         if (editor) {
             const manager = editor.undoManager;
             const textToPaste = await navigator.clipboard.readText();
@@ -1497,8 +1415,8 @@ async function pasteImpl(imageAvailable: boolean) {
             editor.insertText(textToPaste);
             manager.unlock();
             manager.save(true);
-            // We need to update the bubble height (BL-14004).
-            bubbleManager.updateAutoHeight();
+            // We need to update the canvas element height (BL-14004).
+            canvasElementManager.updateAutoHeight();
         }
         // It shouldn't happen that we don't have an editor, but if we don't, we just don't paste.
         // Otherwise, the paste is likely to go somewhere unexpected, wherever a ckeditor last had
@@ -1514,16 +1432,16 @@ async function pasteImpl(imageAvailable: boolean) {
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
     CKEDITOR.currentInstance.insertText(textToPaste);
     (<any>CKEDITOR.currentInstance).undoManager.save(true);
-    // We need to update the bubble height (BL-14004).
+    // We need to update the canvas element height (BL-14004).
     if (
-        activeBubbleEditable &&
-        activeBubble === bubbleManager.theBubbleWeAreTextEditing
+        activeCanvasElementEditable &&
+        activeElement === canvasElementManager.theCanvasElementWeAreTextEditing
     ) {
-        bubbleManager.updateAutoHeight();
+        canvasElementManager.updateAutoHeight();
     }
 }
 
-export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
+export function activateLongPressFor(jQuerySetOfMatchedElements) {
     // using axios directly because we already have a catch...though not obviously better than the Bloom Api one?
     axios
         .get("/bloom/api/keyboarding/useLongpress")
@@ -1604,7 +1522,11 @@ export function attachToCkEditor(element) {
         const show = textSelected && textSelected.length > 0;
         const bar = $("body").find("." + editor.id);
         localizeCkeditorTooltips(bar);
-        show ? bar.show() : bar.hide();
+        if (show) {
+            bar.show();
+        } else {
+            bar.hide();
+        }
 
         // Move the format bar on the screen if needed.
         // (Note that offsets are not defined if it's not visible.)
@@ -1691,4 +1613,94 @@ export function attachToCkEditor(element) {
     }
 
     BloomField.WireToCKEditor(element, ckedit);
+}
+function SetupBookLinkGrids(container: HTMLElement) {
+    $(container)
+        .find(".bloom-link-grid")
+        .click(function() {
+            //If our listeners hear back, they should close, but if something goes wrong, we don't want them to pile up.
+            WebSocketManager.closeSocketsWithPrefix("makeThumbnailFile-");
+
+            const currentLinks: Link[] = Array.from(this.children)
+                .filter(
+                    (child: Element) =>
+                        child.classList.contains("bloom-bookButton") &&
+                        child.hasAttribute("data-bloom-book-id") // drop buttons that might have been edited by hand and don't have this
+                )
+                .map((button: Element) => {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    const id = button.getAttribute("data-bloom-book-id")!; // we already filtered out any that don't have this
+                    const titleElement = button.getElementsByTagName("p")[0]; // TODO should this be something computed from the Book by asking the server?
+                    return {
+                        book: {
+                            id,
+                            title: titleElement?.textContent || "",
+                            // we don't know what the server path to this book would be at the moment
+                            thumbnail: `${window.location.origin}/bloom/api/collections/book/thumbnail?book-id=${id}`
+                        }
+                    };
+                });
+
+            showLinkGridSetupsDialog(
+                currentLinks,
+                // callback if they press OK
+                (links: Link[]) => {
+                    $(this).empty();
+
+                    links.forEach(link => {
+                        const button = document.createElement("div");
+                        button.className = "bloom-bookButton";
+                        button.setAttribute(
+                            "data-href",
+                            `/book/${link.book.id}`
+                        );
+                        button.setAttribute("data-bloom-book-id", link.book.id);
+                        if (link.page) {
+                            button.setAttribute(
+                                "data-bloom-page-id",
+                                link.page.pageId.toString()
+                            );
+                        }
+                        // create img for the thumbnail
+                        const img = document.createElement("img");
+                        button.appendChild(img);
+
+                        const desiredFileNameWithoutExtension = `bookButton-${link.book.id}`;
+
+                        const messageContext =
+                            "makeThumbnailFile-" +
+                            desiredFileNameWithoutExtension;
+
+                        // listen for a websocket message that the image has been saved
+                        // and then update the src attribute
+                        const setImgSrc = () => {
+                            console.log("got message " + messageContext);
+                            img.setAttribute(
+                                "src",
+                                desiredFileNameWithoutExtension + ".png"
+                            ); // note, img.src = "foo" does something different!
+                        };
+                        WebSocketManager.notifyReady(messageContext, () => {
+                            console.log(
+                                "sending post for " +
+                                    desiredFileNameWithoutExtension
+                            );
+                            postJson("editView/addImageFromUrl", {
+                                desiredFileNameWithoutExtension: desiredFileNameWithoutExtension,
+                                url: link.book.thumbnail
+                            });
+                        });
+
+                        WebSocketManager.once(messageContext, setImgSrc);
+                        console.log("listening for ", messageContext);
+
+                        const p = document.createElement("p");
+                        p.textContent = link.book.title;
+                        button.appendChild(p);
+
+                        this.appendChild(button);
+                    });
+                }
+            );
+        });
 }

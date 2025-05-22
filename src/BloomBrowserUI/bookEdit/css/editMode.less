@@ -7,7 +7,8 @@
 @focusBorderColor: transparent; // #d6eaed; // @bloom-blue; // rgba(82, 168, 236, 0.6);
 @tipLinkColor: #8e3581; // intentionally a bit darker to be legible
 
-.bloom-page {
+// should apply to everything, even dialogs.
+body {
     --page-structure-color: #1d94a41a;
     --language-tag-color: #1d94a488;
     --selectedEdit-color: #1d94a4c2; //page structure color, but 76% opacity instead of 10%
@@ -20,7 +21,7 @@
     --selectedEdit-color: rgba(128, 128, 128, 0.9);
 }
 // This mixin simply encapsulates the logic of how we add a border on top
-// of the edge of an image container instead of adding a regular border
+// of the edge of a bloom-canvas instead of adding a regular border
 // which modifies the size of the container. See BL-10268.
 .borderOnTopOfElement(@color) {
     &:after {
@@ -44,9 +45,7 @@
 @ImageAndVideoHoverOverlay: transparent;
 @ImageButtonBorder: #716666;
 @ChangeImageButtonColor: @ControlColor;
-@PasteImageButtonColor: @bloom-blue;
 /*#0C8597; */
-@MetadataButtonColor: #3a7f62; // the only place in .less files that any green is used
 @OverflowColor: @WarningColor;
 @MainPageBackgroundColor: #f8f8f8;
 @PageDragBackgroundColor: #ffffa3;
@@ -127,6 +126,13 @@ body {
     -height: 1px;
 }
 
+// A special case for qtips that belong to Mui dialogs (current example is the Game Prompt dialog).
+// These are not inside the scaling container where we usually put them, so we put the qtip in the body.
+// That allows us to make a rule targeting just those tooltips when the dialog is hovered.
+body:has(.MuiPaper-root:hover) > .qtip {
+    opacity: 1 !important;
+    transition: opacity 200ms ease-out;
+}
 // Now that most of our outline effects are conditional on the page being hovered, we get some sort of
 // default on a focused content-editable div. It's an ugly solid black. When we're not hovering,
 // we don't want any edit-only outlines at all, so the user can see the page as it will be.
@@ -136,10 +142,14 @@ body {
 }
 
 // Keep together here all the effects we want when hovering (previously: also when focus-within)
-// the bloom-page. All of them need to also apply when the overlay context controls are hovered,
+// the bloom-page. All of them need to also apply when the canvas element context controls are hovered,
 // even though that is no longer a child of the bloom-page. (That's what the second rule is for.)
+// The third rule is for the prompt input, which is not a child of the bloom-page.
+// In that case, I don't think there's any reason to limit the effects to hovering; we're not wanting to
+// show the user what the dialog will look like in the printed book.
 .bloom-page:hover,
-body:has(#overlay-context-controls:hover) .bloom-page {
+body:has(#canvas-element-context-controls:hover) .bloom-page,
+#promptDialog {
     textarea,
     div.bloom-editable,
     div.pageLabel[contenteditable="true"] {
@@ -147,27 +157,29 @@ body:has(#overlay-context-controls:hover) .bloom-page {
         outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
     }
     textarea:focus,
-    div.bloom-editable:focus,
+    div.bloom-editable:focus-within,
     div.pageLabel[contenteditable="true"]:focus {
         outline: 1px solid var(--selectedEdit-color) !important;
         outline-offset: -1px; // else the white of an un-focussed box can just bleed into the white of the margin
         // box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
         //     0 0 8px rgba(82, 168, 236, 0.6);
     }
-    .bloom-textOverPicture div.bloom-editable:focus, // not sure need this as well as the following, but it was here first
-    .bloom-textOverPicture[data-bloom-active="true"] div.bloom-editable {
-        // editable in an overlay has the control frame, so any outline just produces a double border
+    .bloom-canvas-element div.bloom-editable:focus, // not sure need this as well as the following, but it was here first
+    .bloom-canvas-element[data-bloom-active="true"] div.bloom-editable {
+        // editable in a canvas element has the control frame, so any outline just produces a double border
         outline: none !important;
     }
     // Any single outline/border color is not enough to always show up on all backgrounds.
-    // So when the page is hovered, we add a thin white outline around the editable overlay divs when
+    // So when the page is hovered, we add a thin white outline around the editable canvas element divs when
     // they are not active to ensure that the user can see their presence even without
     // any text being entered, and even if the faint blueish outline we put on the element
     // itself merges into the background. (On a white background, of course, the outline here
     // won't be visible. But then the  bluish one can be seen.)  See BL-14193.
-    // A rule in base-page.less suppresses these (along with other borders) for bubbles
+    // A rule in base-page.less suppresses these (along with other borders) for canvas elements
     // that are have natural borders to make them visible (i.e., comic style is not 'none')
-    .bloom-textOverPicture:not([data-bloom-active="true"])
+    // The :not(.drag-activity-play *) prevents this from showing up when playing a game (BL-14678).
+    .bloom-canvas-element:not([data-bloom-active="true"]):not(.drag-activity-play
+            *)
         div.bloom-editable:before {
         content: " ";
         position: absolute;
@@ -184,21 +196,21 @@ body:has(#overlay-context-controls:hover) .bloom-page {
         pointer-events: none;
         outline: 1px solid white;
     }
-    div.bloom-imageContainer {
+    div.bloom-canvas {
         // Allow book templates to define a custom borderColor, otherwise fallback to the default color
         .borderOnTopOfElement(var(--page-structure-color));
         // todo: remove?                 --bloom-editMode-custom-image-border-color,
 
-        // This shows the focus border on the root (hasOverlay) image container
+        // This shows the focus border on the bloom-canvas
         // when it has been clicked on to show its editing buttons (:not(.bloom-hideImageButtons)).
         // Currently, something else typically actually has focus and may also show
         // this border. But at least it gives some extra feedback that something happened
         // by clicking the background image.
-        &.hasOverlay:not(.bloom-hideImageButtons) {
+        &.bloom-has-canvas-element:not(.bloom-hideImageButtons) {
             .borderOnTopOfElement(@focusBorderColor);
         }
     }
-    .coverColor div.bloom-imageContainer {
+    .coverColor div.bloom-canvas {
         .borderOnTopOfElement(rgba(1, 1, 1, 0.2));
     }
     #formatButton {
@@ -241,7 +253,7 @@ body:has(#overlay-context-controls:hover) .bloom-page {
     }
     // show some structure when the page is hovered
     // Show the padding, multilingual gap, etc as colored areas.
-    // The ".split-pane-component-inner >"  disables this for overlays, where it's common to have backgrounds like transparent
+    // The ".split-pane-component-inner >"  disables this for canvas elements, where it's common to have backgrounds like transparent
     .split-pane-component-inner > .bloom-translationGroup {
         // no: a border here will take up space, wrecking WYSIWYG
         // border: solid thin var(--page-structure-color);
@@ -263,10 +275,13 @@ body:has(#overlay-context-controls:hover) .bloom-page {
 }
 
 // The editing buttons are hidden when this class is added (currently by motion and comic tools)
-.bloom-imageContainer.bloom-hideImageButtons {
-    > .imageButton,
-    > .miniButton {
-        display: none;
+// (An earlier version required them to be a direct child of the bloom-canvas, so as not to
+// disable them for canvas element images. But now these buttons only occur on background images, which
+// ARE child canvas elements. So we want the disabling there. We use important because the rule that makes
+// them visible ever is very complex and has high specificity.
+.bloom-canvas.bloom-hideImageButtons {
+    .imageButton {
+        display: none !important;
     }
 }
 
@@ -353,45 +368,75 @@ div.readOnlyInTranslationMode {
 
 // Since 'basePage.less' has a rule that puts the video placeholder in as a background image,
 // '.customPage' is needed to add enough specificity here to override that rule.
-body:not(.origami-drag) .customPage .bloom-videoContainer.hoverUp,
-body:not(.origami-drag) .bloom-imageContainer.hoverUp {
+body:not(.origami-drag) .customPage .bloom-videoContainer:hover,
+body:not(.origami-drag) .bloom-canvas:hover {
     background-color: @ImageAndVideoHoverOverlay;
 }
 
-// The hovered image container background is just distracting when the whole page is an image
-// container. One group of such cases is bloom games. We may want to suppress it for pages
+// The hovered bloom-canvas background is just distracting when the whole page is a bloom-canvas.
+// One group of such cases is bloom games. We may want to suppress it for pages
 // designed to have a full-bleed background for a comic, and perhaps others. I went for a
-// minimal change for now.
-.bloom-page[data-tool-id="game"] .bloom-imageContainer.hoverUp {
+// minimal change for now. (Possibly obsolete: we're no longer doing this hover-background at all.)
+.bloom-page[data-tool-id="game"] .bloom-canvas:hover {
     background-color: transparent;
 }
 
+@imageButtonHInset: 10px;
+@imageButtonVInset: 5px;
+
 .imageButton {
-    width: 87px;
+    width: 63px;
     height: 52px;
-    z-index: @dragHandleEventZIndex;
+    z-index: @imageButtonZIndex;
     position: absolute;
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center center;
-
-    &.smallButtonWidth {
-        width: 50%;
-        max-width: 87px;
-        border-style: none;
+    border: none; // agent stylesheet otherwise gives it one. Grrr.
+    background-color: transparent;
+    border-radius: 3px;
+    // Sometimes when the page is reloaded the browser puts a really ugly border around a button,
+    // apparently to indicate it is focused. This rule suppresses that.
+    // We might want some other indication if we allow tabbing to focus these buttons,
+    // but we haven't even set that up yet.
+    outline: none;
+    // These box-shadows are copied from MUI to make our look-and-feel more consistent.
+    box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+        0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+    &:hover {
+        box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+            0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+            0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+        // MUI makes the background of a hovered "contained" button a little darker.
+        // There's no way to just slightly darken the background only of an svg img,
+        // so we'll just darken the whole thing. The effect on the white areas is not
+        // very noticeable.
+        &:after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            border-radius: 3px;
+            background-color: rgba(0, 0, 0, 0.05);
+        }
     }
-
-    &.smallButtonHeight {
-        height: 50%;
-        max-height: 52px;
-        border-style: none;
+    &:active {
+        box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2),
+            0px 8px 10px 1px rgba(0, 0, 0, 0.14),
+            0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+        &:after {
+            // mui does something much more complicated involving an animation,
+            // but this is a rough approximation of the end result.
+            background-color: rgba(255, 255, 155, 0.15);
+        }
     }
 
     &.changeImageButton {
-        right: 0;
-        top: 0;
-        background-color: @ChangeImageButtonColor;
-        background-image: url("/bloom/bookEdit/img/changeButton.svg");
+        right: @imageButtonHInset;
+        top: @imageButtonVInset;
+        background-image: url("/bloom/bookEdit/img/ChangeImageButton.svg");
     }
 
     // BL-9976 JH - "We've gotten complaints that users click it and then are too confused and
@@ -402,44 +447,59 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     //     background-color: @bloom-blue;
     //     background-image: url("/bloom/bookEdit/img/ImageDescriptionImageOverlayButton.svg");
     //     // sorry, this background-size is kinda arbitrary, and "49px 40px" works at full size, but if we ever make these
-    //     //buttons shrink as the image container shrinks, this will still work.
+    //     //buttons shrink as the bloom-canvas shrinks, this will still work.
     //     background-size: 63%;
     // }
     &.chooseWidgetButton {
-        right: 0;
-        top: 0;
+        right: @imageButtonHInset;
+        top: @imageButtonVInset;
         background-color: @ChangeImageButtonColor;
         background-image: url("/bloom/bookEdit/img/browse.svg");
     }
 
-    &.pasteImageButton {
-        right: 0;
-        bottom: 0;
-        background-color: @PasteImageButtonColor;
-        background-image: url("/bloom/bookEdit/img/pasteButton.svg");
-        background-position: right center;
-
-        &.smallButtonWidth {
-            width: 87px;
-
-            &.verySmallButtons {
-                width: 98%;
-                background-size: 60%;
-            }
-        }
-    }
-
     &.editMetadataButton {
-        left: 0;
-        top: 0;
+        left: @imageButtonHInset;
+        top: @imageButtonVInset;
         background-image: url("/bloom/bookEdit/img/imageMetaDataButton.svg") !important;
-        background-color: @MetadataButtonColor;
 
         &.imgMetadataProblem {
             background-color: transparent;
-            background-image: url("/bloom/bookEdit/img/imageMissingMetaData.svg") !important;
-            border: none;
+            // This relatively subtle missing indicator is replaced by a more prominent one
+            // in an active background canvas element.
+            background-image: url("/bloom/bookEdit/img/MissingInfoIndicator.svg") !important;
         }
+    }
+}
+
+.moving .imageButton {
+    display: none !important;
+}
+
+// In a bloom-canvas with an active background canvas element, show yet another form of the edit metadata icon
+.bloom-canvas:has(.bloom-backgroundImage[data-bloom-active="true"]) {
+    .editMetadataButton.imgMetadataProblem {
+        background-image: url("/bloom/bookEdit/img/imageMissingMetaData.svg") !important;
+    }
+}
+// In an active background canvas element, don't show the edit metadata icon if the image failed
+// to load.  Clicking on it would just show an error message anyway, and the button would
+// obscure part of the alt attribute error message.
+.bloom-canavas:has(.bloom-backgroundImage:has(img.bloom-imageLoadError)) {
+    .editMetadataButton.imgMetadataProblem {
+        display: none !important;
+    }
+}
+
+.bloom-imageContainer {
+    container-type: inline-size;
+    container-name: bloom-image-container;
+}
+
+// Hide these large buttons when the image isn't wide enough to hold them both.
+// There are equivalent controls in the toolbar and its menu.
+@container bloom-image-container (max-width: 160px) {
+    .imageButton {
+        display: none !important;
     }
 }
 
@@ -447,79 +507,36 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
 body.bloom-fullBleed {
     @inset: calc(@bleed * 2);
 
-    // little cut and copy buttons
-    .miniButton {
-        right: calc(60px + @inset) !important;
-
-        &.cutImageButton {
-            bottom: calc(27px + @inset) !important;
-        }
-
-        &.copyImageButton {
-            bottom: calc(6px + @inset);
-        }
-    }
-
     .imageButton {
         &.changeImageButton {
-            right: @inset;
-            top: @inset;
+            right: calc(@inset + @imageButtonHInset);
+            top: calc(@inset + @imageButtonVInset);
         }
 
         &.chooseWidgetButton {
-            right: @inset;
-            top: @inset;
-        }
-
-        &.pasteImageButton {
-            right: @inset;
-            bottom: @inset;
+            right: calc(@inset + @imageButtonHInset);
+            top: calc(@inset + @imageButtonVInset);
         }
 
         &.editMetadataButton {
-            left: @inset;
-            top: @inset;
+            left: calc(@inset + @imageButtonHInset);
+            top: calc(@inset + @imageButtonVInset);
         }
     }
 }
 
-// override button positions when the image is shrunk to make room for an image description
 .bloom-showImageDescriptions {
-    canvas,
-    .comical-generated {
-        display: none;
+    // Don't want to deal with resizing the bloom-canvas while this tool is active,
+    // nor with the size changes associated with picking a different image.
+    // The extra layer of scaling does weird things I haven't fully understood
+    // to the code that tries to keep the background image and canvas elements aligned.
+    .imageButton,
+    .split-pane-divider,
+    .origami-toggle {
+        display: none !important;
     }
 
-    .imageButton {
-        &.changeImageButton,
-        &.pasteImageButton {
-            right: 50%;
-        }
-
-        &.changeImageButton,
-        &.editMetadataButton {
-            top: @imageDescriptionTopBorderWidth; // below the ::before border
-        }
-    }
-
-    button.miniButton {
-        right: calc(50% + 60px);
-
-        &.verySmallButtons {
-            // normally right:60%, width: 30%.
-            // We need the effect of 60% of the picture half, plus the 50%
-            // occupied by the text, that is, 30%+50%
-            right: 80%;
-            width: 15%;
-        }
-    }
-
-    .bloom-imageContainer {
-        // Requiring a direct child helps prevent this from applying to things like the format cog
-        > img {
-            height: calc(100% - @imageDescriptionTopBorderWidth);
-        }
-
+    .bloom-canvas {
         .bloom-imageDescription {
             // Note: this rule has basically the same specificity as one in basePage.less
             // that sets top to zero. I think this one only wins because it comes later.
@@ -533,7 +550,7 @@ body.bloom-fullBleed {
 
 @imageDescriptionBorderWidth: 3px;
 
-.bloom-showImageDescriptions .bloom-page .bloom-imageContainer {
+.bloom-showImageDescriptions .bloom-page .bloom-canvas {
     // This produces the thin border on the left, bottom, and right of each image when the
     // image description tool is active.
     border-style: solid;
@@ -555,6 +572,26 @@ body.bloom-fullBleed {
         background-image: url("/bloom/bookEdit/toolbox/imageDescription/ImageDescriptionToolIcon.svg");
     }
 }
+// a wrapper div we add around the contents of a bloom-canvas except the image description,
+// when we are showing image descriptions. Shrinks the image to the center of the left half
+// of the container.
+// We need this because if we scale the bloom-canvas itself, the description gets scaled as well.
+// Even if we tried to apply a reverse transformation to the description, the place we want it is
+// outside the scaled bloom-canvas, and we're hiding overflow on bloom-canvases (and need to,
+// both for cropping images and in case canvas elements extend beyond the container).
+// Conversely, I don't believe CSS provides a way to transform children relative to an anchor
+// on each parent. We could conceivably compute a different transform for each child, but this is more
+// straightforward and less error-prone.
+.bloom-describedImage {
+    // for a reason I haven't tracked down, the rule that usually does this doesn't work here.
+    img[src="placeHolder.png"] {
+        display: none;
+    }
+    height: 100%;
+    width: 100%;
+    transform-origin: center left;
+    transform: scale(0.5, 0.5);
+}
 
 .bloom-videoContainer,
 .bloom-widgetContainer {
@@ -566,10 +603,10 @@ body.bloom-fullBleed {
     // we show the active video container in other ways, and the browser's focus ring is just distracting
     outline: none;
 }
-// We don't need the yellow border indicating the active video when the selected thing is an overlay.
-// We have a distinct mechanism for showing the selected overlay.
-// (We don't have overlay widgets and probably won't ever, but I included them just in case.)
-.bloom-textOverPicture {
+// We don't need the yellow border indicating the active video when the selected thing is a canvas element.
+// We have a distinct mechanism for showing the selected canvas element.
+// (We don't have canvas element widgets and probably won't ever, but I included them just in case.)
+.bloom-canvas-element {
     .bloom-videoContainer,
     .bloom-widgetContainer {
         &.bloom-selected {
@@ -578,73 +615,54 @@ body.bloom-fullBleed {
     }
 }
 
-.hoverUp .imageButton {
-    border: 2px outset @ImageButtonBorder !important;
-    border-radius: 3px !important;
-
-    &:hover {
-        border: inset @ImageButtonBorder !important;
-    }
-
-    &.editMetadataButton {
-        background-image: none;
-        background-color: @MetadataButtonColor !important;
+// while doing an origami drag, most canvas elements won't resize.
+// If there's a background image (which will), hide the others (and the canvas
+// or svg, which shows their graphics, and also won't resize).
+// If not, it's probably less disturbing if they just stay where they are
+// until the origami drag is finished.
+.origami-drag {
+    .bloom-canvas:has(.bloom-backgroundImage) {
+        .bloom-canvas-element:not(.bloom-backgroundImage),
+        .comical-generated {
+            display: none !important;
+        }
     }
 }
 
-button.miniButton {
-    width: 20px;
-    height: 18px;
-    right: 60px;
-    border: none;
-    position: absolute;
-    background-position: left center;
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-color: transparent;
-    z-index: @miniImageEditingButtonZIndex;
+.editMetadataButton,
+.changeImageButton {
+    // currently these buttons display only for active background images,
+    // unless the metadata has a problem (i.e., basically is missing).
+    display: none;
+}
 
-    &:hover {
-        border: 1px inset @ImageButtonBorder;
-    }
+// And this one should ALWAYS show if there's a problem.
+.editMetadataButton.imgMetadataProblem {
+    display: block;
+}
 
-    &.verySmallButtons {
-        right: 60%;
-    }
-
-    &.smallButtonHeight {
-        height: 15%;
-    }
-
-    &.verySmallButtons {
-        width: 30%;
-    }
-
-    &.cutImageButton {
-        background-image: url("/bloom/bookEdit/img/cut.svg");
-        bottom: 27px;
-
-        &.disabled {
-            background-image: url("/bloom/bookEdit/img/cutGrey.svg");
-            pointer-events: none;
-        }
-
-        &.smallButtonHeight {
-            bottom: 26%;
+// in a hovered bloom-canvas, show the buttons if the background image is active,
+// or if there are no other canvas elements. Also, show the metadata button if there's a
+// problem.
+.bloom-canvas:hover {
+    &:not(:has(.bloom-canvas-element:not(.bloom-backgroundImage))),
+    &:has(.bloom-backgroundImage[data-bloom-active="true"]) {
+        .editMetadataButton,
+        .changeImageButton {
+            display: block;
         }
     }
+    .editMetadataButton.imgMetadataProblem {
+        display: block;
+    }
+}
 
-    &.copyImageButton {
-        background-image: url("/bloom/bookEdit/img/copy.svg");
-        bottom: 6px;
-
-        &.disabled {
-            background-image: url("/bloom/bookEdit/img/copyGrey.svg");
-            pointer-events: none;
-        }
-
-        &.smallButtonHeight {
-            bottom: 4%;
+// In a bloom-canvas that has canvas elements other than the background image, we want to
+// hide the placeholder except when the background image is active.
+.bloom-canvas:has(.bloom-canvas-element:not(.bloom-backgroundImage)) {
+    .bloom-backgroundImage:not([data-bloom-active="true"]) {
+        img[src^="placeHolder.png"] {
+            display: none;
         }
     }
 }
@@ -681,19 +699,15 @@ button.moveButton {
     background-size: contain;
 }
 
-img.hoverUp {
-    outline: 1px outset black;
-}
-
-// I'm not sure why the rule above is !important, but this one has to be to beat it.
+// I'm not sure why the rule above (JT: which one?) is !important, but this one has to be to beat it.
 // In edit mode we don't want such an automatic outline, because the control frame
 // provides one, and typically they don't even line up, becuase we grow the control
 // frame a little bit to prevent the side buttons overlapping text.
-// Note that, prior to 6.1, we also had two rules in bubble.less (in content) putting an outline
-// and shadow on a focused bloom-editable in an overlay. If we put that back for some
+// Note that, prior to 6.1, we also had two rules in overlayTool.less (in content) putting an outline
+// and shadow on a focused bloom-editable in a canvas element. If we put that back for some
 // reason, we'll need a box-shadow:none (maybe !important) here because it looks wrong
 // with the wider control frame.
-.bloom-textOverPicture .bloom-editable:focus {
+.bloom-canvas-element .bloom-editable:focus {
     outline: none !important;
 }
 
@@ -1048,7 +1062,7 @@ div.cke_float {
     }
 }
 
-.bloom-textOverPicture .bloom-editable {
+.bloom-canvas-element .bloom-editable {
     padding-top: 1px; // for some reason this is needed to keep edit/non-edit text spacing the same
 }
 
@@ -1078,7 +1092,7 @@ div.long-press-popup {
 // seen in http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=0F77B0242324523646B4C8F5A0BDDA52?doi=10.1.1.656.6430&rep=rep1&type=pdf,
 // particularly Figure 1, "Visual acuity chart showing the blurring and color effects of a disabling brunescent cataract with a visual acuity of 20/200"
 body.simulateCataracts {
-    .bloom-imageContainer {
+    .bloom-canvas {
         background-color: yellow;
 
         img,
@@ -1091,13 +1105,13 @@ body.simulateCataracts {
     }
 }
 
-// Hide images when we are putting a color-blindness overlay on top.
+// Hide images when we are putting a color-blindness canvas element on top.
 // This makes sure we don't get any trace if the size isn't perfect.
 // More critically, when simulating BOTH color-blindness AND cataracts,
 // the Canvas gets merged with what is behind it. We want that to be just
 // the yellow background, not the image.
 body.simulateColorBlindness {
-    .bloom-imageContainer {
+    .bloom-canvas {
         img {
             visibility: hidden;
         }
@@ -1171,8 +1185,8 @@ body {
 }
 
 // Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image
-// (This and several following rules were moved from content/bookLayout/bubble.less)
-.bloom-imageContainer:not(.hoverUp) .bloom-textOverPicture {
+// (This and several following rules were moved from content/bookLayout/overlayTool.less)
+.bloom-canvas:not(:hover) .bloom-canvas-element {
     .bloom-editable {
         border: none;
 
@@ -1208,8 +1222,8 @@ body {
 @ComicAffordanceFilter: invert(48%) sepia(14%) saturate(1147%)
     hue-rotate(257deg) brightness(90%) contrast(84%);
 
-.bloom-imageContainer {
-    .bloom-textOverPicture {
+.bloom-canvas {
+    .bloom-canvas-element {
         .bloom-translationGroup {
             #formatButton {
                 &:hover {
@@ -1234,18 +1248,18 @@ body {
             height: 22px;
             top: -15px;
             // This z-index should be above the canvas
-            z-index: @dragHandleEventZIndex;
+            z-index: @canvasElementDragHandleZIndex;
         }
     }
 }
 
-.bloom-textOverPicture {
+.bloom-canvas-element {
     #formatButton {
         display: none; // Enhance: maybe don't create at all?
     }
 }
 
-// different bubble shapes require different positioning of the affordances
+// different canvas element shapes require different positioning of the affordances
 [data-bubble] {
     // These happen to be multiples of 1.4 is because they are 1% increments of 140px (the default text box width)
     .bloom-dragHandle {
@@ -1253,7 +1267,7 @@ body {
     }
 
     [data-languageTipContent]:after {
-        content: "" !important; // suppress these, now in overlay context controls
+        content: "" !important; // suppress these, now in canvas element context controls
     }
 }
 
@@ -1284,36 +1298,12 @@ body.hideAllCKEditors .cke_chrome {
     color: @bloom-purple;
 }
 
-// --------------------------------------------------------
-// hide tips when the user clicks out of the page
-.qtip {
-    opacity: 0 !important;
-    // When the page isn't focused, the tips will go away when you move off the page.
-    // This keeps them around long enough to reach with the mouse.
-    // We're using opacity instead of visibility because visibility doesn't animate.
-    // A side benefit is that no longer how long it takes you to point at the bubble,
-    // it will still light up if you point at it.
-    transition: opacity 1s cubic-bezier(0, 0.7, 0.3, 1);
-}
-// but keep them visible when the user is interacting with them (BL-13224)
-.qtip:hover,
-.qtip:focus {
-    opacity: 1 !important;
-    transition: opacity 200ms ease-out;
-}
-body:has(.bloom-page:focus-within, .bloom-page:hover),
-body:has(#overlay-context-controls:hover) {
-    .qtip {
-        opacity: 1 !important;
-        transition: opacity 200ms ease-out;
-    }
-}
-
 // ----- Bloom Games ----
 // Tweak the position of the Start/Correct/Wrong/Play control
 #drag-activity-tab-control {
     position: relative;
     top: -8px;
+    width: 100%;
 }
 
 // we want :blank, but it's not in browsers yet. So we simulate it by a mutation observer
@@ -1324,11 +1314,9 @@ body:has(#overlay-context-controls:hover) {
 // Enhance: possibly we could add a class that would let us identify the language that is the current
 // default for the source bubble, rather than fixing on English. But the main thing is to see that
 // there is a block there that should get some attention. The source bubble provides all the options.
-.drag-activity-start
-    .bloom-show-en-when-blank
+.bloom-show-en-when-blank
     .bloom-editable[lang="en"]:has(~ .bloom-content1.bloom-blank),
-.drag-activity-start
-    .bloom-show-en-when-blank
+.bloom-show-en-when-blank
     .bloom-content1.bloom-blank
     ~ .bloom-editable[lang="en"] {
     display: block; // overcomes rule that usually hides it (since it's not content1)
@@ -1343,38 +1331,58 @@ canvas.moving {
     cursor: move;
 }
 
-.bloom-textOverPicture:not(.bloom-focusedTOP) * {
+.bloom-canvas-element:not(.bloom-focusedCanvasElement) * {
     cursor: default;
 }
-.bloom-textOverPicture.moving:not(.bloom-focusedTOP) * {
+.bloom-canvas-element.moving:not(.bloom-focusedCanvasElement) * {
     cursor: move;
 }
 
 @resizeHandleRadius: 8px;
 @sideHandleRadius: 4px;
 @sideHandleCenter: 6px;
-// We place this frame over each overlay to support resizing and cropping.
+// We place this frame over each canvas element to support resizing and cropping.
 // The frame itself is invisible (and ignores pointer events), but it provides a container
 // for the resize and crop handles and the toolbox below.
-#overlay-control-frame {
+#canvas-element-control-frame {
+    // Color for the various parts of the control frame. In a bloom-game page, we use the same
+    // color as other rectangles. In particular we want to match the bloom-rectangle shape, because
+    // that coincides with the control frame and looks strange if they are different colors.
+    --canvas-element-control-color: var(
+        --draggable-background-color,
+        @bloom-blue
+    );
     position: absolute;
-    z-index: @dragHandleEventZIndex + 1;
-    outline: 1px solid @bloom-blue;
+    z-index: @canvasElementFrameZIndex;
+    outline: 1px solid var(--canvas-element-control-color);
+    // makes the outline no larger than the frame's own size, so it doesn't get cropped if it fills
+    // the bloom-canvas, as background images do in at least one dimension. This means the outline
+    // will hide the outermost pixel of the image, but I think that's better than the alternative of
+    // having it cut off on one or two sides of a background image.
+    outline-offset: -1px;
     box-sizing: border-box;
     pointer-events: none;
+    background-color: transparent;
 
-    // The handles and toolbox are hidden when the overlay is being moved, resized or cropped
+    // background images can't be manually resized
+    &.bloom-backgroundImage-control-frame {
+        .bloom-ui-canvas-element-resize-handle {
+            display: none;
+        }
+    }
+
+    // The handles and toolbox are hidden when the canvas element is being moved, resized or cropped
     // (except for the resize or crop control we are operating).
     &.moving {
-        .bloom-ui-overlay-resize-handle,
-        .bloom-ui-overlay-side-handle {
+        .bloom-ui-canvas-element-resize-handle,
+        .bloom-ui-canvas-element-side-handle {
             display: none;
             &.active-control {
                 display: block;
             }
         }
-        &.bloom-ui-overlay-show-move-crop-handle {
-            .bloom-ui-overlay-move-crop-handle {
+        &.bloom-ui-canvas-element-show-move-crop-handle {
+            .bloom-ui-canvas-element-move-crop-handle {
                 display: none;
             }
         }
@@ -1382,135 +1390,196 @@ canvas.moving {
     // the "crop" handles on left and right are visible for text boxes
     // (though with a different function).
     &.has-text:not(.moving) {
-        .bloom-ui-overlay-side-handle-e,
-        .bloom-ui-overlay-side-handle-w {
+        .bloom-ui-canvas-element-side-handle-e,
+        .bloom-ui-canvas-element-side-handle-w {
             display: block;
         }
         // the south one is visible for text boxes only when auto-height is turned off.
-        &.bloom-noAutoHeight .bloom-ui-overlay-side-handle-s {
+        &.bloom-noAutoHeight .bloom-ui-canvas-element-side-handle-s {
             display: block;
         }
         // Enhance: Canva uses these handles on text boxes to resize the box by modifying
         // font size. This is nice for tweaking things but it's not clear how it should interact
         // with our style system. For now we're just not showing them for text boxes.
-        .bloom-ui-overlay-resize-handle {
+        .bloom-ui-canvas-element-resize-handle {
             display: none;
         }
     }
 
     // crop handles are, for now, only visible on images.
-    .bloom-ui-overlay-side-handle {
+    .bloom-ui-canvas-element-side-handle {
         display: none; // default
         &.active-control {
             display: block;
         }
     }
-    &.has-image:not(.moving) .bloom-ui-overlay-side-handle {
+    &.has-image:not(.moving):not(.has-svg)
+        .bloom-ui-canvas-element-side-handle {
         display: block;
     }
 
     // The resize handles are the small circles in the four corners.
     // The move crop handle is the small circle in the center, used to change how an
     // image is cropped by (apparently) moving the image within the frame.
-    .bloom-ui-overlay-resize-handle,
-    .bloom-ui-overlay-move-crop-handle {
+    .bloom-ui-canvas-element-resize-handle,
+    .bloom-ui-canvas-element-move-crop-handle {
         position: absolute;
         width: @resizeHandleRadius * 2;
         height: @resizeHandleRadius * 2;
         border-radius: 50%;
         background-color: white;
-        border: 1px solid @bloom-blue;
+        border: 1px solid var(--canvas-element-control-color);
         box-sizing: border-box;
         pointer-events: all;
         //z-index: @canvasZIndex + 2;
         &.active-control,
         &:hover {
-            background-color: @bloom-blue;
+            background-color: var(--canvas-element-control-color);
         }
     }
-    .bloom-ui-overlay-resize-handle-nw {
+    .bloom-ui-canvas-element-resize-handle-nw {
         top: -@resizeHandleRadius;
         left: -@resizeHandleRadius;
         cursor: nw-resize;
     }
-    .bloom-ui-overlay-resize-handle-ne {
+    .bloom-ui-canvas-element-resize-handle-ne {
         top: -@resizeHandleRadius;
         right: -@resizeHandleRadius;
         cursor: ne-resize;
     }
-    .bloom-ui-overlay-resize-handle-sw {
+    .bloom-ui-canvas-element-resize-handle-sw {
         bottom: -@resizeHandleRadius;
         left: -@resizeHandleRadius;
         cursor: sw-resize;
     }
-    .bloom-ui-overlay-resize-handle-se {
+    .bloom-ui-canvas-element-resize-handle-se {
         bottom: -@resizeHandleRadius;
         right: -@resizeHandleRadius;
         cursor: se-resize;
     }
 
-    .bloom-ui-overlay-move-crop-handle {
+    .bloom-ui-canvas-element-move-crop-handle {
         top: calc(50% - @resizeHandleRadius);
         left: calc(50% - @resizeHandleRadius);
         display: none;
-        //cursor: move;
+        cursor: move;
     }
 
-    &.bloom-ui-overlay-show-move-crop-handle
-        .bloom-ui-overlay-move-crop-handle {
+    &.bloom-ui-canvas-element-show-move-crop-handle
+        .bloom-ui-canvas-element-move-crop-handle {
         display: block;
     }
 
     // Used to crop images, but for text boxes the left and right ones are actually used to change width (and thus
     // aspect ratio).
-    .bloom-ui-overlay-side-handle {
+    .bloom-ui-canvas-element-side-handle {
         position: absolute;
         width: @sideHandleRadius * 2;
         height: @sideHandleRadius * 2;
         border-radius: @sideHandleRadius;
         background-color: white;
-        border: 1px solid @bloom-blue;
+        border: 1px solid var(--canvas-element-control-color);
         box-sizing: border-box;
         pointer-events: all;
-        &.active-control,
-        &:hover {
-            background-color: @bloom-blue;
+        &.bloom-currently-cropped {
+            background-color: var(--canvas-element-control-color);
         }
     }
 
-    .bloom-ui-overlay-side-handle-n {
+    .bloom-ui-canvas-element-side-handle-n {
         top: -@sideHandleRadius;
         left: calc(50% - @sideHandleRadius - @sideHandleCenter);
         width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ns-resize;
     }
-    .bloom-ui-overlay-side-handle-e {
+    .bloom-ui-canvas-element-side-handle-e {
         top: calc(50% - @sideHandleRadius - @sideHandleCenter);
         right: -@sideHandleRadius;
         height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ew-resize;
     }
-    .bloom-ui-overlay-side-handle-s {
+    .bloom-ui-canvas-element-side-handle-s {
         bottom: -@sideHandleRadius;
         left: calc(50% - @sideHandleRadius - @sideHandleCenter);
         width: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ns-resize;
     }
-    .bloom-ui-overlay-side-handle-w {
+    .bloom-ui-canvas-element-side-handle-w {
         top: calc(50% - @sideHandleRadius - @sideHandleCenter);
         left: -@sideHandleRadius;
         height: @sideHandleCenter * 2 + @sideHandleRadius * 2;
         cursor: ew-resize;
     }
+    [data-title]:hover:after,
+    [data-title]:active:after {
+        // display the data-title like a title, but we will show it immediately,
+        // and even while the mouse is down
+        content: attr(data-title);
+        position: absolute;
+        top: 20px;
+        left: 10px;
+        background: white;
+        border: 1px solid black;
+        color: black;
+        font-size: small;
+        padding: 0.2em;
+        z-index: 2;
+        text-wrap-mode: nowrap;
+    }
+    // the tooltip may not be visible outside the frame, so
+    // on the south and east sides we move it to the other side.
+    .bloom-ui-canvas-element-side-handle-s:after {
+        bottom: 20px;
+        top: auto !important;
+    }
+    .bloom-ui-canvas-element-side-handle-e:after {
+        right: 10px;
+        left: auto !important;
+    }
+
+    // the background image is hard up against the side of the container on at least two edges,
+    // and can't be moved. Half the default crop handle is clipped at best, and sometimes the
+    // origami control gets in the way even more. So we move them inwards.
+    &.bloom-backgroundImage-control-frame {
+        .bloom-ui-canvas-element-side-handle-n {
+            top: 1px;
+        }
+        .bloom-ui-canvas-element-side-handle-e {
+            right: 1px;
+        }
+        .bloom-ui-canvas-element-side-handle-s {
+            bottom: 1px;
+        }
+        .bloom-ui-canvas-element-side-handle-w {
+            left: 1px;
+        }
+    }
 }
 
-#overlay-context-controls {
+// Temporarily (we hope) cropping does not work on the cover. But the handles are part of the
+// expected look of a selected canvas element. This rule dims and disables them.
+.outsideFrontCover
+    #canvas-element-control-frame
+    .bloom-ui-canvas-element-side-handle {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+#canvas-element-context-controls {
     position: absolute;
     transform-origin: top left;
     &.moving {
         display: none;
     }
     pointer-events: none; // overridden for children, but the outer bit that's just for positioning should not be clickable
+}
+
+#promptButton {
+    visibility: hidden;
+}
+
+.drag-activity-start #promptButton {
+    visibility: unset;
 }
 
 @videoIconSize: 30px;
@@ -1582,6 +1651,51 @@ svg.bloom-videoControl {
 // it modifies.)
 .drag-activity-play .bloom-videoContainer:not(.paused):not(.playing):hover {
     .bloom-videoPlayIcon {
+        display: none;
+    }
+}
+
+// If the background image hasn't been set in a game, we don't want to show the placeholder image.
+.bloom-page[data-tool-id="game"]:not([data-activity="simple-dom-choice"])
+    .bloom-backgroundImage
+    img[src="placeHolder.png"] {
+    visibility: hidden;
+}
+// We also want the crop handles to look disabled.  Disabling them is actually done in
+// typescript code.  The pointer-events: none; seems not to work on the handle divs but
+// is left as a reminder that we don't want to allow cropping in this case.  (BL-14703)
+.bloom-page[data-tool-id="game"]:not([data-activity="simple-dom-choice"])
+    #canvas-element-control-frame.bloom-backgroundImage-control-frame-no-image {
+    .bloom-ui-canvas-element-side-handle,
+    .bloom-ui-canvas-element-move-crop-handle {
+        pointer-events: none;
+        cursor: unset;
+        opacity: 30%;
+    }
+}
+.bloom-passive-element[data-bloom-active="true"]
+    ~ .bloom-ui-canvas-element-resize-handle,
+.bloom-passive-element[data-bloom-active="true"]
+    ~ .bloom-ui-convas-element-side-handle,
+.bloom-passive-element[data-bloom-active="true"]
+    ~ .bloom-ui-canvas-element-move-crop-handle,
+.bloom-passive-element[data-bloom-active="true"]
+    ~ #canvas-element-control-frame {
+    pointer-events: none;
+    display: none;
+}
+#page-scaling-container:has(.bloom-passive-element[data-bloom-active="true"])
+    ~ #canvas-element-context-controls {
+    left: 160px;
+    top: 80px;
+    // Show only the first child of the context controls, which is the style button.
+    span ~ span {
+        display: none;
+    }
+    span ~ div {
+        display: none;
+    }
+    span ~ button {
         display: none;
     }
 }

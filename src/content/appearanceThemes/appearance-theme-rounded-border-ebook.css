@@ -48,7 +48,7 @@
     > .vertical-percent
     > .position-left
     > .split-pane-component-inner
-    > .bloom-imageContainer {
+    > .bloom-canvas {
     --image-border-radius: var(--marginBox-border-radius) 0px 0px
         var(--marginBox-border-radius); /* left corners */
 }
@@ -58,7 +58,7 @@
     > .vertical-percent
     > .position-right
     > .split-pane-component-inner
-    > .bloom-imageContainer {
+    > .bloom-canvas {
     --image-border-radius: 0px var(--marginBox-border-radius)
         var(--marginBox-border-radius) 0px; /* right corners */
 }
@@ -68,7 +68,7 @@
     > .horizontal-percent
     > .position-top
     > .split-pane-component-inner
-    > .bloom-imageContainer {
+    > .bloom-canvas {
     --image-border-radius: var(--marginBox-border-radius)
         var(--marginBox-border-radius) 0px 0px; /* top corners */
 }
@@ -78,7 +78,7 @@
     > .horizontal-percent
     > .position-bottom
     > .split-pane-component-inner
-    > .bloom-imageContainer {
+    > .bloom-canvas {
     --image-border-radius: 0px 0px var(--marginBox-border-radius)
         var(--marginBox-border-radius); /* bottom corners */
 }
@@ -86,13 +86,10 @@
 [class*="Device"].numberedPage
     .marginBox
     > .split-pane-component-inner
-    > .bloom-imageContainer {
+    > .bloom-canvas {
     --image-border-radius: var(--marginBox-border-radius); /* all corners */
 }
-/* Nested/overlay picture */
-.bloom-imageContainer > .bloom-textOverPicture > .bloom-imageContainer {
-    --image-border-radius: 0px; /* No rounding for nested images.  See BL-13960. */
-}
+
 /* End Rules for rounding the corner of images */
 
 .Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight::after {

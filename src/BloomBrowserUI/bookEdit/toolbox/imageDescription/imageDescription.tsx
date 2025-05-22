@@ -18,6 +18,8 @@ import {
     hideImageDescriptions,
     showImageDescriptions
 } from "./imageDescriptionUtils";
+import { getCanvasElementManager } from "../overlay/canvasElementUtils";
+import { kBloomCanvasClass } from "../../js/bloomImages";
 
 interface IImageDescriptionState {
     enabled: boolean;
@@ -33,7 +35,7 @@ interface IImageDescriptionState {
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which passes an instance of ImageDescriptionTool to ToolBox.registerTool().
 export class ImageDescriptionToolControls extends React.Component<
-    {},
+    unknown,
     IImageDescriptionState
 > {
     public readonly state: IImageDescriptionState = {
@@ -174,19 +176,19 @@ export class ImageDescriptionToolControls extends React.Component<
         ) as unknown) as ImageDescriptionToolControls;
     }
 
-    public selectImageDescription(imageContainer: Element | null): void {
-        if (imageContainer == null) {
+    public selectImageDescription(bloomCanvas: Element | null): void {
+        if (bloomCanvas == null) {
             // pathological
             this.setDisabledState();
             return;
         }
-        this.activeEditable = imageContainer;
+        this.activeEditable = bloomCanvas;
         const noDescriptionNeeded = this.activeEditable.getAttribute(
             "aria-hidden"
         );
         this.setState({
             enabled: true,
-            descriptionNotNeeded: noDescriptionNeeded == "true",
+            descriptionNotNeeded: noDescriptionNeeded === "true",
             isXmatterPage: ToolBox.isXmatterPage()
         });
     }
@@ -199,15 +201,13 @@ export class ImageDescriptionToolControls extends React.Component<
         }
         // If we're still on the same page, it must be one without images.
         // We might also have switched TO one without images.
-        const imageContainers = page.getElementsByClassName(
-            "bloom-imageContainer"
-        );
-        if (imageContainers.length === 0) {
+        const bloomCanvases = page.getElementsByClassName(kBloomCanvasClass);
+        if (bloomCanvases.length === 0) {
             // This is OK whether we switched from a page without images or just stayed on one.
             this.setDisabledState();
             return;
         }
-        this.selectImageDescription(imageContainers[0]);
+        this.selectImageDescription(bloomCanvases[0]);
     }
 
     private setDisabledState() {
@@ -225,14 +225,14 @@ export class ImageDescriptionToolControls extends React.Component<
 export function setupImageDescriptions(
     page: HTMLElement,
     // This function will be run on the (usually single-member) collection of image descriptions
-    // for each image container, either immediately if it already exists, or (asynchronously)
+    // for each bloom-canvas, either immediately if it already exists, or (asynchronously)
     // after it gets created, if it does not.
     doToImageDescriptions: (descriptions: HTMLCollectionOf<Element>) => void,
-    // This function is called for each image container that gets modified by adding an image description
+    // This function is called for each bloom-canvas that gets modified by adding an image description
     doIfContentAdded: () => void
 ) {
-    const bubbleManager = OverlayTool.bubbleManager();
-    if (!bubbleManager) {
+    const canvasElementManager = getCanvasElementManager();
+    if (!canvasElementManager) {
         // try again later...maybe we're still bootstrapping? Haven't finished loading that iframe?
         setTimeout(() => {
             setupImageDescriptions(
@@ -243,10 +243,10 @@ export function setupImageDescriptions(
         }, 100);
         return;
     }
-    const imageContainers = bubbleManager.getAllPrimaryImageContainersOnPage(); // don't add to overlay images!
+    const bloomCanvases = canvasElementManager.getAllBloomCanvasesOnPage(); // don't add to canvas element images!
 
-    for (let i = 0; i < imageContainers.length; i++) {
-        const container = imageContainers[i];
+    for (let i = 0; i < bloomCanvases.length; i++) {
+        const container = bloomCanvases[i];
         let imageDescriptions = container.getElementsByClassName(
             "bloom-imageDescription"
         );
@@ -288,7 +288,7 @@ function appendTranslationGroup(innerHtml, container: Element) {
 
     // from somewhere else I (John Thomson) copied this as a typical default set of classes for a translation group,
     // except for the extra bloom-imageDescription. This distinguishes it from other TGs (such as in
-    // textOverPicture) which might be nested in image containers.
+    // canvas element) which might be nested in image containers.
     // Note that, like normal-style, the class imageDescriptionEdit-style class is not defined
     // anywhere. Image descriptions will get the book's default font and Bloom's default text size
     // from other style sheets, unless the user edits the imageDescriptionEdit-style directly.
@@ -389,7 +389,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 return;
             }
             showImageDescriptions(page);
-            // Make sure every image container has a child bloom-translationGroup to hold the image description.
+            // Make sure every bloom-canvas has a child bloom-translationGroup to hold the image description.
             setupImageDescriptions(
                 page,
                 // BL-6798: we need to add focus listeners to these new (or newly visible) description elements.

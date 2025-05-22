@@ -260,11 +260,18 @@ namespace Bloom.Publish
             {
                 // At this point (5.1), we have an enterprise-related publishing problem if :
                 // - User is not in Enterprise mode AND
-                // - Book contains overlay elements AND
+                // - Book contains canvas element elements AND
                 // - Book is not a translated shell
 
+                // As of Bloom 6.2, all pictures in a book that have been edited with 6.2
+                // involve bloom-canvas-element somehow. What used to be simple imageContainers are now
+                // bloom-canvases containing a bloom-canvas-element that also has bloom-backgroundImage.
+                // That shouldn't prevent publishing. We want to count only overlay
+                // elements that are not also marked as background images.  See BL-14245.
                 var overlayElementNodes = BookSelection?.CurrentSelection?.RawDom.SafeSelectNodes(
-                    "//div[contains(@class, 'bloom-textOverPicture')]"
+                    "//div[contains(@class, '"
+                        + HtmlDom.kCanvasElementClass
+                        + "') and not(contains(@class, 'bloom-backgroundImage'))]"
                 );
                 var bookContainsOverlayElements = (overlayElementNodes?.Length ?? 0) > 0;
 
@@ -442,6 +449,12 @@ namespace Bloom.Publish
             foreach (var page in pages)
                 PublishHelper.RemoveUnpublishableContent(page);
             PublishHelper.RemoveUnpublishableBookData(dom.RawDom);
+
+            // Show any game pages in the "play" mode.  See BL-14620.
+            // During editing, this class is added to the #page-scaling-container element
+            // which sits above the page.  That doesn't exist in the PDF's HTML, so we
+            // use the body element instead.
+            dom.Body.AddClass("drag-activity-play");
 
             return BloomServer.MakeInMemoryHtmlFileInBookFolder(
                 dom,
@@ -658,7 +671,7 @@ namespace Bloom.Publish
                 pdfFileLabel = pdfFileLabel.Replace("|", "");
                 var pdfFilter = String.Format("{0}|*.pdf", pdfFileLabel);
 
-                var initialPath = OutputFilenames.GetOutputFilePath(
+                var initialPath = FilePathMemory.GetOutputFilePath(
                     _currentlyLoadedBook,
                     ".pdf",
                     suggestedName,
@@ -673,7 +686,7 @@ namespace Bloom.Publish
                 if (String.IsNullOrEmpty(destFileName))
                     return;
 
-                OutputFilenames.RememberOutputFilePath(
+                FilePathMemory.RememberOutputFilePath(
                     _currentlyLoadedBook,
                     ".pdf",
                     destFileName,

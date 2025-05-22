@@ -1,4 +1,4 @@
-import React = require("react");
+import * as React from "react";
 import { useCanModifyCurrentBook } from "../utils/bloomApi";
 import { InfoTooltip } from "./icons/InfoTooltip";
 

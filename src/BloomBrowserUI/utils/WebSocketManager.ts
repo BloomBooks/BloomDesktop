@@ -272,6 +272,20 @@ export default class WebSocketManager {
             delete WebSocketManager.socketMap[clientContext];
         }
     }
+
+    /**
+     * Clear out all sockets that start with the given prefix
+     * @param {string} clientContext - should use the same name through the lifetime of the WebSocketManager.socketMap
+     */
+    public static closeSocketsWithPrefix(prefix: string) {
+        const keys = Object.getOwnPropertyNames(this.socketMap);
+        keys.forEach(clientContext => {
+            if (clientContext.startsWith(prefix)) {
+                WebSocketManager.closeSocket(clientContext);
+            }
+        });
+    }
+
     /**
      * Find or create a websocket and add a listener to it.
      * When a message is received on the socket whose data parses into an object whose clientContext property
@@ -300,12 +314,33 @@ export default class WebSocketManager {
         const count =
             WebSocketManager.clientContextCallbacks[clientContext].length;
 
+        // if clientContext is not one of the known ones that have lots of listeners, report it.
+        const frequentlyListenedContexts = [
+            // Each BookButton, for the moment at least, subscribes to these.
+            "collections",
+            "bookImage",
+            "book", // via useWatchString
+            "bookTeamCollectionStatus", // via useTColBookStatus
+            // each book collection subscribes to this
+            "editableCollectionList"
+        ];
+
         // in the case of the progressDialog, we expect to have 2: one for the dialog, which is listening, and one for the ProgressBox.
-        if (count > 2) {
+        if (count > 2 && !frequentlyListenedContexts.includes(clientContext)) {
             console.error(
                 `addListener sees that we have ${count} listeners on "${clientContext}". Normally if everything is disconnecting appropriately, these should not add up.`
             );
         }
+    }
+    public static once<T extends IBloomWebSocketEvent>(
+        clientContext: string,
+        listener: (messageEvent: T) => void
+    ): void {
+        const onceListener = (messageEvent: T) => {
+            listener(messageEvent);
+            WebSocketManager.removeListener(clientContext, onceListener);
+        };
+        WebSocketManager.addListener(clientContext, onceListener);
     }
 
     public static removeListener(

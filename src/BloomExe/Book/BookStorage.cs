@@ -10,7 +10,6 @@ using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
-using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
@@ -106,6 +105,9 @@ namespace Bloom.Book
         void MigrateToLevel3PutImgFirst();
 
         void MigrateToLevel4UseAppearanceSystem();
+        void MigrateToLevel5CanvasElement();
+        void MigrateToLevel6LegacyActivities();
+        void MigrateToLevel7BloomCanvas();
 
         void DoBackMigrations();
 
@@ -157,18 +159,24 @@ namespace Bloom.Book
         /// History of kMaintenanceLevel:
         ///   Bloom 4.9: 1 = Ensure that all images are opaque and no larger than our desired maximum size.
         ///              2 = Remove any 'comical-generated' svgs that are transparent.
-        ///				 3 = Ensure main img comes first in image container
+        ///				 3 = Ensure main img comes first in image container (now bloom-canvas)
         ///   (Bloom 6.0 added kMediaMaintenanceLevel so we could distinguish migrations that affect
         ///   other files (typically images or media) in the book folder from ones that only affect
         ///   the DOM and can safely be done in memory. (Later in 6.0 we stopped doing incomplete
         ///   book updates in memory, so this distinction may no longer be helpful.))
         ///   Bloom 6.0  4 = Switched to using a theme (or explicitly using legacy)
+        ///   Bloom 6.2  5 = bloom-textOverPicture became bloom-canvas-element
+        ///   Bloom 6.2  6 = Legacy activities were updated to have data-tool-id="game", class
+        ///     game-theme-legacy, and to give simple-comprehension-quiz a data-activity.
+        ///   Bloom 6.2  7 = Changed name of element that contains canvas elements to bloom-canvas
+        ///     (Previously was bloom-imageContainer, which conflicted with the use inside canvas
+        ///     elements, and was inaccurate because it could contain many other things.)
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 4;
+        public const int kMaintenanceLevel = 7;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -533,14 +541,6 @@ namespace Bloom.Book
         {
             // Check if there are any features in this file format (which is readable), but which won't be supported (and have effects bad enough to warrant blocking opening) in this version.
             var breakingFeatureRequirements = GetBreakingFeatureRequirements();
-
-            // For 6.1 and 6.0 only; don't merge into 6.2
-            if (
-                breakingFeatureRequirements.All(
-                    fr => fr.FeatureId == "canvasElement" || fr.FeatureId == "bloomCanvas"
-                )
-            )
-                return "";
 
             // Note: even though versionRequirements is guaranteed non-empty by now, the ones that actually break our current version of Bloom DESKTOP could be empty.
             if (breakingFeatureRequirements.Any())
@@ -1064,9 +1064,11 @@ namespace Bloom.Book
                 BloomReaderMinVersion = "1.0",
                 // Bloom now allows comical Captions to have straight line tails, but if we open such a book
                 // in an older version of Bloom which nevertheless has comical, it will give it a normal bubble tail.
-                // This xpath finds a bubble with a "caption" style and a non-empty tail spec.
+                // This xpath finds a canvas element with a "caption" style and a non-empty tail spec.
                 XPath =
-                    "//div[contains(@class,'bloom-textOverPicture') and contains(@data-bubble, '`caption`') and contains(@data-bubble, '`tails`:[{`')]"
+                    "//div[contains(@class,'"
+                    + HtmlDom.kCanvasElementClass
+                    + "') and contains(@data-bubble, '`caption`') and contains(@data-bubble, '`tails`:[{`')]"
             },
             new Feature()
             {
@@ -1083,7 +1085,39 @@ namespace Bloom.Book
                 BloomDesktopMinVersion = "6.1",
                 BloomReaderMinVersion = "1.0",
                 XPath =
-                    "//div[contains(@class,'bloom-textOverPicture')]/div[contains(@class, 'bloom-imageContainer')]/img[contains(@style, 'width') and contains(@style, 'left') ]"
+                    "//div[contains(@class,'"
+                    + HtmlDom.kCanvasElementClass
+                    + "')]/div[contains(@class, 'bloom-imageContainer')]/img[contains(@style, 'width') and contains(@style, 'left') ]"
+            },
+            new Feature()
+            {
+                FeatureId = "bloomGames6.2",
+                FeaturePhrase = "Bloom Games added in 6.2",
+                BloomDesktopMinVersion = "6.2",
+                BloomReaderMinVersion = "3.3",
+                XPath =
+                    "//div[@data-activity='drag-letter-to-target' or @data-activity='drag-image-to-target' or @data-activity='drag-sort-sentence' ]"
+            },
+            new Feature()
+            {
+                FeatureId = "canvasElement",
+                FeaturePhrase = "6.2 representation of canvas elements",
+                // Plan is to make a special exception to this for late releases of 6.1 and 6.0,
+                // which will know how to reverse the migration.
+                BloomDesktopMinVersion = "6.2",
+                BloomReaderMinVersion = "3.3",
+                XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
+            },
+            new Feature()
+            {
+                FeatureId = "bloomCanvas",
+                FeaturePhrase = "6.2 use of bloom-canvas",
+                // Plan is to make a special exception to this for late releases of 6.1 and 6.0,
+                // which will know how to reverse the migration.
+                BloomDesktopMinVersion = "6.2",
+                BloomReaderMinVersion = "3.3",
+                // This is used for all images so will nearly always succeed fast.
+                XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
             }
         };
 
@@ -1376,7 +1410,9 @@ namespace Bloom.Book
             );
             usedAudioFileNames.AddRange(narrationAudioFileNames);
 
-            audioFilesToDeleteIfNotUsed.ExceptWith(usedAudioFileNames);
+            audioFilesToDeleteIfNotUsed.ExceptWith(
+                usedAudioFileNames.Select(path => GetNormalizedPathForOS(path))
+            );
 
             //Delete any files still in the list
             foreach (var fileName in audioFilesToDeleteIfNotUsed)
@@ -1690,10 +1726,10 @@ namespace Bloom.Book
             return relocatableDom;
         }
 
-        private static bool ShouldWeChangeFolderName(
-            string sanitizedFilename,
+        private static string GetActualPathToSave(
+            string idealFolderName,
             string currentFolderName,
-            string idealFolderName
+            string idealFolderPath
         )
         {
             // As of 16 Dec 2019 we changed our definition of "sanitized" to include some more characters that can
@@ -1702,21 +1738,31 @@ namespace Bloom.Book
             // we go ahead and do the rename.
             // The various cases of sanitized names and folders and existing book names (e.g. Foo1) are tricky
             // to tease apart. We can't just let it go, though, since the new higher level of sanitization is
-            // necessary to keep bloom-player from throwing an error.
+            // necessary to keep bloom-player from throwing an error. However, idealFolderName is
+            // sanitized by the new system, so it can't be equal to currentFolderName if the latter has a problem.
 
-            // 1. If the current folder name needs sanitizing, we definitely can't use it; keep going.
-            if (currentFolderName != SanitizeNameForFileSystem(currentFolderName))
-                return true;
-            // 2. If the name we are already using is the name we want, keep using it (don't change anything)
-            if (currentFolderName == sanitizedFilename)
-                return false;
-            // 3. If our most prefered sanitized filename works (doesn't exist), go ahead and change to it; keep going.
-            if (!Directory.Exists(idealFolderName))
-                return true;
-            // 4. If our current folder name is one of the possible work-arounds (because preferred name is in use),
-            //    then return early and don't change. (We don't need to generate another alternative.)
-            // 5. Otherwise change to some other (sanitized) name, ensuring availability.
-            return !currentFolderName.StartsWith(sanitizedFilename);
+            // 1. If the name we are already using is the name we want, keep using it
+            if (currentFolderName.ToLowerInvariant() == idealFolderName.ToLowerInvariant())
+                return idealFolderPath; // might be a change of case, we will just change it.
+            // 2. If our most preferred sanitized filename works (doesn't exist), go ahead and change to it.
+            if (!Directory.Exists(idealFolderPath))
+                return idealFolderPath;
+            // 3. If our current folder name is one of the possible work-arounds (because idealFolderName
+            // is in use by some other book), then stick with the name we have.
+            // (A very unlikely exception to this is if there is something invalid in the current name.)
+            // There is a pathological case we're not handling here, I think. Suppose we have two books,
+            // "A nice story" and "A nice story about Bob". If the second one is renamed to "A nice story",
+            // we can't use that as a file name because the first book exists, but it will pass this check,
+            // so "A nice story about Bob" will be kept when we might prefer "A nice story 2". But this
+            // won't cause dreadful problems and is pretty unlikely.
+            if (
+                currentFolderName.StartsWith(idealFolderName)
+                && currentFolderName == SanitizeNameForFileSystem(currentFolderName)
+            )
+                return Path.Combine(Path.GetDirectoryName(idealFolderPath), currentFolderName);
+            // 4. ideal name is in use, and currentFolderName is not a variant of it,
+            // so find a new variant that is not in use.
+            return GetUniqueFolderPath(idealFolderPath);
         }
 
         public void SetBookName(string name)
@@ -1742,12 +1788,10 @@ namespace Bloom.Book
 
             var currentFilePath = PathToExistingHtml;
             var currentFolderName = Path.GetFileNameWithoutExtension(currentFilePath);
-            var idealFolderName = Path.Combine(Directory.GetParent(FolderPath).FullName, name);
-            if (!ShouldWeChangeFolderName(name, currentFolderName, idealFolderName))
-                return;
-
-            // Figure out what name we're really going to use (might need to add a number suffix).
-            idealFolderName = GetUniqueFolderPath(idealFolderName);
+            var idealFolderPath = Path.Combine(Directory.GetParent(FolderPath).FullName, name);
+            var actualSavePath = GetActualPathToSave(name, currentFolderName, idealFolderPath);
+            if (actualSavePath == Path.GetDirectoryName(currentFilePath))
+                return; // for this path they must be exactly the same, even by case.
 
             // Next, rename the file
             Guard.Against(
@@ -1757,42 +1801,27 @@ namespace Bloom.Book
                 ),
                 "Cannot rename template books!"
             );
-            Logger.WriteEvent(
-                "Renaming html from '{0}' to '{1}.htm'",
-                currentFilePath,
-                idealFolderName
-            );
-            var newFilePath = Path.Combine(FolderPath, Path.GetFileName(idealFolderName) + ".htm");
-            if (RobustFile.Exists(newFilePath))
-            {
-                // The folder already contains two HTML files, one with the name we were going to change to.
-                // Just get rid of it.
-                // (This is a weird state of affairs that should never occur but did once (BL-10200).
-                // Extra HTML files in the book folder are an anomaly. We could recycle it, report it,
-                // etc...but this has only happened once. I don't think it's worth it. Just clean up
-                // and so prevent a crash.)
-                RobustFile.Delete(newFilePath);
-            }
 
-            RobustFile.Move(currentFilePath, newFilePath);
+            var newFilePath = Path.Combine(FolderPath, Path.GetFileName(actualSavePath) + ".htm");
+            Logger.WriteEvent("Renaming html from '{0}' to '{1}'", currentFilePath, newFilePath);
 
-            var fromToPair = new KeyValuePair<string, string>(FolderPath, idealFolderName);
+            MoveFilePossiblyOnlyChangingCaseAllowReplace(currentFilePath, newFilePath);
+
+            var fromToPair = new KeyValuePair<string, string>(FolderPath, actualSavePath);
             try
             {
                 Logger.WriteEvent(
                     "Renaming folder from '{0}' to '{1}'",
                     FolderPath,
-                    idealFolderName
+                    actualSavePath
                 );
 
-                //This one can't handle network paths and isn't necessary, since we know these are on the same volume:
-                //SIL.IO.DirectoryUtilities.MoveDirectorySafely(FolderPath, newFolderPath);
-                SIL.IO.RobustIO.MoveDirectory(FolderPath, idealFolderName);
+                MoveDirectoryPossiblyOnlyChangingCase(FolderPath, actualSavePath);
 
                 _fileLocator.RemovePath(FolderPath);
-                _fileLocator.AddPath(idealFolderName);
+                _fileLocator.AddPath(actualSavePath);
 
-                FolderPath = idealFolderName;
+                FolderPath = actualSavePath;
             }
             catch (Exception e)
             {
@@ -1803,6 +1832,59 @@ namespace Bloom.Book
             RaiseBookRenamedEvent(fromToPair);
 
             OnFolderPathChanged();
+        }
+
+        // Move a file, possibly only changing the case of the name.
+        // Only handles case changes in the actual file name; changes elsewhere
+        // in the path are ignored. May not handle changing volume.
+        public static void MoveFilePossiblyOnlyChangingCaseAllowReplace(
+            string oldPath,
+            string newPath
+        )
+        {
+            if (oldPath == newPath)
+                return;
+            if (oldPath.ToLowerInvariant() == newPath.ToLowerInvariant())
+            {
+                var tempName = new Guid().ToString();
+                var tempPath = Path.Combine(Path.GetDirectoryName(oldPath), tempName);
+                // This is a case-only change. We can't just rename the file, because that throws.
+                // So we move the file to a temporary name, and then rename again to what we want.
+                RobustFile.Move(oldPath, tempPath);
+                RobustFile.Move(tempPath, newPath);
+            }
+            else
+            {
+                // Allow overwrite in case the folder already contains two HTML files,
+                // one with the name we were going to change to.
+                // Just allow the extra to get overwritten.
+                // (This is a weird state of affairs that should never occur but did once (BL-10200).
+                // Extra HTML files in the book folder are an anomaly. We could recycle it, report it,
+                // etc...but this has only happened once. I don't think it's worth it. Just prevent a crash.)
+                RobustFile.Move(oldPath, newPath, true);
+            }
+        }
+
+        // Move a directory, which may involve only changing the case of the name.
+        // Case differences other than the leaf directory are ignored.
+        // Won't handle moving between volumes.
+        public static void MoveDirectoryPossiblyOnlyChangingCase(string oldPath, string newPath)
+        {
+            if (oldPath == newPath)
+                return;
+            if (oldPath.ToLowerInvariant() == newPath.ToLowerInvariant())
+            {
+                var tempName = new Guid().ToString();
+                var tempPath = Path.Combine(Path.GetDirectoryName(oldPath), tempName);
+                // This is a case-only change. We can't just rename the directory, because that throws.
+                // So we move the directory to the new name, and then move again to the one we want.
+                RobustIO.MoveDirectory(oldPath, tempPath);
+                RobustIO.MoveDirectory(tempPath, newPath);
+            }
+            else
+            {
+                RobustIO.MoveDirectory(oldPath, newPath);
+            }
         }
 
         /// <summary>
@@ -3262,16 +3344,23 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// if necessary, append a number to make the file name unique within the given folder
+        /// if necessary, append a number to make the file name unique within the given folder.
+        /// name must NOT include an extension. The supplied extension will be added rather than
+        /// replacing any existing extension. (This is to allow names that may contain periods,
+        /// without stripping off whatever follows the period.)
         /// </summary>
         internal static string GetUniqueFileName(string parentPath, string name, string ext)
         {
             int i = 0;
             string suffix = "";
             string result;
+            if (!ext.StartsWith("."))
+                ext = "." + ext;
             do
             {
-                result = Path.ChangeExtension(Path.Combine(parentPath, name + suffix), ext);
+                // Don't use Path.ChangeExtension here. If name happens to have a period, it will remove
+                // everything after it, including suffix, potentially resulting in an infinite loop.
+                result = Path.Combine(parentPath, name + suffix + ext);
                 ++i;
                 suffix = i.ToString(CultureInfo.InvariantCulture);
             } while (RobustFile.Exists(result));
@@ -3565,16 +3654,18 @@ namespace Bloom.Book
             var elementsToSave = new HashSet<SafeXmlElement>();
             foreach (var svgElement in comicalSvgs)
             {
-                var container = svgElement.ParentNode; // bloom-imageContainer div (not gonna be null)
-                var textOverPictureDivs = container.SafeSelectNodes(
+                var bloomCanvas = svgElement.ParentNode; // bloom-canvas div (not gonna be null)
+                // Since this migration comes before the canvas-element migration, we have to look for the
+                // old class here. Not using any constant, because this should never change, however we later rename things.
+                var canvasElementDivs = bloomCanvas.SafeSelectNodes(
                     "div[contains(@class, 'bloom-textOverPicture')]"
                 );
-                if (textOverPictureDivs == null) // unlikely, but maybe possible
+                if (canvasElementDivs == null) // unlikely, but maybe possible
                     continue;
 
-                foreach (var textOverPictureDiv in textOverPictureDivs)
+                foreach (var canvasElement in canvasElementDivs)
                 {
-                    var bubbleData = textOverPictureDiv.GetAttribute("data-bubble");
+                    var bubbleData = canvasElement.GetAttribute("data-bubble");
                     if (string.IsNullOrEmpty(bubbleData))
                         continue;
                     var jsonObject = HtmlDom.GetJsonObjectFromDataBubble(bubbleData);
@@ -3588,7 +3679,7 @@ namespace Bloom.Book
                 }
             }
 
-            // Now delete the SVGs that only have bubbles of style 'none'.
+            // Now delete the SVGs that only have canvas elements of style 'none'.
             var dirty = false;
             foreach (var svgElement in comicalSvgs.ToArray())
             {
@@ -3618,11 +3709,12 @@ namespace Bloom.Book
             if (GetMaintenanceLevel() >= 3)
                 return;
 
-            // Make sure that in every image container, the first element is the img.
-            // This is important because, since 5.4, we don't use a z-index to put overlays above the base image
-            // (so the overlay image container does not become a stacking context, so we can use
+            // Make sure that in every image container (at level 3 this includes what we now call bloom canvases;
+            // that migration is level 7), the first element is the img.
+            // This is important because, since 5.4, we don't use a z-index to put canvas elements above the base image
+            // (so the outer image container (since level 7 bloom-canvas) does not become a stacking context, so we can use
             // z-index on its children to put them above the comicaljs canvas),
-            // which means we depend on the img being first to make sure the overlays are on top of it.
+            // which means we depend on the img being first to make sure the canvas elements are on top of it.
             // (I'm not sure we ever created situations where the img was not first, but now it's vital,
             // so I added this maintenance to make sure of it.)
             var imageContainers = Dom.SafeSelectNodes(
@@ -3809,96 +3901,199 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// This method and calls to it and the other changes here can be merged to master,
-        /// but without the test for canvasElement (which wouldn't build unless we merge the
-        /// method it calls too).
+        /// This method is a place to do any back migrations that are needed to make a newer
+        /// version of a Bloom book work with this one. Keeping the code that we used in 6.0
+        /// and 6.1, though we won't need it in 6.2 until there is some later version that
+        /// creates such a need.
+        /// If you implement a back-migration, you must also modify GetHtmlMessageIfFeatureIncompatibility
+        /// to not complain if the only breaking changes are ones we can back-migrate.
         /// </summary>
         public void DoBackMigrations()
         {
-            if (GetMaintenanceLevel() <= kMaintenanceLevel)
-                return;
-            var breakingFeatureRequirements = GetBreakingFeatureRequirements();
+            //if (GetMaintenanceLevel() <= kMaintenanceLevel)
+            //    return;
+            //var breakingFeatureRequirements = GetBreakingFeatureRequirements();
             // Handle the back migrations this version of Bloom knows about, in the proper reverse order.
-            // This should not be merged to 6.2, though it may be a useful model of how to handle future
-            // back migrations.
+            // Back migrations should not be merged to later versions.
+            MigrateBackfromDataFeatureAttributes();
             // If you add a new back migration, you must also modify GetHtmlMessageIfFeatureIncompatibility
             // to not complain if the only breaking changes are ones we can back-migrate.
             // Also, each back migration has the potential to cause problems since the corresponding forward
             // migration is likely to be run again. Make sure that each migration that might be re-run will
             // not cause problems if it is run repeatedly, and comment it to reinforce this.
-            if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "bloomCanvas"))
-            {
-                MigrateBackFromLevel7BloomCanvas();
-            }
-            if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "canvasElement"))
-            {
-                MigrateBackFromLevel5CanvasElement();
-            }
+            // if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "bloomCanvas"))
+            // {
+            //     MigrateBackFromLevel7BloomCanvas();
+            // }
+            // if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "canvasElement"))
+            // {
+            //     MigrateBackFromLevel5CanvasElement();
+            // }
         }
 
-        /// <summary>
-        /// Only for 6.1 and 6.0! Do not merge to 6.2.
-        /// </summary>
-        public void MigrateBackFromLevel5CanvasElement()
+        private void MigrateClassName(string oldClassName, string newClassName)
         {
-            Guard.Against(
-                !BookInfo.IsSaveable,
-                "We should not even think about migrating a book that is not Saveable"
-            );
-            if (GetMaintenanceLevel() <= 4)
-                return;
-            var legacyCanvasElements = Dom.SafeSelectNodes(
-                    "//*[contains(@class, 'bloom-canvas-element')]"
-                )
+            var elements = Dom.SafeSelectNodes($"//*[contains(@class, '{oldClassName}')]")
                 .Cast<SafeXmlElement>()
                 .ToList();
-            foreach (var element in legacyCanvasElements)
+            foreach (var element in elements)
             {
                 element.SetAttribute(
                     "class",
-                    element
-                        .GetAttribute("class")
-                        .Replace("bloom-canvas-element", "bloom-textOverPicture")
+                    element.GetAttribute("class").Replace(oldClassName, newClassName)
                 );
             }
-            Dom.UpdateMetaElement("maintenanceLevel", "4");
+        }
+
+        private void MigrateAttributeName(string oldAttrName, string newAttrName)
+        {
+            var elements = Dom.SafeSelectNodes($"//*[@{oldAttrName}]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            foreach (var element in elements)
+            {
+                element.SetAttribute(newAttrName, element.GetAttribute(oldAttrName));
+                element.RemoveAttribute(oldAttrName);
+            }
         }
 
         /// <summary>
-        /// Only for 6.1 and 6.0! Do not merge to 6.2.
+        /// Only for 6.0 and 6.1! Do not merge to 6.2.
         /// </summary>
-        public void MigrateBackFromLevel7BloomCanvas()
+        /// <remarks>
+        /// Possibly merge to 6.2a if that branch lasts long enough.
+        /// </remarks>
+        public void MigrateBackfromDataFeatureAttributes()
         {
-            Guard.Against(
-                !BookInfo.IsSaveable,
-                "We should not even think about migrating a book that is not Saveable"
-            );
-            if (GetMaintenanceLevel() <= 6)
-                return;
-            var bloomCanvases = Dom.SafeSelectNodes("//*[contains(@class, 'bloom-canvas')]")
-                .Cast<SafeXmlElement>()
-                // the crude xpath above will also match bloom-canvas-element, which we don't want to change
-                .Where(e => e.HasClass("bloom-canvas"))
-                .ToList();
-            foreach (var element in bloomCanvases)
-            {
-                element.RemoveClass("bloom-canvas");
-                element.AddClass("bloom-imageContainer");
-                var bgImage = element.ChildNodes.FirstOrDefault(
-                    x => x is SafeXmlElement elt && elt.Name == "img" && elt.HasAttribute("src")
+            if (!Program.RunningUnitTests)
+                Guard.Against(
+                    !BookInfo.IsSaveable,
+                    "We should not even think about migrating a book that is not Saveable"
                 );
-                // Our 6.2 comic book templates for a while came with a data-div coverImage that had class="bloom-canvas".
-                // We expect the content of a data-div coverImage element to be a file name, so having markup for an img
-                // element there caused a crash, since the wedge characters are not valid in filenames. So if the bloom-canvas
-                // is a child of the data-div, we do NOT want to add a placeholder!
-                if (bgImage == null && element.ParentNode.GetAttribute("id") != "bloomDataDiv")
+            foreach (
+                SafeXmlElement pageDiv in Dom.SafeSelectNodes(
+                    "//body/div[contains(@class, 'bloom-page')]"
+                )
+            )
+            {
+                var dataFeature = pageDiv.GetAttribute("data-feature");
+                if (!string.IsNullOrEmpty(dataFeature))
                 {
-                    bgImage = element.OwnerDocument.CreateElement("img");
-                    bgImage.SetAttribute("src", "placeHolder.png");
-                    element.InsertBefore(bgImage, element.FirstChild);
+                    pageDiv.RemoveAttribute("data-feature");
+                    pageDiv.AddClass("enterprise-only");
                 }
             }
+        }
+
+        /// <summary>
+        /// Change the class bloom-textOverPicture to bloom-canvas-element, and hasOverlay to bloom-has-canvas-element,
+        /// and replace the attribute data-bubble-id with data-draggable-id
+        /// </summary>
+        ///<remarks>Because version 6.0 and 6.1 have been given back-migration code, maintenance level can
+        /// revert (currently to 4 from at least 7) resulting in this migration running multiple times.
+        /// The code must handle this. The class-name changes will need re-doing, since the back-migration
+        /// reverts them. data-draggable-id should not be affected; 6.0 and 6.1 do not use or mess with these.</remarks>
+        public void MigrateToLevel5CanvasElement()
+        {
+            if (GetMaintenanceLevel() >= 5)
+                return;
+            MigrateClassName("bloom-textOverPicture", HtmlDom.kCanvasElementClass);
+            MigrateClassName("hasOverlay", "bloom-has-canvas-element");
+            // Note: this is deliberately not inverted in the 6.1 back-migration, since it is
+            // only used in earlier 6.2's.
+            MigrateAttributeName("data-bubble-id", "data-draggable-id");
+            // When we change the ID used for the canvas element tool in the metadata
+            //var metaData = BookMetaData.FromFolder(FolderPath);
+            //var ceTool = metaData.ToolStates.FirstOrDefault(x => x.ToolId == "overlay");
+            //if (ceTool != null)
+            //    ceTool.ToolId = "canvasElement";
+            //if (metaData.CurrentTool == "overlayTool")
+            //    metaData.CurrentTool = "canvasElementTool";
+            //metaData.WriteToFolder(FolderPath);
+            Dom.UpdateMetaElement("maintenanceLevel", "5");
+        }
+
+        /// <summary>
+        /// Older activities are brought more in line with the newer games by making sure each has a data-activity
+        /// and a data-tool-id and one of the game-theme classes
+        /// </summary>
+        /// <remarks>Because version 6.0 and 6.1 have been given back-migration code, maintenance level can
+        /// revert (currently to 4 from at least 7) resulting in this migration running multiple times.
+        /// The code must handle this. It's not a problem for the data-activity and data-tool-id values,
+        /// as repeated migrations will just set it to the same thing. But on the game-theme, we could
+        /// easily overwrite the theme the user has chosen. For this reason, a game theme is only added
+        /// if the page does not already have one.</remarks>
+        public void MigrateToLevel6LegacyActivities()
+        {
+            if (GetMaintenanceLevel() >= 6)
+                return;
+            var quizzes = Dom.SafeSelectNodes(
+                "//div[contains(@class, 'simple-comprehension-quiz')]"
+            );
+            foreach (SafeXmlElement quiz in quizzes)
+            {
+                // Yes, the data-activity is different from the class name.  See BL-14450.
+                // bloom-player uses "simple-checkbox-quiz" as its id for this game/activity.
+                quiz.SetAttribute("data-activity", "simple-checkbox-quiz");
+            }
+            var choices = Dom.SafeSelectNodes("//div[@data-activity = 'simple-dom-choice']");
+
+            void MigrateList(SafeXmlNode[] choices, string newClass)
+            {
+                foreach (SafeXmlElement elt in choices)
+                {
+                    elt.SetAttribute("data-tool-id", "game");
+                    // In case this runs on something that's already migrated, don't change an existing theme.
+                    if (!elt.GetClasses().Any(x => x.StartsWith("game-theme")))
+                    {
+                        // This is the theme (once called 'legacy') that looks most like the old version
+                        // of these games...in fact we tried hard to make it identical.
+                        elt.AddClass(newClass);
+                    }
+                }
+            }
+
+            MigrateList(quizzes, "game-theme-red-on-white");
+            MigrateList(choices, "game-theme-white-and-orange-on-blue");
             Dom.UpdateMetaElement("maintenanceLevel", "6");
+        }
+
+        /// <summary>
+        /// Change the class bloom-imageContainer to bloom-canvas, but only for top-level image containers,
+        /// that is, those that do not have an ancestor with that class. (This migration came about because
+        /// we realized that what started out as "image containers" had come to contain many other kinds of
+        /// canvas elements, and no longer directly contain an image in edit mode, and sometimes contain
+        /// other image containers, and bugs were happening as code and CSS rules intended to apply to one
+        /// level of image container were accidentally affecting the others.)
+        /// </summary>
+        ///<remarks>Because version 6.0 and 6.1 have been given back-migration code, maintenance level can
+        /// revert (currently to 4 from at least 7) resulting in this migration running multiple times.
+        /// The code must handle this. The revert code will convert all bloom-canvas elements to
+        /// bloom-imageContainer; converting the outer ones to bloom-canvas again should be fine.</remarks>
+        public void MigrateToLevel7BloomCanvas()
+        {
+            if (GetMaintenanceLevel() >= 7)
+                return;
+            var bloomCanvases = Dom.SafeSelectNodes("//*[contains(@class, 'bloom-imageContainer')]")
+                .Cast<SafeXmlElement>()
+                // Don't make assumptions about whether the parent has already been converted.
+                .Where(
+                    (ic) =>
+                        ic.ParentWithClass("bloom-imageContainer") == null
+                        && ic.ParentWithClass(HtmlDom.kBloomCanvasClass) == null
+                );
+            foreach (SafeXmlElement bloomCanvas in bloomCanvases)
+            {
+                bloomCanvas.RemoveClass("bloom-imageContainer");
+                bloomCanvas.AddClass(HtmlDom.kBloomCanvasClass);
+                // Note: more changes happen around this time...but they are done in Javascript as pages open.
+                // Child img becomes background canvas element, and where level 6 leaves a dummy placeholder img
+                // behind, the JS migration now removes it. It would be nice to do this in migration, but very
+                // difficult, since we need to set the position and size of the new canvas element based on the
+                // computed size of the container. But we want at least the bloom-canvas to be consistent.
+            }
+
+            Dom.UpdateMetaElement("maintenanceLevel", "7");
         }
 
         /// <summary>

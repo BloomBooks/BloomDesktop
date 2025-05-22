@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html>
     <head>
@@ -11,56 +11,26 @@
         <meta name="pageTemplateSource" content="Basic Book" />
 
         <title>Game Templates</title>
+        <!-- In a typical template, a style here gets added to the book when adding a page from the template
+             only if the page being added uses that style.
+             The data-copy-all-styles attribute on the body causes all the styles here to get added
+             when adding any page from the template. For games pages, we want to do that so the user
+             immediately has access to the Small/Medium/Large varieties of draggables and text.
+             (Also note that some styles are used by elements the user can dynamically add to games pages.)
+
+             Of course, these are just setting up the defaults. The user can change them using the Format dialog.
+
+             Note, our current parsing doesn't handle comments in the styles, so if you want to include
+             commented styles, add them below this style tag.
+        -->
         <style type="text/css" title="userModifiedStyles">
             /*<![CDATA[*/
             .BigWords-style {
                 font-size: 45pt !important;
                 text-align: center !important;
             }
-            .ButtonText-style {
-                font-size: 31pt !important;
-                text-align: center !important;
-                line-height: 1.3 !important;
-            }
-            .Order_Words-style[lang="qaa"] {
-                font-size: 24pt !important;
-            }
-            .Order_Words-style {
-                font-size: 24pt !important;
-            }
-            .Letter-style[lang="qaa"] {
-                color: rgb(255, 255, 255);
-                font-size: 24pt !important;
-                line-height: 1.5 !important;
-                word-spacing: normal !important;
-                font-weight: normal !important;
-                font-style: normal !important;
-                text-decoration: none !important;
-            }
-            .Letter-style {
-                font-size: 24pt !important;
-                line-height: 1.5 !important;
-                word-spacing: normal !important;
-                font-weight: normal !important;
-                font-style: normal !important;
-                text-decoration: none !important;
-                text-align: center !important;
-            }
-            .Letter-style > p {
-                text-indent: 0px !important;
-                margin-left: 0px !important;
-                margin-bottom: 0em !important;
-            }
-            .Instructions-style[lang="qaa"] {
-                color: rgb(0, 0, 0);
-                font-size: 16pt !important;
-                line-height: 1.5 !important;
-                word-spacing: normal !important;
-                font-weight: normal !important;
-                font-style: normal !important;
-                text-decoration: none !important;
-            }
-            .Instructions-style {
+
+            .GameHeader-style {
                 font-size: 16pt !important;
                 line-height: 1.5 !important;
                 word-spacing: normal !important;
@@ -69,35 +39,75 @@
                 text-decoration: none !important;
                 text-align: center !important;
             }
-            .Instructions-style > p {
+
+            .GameHeader-style > p {
                 text-indent: 0px !important;
                 margin-left: 0px !important;
                 margin-bottom: 0em !important;
             }
-            .Button-style[lang="qaa"] {
-                color: rgb(255, 255, 255);
-                font-size: 24pt !important;
-                line-height: 1.5 !important;
-                word-spacing: normal !important;
-                font-weight: bold !important;
-                font-style: normal !important;
-                text-decoration: none !important;
-                font-family: Roboto !important;
+
+            .GameTextSmallStart-style {
+                font-size: 16pt !important;
+                line-height: 1 !important;
+                text-align: start !important;
             }
-            .Button-style {
-                font-size: 24pt !important;
-                line-height: 1.5 !important;
-                word-spacing: normal !important;
-                font-weight: bold !important;
-                font-style: normal !important;
-                text-decoration: none !important;
+            .GameTextSmallCenter-style {
+                font-size: 16pt !important;
+                line-height: 1 !important;
                 text-align: center !important;
             }
-            .Button-style > p {
-                text-indent: 0px !important;
-                margin-left: 0px !important;
-                margin-bottom: 0em !important;
-            } /*]]>*/
+            .GameTextMediumStart-style {
+                font-size: 30pt !important;
+                line-height: 1 !important;
+                text-align: start !important;
+            }
+            .GameTextMediumCenter-style {
+                font-size: 30pt !important;
+                line-height: 1 !important;
+                text-align: center !important;
+            }
+            .GameTextLargeStart-style {
+                font-size: 45pt !important;
+                line-height: 1 !important;
+                text-align: start !important;
+            }
+            .GameTextLargeCenter-style {
+                font-size: 45pt !important;
+                line-height: 1 !important;
+                text-align: center !important;
+            }
+            .GameDragSmallStart-style {
+                font-size: 16pt !important;
+                line-height: 1 !important;
+                text-align: start !important;
+            }
+            .GameDragSmallCenter-style {
+                font-size: 16pt !important;
+                line-height: 1 !important;
+                text-align: center !important;
+            }
+            .GameDragMediumStart-style {
+                font-size: 30pt !important;
+                line-height: 1 !important;
+                text-align: start !important;
+            }
+            .GameDragMediumCenter-style {
+                font-size: 30pt !important;
+                line-height: 1 !important;
+                text-align: center !important;
+            }
+            .GameDragLargeStart-style {
+                font-size: 45pt !important;
+                line-height: 1 !important;
+                text-align: start !important;
+            }
+            .GameDragLargeCenter-style {
+                font-size: 45pt !important;
+                line-height: 1 !important;
+                text-align: center !important;
+            }
+
+            /*]]>*/
         </style>
         <style type="text/css">
             div.bloom-page.coverColor {
@@ -113,6 +123,7 @@
         <link rel="stylesheet" href="appearance.css" type="text/css" />
     </head>
 
+    <!-- See comment above regarding data-copy-all-styles. -->
     <body
         data-decodablestage="0"
         data-leveledreaderlevel="0"
@@ -120,9 +131,10 @@
         data-l1="en"
         data-l2=""
         data-l3=""
+        data-copy-all-styles="true"
     >
         <div id="bloomDataDiv">
-            <div data-book="bookTitle" lang="en">Games</div>
+            <div data-book="bookTitle" lang="en">Games Pages</div>
             <div data-book="styleNumberSequence" lang="*">0</div>
         </div>
 
@@ -165,7 +177,7 @@
                         lang="qaa"
                         contenteditable="true"
                         data-book="bookTitle"
-                        style="padding-bottom: 0px;"
+                        style="padding-bottom: 0px"
                     >
                         <p>Game</p>
                     </div>
@@ -175,13 +187,13 @@
                         lang="en"
                         contenteditable="true"
                         data-book="bookTitle"
-                        style="padding-bottom: 3px;"
+                        style="padding-bottom: 3px"
                     >
                         <p>Game Template mockups</p>
                     </div>
                 </div>
 
-                <div class="bloom-imageContainer">
+                <div class="bloom-canvas">
                     <img data-book="coverImage" src="placeHolder.png" alt="" />
 
                     <div
@@ -265,8 +277,9 @@
             </div>
         </div>
 
-        <div
-            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage activityBlueOnTan side-right Device16x9Landscape bloom-monolingual"
+        <!-- Hiding the Drag Letters to Targets game for now. It isn't ready for the FAL channel. BL-14696 -->
+        <!-- <div
+            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage side-right Device16x9Landscape bloom-monolingual"
             id="c8f4834c-1efd-4864-bc2c-8538ef26bb5b"
             data-page="extra"
             data-analyticscategories="drag-activity"
@@ -275,8 +288,8 @@
             data-pagelineage="3325A8B6-EA15-4FB7-9F8D-271D7B3C8D57"
             data-page-number="1"
             lang=""
-            data-correct-sound="ding-a-ling.mp3"
-            data-wrong-sound="waah.mp3"
+            data-correct-sound="correct_tada-fanfare-a_pixabay.webm"
+            data-wrong-sound="wrong_twoDownElectronic2_pixabay.webm"
         >
             <div
                 class="pageLabel"
@@ -290,234 +303,245 @@
             <div class="marginBox">
                 <div class="split-pane-component-inner">
                     <div
-                        class="bloom-imageContainer hasOverlay"
+                        class="bloom-game-prompt"
+                        data-prompt-button-l10nid="EditTab.Toolbox.DragActivity.EditWordToSpell"
+                        data-caption-l10nid="EditTab.Toolbox.DragActivity.WordToSpell"
+                    >
+                        <div class="bloom-game-prompt">
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                style="font-size: 32px"
+                                data-hasqtip="true"
+                            >
+                                <div
+                                    class="bloom-editable Normal-style"
+                                    lang="z"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    contenteditable="true"
+                                    style="font-size: 14pt"
+                                >
+                                    <p></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="bloom-canvas bloom-has-canvas-element"
                         data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                         title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                     >
-                        <img src="placeHolder.png" alt="" />
-
                         <div
-                            class="bloom-textOverPicture draggable-text ui-resizable ui-draggable"
-                            style="left: 147.578px; top: 109.766px; width: 85px; height: 60px;"
-                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
-                            data-bubble-id="b12rlzh"
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
                         >
                             <div
-                                class="bloom-translationGroup bloom-leadingElement bloom-show-en-when-blank"
-                                data-default-languages="V"
-                                style="font-size: 32px;"
-                                data-hasqtip="true"
-                            >
-                                <div
-                                    class="bloom-editable Letter-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
-                                    lang="en"
-                                    tabindex="0"
-                                    spellcheck="false"
-                                    role="textbox"
-                                    aria-label="false"
-                                    style="min-height: 48.01px;"
-                                    contenteditable="true"
-                                >
-                                    <p>a</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            data-target-of="b12rlzh"
-                            tabindex="0"
-                            style="left: 60px; top: 214px; width: 85px; height: 60px;"
-                        ></div>
-
-                        <div
-                            class="bloom-textOverPicture draggable-text ui-resizable ui-draggable"
-                            style="left: 239.313px; top: 86.75px; width: 85px; height: 60px;"
-                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:12,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
-                            data-bubble-id="muozas1"
-                        >
-                            <div
-                                class="bloom-translationGroup bloom-leadingElement bloom-show-en-when-blank"
-                                data-default-languages="V"
-                                style="font-size: 32px;"
-                                data-hasqtip="true"
-                            >
-                                <div
-                                    class="bloom-editable Letter-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
-                                    lang="en"
-                                    tabindex="0"
-                                    spellcheck="false"
-                                    role="textbox"
-                                    aria-label="false"
-                                    style="min-height: 48.01px;"
-                                    contenteditable="true"
-                                >
-                                    <p>b</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            data-target-of="muozas1"
-                            tabindex="0"
-                            style="left: 153.32px; top: 214px; width: 85px; height: 60px;"
-                        ></div>
-
-                        <div
-                            class="bloom-textOverPicture draggable-text ui-resizable ui-draggable"
-                            style="left: 49px; top: 90.6563px; width: 85px; height: 60px; position: absolute;"
-                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:13,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
-                            data-bubble-id="lkbg233"
-                        >
-                            <div
-                                class="bloom-translationGroup bloom-leadingElement bloom-show-en-when-blank"
-                                data-default-languages="V"
-                                style="font-size: 32px;"
-                                data-hasqtip="true"
-                            >
-                                <div
-                                    class="bloom-editable Letter-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
-                                    lang="en"
-                                    tabindex="0"
-                                    spellcheck="false"
-                                    role="textbox"
-                                    aria-label="false"
-                                    style="min-height: 48.01px;"
-                                    contenteditable="true"
-                                >
-                                    <p>c</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            data-target-of="lkbg233"
-                            tabindex="0"
-                            style="left: 246px; top: 214px; width: 85px; height: 60px;"
-                        ></div>
-
-                        <div
-                            class="bloom-textOverPicture bloom-gif drag-item-correct ui-resizable ui-draggable"
-                            style="height: 297px; left: 373.297px; top: 35.9844px; width: 233px; position: absolute;"
-                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
-                        >
-                            <div
-                                tabindex="0"
-                                class="bloom-imageContainer bloom-leadingElement"
-                                data-title="Name: love-fox.gif Size: 153.34 kb Dots: 90 x 90 For the current paper size: • The image container is 231 x 295 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 37 DPI. • An image with 722 x 922 dots would fill this container at 300 DPI."
-                                title=""
-                            >
-                                <img
-                                    src="love-fox.gif"
-                                    alt=""
-                                    data-copyright=""
-                                    data-creator=""
-                                    data-license=""
-                                />
-                            </div>
-                        </div>
-
-                        <div
-                            class="bloom-textOverPicture ui-resizable ui-draggable"
-                            style="left: 5px; top: 5px; width: 364px; height: 84px; position: absolute;"
-                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
-                        >
-                            <div
-                                class="bloom-translationGroup bloom-leadingElement bloom-show-en-when-blank"
-                                data-default-languages="V"
-                                style="font-size: 21.3333px;"
-                                data-hasqtip="true"
-                            >
-                                <div
-                                    class="bloom-editable Instructions-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
-                                    data-book="spell-words-instructions"
-                                    lang="en"
-                                    tabindex="0"
-                                    spellcheck="false"
-                                    role="textbox"
-                                    aria-label="false"
-                                    contenteditable="true"
-                                    data-languagetipcontent="English"
-                                >
-                                    <p>​Drag the letters where they go</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            class="bloom-textOverPicture ui-resizable ui-draggable"
-                            style="height: 193px; left: 385.141px; top: 44.1406px; width: 220px; position: absolute;"
-                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:17,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
-                        >
-                            <div
-                                tabindex="0"
-                                class="bloom-imageContainer bloom-leadingElement"
-                                data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
-                                title=""
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                             >
                                 <img
                                     src="placeHolder.png"
+                                    style="width: 672px; top: -141.088px; left: 0px;"
                                     alt=""
-                                    data-copyright=""
-                                    data-creator=""
-                                    data-license=""
                                 />
                             </div>
                         </div>
 
                         <div
-                            class="bloom-textOverPicture drag-item-wrong ui-resizable ui-draggable"
-                            style="height: 287px; left: 360.33333px; top: 8.33333px; width: 260px; position: absolute;"
-                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        class="bloom-canvas-element draggable-text ui-resizable ui-draggable bloom-noAutoHeight"
+                        style="
+                            left: 30px;
+                            top: 109.766px;
+                            width: 50px;
+                            height: 50px;
+                        "
+                        data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        data-draggable-id="b12rlzh"
+                    >
+                        <div
+                            class="bloom-translationGroup bloom-leadingElement"
+                            data-default-languages="V"
+                            style="font-size: 32px"
+                            data-hasqtip="true"
                         >
                             <div
+                                class="bloom-editable GameDraggableLetterMediumCenter-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                lang="en"
                                 tabindex="0"
-                                class="bloom-imageContainer bloom-leadingElement"
-                                data-title="Name: crying boy.jpg Size: 42.29 kb Dots: 431 x 494 For the current paper size: • The image container is 100 x 100 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 474 DPI. • An image with 313 x 313 dots would fill this container at 300 DPI."
-                                title=""
+                                spellcheck="false"
+                                role="textbox"
+                                aria-label="false"
+                                style="min-height: 48.01px"
+                                contenteditable="true"
                             >
-                                <img
-                                    src="crying%20boy.jpg"
-                                    alt=""
-                                    data-copyright=""
-                                    data-creator=""
-                                    data-license=""
-                                />
+                                <p></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        data-target-of="b12rlzh"
+                        tabindex="0"
+                        style="
+                            left: 30px;
+                            top: 254px;
+                            width: 50px;
+                            height: 50px;
+                        "
+                    ></div>
+
+                    <div
+                        class="bloom-canvas-element bloom-gif drag-item-correct ui-resizable ui-draggable"
+                        style="
+                            height: 220px;
+                            left: 370px;
+                            top: 70px;
+                            width: 230px;
+                            position: absolute;
+                        "
+                        data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                    >
+                        <div
+                            tabindex="0"
+                            class="bloom-imageContainer bloom-leadingElement"
+                            title=""
+                        >
+                            <img
+                                src="smiling-flowers.gif"
+                                alt=""
+                                data-copyright="Copyright © 2024, Ilona Spaeder"
+                                data-creator="Ilona Spaeder"
+                                data-license="Custom License"
+                            />
+                        </div>
+                    </div>
+
+                    <div
+                        class="bloom-canvas-element bloom-passive-element"
+                        data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                    >
+                        <div
+                            class="bloom-translationGroup bloom-leadingElement"
+                            data-default-languages="V"
+                            data-hasqtip="true"
+                            data-eager-placeholder-l10n-id="EditTab.Toolbox.Games.Placeholder.DragLettersInstructions"
+                        >
+                            <div
+                                class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                data-book="spell-words-instructions"
+                                lang="z"
+                                tabindex="0"
+                                spellcheck="false"
+                                role="textbox"
+                                aria-label="false"
+                                contenteditable="true"
+                                data-languagetipcontent="English"
+                            >
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bloom-canvas-element ui-resizable ui-draggable"
+                        style="
+                            height: 193px;
+                            left: 385.141px;
+                            top: 44.1406px;
+                            width: 196px;
+                            position: absolute;
+                        "
+                        data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:17,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                    >
+                        <div
+                            tabindex="0"
+                            class="bloom-imageContainer"
+                            data-title="For the current paper size: • The image container is 196 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 613 x 604 dots would fill this container at 300 DPI."
+                            title=""
+                        >
+                            <img
+                                src="placeHolder.png"
+                                alt=""
+                                data-copyright=""
+                                data-creator=""
+                                data-license=""
+                            />
+                        </div>
+                    </div>
+
+                    <div
+                        class="bloom-canvas-element bloom-gif drag-item-wrong ui-resizable ui-draggable"
+                        style="
+                            height: 220px;
+                            left: 370px;
+                            top: 70px;
+                            width: 220px;
+                            position: absolute;
+                        "
+                        data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                    >
+                        <div
+                            tabindex="0"
+                            class="bloom-imageContainer bloom-leadingElement"
+                            title=""
+                        >
+                            <img
+                                src="sad-face.gif"
+                                alt=""
+                                data-copyright="Copyright © 2022, Ilona Spaeder"
+                                data-creator="Ilona Spaeder"
+                                data-license="Custom License"
+                            />
                             </div>
                         </div>
                     </div>
                 </div>
                 <button
                     class="check-button page-content game-button"
-                    style="right: 10px; bottom: 10px;"
+                    style="right: 10px; bottom: 10px"
                 >
                     <img src="Check Answer Symbol.svg" />
                 </button>
                 <button
                     class="try-again-button page-content game-button"
-                    style="right: 130px; bottom: 10px;"
+                    style="right: 130px; bottom: 10px"
                 >
                     <img src="Try Again Symbol.svg" />
                 </button>
                 <button
                     class="show-correct-button page-content game-button"
-                    style="right: 70px; bottom: 10px;"
+                    style="right: 70px; bottom: 10px"
                 >
                     <img src="Show Answer Symbol.svg" />
                 </button>
                 <button
                     class="page-content page-turn-button turn-right"
-                    style="right: 10px; top: calc(50% - 12px);"
+                    style="right: 10px; top: calc(50% - 12px)"
                 >
                     <img src="Page Nav.svg" />
                 </button>
                 <button
                     class="page-content page-turn-button turn-left"
-                    style="left: 10px; top: calc(50% - 12px);"
+                    style="left: 10px; top: calc(50% - 12px)"
                 >
                     <img src="Page Nav.svg" />
                 </button>
             </div>
-        </div>
+        </div> -->
 
+        <!-- Comment out the Order Words page for now.  We don't want to lose it, but
+             it's not ready for users because too much can still change. (BL-14457)
         <div
-            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage activityBlueOnTan Device16x9Landscape side-left bloom-monolingual"
+            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage Device16x9Landscape side-left bloom-monolingual"
             id="8227374b-a449-4105-9c14-9d03e3ce0de3"
             data-analyticscategories="drag-activity"
             data-activity="drag-sort-sentence"
@@ -525,8 +549,8 @@
             data-page="extra"
             data-pagelineage="3325A8B6-EA15-4FB7-9F8D-271D7B3C8D59"
             lang=""
-            data-correct-sound="ding-a-ling.mp3"
-            data-wrong-sound="waah.mp3"
+            data-correct-sound="correct_tada-fanfare-a_pixabay.webm"
+            data-wrong-sound="wrong_twoDownElectronic2_pixabay.webm"
         >
             <div
                 class="pageLabel"
@@ -541,18 +565,39 @@
             <div class="marginBox">
                 <div class="split-pane-component-inner">
                     <div
-                        class="bloom-imageContainer hasOverlay"
+                        class="bloom-canvas bloom-has-canvas-element"
                         data-title="For the current paper size: • The image container is 652 x 328 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1025 dots would fill this container at 300 DPI."
                         title="For the current paper size: • The image container is 652 x 328 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1025 dots would fill this container at 300 DPI."
                     >
-                        <img src="placeHolder.png" alt="" />
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="width: 672px; top: -141.088px; left: 0px;"
+                                    alt=""
+                                />
+                            </div>
+                        </div>
 
                         <div
-                            class="bloom-textOverPicture bloom-allowAutoShrink drag-item-order-sentence ui-resizable ui-draggable"
+                            class="bloom-canvas-element bloom-allowAutoShrink drag-item-order-sentence ui-resizable ui-draggable bloom-noAutoHeight"
                             data-txt-img="1"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                             style="left: 30px; top: 80px; width: 300px; height: 36px; position: absolute;"
-                            data-hint="EditTab.Toolbox.DragActivity.SentenceHint"
+                            data-hint="Type a sentence. The reader will be asked to sort the words."
                             data-hasqtip="true"
                             aria-describedby="qtip-1"
                         >
@@ -562,7 +607,7 @@
                                 style="font-size: 32px;"
                             >
                                 <div
-                                    class="bloom-editable Order_Words-style bloom-contentNational1"
+                                    class="bloom-editable GameOrderWordsMediumCenter-style bloom-contentNational1"
                                     lang="en"
                                     contenteditable="true"
                                     data-languagetipcontent="English"
@@ -574,42 +619,40 @@
                             </div>
                         </div>
                         <div
-                            class="bloom-textOverPicture bloom-gif drag-item-correct ui-resizable ui-draggable"
-                            style="height: 297px; left: 373.297px; top: 35.9844px; width: 233px; position: absolute;"
+                            class="bloom-canvas-element bloom-gif drag-item-correct ui-resizable ui-draggable"
+                            style="height: 220px; left: 370px; top: 70px; width: 230px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
                             <div
                                 tabindex="0"
                                 class="bloom-imageContainer bloom-leadingElement"
-                                data-title="Name: love-fox.gif Size: 153.34 kb Dots: 90 x 90 For the current paper size: • The image container is 231 x 295 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 37 DPI. • An image with 722 x 922 dots would fill this container at 300 DPI."
                                 title=""
                             >
                                 <img
-                                    src="love-fox.gif"
+                                    src="smiling-flowers.gif"
                                     alt=""
-                                    data-copyright=""
-                                    data-creator=""
-                                    data-license=""
+                                    data-copyright="Copyright © 2024, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
                                 />
                             </div>
                         </div>
                         <div
-                            class="bloom-textOverPicture drag-item-wrong ui-resizable ui-draggable"
-                            style="height: 287px; left: 360.33333px; top: 8.33333px; width: 260px; position: absolute;"
+                            class="bloom-canvas-element bloom-gif drag-item-wrong ui-resizable ui-draggable"
+                            style="height: 220px; left: 370px; top: 70px; width: 220px; position: absolute;"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
                             <div
                                 tabindex="0"
                                 class="bloom-imageContainer bloom-leadingElement"
-                                data-title="Name: crying boy.jpg Size: 42.29 kb Dots: 431 x 494 For the current paper size: • The image container is 100 x 100 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 474 DPI. • An image with 313 x 313 dots would fill this container at 300 DPI."
                                 title=""
                             >
                                 <img
-                                    src="crying%20boy.jpg"
+                                    src="sad-face.gif"
                                     alt=""
-                                    data-copyright=""
-                                    data-creator=""
-                                    data-license=""
+                                    data-copyright="Copyright © 2022, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
                                 />
                             </div>
                         </div>
@@ -647,9 +690,10 @@
                 </div>
             </div>
         </div>
+	-->
 
         <div
-            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage activityBlueOnTan side-right Device16x9Landscape bloom-monolingual"
+            class="bloom-page targets-semi-transparent customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage side-right Device16x9Landscape bloom-monolingual"
             id="c8f4834c-1efd-4864-bc2c-8548ef26bb5b"
             data-page="extra"
             data-analyticscategories="drag-activity"
@@ -658,8 +702,8 @@
             data-pagelineage="3325A8B6-EA15-4FB7-9F8D-271D7B3C8D57"
             data-page-number="1"
             lang=""
-            data-correct-sound="ding-a-ling.mp3"
-            data-wrong-sound="waah.mp3"
+            data-correct-sound="correct_tada-fanfare-a_pixabay.webm"
+            data-wrong-sound="wrong_twoDownElectronic2_pixabay.webm"
         >
             <div
                 class="pageLabel"
@@ -673,89 +717,125 @@
             <div class="marginBox">
                 <div class="split-pane-component-inner">
                     <div
-                        class="bloom-imageContainer hasOverlay"
+                        class="bloom-canvas bloom-has-canvas-element"
                         data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                         title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
                     >
-                        <img src="placeHolder.png" alt="" />
-
                         <div
-                            class="bloom-textOverPicture bloom-gif drag-item-correct ui-resizable ui-draggable"
-                            style="height: 297px; left: 373.297px; top: 35.9844px; width: 233px; position: absolute;"
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-correct ui-resizable ui-draggable"
+                            style="
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 230px;
+                                position: absolute;
+                            "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
                             <div
                                 tabindex="0"
-                                class="bloom-imageContainer bloom-leadingElement"
-                                data-title="Name: love-fox.gif Size: 153.34 kb Dots: 90 x 90 For the current paper size: • The image container is 231 x 295 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 37 DPI. • An image with 722 x 922 dots would fill this container at 300 DPI."
+                                class="bloom-imageContainer"
                                 title=""
                             >
                                 <img
-                                    src="love-fox.gif"
+                                    src="smiling-flowers.gif"
                                     alt=""
-                                    data-copyright=""
-                                    data-creator=""
-                                    data-license=""
+                                    data-copyright="Copyright © 2024, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
                                 />
                             </div>
                         </div>
 
                         <div
-                            class="bloom-textOverPicture ui-resizable ui-draggable"
-                            style="left: 5px; top: 5px; width: 364px; height: 50px; position: absolute;"
+                            class="bloom-canvas-element bloom-passive-element"
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
                             <div
-                                class="bloom-translationGroup bloom-leadingElement bloom-show-en-when-blank"
+                                class="bloom-translationGroup bloom-leadingElement"
                                 data-default-languages="V"
-                                style="font-size: 21.3333px;"
                                 data-hasqtip="true"
+                                data-eager-placeholder-l10n-id="EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions"
                             >
                                 <div
-                                    class="bloom-editable Instructions-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
-                                    lang="en"
+                                    class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="z"
                                     tabindex="0"
                                     spellcheck="false"
                                     role="textbox"
                                     aria-label="false"
-                                    style="min-height: 32.01px;"
+                                    style="min-height: 32.01px"
                                     contenteditable="true"
                                     data-languagetipcontent="English"
-                                >
-                                    <p>​Drag the pictures where they go</p>
-                                </div>
+                                ></div>
                             </div>
                         </div>
                         <div
-                            class="bloom-textOverPicture drag-item-wrong ui-resizable ui-draggable"
-                            style="height: 287px; left: 360.33333px; top: 8.33333px; width: 260px; position: absolute;"
+                            class="bloom-canvas-element bloom-gif drag-item-wrong ui-resizable ui-draggable"
+                            style="
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 220px;
+                                position: absolute;
+                            "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
                         >
                             <div
                                 tabindex="0"
-                                class="bloom-imageContainer bloom-leadingElement"
-                                data-title="Name: crying boy.jpg Size: 42.29 kb Dots: 431 x 494 For the current paper size: • The image container is 100 x 100 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 474 DPI. • An image with 313 x 313 dots would fill this container at 300 DPI."
+                                class="bloom-imageContainer"
                                 title=""
                             >
                                 <img
-                                    src="crying%20boy.jpg"
+                                    src="sad-face.gif"
                                     alt=""
-                                    data-copyright=""
-                                    data-creator=""
-                                    data-license=""
+                                    data-copyright="Copyright © 2022, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
                                 />
                             </div>
                         </div>
 
                         <div
-                            class="bloom-textOverPicture ui-resizable ui-draggable"
-                            style="left: 147.578px; top: 109.766px; width: 61px; height: 60px;"
+                            class="bloom-canvas-element ui-resizable ui-draggable"
+                            style="
+                                left: 270px;
+                                top: 110px;
+                                width: 60px;
+                                height: 60px;
+                            "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
-                            data-bubble-id="b12rlzh"
+                            data-draggable-id="b12rlzh"
                         >
                             <div
                                 tabindex="0"
-                                class="bloom-imageContainer bloom-leadingElement"
+                                class="bloom-imageContainer"
                                 data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
                                 title=""
                             >
@@ -771,14 +851,24 @@
                         <div
                             data-target-of="b12rlzh"
                             tabindex="0"
-                            style="left: 60px; top: 264px; width: 61px; height: 60px;"
+                            style="
+                                left: 160px;
+                                top: 230px;
+                                width: 60px;
+                                height: 60px;
+                            "
                         ></div>
 
                         <div
-                            class="bloom-textOverPicture ui-resizable ui-draggable"
-                            style="left: 239.313px; top: 86.75px; width: 61px; height: 60px;"
+                            class="bloom-canvas-element ui-resizable ui-draggable"
+                            style="
+                                left: 400px;
+                                top: 110px;
+                                width: 60px;
+                                height: 60px;
+                            "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:12,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
-                            data-bubble-id="muozas1"
+                            data-draggable-id="muozas1"
                         >
                             <div
                                 tabindex="0"
@@ -798,14 +888,25 @@
                         <div
                             data-target-of="muozas1"
                             tabindex="0"
-                            style="left: 153.32px; top: 264px; width: 61px; height: 60px;"
+                            style="
+                                left: 270px;
+                                top: 230px;
+                                width: 60px;
+                                height: 60px;
+                            "
                         ></div>
 
                         <div
-                            class="bloom-textOverPicture ui-resizable ui-draggable"
-                            style="left: 49px; top: 90.6563px; width: 61px; height: 60px; position: absolute;"
+                            class="bloom-canvas-element ui-resizable ui-draggable"
+                            style="
+                                left: 140px;
+                                top: 110px;
+                                width: 60px;
+                                height: 60px;
+                                position: absolute;
+                            "
                             data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:13,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
-                            data-bubble-id="lkbg233"
+                            data-draggable-id="lkbg233"
                         >
                             <div
                                 tabindex="0"
@@ -825,37 +926,2635 @@
                         <div
                             data-target-of="lkbg233"
                             tabindex="0"
-                            style="left: 246px; top: 264px; width: 61px; height: 60px;"
+                            style="
+                                left: 380px;
+                                top: 230px;
+                                width: 60px;
+                                height: 60px;
+                            "
                         ></div>
                     </div>
                 </div>
                 <button
                     class="check-button page-content game-button"
-                    style="right: 10px; bottom: 10px;"
+                    style="right: 10px; bottom: 10px"
                 >
                     <img src="Check Answer Symbol.svg" />
                 </button>
                 <button
                     class="try-again-button page-content game-button"
-                    style="right: 130px; bottom: 10px;"
+                    style="right: 130px; bottom: 10px"
                 >
                     <img src="Try Again Symbol.svg" />
                 </button>
                 <button
                     class="show-correct-button page-content game-button"
-                    style="right: 70px; bottom: 10px;"
+                    style="right: 70px; bottom: 10px"
                 >
                     <img src="Show Answer Symbol.svg" />
                 </button>
                 <button
                     class="page-content page-turn-button turn-right"
-                    style="right: 10px; top: calc(50% - 12px);"
+                    style="right: 10px; top: calc(50% - 12px)"
                 >
                     <img src="Page Nav.svg" />
                 </button>
                 <button
                     class="page-content page-turn-button turn-left"
-                    style="left: 10px; top: calc(50% - 12px);"
+                    style="left: 10px; top: calc(50% - 12px)"
+                >
+                    <img src="Page Nav.svg" />
+                </button>
+            </div>
+        </div>
+
+        <div
+            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage bloom-monolingual"
+            id="B902D56E-8AF7-43CF-9F2A-E473D0971CC7"
+            data-page="extra"
+            data-analyticscategories="drag-activity"
+            data-activity="drag-image-to-target"
+            data-tool-id="game"
+            data-pagelineage="3325A8B6-EA15-4FB7-9F8D-271D7B3C8D57"
+            data-page-number="1"
+            lang=""
+            data-correct-sound="correct_tada-fanfare-a_pixabay.webm"
+            data-wrong-sound="wrong_twoDownElectronic2_pixabay.webm"
+            data-show-answers-in-targets="true"
+            data-show-targets-during-play="false"
+            data-show-target-as-shadow="true"
+            data-initial-page-orientation="portrait"
+        >
+            <div
+                class="pageLabel"
+                lang="en"
+                data-i18n="TemplateBooks.PageLabel.DragImagesShadows"
+            >
+                Drag Images to Shadows
+            </div>
+            <div class="pageDescription" lang="en">
+                ℹ️ This game requires images with transparent backgrounds.
+            </div>
+
+            <div class="marginBox">
+                <div class="split-pane-component-inner">
+                    <div
+                        class="bloom-canvas bloom-has-canvas-element"
+                        data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                        title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                    >
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 378px;
+                                top: 0px;
+                                left: 0px;
+                                height: 672px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 378px;
+                                        left: -141.088px;
+                                        top: 0px;
+                                    "
+                                    alt=""
+                                />
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-correct ui-resizable ui-draggable"
+                            style="
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 230px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="smiling-flowers.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2024, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-passive-element"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                data-hasqtip="true"
+                                data-eager-placeholder-l10n-id="EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions"
+                            >
+                                <div
+                                    class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="z"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 32.01px"
+                                    contenteditable="true"
+                                    data-languagetipcontent="English"
+                                ></div>
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-wrong ui-resizable ui-draggable"
+                            style="
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 220px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="sad-face.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2022, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element ui-resizable ui-draggable"
+                            style="
+                                left: 160px;
+                                top: 100px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="b12rlzh"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
+                                title=""
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    alt=""
+                                    data-copyright=""
+                                    data-creator=""
+                                    data-license=""
+                                />
+                            </div>
+                        </div>
+                        <div
+                            data-target-of="b12rlzh"
+                            tabindex="0"
+                            style="
+                                left: 80px;
+                                top: 270px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                        ></div>
+
+                        <div
+                            class="bloom-canvas-element ui-resizable ui-draggable"
+                            style="
+                                left: 260px;
+                                top: 100px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:12,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="muozas1"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer bloom-leadingElement"
+                                data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
+                                title=""
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    alt=""
+                                    data-copyright=""
+                                    data-creator=""
+                                    data-license=""
+                                />
+                            </div>
+                        </div>
+                        <div
+                            data-target-of="muozas1"
+                            tabindex="0"
+                            style="
+                                left: 160px;
+                                top: 270px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                        ></div>
+
+                        <div
+                            class="bloom-canvas-element ui-resizable ui-draggable"
+                            style="
+                                left: 60px;
+                                top: 100px;
+                                width: 60px;
+                                height: 60px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:13,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="lkbg233"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer bloom-leadingElement"
+                                data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
+                                title=""
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    alt=""
+                                    data-copyright=""
+                                    data-creator=""
+                                    data-license=""
+                                />
+                            </div>
+                        </div>
+                        <div
+                            data-target-of="lkbg233"
+                            tabindex="0"
+                            style="
+                                left: 240px;
+                                top: 270px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                        ></div>
+                    </div>
+                </div>
+                <button
+                    class="check-button page-content game-button"
+                    style="right: 10px; bottom: 10px"
+                >
+                    <img src="Check Answer Symbol.svg" />
+                </button>
+                <button
+                    class="try-again-button page-content game-button"
+                    style="right: 130px; bottom: 10px"
+                >
+                    <img src="Try Again Symbol.svg" />
+                </button>
+                <button
+                    class="show-correct-button page-content game-button"
+                    style="right: 70px; bottom: 10px"
+                >
+                    <img src="Show Answer Symbol.svg" />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-right"
+                    style="right: 10px; top: calc(50% - 12px)"
+                >
+                    <img src="Page Nav.svg" />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-left"
+                    style="left: 10px; top: calc(50% - 12px)"
+                >
+                    <img src="Page Nav.svg" />
+                </button>
+            </div>
+        </div>
+        <div
+            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage bloom-monolingual"
+            id="F1F4090B-3383-4F36-870B-437B5CF84EA6"
+            data-page="extra"
+            data-analyticscategories="drag-activity"
+            data-activity="drag-image-to-target"
+            data-tool-id="game"
+            data-pagelineage="3325A8B6-EA15-4FB7-9F8D-271D7B3C8D57;B902D56E-8AF7-43CF-9F2A-E473D0971CC7"
+            data-page-number="1"
+            lang=""
+            data-correct-sound="correct_tada-fanfare-a_pixabay.webm"
+            data-wrong-sound="wrong_twoDownElectronic2_pixabay.webm"
+            data-show-answers-in-targets="true"
+            data-show-targets-during-play="false"
+            data-show-target-as-shadow="true"
+            data-initial-page-orientation="landscape"
+        >
+            <div
+                class="pageLabel"
+                lang="en"
+                data-i18n="TemplateBooks.PageLabel.DragImagesShadows"
+            >
+                Drag Images to Shadows
+            </div>
+            <div class="pageDescription" lang="en">
+                ℹ️ This game requires images with transparent backgrounds.
+            </div>
+
+            <div class="marginBox">
+                <div class="split-pane-component-inner">
+                    <div
+                        class="bloom-canvas bloom-has-canvas-element"
+                        data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                        title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                    >
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-correct ui-resizable ui-draggable"
+                            style="
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 230px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="smiling-flowers.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2024, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-passive-element"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                data-hasqtip="true"
+                                data-eager-placeholder-l10n-id="EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions"
+                            >
+                                <div
+                                    class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="z"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 32.01px"
+                                    contenteditable="true"
+                                    data-languagetipcontent="English"
+                                ></div>
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-wrong ui-resizable ui-draggable"
+                            style="
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 220px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="sad-face.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2022, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element ui-resizable ui-draggable"
+                            style="
+                                left: 50px;
+                                top: 180px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="b12rlzh"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
+                                title=""
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    alt=""
+                                    data-copyright=""
+                                    data-creator=""
+                                    data-license=""
+                                />
+                            </div>
+                        </div>
+                        <div
+                            data-target-of="b12rlzh"
+                            tabindex="0"
+                            style="
+                                left: 310px;
+                                top: 280px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                        ></div>
+
+                        <div
+                            class="bloom-canvas-element ui-resizable ui-draggable"
+                            style="
+                                left: 50px;
+                                top: 280px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:12,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="muozas1"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer bloom-leadingElement"
+                                data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
+                                title=""
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    alt=""
+                                    data-copyright=""
+                                    data-creator=""
+                                    data-license=""
+                                />
+                            </div>
+                        </div>
+                        <div
+                            data-target-of="muozas1"
+                            tabindex="0"
+                            style="
+                                left: 310px;
+                                top: 80px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                        ></div>
+
+                        <div
+                            class="bloom-canvas-element ui-resizable ui-draggable"
+                            style="
+                                left: 50px;
+                                top: 80px;
+                                width: 60px;
+                                height: 60px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:13,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="lkbg233"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer bloom-leadingElement"
+                                data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
+                                title=""
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    alt=""
+                                    data-copyright=""
+                                    data-creator=""
+                                    data-license=""
+                                />
+                            </div>
+                        </div>
+                        <div
+                            data-target-of="lkbg233"
+                            tabindex="0"
+                            style="
+                                left: 310px;
+                                top: 180px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                        ></div>
+                    </div>
+                </div>
+                <button
+                    class="check-button page-content game-button"
+                    style="right: 10px; bottom: 10px"
+                >
+                    <img src="Check Answer Symbol.svg" />
+                </button>
+                <button
+                    class="try-again-button page-content game-button"
+                    style="right: 130px; bottom: 10px"
+                >
+                    <img src="Try Again Symbol.svg" />
+                </button>
+                <button
+                    class="show-correct-button page-content game-button"
+                    style="right: 70px; bottom: 10px"
+                >
+                    <img src="Show Answer Symbol.svg" />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-right"
+                    style="right: 10px; top: calc(50% - 12px)"
+                >
+                    <img src="Page Nav.svg" />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-left"
+                    style="left: 10px; top: calc(50% - 12px)"
+                >
+                    <img src="Page Nav.svg" />
+                </button>
+            </div>
+        </div>
+        <div
+            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage game-theme-blue-on-white bloom-monolingual"
+            id="d4fd048e-64c0-472c-bb23-f136ce2a4868"
+            data-page="extra"
+            data-analyticscategories="drag-activity"
+            data-activity="drag-image-to-target"
+            data-tool-id="game"
+            data-pagelineage="3325A8B6-EA15-4FB7-9F8D-271D7B3C8D57"
+            data-correct-sound="correct_tada-fanfare-a_pixabay.webm"
+            data-wrong-sound="wrong_twoDownElectronic2_pixabay.webm"
+        >
+            <div
+                class="pageLabel"
+                lang="en"
+                data-i18n="TemplateBooks.PageLabel.MatchWordsWithImages"
+            >
+                Match Words with Images
+            </div>
+            <div class="pageDescription" lang="en"></div>
+
+            <div class="marginBox">
+                <div class="split-pane-component-inner">
+                    <div
+                        class="bloom-canvas bloom-has-canvas-element"
+                        data-title="For the current paper size: • The image container is 672 x 378 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2100 x 1182 dots would fill this container at 300 DPI."
+                    >
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                left: 120px;
+                                top: 240px;
+                                width: 300px;
+                                height: 110px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:3,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div tabindex="0" class="bloom-rectangle"></div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-correct"
+                            style="
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 230px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="smiling-flowers.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2024, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-passive-element"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                data-hasqtip="true"
+                                data-eager-placeholder-l10n-id="EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions"
+                            >
+                                <div
+                                    class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1"
+                                    lang="z"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 32.01px"
+                                    contenteditable="true"
+                                    data-languagetipcontent="English"
+                                ></div>
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-wrong"
+                            style="
+                                height: 220px;
+                                left: 370px;
+                                top: 70px;
+                                width: 220px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:20,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="sad-face.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2022, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+                        <div
+                            data-target-of="jgcdref"
+                            tabindex="0"
+                            style="
+                                left: 140px;
+                                top: 260px;
+                                width: 160px;
+                                height: 60px;
+                            "
+                        ></div>
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                height: 80px;
+                                left: 320px;
+                                top: 250px;
+                                width: 80px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:28,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer bloom-leadingElement"
+                            >
+                                <img src="placeHolder.png" alt="" />
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element draggable-text bloom-noAutoHeight"
+                            style="
+                                left: 30px;
+                                top: 100px;
+                                width: 160px;
+                                height: 60px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:30,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="jgcdref"
+                            data-hasqtip="true"
+                            data-bloom-active="true"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                style="font-size: 45px"
+                            >
+                                <div
+                                    class="bloom-editable GameDragMediumCenter-style bloom-visibility-code-on bloom-content1"
+                                    lang="en"
+                                    contenteditable="true"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 45.01px"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 30px; top: 105px; width: 160px; height: 70px;`,`tails`:[]}"
+                                    data-languagetipcontent="English"
+                                ></div>
+                                <div
+                                    class="bloom-editable GameDragMediumCenter-style bloom-contentNational1"
+                                    lang="fr"
+                                    contenteditable="true"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 45.01px"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 30px; top: 105px; width: 160px; height: 70px;`,`tails`:[]}"
+                                    data-languagetipcontent="français"
+                                ></div>
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element draggable-text bloom-noAutoHeight"
+                            style="
+                                left: 230px;
+                                top: 100px;
+                                width: 160px;
+                                height: 60px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:31,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="7hmlixy"
+                            data-hasqtip="true"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                style="font-size: 45px"
+                            >
+                                <div
+                                    class="bloom-editable GameDragMediumCenter-style bloom-visibility-code-on bloom-content1"
+                                    lang="en"
+                                    contenteditable="true"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 45.01px"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 230px; top: 105px; width: 160px; height: 70px;`,`tails`:[]}"
+                                    data-languagetipcontent="English"
+                                ></div>
+                                <div
+                                    class="bloom-editable GameDragMediumCenter-style bloom-contentNational1"
+                                    lang="fr"
+                                    contenteditable="true"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 45.01px"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 230px; top: 105px; width: 160px; height: 70px;`,`tails`:[]}"
+                                    data-languagetipcontent="français"
+                                ></div>
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element draggable-text bloom-noAutoHeight"
+                            style="
+                                left: 430px;
+                                top: 100px;
+                                width: 160px;
+                                height: 60px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:32,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="89ogfih"
+                            data-hasqtip="true"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                style="font-size: 45px"
+                            >
+                                <div
+                                    class="bloom-editable GameDragMediumCenter-style bloom-visibility-code-on bloom-content1"
+                                    lang="en"
+                                    contenteditable="true"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 45.01px"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 430px; top: 105px; width: 160px; height: 70px;`,`tails`:[]}"
+                                    data-languagetipcontent="English"
+                                ></div>
+                                <div
+                                    class="bloom-editable GameDragMediumCenter-style bloom-contentNational1"
+                                    lang="fr"
+                                    contenteditable="true"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 45.01px"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 430px; top: 105px; width: 160px; height: 70px;`,`tails`:[]}"
+                                    data-languagetipcontent="français"
+                                ></div>
+                            </div>
+                        </div>
+                        <svg
+                            id="target-arrow"
+                            width="77.35637876088757"
+                            height="123"
+                            viewBox="0 0 77.35637876088757 123"
+                            style="
+                                left: 72.0249px;
+                                top: 138px;
+                                pointer-events: none;
+                                z-index: 1003;
+                                position: absolute;
+                            "
+                        >
+                            <line
+                                x1="0"
+                                y1="0"
+                                x2="73.97508896797153"
+                                y2="123"
+                                stroke="#80808080"
+                                stroke-width="3"
+                            />
+                            <line
+                                x2="73.97508896797153"
+                                y2="123"
+                                x1="60.38954962143391"
+                                y1="119.61871020708396"
+                                stroke="#80808080"
+                                stroke-width="3"
+                            />
+                            <line
+                                x2="73.97508896797153"
+                                y2="123"
+                                x1="77.35637876088757"
+                                y1="109.41446065346238"
+                                stroke="#80808080"
+                                stroke-width="3"
+                            />
+                        </svg>
+                    </div>
+                </div>
+                <button
+                    class="check-button page-content game-button"
+                    style="right: 10px; bottom: 10px"
+                >
+                    <img src="Check%20Answer%20Symbol.svg" alt="" />
+                </button>
+                <button
+                    class="try-again-button page-content game-button"
+                    style="right: 130px; bottom: 10px"
+                >
+                    <img src="Try%20Again%20Symbol.svg" alt="" />
+                </button>
+                <button
+                    class="show-correct-button page-content game-button"
+                    style="right: 70px; bottom: 10px"
+                >
+                    <img src="Show%20Answer%20Symbol.svg" alt="" />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-right"
+                    style="right: 10px; top: calc(50% - 12px)"
+                >
+                    <img src="Page%20Nav.svg" alt="" />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-left"
+                    style="left: 10px; top: calc(50% - 12px)"
+                >
+                    <img src="Page%20Nav.svg" alt="" />
+                </button>
+            </div>
+        </div>
+        <div
+            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage game-theme-blue-on-white bloom-monolingual"
+            id="74859844-0066-4365-B90B-FA37B953FF1B"
+            data-page="extra"
+            data-analyticscategories="drag-activity"
+            data-activity="drag-image-to-target"
+            data-tool-id="game"
+            data-pagelineage="3325A8B6-EA15-4FB7-9F8D-271D7B3C8D57"
+            data-correct-sound="correct_tada-fanfare-a_pixabay.webm"
+            data-wrong-sound="wrong_twoDownElectronic2_pixabay.webm"
+        >
+            <div
+                class="pageLabel"
+                lang="en"
+                data-i18n="TemplateBooks.PageLabel.DragImagesTargets"
+            >
+                Drag Images to Words
+            </div>
+            <div class="pageDescription" lang="en"></div>
+            <div class="marginBox">
+                <div class="split-pane-component-inner">
+                    <div
+                        class="bloom-canvas bloom-has-canvas-element"
+                        data-title="For the current paper size: • The image container is 672 x 378 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2100 x 1182 dots would fill this container at 300 DPI."
+                    >
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-correct"
+                            style="
+                                height: 110px;
+                                left: 290px;
+                                top: 50px;
+                                width: 110px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="smiling-flowers.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2024, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-passive-element"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-bloom-active="true"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                data-hasqtip="true"
+                                data-eager-placeholder-l10n-id="EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions"
+                            >
+                                <div
+                                    class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="z"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 32.01px"
+                                    contenteditable="true"
+                                    data-languagetipcontent="English"
+                                ></div>
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-wrong"
+                            style="
+                                height: 110px;
+                                left: 290px;
+                                top: 50px;
+                                width: 110px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="sad-face.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2022, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+                        <div
+                            data-target-of="b12rlzh"
+                            tabindex="0"
+                            style="
+                                left: 100px;
+                                top: 190px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                        >
+                            <div class="bloom-targetWrapper">
+                                <div
+                                    class="bloom-imageContainer"
+                                    data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
+                                    title=""
+                                    style="width: 84px; height: 83px"
+                                >
+                                    <img
+                                        src="placeHolder.png"
+                                        alt=""
+                                        data-copyright=""
+                                        data-creator=""
+                                        data-license=""
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            data-target-of="muozas1"
+                            tabindex="0"
+                            style="
+                                left: 310px;
+                                top: 190px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                        >
+                            <div class="bloom-targetWrapper">
+                                <div
+                                    class="bloom-imageContainer bloom-leadingElement"
+                                    data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
+                                    title=""
+                                    style="width: 79px; height: 78px"
+                                >
+                                    <img
+                                        src="placeHolder.png"
+                                        alt=""
+                                        data-copyright=""
+                                        data-creator=""
+                                        data-license=""
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            data-target-of="lkbg233"
+                            tabindex="0"
+                            style="
+                                left: 520px;
+                                top: 190px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                        >
+                            <div class="bloom-targetWrapper">
+                                <div
+                                    class="bloom-imageContainer bloom-leadingElement"
+                                    data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
+                                    title=""
+                                    style="width: 82px; height: 81px"
+                                >
+                                    <img
+                                        src="placeHolder.png"
+                                        alt=""
+                                        data-copyright=""
+                                        data-creator=""
+                                        data-license=""
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-noAutoHeight"
+                            style="
+                                left: 50px;
+                                top: 270px;
+                                width: 160px;
+                                height: 44px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:19,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                style="font-size: 32px"
+                            >
+                                <div
+                                    class="bloom-editable GameTextMediumCenter-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="en"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 48.01px"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 50px; top: 270px; width: 160px; height: 44px;`,`tails`:[]}"
+                                    id="i1e76084c-b93a-4840-9b50-9ed5dac889e4"
+                                    contenteditable="true"
+                                    data-languagetipcontent="English"
+                                >
+                                    <p>Word</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                left: 460px;
+                                top: 170px;
+                                width: 180px;
+                                height: 153px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:28,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div tabindex="0" class="bloom-rectangle"></div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-noAutoHeight"
+                            style="
+                                left: 260px;
+                                top: 270px;
+                                width: 160px;
+                                height: 44px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:30,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                style="font-size: 32px"
+                            >
+                                <div
+                                    class="bloom-editable GameTextMediumCenter-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="en"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 48.01px"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 260px; top: 270px; width: 160px; height: 44px;`,`tails`:[]}"
+                                    id="a7fc688b-a6c3-4738-bbd7-af446ddd6e46"
+                                    contenteditable="true"
+                                    data-languagetipcontent="English"
+                                >
+                                    <p>Word</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element bloom-noAutoHeight"
+                            style="
+                                left: 470px;
+                                top: 270px;
+                                width: 160px;
+                                height: 44px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:31,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                style="font-size: 32px"
+                            >
+                                <div
+                                    class="bloom-editable GameTextMediumCenter-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="en"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 48.01px"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 470px; top: 270px; width: 160px; height: 44px;`,`tails`:[]}"
+                                    id="f3ed2f3e-f492-4f2c-85eb-09e35e6aa750"
+                                    contenteditable="true"
+                                    data-languagetipcontent="English"
+                                >
+                                    <p>Word</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                left: 250px;
+                                top: 170px;
+                                width: 180px;
+                                height: 153px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:32,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div tabindex="0" class="bloom-rectangle"></div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                left: 40px;
+                                top: 170px;
+                                width: 180px;
+                                height: 153px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:33,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div tabindex="0" class="bloom-rectangle"></div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                left: 290px;
+                                top: 70px;
+                                width: 60px;
+                                height: 60px;
+                                touch-action: none;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:34,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="b12rlzh"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
+                                title=""
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    alt=""
+                                    data-copyright=""
+                                    data-creator=""
+                                    data-license=""
+                                />
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                left: 410px;
+                                top: 70px;
+                                width: 60px;
+                                height: 60px;
+                                touch-action: none;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:35,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="muozas1"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer bloom-leadingElement"
+                                data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
+                                title=""
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    alt=""
+                                    data-copyright=""
+                                    data-creator=""
+                                    data-license=""
+                                />
+                            </div>
+                        </div>
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                left: 170px;
+                                top: 70px;
+                                width: 60px;
+                                height: 60px;
+                                position: absolute;
+                                touch-action: none;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:36,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="lkbg233"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer bloom-leadingElement"
+                                data-title="For the current paper size: • The image container is 220 x 193 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 688 x 604 dots would fill this container at 300 DPI."
+                                title=""
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    alt=""
+                                    data-copyright=""
+                                    data-creator=""
+                                    data-license=""
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button
+                    class="check-button page-content game-button"
+                    style="right: 10px; bottom: 10px"
+                >
+                    <img src="Check%20Answer%20Symbol.svg" alt="" />
+                </button>
+                <button
+                    class="try-again-button page-content game-button"
+                    style="right: 130px; bottom: 10px"
+                >
+                    <img src="Try%20Again%20Symbol.svg" alt="" />
+                </button>
+                <button
+                    class="show-correct-button page-content game-button"
+                    style="right: 70px; bottom: 10px"
+                >
+                    <img src="Show%20Answer%20Symbol.svg" alt="" />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-right"
+                    style="right: 10px; top: calc(50% - 12px)"
+                >
+                    <img src="Page%20Nav.svg" alt="" />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-left"
+                    style="left: 10px; top: calc(50% - 12px)"
+                >
+                    <img src="Page%20Nav.svg" alt="" />
+                </button>
+            </div>
+        </div>
+        <div
+            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page no-margin-page numberedPage game-theme-blue-on-white side-right Device16x9Landscape bloom-monolingual"
+            id="7f680864-9ab4-4af5-b9f6-b96cea22ff63"
+            data-page="extra"
+            data-feature="game"
+            data-analyticscategories="drag-activity"
+            data-activity="drag-image-to-target"
+            data-tool-id="game"
+            data-pagelineage="3325A8B6-EA15-4FB7-9F8D-271D7B3C8D57;c8f4834c-1efd-4864-bc2c-8548ef26bb5b;48100f6f-a433-4373-b862-3a6075fe966a"
+            data-page-number="1"
+            lang=""
+            data-correct-sound="correct_tada-fanfare-a_pixabay.webm"
+            data-wrong-sound="wrong_twoDownElectronic2_pixabay.webm"
+            data-show-targets-during-play="true"
+            data-same-size="true"
+            data-show-answers-in-targets="false"
+        >
+            <div
+                class="pageLabel"
+                lang="en"
+                data-i18n="TemplateBooks.PageLabel.Drag Sound to Word Target"
+            >
+                Drag Sound to Word Target
+            </div>
+            <div class="pageDescription" lang="en"></div>
+
+            <div class="marginBox">
+                <div class="split-pane-component-inner">
+                    <div
+                        class="bloom-canvas bloom-has-canvas-element"
+                        data-title="For the current paper size: • The image container is 666 x 372 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2082 x 1163 dots would fill this container at 300 DPI."
+                    >
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:10,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element drag-item-wrong"
+                            style="
+                                height: 260px;
+                                left: 70px;
+                                top: 60px;
+                                width: 440px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-rectangle bloom-theme-background"
+                            ></div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element drag-item-correct"
+                            style="
+                                height: 270px;
+                                left: 90px;
+                                top: 50px;
+                                width: 450px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:12,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-rectangle bloom-theme-background"
+                            ></div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                height: 120px;
+                                left: 120px;
+                                top: 170px;
+                                width: 400px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:13,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div tabindex="0" class="bloom-rectangle"></div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-correct"
+                            style="
+                                height: 220px;
+                                left: 20px;
+                                top: 70px;
+                                width: 230px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:17,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="smiling-flowers.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2025, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-wrong"
+                            style="
+                                height: 180px;
+                                left: 200px;
+                                top: 100px;
+                                width: 180px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:21,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="sad-face.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2025, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-noAutoHeight"
+                            style="
+                                left: 230px;
+                                top: 200px;
+                                width: 260px;
+                                height: 64px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:22,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                style="font-size: 60px"
+                            >
+                                <div
+                                    class="bloom-editable GameTextLargeStart-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="en"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 230px; top: 200px; width: 260px; height: 64px;`,`tails`:[]}"
+                                    style="min-height: 60.01px"
+                                    id="i10b7e0dd-9084-4c2a-9dfc-ddb6c315067d"
+                                    data-languagetipcontent="English"
+                                    contenteditable="true"
+                                >
+                                    <p>word</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            data-target-of="zjla6ss"
+                            tabindex="0"
+                            style="
+                                left: 140px;
+                                top: 200px;
+                                width: 60px;
+                                height: 60px;
+                            "
+                        ></div>
+
+                        <div
+                            class="bloom-canvas-element bloom-passive-element"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:26,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                data-eager-placeholder-l10n-id="EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions"
+                                style="font-size: 32px"
+                            >
+                                <div
+                                    class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="z"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 32.01px"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: -8px; top: -6px; width: 692px; height: 33.5px;`,`tails`:[]}"
+                                    data-languagetipcontent="English"
+                                    contenteditable="true"
+                                ></div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                height: 60px;
+                                left: 140px;
+                                top: 70px;
+                                width: 60px;
+                                touch-action: none;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:27,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="zjla6ss"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-unmodifiable-image bloom-svg bloom-imageContainer bloom-leadingElement"
+                                data-icon-type="audio"
+                            >
+                                <svg
+                                    viewBox="0 0 31 31"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <rect
+                                        width="31"
+                                        height="31"
+                                        rx="1.81232"
+                                        fill="var(--game-draggable-bg-color, black)"
+                                    />
+                                    <path
+                                        d="M23.0403 9.12744C24.8868 10.8177 25.9241 13.11 25.9241 15.5C25.9241 17.8901 24.8868 20.1823 23.0403 21.8726M19.5634 12.3092C20.4867 13.1544 21.0053 14.3005 21.0053 15.4955C21.0053 16.6906 20.4867 17.8367 19.5634 18.6818M15.0917 9.19054L10.1669 12.796H6.22705V18.2041H10.1669L15.0917 21.8095V9.19054Z"
+                                        stroke="var(--game-draggable-color, white)"
+                                        strokewidth="1.15865"
+                                        strokelinecap="round"
+                                        strokelinejoin="round"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                height: 60px;
+                                left: 220px;
+                                top: 70px;
+                                width: 60px;
+                                touch-action: none;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:28,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="0oavr61"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-unmodifiable-image bloom-svg bloom-imageContainer bloom-leadingElement"
+                                data-icon-type="audio"
+                            >
+                                <svg
+                                    viewBox="0 0 31 31"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <rect
+                                        width="31"
+                                        height="31"
+                                        rx="1.81232"
+                                        fill="var(--game-draggable-bg-color, black)"
+                                    />
+                                    <path
+                                        d="M23.0403 9.12744C24.8868 10.8177 25.9241 13.11 25.9241 15.5C25.9241 17.8901 24.8868 20.1823 23.0403 21.8726M19.5634 12.3092C20.4867 13.1544 21.0053 14.3005 21.0053 15.4955C21.0053 16.6906 20.4867 17.8367 19.5634 18.6818M15.0917 9.19054L10.1669 12.796H6.22705V18.2041H10.1669L15.0917 21.8095V9.19054Z"
+                                        stroke="var(--game-draggable-color, white)"
+                                        strokewidth="1.15865"
+                                        strokelinecap="round"
+                                        strokelinejoin="round"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                height: 60px;
+                                left: 300px;
+                                top: 70px;
+                                width: 60px;
+                                touch-action: none;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:29,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="wfmikph"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-unmodifiable-image bloom-svg bloom-imageContainer bloom-leadingElement"
+                                data-icon-type="audio"
+                            >
+                                <svg
+                                    viewBox="0 0 31 31"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <rect
+                                        width="31"
+                                        height="31"
+                                        rx="1.81232"
+                                        fill="var(--game-draggable-bg-color, black)"
+                                    />
+                                    <path
+                                        d="M23.0403 9.12744C24.8868 10.8177 25.9241 13.11 25.9241 15.5C25.9241 17.8901 24.8868 20.1823 23.0403 21.8726M19.5634 12.3092C20.4867 13.1544 21.0053 14.3005 21.0053 15.4955C21.0053 16.6906 20.4867 17.8367 19.5634 18.6818M15.0917 9.19054L10.1669 12.796H6.22705V18.2041H10.1669L15.0917 21.8095V9.19054Z"
+                                        stroke="var(--game-draggable-color, white)"
+                                        strokewidth="1.15865"
+                                        strokelinecap="round"
+                                        strokelinejoin="round"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button
+                    class="check-button page-content game-button"
+                    style="right: 10px; bottom: 10px"
+                >
+                    <img
+                        src="Check%20Answer%20Symbol.svg"
+                        alt=""
+                        data-copyright=""
+                        data-creator=""
+                        data-license=""
+                    />
+                </button>
+                <button
+                    class="try-again-button page-content game-button"
+                    style="right: 130px; bottom: 10px"
+                >
+                    <img
+                        src="Try%20Again%20Symbol.svg"
+                        alt=""
+                        data-copyright=""
+                        data-creator=""
+                        data-license=""
+                    />
+                </button>
+                <button
+                    class="show-correct-button page-content game-button"
+                    style="right: 70px; bottom: 10px"
+                >
+                    <img
+                        src="Show%20Answer%20Symbol.svg"
+                        alt=""
+                        data-copyright=""
+                        data-creator=""
+                        data-license=""
+                    />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-right"
+                    style="right: 10px; top: calc(50% - 12px)"
+                >
+                    <img
+                        src="Page%20Nav.svg"
+                        alt=""
+                        data-copyright=""
+                        data-creator=""
+                        data-license=""
+                    />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-left"
+                    style="left: 10px; top: calc(50% - 12px)"
+                >
+                    <img
+                        src="Page%20Nav.svg"
+                        alt=""
+                        data-copyright=""
+                        data-creator=""
+                        data-license=""
+                    />
+                </button>
+            </div>
+        </div>
+
+        <div
+            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page no-margin-page numberedPage game-theme-blue-on-white side-left Device16x9Landscape bloom-monolingual"
+            id="7a7d68c0-f694-407a-a3e3-837e16feca73"
+            data-page="extra"
+            data-feature="game"
+            data-analyticscategories="drag-activity"
+            data-activity="drag-image-to-target"
+            data-tool-id="game"
+            data-pagelineage="3325A8B6-EA15-4FB7-9F8D-271D7B3C8D57;c8f4834c-1efd-4864-bc2c-8548ef26bb5b;48100f6f-a433-4373-b862-3a6075fe966a;7f680864-9ab4-4af5-b9f6-b96cea22ff63"
+            data-page-number="2"
+            lang=""
+            data-correct-sound="correct_tada-fanfare-a_pixabay.webm"
+            data-wrong-sound="wrong_twoDownElectronic2_pixabay.webm"
+            data-show-targets-during-play="true"
+        >
+            <div
+                class="pageLabel"
+                lang="en"
+                data-i18n="TemplateBooks.PageLabel.Drag Sounds to Word Targets"
+            >
+                Drag Sounds to Word Targets
+            </div>
+            <div class="pageDescription" lang="en"></div>
+
+            <div class="marginBox">
+                <div class="split-pane-component-inner">
+                    <div
+                        class="bloom-canvas bloom-has-canvas-element"
+                        data-title="For the current paper size: • The image container is 666 x 372 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2082 x 1163 dots would fill this container at 300 DPI."
+                    >
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:10,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                left: 300px;
+                                top: 140px;
+                                width: 230px;
+                                height: 80px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:11,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div tabindex="0" class="bloom-rectangle"></div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                left: 300px;
+                                top: 240px;
+                                width: 230px;
+                                height: 80px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:12,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div tabindex="0" class="bloom-rectangle"></div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                left: 40px;
+                                top: 240px;
+                                width: 230px;
+                                height: 80px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:13,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div tabindex="0" class="bloom-rectangle"></div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element drag-item-wrong"
+                            style="
+                                height: 260px;
+                                left: 70px;
+                                top: 60px;
+                                width: 440px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-rectangle bloom-theme-background"
+                            ></div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element drag-item-correct"
+                            style="
+                                height: 270px;
+                                left: 90px;
+                                top: 50px;
+                                width: 450px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:15,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-rectangle bloom-theme-background"
+                            ></div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                height: 80px;
+                                left: 40px;
+                                top: 140px;
+                                width: 230px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div tabindex="0" class="bloom-rectangle"></div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-correct"
+                            style="
+                                height: 220px;
+                                left: 200px;
+                                top: 70px;
+                                width: 230px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:20,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="smiling-flowers.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2025, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-wrong"
+                            style="
+                                height: 180px;
+                                left: 200px;
+                                top: 100px;
+                                width: 180px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:24,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="sad-face.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2025, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-noAutoHeight"
+                            style="
+                                left: 120px;
+                                top: 160px;
+                                width: 140px;
+                                height: 44px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:25,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                style="font-size: 32px"
+                            >
+                                <div
+                                    class="bloom-editable GameTextMediumStart-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="en"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 120px; top: 160px; width: 140px; height: 44px;`,`tails`:[]}"
+                                    style="min-height: 48.01px"
+                                    id="fd38768e-a762-4c9f-a5b6-95bd9c12082a"
+                                    contenteditable="true"
+                                    data-languagetipcontent="English"
+                                >
+                                    <p>word</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            data-target-of="zjla6ss"
+                            tabindex="0"
+                            style="
+                                left: 320px;
+                                top: 260px;
+                                width: 45px;
+                                height: 45px;
+                            "
+                        ></div>
+
+                        <div
+                            class="bloom-canvas-element bloom-passive-element"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:29,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                data-eager-placeholder-l10n-id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions"
+                            >
+                                <div
+                                    class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="z"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 32.01px"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: -8px; top: -6px; width: 692px; height: 33.5px;`,`tails`:[]}"
+                                    contenteditable="true"
+                                    data-languagetipcontent="English"
+                                >
+                                    <p>Match sounds with words</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-noAutoHeight"
+                            style="
+                                left: 120px;
+                                top: 260px;
+                                width: 140px;
+                                height: 44px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:33,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                style="font-size: 32px"
+                            >
+                                <div
+                                    class="bloom-editable GameTextMediumStart-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="en"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 120px; top: 260px; width: 140px; height: 44px;`,`tails`:[]}"
+                                    style="min-height: 48.01px"
+                                    contenteditable="true"
+                                    id="a87cc709-93de-43d3-bac0-291334ff11c0"
+                                    data-languagetipcontent="English"
+                                >
+                                    <p>word</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            data-target-of="0oavr61"
+                            tabindex="0"
+                            style="
+                                left: 60px;
+                                top: 160px;
+                                width: 45px;
+                                height: 45px;
+                            "
+                        ></div>
+                        <div
+                            data-target-of="s3b0hfa"
+                            tabindex="0"
+                            style="
+                                left: 60px;
+                                top: 260px;
+                                width: 45px;
+                                height: 45px;
+                            "
+                        ></div>
+                        <div
+                            data-target-of="9a4tagc"
+                            tabindex="0"
+                            style="
+                                left: 320px;
+                                top: 160px;
+                                width: 45px;
+                                height: 45px;
+                            "
+                        ></div>
+
+                        <div
+                            class="bloom-canvas-element bloom-noAutoHeight"
+                            style="
+                                left: 380px;
+                                top: 260px;
+                                width: 140px;
+                                height: 44px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:40,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                style="font-size: 32px"
+                            >
+                                <div
+                                    class="bloom-editable GameTextMediumStart-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="en"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 380px; top: 260px; width: 140px; height: 44px;`,`tails`:[]}"
+                                    style="min-height: 48.01px"
+                                    contenteditable="true"
+                                    id="i6fa7f25f-6a51-4ab4-b99b-70ffa3bd8490"
+                                    data-languagetipcontent="English"
+                                >
+                                    <p>word</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-noAutoHeight"
+                            style="
+                                left: 380px;
+                                top: 160px;
+                                width: 140px;
+                                height: 44px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:41,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                style="font-size: 32px"
+                            >
+                                <div
+                                    class="bloom-editable GameTextMediumStart-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="en"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    data-bubble-alternate="{`lang`:`en`,`style`:`left: 380px; top: 160px; width: 140px; height: 44px;`,`tails`:[]}"
+                                    style="min-height: 48.01px"
+                                    contenteditable="true"
+                                    id="db2118d8-a7e5-446d-a50a-7a7d7346d67c"
+                                    data-languagetipcontent="English"
+                                >
+                                    <p>word</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                height: 45px;
+                                left: 50px;
+                                top: 60px;
+                                width: 45px;
+                                touch-action: none;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:42,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="zjla6ss"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-unmodifiable-image bloom-svg bloom-imageContainer bloom-leadingElement"
+                                data-icon-type="audio"
+                            >
+                                <svg
+                                    viewBox="0 0 31 31"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <rect
+                                        width="31"
+                                        height="31"
+                                        rx="1.81232"
+                                        fill="var(--game-draggable-bg-color, black)"
+                                    />
+                                    <path
+                                        d="M23.0403 9.12744C24.8868 10.8177 25.9241 13.11 25.9241 15.5C25.9241 17.8901 24.8868 20.1823 23.0403 21.8726M19.5634 12.3092C20.4867 13.1544 21.0053 14.3005 21.0053 15.4955C21.0053 16.6906 20.4867 17.8367 19.5634 18.6818M15.0917 9.19054L10.1669 12.796H6.22705V18.2041H10.1669L15.0917 21.8095V9.19054Z"
+                                        stroke="var(--game-draggable-color, white)"
+                                        strokewidth="1.15865"
+                                        strokelinecap="round"
+                                        strokelinejoin="round"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                height: 45px;
+                                left: 110px;
+                                top: 60px;
+                                width: 45px;
+                                touch-action: none;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:43,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="0oavr61"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-unmodifiable-image bloom-svg bloom-imageContainer bloom-leadingElement"
+                                data-icon-type="audio"
+                            >
+                                <svg
+                                    viewBox="0 0 31 31"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <rect
+                                        width="31"
+                                        height="31"
+                                        rx="1.81232"
+                                        fill="var(--game-draggable-bg-color, black)"
+                                    />
+                                    <path
+                                        d="M23.0403 9.12744C24.8868 10.8177 25.9241 13.11 25.9241 15.5C25.9241 17.8901 24.8868 20.1823 23.0403 21.8726M19.5634 12.3092C20.4867 13.1544 21.0053 14.3005 21.0053 15.4955C21.0053 16.6906 20.4867 17.8367 19.5634 18.6818M15.0917 9.19054L10.1669 12.796H6.22705V18.2041H10.1669L15.0917 21.8095V9.19054Z"
+                                        stroke="var(--game-draggable-color, white)"
+                                        strokewidth="1.15865"
+                                        strokelinecap="round"
+                                        strokelinejoin="round"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                height: 45px;
+                                left: 230px;
+                                top: 60px;
+                                width: 45px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:44,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="s3b0hfa"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-unmodifiable-image bloom-svg bloom-imageContainer bloom-leadingElement"
+                                data-icon-type="audio"
+                            >
+                                <svg
+                                    viewBox="0 0 31 31"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <rect
+                                        width="31"
+                                        height="31"
+                                        rx="1.81232"
+                                        fill="var(--game-draggable-bg-color, black)"
+                                    />
+                                    <path
+                                        d="M23.0403 9.12744C24.8868 10.8177 25.9241 13.11 25.9241 15.5C25.9241 17.8901 24.8868 20.1823 23.0403 21.8726M19.5634 12.3092C20.4867 13.1544 21.0053 14.3005 21.0053 15.4955C21.0053 16.6906 20.4867 17.8367 19.5634 18.6818M15.0917 9.19054L10.1669 12.796H6.22705V18.2041H10.1669L15.0917 21.8095V9.19054Z"
+                                        stroke="var(--game-draggable-color, white)"
+                                        strokewidth="1.15865"
+                                        strokelinecap="round"
+                                        strokelinejoin="round"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element"
+                            style="
+                                height: 45px;
+                                left: 170px;
+                                top: 60px;
+                                width: 45px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:45,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            data-draggable-id="9a4tagc"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-unmodifiable-image bloom-svg bloom-imageContainer bloom-leadingElement"
+                                data-icon-type="audio"
+                            >
+                                <svg
+                                    viewBox="0 0 31 31"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <rect
+                                        width="31"
+                                        height="31"
+                                        rx="1.81232"
+                                        fill="var(--game-draggable-bg-color, black)"
+                                    />
+                                    <path
+                                        d="M23.0403 9.12744C24.8868 10.8177 25.9241 13.11 25.9241 15.5C25.9241 17.8901 24.8868 20.1823 23.0403 21.8726M19.5634 12.3092C20.4867 13.1544 21.0053 14.3005 21.0053 15.4955C21.0053 16.6906 20.4867 17.8367 19.5634 18.6818M15.0917 9.19054L10.1669 12.796H6.22705V18.2041H10.1669L15.0917 21.8095V9.19054Z"
+                                        stroke="var(--game-draggable-color, white)"
+                                        strokewidth="1.15865"
+                                        strokelinecap="round"
+                                        strokelinejoin="round"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button
+                    class="check-button page-content game-button"
+                    style="right: 10px; bottom: 10px"
+                >
+                    <img
+                        src="Check%20Answer%20Symbol.svg"
+                        alt=""
+                        data-copyright=""
+                        data-creator=""
+                        data-license=""
+                    />
+                </button>
+                <button
+                    class="try-again-button page-content game-button"
+                    style="right: 130px; bottom: 10px"
+                >
+                    <img
+                        src="Try%20Again%20Symbol.svg"
+                        alt=""
+                        data-copyright=""
+                        data-creator=""
+                        data-license=""
+                    />
+                </button>
+                <button
+                    class="show-correct-button page-content game-button"
+                    style="right: 70px; bottom: 10px"
+                >
+                    <img
+                        src="Show%20Answer%20Symbol.svg"
+                        alt=""
+                        data-copyright=""
+                        data-creator=""
+                        data-license=""
+                    />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-right"
+                    style="right: 10px; top: calc(50% - 12px)"
+                >
+                    <img
+                        src="Page%20Nav.svg"
+                        alt=""
+                        data-copyright=""
+                        data-creator=""
+                        data-license=""
+                    />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-left"
+                    style="left: 10px; top: calc(50% - 12px)"
+                >
+                    <img
+                        src="Page%20Nav.svg"
+                        alt=""
+                        data-copyright=""
+                        data-creator=""
+                        data-license=""
+                    />
+                </button>
+            </div>
+        </div>
+
+        <div
+            class="bloom-page customPage bloom-ignoreForReaderStats bloom-interactive-page enterprise-only no-margin-page numberedPage side-right Device16x9Landscape bloom-monolingual"
+            id="82330919-7ed8-4684-bc4a-d6b53cdb5b74"
+            data-page="extra"
+            data-analyticscategories="drag-activity"
+            data-activity="drag-image-to-target"
+            data-tool-id="game"
+            data-pagelineage=""
+            data-page-number="1"
+            lang=""
+            data-correct-sound="correct_tada-fanfare-a_pixabay.webm"
+            data-wrong-sound="wrong_twoDownElectronic2_pixabay.webm"
+        >
+            <div
+                class="pageLabel"
+                lang="en"
+                data-i18n="TemplateBooks.PageLabel.Custom Game"
+            >
+                Custom Game
+            </div>
+            <div class="pageDescription" lang="en"></div>
+
+            <div class="marginBox">
+                <div class="split-pane-component-inner">
+                    <div
+                        class="bloom-canvas bloom-has-canvas-element"
+                        data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                        title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                    >
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:10,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                            style="
+                                width: 672px;
+                                top: 0px;
+                                left: 0px;
+                                height: 378px;
+                            "
+                        >
+                            <div
+                                class="bloom-imageContainer"
+                                data-title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                                title="For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."
+                            >
+                                <img
+                                    src="placeHolder.png"
+                                    style="
+                                        width: 672px;
+                                        top: -141.088px;
+                                        left: 0px;
+                                    "
+                                    alt=""
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-passive-element"
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                class="bloom-translationGroup bloom-leadingElement"
+                                data-default-languages="V"
+                                data-hasqtip="true"
+                            >
+                                <div
+                                    class="bloom-editable GameHeader-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
+                                    lang="z"
+                                    tabindex="0"
+                                    spellcheck="false"
+                                    role="textbox"
+                                    aria-label="false"
+                                    style="min-height: 32.01px"
+                                    contenteditable="true"
+                                    data-languagetipcontent="English"
+                                ></div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element drag-item-wrong"
+                            style="
+                                height: 260px;
+                                left: 70px;
+                                top: 60px;
+                                width: 440px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-rectangle bloom-theme-background"
+                            ></div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element drag-item-correct"
+                            style="
+                                height: 270px;
+                                left: 90px;
+                                top: 50px;
+                                width: 450px;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:15,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-rectangle bloom-theme-background"
+                            ></div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-correct"
+                            style="
+                                height: 220px;
+                                left: 200px;
+                                top: 70px;
+                                width: 230px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:20,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="smiling-flowers.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2025, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="bloom-canvas-element bloom-gif drag-item-wrong"
+                            style="
+                                height: 180px;
+                                left: 200px;
+                                top: 100px;
+                                width: 180px;
+                                position: absolute;
+                            "
+                            data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:24,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                        >
+                            <div
+                                tabindex="0"
+                                class="bloom-imageContainer"
+                                title=""
+                            >
+                                <img
+                                    src="sad-face.gif"
+                                    alt=""
+                                    data-copyright="Copyright © 2025, Ilona Spaeder"
+                                    data-creator="Ilona Spaeder"
+                                    data-license="Custom License"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button
+                    class="check-button page-content game-button"
+                    style="right: 10px; bottom: 10px"
+                >
+                    <img src="Check Answer Symbol.svg" />
+                </button>
+                <button
+                    class="try-again-button page-content game-button"
+                    style="right: 130px; bottom: 10px"
+                >
+                    <img src="Try Again Symbol.svg" />
+                </button>
+                <button
+                    class="show-correct-button page-content game-button"
+                    style="right: 70px; bottom: 10px"
+                >
+                    <img src="Show Answer Symbol.svg" />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-right"
+                    style="right: 10px; top: calc(50% - 12px)"
+                >
+                    <img src="Page Nav.svg" />
+                </button>
+                <button
+                    class="page-content page-turn-button turn-left"
+                    style="left: 10px; top: calc(50% - 12px)"
                 >
                     <img src="Page Nav.svg" />
                 </button>

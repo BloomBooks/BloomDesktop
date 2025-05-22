@@ -20,6 +20,16 @@ export interface IEditViewFrameExports {
     showColorPickerDialog(props: IColorPickerDialogProps): void;
     showCopyrightAndLicenseDialog(imageUrl?: string): void;
     showEditViewTopicChooserDialog(): void;
+    showAdjustTimingsDialogFromEditViewFrame(
+        // The split and applyTimingsFile calls both return a list of new timings,
+        // such as we might find in data-audioRecordingEndTimes
+        split: (timingFilePath: string) => Promise<string | undefined>,
+        editTimingsFile: (timingsFilePath?: string) => Promise<void>,
+        applyTimingsFile: (
+            timingsFilePath?: string
+        ) => Promise<string | undefined>,
+        closing: (canceled: boolean) => void
+    );
 }
 
 export function SayHello() {
@@ -42,9 +52,11 @@ import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import { FunctionComponentElement } from "react";
-export { getImageUrlFromImageButton } from "./js/bloomImages";
+
+import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
+export { showAdjustTimingsDialog as showAdjustTimingsDialogFromEditViewFrame };
 
 //Called by c# using editTabBundle.handleUndo()
 export function handleUndo(): void {

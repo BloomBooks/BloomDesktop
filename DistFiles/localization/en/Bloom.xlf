@@ -513,6 +513,10 @@
         <source xml:lang="en">Change...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChooseLanguage">
+        <source xml:lang="en">Choose Language</source>
+        <note>ID: CollectionSettingsDialog.LanguageTab.ChooseLanguage</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
         <source xml:lang="en">Languages</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.LanguageTabLabel</note>
@@ -1803,6 +1807,10 @@
         <note>ID: EditTab.Image.AltMsg</note>
         <note>The {0} is replaced by the filename of the picture.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.BackgroundImage" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Background Image</source>
+        <note>ID: EditTab.Image.BackgroundImage</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
         <source xml:lang="en">Change image</source>
         <note>ID: EditTab.Image.ChangeImage</note>
@@ -1865,6 +1873,11 @@
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
         <source xml:lang="en">Paste image</source>
         <note>ID: EditTab.Image.PasteImage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Reset" sil:dynamic="true">
+        <source xml:lang="en">Reset image</source>
+        <note>ID: EditTab.Image.Reset</note>
+        <note>Removes cropping from image</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
         <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
@@ -2097,12 +2110,16 @@
         <source xml:lang="en">Crop</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
+        <source xml:lang="en">Fill the space</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Fit</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Resize" sil:dynamic="true">
         <source xml:lang="en">Resize</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Resize</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Shift" sil:dynamic="true">
-        <source xml:lang="en">Shift Picture</source>
+        <source xml:lang="en">Move image</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Shift</note>
         <note>Or you could translate "position picture". The control is used when a picture has been made bigger than its framing overlay by cropping and causes the picture to move without changing the shape of the overlay so that a different part of it can be seen.</note>
       </trans-unit>
@@ -2136,6 +2153,14 @@
         <source xml:lang="en">Duplicate</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
         <note>Tooltip for the bubble Duplicate icon</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate ="no">
+        <source xml:lang="en">Fill Background</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FillBackground</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate ="no">
+        <source xml:lang="en">Expand image to fill space</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FillSpace</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true">
         <source xml:lang="en">Format text...</source>
@@ -4720,12 +4745,6 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Upload Progress</source>
         <note>ID: PublishTab.Upload.UploadProgress</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadingBookMetadata">
-        <source xml:lang="en">Uploading book metadata</source>
-        <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
-        <note>In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.</note>
-        <note>Obsolete as of Bloom 5.6</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingStatus">
         <source xml:lang="en">Uploading {0}</source>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
@@ -5585,10 +5604,16 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.BookName.Activity" sil:dynamic="true">
         <source xml:lang="en">Activity</source>
         <note>ID: TemplateBooks.BookName.Activity</note>
+        <note>obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
         <source xml:lang="en">Arithmetic</source>
         <note>ID: TemplateBooks.BookName.Arithmetic</note>
+        <note>obsolete as of Bloom 6.2</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Arithmetic Pages" sil:dynamic="true">
+        <source xml:lang="en">Arithmetic Pages</source>
+        <note>ID: TemplateBooks.BookName.Arithmetic Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true">
         <source xml:lang="en">Arithmetic Template</source>
@@ -5597,6 +5622,10 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true">
         <source xml:lang="en">Basic Book</source>
         <note>ID: TemplateBooks.BookName.Basic Book</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Basic Pages" sil:dynamic="true">
+        <source xml:lang="en">Basic Pages</source>
+        <note>ID: TemplateBooks.BookName.Basic Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true">
         <source xml:lang="en">Big Book</source>
@@ -5610,6 +5639,14 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Digital Comic Book</source>
         <note>ID: TemplateBooks.BookName.Digital Comic Book</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Digital Comic Book Pages" sil:dynamic="true">
+        <source xml:lang="en">Digital Comic Book Pages</source>
+        <note>ID: TemplateBooks.BookName.Digital Comic Book Pages</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Games Pages" sil:dynamic="true">
+        <source xml:lang="en">Games Pages</source>
+        <note>ID: TemplateBooks.BookName.Games Pages</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true">
         <source xml:lang="en">Leveled Reader</source>
         <note>ID: TemplateBooks.BookName.Leveled Reader</note>
@@ -5617,6 +5654,10 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.BookName.Paper Comic Book" sil:dynamic="true">
         <source xml:lang="en">Paper Comic Book</source>
         <note>ID: TemplateBooks.BookName.Paper Comic Book</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Paper Comic Book Pages" sil:dynamic="true">
+        <source xml:lang="en">Paper Comic Book Pages</source>
+        <note>ID: TemplateBooks.BookName.Paper Comic Book Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true">
         <source xml:lang="en">Picture Dictionary</source>
@@ -5626,9 +5667,19 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Sign Language</source>
         <note>ID: TemplateBooks.BookName.Sign Language</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Sign Language Pages" sil:dynamic="true">
+        <source xml:lang="en">Sign Language Pages</source>
+        <note>ID: TemplateBooks.BookName.Sign Language Pages</note>
+        <note>obsolete as of Bloom 6.2</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Special" sil:dynamic="true">
         <source xml:lang="en">Special</source>
         <note>ID: TemplateBooks.BookName.Special</note>
+        <note>obsolete as of Bloom 6.2</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Special Pages" sil:dynamic="true">
+        <source xml:lang="en">Special Pages</source>
+        <note>ID: TemplateBooks.BookName.Special Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true">
         <source xml:lang="en">Template Starter</source>
@@ -5649,6 +5700,10 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.PageDescription.Bloom Reader Quiz" sil:dynamic="true">
         <source xml:lang="en">Use for comprehension testing on devices.</source>
         <note>ID: TemplateBooks.PageDescription.Bloom Reader Quiz</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle" sil:dynamic="true" translate="no">
+        <source xml:lang="en">A page with one language above the image and another below it.</source>
+        <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true">
         <source xml:lang="en">A blank page that allows you to add items.</source>
@@ -5977,6 +6032,10 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Picture in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Picture in Middle</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Bilingual &amp; Picture in Middle</source>
+        <note>ID: TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true">
         <source xml:lang="en">Picture on Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
@@ -6034,6 +6093,34 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.PageLabel.Widget Page" sil:dynamic="true">
         <source xml:lang="en">Widget Page</source>
         <note>ID: TemplateBooks.PageLabel.Widget Page</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Letters to Targets" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag Letters to Targets</source>
+        <note>ID: TemplateBooks.PageLabel.Drag Letters to Targets</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.DragImagesTargets" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag Images to Targets</source>
+        <note>ID: TemplateBooks.PageLabel.DragImagesTargets</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag Sound to Word Target</source>
+        <note>ID: TemplateBooks.PageLabel.Drag Sound to Word Target</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Sounds to Word Targets" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag Sounds to Word Targets</source>
+        <note>ID: TemplateBooks.PageLabel.Drag Sounds to Word Targets</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.DragImagesShadows" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag Images to Shadows</source>
+        <note>ID: TemplateBooks.PageLabel.DragImagesShadows</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.MatchWordsWithImages" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Match Words with Images</source>
+        <note>ID: TemplateBooks.PageLabel.MatchWordsWithImages</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Custom Game" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Custom Game</source>
+        <note>ID: TemplateBooks.PageLabel.Custom Game</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
         <source xml:lang="en">Setup</source>
@@ -6142,12 +6229,6 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Science</source>
         <note>ID: Topics.Science</note>
         <note>shows in the topics chooser in the edit tab</note>
-      </trans-unit>
-      <trans-unit id="Topics.Spiritual" sil:dynamic="true">
-        <source xml:lang="en">Spiritual</source>
-        <note>ID: Topics.Spiritual</note>
-        <note>shows in the topics chooser in the edit tab</note>
-        <note>Obsolete as of Bloom 5.6</note>
       </trans-unit>
       <trans-unit id="Topics.Story Book" sil:dynamic="true">
         <source xml:lang="en">Story Book</source>

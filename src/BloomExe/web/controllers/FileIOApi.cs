@@ -13,6 +13,8 @@ using System.Net;
 using System.Windows.Forms;
 using System.IO;
 using System.Threading;
+using ThirdParty.Json.LitJson;
+using System.Dynamic;
 
 namespace Bloom.web.controllers
 {
@@ -65,6 +67,39 @@ namespace Bloom.web.controllers
             ); // Common
 
             apiHandler.RegisterEndpointHandler("fileIO/listFiles", HandleListFiles, true);
+            apiHandler.RegisterEndpointHandler(
+                "fileIO/completeRelativePath",
+                HandleCompleteRelativePath,
+                false
+            );
+
+            apiHandler.RegisterEndpointHandler("fileIO/writeFile", WriteFile, true);
+        }
+
+        private void WriteFile(ApiRequest request)
+        {
+            string json = request.RequiredPostJson();
+            dynamic data = JsonConvert.DeserializeObject<ExpandoObject>(json);
+            string path = data.path;
+            string content = data.content;
+            try
+            {
+                RobustFile.WriteAllText(path, content);
+            }
+            catch (Exception e)
+            {
+                request.Failed(HttpStatusCode.InternalServerError, e.Message);
+            }
+            request.PostSucceeded();
+        }
+
+        private void HandleCompleteRelativePath(ApiRequest request)
+        {
+            string json = request.RequiredPostJson();
+            dynamic data = JsonConvert.DeserializeObject<ExpandoObject>(json);
+            string relativePath = data.relativePath;
+            var result = Path.Combine(_bookSelection.CurrentSelection.FolderPath, relativePath);
+            request.ReplyWithText(result);
         }
 
         // Return a list of files in the specified subfolder of the browser root.
@@ -105,19 +140,11 @@ namespace Bloom.web.controllers
             // For saving and recalling the last chosen file location
             // requestParameters.title is something like "Choose Audio File", use as an identifier for recalling this filepath
             var extraTag = requestParameters.title;
-            var extension = "." + requestParameters.fileTypes[0].extensions[0];
 
+            // if there is no rememberedPath, initialDirectory will be null, and the FileDialog will use whatever location it remembers (default windows behavior)
+            FilePathMemory.TryGetRememberedFolderPath(extraTag, out string rememberedPath);
             var initialDirectory = string.IsNullOrEmpty(requestParameters.defaultPath)
-                ? Path.GetDirectoryName(
-                    OutputFilenames.GetOutputFilePath(
-                        CurrentBook,
-                        extension,
-                        extraTag: extraTag,
-                        proposedFolder: System.Environment.GetFolderPath(
-                            System.Environment.SpecialFolder.MyDocuments
-                        )
-                    )
-                )
+                ? rememberedPath
                 : Path.GetDirectoryName(requestParameters.defaultPath); // enhance would be better to actually select the file, not just the Dir?
 
             using (
@@ -142,12 +169,10 @@ namespace Bloom.web.controllers
                     // We are not trying get a memory or time diff, just a point measure.
                     PerformanceMeasurement.Global.Measure("Choose file", dlg.FileName)?.Dispose();
 
-                    // remember selected filepath for next time
-                    OutputFilenames.RememberOutputFilePath(
-                        CurrentBook,
-                        extension,
-                        dlg.FileName,
-                        extraTag
+                    // remember selected folder path for next time
+                    FilePathMemory.RememberFolderPath(
+                        extraTag,
+                        Path.GetDirectoryName(dlg.FileName)
                     );
 
                     if (!string.IsNullOrEmpty(requestParameters.destFolder))

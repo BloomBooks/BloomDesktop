@@ -96,23 +96,19 @@ namespace Bloom.web.controllers
             );
             string srcFile = null;
 
-            // For saving and recalling the last chosen file location
-            var extension = ".mp3";
-            var directoryTag = "ShowSelectMusicFile";
+            // For saving and recalling the last chosen file directory
+            var musicDirectoryTag = "ShowSelectMusicFile";
+
+            // if there is no remembered Path, initialDirectory will be null, and the FileDialog will use whatever location it remembers (default windows behavior)
+            FilePathMemory.TryGetRememberedFolderPath(
+                musicDirectoryTag,
+                out string initialDirectory
+            );
             using (
                 var dlg = new MiscUI.BloomOpenFileDialog
                 {
                     Filter = $"{soundFiles} {BuildFileFilter()}",
-                    InitialDirectory = Path.GetDirectoryName(
-                        OutputFilenames.GetOutputFilePath(
-                            CurrentBook,
-                            extension,
-                            extraTag: directoryTag,
-                            proposedFolder: System.Environment.GetFolderPath(
-                                System.Environment.SpecialFolder.MyDocuments
-                            )
-                        )
-                    )
+                    InitialDirectory = initialDirectory,
                 }
             )
             {
@@ -120,11 +116,9 @@ namespace Bloom.web.controllers
                 if (result == DialogResult.OK)
                 {
                     srcFile = dlg.FileName;
-                    OutputFilenames.RememberOutputFilePath(
-                        CurrentBook,
-                        extension,
-                        srcFile,
-                        extraTag: directoryTag
+                    FilePathMemory.RememberFolderPath(
+                        musicDirectoryTag,
+                        Path.GetDirectoryName(srcFile)
                     );
                 }
             }

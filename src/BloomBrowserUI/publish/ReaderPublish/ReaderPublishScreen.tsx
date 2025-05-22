@@ -38,25 +38,28 @@ import { EmbeddedProgressDialog } from "../../react_components/Progress/Progress
 import { MustBeCheckedOut } from "../../react_components/MustBeCheckedOut";
 
 export const ReaderPublishScreen = () => {
-    // When the user changes some features, included languages, etc., we
+    // When the user changes some features, included languages, etc.,
+    // and wants an updated preview, we
     // need to rebuild the book and re-run all of our Bloom API queries.
     // This requires a hard-reset of the whole screen, which we do by
     // incrementing a `key` prop on the core of this screen.
-    const [keyForReset, setKeyForReset] = useState(0);
+    const [keyForUpdatingPreview, setKeyForUpdatingPreview] = useState(0);
     return (
         <ReaderPublishScreenInternal
-            key={keyForReset} // NOTE: Updating the key mounts a new component instance (beware of trying to keep state after reset... it's not the same instance!)
-            onReset={() => {
-                setKeyForReset(keyForReset + 1);
+            key={keyForUpdatingPreview} // NOTE: Updating the key mounts a new component instance (beware of trying to keep state after reset... it's not the same instance!)
+            onUpdatePreview={() => {
+                // This causes props.showPreview to be true, which cases the progress dialog to show,
+                // which causes the preview to be generated.
+                setKeyForUpdatingPreview(keyForUpdatingPreview + 1);
             }}
-            showPreview={keyForReset > 0}
+            showPreview={keyForUpdatingPreview > 0}
         />
     );
 };
 
 const kUpdatePreviewApi = "publish/bloompub/updatePreview";
 const ReaderPublishScreenInternal: React.FunctionComponent<{
-    onReset: () => void;
+    onUpdatePreview: () => void;
     showPreview: boolean;
 }> = props => {
     const inStorybookMode = useContext(StorybookContext);
@@ -93,8 +96,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                   window.location.host +
                   "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloompub in the source tree
             : // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloompub.
-              //BloomPlayer recognizes "working" as a special value; it will show some spinner or some such.
-              "working"
+              ""
     );
 
     const [defaultLandscape] = useApiBoolean(
@@ -144,12 +146,27 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         }
     );
 
+    let baseUrl = bookUrl;
+    let moreParams = "";
+    try {
+        const url = new URL(bookUrl);
+        baseUrl = url.origin + url.pathname;
+        url.searchParams.forEach((value, key) => {
+            if (key !== "url") {
+                moreParams += `&${key}=${encodeURIComponent(value)}`;
+            }
+        });
+    } catch (e) {
+        // ignore the error and go with the original url
+        moreParams = "";
+    }
     const previewUrl =
         "/bloom/bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
-        encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
+        encodeURIComponent(baseUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
         "&independent=false" + // you can temporarily comment this out to send BloomPlayer analytics from Bloom Editor
         "&host=bloomdesktop" +
         "&roundPageWidthToNearestK=2" + // Fractional pixels can cause a small sliver of the next page or background color to show (See BL-11497)
+        moreParams +
         "&roundMarginToNearestK=2"; // Fractional pixels can cause a small sliver of the next page or background color to show (See BL-11497)
 
     const showBlankPreviewScreen =
@@ -189,7 +206,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     showPreviewButton={true}
                     highlightPreviewButton={highlightPreview}
                     onPreviewButtonClicked={() => {
-                        props.onReset();
+                        props.onUpdatePreview();
                     }}
                 />
             </PreviewPanel>
@@ -269,6 +286,10 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         </SettingsPanel>
     );
 
+    // props.showPreview is false until the first time the user clicks the Preview button.
+    // Therefore we don't show the progress dialog until then.
+    // That also is what prevents us from actually generating the preview until the user asks for it,
+    // because generating it is a side effect of showing the dialog.
     const showProgressDialog = props.showPreview || publishStarted;
 
     return (

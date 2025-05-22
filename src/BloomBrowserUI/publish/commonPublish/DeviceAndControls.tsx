@@ -37,6 +37,8 @@ export const DeviceAndControls: React.FunctionComponent<{
     showPreviewButton?: boolean;
     highlightPreviewButton?: boolean;
     onPreviewButtonClicked?: () => void;
+    // hide theactual preview (typically if we're waiting for some data, especially orientation)
+    hidePreview?: boolean;
 }> = props => {
     const [landscape, setLandscape] = useState(props.defaultLandscape);
 
@@ -113,6 +115,7 @@ export const DeviceAndControls: React.FunctionComponent<{
                 css={css`
                     ${commonDeviceFrameCss}
                     ${props.canRotate ? "margin-top: -15px;" : ""}
+                    ${props.hidePreview ? "visibility: hidden;" : ""}
                 `}
                 className={
                     "deviceFrame fullSize " +
@@ -120,6 +123,7 @@ export const DeviceAndControls: React.FunctionComponent<{
                 }
             >
                 <iframe
+                    id="preview-iframe"
                     css={css`
                         background-color: black;
                         border: none;

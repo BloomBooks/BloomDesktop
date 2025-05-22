@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.SafeXml;
 using Moq;
 using NUnit.Framework;
@@ -20,6 +21,7 @@ namespace BloomTests.web
             _bookSelection = new BookSelection();
             _bookSelection.SelectBook(new Bloom.Book.Book());
             _server = new BloomServer(_bookSelection);
+            _server.SetCollectionSettingsDuringInitialization(new CollectionSettings());
 
             var controller = new ReadersApi(_bookSelection, null);
             controller.RegisterWithApiHandler(_server.ApiHandler);
@@ -53,7 +55,7 @@ namespace BloomTests.web
                     <p>Level Two</p>
                 </div>
             </div>
-            <div class='bloom-imageContainer' title='Name: aor_IN16.png'>
+            <div class='bloom-canvas' title='Name: aor_IN16.png'>
                 <img src='aor_IN16.png'></img>
                 <div class='bloom-translationGroup bloom-imageDescription'>
                     <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>cat</div>
@@ -79,7 +81,7 @@ namespace BloomTests.web
         <div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Just a Picture' lang='en'>Just a Picture</div>
         <div class='marginBox'>
             <div class='split-pane-component-inner'>
-                <div class='bloom-imageContainer' title='Name: aor_acc034m.png'>
+                <div class='bloom-canvas' title='Name: aor_acc034m.png'>
                     <img src='aor_acc034m.png' alt='cat staring at something outside the picture'></img>
                     <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement'>
                         <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>
@@ -97,7 +99,7 @@ namespace BloomTests.web
             <div class='split-pane horizontal-percent'>
                 <div class='split-pane-component position-top'>
                     <div class='split-pane-component-inner'>
-                        <div class='bloom-imageContainer bloom-leadingElement' title='Name: aor_Cat3.png'>
+                        <div class='bloom-canvas bloom-leadingElement' title='Name: aor_Cat3.png'>
                             <img src='aor_Cat3.png' alt='cat lying down and staring at you through slitted eyes'></img>
                             <div class='bloom-translationGroup bloom-imageDescription'>
                                 <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>
@@ -127,7 +129,7 @@ namespace BloomTests.web
             <div class='split-pane horizontal-percent'>
                 <div class='split-pane-component position-top'>
                     <div class='split-pane-component-inner'>
-                        <div class='bloom-imageContainer' title='Name: aor_ACC029M.png'>
+                        <div class='bloom-canvas' title='Name: aor_ACC029M.png'>
                             <img src='aor_ACC029M.png' alt='cat sleeping in a box that is just large enough'></img>
                             <div class='bloom-translationGroup bloom-imageDescription'>
                                 <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>
@@ -237,7 +239,6 @@ namespace BloomTests.web
             var storage = CreateMockStorage(dom, "GetPagesForReader");
             var book = new Bloom.Book.Book(storage.Object.BookInfo, storage.Object);
             _bookSelection.SelectBook(book);
-
             var result = ApiTest.GetString(_server, "readers/io/textOfContentPages");
             Assert.That(
                 result,

@@ -157,7 +157,7 @@ namespace Bloom.Spreadsheet
             Color colorForPage
         )
         {
-            var imageContainers = GetImageContainers(page);
+            var imageContainers = GetImageContainersAndBloomCanvases(page);
             var allGroups = TranslationGroupManager.SortedGroupsOnPage(page, true);
             var groups = allGroups
                 .Where(x => !x.GetAttribute("class").Contains("bloom-imageDescription"))
@@ -559,11 +559,33 @@ namespace Bloom.Spreadsheet
                 .First();
         }
 
-        private List<SafeXmlElement> GetImageContainers(SafeXmlElement elementOrDom)
+        /// <summary>
+        /// Get a list of the image containers on the page, including any bloom-canvas elements that directly
+        /// contain an image and don't have a background canvas element. (Normally a bloom-canvas that has a background
+        /// image won't have a direct image child as well. But we briefly had a version that left an unused
+        /// placeholder when converting to background canvas element. We don't want to export that. So having a
+        /// background image is decisive for not including a bloom-canvas in this list.)
+        /// </summary>
+        /// <remarks>We're being a bit tricky here. Because the background canvas element, if any, is always the
+        /// first canvas element, that background  child image will occur in the exact same place in the list images
+        /// derived from the return result here as if it had been a direct child of the bloom canvas. On import,
+        /// we'll just make it a child of the bloom canvas. Next edit will convert it back to background canvas element
+        /// and, crucially, make it the right size. (The C# importer has no good way to make it the right size
+        /// for whatever page size it is being imported into.) We may be able to do better when we figure out a
+        /// good way to export and import canvas elements generally. (For now they just export as additional
+        /// rows and typically produce new pages on import, unless into a book with the exact same structure.)</remarks>
+        private List<SafeXmlElement> GetImageContainersAndBloomCanvases(SafeXmlElement elementOrDom)
         {
-            return elementOrDom
-                .SafeSelectNodes(".//*[contains(@class,'bloom-imageContainer')]")
-                .Cast<SafeXmlElement>()
+            return SafeXmlElement
+                .GetAllDivsWithClass(elementOrDom, HtmlDom.kBloomCanvasClass)
+                .Where(
+                    bloomCanvas =>
+                        !HtmlDom.HasBackgroundImage(bloomCanvas)
+                        && bloomCanvas.ChildNodes.Any(
+                            c => c is SafeXmlElement ce && ce.Name == "img"
+                        )
+                )
+                .Concat(SafeXmlElement.GetAllDivsWithClass(elementOrDom, "bloom-imageContainer"))
                 .ToList();
         }
 

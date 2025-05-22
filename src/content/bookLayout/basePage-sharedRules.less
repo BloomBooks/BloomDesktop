@@ -1,4 +1,5 @@
 ﻿// Styles that are shared by both the regular book css and the more minimalist epub css.
+@import (reference) "../../BloomBrowserUI/bloomUI.less";
 
 @preferredBackgroundGray: hsl(0, 0%, 86%);
 
@@ -43,7 +44,7 @@ textarea,
 
 // Centers the img in the container making it as large as possible while preserving aspect ratio
 // (for any obsolete xmatter pages which use a background image)
-.bloom-backgroundImage {
+.bloom-background-image-in-style {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -51,44 +52,60 @@ textarea,
 
 // Centers the img in the container making it as large as possible while preserving aspect ratio
 // (for all current pages, which currently have a child img element)
-.bloom-imageContainer img {
+// We don't need this for bloom-canvas in edit mode, but might still in publishing or preview,
+// where background images are not necessarily inside background canvas elements, but
+// are (or may be) direct children of the bloom-canvas.
+// I don't think we need the child restrictions here, since we currently want the rule to apply
+// to all images (and image containers live inside bloom-canvases), but the intent
+// is to target the direct children of both bloom-canvases and bloom-imageContainers,
+// so I think it's better to make that  explicit.
+// (Note that the height rule is overridden elsewhere for images that are cropped.)
+.bloom-imageContainer > img,
+.bloom-canvas > img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    &.bloom-imageObjectFit-cover {
-        object-fit: cover; // if we don't have the proportions exactly right, object-fit:"contain" will make black borders
-    }
 }
-.bloom-imageContainer.bloom-imageObjectFit-cover {
+.bloom-canvas.bloom-imageObjectFit-cover {
     background-size: cover;
 }
 
 // A rule elsewhere says that images in image containers should be object-fit:contain
 // and height:100%. That's necessary for images that haven't been converted to 6.1 mode,
-// where the imageContainer is the size of the image, so the browser will put it where
+// where the image container is the size of the image, so the browser will put it where
 // older bloom's intended.
 // On the other hand we must prevent it for cropped images, where we explicitly position
 // the image to produce the cropping.
 // A third possible state is that we have converted to 6.1 but not cropped. In this case,
 // it doeesn't matter whether we override the old rule, since the imageContainer is already
 // the right size. The easiest way to make
-// sure we don't mess up the old overlays but do get this rule for cropped images
+// sure we don't mess up the old canvas elements but do get this rule for cropped images
 // where we need it is to look for the width in the style attribute, which is always
-// present for cropped images (and not otherwise, at least in overlays).
-.bloom-textOverPicture .bloom-imageContainer img[style*="width"] {
+// present for cropped images (and not otherwise, at least in canvas elements).
+.bloom-canvas-element .bloom-imageContainer img[style*="width"] {
     object-fit: unset;
     height: unset;
     // width will initially be 100%, but typically overridden by object style
 }
+.bloom-rectangle {
+    border: 5px solid var(--game-draggable-bg-color, @bloom-blue);
+    border-radius: 9px;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    &.bloom-theme-background {
+        background-color: var(--game-draggable-bg-color, @bloom-blue);
+    }
+}
 
-// Now that we have overlay elements, we don't want to show the placeholder flower underneath them.
-.bloom-imageContainer.hasOverlay > img[src="placeHolder.png"] {
+// Now that we have canvas element elements, we don't want to show the placeholder flower underneath them.
+.bloom-canvas.bloom-has-canvas-element > img[src="placeHolder.png"] {
     display: none;
 }
 
 // overridden if it is also nested in bloom-showImageDescriptions, but this can't be shared,
 // because we can't use display:flex in epubs.
-.bloom-imageContainer .bloom-imageDescription {
+.bloom-canvas .bloom-imageDescription {
     display: none;
 }
 
@@ -184,7 +201,7 @@ span.bloom-linebreak {
         text-wrap: balance;
     }
     &.Bubble-style {
-        // Ensure that the text wrapping in overlays is generally stable.  See BL-13135.
+        // Ensure that the text wrapping in canvas elements is generally stable.  See BL-13135.
         // We would use the "stable" keyword, but that isn't implemented in most browsers.
         text-wrap: wrap;
     }

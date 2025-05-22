@@ -189,6 +189,40 @@ namespace Bloom.CollectionTab
             }
         }
 
+        public void moveBookIntoThisCollection(Book.Book origBook, BookCollection origCollection)
+        {
+            var possibleTCFilePath = TeamCollectionManager.GetTcLinkPathFromLcPath(
+                origCollection.PathToDirectory
+            );
+            if (RobustFile.Exists(possibleTCFilePath))
+            {
+                // Original collection is a TC.
+                // To remove a book from a TC, we would have "load up" the collection to check that the book is checked
+                // out, the tc is connected, etc. So for now we don't allow it
+                throw new ApplicationException(
+                    $"{origCollection.Name} is a Team Collection. Cannot move a book that is currently in a Team Collection."
+                );
+            }
+
+            var origBookFolderPath = origBook.FolderPath;
+            var bookFolderName = Path.GetFileName(origBookFolderPath);
+            var newCollectionDir = TheOneEditableCollection.PathToDirectory;
+            var newBookFolderPath = Path.Combine(newCollectionDir, bookFolderName);
+            SIL.IO.RobustIO.MoveDirectory(origBookFolderPath, newBookFolderPath);
+            origCollection.HandleBookDeletedFromCollection(origBookFolderPath);
+            ReloadEditableCollection();
+            var movedBookInfo = TheOneEditableCollection
+                .GetBookInfos()
+                .FirstOrDefault(info => info.FolderPath == newBookFolderPath);
+            var movedBook = GetBookFromBookInfo(movedBookInfo);
+            SelectBook(movedBook);
+            BookHistory.AddEvent(
+                movedBook,
+                BookHistoryEventType.Moved,
+                $"Moved book from collection \"{origCollection.Name}\" to collection \"{TheOneEditableCollection.Name}\""
+            );
+        }
+
         /// <summary>
         /// Eventually this might entirely replace ReloadCollections, since we probably never need to reload anything ut the first.
         /// For now it actually reloads them all, but at least allows clients that definitely only need the first reloaded to do so.
@@ -323,7 +357,7 @@ namespace Bloom.CollectionTab
         // but with the Collection UI moving to JS I don't see a good alternative
         public void MakeBloomPack(bool forReaderTools)
         {
-            var initialPath = OutputFilenames.GetOutputFilePath(
+            var initialPath = FilePathMemory.GetOutputFilePath(
                 TheOneEditableCollection,
                 ".BloomPack"
             );
@@ -333,7 +367,7 @@ namespace Bloom.CollectionTab
             );
             if (!string.IsNullOrEmpty(destFileName))
             {
-                OutputFilenames.RememberOutputFilePath(
+                FilePathMemory.RememberOutputFilePath(
                     TheOneEditableCollection,
                     ".BloomPack",
                     destFileName
@@ -1009,8 +1043,12 @@ namespace Bloom.CollectionTab
         public BookInfo GetBookInfoByFolderPath(string path)
         {
             var collectionPath = Path.GetDirectoryName(path);
+            // This might need adjustment if we ever get Linux/Mac versions working. But I think not. See the
+            // comment in BookCollection.GetBookInfoByFolderPath.
             var collection = GetBookCollections()
-                .FirstOrDefault(c => c.PathToDirectory == collectionPath);
+                .FirstOrDefault(
+                    c => c.PathToDirectory.ToLowerInvariant() == collectionPath.ToLowerInvariant()
+                );
             if (collection == null)
                 return null;
             return collection.GetBookInfoByFolderPath(path);

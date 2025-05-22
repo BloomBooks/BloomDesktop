@@ -327,7 +327,8 @@ namespace Bloom.web.controllers
                 if (!string.IsNullOrWhiteSpace(userEmail))
                 {
                     // remember their email
-                    SIL.Windows.Forms.Registration.Registration.Default.Email = userEmail;
+                    Bloom.Registration.Registration.Default.Email = userEmail;
+                    Bloom.Registration.Registration.Default.Save();
                 }
 
                 issueId = issueSubmission.SubmitToYouTrack(subject, diagnosticInfo);
@@ -956,7 +957,7 @@ namespace Bloom.web.controllers
                 issueLink = SubmitToYouTrack(
                     levelOfProblem,
                     "",
-                    SIL.Windows.Forms.Registration.Registration.Default.Email,
+                    Bloom.Registration.Registration.Default.Email,
                     false,
                     false,
                     additionalPathsToInclude
@@ -1009,9 +1010,9 @@ namespace Bloom.web.controllers
             var book = _bookSelection?.CurrentSelection;
             var bestBookName = book?.NameBestForUserDisplay;
 
-            var userEmail = SIL.Windows.Forms.Registration.Registration.Default.Email;
-            var userFirstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName;
-            var userSurname = SIL.Windows.Forms.Registration.Registration.Default.Surname;
+            var userEmail = Bloom.Registration.Registration.Default.Email;
+            var userFirstName = Bloom.Registration.Registration.Default.FirstName;
+            var userSurname = Bloom.Registration.Registration.Default.Surname;
 
             _reportInfo = new ReportInfo(
                 heading,

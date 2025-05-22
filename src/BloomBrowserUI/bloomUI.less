@@ -14,7 +14,7 @@
 // there are probably other sources of ui font size.
 @ui-font-size: 10pt;
 
-@dragHandleVisibleZIndex: @bubbleCanvasZIndex - 1;
+@dragHandleVisibleZIndex: @canvasElementCanvasZIndex - 1;
 
 // This name is almost obsolete, we do NOT want bloom-imageContainer to have a z-index,
 // since that makes it a stacking context, and then we can't get child buttons to
@@ -23,19 +23,34 @@
 // widgets.
 @baseZIndexForContainers: 1000;
 
-// needs to be above overlay images so tails can cross into them
-@bubbleCanvasZIndex: @baseZIndexForContainers + 1;
+// needs to be above canvas element images so tails can cross into them
+@canvasElementCanvasZIndex: @baseZIndexForContainers + 1;
 
 // Above the canvas so they can be clicked
-@imageEditingButtonZIndex: @bubbleCanvasZIndex + 5;
+@imageEditingButtonZIndex: @canvasElementCanvasZIndex + 5;
 // And these are on top of those main buttons
 @miniImageEditingButtonZIndex: @imageEditingButtonZIndex + 1;
 
-// Text in bubbles needs to be above the bubble so we can see and edit it.
-@textOverPictureZIndex: @bubbleCanvasZIndex + 1;
-@formatButtonZIndex: @textOverPictureZIndex + 1;
-@dragHandleEventZIndex: @textOverPictureZIndex + 1;
-@resizeHandleEventZIndex: @textOverPictureZIndex + 1; // Not directly referenced via .less, but conceptually used in bubbleManager.ts
+// Text in canvas elements needs to be above the canvas element so we can see and edit it.
+@canvasElementZIndex: @canvasElementCanvasZIndex + 1;
+// Historically, the format button wanted to be above the text. They don't conflict any more, so
+// this probably isn't necessary.
+@formatButtonZIndex: @canvasElementZIndex + 1;
+// Drag handles for resizing the canvas element need to be above the canvas to be clickable.
+@canvasElementDragHandleZIndex: @canvasElementZIndex + 1;
+// The reason this should be one more than the drag handle is lost. It doesn't actually make
+// it above the drag handles, because they are children.
+@canvasElementFrameZIndex: @canvasElementDragHandleZIndex + 1;
+// The large buttons we show for bloom-canvases can overlap the edge of the element,
+// and therefore the control frame. We don't want the blue line across them, so they
+// need to be above it.
+@imageButtonZIndex: @canvasElementFrameZIndex + 1;
+
+@resizeHandleEventZIndex: @canvasElementZIndex + 1; // Not directly referenced via .less, but conceptually used in canvas elementManager.ts
+
+// These two constants are also in bloomMaterialUITheme.ts
+@toolboxZIndex: 18000; // Just over help bubbles, but under topic dialog
+@toolboxPopupZIndex: @toolboxZIndex + 1; // Must be above it to be seen at all.
 
 // Bloom's web palette
 @bloom-blue: #1d94a4; // used in decodable reader and various text backgrounds and Paste Image button

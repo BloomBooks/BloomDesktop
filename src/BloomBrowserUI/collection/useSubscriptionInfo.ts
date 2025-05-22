@@ -1,5 +1,4 @@
-import { useCallback, useState } from "react";
-import React = require("react");
+import { useCallback, useEffect, useState } from "react";
 import { get } from "../utils/bloomApi";
 
 export type SubscriptionCodeIntegrity =
@@ -44,7 +43,7 @@ export const useSubscriptionInfo = () => {
     }, [setSubscriptionData]);
 
     // refresh when the subscription code changes
-    React.useEffect(() => {
+    useEffect(() => {
         document.addEventListener(
             "subscriptionCodeChanged",
             querySubscriptionInfo
@@ -59,7 +58,7 @@ export const useSubscriptionInfo = () => {
     }, [querySubscriptionInfo]);
 
     // get initial info once at startup
-    React.useEffect(() => {
+    useEffect(() => {
         querySubscriptionInfo();
     }, [querySubscriptionInfo]);
 

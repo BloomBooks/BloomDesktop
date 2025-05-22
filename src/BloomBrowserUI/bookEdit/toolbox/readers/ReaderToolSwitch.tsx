@@ -38,7 +38,8 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                         ? "EditTab.Toolbox.LeveledReaderTool.BookIsLeveled"
                         : "EditTab.Toolbox.DecodableReaderTool.BookIsDecodable"
                 }
-                checked={checked}
+                // We're not making a controlled component, but we do want to control the initial state.
+                defaultChecked={checked}
                 onChange={(_, checked) => {
                     // Toggle the display of the reader tool UI.
                     document

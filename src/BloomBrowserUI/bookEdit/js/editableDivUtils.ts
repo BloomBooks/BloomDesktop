@@ -167,17 +167,18 @@ export class EditableDivUtils {
     // from http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
     public static createUuid(): string {
         // http://www.ietf.org/rfc/rfc4122.txt
-        const s: string[] = [];
-        const hexDigits = "0123456789abcdef";
-        for (let i = 0; i < 36; i++) {
-            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-        }
-        s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
-        s[19] = hexDigits.substr((s[19].charCodeAt(0) & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
-        s[8] = s[13] = s[18] = s[23] = "-";
-
-        const uuid = s.join("");
-        return uuid;
+        return crypto.randomUUID
+            ? crypto.randomUUID()
+            : // The string "10000000-1000-4000-8000-100000000000" is a template for the UUID.
+              // The 4 is never changed, but the 1, 0, and 8 are replaced with random hex digits,
+              // with 1 and 8 having special meaning and effects due to the XOR and shift operations.
+              "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+                  (
+                      +c ^
+                      (crypto.getRandomValues(new Uint8Array(1))[0] &
+                          (15 >> (+c / 4)))
+                  ).toString(16)
+              );
     }
 
     public static getPageFrame(): HTMLIFrameElement | null {
@@ -193,8 +194,17 @@ export class EditableDivUtils {
     }
 
     // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
-    public static getPageScale(): number {
+    // If target is supplied, we only want a scale based on the page scaler if the target is inside it.
+    public static getPageScale(target?: HTMLElement): number {
         const page = this.getPage();
+        let scaler: HTMLElement | undefined = undefined;
+        const getScaler = () => page.find("div#page-scaling-container").get(0);
+        if (target) {
+            scaler = getScaler();
+            if (!scaler || !scaler.contains(target)) {
+                return 1.0;
+            }
+        }
 
         // With full bleed, we have a transform on the page in addition to the possible scaling using the zoom control.
         // This calculation gets the scale experimentally. Because offsetWidth is an integer,
@@ -216,9 +226,8 @@ export class EditableDivUtils {
 
         let scale = 1.0;
         if (page.length === 0) return scale;
-        const styleString = page
-            .find("div#page-scaling-container")
-            .attr("style");
+        const styleString =
+            (scaler ?? getScaler())?.getAttribute("style") ?? "";
         const searchData = /transform: *scale\(([0-9.]*)/.exec(styleString);
         if (searchData) {
             scale = parseFloat(searchData[1]);
@@ -498,7 +507,7 @@ export class EditableDivUtils {
             // Really not wanting this scenario to happen, because we may get inaccurate results, but...
             // We ought to be able to continue on without anything terrible happening
             console.assert(
-                parentEditable,
+                !!parentEditable,
                 "isVisible(): Unexpected span that is not inside a bloom-editable. span = " +
                     elem
             );

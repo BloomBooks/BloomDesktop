@@ -867,6 +867,8 @@ namespace BloomTests.Book
             // Set these before making the bookData as it will cache during constructor.
             _collectionSettings.Language1.Tag = "en";
             _collectionSettings.Language2.Tag = "fr";
+            _collectionSettings.Language1.SetName("English", false);
+            _collectionSettings.Language2.SetName("French", false);
             var bookData = new BookData(dom, _collectionSettings, null);
             return BookCopyrightAndLicense.GetOriginalCopyrightAndLicenseNotice(bookData, dom);
         }

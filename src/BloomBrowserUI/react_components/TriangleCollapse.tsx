@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import { Button, Collapse } from "@mui/material";
-import React = require("react");
+import * as React from "react";
 import { Span } from "./l10nComponents";
 
 // Shows a triangle that can be clicked to expand a section

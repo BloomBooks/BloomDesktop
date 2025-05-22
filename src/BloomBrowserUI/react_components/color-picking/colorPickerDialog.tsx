@@ -1,6 +1,6 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
-import React = require("react");
+import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { getEditTabBundleExports } from "../../bookEdit/js/bloomFrames";
@@ -36,7 +36,7 @@ export interface IColorPickerDialogProps {
     noGradientSwatches?: boolean;
     initialColor: IColorInfo;
     palette: BloomPalette;
-    isForOverlay?: boolean;
+    isForCanvasElement?: boolean;
     onChange: (color: IColorInfo) => void;
     onDefaultClick?: () => void;
     onInputFocus: (input: HTMLElement) => void;
@@ -78,12 +78,12 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                 `settings/getCustomPaletteColors?palette=${props.palette}`
             );
             // Before we introduced the concept of a custom palette (BL-11433),
-            // the overlay tool color pickers would display all colors currently in
-            // use in any overlays in the book. Rather than try some fancy migration,
+            // the canvas element tool color pickers would display all colors currently in
+            // use in any canvas elements in the book. Rather than try some fancy migration,
             // we just continue to display those along with the custom palette colors.
             // Thus, users won't see colors disappear from their pickers.
-            if (props.isForOverlay)
-                addCustomColors("editView/getColorsUsedInBookOverlays");
+            if (props.isForCanvasElement)
+                addCustomColors("editView/getColorsUsedInBookCanvasElements");
             setCurrentColor(props.initialColor);
         }
     }, [open, props.open]);
@@ -99,11 +99,11 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         }
 
         // When we make incremental color changes while editing one of these inputs,
-        // the process of applying the changed color to the overlay moves the focus
-        // to the overlay. This makes it painfully necessary to click back in the input
+        // the process of applying the changed color to the canvas element moves the focus
+        // to the canvas element. This makes it painfully necessary to click back in the input
         // box after each keystroke. This code arranges that when one of our inputs gets
         // focused, we pass that information to our client, which uses it to refocus
-        // the appropriate control once things stabilize in the overlay.
+        // the appropriate control once things stabilize in the canvas element.
         const inputs = Array.from(parent.getElementsByTagName("input"));
         inputs.forEach(input => input.addEventListener("focus", focusFunc));
 

@@ -100,6 +100,25 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
+                "bookCommand/moveToCurrentCollection",
+                (request) =>
+                {
+                    var book = GetBookObjectFromPost(request);
+                    var origCollection = GetCollectionOfRequest(request);
+                    try
+                    {
+                        _collectionModel.moveBookIntoThisCollection(book, origCollection);
+                    }
+                    catch (Exception error)
+                    {
+                        var msg = "Could not move book to this collection: " + error.Message;
+                        BloomMessageBox.ShowWarning(msg);
+                    }
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
                 "bookCommand/exportToWord",
                 (request) =>
                 {
@@ -357,7 +376,7 @@ namespace Bloom.web.controllers
             Book.Book book
         )
         {
-            var initialPath = OutputFilenames.GetOutputFilePath(book, defaultExtension);
+            var initialPath = FilePathMemory.GetOutputFilePath(book, defaultExtension);
 
             var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(
                 initialPath,
@@ -365,7 +384,7 @@ namespace Bloom.web.controllers
             );
 
             if (!String.IsNullOrEmpty(destFileName))
-                OutputFilenames.RememberOutputFilePath(book, defaultExtension, destFileName);
+                FilePathMemory.RememberOutputFilePath(book, defaultExtension, destFileName);
             return destFileName;
         }
 

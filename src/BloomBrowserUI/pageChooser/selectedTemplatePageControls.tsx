@@ -9,7 +9,11 @@ import { RequiresSubscriptionNotice } from "../react_components/requiresSubscrip
 import SmallNumberPicker from "../react_components/smallNumberPicker";
 import { Link } from "../react_components/link";
 import { useL10n } from "../react_components/l10nHooks";
-import { kBloomBuff, kWarningColor } from "../bloomMaterialUITheme";
+import {
+    kBloomBuff,
+    kMutedTextGray,
+    kWarningColor
+} from "../bloomMaterialUITheme";
 
 interface ISelectedTemplatePageProps {
     enterpriseAvailable: boolean;
@@ -18,6 +22,7 @@ interface ISelectedTemplatePageProps {
     pageDescription: string | null;
     pageIsDigitalOnly: boolean;
     pageIsEnterpriseOnly?: boolean;
+    pageIsMarkedBilingual?: boolean;
     templateBookPath: string;
     pageId: string;
     forChangeLayout?: boolean;
@@ -25,6 +30,7 @@ interface ISelectedTemplatePageProps {
     learnMoreLink?: string;
     requiredTool?: string;
     isLandscape: boolean;
+    dataToolId: string;
     onSubmit?: (
         forChangeLayout: boolean,
         pageId: string,
@@ -33,6 +39,7 @@ interface ISelectedTemplatePageProps {
         willLoseData: boolean,
         convertWholeBookChecked: boolean,
         numberToAdd: number,
+        dataToolId: string,
         requiredTool?: string
     ) => void;
 }
@@ -89,16 +96,35 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
             `}
         >
             {props.imageSource && (
-                <img
+                <div
                     css={css`
-                        border: 1px solid #b0dee4;
-                        max-width: 98%;
-                        max-height: 232px;
-                        width: ${props.isLandscape ? "unset" : "auto"};
-                        height: ${props.isLandscape ? "150px" : "auto"};
+                        display: flex;
+                        flex-direction: row;
+                        align-items: flex-end;
                     `}
-                    src={props.imageSource}
-                />
+                >
+                    <img
+                        css={css`
+                            border: 1px solid #b0dee4;
+                            max-width: 98%;
+                            max-height: 232px;
+                            width: ${props.isLandscape ? "unset" : "150px"};
+                            height: ${props.isLandscape ? "150px" : "unset"};
+                        `}
+                        src={props.imageSource}
+                    />
+                    {props.pageIsMarkedBilingual && (
+                        <div
+                            css={css`
+                                font-size: 28pt;
+                                color: ${kMutedTextGray};
+                                margin-bottom: -8px;
+                            `}
+                        >
+                            B
+                        </div>
+                    )}
+                </div>
             )}
             <Div
                 css={css`
@@ -119,6 +145,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                     overflow-y: auto;
                     margin-right: ${previewPaneLeftPadding}px;
                     margin-left: ${previewPaneLeftPadding}px;
+                    margin-top: 1em;
                     align-self: flex-start;
                 `}
                 id="previewDescriptionTextContainer"
@@ -255,6 +282,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                                         props.forChangeLayout
                                             ? -1
                                             : numberToAdd,
+                                        props.dataToolId,
                                         props.requiredTool
                                     );
                             }}

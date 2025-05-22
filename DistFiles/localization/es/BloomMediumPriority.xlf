@@ -182,10 +182,10 @@
         <target xml:lang="es-ES" state="translated">Ninguno</target>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.SameSize">
-        <source xml:lang="en">Keep all items and targets the same size</source>
+      <trans-unit id="EditTab.Toolbox.DragActivity.TargetsSameSize">
+        <source xml:lang="en">Keep all targets the same size so students can't use size as a clue</source>
         <target xml:lang="es-ES" state="translated">Mantener todos los elementos y objetivos del mismo tamaño</target>
-        <note>ID: EditTab.Toolbox.DragActivity.SameSize</note>
+        <note>ID: EditTab.Toolbox.DragActivity.TargetsSameSize</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SceneInstructions">
         <source xml:lang="en">Properties of the Scene</source>

@@ -1,7 +1,7 @@
 /// <reference path="readerSetup.io.ts" />
 /// <reference path="../../../../lib/jquery.onSafe.d.ts" />
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
-import "../../../../lib/jquery.onSafe.ts";
+import "../../../../lib/jquery.onSafe";
 import {
     beginSaveChangedSettings,
     cleanSpaceDelimitedList,
@@ -495,7 +495,7 @@ function displayAllowedWordsForSelectedStage(wordsStr: string): void {
     const wordList = <HTMLElement>document.getElementById("rs-matching-words");
     wordList.innerHTML = "";
 
-    const wordsObj: Object = JSON.parse(wordsStr);
+    const wordsObj: object = JSON.parse(wordsStr);
     const words: string[] = <string[]>_.toArray(wordsObj);
 
     let result: string = "";
@@ -527,7 +527,7 @@ function displayWordsForSelectedStage(wordsStr: string): void {
     const wordList = <HTMLElement>document.getElementById("rs-matching-words");
     wordList.innerHTML = "";
 
-    const wordsObj: Object = JSON.parse(wordsStr);
+    const wordsObj: object = JSON.parse(wordsStr);
     let words: DataWord[] = <DataWord[]>_.toArray(wordsObj);
 
     // add sight words
@@ -1240,8 +1240,6 @@ $(document).ready(() => {
     // http://stackoverflow.com/questions/3032770/execute-javascript-function-in-a-another-iframe-when-parent-is-from-different-do
     const container = $("body");
     //   const pageIframe = parent.frames['page'];
-    //   pageIframe.toolboxBundle.loadLongpressInstructions(container.find('textarea'));
-    getToolboxBundleExports()?.loadLongpressInstructions(
-        container.find("textarea")
-    );
+    //   pageIframe.toolboxBundle.activateLongPressFor(container.find('textarea'));
+    getToolboxBundleExports()?.activateLongPressFor(container.find("textarea"));
 });

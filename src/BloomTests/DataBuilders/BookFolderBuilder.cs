@@ -20,6 +20,7 @@ namespace BloomTests.DataBuilders
         private string _bookFolderName = null; // Optional. Not needed if same as _bookTitle
         private string _bookTitle;
         private string _htmContents;
+        private string _metaDataJson;
 
         #region Post-Build Getter properties
         internal string BuiltBookFolderPath;
@@ -61,8 +62,8 @@ namespace BloomTests.DataBuilders
                 BuiltBookHtmPath = htmPath;
             }
 
-            var meta = new BookMetaData();
-            meta.WriteToFolder(bookFolderPath);
+            var metaDataPath = BookMetaData.MetaDataPath(bookFolderPath);
+            RobustFile.WriteAllText(metaDataPath, _metaDataJson ?? new BookMetaData().Json);
 
             // Returns the builder object again so that callers can call post-build properties
             return this;
@@ -76,6 +77,7 @@ namespace BloomTests.DataBuilders
         {
             WithTitle("Book Title");
             WithHtm("<html></html>");
+            WithMetaDataJson(new BookMetaData().Json);
             return this;
         }
 
@@ -104,6 +106,14 @@ namespace BloomTests.DataBuilders
             this._htmContents = htmContents;
             return this;
         }
+
+        public BookFolderBuilder WithMetaDataJson(string metaDataJson)
+        {
+            if (metaDataJson != null)
+                _metaDataJson = metaDataJson;
+            return this;
+        }
+
         #endregion
     }
 }

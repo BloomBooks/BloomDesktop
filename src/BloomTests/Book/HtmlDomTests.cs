@@ -131,6 +131,87 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void SetImageAltAttrsFromDescriptions_BgImage_AltGetsSetOnRightElements()
+        {
+            var dom = new HtmlDom(
+                @"
+<html><body>
+    <div class='bloom-page'>
+        <div class='bloom-canvas'>
+            <div class='bloom-canvas-element bloom-backgroundImage'>
+                <div class='bloom-imageContainer'>
+                    <img src='something.jpg'/>
+                </div>
+            </div>
+            <div class='bloom-canvas-element'>
+                <div class='bloom-imageContainer'>
+                    <img src='something1.jpg' alt='delete me'/>
+                </div>
+            </div>
+            <div class='bloom-canvas-element'>
+                <div class='bloom-imageContainer'>
+                    <img src='something2.jpg'/>
+                </div>
+            </div>
+            <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement ImageDescriptionEdit-style' style='font-size: 16px;'>
+                <div class='bloom-editable bloom-visibility-code-on bloom-content1 bloom-contentNational1 ImageDescriptionEdit-style cke_editable cke_editable_inline cke_contents_ltr' contenteditable='true' lang='fr'>
+                    <p>French text</p>
+                </div>
+                <div class='bloom-editable bloom-contentNational2 ImageDescriptionEdit-style cke_editable cke_editable_inline cke_contents_ltr' contenteditable='true' lang='de'>
+                    <p>German text</p>
+                </div>
+            </div>
+        </div>
+        <img src='something3.jpg' alt='delete me'/>
+        <img src='something4.jpg'/>
+        <img src='something5.jpg' class='branding' alt='leave me alone'/>
+    </div>
+</body></html>"
+            );
+            dom.SetImageAltAttrsFromDescriptions("de");
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='bloom-canvas-element bloom-backgroundImage']/div/img[@alt='German text']",
+                    1
+                );
+            // the non-BG images should have their alt set explicitly to the empty string
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//img[@alt='']", 4);
+            // except for the branding one, which should be left alone
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//img[@alt='leave me alone' and @class='branding']",
+                    1
+                );
+        }
+
+        [Test]
+        public void SetImageAltAttrsFromDescriptions_BgImage_NoDescription_AltEmpty()
+        {
+            var dom = new HtmlDom(
+                @"
+<html><body>
+    <div class='bloom-page'>
+        <div class='bloom-canvas'>
+            <div class='bloom-canvas-element bloom-backgroundImage'>
+                <div class='bloom-imageContainer'>
+                    <img src='something.jpg'/>
+                </div>
+            </div>
+        </div>
+    </div>
+</body></html>"
+            );
+            dom.SetImageAltAttrsFromDescriptions("en");
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//img[@alt='']", 1);
+        }
+
+        [Test]
         public void AddClass_AlreadyThere_LeavesAlone()
         {
             var dom = SafeXmlDocument.Create();
@@ -1670,6 +1751,67 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void MigrateChildren_MigratesImages_WithImageSizeBasedOn()
+        {
+            var pageDom = new HtmlDom(
+                @"<html><head></head><body>
+					<div class='bloom-page' id='pageGuid'>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable ' contenteditable='true' lang='en'>Contents</div>
+							</div>
+							<div class='bloom-canvas' data-imgsizebasedon='703, 313'>
+								<img src='something.jpg' />
+							</div>
+						</div>
+					</div>
+				</body></html>"
+            );
+            var templateDom = new HtmlDom(
+                @"<html><head></head><body>
+					<div class='bloom-page' id='templateGuid'>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-canvas' />
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable ' contenteditable='true' lang='en'></div>
+							</div>
+						</div>
+					</div>
+				</body></html>"
+            );
+            bool didChange;
+            var lineage = "someGuid";
+            var pageElement = pageDom.SelectSingleNode("//div[@class='bloom-page']");
+            var templateElement = templateDom.SelectSingleNode("//div[@class='bloom-page']");
+
+            // SUT
+            pageDom.MigrateEditableData(
+                pageElement,
+                templateElement,
+                lineage,
+                false,
+                out didChange
+            );
+
+            // Verification
+            Assert.That(didChange, Is.True);
+            AssertThatXmlIn
+                .Dom(pageDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@data-pagelineage='someGuid']", 1);
+            var textContentsXpath =
+                "//div[contains(@class,'bloom-editable') and text()='Contents']";
+            var imgXPath = "//div[@data-imgsizebasedon='703, 313']/img[@src='something.jpg']";
+            AssertThatXmlIn.Dom(pageDom.RawDom).HasNoMatchForXpath("//div[@id='templateGuid']");
+            AssertThatXmlIn
+                .Dom(pageDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@id='pageGuid']", 1);
+            AssertThatXmlIn
+                .Dom(pageDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(textContentsXpath, 1);
+            AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(imgXPath, 1);
+        }
+
+        [Test]
         public void RemoveComments_WorksForCssData()
         {
             const string cssContent =
@@ -1753,9 +1895,13 @@ p {
         {
             const string htmlContent =
                 @"<html>
-<head>" + kHtmlHeadContent + @"
+<head>"
+                + kHtmlHeadContent
+                + @"
 </head>
-<body>"+ kBodyContentWithoutClasses + @"
+<body>"
+                + kBodyContentWithoutClasses
+                + @"
 <div class=""Title-On-Cover-style"" lang=""en"">Test 5</div>
 <div class=""small-style"" lang=""en"">Test 6</div>
 <div class=""Inside-Back-Cover-style"" lang=""jmx"">Test 7</div>
@@ -1798,16 +1944,24 @@ p {
         {
             const string htmlContent =
                 @"<html>
-<head>" + kHtmlHeadContent + @"
+<head>"
+                + kHtmlHeadContent
+                + @"
 </head>
-<body>" + kBodyContentWithoutClasses + @"
+<body>"
+                + kBodyContentWithoutClasses
+                + @"
 <div class=""Title-On-Cover-style"" lang=""en"">Test 5</div>
 </body>
 </html>";
 
             var fonts = new HashSet<string>();
             HtmlDom.FindFontsUsedInCss(htmlContent, fonts, true);
-            Assert.AreEqual(4, fonts.Count, "Four fonts are actually used in the test html/css data");
+            Assert.AreEqual(
+                4,
+                fonts.Count,
+                "Four fonts are actually used in the test html/css data"
+            );
             Assert.IsTrue(
                 fonts.Contains("NikoshBAN"),
                 "The text/css data refers to NikoshBAN as a font."
@@ -1827,16 +1981,16 @@ p {
         }
 
         [Test]
-        public void MigrateChildren_MigratesOverlays_DoesNotLoseOverlays()
+        public void MigrateChildren_MigratesCanvasElements_DoesNotLoseCanvasElements()
         {
             // The original has two images, two translation groups, a video, and a widget, in the order picture, text, video, widget, text, picture.
-            // The image contains text, video, image, and widget overlays.
+            // The image contains text, video, image, and widget canvas elements.
             var pageDom = new HtmlDom(
                 @"<html><head></head><body>
 					<div class='bloom-page' id='pageGuid'>
 						<div class='split-pane-component-inner'>
-							<div class='bloom-imageContainer'>
-								<div class='bloom-textOverPicture'>
+							<div class='bloom-canvas'>
+								<div class='bloom-canvas-element'>
 									<div class='bloom-translationGroup'>
 										<div class='bloom-editable'>
 											<p>Text over picture text</p>
@@ -1844,14 +1998,14 @@ p {
 									</div>
 									<div class='bloom-videoContainer'>
 										<video>
-											<source src='video/videoGuidOverlay.mp4' type='video/mp4'></source>
+											<source src='video/videoGuidCanvasElement.mp4' type='video/mp4'></source>
 										</video>
 									</div>
 									<div class='bloom-imageContainer'>
-										<img src='myImageFileOverlay.png'></img>
+										<img src='myImageFileCanvasElement.png'></img>
 									</div>
 									<div class='bloom-widgetContainer'>
-										<iframe src='activities/balldragTouch/indexOverlay.html'>Must have a closing tag in HTML</iframe>
+										<iframe src='activities/balldragTouch/indexCanvasElement.html'>Must have a closing tag in HTML</iframe>
 									</div>
 								</div>
 								<img src='myImageFile.png'></img>
@@ -1878,7 +2032,7 @@ p {
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'>Second text contents</div>
 							</div>
-							<div class='bloom-imageContainer'>
+							<div class='bloom-canvas'>
 								<img src='myImageFile2.png'></img>
 							</div>
 						</div>
@@ -1886,8 +2040,8 @@ p {
 				</body></html>"
             );
             // The output has slots for a widget, video, text, image, another text, and another image.
-            // We particularly want to check that the overlay items are not moved to the top level, but preserved
-            // as overlays of the moved image.
+            // We particularly want to check that the canvas element items are not moved to the top level, but preserved
+            // as canvas elements of the moved image.
             var templateDom = new HtmlDom(
                 @"<html><head></head><body>
 					<div class='bloom-page' id='templateGuid'>
@@ -1899,7 +2053,7 @@ p {
 							</div>
 						</div>
 						<div class='split-pane-component-inner'>
-							<div id='overlaySlot' title='placeHolder.png' class='bloom-imageContainer'>
+							<div id='canvasElementSlot' title='placeHolder.png' class='bloom-canvas'>
 								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
@@ -1907,7 +2061,7 @@ p {
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'></div>
 							</div>
-							<div id='imageSlot2' title='placeHolder.png' class='bloom-imageContainer'>
+							<div id='imageSlot2' title='placeHolder.png' class='bloom-canvas'>
 								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
@@ -1940,16 +2094,16 @@ p {
             var secondTextXpath =
                 "//div[contains(@class,'bloom-editable') and text()='Second text contents']";
             var topTextXpath =
-                "//div[contains(@class,'bloom-imageContainer')]//div[contains(@class,'bloom-editable')]/p[text()='Text over picture text']";
+                "//div[contains(@class,'bloom-canvas')]//div[contains(@class,'bloom-editable')]/p[text()='Text over picture text']";
             var imageDescXpath =
-                "//div[contains(@class,'bloom-imageContainer')]/div[contains(@class,'bloom-imageDescription')]//p[text()='Image description text']";
+                "//div[contains(@class,'bloom-canvas')]/div[contains(@class,'bloom-imageDescription')]//p[text()='Image description text']";
             assertThatOutput.HasNoMatchForXpath("//div[@id='templateGuid']");
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath("//div[@id='pageGuid']", 1);
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(firstTextXpath, 1);
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(secondTextXpath, 1);
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(topTextXpath, 1);
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(imageDescXpath, 1);
-            // second image slot should be filled from second top-level input image, not from overlay
+            // second image slot should be filled from second top-level input image, not from canvas element
             // likewise for video and widget
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(
                 "//div[@id='imageSlot2']/img[@src='myImageFile2.png']",
@@ -1963,17 +2117,17 @@ p {
                 "//div[@id='outerVideo']/video/source[@src='video/videoGuid.mp4']",
                 1
             );
-            // overlays should become overlays of first image
+            // canvas elements should become canvas elements of first image
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[@id='overlaySlot']//img[@src='myImageFileOverlay.png']",
+                "//div[@id='canvasElementSlot']//img[@src='myImageFileCanvasElement.png']",
                 1
             );
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[@id='overlaySlot']//iframe[@src='activities/balldragTouch/indexOverlay.html']",
+                "//div[@id='canvasElementSlot']//iframe[@src='activities/balldragTouch/indexCanvasElement.html']",
                 1
             );
             assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[@id='overlaySlot']//video/source[@src='video/videoGuidOverlay.mp4']",
+                "//div[@id='canvasElementSlot']//video/source[@src='video/videoGuidCanvasElement.mp4']",
                 1
             );
         }
@@ -1988,7 +2142,7 @@ p {
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable normal-style' contenteditable='true' lang='en'>First text contents</div>
 							</div>
-							<div class='bloom-imageContainer'>
+							<div class='bloom-canvas'>
 								<img src='myImageFile.png'></img>
 							</div>
 						</div>
@@ -2017,7 +2171,7 @@ p {
 							</div>
 						</div>
 						<div class='split-pane-component-inner'>
-							<div title='placeHolder.png' class='bloom-imageContainer'>
+							<div title='placeHolder.png' class='bloom-canvas'>
 								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
@@ -2333,7 +2487,7 @@ p {
                 @"<html>
 	<body>
 		<div class='bloom-page bloom-frontMatter'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				<img src='coverImage.jpg'></img>
 				<div class='bloom-translationGroup bloom-imageDescription'>
 					<div id='badFrontXmatter' class='bloom-editable' lang='en'>
@@ -2343,7 +2497,7 @@ p {
 			</div>
 		</div>
 		<div class='bloom-page'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				<img src='page1Image.jpg'></img>
 				<div class='bloom-translationGroup bloom-imageDescription'>
 					<div id='good1' class='bloom-editable' lang='es'>
@@ -2372,7 +2526,7 @@ p {
 			</div>
 		</div>
 		<div class='bloom-page bloom-backMatter'>
-			<div class='bloom-imageContainer'>
+			<div class='bloom-canvas'>
 				<img src='backCoverImage.jpg'></img>
 				<div class='bloom-translationGroup bloom-imageDescription'>
 					<div id='badBackXmatter' class='bloom-editable' lang='fr'>
@@ -2473,8 +2627,8 @@ p {
 						<div class='bloom-translationGroup'>
 							<div class='bloom-editable'>First text contents</div>
 						</div>
-						<div class='bloom-imageContainer'>
-							<div class='bloom-textOverPicture' style='left: 8.50603%; "
+						<div class='bloom-canvas'>
+							<div class='bloom-canvas-element' style='left: 8.50603%; "
                     + textColorLoc1
                     + @"'
 								data-bubble='{`version`:`1.0`"
@@ -2487,8 +2641,8 @@ p {
 								</div>
 							</div>
 						</div>
-						<div class='bloom-imageContainer'>
-							<div class='bloom-textOverPicture' style='left: 8.50603%; "
+						<div class='bloom-canvas'>
+							<div class='bloom-canvas-element' style='left: 8.50603%; "
                     + textColorLoc2
                     + @"'
 								data-bubble='{`version`:`1.0`"
@@ -2505,8 +2659,8 @@ p {
 				</div>
 				<div class='bloom-page' id='pageGuid2'>
 					<div class='split-pane-component-inner'>
-						<div class='bloom-imageContainer'>
-							<div class='bloom-textOverPicture' style='left: 8.50603%; "
+						<div class='bloom-canvas'>
+							<div class='bloom-canvas-element' style='left: 8.50603%; "
                     + textColorLoc3
                     + @"'
 								data-bubble='{`version`:`1.0`"
@@ -2525,7 +2679,7 @@ p {
             );
 
             // SUT
-            var colors = bookDom.GetColorsUsedInBookBubbleElements();
+            var colors = bookDom.GetColorsUsedInBookCanvasElements();
 
             // Verification
             Assert.That(

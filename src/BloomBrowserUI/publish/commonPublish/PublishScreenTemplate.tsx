@@ -20,8 +20,10 @@ export const PublishScreenTemplate: React.FunctionComponent<{
     optionsPanelContents?: React.ReactNode;
     bottomBanner?: React.ReactNode;
 }> = props => {
-    // Tells CSharp land to handle our external links correctly (by opening in the system browser)
-    React.useEffect(() => hookupLinkHandler(), []);
+    React.useEffect(() => {
+        // Tells CSharp land to handle our external links correctly (by opening in the system browser)
+        hookupLinkHandler();
+    }, []);
 
     return (
         <SelectedBookProvider>

@@ -1,4 +1,4 @@
-﻿
+
 namespace Bloom.MiscUI
 {
 	partial class ReactDialog
@@ -32,7 +32,7 @@ namespace Bloom.MiscUI
 			this.reactControl = new Bloom.web.ReactControl();
 			this.SuspendLayout();
 			// 
-			// reactControl1
+			// reactControl
 			// 
 			this.reactControl.BackColor = System.Drawing.Color.White;
 			this.reactControl.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -41,6 +41,7 @@ namespace Bloom.MiscUI
 			this.reactControl.Size = new System.Drawing.Size(800, 450);
 			this.reactControl.TabIndex = 0;
 			this.reactControl.UseEditContextMenu = true;
+            this.reactControl.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form_KeyDown);
 			// 
 			// ReactDialog
 			// 

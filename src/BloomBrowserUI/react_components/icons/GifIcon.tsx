@@ -1,4 +1,4 @@
-import React = require("react");
+import * as React from "react";
 
 interface ImagePlaceholderIconProps extends React.SVGProps<SVGSVGElement> {
     color?: string;
@@ -23,6 +23,7 @@ export const GifIcon: React.FunctionComponent<ImagePlaceholderIconProps> = props
                     fill={color ?? "transparent"}
                     stroke={strokeColor ?? "black"}
                     strokeWidth={2.71467}
+                    strokeDasharray="10,10"
                     cx="62.354107"
                     cy="60.333931"
                     rx="59.615532"

@@ -25,7 +25,7 @@ import { get, wrapAxios } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import * as ReactDOM from "react-dom";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
-import React = require("react");
+import * as React from "react";
 import {
     ISimpleColorPickerDialogProps,
     showSimpleColorPickerDialog
@@ -33,8 +33,10 @@ import {
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import { kBloomYellow } from "../../bloomMaterialUITheme";
 import { RenderRoot } from "./AudioHilitePage";
-import { RenderOverlayRoot } from "./OverlayFormatPage";
-import { BubbleManager } from "../js/bubbleManager";
+import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
+import { CanvasElementManager } from "../js/CanvasElementManager";
+import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
+import { getPageIFrame } from "../../utils/shared";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -65,14 +67,71 @@ interface IFormattingValues {
     padding: string;
 }
 
+// Props we know how to set in creating a user-defined style.
+// I just did the ones we needed. More can easily be added.
+// These currently apply to all languages. This means that font-family should NOT be added.
+export interface StyleDefnProps {
+    fontSize?: string;
+    lineHeight?: string;
+    textAlign?: string;
+}
+
+// If the document doesn't already have a user-defined style with the specified name,
+// (which should not include the -style suffix), create one with the specified styles.
+export function createStyleDefnIfUndefined(
+    styleNamePlain: string,
+    styles: StyleDefnProps,
+    supportFilesRoot: string = ""
+): CSSStyleRule | null {
+    const styleName = styleNamePlain + "-style";
+    const styleEditor = new StyleEditor(supportFilesRoot);
+    const documentToUse = getPageIFrame()?.contentDocument ?? document;
+    const rule = styleEditor.GetRuleForStyle(
+        styleName,
+        "",
+        false, // don't create it if it doesn't exist
+        documentToUse
+    );
+    if (rule) {
+        return null; // already exists, nothing to do
+    }
+    const newRule = styleEditor.GetRuleForStyle(
+        styleName,
+        "",
+        true, // create it if it doesn't exist
+        documentToUse
+    );
+    applyStyleDefnToRule(newRule, styles);
+
+    // As you add to this,some props may need to be applied to the paragraph inside.
+    // Pay attention to the setter for the corresponding property in the dialog event handlers.
+    return newRule;
+}
+
+function applyStyleDefnToRule(
+    rule: CSSStyleRule | null,
+    styles: StyleDefnProps
+): void {
+    if (!rule) return;
+
+    // Iterate through all properties in the styles object
+    for (const [key, value] of Object.entries(styles)) {
+        if (value !== undefined) {
+            // Convert camelCase to kebab-case (e.g., fontSize -> font-size)
+            const cssProperty = key.replace(/([A-Z])/g, "-$1").toLowerCase();
+            rule.style.setProperty(cssProperty, value, "important");
+        }
+    }
+}
+
 // Class provides a convenient way to group a style id and display name
 class FormattingStyle {
     public styleId: string;
     public englishDisplayName: string;
     public localizedName: string;
 
-    constructor(namestr: string, displayStr: string) {
-        this.styleId = namestr;
+    constructor(nameStr: string, displayStr: string) {
+        this.styleId = nameStr;
         this.englishDisplayName = displayStr;
     }
 
@@ -434,34 +493,38 @@ export default class StyleEditor {
         return filteredArray;
     }
 
-    private FindExistingUserModifiedStyleSheet(): CSSStyleSheet | null {
-        for (let i = 0; i < document.styleSheets.length; i++) {
+    private FindExistingUserModifiedStyleSheet(
+        documentToUse: Document = document
+    ): CSSStyleSheet | null {
+        for (let i = 0; i < documentToUse.styleSheets.length; i++) {
             if (
-                (<HTMLElement>document.styleSheets[i].ownerNode).title ===
+                (<HTMLElement>documentToUse.styleSheets[i].ownerNode).title ===
                 "userModifiedStyles"
             ) {
                 // alert("Found userModifiedStyles sheet: i= " + i + ", title= " +
-                //  (<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title + ", sheet= " +
-                //  document.styleSheets[i].ownerNode.textContent);
-                return <CSSStyleSheet>document.styleSheets[i];
+                //  (<StyleSheet>(<any>documentToUse.styleSheets[i]).ownerNode).title + ", sheet= " +
+                //  documentToUse.styleSheets[i].ownerNode.textContent);
+                return <CSSStyleSheet>documentToUse.styleSheets[i];
             }
         }
         return null;
     }
 
     //note, this currently just makes an element in the document, not a separate file
-    public GetOrCreateUserModifiedStyleSheet(): CSSStyleSheet | null {
-        let styleSheet = this.FindExistingUserModifiedStyleSheet();
+    public GetOrCreateUserModifiedStyleSheet(
+        documentToUse: Document = document
+    ): CSSStyleSheet | null {
+        let styleSheet = this.FindExistingUserModifiedStyleSheet(documentToUse);
         if (styleSheet == null) {
-            const newSheet = document.createElement("style");
-            document.getElementsByTagName("head")[0].appendChild(newSheet);
+            const newSheet = documentToUse.createElement("style");
+            documentToUse.getElementsByTagName("head")[0].appendChild(newSheet);
             newSheet.title = "userModifiedStyles";
             newSheet.type = "text/css";
 
             //at this point, we are tempted to just return newSheet, but in the FF29 we're using,
             //that is just an element at this point, not a really stylesheet.
             //so we just go searching for it again in the document.styleSheets array, and this time we will find it.
-            styleSheet = this.FindExistingUserModifiedStyleSheet();
+            styleSheet = this.FindExistingUserModifiedStyleSheet(documentToUse);
         }
         return styleSheet;
     }
@@ -505,9 +568,12 @@ export default class StyleEditor {
         // such as [lang='fr'] or span.ui-audioCurrent
         addToSelector: string,
         // If there is not already such a rule, should we create it, or return null?
-        create: boolean
+        create: boolean,
+        documentToUse: Document = document
     ): CSSStyleRule | null {
-        const styleSheet = this.GetOrCreateUserModifiedStyleSheet();
+        const styleSheet = this.GetOrCreateUserModifiedStyleSheet(
+            documentToUse
+        );
         if (styleSheet == null) {
             return null;
         }
@@ -1001,8 +1067,11 @@ export default class StyleEditor {
     public AdjustFormatButton(element: Element): void {
         const scale = EditableDivUtils.getPageScale();
         const eltBounds = element.getBoundingClientRect();
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const parentBounds = element.parentElement!.getBoundingClientRect();
+        const parent = element.parentElement;
+        if (!parent) {
+            return; // the element we're trying to adjust for may have been removed
+        }
+        const parentBounds = parent.getBoundingClientRect();
         const bottom = eltBounds.bottom - parentBounds.top;
         const fmtButton = document.getElementById("formatButton");
 
@@ -1016,7 +1085,7 @@ export default class StyleEditor {
             fmtButton.style.top = bottom / scale - this.fmtButtonHeight + "px";
             fmtButton.style.left = "unset";
             fmtButton.style.right = "0";
-        } else if (element.closest(".bloom-textOverPicture")) {
+        } else if (element.closest(kCanvasElementSelector)) {
             // This element is inside a text-over-picture element.
             fmtButton.style.top = bottom / scale + "px";
             fmtButton.style.left = -5 - this.fmtButtonWidth + "px";
@@ -1138,7 +1207,7 @@ export default class StyleEditor {
         // Instead, we have to actually compute the position, and observe changes in the size of
         // targetBox that might require adjusting it.
         // As far as I know, nothing ELSE can change (while this box has focus and the button exists)
-        // that would require moving it. (Moving a bubble moves the TG, so the button goes along.)
+        // that would require moving it. (Moving a canvas element moves the TG, so the button goes along.)
         $(targetBox).after(
             '<div id="formatButton" contenteditable="false" class="bloom-ui"><img contenteditable="false" src="' +
                 this._supportFilesRoot +
@@ -1182,7 +1251,7 @@ export default class StyleEditor {
         }
         const oldPaddingStr = window.getComputedStyle(this.boxBeingEdited)
             .paddingLeft;
-        BubbleManager.adjustOverlaysForPaddingChange(
+        CanvasElementManager.adjustCanvasElementsForPaddingChange(
             this.boxBeingEdited.ownerDocument.body,
             StyleEditor.GetStyleNameForElement(this.boxBeingEdited) ?? "",
             oldPaddingStr,
@@ -1192,7 +1261,7 @@ export default class StyleEditor {
         if (rule !== null) {
             rule.style.setProperty("padding", padding, "important");
             this.cleanupAfterStyleChange(true); // do not shrink box that we may have grown
-            RenderOverlayRoot(padding, (newPadding: string) => {
+            RenderCanvasElementRoot(padding, (newPadding: string) => {
                 this.changePadding(newPadding);
             });
         }
@@ -1774,22 +1843,22 @@ export default class StyleEditor {
         }
     }
 
-    changeOverlayProps(padding: string) {
+    changeCanvasElementProps(padding: string) {
         if (this.ignoreControlChanges) {
             return;
         }
         // const styleName = StyleEditor.GetStyleNameForElement(
         //     this.boxBeingEdited
         // );
-        RenderOverlayRoot(padding, (newPadding: string) => {
+        RenderCanvasElementRoot(padding, (newPadding: string) => {
             this.changePadding(newPadding);
         });
         // if (styleName) {
-        //     this.putOverlayRulesInDom(styleName, padding);
+        //     this.putCanvasElementRulesInDom(styleName, padding);
         // }
     }
 
-    // putOverlayRulesInDom(styleName: string, padding: string) {
+    // putCanvasElementRulesInDom(styleName: string, padding: string) {
     //     // TODO
     // }
 
@@ -2093,7 +2162,7 @@ export default class StyleEditor {
         this.selectButtons(current);
         this.setColorButtonColor("colorSelectButton", current.color);
         this.changeHiliteProps(current.color, current.hiliteBgColor);
-        this.changeOverlayProps(current.padding);
+        this.changeCanvasElementProps(current.padding);
         this.ignoreControlChanges = false;
         this.cleanupAfterStyleChange();
     }
@@ -2129,12 +2198,12 @@ export default class StyleEditor {
     }
 
     public cleanupAfterStyleChange(doNotShrink?: boolean) {
-        const target = this.boxBeingEdited;
-        const styleName = StyleEditor.GetStyleNameForElement(target);
+        const editable = this.boxBeingEdited;
+        const styleName = StyleEditor.GetStyleNameForElement(editable);
         if (!styleName) {
             return; // bizarre, since we put up the dialog
         }
-        OverflowChecker.MarkOverflowInternal(target, doNotShrink);
+        OverflowChecker.AdjustSizeOrMarkOverflow(editable, doNotShrink);
         this.updateLabelsWithStyleName();
         this.getParagraphTabDescription();
 
@@ -2250,11 +2319,9 @@ export default class StyleEditor {
                         if (this.xmatterMode) {
                             $("#style-page").remove();
                         }
-                        // Show the overlay tab only if the box being edited is in an overlay
+                        // Show the canvas element tab only if the box being edited is in a canvas element
                         if (
-                            !this.boxBeingEdited.closest(
-                                ".bloom-textOverPicture"
-                            )
+                            !this.boxBeingEdited.closest(kCanvasElementSelector)
                         ) {
                             document.getElementById("overlay-page")?.remove();
                         }
@@ -2300,9 +2367,12 @@ export default class StyleEditor {
                             this.changeHiliteProps(textColor, bgColor)
                     );
 
-                    RenderOverlayRoot(current.padding, (newPadding: string) => {
-                        this.changePadding(newPadding);
-                    });
+                    RenderCanvasElementRoot(
+                        current.padding,
+                        (newPadding: string) => {
+                            this.changePadding(newPadding);
+                        }
+                    );
 
                     if (!noFormatChange) {
                         this.updateFontControl(fontMetadata, current.fontName);
@@ -2411,9 +2481,9 @@ export default class StyleEditor {
                     }
                     // #formatButton doesn't always exist in text-on-picture
                     // divs, so we need a fallback that will exist in those cases.
-                    // But we also want repeatable positions for overlays, so we
+                    // But we also want repeatable positions for canvas elements, so we
                     // check for their popup div first.  See BL-13829.
-                    let orientOnButton = $("#overlay-context-controls");
+                    let orientOnButton = $("#canvas-element-context-controls");
                     if (orientOnButton.length === 0) {
                         orientOnButton = $("#formatButton");
                     }

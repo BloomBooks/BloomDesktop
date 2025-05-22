@@ -2,7 +2,7 @@
 
 /* The below statement controls the space between the image and the title on the frontcover. */
 
-.Device16x9Landscape.frontCover .bloom-imageContainer {
+.Device16x9Landscape.frontCover .bloom-canvas {
     order: 1;
     flex: 1 1 auto;
     margin-top: 1px !important;
