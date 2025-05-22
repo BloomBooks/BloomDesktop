@@ -5,9 +5,6 @@ import {
     ConfigrGroup,
     ConfigrSubgroup,
     ConfigrCustomStringInput,
-    ConfigrCustomNumberInput,
-    ConfigrColorPicker,
-    ConfigrInput,
     ConfigrCustomObjectInput,
     ConfigrBoolean,
     ConfigrSelect
@@ -25,20 +22,14 @@ import {
     DialogCancelButton,
     DialogOkButton
 } from "../../react_components/BloomDialog/commonDialogComponents";
-import {
-    BloomPalette,
-    getDefaultColorsFromPalette
-} from "../../react_components/color-picking/bloomPalette";
-import ColorPicker from "../../react_components/color-picking/colorPicker";
+import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import {
     ColorDisplayButton,
     DialogResult
 } from "../../react_components/color-picking/colorPickerDialog";
-import { IColorInfo } from "../../react_components/color-picking/colorSwatch";
 import {
     post,
     postJson,
-    postString,
     useApiObject,
     useApiStringState
 } from "../../utils/bloomApi";
@@ -50,10 +41,8 @@ import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { PWithLink } from "../../react_components/pWithLink";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 import { StyleAndFontTable } from "./StyleAndFontTable";
-import {
-    BloomSubscriptionIndicatorIconAndText,
-    useHaveSubscription
-} from "../../react_components/requiresSubscription";
+import { BloomSubscriptionIndicatorIconAndText } from "../../react_components/requiresSubscription";
+import { useGetFeatureStatus } from "../../react_components/featureStatus";
 
 let isOpenAlready = false;
 
@@ -325,7 +314,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
         setMigratedTheme("");
     };
 
-    const haveSubscription = useHaveSubscription();
+    const tierAllowsCoverIsImage = useGetFeatureStatus("coverIsImage")?.enabled;
 
     function saveSettingsAndCloseDialog() {
         if (settingsToReturnLater) {
@@ -428,7 +417,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         )}
                                         disabled={
                                             appearanceDisabled ||
-                                            !haveSubscription
+                                            !tierAllowsCoverIsImage
                                         }
                                     />
                                     <div
@@ -440,6 +429,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `}
                                     >
                                         <BloomSubscriptionIndicatorIconAndText
+                                            feature="coverIsImage"
                                             css={css`
                                                 margin-left: auto;
                                             `}

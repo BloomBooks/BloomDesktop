@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useState, useEffect } from "react";
@@ -37,20 +36,6 @@ import {
 } from "./featureStatus";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
-
-// TODO: REMOVE THIS. Everything should be using useGetFeatureStatus() instead of this.
-// Tells you wether the user has an active subscription or not.
-export function useHaveSubscription() {
-    const [haveSubscription, setHaveSubscription] = useState(true);
-
-    useEffect(() => {
-        get("settings/subscriptionEnabled", response => {
-            setHaveSubscription(response.data);
-        });
-    }, []);
-
-    return haveSubscription;
-}
 
 /**
  * A component's props that include a "disabled" property
@@ -447,22 +432,23 @@ export const RequiresSubscriptionDialog: React.FunctionComponent<{
 };
 
 export const BloomSubscriptionIndicatorIconAndText: React.FunctionComponent<{
+    feature: string;
     disabled?: boolean;
     className?: string;
 }> = props => {
-    const haveSubscription = useHaveSubscription();
+    const tierAllowsFeature = useGetFeatureStatus(props.feature)?.enabled;
 
     return (
         <div
             onClick={() => {
-                if (!haveSubscription && !props.disabled) {
+                if (!tierAllowsFeature && !props.disabled) {
                     openBloomSubscriptionSettings();
                 }
             }}
             css={css`
                 display: flex;
                 align-items: center;
-                ${haveSubscription || props.disabled || "cursor:pointer"};
+                ${tierAllowsFeature || props.disabled || "cursor:pointer"};
 
                 opacity: ${props.disabled ? kBloomDisabledOpacity : 1.0};
             `}
@@ -475,7 +461,7 @@ export const BloomSubscriptionIndicatorIconAndText: React.FunctionComponent<{
                     padding-right: 0.5em;
                 `}
             />
-            {haveSubscription ? (
+            {tierAllowsFeature ? (
                 <Span l10nKey={"AvailableWithSubscription"}>
                     Available with your Bloom Subscription
                 </Span>
