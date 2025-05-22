@@ -977,6 +977,23 @@ namespace Bloom.Publish
                     bloomCanvas.RemoveClass("bloom-has-canvas-element");
                 }
             }
+
+            // We need to clear out these attributes from the data-div, or a later call to update things will try to restore
+            // the background image representation of any cover image.
+            var dataDiv = dom.SelectSingleNode("//div[@id='bloomDataDiv']");
+            var bgImgDataAttrs = HtmlDom.BackgroundImgTupleNames;
+            foreach (
+                var elt in dataDiv
+                    .SafeSelectNodes($".//div[@{bgImgDataAttrs[0]}]")
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                foreach (var attr in bgImgDataAttrs)
+                {
+                    if (elt.HasAttribute(attr))
+                        elt.RemoveAttribute(attr);
+                }
+            }
         }
 
         /// <summary>
