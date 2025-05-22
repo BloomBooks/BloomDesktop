@@ -11,7 +11,7 @@
 
     // defaults which don't follow the primary/secondary pattern
     --game-button-wrong-color: white;
-    --game-button-wrong-bg-color: #848484; // mid-gray
+    --game-button-wrong-bg-color: #707070;
 }
 
 // This is a single place to push the general variables down into the more specific ones.
@@ -31,7 +31,12 @@
 
     --game-draggable-color: var(--game-secondary-color);
     --game-draggable-bg-color: var(--game-primary-bg-color);
+
     --game-draggable-target-outline-color: var(--game-draggable-bg-color);
+    // CSS variable cannot reference themselves, so we define this copy
+    // so that we can use color-mix() to make it semi-transparent
+    // when we want.
+    --game-draggable-target-outline-color-base: var(--game-draggable-bg-color);
 
     --game-header-color: var(--game-secondary-color);
     --game-header-bg-color: var(--game-primary-bg-color);
@@ -54,38 +59,40 @@
 }
 
 .bloom-page.game-theme-blue-on-white {
-    --game-primary-color: #2980bb;
+    --game-primary-color: #0058cc;
     --game-secondary-color: white;
 }
 
 .bloom-page.game-theme-red-on-white {
-    --game-primary-color: @bloom-red;
+    --game-primary-color: #da1b1b; // bloom red is too low contrast
     --game-secondary-color: white;
 }
 
 .bloom-page.game-theme-white-and-orange-on-blue {
-    // from an old rule in simple-dom-choice-activities.less; a slightly lighter blue
-    @legacy-blue: #539eff;
-    @legacy-orange: #ffb453;
-
-    --game-primary-color: @legacy-orange;
-    --game-secondary-color: @legacy-blue;
+    --game-primary-color: #ffb453;
+    --game-secondary-color: #0068f0;
 
     --game-text-color: white;
 
-    --game-draggable-color: white;
+    --game-draggable-color: black;
 
-    --game-header-color: var(--game-text-color);
+    --game-header-color: white;
     --game-header-bg-color: var(--game-secondary-color);
 
     --game-button-text-color: black;
     --game-button-bg-color: white;
-    --game-button-correct-color: var(--game-text-color);
+    --game-button-correct-color: black;
     --game-button-outline-color: var(--game-page-bg-color);
 
     --game-checkbox-outline-color: #848484;
 }
-
+.bloom-page.game-theme-pollinator {
+    --game-button-correct-bg-color: #c46232;
+    --game-draggable-bg-color: #6b678d;
+    --game-primary-color: #617321;
+    --game-secondary-color: white;
+    --game-draggable-target-outline-color: #61732185;
+}
 // These rules for monochrome-PDF are used unconditionally when publishing to PDF
 // (because the publishing process puts .pdfPublishMode on the body element, and this rule
 // is then more specific than any of the other theme rules).
@@ -102,4 +109,14 @@
     // if we don't reapply --game-text-color: var(--game-primary-color), it will
     // be white here even though we just set --game-primary-color to black.
     .apply-game-theme();
+}
+
+.bloom-page.targets-semi-transparent {
+    // The target outline sticks out and ruins the target image, so we
+    // set the opacity of game-draggable-target-outline-color to 0.5
+    --game-draggable-target-outline-color: color-mix(
+        in srgb,
+        var(--game-draggable-target-outline-color-base) 10%,
+        transparent
+    );
 }
