@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useCallback, useEffect, useState } from "react";
@@ -16,7 +15,6 @@ import { getBloomApiPrefix } from "../utils/bloomApi";
 import { getToolboxBundleExports } from "../bookEdit/js/bloomFrames";
 import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
-import { useHaveSubscription } from "../react_components/requiresSubscription";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 import axios from "axios";
 import {
@@ -124,6 +122,20 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
     const [selectedTemplatePageDiv, setSelectedTemplatePageDiv] = useState<
         HTMLDivElement | undefined
     >(undefined);
+
+    // TODO: REMOVE THIS. Everything should be using useGetFeatureStatus() instead of this.
+    // Tells you whether the user has an active subscription or not.
+    function useHaveSubscription() {
+        const [haveSubscription, setHaveSubscription] = useState(true);
+
+        useEffect(() => {
+            get("settings/subscriptionEnabled", response => {
+                setHaveSubscription(response.data);
+            });
+        }, []);
+
+        return haveSubscription;
+    }
 
     const isEnterpriseAvailable = useHaveSubscription();
 

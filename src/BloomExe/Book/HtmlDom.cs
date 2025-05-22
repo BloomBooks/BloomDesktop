@@ -2824,6 +2824,11 @@ namespace Bloom.Book
                 || HasWidgetPages();
         }
 
+        public bool HasGamePages() {
+            var nodes = _dom.SafeSelectNodes("//*[@data-feature='game']");
+            return nodes?.Length >= 1;
+        }
+
         public static bool IsActivityPage(SafeXmlElement pageElement)
         {
             var classes = pageElement.GetAttribute("class");
