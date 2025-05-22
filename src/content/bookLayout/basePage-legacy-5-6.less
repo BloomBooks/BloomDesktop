@@ -1664,3 +1664,13 @@ body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"]
 .bloom-canvas .bloom-canvas-element .bloom-imageContainer {
     margin: 0;
 }
+
+// added from new basePage.less to make cropping work
+.bloom-imageContainer {
+    overflow: hidden;
+}
+.bloom-canvas-element .bloom-imageContainer {
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+}
