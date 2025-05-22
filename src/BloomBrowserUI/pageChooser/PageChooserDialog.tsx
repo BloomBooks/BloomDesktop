@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useCallback, useEffect, useState } from "react";
@@ -16,7 +15,6 @@ import { getBloomApiPrefix } from "../utils/bloomApi";
 import { getToolboxBundleExports } from "../bookEdit/js/bloomFrames";
 import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
-import { useHaveSubscription } from "../react_components/requiresSubscription";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 import axios from "axios";
 import {
@@ -125,7 +123,11 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         HTMLDivElement | undefined
     >(undefined);
 
-    const isEnterpriseAvailable = useHaveSubscription();
+    const [featureToCheck, setFeatureToCheck] = useState<string | undefined>(
+        undefined
+    );
+    const isFeatureAvailable: boolean =
+        useGetFeatureStatus(featureToCheck)?.enabled || false;
 
     // Tell edit tab to disable everything when the dialog is up.
     // (Without this, the page list is not disabled since the modal
@@ -372,11 +374,11 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         selectedPageDiv: HTMLDivElement
     ): void => {
         // N.B. The double click handler in the inner component does the single-click actions first.
-        const requiresSubscription = selectedPageDiv.hasAttribute(
-            "data-feature"
-        );
 
-        if (requiresSubscription && !isEnterpriseAvailable) {
+        const featureName =
+            selectedPageDiv.getAttribute("data-feature") || undefined;
+        setFeatureToCheck(featureName);
+        if (featureName && isFeatureAvailable !== true) {
             return;
         }
         const convertAnywayCheckbox = document.getElementById(

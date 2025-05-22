@@ -146,8 +146,14 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterBooleanEndpointHandler(
-                "publish/hasActivities",
-                request => Model.Book.HasActivities,
+                "publish/hasGames",
+                request => Model.Book.HasGames,
+                null,
+                true
+            );
+            apiHandler.RegisterBooleanEndpointHandler(
+                "publish/hasWidgets",
+                request => Model.Book.HasWidgets,
                 null,
                 true
             );
