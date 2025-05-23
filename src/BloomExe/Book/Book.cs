@@ -1780,6 +1780,7 @@ namespace Bloom.Book
             Storage.MigrateToLevel5CanvasElement();
             Storage.MigrateToLevel6LegacyActivities();
             Storage.MigrateToLevel7BloomCanvas();
+            Storage.MigrateToDataFeatureAttribute();
 
             Storage.DoBackMigrations();
 
