@@ -245,7 +245,11 @@ namespace Bloom.WebLibraryIntegration
 
             if (!String.IsNullOrEmpty(collectionSettings?.DefaultBookshelf))
             {
-                if (collectionSettings.Subscription.HaveActiveSubscription)
+                var bookshelfFeatureStatus = FeatureStatus.GetFeatureUseStatus(
+                    collectionSettings.Subscription,
+                    FeatureName.Bookshelf
+                );
+                if (bookshelfFeatureStatus.Enabled)
                     tags = tags.Concat(
                         new[] { "bookshelf:" + collectionSettings.DefaultBookshelf }
                     );
@@ -254,9 +258,7 @@ namespace Bloom.WebLibraryIntegration
                     // At least at this point, we aren't localizing this message, because the people with Enterprise
                     // bookshelves likely know enough English to understand this message.
                     progress.WriteWarning(
-                        "This book was not uploaded to the '"
-                            + collectionSettings.DefaultBookshelf
-                            + "' bookshelf. Uploading to a bookshelf requires a valid Enterprise subscription."
+                        $"This book was not uploaded to the '{collectionSettings.DefaultBookshelf}' bookshelf. Uploading to a bookshelf requires a Bloom subscription tier of at least '{bookshelfFeatureStatus.SubscriptionTier}'."
                     );
                 }
             }
@@ -823,9 +825,9 @@ namespace Bloom.WebLibraryIntegration
         )
         {
             if (
-                book.CollectionSettings.Subscription.HaveActiveSubscription
-                && !PublishHelper.BookHasUnpublishableData(book)
-            )
+                // See comment below.
+                //book.CollectionSettings.Subscription.HaveActiveSubscription &&
+                !PublishHelper.BookHasUnpublishableData(book))
                 return false; // no need to prune the book data
 
             // We need to be sure that any in-memory changes have been written to disk
@@ -841,7 +843,8 @@ namespace Bloom.WebLibraryIntegration
             var pages = new List<SafeXmlElement>();
             foreach (SafeXmlElement page in copiedBook.GetPageElements())
                 pages.Add(page);
-            // Retiring this: We now stop you with the UI before you get this far
+            // Retiring this: We now stop you with the UI before you get this far.
+            // If reinstating something like this, check the initial if condition above.
             // if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
             // {
             //     // Remove enterprise features since they aren't allowed.

@@ -18,6 +18,7 @@ using Bloom.FontProcessing;
 using Bloom.History;
 using Bloom.Publish;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
@@ -604,13 +605,10 @@ namespace Bloom.Book
             var headXml = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
             var originalBody = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/body");
 
-            var subcriptionStatusClasses = this.CollectionSettings
-                .Subscription
-                .HaveActiveSubscription
-                ? "subscription-yes"
-                : "subscription-no";
+            var subscriptionTierClass =
+                $"subscription-tier-{this.CollectionSettings.Subscription.Tier}";
             var dom = new HtmlDom(
-                @"<html>" + headXml + $"<body class='{subcriptionStatusClasses}'></body></html>"
+                @"<html>" + headXml + $"<body class='{subscriptionTierClass}'></body></html>"
             );
             dom = Storage.MakeDomRelocatable(dom);
             // Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
@@ -2461,8 +2459,7 @@ namespace Bloom.Book
                 BookInfo.UseDeviceXMatter,
                 _bookData.MetadataLanguage1Tag,
                 oldIds,
-                BookInfo.AppearanceSettings.CoverIsImage
-                    && CollectionSettings.Subscription.HaveActiveSubscription
+                CoverIsImage
             );
 
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
@@ -4008,14 +4005,23 @@ namespace Bloom.Book
             }
         }
 
+        public bool CoverIsImage =>
+            BookInfo.AppearanceSettings.CoverIsImage
+            && FeatureStatus
+                .GetFeatureUseStatus(CollectionSettings.Subscription, FeatureName.CoverIsImage)
+                .Enabled;
+
         public bool FullBleed =>
             (
                 // Wants to be
                 // BookInfo.AppearanceSettings.FullBleed
                 // but we haven't put that in the book settings yet.
                 BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-                || BookInfo.AppearanceSettings.CoverIsImage
-            ) && CollectionSettings.Subscription.HaveActiveSubscription;
+                || CoverIsImage
+            )
+            && FeatureStatus
+                .GetFeatureUseStatus(CollectionSettings.Subscription, FeatureName.PrintShopReady)
+                .Enabled;
 
         /// <summary>
         /// Save the page content to the DOM.
@@ -5485,14 +5491,17 @@ namespace Bloom.Book
             // If we wanted to, it is also possible to compute it as a language-specific feature.
             // (That is, check if the languages in the book have non-empty text for part of the quiz section)
             BookInfo.MetaData.Feature_Quiz =
-                CollectionSettings.Subscription.HaveActiveSubscription && HasQuizPages;
+                FeatureStatus
+                    .GetFeatureUseStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .Enabled && HasQuizPages;
         }
 
         private void UpdateSimpleDomChoiceFeature()
         {
             BookInfo.MetaData.Feature_SimpleDomChoice =
-                CollectionSettings.Subscription.HaveActiveSubscription
-                && OurHtmlDom.HasSimpleDomChoicePages();
+                FeatureStatus
+                    .GetFeatureUseStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .Enabled && OurHtmlDom.HasSimpleDomChoicePages();
         }
 
         /// <summary>
