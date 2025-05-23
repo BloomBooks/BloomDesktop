@@ -982,16 +982,19 @@ namespace Bloom.Publish
             // the background image representation of any cover image.
             var dataDiv = dom.SelectSingleNode("//div[@id='bloomDataDiv']");
             var bgImgDataAttrs = HtmlDom.BackgroundImgTupleNames;
-            foreach (
-                var elt in dataDiv
-                    .SafeSelectNodes($".//div[@{bgImgDataAttrs[0]}]")
-                    .Cast<SafeXmlElement>()
-            )
+            if (dataDiv != null)
             {
-                foreach (var attr in bgImgDataAttrs)
+                foreach (
+                    var elt in dataDiv
+                        .SafeSelectNodes($".//div[@{bgImgDataAttrs[0]}]")
+                        .Cast<SafeXmlElement>()
+                )
                 {
-                    if (elt.HasAttribute(attr))
-                        elt.RemoveAttribute(attr);
+                    foreach (var attr in bgImgDataAttrs)
+                    {
+                        if (elt.HasAttribute(attr))
+                            elt.RemoveAttribute(attr);
+                    }
                 }
             }
         }
