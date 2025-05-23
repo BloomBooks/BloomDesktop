@@ -5,6 +5,8 @@ using System.IO;
 using SIL.IO;
 using SIL.Reporting;
 using Bloom.Utils;
+using System.Dynamic;
+using System.Collections.Generic;
 
 namespace Bloom.Book
 {
@@ -14,7 +16,7 @@ namespace Bloom.Book
         private string _filePath;
         private int _mostRecentPage;
         private bool _reducePdfMemory;
-        private bool _cmykPdf;
+        private string _colorProfileForPdf;
         private bool _fullBleed;
         private string _spreadsheetFolder;
         private bool _uploadAgreementsAccepted;
@@ -38,6 +40,22 @@ namespace Bloom.Book
                         throw new ApplicationException(
                             "JsonConvert.DeserializeObject() returned null"
                         );
+                    if (userPrefs.ColorProfileForPdf == null)
+                    {
+                        // This is a workaround for the fact that we used to have a property called cmykPdf
+                        // which was a boolean. Now we have a string property called ColorProfileForPdf.
+                        // We need to convert the old value to the new one, without preserving the old value.
+                        // The new value will be null if it has never been set, otherwise it may be the
+                        // empty string.
+                        var oldPrefs = JsonConvert.DeserializeObject<ExpandoObject>(RobustFile.ReadAllText(fileName)) as IDictionary<string, object>;
+                        if (oldPrefs != null && oldPrefs.TryGetValue("cmykPdf", out var cmykPdf))
+                        {
+                            if (cmykPdf is bool && (bool)cmykPdf)
+                                userPrefs.ColorProfileForPdf = "USWebCoatedSWOP";
+                            else if (cmykPdf is string && (string)cmykPdf == "true")
+                                userPrefs.ColorProfileForPdf = "USWebCoatedSWOP";
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
@@ -84,13 +102,13 @@ namespace Bloom.Book
             }
         }
 
-        [JsonProperty("cmykPdf")]
-        public bool CmykPdf
+        [JsonProperty("colorProfileForPdf")]
+        public string ColorProfileForPdf
         {
-            get { return _cmykPdf; }
+            get { return _colorProfileForPdf; }
             set
             {
-                _cmykPdf = value;
+                _colorProfileForPdf = value;
                 Save();
             }
         }
