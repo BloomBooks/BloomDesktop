@@ -403,7 +403,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 {
                     english: localizedUploadCollection,
                     l10nId: "already-localized",
-                    featureName: "uploadCollections",
+                    featureName: "bulkUpload",
                     subscriptionTooltipOverride: localizedEnterpriseTooltip,
                     onClick: () => {
                         progressBoxRef.current?.clear();
@@ -413,7 +413,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 {
                     english: localizedUploadFolder,
                     l10nId: "already-localized",
-                    featureName: "uploadFolderOfCollections",
+                    featureName: "bulkUpload",
                     subscriptionTooltipOverride: localizedEnterpriseTooltip,
                     onClick: () => {
                         progressBoxRef.current?.clear();
