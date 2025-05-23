@@ -5,6 +5,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
+using Bloom.SubscriptionAndFeatures;
 using SIL.IO;
 
 namespace Bloom.TeamCollection
@@ -241,11 +242,13 @@ namespace Bloom.TeamCollection
                         CurrentCollection.SyncLocalAndRepoCollectionFiles(false);
                     }
                     else if (
-                        Settings.Subscription.HaveActiveSubscription
+                        FeatureStatus
+                            .GetFeatureStatus(Settings.Subscription, FeatureName.TeamCollection)
+                            .Enabled
                         && CurrentCollectionEvenIfDisconnected != null
                         && CurrentCollectionEvenIfDisconnected
                             is DisconnectedTeamCollection disconnectedTC
-                        && disconnectedTC.DisconnectedBecauseNoEnterprise
+                        && disconnectedTC.DisconnectedBecauseOfSubscriptionTier
                     )
                     {
                         // We were disconnected because of Enterprise being off, but now the user has
@@ -572,10 +575,15 @@ namespace Bloom.TeamCollection
                 return; // already disabled, or not a TC
             string msg = null;
             string l10nId = null;
-            if (!settings.Subscription.HaveActiveSubscription)
+            var tcFeatureStatus = FeatureStatus.GetFeatureStatus(
+                Settings.Subscription,
+                FeatureName.TeamCollection
+            );
+            if (!tcFeatureStatus.Enabled)
             {
-                l10nId = "TeamCollection.DisabledForEnterprise";
-                msg = "Bloom Enterprise is not enabled.";
+                l10nId = "TeamCollection.DisabledForSubscriptionTier";
+                msg =
+                    $"Team Collections require a Bloom subscription tier of at least \"{tcFeatureStatus.SubscriptionTier}\".";
             }
 
             if (!IsRegistrationSufficient())
@@ -591,10 +599,14 @@ namespace Bloom.TeamCollection
                     new TeamCollectionMessage(MessageAndMilestoneType.Error, l10nId, msg),
                     CurrentCollection.RepoDescription
                 );
-                if (!settings.Subscription.HaveActiveSubscription)
+                if (
+                    !FeatureStatus
+                        .GetFeatureStatus(Settings.Subscription, FeatureName.TeamCollection)
+                        .Enabled
+                )
                     (
                         CurrentCollectionEvenIfDisconnected as DisconnectedTeamCollection
-                    ).DisconnectedBecauseNoEnterprise = true;
+                    ).DisconnectedBecauseOfSubscriptionTier = true;
             }
         }
 

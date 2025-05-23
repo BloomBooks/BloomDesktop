@@ -14,6 +14,7 @@ using Bloom.Api;
 using Bloom.Publish; // for DynamicJson
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
@@ -2824,8 +2825,9 @@ namespace Bloom.Book
                 || HasWidgetPages();
         }
 
-        public bool HasGamePages() {
-            var nodes = _dom.SafeSelectNodes("//*[@data-feature='game']");
+        public bool HasGamePages()
+        {
+            var nodes = _dom.SafeSelectNodes($"//{FeatureRegistry.kGamePageXPath}");
             return nodes?.Length >= 1;
         }
 

@@ -424,7 +424,14 @@ namespace Bloom.Publish.BloomPub
             //    than the one written to the .htm file.
             string modifiedBookFolderPath = modifiedBook.FolderPath;
 
-            if (modifiedBook.CollectionSettings.Subscription.HaveActiveSubscription)
+            if (
+                FeatureStatus
+                    .GetFeatureStatus(
+                        modifiedBook.CollectionSettings.Subscription,
+                        FeatureName.Game
+                    )
+                    .Enabled
+            )
                 ProcessQuizzes(modifiedBookFolderPath, modifiedBook.RawDom);
 
             // Right here, let's maintain the history of what the BloomdVersion signifies to a reader.

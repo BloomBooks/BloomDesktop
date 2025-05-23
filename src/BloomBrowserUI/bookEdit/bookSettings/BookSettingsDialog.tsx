@@ -314,7 +314,9 @@ export const BookSettingsDialog: React.FunctionComponent<{
         setMigratedTheme("");
     };
 
-    const tierAllowsCoverIsImage = useGetFeatureStatus("coverIsImage")?.enabled;
+    const tierAllowsFullPageCoverImage = useGetFeatureStatus(
+        "fullPageCoverImage"
+    )?.enabled;
 
     function saveSettingsAndCloseDialog() {
         if (settingsToReturnLater) {
@@ -417,7 +419,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         )}
                                         disabled={
                                             appearanceDisabled ||
-                                            !tierAllowsCoverIsImage
+                                            !tierAllowsFullPageCoverImage
                                         }
                                     />
                                     <div
@@ -429,7 +431,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `}
                                     >
                                         <BloomSubscriptionIndicatorIconAndText
-                                            feature="coverIsImage"
+                                            feature="fullPageCoverImage"
                                             css={css`
                                                 margin-left: auto;
                                             `}

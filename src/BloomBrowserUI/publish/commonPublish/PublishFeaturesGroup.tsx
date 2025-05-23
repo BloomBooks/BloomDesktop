@@ -29,6 +29,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     generation?: number; // bump this to force recalc of computed features
 }> = props => {
     const [motionEnabled] = useApiBoolean("publish/canHaveMotionMode", false);
+    // hasGames includes quizzes, simple choice, and drag activities.
     const [hasGames] = useApiBoolean("publish/hasGames", false);
     const [hasWidgets] = useApiBoolean("publish/hasWidgets", false);
     const [comicEnabled] = useApiBoolean("publish/comicEnabled", false);
@@ -173,7 +174,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "PublishTab.Feature.Activities.Present"
     );
 
-    const enterpriseRequiredTooltip = useL10n(
+    const subscriptionRequiredTooltip = useL10n(
         "This is disabled because publishing interactive activities requires a subscription.",
         "PublishTab.Feature.Activities.RequiresSubscription"
     );
@@ -185,7 +186,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     const activitiesTooltip = hasActivities
         ? hasActivitiesUserMayPublish
             ? hasActivitiesTooltip
-            : enterpriseRequiredTooltip
+            : subscriptionRequiredTooltip
         : noActivitiesTooltip;
 
     const checkTheActivityBox = hasActivitiesUserMayPublish;
