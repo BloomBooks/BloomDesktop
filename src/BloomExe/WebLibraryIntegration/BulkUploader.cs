@@ -13,6 +13,7 @@ using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
 using BloomTemp;
+using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -208,10 +209,14 @@ namespace Bloom.WebLibraryIntegration
                     );
                     return;
                 }
-                if (!settings.Subscription.HaveActiveSubscription)
+                var featureStatus = FeatureStatus.GetFeatureUseStatus(
+                    settings.Subscription,
+                    FeatureName.BulkUpload
+                );
+                if (!featureStatus.Enabled)
                 {
                     progress.WriteError(
-                        $"Skipping {uploadParams.Folder} because bulk upload is an Enterprise-only feature."
+                        $"Skipping {uploadParams.Folder} because bulk upload requires a Bloom subscription tier of at least \"{featureStatus.SubscriptionTier}\". "
                     );
                     return;
                 }

@@ -13,8 +13,11 @@ namespace Bloom.SubscriptionAndFeatures
         Widget, //HTML5 Widget
         Spreadsheet,
         TeamCollection,
+        ViewBookHistory, // Sort of tied to team collections now, but nothing says it has to be in the future...
         Motion,
         Music,
+
+        CoverIsImage, // The whole front cover is one full-bleed image
 
         //PictureDictionary,
         //? CustomizableTemplates,
@@ -107,6 +110,11 @@ namespace Bloom.SubscriptionAndFeatures
                 RestrictionInOriginalBooks = PublicationRestrictions.Remove,
                 ExistsInPageXPath = ".//div[contains(@data-activity,'game')]"
             },
+            new FeatureInfo
+            {
+                Feature = FeatureName.CoverIsImage,
+                SubscriptionTier = SubscriptionTier.Pro
+            },
             // ----------------------------------------
             // LocalCommunity Tier Features
             // ----------------------------------------
@@ -118,6 +126,11 @@ namespace Bloom.SubscriptionAndFeatures
             new FeatureInfo
             {
                 Feature = FeatureName.TeamCollection,
+                SubscriptionTier = SubscriptionTier.LocalCommunity
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.ViewBookHistory,
                 SubscriptionTier = SubscriptionTier.LocalCommunity
             },
             // ----------------------------------------

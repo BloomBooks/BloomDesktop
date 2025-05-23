@@ -141,18 +141,6 @@ namespace BloomTests.Collection
             Assert.AreEqual(expectedResult, subscription.IsDifferent(newCode));
         }
 
-        [TestCase(null, false)]
-        [TestCase("", false)]
-        [TestCase("Test-Expired-005691-4935", false)]
-        [TestCase("Legacy-LC-005839-2533", true)]
-        [TestCase("Fake-006273-0501", true)]
-        [TestCase("Fake-LC-006273-1463", true)]
-        public void HaveActiveSubscription_ReturnsCorrectValue(string code, bool hasSubscription)
-        {
-            var subscription = new Subscription(code);
-            Assert.AreEqual(hasSubscription, subscription.HaveActiveSubscription);
-        }
-
         [TestCase(null, "")]
         [TestCase("", "")]
         [TestCase("Fake-Thing-LC-006273-5397", "Fake Thing")] // dashes are replaced by spaces

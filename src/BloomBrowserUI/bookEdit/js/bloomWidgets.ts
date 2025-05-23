@@ -1,5 +1,6 @@
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
-import { get, getString } from "../../utils/bloomApi";
+import { getFeatureStatusAsync } from "../../react_components/featureStatus";
+import { getString } from "../../utils/bloomApi";
 
 // Code related to the fourth option for types of origami panel content, HTML Widget
 // An HTML widget must be a zip file (with extension wdgt) containing a self-contained web page rooted at
@@ -12,9 +13,9 @@ import { get, getString } from "../../utils/bloomApi";
 
 // Initialization function, sets up all the editing functions we support for these elements.
 export function SetupWidgetEditing(container: HTMLElement): void {
-    get("settings/subscriptionEnabled", result => {
-        const isEnterpriseEnabled: boolean = result.data;
-        if (isEnterpriseEnabled) {
+    getFeatureStatusAsync("widget").then(featureStatus => {
+        const isWidgetFeatureEnabled: boolean = featureStatus?.enabled || false;
+        if (isWidgetFeatureEnabled) {
             const widgets = Array.from(
                 container.getElementsByClassName("bloom-widgetContainer")
             );

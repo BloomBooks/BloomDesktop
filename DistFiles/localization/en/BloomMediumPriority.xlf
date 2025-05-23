@@ -507,7 +507,7 @@
         <note>This is a tooltip.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
-        <source xml:lang="en">This is disabled because publishing interactive activities requires a subcription.</source>
+        <source xml:lang="en">This is disabled because publishing interactive activities requires a subscription.</source>
         <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
         <note>This is a tooltip.</note>
       </trans-unit>
