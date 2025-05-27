@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.FontProcessing;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
@@ -423,7 +424,14 @@ namespace Bloom.Publish.BloomPub
             //    than the one written to the .htm file.
             string modifiedBookFolderPath = modifiedBook.FolderPath;
 
-            if (modifiedBook.CollectionSettings.Subscription.HaveActiveSubscription)
+            if (
+                FeatureStatus
+                    .GetFeatureUseStatus(
+                        modifiedBook.CollectionSettings.Subscription,
+                        FeatureName.Game
+                    )
+                    .Enabled
+            )
                 ProcessQuizzes(modifiedBookFolderPath, modifiedBook.RawDom);
 
             // Right here, let's maintain the history of what the BloomdVersion signifies to a reader.

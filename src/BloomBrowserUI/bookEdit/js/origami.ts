@@ -3,22 +3,23 @@
 import { kBloomCanvasClass, SetupImage } from "./bloomImages";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
-import { get, post, postThatMightNavigate } from "../../utils/bloomApi";
+import { post, postThatMightNavigate } from "../../utils/bloomApi";
 import { ElementQueries } from "css-element-queries";
 import { theOneCanvasElementManager } from "./CanvasElementManager";
+import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 
 $(() => {
     $("div.split-pane").splitPane();
 });
 
 export function setupOrigami() {
-    get("settings/subscriptionEnabled", result2 => {
-        const isEnterpriseEnabled: boolean = result2.data;
+    getFeatureStatusAsync("widget").then(featureStatus => {
+        const isWidgetFeatureEnabled: boolean = featureStatus?.enabled || false;
         const customPages = document.getElementsByClassName("customPage");
         if (customPages.length > 0) {
             const width = customPages[0].clientWidth;
             const origamiControl = getAbovePageControlContainer()
-                .append(createTypeSelectors(isEnterpriseEnabled))
+                .append(createTypeSelectors(isWidgetFeatureEnabled))
                 .append(createTextBoxIdentifier());
             // The order of this is not important in most ways, since it is positioned absolutely.
             // However, we position the page label, also absolutely, in the same screen area, and

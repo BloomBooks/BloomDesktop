@@ -78,24 +78,24 @@ namespace Bloom.SubscriptionAndFeatures
                 && code.Contains(kRedactedCodeSuffix)
             )
             {
-            if (code == "Local-Community-***-***")
-            {
-                // Migrate the downloaded book to the new code and descriptor.
-                code = "Legacy-LC-005839-2533"; // expires on 1 July 2025
-                descriptor = "Legacy-LC";
-            }
-            else
+                if (code == "Local-Community-***-***")
+                {
+                    // Migrate the downloaded book to the new code and descriptor.
+                    code = "Legacy-LC-005839-2533"; // expires on 1 July 2025
+                    descriptor = "Legacy-LC";
+                }
+                else
                 {
                     // set the descriptor by parsing the code
                     ParseCode(code, out descriptor, out _, out _);
                 }
             }
-        if (string.IsNullOrWhiteSpace(code) && (brandingProjectName == "Local-Community"))
-        {
-            // Migrate the local collection to the new code and descriptor.
-            code = "Legacy-LC-005839-2533"; // expires on 1 July 2025
-            descriptor = "Legacy-LC";
-        }
+            if (string.IsNullOrWhiteSpace(code) && (brandingProjectName == "Local-Community"))
+            {
+                // Migrate the local collection to the new code and descriptor.
+                code = "Legacy-LC-005839-2533"; // expires on 1 July 2025
+                descriptor = "Legacy-LC";
+            }
 
             // When on BloomLibrary.org you click "Download for Edit", we want to let you use the same tier and
             // branding as when it was uploaded, even if it is expired.
@@ -267,10 +267,6 @@ namespace Bloom.SubscriptionAndFeatures
             }
         }
 
-        // Enhance: soon we will divide up these so that they don't have exactly the same set of features
-        public bool HaveActiveSubscription =>
-            Tier == SubscriptionTier.Enterprise || Tier == SubscriptionTier.LocalCommunity;
-
         // From the subscription code extract everything up to the second-last hyphen.
         // Pays no attention to the validity of the code, just returns the part before the numbers.
         private string CalculateDescriptor()
@@ -335,16 +331,16 @@ namespace Bloom.SubscriptionAndFeatures
         private DateTime CalculateExpirationDate()
         {
             if (Code == null)
-            return DateTime.MinValue;
+                return DateTime.MinValue;
 
-        if (Code == "Local-Community")
-            return DateTime.ParseExact(
-                kExpiryDateForDeprecatedCodes,
-                "yyyy-MM-dd",
-                CultureInfo.InvariantCulture
-            );
+            if (Code == "Local-Community")
+                return DateTime.ParseExact(
+                    kExpiryDateForDeprecatedCodes,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture
+                );
 
-        ParseCode(Code, out var descriptor, out var datePart, out var combinedChecksum);
+            ParseCode(Code, out var descriptor, out var datePart, out var combinedChecksum);
 
             // Early exit for invalid code formats
             if (string.IsNullOrEmpty(descriptor) || datePart == 0 || combinedChecksum == 0)
@@ -357,19 +353,19 @@ namespace Bloom.SubscriptionAndFeatures
             int dateNum = datePart + 40000; // days since Dec 30 1899
             var date = new DateTime(1899, 12, 30) + TimeSpan.FromDays(dateNum);
 
-        // At one time there were some subscriptions which never ended. Those have been retired.
-        if (date.Year == 3000)
-            return DateTime.ParseExact(
-                kExpiryDateForDeprecatedCodes,
-                "yyyy-MM-dd",
-                CultureInfo.InvariantCulture
-            );
-        return date;
-    }
+            // At one time there were some subscriptions which never ended. Those have been retired.
+            if (date.Year == 3000)
+                return DateTime.ParseExact(
+                    kExpiryDateForDeprecatedCodes,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture
+                );
+            return date;
+        }
 
-    private SubscriptionTier CalculateTier()
-    {
-        if (GetIntegrityLabel() != "ok" || ExpirationDate < DateTime.Now)
+        private SubscriptionTier CalculateTier()
+        {
+            if (GetIntegrityLabel() != "ok" || ExpirationDate < DateTime.Now)
                 return SubscriptionTier.Basic;
             var descriptor = CalculateDescriptor();
             if (string.IsNullOrWhiteSpace(descriptor) || descriptor == "Default")

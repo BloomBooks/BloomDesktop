@@ -1,11 +1,10 @@
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
-import { get, post, postThatMightNavigate } from "../../utils/bloomApi";
+import { post, postThatMightNavigate } from "../../utils/bloomApi";
 
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).
 // It sets things up for the button (plural eventually) to appear when hovering over the video.
 // Currently the button actions are entirely in C#.
 
-import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { getToolboxBundleExports } from "./bloomFrames";
 import {
     SignLanguageToolControls,
@@ -19,14 +18,11 @@ import { getReplayIcon } from "../img/replayIcon";
 import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
 
 export function SetupVideoEditing(container) {
-    get("settings/subscriptionEnabled", result => {
-        const isEnterpriseEnabled: boolean = result.data;
-        $(container)
-            .find(".bloom-videoContainer")
-            .each((index, vc) => {
-                SetupVideoContainer(vc, isEnterpriseEnabled);
-            });
-    });
+    $(container)
+        .find(".bloom-videoContainer")
+        .each((index, vc) => {
+            SetupVideoContainer(vc);
+        });
     Array.from(container.getElementsByTagName("video")).forEach(
         (videoElement: HTMLVideoElement) => {
             videoElement.removeAttribute("controls");
@@ -62,10 +58,7 @@ export function SetupVideoEditing(container) {
     );
 }
 
-function SetupVideoContainer(
-    videoContainerDiv: Element,
-    isEnterpriseEnabled: boolean
-) {
+function SetupVideoContainer(videoContainerDiv: Element) {
     const videoElts = videoContainerDiv.getElementsByTagName("video");
     for (let i = 0; i < videoElts.length; i++) {
         const video = videoElts[i] as HTMLVideoElement;
@@ -76,34 +69,6 @@ function SetupVideoContainer(
     }
 
     SetupClickToShowSignLanguageTool(videoContainerDiv);
-
-    // BL-6133 - Only set up the Change Video button on the container,
-    //   if Enterprise features are enabled.
-    if (isEnterpriseEnabled) {
-        theOneLocalizationManager
-            .asyncGetText(
-                "EditTab.Toolbox.SignLanguage.ImportVideo",
-                "Import Video",
-                ""
-            )
-            .done(changeVideoText => {
-                // $(videoContainerDiv)
-                //     .mouseenter(function() {
-                //         const $this = $(this);
-                //         //SetImageTooltip(containerDiv, img);
-                //         // Enhance: we will have to do something about license information for videos, but it's complicated.
-                //         // I don't think we have fully determined how to store the information with the video, though I believe
-                //         // we can embed EXIF data as we do for pictures. But rights over a video are more complicated.
-                //         // Many people may have rights if they haven't been explicitly given up...producer, videographer,
-                //         // copyright owner of script, actors, owners of music used, copyright owner of work script is based on,
-                //         // possibly some subject matter may be copyright (the Eiffel tower at night is a notorious example).
-                //         // if (IsImageReal(img)) {
-                //         //     $this.prepend('<button class="editMetadataButton imageButton ' + buttonModifier + '" title="' +
-                //         //         theOneLocalizationManager.getText('EditTab.Image.EditMetadata') + '"></button>');
-                //         // }
-                //     })
-            });
-    }
 }
 
 function videoEndedEventHandler(e: Event) {

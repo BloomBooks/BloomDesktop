@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useRef, useState } from "react";
 import { get, getBoolean, postThatMightNavigate } from "../../utils/bloomApi";
@@ -12,7 +11,6 @@ import { useMonitorBookSelection } from "../../app/selectedBook";
 import BloomButton from "../../react_components/bloomButton";
 import { kDarkestBackground } from "../../bloomMaterialUITheme";
 import { useSubscribeToWebSocketForEvent } from "../../utils/WebSocketManager";
-import { useHaveSubscription } from "../../react_components/requiresSubscription";
 import { Tab, TabList, TabPanel } from "react-tabs";
 import { LocalizedString } from "../../react_components/l10nComponents";
 import { CollectionHistoryTable } from "../../teamCollection/CollectionHistoryTable";
@@ -25,6 +23,7 @@ import {
     Mode
 } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { BookInfoIndicator } from "../../react_components/BookInfoIndicator";
+import { useGetFeatureStatus } from "../../react_components/featureStatus";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
     // If false, as it usually is, the overlay above the preview iframe
@@ -41,7 +40,8 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     );
     const [reload, setReload] = useState(0);
     const [reloadStatus, setReloadStatus] = useState(0);
-    const enterpriseAvailable = useHaveSubscription();
+    const tierAllowsViewHistory = useGetFeatureStatus("viewBookHistory")
+        ?.enabled;
     // Force a reload when told the book changed, even if it's the same book [id]
     useSubscribeToWebSocketForEvent("bookContent", "reload", () =>
         setReload(old => old + 1)
@@ -86,14 +86,14 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
         );
     }, [selectedBookId, saveable, reload, reloadStatus]);
 
-    const canMakeBook = collectionKind != "main";
+    const canMakeBook = collectionKind !== "main";
     // History, and thus the tab controls, are only relevant if there's a selected book
-    // that is in the main collection, and only allowed if enterprise is enabled.
+    // that is in the main collection, and only allowed if enterprise tier allows it.
     // We currently only collect useful history in team collections, so hide it otherwise.
     const showTabs =
         selectedBookId &&
-        enterpriseAvailable &&
-        collectionKind == "main" &&
+        tierAllowsViewHistory &&
+        collectionKind === "main" &&
         isTeamCollection;
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
