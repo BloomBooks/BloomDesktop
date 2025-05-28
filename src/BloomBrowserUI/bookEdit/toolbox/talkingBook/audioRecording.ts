@@ -3621,80 +3621,28 @@ export default class AudioRecording implements IAudioRecorder {
     private async updateButtonStateAsync(expectedVerb: string): Promise<void> {
         this.setEnabledOrExpecting("record", expectedVerb);
 
-        const promisesToAwait: Promise<void>[] = [];
-        promisesToAwait.push(this.updateListenButtonStateAsync());
+        await this.updateListenButtonStateAsync();
 
-        // Now work on all the things that depend or sometimes depend on availability of audio within the text box.
-        const currentTextBoxIds: string[] = [];
-        const audioSentenceCollection = this.getAudioSegmentsInCurrentTextBox();
-        for (let i = 0; i < audioSentenceCollection.length; ++i) {
-            const audioSentenceElement = audioSentenceCollection[i];
-            if (audioSentenceElement) {
-                const id = audioSentenceElement.getAttribute("id");
-                if (id) {
-                    currentTextBoxIds.push(id);
-                }
-            }
-        }
+        let idsToCheck: string;
+        if (this.recordingMode === RecordingMode.Sentence) {
+            const currentElementIds = this.getSegmentIdsWithinCurrent();
+            idsToCheck = currentElementIds.toString();
+        } else {
+            console.assert(this.recordingMode === RecordingMode.TextBox);
 
-        const doWhenTextBoxAudioAvailabilityKnownCallback = async (
-            textBoxResponse: AxiosResponse<any>
-        ) => {
-            // Look up the subsequent async call that we (possibly) need to retrieve all the information we need to complete processing
-            let idsToCheck: string;
-            if (this.recordingMode == RecordingMode.Sentence) {
-                const currentElementIds = this.getSegmentIdsWithinCurrent();
-                idsToCheck = currentElementIds.toString();
+            const currentTextBox = this.getCurrentTextBox();
+            if (currentTextBox) {
+                idsToCheck = currentTextBox.id;
             } else {
-                console.assert(this.recordingMode == RecordingMode.TextBox);
-
-                const currentTextBox = this.getCurrentTextBox();
-                if (currentTextBox) {
-                    idsToCheck = currentTextBox.id;
-                } else {
-                    idsToCheck = "";
-                }
+                idsToCheck = "";
             }
-
-            try {
-                const elementResponse: AxiosResponse<any> = await axios.get(
-                    `/bloom/api/audio/checkForAnyRecording?ids=${idsToCheck}`
-                );
-
-                this.updateButtonStateHelper(
-                    expectedVerb,
-                    textBoxResponse,
-                    elementResponse
-                );
-            } catch (elementError) {
-                // Note: If there is no audio, it returns Request.Failed AKA it actually goes into the catch!!!
-                this.updateButtonStateHelper(
-                    expectedVerb,
-                    textBoxResponse,
-                    elementError.response
-                );
-            }
-        };
-
-        try {
-            const textBoxResponse: AxiosResponse<any> = await axios.get(
-                `/bloom/api/audio/checkForAnyRecording?ids=${currentTextBoxIds.toString()}`
-            );
-
-            // Now find if any audio exists for the current recording element.
-            promisesToAwait.push(
-                doWhenTextBoxAudioAvailabilityKnownCallback(textBoxResponse)
-            );
-        } catch (textBoxError) {
-            // Note: If there is no audio, it returns Request.Failed AKA it actually goes into the catch!!!
-            promisesToAwait.push(
-                doWhenTextBoxAudioAvailabilityKnownCallback(
-                    textBoxError.response
-                )
-            );
         }
 
-        await Promise.all(promisesToAwait);
+        const response: AxiosResponse<any> = await axios.get(
+            `/bloom/api/audio/checkForAnyRecording?ids=${idsToCheck}`
+        );
+
+        this.updateButtonStateHelper(expectedVerb, response);
     }
 
     public static async audioExistsForIdsAsync(
@@ -3712,25 +3660,13 @@ export default class AudioRecording implements IAudioRecorder {
 
     // Given a response (from "/bloom/api/audio/checkForAnyRecording?ids=..."), determines whether the response indicates that narration audio exists for any of the specified IDs
     private static DoesNarrationExist(response: AxiosResponse<any>): boolean {
-        // Note regarding Non-OK status codes: If there is no audio, it returns Request.Failed AKA it actually has Non-OK Status code!
-        //       This doesn't mean you need to log an error though, since it is "normal" for failed requests to return.
-        //       Just mark them as not-exist instead.
-
-        return (
-            response && response.status === 200 && response.statusText === "OK"
-        );
+        return response && response.data === true;
     }
 
     private updateButtonStateHelper(
         expectedVerb: string, // e.g. "record", "play", "check", etc.
-        textBoxResponse: AxiosResponse<any>,
         elementResponse: AxiosResponse<any>
     ): void {
-        // This var is true if the Text Box containing the Currently Highlighted Element contains audio for any of the elements within the text box.
-        const doesTextBoxAudioExist: boolean = AudioRecording.DoesNarrationExist(
-            textBoxResponse
-        );
-
         // This var is true if the Currently Highlighted Element contains audio
         // (If RecordingMode=TextBox but PlaybackMode=Sentence, this means if any of the sentences of the currently highlighted element contain audio)
         const doesElementAudioExist: boolean = AudioRecording.DoesNarrationExist(
@@ -3792,18 +3728,12 @@ export default class AudioRecording implements IAudioRecorder {
             ids.push(element.id);
         });
 
-        try {
-            const response = await axios.get(
-                "/bloom/api/audio/checkForAnyRecording?ids=" + ids
-            );
-            if (response.statusText === "OK") {
-                this.setStatus("listen", Status.Enabled);
-            } else {
-                this.setStatus("listen", Status.Disabled);
-            }
-        } catch {
-            // This handles the case where AudioRecording.HandleCheckForAnyRecording() (in C#)
-            // sends back a request.Failed("no audio") and thereby avoids an uncaught js exception.
+        const response = await axios.get(
+            "/bloom/api/audio/checkForAnyRecording?ids=" + ids
+        );
+        if (response.data === true) {
+            this.setStatus("listen", Status.Enabled);
+        } else {
             this.setStatus("listen", Status.Disabled);
         }
     }
