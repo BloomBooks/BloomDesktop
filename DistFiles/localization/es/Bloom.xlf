@@ -1112,7 +1112,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="Common.HigherSubscriptionTierRequired">
         <source xml:lang="en">Feature Requires Higher Subscription Tier</source>
-        <target xml:lang="es-ES" state="needs-translation">Feature Requires Higher Subscription Tier</target>
+        <target xml:lang="es-ES" state="translated">La función requiere un nivel de suscripción superior</target>
         <note>ID: Common.HigherSubscriptionTierRequired</note>
       </trans-unit>
       <trans-unit id="Common.Error" approved="yes">
@@ -4865,17 +4865,17 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage">
         <source xml:lang="en">Page {0} is the first page that uses this feature.</source>
-        <target xml:lang="es-ES" state="needs-translation">Page {0} is the first page that uses this feature.</target>
+        <target xml:lang="es-ES" state="translated">La página {0} es la primera página que utiliza esta función.</target>
         <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage</note>
       </trans-unit>
       <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.Options">
         <source xml:lang="en">In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.</source>
-        <target xml:lang="es-ES" state="needs-translation">In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.</target>
+        <target xml:lang="es-ES" state="translated">Para publicar tu libro, tienes que conseguir una suscripción Bloom con el nivel necesario, o eliminar el uso de esta función de tu libro.</target>
         <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.Options</note>
       </trans-unit>
       <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation">
         <source xml:lang="en">The book titled "{0}" uses the "{1}" feature.</source>
-        <target xml:lang="es-ES" state="needs-translation">The book titled "{0}" uses the "{1}" feature.</target>
+        <target xml:lang="es-ES" state="translated">El libro titulado "{0}" utiliza la función "{1}".</target>
         <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute" approved="yes">
@@ -6162,12 +6162,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="Subscription.RequiredTierForFeatureSentence">
         <source xml:lang="en">This feature requires a Bloom subscription tier of at least "{0}".</source>
-        <target xml:lang="es-ES" state="needs-translation">This feature requires a Bloom subscription tier of at least "{0}".</target>
+        <target xml:lang="es-ES" state="translated">Esta función requiere un nivel de suscripción a Bloom de al menos "{0}".</target>
         <note>ID: Subscription.RequiredTierForFeatureSentence</note>
       </trans-unit>
       <trans-unit id="Subscription.FeatureIsIncludedSentence">
         <source xml:lang="en">This feature is included in your {0} subscription.</source>
-        <target xml:lang="es-ES" state="needs-translation">This feature is included in your {0} subscription.</target>
+        <target xml:lang="es-ES" state="translated">Esta función está incluida en tu suscripción {0}.</target>
         <note>ID: Subscription.FeatureIsIncludedSentence</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
