@@ -172,12 +172,14 @@ namespace Bloom.Book
         ///   Bloom 6.2  7 = Changed name of element that contains canvas elements to bloom-canvas
         ///     (Previously was bloom-imageContainer, which conflicted with the use inside canvas
         ///     elements, and was inaccurate because it could contain many other things.)
+        ///   Bloom 6.2  8 = Replaced enterprise-only class on template pages with a data-feature
+        ///     attribute that is more specific and can be tied to subscription tiers
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 7;
+        public const int kMaintenanceLevel = 8;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
