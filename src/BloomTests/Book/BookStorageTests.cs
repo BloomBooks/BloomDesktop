@@ -2260,7 +2260,7 @@ namespace BloomTests.Book
                 0);
 
             // SUT
-            storage.MigrateBackfromDataFeatureAttributes();
+            storage.MigrateBackFromLevel8DataFeatureAttributes();
 
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
                "//body/div[contains(@class, 'bloom-page')]",
