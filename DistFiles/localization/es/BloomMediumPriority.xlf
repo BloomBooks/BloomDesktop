@@ -55,7 +55,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Draggable">
         <source xml:lang="en">Objects to Drag</source>
-        <target xml:lang="es-ES" state="translated">Arrastrable</target>
+        <target xml:lang="es-ES" state="translated">Objetos para arrastrar</target>
         <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
       </trans-unit>
       <!-- <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading">
@@ -81,7 +81,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.FixedInPlace">
         <source xml:lang="en">Objects that do not Move</source>
-        <target xml:lang="es-ES" state="translated">Fijado en el lugar</target>
+        <target xml:lang="es-ES" state="translated">Objetos que no se mueven</target>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions">
@@ -166,7 +166,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TargetsSameSize">
         <source xml:lang="en">Keep all targets the same size so students can't use size as a clue.</source>
-        <target xml:lang="es-ES" state="needs-translation">Keep all targets the same size so students can't use size as a clue.</target>
+        <target xml:lang="es-ES" state="translated">Mantenga todos los objetivos del mismo tamaño para que los alumnos no puedan utilizar el tamaño como pista.</target>
         <note>ID: EditTab.Toolbox.DragActivity.TargetsSameSize</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SceneInstructions">
@@ -186,7 +186,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ShowTargetsPlay">
         <source xml:lang="en">Show drag targets during Play</source>
-        <target xml:lang="es-ES" state="needs-translation">Show drag targets during Play</target>
+        <target xml:lang="es-ES" state="translated">Mostrar objetivos de arrastre durante la reproducción</target>
         <note>ID: EditTab.Toolbox.DragActivity.ShowTargetsPlay</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ShowAnswersInTargets">
@@ -201,7 +201,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TestInstructions">
         <source xml:lang="en">Try it out!</source>
-        <target xml:lang="es-ES" state="translated">Pruébalo!</target>
+        <target xml:lang="es-ES" state="translated">¡Pruébalo!</target>
         <note>ID: EditTab.Toolbox.DragActivity.TestInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TryAgain">
@@ -275,43 +275,43 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragLettersInstructions">
         <source>Drag the letters where they go</source>
-        <target xml:lang="es-ES" state="needs-translation">Drag the letters where they go</target>
+        <target xml:lang="es-ES" state="translated">Arrastra las letras donde vayan</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragLettersInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions">
         <source>Drag the pictures where they go</source>
-        <target xml:lang="es-ES" state="needs-translation">Drag the pictures where they go</target>
+        <target xml:lang="es-ES" state="translated">Arrastra las imágenes donde vayan</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions">
         <source>Drag the pictures to their shadows</source>
-        <target xml:lang="es-ES" state="needs-translation">Drag the pictures to their shadows</target>
+        <target xml:lang="es-ES" state="translated">Arrastra las imágenes hasta sus sombras</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions">
         <source>Match sounds with their words</source>
-        <target xml:lang="es-ES" state="needs-translation">Match sounds with their words</target>
+        <target xml:lang="es-ES" state="translated">Emparejar sonidos con sus palabras</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions
         </note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions">
         <source>Drag the correct sound to matching word</source>
-        <target xml:lang="es-ES" state="needs-translation">Drag the correct sound to matching word</target>
+        <target xml:lang="es-ES" state="translated">Arrastre el sonido correcto a la palabra correspondiente</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions">
         <source>Drag the word to the matching image</source>
-        <target xml:lang="es-ES" state="needs-translation">Drag the word to the matching image</target>
+        <target xml:lang="es-ES" state="translated">Arrastre la palabra a la imagen correspondiente</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions">
         <source>Match each image to a word</source>
-        <target xml:lang="es-ES" state="needs-translation">Match each image to a word</target>
+        <target xml:lang="es-ES" state="translated">Relacione cada imagen con una palabra</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.CustomGameInstructions">
         <source>Put instructions here</source>
-        <target xml:lang="es-ES" state="needs-translation">Put instructions here</target>
+        <target xml:lang="es-ES" state="translated">Ponga las instrucciones aquí</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.CustomGameInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool">
