@@ -40,6 +40,7 @@ export interface ITool {
     showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
     hideTool(); // called when changing tools or hiding the toolbox.
     // Note, new implementations of updateMarkup may need to call EditableDivUtils.doCkEditorCleanup() like readerToolsModel.doMarkup() does.
+    // TODO this comment may be out of date
     updateMarkup(); // called on most keypresses (but notably, not on arrow navigation, also not Ctrl+C). It is called on typing letters (obviously), Ctrl+X, Ctrl+V, Ctrl+Z, Ctrl+Y etc... or even just pressing and releasing Ctrl or Shift.
     // like updateMarkup, but expected to be async. Implement instead of updateMarkup if you need to use async functions.
     // Because it is async, it is not guaranteed that all the async processing will complete before another keystroke is received.
@@ -945,15 +946,26 @@ function beginAddTool(
         // we don't do it to localizations. But in English, the code value beats the xlf one.
         let toolLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim();
         toolLabel = ToolBox.addToolToString(toolLabel, true);
+        // TODO logic for whether we add data-feature. On the tool?
+
         const header = $(
-            "<h3 data-i18n='" + i18Id + "'>" + toolLabel + "</h3>"
+            "<h3 data-i18n='" +
+                i18Id +
+                "'>" +
+                toolLabel +
+                '<span class="subscription-badge"></span>' +
+                "</h3>"
         );
+        // TODO comment for now, all subscription tools are React, so we haven't implemented a way to add the subscription badge to old-style tools
         const reactTool = (tool as unknown) as IReactTool;
         header.attr("data-toolId", toolName);
         content.attr("data-toolId", toolName);
 
+        console.log("before");
         // Check feature status asynchronously and apply subscription requirements if needed
         if (reactTool.featureName) {
+            console.log("got here");
+            header.attr("data-feature", reactTool.featureName);
             getFeatureStatusAsync(reactTool.featureName).then(featureStatus => {
                 if (
                     featureStatus &&
@@ -1285,6 +1297,65 @@ function resizeToolbox() {
 }
 
 /**
+ * Gets the localized title text for a feature based on its status
+ * @param featureName The name of the feature to get status for
+ * @returns A Promise that resolves to the localized title text
+ */
+async function getFeatureStatusTitleText(featureName: string): Promise<string> {
+    return new Promise<string>(resolve => {
+        get(`features/status?featureName=${featureName}`, c => {
+            const featureStatus = c.data;
+            const localizedTier = featureStatus?.localizedTier;
+
+            let titleText: string;
+            if (featureStatus.enabled) {
+                titleText = theOneLocalizationManager.getText(
+                    "Subscription.FeatureIsIncludedSentence",
+                    "This feature is included in your {0} subscription.",
+                    localizedTier
+                );
+            } else {
+                titleText = theOneLocalizationManager.getText(
+                    "Subscription.RequiredTierForFeatureSentence",
+                    'This feature requires a Bloom subscription tier of at least "{0}".',
+                    localizedTier
+                );
+            }
+            resolve(titleText);
+        });
+    });
+}
+
+/**
+ * Adds feature status message titles to subscription badges found in the specified jQuery element
+ * @param element The jQuery element containing subscription badges
+ */
+async function addFeatureStatusMessageTitlesToSubscriptionBadges(
+    element: JQuery
+): Promise<void> {
+    const subscriptionBadges = element.find(".subscription-badge");
+    const promises: Promise<void>[] = [];
+
+    subscriptionBadges.each(function(_i, subscriptionBadge) {
+        if (subscriptionBadge.hasAttribute("title")) return;
+        const featureName = subscriptionBadge.parentElement?.getAttribute(
+            "data-feature"
+        );
+        if (!featureName) return;
+
+        const promise = (async () => {
+            const titleText = await getFeatureStatusTitleText(featureName);
+            subscriptionBadge.setAttribute("title", titleText);
+        })();
+
+        promises.push(promise);
+    });
+
+    // Wait for all the promises to complete
+    await Promise.all(promises);
+}
+
+/**
  * Adds one tool to the toolbox
  * @param {String} newContent
  * @param {String} toolId
@@ -1299,9 +1370,11 @@ function loadToolboxToolText(
 
     parts.filter("*[data-i18n]").localize();
     parts.find("*[data-i18n]").localize();
-
     // expect parts to have 2 items, an h3 and a div
     if (parts.length < 2) return;
+
+    // Add feature status message titles to the subscription badges
+    addFeatureStatusMessageTitlesToSubscriptionBadges(parts);
 
     // get the toolbox tool label
     const header = parts.filter("h3").first();

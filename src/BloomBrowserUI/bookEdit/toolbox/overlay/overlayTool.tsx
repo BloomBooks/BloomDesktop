@@ -797,6 +797,8 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
         return kOverlayToolId;
     }
 
+    public featureName?: string | undefined = kOverlayToolId;
+
     public isExperimental(): boolean {
         return false;
     }

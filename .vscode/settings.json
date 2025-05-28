@@ -25,5 +25,7 @@
     },
     "[less]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
-    }
+    },
+    "workbench.colorCustomizations": {},
+    "editor.language.colorizedBracketPairs": []
 }

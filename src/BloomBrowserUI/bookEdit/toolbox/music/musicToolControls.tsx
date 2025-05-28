@@ -6,6 +6,7 @@ import { get } from "../../../utils/bloomApi";
 import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
 import "./music.less";
+import { kMusicToolId } from "../toolIds";
 
 interface IMusicState {
     activeRadioValue: string;
@@ -419,8 +420,10 @@ export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
     }
 
     public id(): string {
-        return "music";
+        return kMusicToolId;
     }
+
+    public featureName?: string | undefined = kMusicToolId;
 
     public showTool() {
         if (this.controlsElement) {

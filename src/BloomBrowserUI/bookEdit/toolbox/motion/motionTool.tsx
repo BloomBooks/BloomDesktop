@@ -18,6 +18,7 @@ import {
     kBloomCanvasClass
 } from "../../js/bloomImages";
 import { css } from "@emotion/react";
+import { kMotionToolId } from "../toolIds";
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
@@ -284,8 +285,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     public id(): string {
-        return "motion";
+        return kMotionToolId;
     }
+
+    public featureName?: string | undefined = kMotionToolId;
 
     private getBloomCanvasToAnimate(): HTMLElement | null {
         const page = this.getPage();
