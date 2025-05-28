@@ -343,7 +343,7 @@ namespace Bloom.Publish
                             BookletPortion = BookletPortion,
                             BookIsFullBleed = _currentlyLoadedBook.FullBleed,
                             PrintWithFullBleed = GetPrintingWithFullBleed(),
-                            Cmyk = _currentlyLoadedBook.UserPrefs.CmykPdf,
+                            ColorProfile = _currentlyLoadedBook.UserPrefs.ColorProfileForPdf,
                             HtmlPageCount = this.HtmlPageCount,
                             Author = _currentlyLoadedBook.BookInfo.MetaData.Author,
                             Title = _currentlyLoadedBook.BookInfo.MetaData.Title,
@@ -654,7 +654,7 @@ namespace Bloom.Publish
                         throw new ArgumentOutOfRangeException();
                 }
                 string forPrintShop =
-                    _currentlyLoadedBook.UserPrefs.CmykPdf
+                    !string.IsNullOrEmpty(_currentlyLoadedBook.UserPrefs.ColorProfileForPdf)
                     || _currentlyLoadedBook.UserPrefs.FullBleed
                         ? "-printshop"
                         : "";
@@ -694,12 +694,13 @@ namespace Bloom.Publish
                 );
                 _lastDirectory = Path.GetDirectoryName(destFileName);
 
-                if (_currentlyLoadedBook.UserPrefs.CmykPdf)
+                if (!String.IsNullOrEmpty(_currentlyLoadedBook.UserPrefs.ColorProfileForPdf))
                 {
-                    // PDF for Printshop (CMYK US Web Coated V2)
+                    // PDF for Printshop (CMYK color conversion)
                     ProcessPdfFurtherAndSave(
                         PdfFilePath,
                         ProcessPdfWithGhostscript.OutputType.Printshop,
+                        _currentlyLoadedBook.UserPrefs.ColorProfileForPdf,
                         destFileName
                     );
                 }
@@ -736,6 +737,7 @@ namespace Bloom.Publish
         internal static void ProcessPdfFurtherAndSave(
             string pdfFilePath,
             ProcessPdfWithGhostscript.OutputType type,
+            string colorProfile,
             string outputPath
         )
         {
@@ -799,6 +801,7 @@ namespace Bloom.Publish
                 {
                     var pdfProcess = new ProcessPdfWithGhostscript(
                         type,
+                        colorProfile,
                         sender as BackgroundWorker,
                         e
                     );

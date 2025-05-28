@@ -2331,7 +2331,7 @@ These are similar but already have game-theme classes
                 0);
 
             // SUT
-            storage.MigrateBackfromDataFeatureAttributes();
+            storage.MigrateBackFromLevel8DataFeatureAttributes();
 
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
                "//body/div[contains(@class, 'bloom-page')]",
