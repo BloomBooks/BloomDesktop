@@ -1206,6 +1206,7 @@ namespace Bloom.Book
                         if (goodDiv == null)
                         {
                             badDiv.SetAttribute("lang", tag);
+                            continue;   // we don't want to delete a div that has been fixed.  BL-14597
                         }
                         else if (
                             string.IsNullOrWhiteSpace(goodDiv.InnerText)
