@@ -537,7 +537,7 @@ namespace Bloom.Book
             // For 6.1 and 6.0 only; don't merge into 6.2
             if (
                 breakingFeatureRequirements.All(
-                    fr => fr.FeatureId == "canvasElement" || fr.FeatureId == "bloomCanvas" || fr.FeatureId == "dataFeature"
+                    fr => fr.FeatureId == "canvasElement" || fr.FeatureId == "bloomCanvas"
                 )
             )
                 return "";
@@ -3793,10 +3793,6 @@ namespace Bloom.Book
             // Also, each back migration has the potential to cause problems since the corresponding forward
             // migration is likely to be run again. Make sure that each migration that might be re-run will
             // not cause problems if it is run repeatedly, and comment it to reinforce this.
-            if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "dataFeature"))
-            {
-                MigrateBackFromLevel8DataFeatureAttributes();
-            }
             if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "bloomCanvas"))
             {
                 MigrateBackFromLevel7BloomCanvas();
@@ -3805,37 +3801,6 @@ namespace Bloom.Book
             {
                 MigrateBackFromLevel5CanvasElement();
             }
-        }
-
-        /// <summary>
-        /// Only for 6.0 and 6.1! Do not merge to 6.2.
-        /// </summary>
-        /// <remarks>
-        /// Possibly merge to 6.2a if that branch lasts long enough.
-        /// </remarks>
-        public void MigrateBackFromLevel8DataFeatureAttributes()
-        {
-            if (!Program.RunningUnitTests)
-                Guard.Against(
-                    !BookInfo.IsSaveable,
-                    "We should not even think about migrating a book that is not Saveable"
-                );
-            if (GetMaintenanceLevel() <= 7)
-                return;
-            foreach (
-                XmlElement pageDiv in Dom.SafeSelectNodes(
-                    "//body/div[contains(@class, 'bloom-page')]"
-                )
-            )
-            {
-                var dataFeature = pageDiv.GetAttribute("data-feature");
-                if (!string.IsNullOrEmpty(dataFeature))
-                {
-                    pageDiv.RemoveAttribute("data-feature");
-                    HtmlDom.AddClass(pageDiv, "enterprise-only");
-                }
-            }
-            Dom.UpdateMetaElement("maintenanceLevel", "7");
         }
 
         /// <summary>
