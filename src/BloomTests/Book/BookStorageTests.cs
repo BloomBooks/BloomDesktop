@@ -2295,7 +2295,7 @@ These are similar but already have game-theme classes
         }
 
         [Test]
-        public void MigrateToDataFeatureAttribute_FindsGame()
+        public void MigrateToLevel8RemoveEnterpriseOnly_WorksForGames()
         {
             var threeGamesHtml = @"<html>
   <head></head>
@@ -2432,17 +2432,16 @@ These are similar but already have game-theme classes
             assertThatDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-page') and @data-feature]");
 
             //SUT
-            storage.MigrateToLevel8DataFeatureAttribute();
+            storage.MigrateToLevel8RemoveEnterpriseOnly();
 
             assertThatDom.HasNoMatchForXpath(
                 "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]");
-            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[contains(@class,'bloom-page') and @data-feature='game']",
-                3);
+            assertThatDom.HasNoMatchForXpath(
+                "//div[contains(@class,'bloom-page') and @data-feature]");
         }
 
         [Test]
-        public void MigrateToDataFeatureAttribute_FindsOverlay()
+        public void MigrateToLevel8RemoveEnterpriseOnly_WorksForOverlay()
         {
             // One overlay page is marked enterprise-only, but the other is not.
             // This means that one page gets the data-feature attribute, and the other does not.
@@ -2515,18 +2514,17 @@ These are similar but already have game-theme classes
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(xpathOverlay, 2);
 
             //SUT
-            storage.MigrateToLevel8DataFeatureAttribute();
+            storage.MigrateToLevel8RemoveEnterpriseOnly();
 
             assertThatDom.HasNoMatchForXpath(
                 "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]");
-            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[contains(@class,'bloom-page') and @data-feature='overlay']",
-                1);
+            assertThatDom.HasNoMatchForXpath(
+                "//div[contains(@class,'bloom-page') and @data-feature]");
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(xpathOverlay, 2);
         }
 
         [Test]
-        public void MigrateToDataFeatureAttribute_FindsWidget()
+        public void MigrateToLevel8RemoveEnterpriseOnly_WorksForWidget()
         {
             var oneWidgetPageHtml = @"<html>
   <head></head>
@@ -2550,17 +2548,16 @@ These are similar but already have game-theme classes
             assertThatDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-page') and @data-feature]");
 
             //SUT
-            storage.MigrateToLevel8DataFeatureAttribute();
+            storage.MigrateToLevel8RemoveEnterpriseOnly();
 
             assertThatDom.HasNoMatchForXpath(
                 "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]");
-            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[contains(@class,'bloom-page') and @data-feature='widget']",
-                1);
+            assertThatDom.HasNoMatchForXpath(
+                "//div[contains(@class,'bloom-page') and @data-feature]");
         }
 
         [Test]
-        public void MigrateToDataFeatureAttribute_FindsOldActivitiesAsGames()
+        public void MigrateToLevel8RemoveEnterpriseOnly_WorksForOldActivities()
         {
             var twoOldActivitiesHtml = @"<html>
   <head></head>
@@ -2658,13 +2655,12 @@ These are similar but already have game-theme classes
             assertThatDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-page') and @data-feature]");
 
             //SUT
-            storage.MigrateToLevel8DataFeatureAttribute();
+            storage.MigrateToLevel8RemoveEnterpriseOnly();
 
             assertThatDom.HasNoMatchForXpath(
                 "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]");
-            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
-                "//div[contains(@class,'bloom-page') and @data-feature='game']",
-                2);
+            assertThatDom.HasNoMatchForXpath(
+                "//div[contains(@class,'bloom-page') and @data-feature]");
         }
     }
 }

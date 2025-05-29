@@ -109,7 +109,7 @@ namespace Bloom.Book
         void MigrateToLevel5CanvasElement();
         void MigrateToLevel6LegacyActivities();
         void MigrateToLevel7BloomCanvas();
-        void MigrateToLevel8DataFeatureAttribute();
+        void MigrateToLevel8RemoveEnterpriseOnly();
         void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
@@ -172,8 +172,7 @@ namespace Bloom.Book
         ///   Bloom 6.2  7 = Changed name of element that contains canvas elements to bloom-canvas
         ///     (Previously was bloom-imageContainer, which conflicted with the use inside canvas
         ///     elements, and was inaccurate because it could contain many other things.)
-        ///   Bloom 6.2  8 = Replaced enterprise-only class on template pages with a data-feature
-        ///     attribute that is more specific and can be tied to subscription tiers
+        ///   Bloom 6.2  8 = Removed enterprise-only class on all pages that have it
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
@@ -1121,16 +1120,6 @@ namespace Bloom.Book
                 BloomReaderMinVersion = "3.3",
                 // This is used for all images so will nearly always succeed fast.
                 XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
-            },
-            new Feature()
-            {
-                FeatureId = "dataFeature",
-                FeaturePhrase = "6.2 use of data-feature",
-                // Plan is to make a special exception to this for late releases of 6.1 and 6.0,
-                // which will know how to reverse the migration.
-                BloomDesktopMinVersion = "6.2",
-                BloomReaderMinVersion = "3.3",
-                XPath = $"//div[contains(@class,'bloom-page') and @data-feature]"
             }
         };
 
@@ -4043,31 +4032,15 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Ensure that the data-feature attribute is set on all pages that have an "enterprise-only" class,
-        /// and that the class is removed. This is needed for the new subscription system.
+        /// Remove the "enterprise-only" class on all pages that have it.
         /// </summary>
-        public void MigrateToLevel8DataFeatureAttribute()
+        public void MigrateToLevel8RemoveEnterpriseOnly()
         {
             if (GetMaintenanceLevel() >= 8)
                 return;
             var enterpriseOnlyPages = Dom.SafeSelectNodes("//div[contains(@class, 'enterprise-only')]");
-            var featureList = new List<FeatureName>();
             foreach (SafeXmlElement page in enterpriseOnlyPages)
             {
-                featureList.Clear();
-                foreach (var feature in FeatureRegistry.Features)
-                {
-                    if (string.IsNullOrEmpty(feature.ExistsInPageXPath))
-                        continue;
-                    var featureElements = page.SafeSelectNodes(feature.ExistsInPageXPath);
-                    if (featureElements.Length > 0)
-                        featureList.Add(feature.Feature);
-                }
-                Debug.Assert(featureList.Count > 0, "No feature found for enterprise-only page??");
-                if (featureList.Count > 1)
-                    ReduceListToMainFeature(featureList);
-                if (featureList.Count > 0)
-                    page.SetAttribute("data-feature", featureList[0].ToString().ToLowerInvariant());
                 page.RemoveClass("enterprise-only");
             }
             Dom.UpdateMetaElement("maintenanceLevel", "8");

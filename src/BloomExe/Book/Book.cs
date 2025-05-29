@@ -1780,7 +1780,7 @@ namespace Bloom.Book
             Storage.MigrateToLevel5CanvasElement();
             Storage.MigrateToLevel6LegacyActivities();
             Storage.MigrateToLevel7BloomCanvas();
-            Storage.MigrateToLevel8DataFeatureAttribute();
+            Storage.MigrateToLevel8RemoveEnterpriseOnly();
 
             Storage.DoBackMigrations();
 
