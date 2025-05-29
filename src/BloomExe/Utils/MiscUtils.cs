@@ -792,23 +792,47 @@ namespace Bloom.Utils
                 )
             )
             {
-                if (!string.IsNullOrEmpty(language))
+				//if (IetfLanguageTag.TryCreate(language, script, region, variant, out var newTag))
+				//{
+				//    //if (newTag != tag)
+				//    //    Debug.WriteLine(
+				//    //        $"DEBUG NormalizeLanguageTag(): tag: {tag} normalized to {newTag}"
+				//    //    );
+				//    return newTag;
+				//}
+				// Using IetfLanguageTag.TryCreate() to create the new tag removes a Script if it's
+				// the one that is implied by the language code.  This is a gratuitous change that
+				// can cause problems.  See BL-14597.
+				StringBuilder bldr = new StringBuilder();
+				if (!string.IsNullOrEmpty(language))
+                {
                     language = language.ToLowerInvariant();
+                    bldr.Append(language);
+				}
                 if (!string.IsNullOrEmpty(script))
+                {
                     script =
                         script.Substring(0, 1).ToUpperInvariant()
                         + script.Substring(1).ToLowerInvariant();
+                    if (bldr.Length > 0)
+						bldr.Append('-');
+					bldr.Append(script);
+				}
                 if (!string.IsNullOrEmpty(region))
-                    region = region.ToUpperInvariant();
-                // Variants are freeform, so we don't try to recapitalize them.
-                if (IetfLanguageTag.TryCreate(language, script, region, variant, out var newTag))
                 {
-                    //if (newTag != tag)
-                    //    Debug.WriteLine(
-                    //        $"DEBUG NormalizeLanguageTag(): tag: {tag} normalized to {newTag}"
-                    //    );
-                    return newTag;
-                }
+                    region = region.ToUpperInvariant();
+					if (bldr.Length > 0)
+                        bldr.Append('-');
+					bldr.Append(region);
+				}
+				// Variants are freeform, so we don't try to recapitalize them.
+				if (!string.IsNullOrEmpty(variant))
+				{
+					if (bldr.Length > 0)
+						bldr.Append('-');
+					bldr.Append(variant);
+				}
+                return bldr.ToString();
             }
             return tag; // failed to parse: return the original
         }
