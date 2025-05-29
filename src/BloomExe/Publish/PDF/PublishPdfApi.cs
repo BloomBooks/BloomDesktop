@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -13,8 +11,6 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using DesktopAnalytics;
 using L10NSharp;
-using Microsoft.VisualBasic.FileIO;
-using SIL.IO;
 using SIL.Reporting;
 using Application = System.Windows.Forms.Application;
 
@@ -97,34 +93,18 @@ namespace Bloom.Publish.PDF
                 ),
                 false
             );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "colorProfile",
-                request =>
-                {
-                    if (request.HttpMethod == HttpMethods.Get)
+            apiHandler.RegisterBooleanEndpointHandler(
+                kApiUrlPart + "cmyk",
+                request => CurrentBook?.UserPrefs.CmykPdf ?? false,
+                (
+                    (writeRequest, value) =>
                     {
-                        var profile = CurrentBook?.UserPrefs.ColorProfileForPdf;
-                        if (string.IsNullOrEmpty(profile))
-                            profile = "none";
-                        request.ReplyWithText(profile);
-                    }
-                    else
-                    {
-                        var value = request.RequiredPostString();
                         if (CurrentBook != null)
                         {
-                            if (value == "none")
-                                value = "";
-                            CurrentBook.UserPrefs.ColorProfileForPdf = value;
+                            CurrentBook.UserPrefs.CmykPdf = value;
                         }
-                        request.PostSucceeded();
                     }
-                },
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "colorProfiles",
-                HandleColorProfiles,
+                ),
                 false
             );
             apiHandler.RegisterBooleanEndpointHandler(
@@ -139,41 +119,6 @@ namespace Bloom.Publish.PDF
                 ),
                 false
             );
-        }
-
-        private void HandleColorProfiles(ApiRequest request)
-        {
-            if (request.HttpMethod == HttpMethods.Get)
-            {
-				var result = new StringBuilder();
-				result.Append($"[\"none\"");
-                var distFolder = PdfMaker.GetDistributedColorProfilesFolder();
-				if (Directory.Exists(distFolder))
-                {
-					var files = Directory.GetFiles(distFolder, "*.icc");
-					foreach (var file in files)
-					{
-						var name = Path.GetFileNameWithoutExtension(file);
-						result.AppendFormat(",\"{0}\"", name);
-					}
-				}
-                var folder = PdfMaker.GetUserColorProfilesFolder();
-                if (Directory.Exists(folder))
-                {
-                    var files = Directory.GetFiles(folder, "*.icc");
-                    foreach (var file in files)
-                    {
-                        var name = Path.GetFileNameWithoutExtension(file);
-                        result.AppendFormat(",\"{0}\"", name);
-                    }
-                }
-                result.Append("]");
-                request.ReplyWithText(result.ToString());
-            }
-            else
-            {
-                request.Failed();
-            }
         }
 
         private string CheckForLicenseWarning()
