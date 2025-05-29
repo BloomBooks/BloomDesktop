@@ -1305,6 +1305,14 @@ body.hideAllCKEditors .cke_chrome {
     top: -8px;
     width: 100%;
 }
+// Very narrow pages need more space for the #drag-activity-tab-control
+.above-page-control-container:has(+ .Device16x9Portrait),
+.above-page-control-container:has(+ .QuarterLetterPortrait),
+.above-page-control-container:has(+ .A6Portrait) {
+    #drag-activity-tab-control {
+        top: -22px;
+    }
+}
 
 // we want :blank, but it's not in browsers yet. So we simulate it by a mutation observer
 // that adds a class to the editable when it is empty.
