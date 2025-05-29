@@ -542,17 +542,6 @@ namespace Bloom.Book
             // Check if there are any features in this file format (which is readable), but which won't be supported (and have effects bad enough to warrant blocking opening) in this version.
             var breakingFeatureRequirements = GetBreakingFeatureRequirements();
 
-			// For 6.2a only; don't merge into 6.2
-            if (breakingFeatureRequirements.All(fr => fr.FeatureId == "dataFeature"))
-                return "";
-            // For 6.1 and 6.0 only; don't merge into 6.2
-            //if (
-            //    breakingFeatureRequirements.All(
-            //        fr => fr.FeatureId == "canvasElement" || fr.FeatureId == "bloomCanvas" || fr.FeatureId == "dataFeature"
-            //    )
-            //)
-            //    return "";
-
             // Note: even though versionRequirements is guaranteed non-empty by now, the ones that actually break our current version of Bloom DESKTOP could be empty.
             if (breakingFeatureRequirements.Any())
             {
@@ -3921,16 +3910,11 @@ namespace Bloom.Book
         /// </summary>
         public void DoBackMigrations()
         {
-            if (GetMaintenanceLevel() <= kMaintenanceLevel)
-                return;
-            var breakingFeatureRequirements = GetBreakingFeatureRequirements();
+            //if (GetMaintenanceLevel() <= kMaintenanceLevel)
+            //    return;
+            //var breakingFeatureRequirements = GetBreakingFeatureRequirements();
             // Handle the back migrations this version of Bloom knows about, in the proper reverse order.
-            // This should not be merged to 6.2, though it may be a useful model of how to handle future
-            // back migrations.
-            if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "dataFeature"))
-            {
-                MigrateBackFromLevel8DataFeatureAttributes();
-            }
+            // Back migrations should not be merged to later versions.
             // If you add a new back migration, you must also modify GetHtmlMessageIfFeatureIncompatibility
             // to not complain if the only breaking changes are ones we can back-migrate.
             // Also, each back migration has the potential to cause problems since the corresponding forward
@@ -3970,37 +3954,6 @@ namespace Bloom.Book
                 element.SetAttribute(newAttrName, element.GetAttribute(oldAttrName));
                 element.RemoveAttribute(oldAttrName);
             }
-        }
-
-        /// <summary>
-        /// Only for 6.0 and 6.1! Do not merge to 6.2.
-        /// </summary>
-        /// <remarks>
-        /// Possibly merge to 6.2a if that branch lasts long enough.
-        /// </remarks>
-        public void MigrateBackFromLevel8DataFeatureAttributes()
-        {
-            if (!Program.RunningUnitTests)
-                Guard.Against(
-                    !BookInfo.IsSaveable,
-                    "We should not even think about migrating a book that is not Saveable"
-                );
-            if (GetMaintenanceLevel() <= 7)
-                return;
-            foreach (
-                SafeXmlElement pageDiv in Dom.SafeSelectNodes(
-                    "//body/div[contains(@class, 'bloom-page')]"
-                )
-            )
-            {
-                var dataFeature = pageDiv.GetAttribute("data-feature");
-                if (!string.IsNullOrEmpty(dataFeature))
-                {
-                    pageDiv.RemoveAttribute("data-feature");
-                    pageDiv.AddClass("enterprise-only");
-                }
-            }
-            Dom.UpdateMetaElement("maintenanceLevel", "7");
         }
 
         /// <summary>

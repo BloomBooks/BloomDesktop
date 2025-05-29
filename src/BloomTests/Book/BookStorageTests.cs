@@ -2292,56 +2292,5 @@ These are similar but already have game-theme classes
             //Assert.That(metaData2.ToolStates.Count, Is.EqualTo(1));
             //Assert.That(metaData2.ToolStates[0].ToolId, Is.EqualTo("canvasElement"));
         }
-
-        [Test]
-        public void MigrateBackfromDataFeatureAttributes_Works()
-        {
-            var storage = GetInitialStorageWithCustomHtml(
-                @"<html>
-<head>
-</head>
-<body>
-    <div class='bloom-page' data-feature='overlay'>
-        <div class='marginBox'>
-        </div>
-    </div>
-    <div class='bloom-page' data-feature='something'>
-        <div class='marginBox'>
-        </div>
-    </div>
-    <div class='bloom-page' data-feature=''>
-        <div class='marginBox'>
-        </div>
-    </div>
-    <div class='bloom-page'>
-        <div class='marginBox'>
-        </div>
-    </div>
-</body>
-</html>");
-            var assertThatDom = AssertThatXmlIn.Dom(storage.Dom.RawDom);
-            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
-               "//body/div[contains(@class, 'bloom-page')]",
-               4);
-            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
-                "//body/div[contains(@class, 'bloom-page') and @data-feature]",
-                3);
-            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
-                "//body/div[contains(@class, 'bloom-page') and contains(@class, 'enterprise-only')]",
-                0);
-
-            // SUT
-            storage.MigrateBackFromLevel8DataFeatureAttributes();
-
-            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
-               "//body/div[contains(@class, 'bloom-page')]",
-               4);
-            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
-                "//body/div[contains(@class, 'bloom-page') and @data-feature]",
-                1);
-            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
-                "//body/div[contains(@class, 'bloom-page') and contains(@class, 'enterprise-only')]",
-                2);
-        }
     }
 }
