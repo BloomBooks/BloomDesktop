@@ -3884,6 +3884,10 @@
         <source xml:lang="en">Produce a .bloomshelf file</source>
         <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
       </trans-unit>
+      <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true">
+        <source xml:lang="en">Removing one or more pages which require a higher subscription tier</source>
+        <note>ID: Publish.RemovingDisallowedPages</note>
+      </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
         <source xml:lang="en">Web</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm</note>
