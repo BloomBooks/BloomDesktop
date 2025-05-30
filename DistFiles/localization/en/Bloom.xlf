@@ -3884,6 +3884,10 @@
         <source xml:lang="en">Produce a .bloomshelf file</source>
         <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
       </trans-unit>
+      <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true">
+        <source xml:lang="en">Removing one or more pages which require a higher subscription tier</source>
+        <note>ID: Publish.RemovingDisallowedPages</note>
+      </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
         <source xml:lang="en">Web</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm</note>
@@ -4029,6 +4033,10 @@
       <trans-unit id="PublishTab.EpubRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.FeatureRequiresHigherTier" translate="no">
+        <source xml:lang="en">The feature "{0}" was removed from this book because it requires a higher subscription tier</source>
+        <note>ID: PublishTab.FeatureRequiresHigherTier</note>
       </trans-unit>
       <trans-unit id="PublishTab.NoBookletsMessage">
         <source xml:lang="en">This is disabled because Bloom cannot make booklets using the current size and orientation.</source>

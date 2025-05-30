@@ -3050,8 +3050,17 @@ namespace Bloom.Book
         /// </summary>
         public int GetPageNumberOfPage(SafeXmlElement pageDiv)
         {
-            var allPages = RawDom.SafeSelectNodes("html/body/div[contains(@class,'bloom-page')]");
+            return GetPageNumberOfPage(
+                pageDiv,
+                RawDom.SafeSelectElements("html/body/div[contains(@class,'bloom-page')]")
+            );
+        }
 
+        private static int GetPageNumberOfPage(
+            SafeXmlElement pageDiv,
+            IEnumerable<SafeXmlElement> allPages
+        )
+        {
             var pageNumber = 0;
             foreach (SafeXmlElement p in allPages)
             {
@@ -3084,15 +3093,29 @@ namespace Bloom.Book
             bool languageIsRightToLeft
         )
         {
+            var pageDivs = GetPageElements();
+            UpdatePageNumberAndSideClassOfPages(
+                charactersForDigits,
+                languageIsRightToLeft,
+                pageDivs
+            );
+        }
+
+        public static void UpdatePageNumberAndSideClassOfPages(
+            string charactersForDigits,
+            bool languageIsRightToLeft,
+            IEnumerable<SafeXmlElement> pageDivs
+        )
+        {
             var i = 0;
-            foreach (var pageDiv in GetPageElements())
+            foreach (var pageDiv in pageDivs)
             {
                 UpdateSideClass(pageDiv, i, languageIsRightToLeft);
                 // enhance: we could optimize this since we are doing them all in sequence...
                 // we'd have to call this until we get a non-empty page number, but perhaps
                 // we could keep going through the back cover so long as the stylesheet
                 // ignores the numbers on those so no one will see them?
-                var number = GetPageNumberOfPage(pageDiv);
+                var number = GetPageNumberOfPage(pageDiv, pageDivs);
                 // Don't set data-page-number for xmatter (or other unnumbered) pages.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7303.
                 var numberInScript =
                     (number > 0 && pageDiv.HasClass("numberedPage"))
@@ -3107,7 +3130,10 @@ namespace Bloom.Book
         /// Simplified from https://stackoverflow.com/a/35099462/723299
         /// If there are number systems that can't be represented by just exchanging digits, this won't work for them.
         /// </summary>
-        private string GetNumberStringRepresentation(int postiveInteger, string charactersForDigits)
+        private static string GetNumberStringRepresentation(
+            int postiveInteger,
+            string charactersForDigits
+        )
         {
             if (String.IsNullOrEmpty(charactersForDigits))
                 return postiveInteger.ToString(CultureInfo.InvariantCulture);

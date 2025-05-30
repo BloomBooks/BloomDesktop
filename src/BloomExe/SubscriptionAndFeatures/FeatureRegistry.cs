@@ -15,6 +15,7 @@ namespace Bloom.SubscriptionAndFeatures
         TeamCollection,
         Motion,
         Music,
+        FullPageCoverImage,
 
         //PictureDictionary,
         //? CustomizableTemplates,
@@ -52,16 +53,25 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.Motion,
                 SubscriptionTier = SubscriptionTier.Pro,
-                ExistsInPageXPath = ".//div[contains(@class,'bloom-canvas') and @data-initial-rect]",
+                ExistsInPageXPath =
+                    ".//div[contains(@class,'bloom-canvas') and @data-initial-rect]",
+                // PDFs can't move, and EPUB players won't know how to do it.
                 SupportedMediums = PublishingMediums.BloomPub | PublishingMediums.Video,
                 RestrictionInDerivativeBooks = PublicationRestrictions.None,
-                RestrictionInOriginalBooks = PublicationRestrictions.Remove
+                RestrictionInOriginalBooks = PublicationRestrictions.DisabledInUi,
+                RestrictionInUnsupportedMediums = PublicationRestrictions.DisabledInUi
             },
             new FeatureInfo
             {
                 Feature = FeatureName.Music,
                 SubscriptionTier = SubscriptionTier.Pro,
-                ExistsInPageXPath = "self::div[@data-backgroundaudio and string-length(@data-backgroundaudio)!=0]",
+                ExistsInPageXPath =
+                    "self::div[@data-backgroundaudio and string-length(@data-backgroundaudio)!=0]",
+                RestrictionInDerivativeBooks = PublicationRestrictions.None,
+                RestrictionInOriginalBooks = PublicationRestrictions.DisabledByModifyingDom,
+                RestrictionInUnsupportedMediums = PublicationRestrictions.DisabledByModifyingDom,
+                AttributesToRemoveToDisable = "data-backgroundaudio",
+                L10NId = "PublishTab.Feature.Music"
             },
             //new FeatureInfo
             //{
@@ -89,6 +99,14 @@ namespace Bloom.SubscriptionAndFeatures
                 Feature = FeatureName.Widget,
                 SubscriptionTier = SubscriptionTier.Pro,
                 ExistsInPageXPath = "self::div[contains(@class,'custom-widget-page')]",
+                // Do we want to remove these in PDFs? I think so...no knowing whether the
+                // widget will be any use printed. Don't think they would work in epubs,
+                // but haven't tested that. Definitely not in videos...no opportunity
+                // to interact with them.
+                SupportedMediums = PublishingMediums.BloomPub,
+                RestrictionInDerivativeBooks = PublicationRestrictions.None,
+                RestrictionInOriginalBooks = PublicationRestrictions.Remove,
+                RestrictionInUnsupportedMediums = PublicationRestrictions.Remove,
             },
             new FeatureInfo
             {
@@ -98,7 +116,11 @@ namespace Bloom.SubscriptionAndFeatures
                 RestrictionInDerivativeBooks = PublicationRestrictions.None,
                 RestrictionInOriginalBooks = PublicationRestrictions.Block,
                 ExistsInPageXPath =
-                    ".//div[contains(@class,'" + Bloom.Book.HtmlDom.kCanvasElementClass + "') and not(contains(@class,'" + Bloom.Book.HtmlDom.kBackgroundImageClass + "'))]"
+                    ".//div[contains(@class,'"
+                    + Bloom.Book.HtmlDom.kCanvasElementClass
+                    + "') and not(contains(@class,'"
+                    + Bloom.Book.HtmlDom.kBackgroundImageClass
+                    + "'))]"
             },
             new FeatureInfo
             {
@@ -106,8 +128,35 @@ namespace Bloom.SubscriptionAndFeatures
                 SubscriptionTier = SubscriptionTier.Pro,
                 RestrictionInDerivativeBooks = PublicationRestrictions.Remove,
                 RestrictionInOriginalBooks = PublicationRestrictions.Remove,
-                ExistsInPageXPath = "self::div[@data-tool-id='game' or contains(@class,'simple-comprehension-quiz') or @data-activity='simple-dom-choice']"
-			},
+                ExistsInPageXPath =
+                    "self::div[@data-tool-id='game' or contains(@class,'simple-comprehension-quiz') or @data-activity='simple-dom-choice']",
+                // Many of our games can potentially be played on paper, though we think it's unlikely
+                // that most of our target audience will allow writing in books. PDFs may also be used in checking
+                // processes that need all the content. We even made a black-and-white theme specially for PDFs.
+                // So for now we're allowing game pages in PDFs. Note that in many cases, if we expect the game
+                // to actually be played using the PDF, we need to add code to shuffle the answers before making the PDF.
+                // Do we need a way to remove games that don't work at all on paper? UI to decide whether to include
+                // any games in a PDF? UI to control it for individual pages?
+                // OTOH, we're sure Games don't make sense in a Video publication, where there is no opportunity to play them,
+                // or in an EPUB, where the player will not have the code that makes them work.
+                SupportedMediums = PublishingMediums.BloomPub | PublishingMediums.PDF,
+                RestrictionInUnsupportedMediums = PublicationRestrictions.Remove,
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.FullPageCoverImage,
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExistsInPageXPath = "self::div[contains(@class,'cover-is-image')]",
+                // This disabling doesn't get a chance to work, because when we bring a book's XMatter
+                // up to date, we update the cover-is-image class to something consistent with both
+                // the AppearanceSettings.CoverIsImage and Subscription.HaveActiveSubscription.
+                // (The latter should be changed to something involving this feature, but even then,
+                // the class will be removed by the time we execute the code that processes these properties.)
+                RestrictionInDerivativeBooks = PublicationRestrictions.DisabledByModifyingDom,
+                RestrictionInOriginalBooks = PublicationRestrictions.DisabledByModifyingDom,
+                ClassesToRemoveToDisable = "cover-is-image no-margin-page",
+                L10NId = "BookSettings.CoverIsImage"
+            },
             // ----------------------------------------
             // LocalCommunity Tier Features
             // ----------------------------------------

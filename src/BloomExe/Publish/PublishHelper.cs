@@ -12,6 +12,7 @@ using Bloom.FontProcessing;
 using Bloom.ImageProcessing;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
@@ -87,7 +88,9 @@ namespace Bloom.Publish
             HtmlDom dom,
             Book.Book book,
             bool removeInactiveLanguages,
-            ISet<string> warningMessages,
+            Dictionary<string, int> omittedPages,
+            ISet<string> modifiedPageMessages,
+            PublishingMediums medium, // should normally only be one of them
             EpubMaker epubMaker = null,
             bool keepPageLabels = false
         )
@@ -107,7 +110,9 @@ namespace Bloom.Publish
                                 book,
                                 removeInactiveLanguages,
                                 epubMaker,
-                                warningMessages,
+                                omittedPages,
+                                modifiedPageMessages,
+                                medium,
                                 keepPageLabels
                             );
                         }
@@ -120,7 +125,9 @@ namespace Bloom.Publish
                     book,
                     removeInactiveLanguages,
                     epubMaker,
-                    warningMessages,
+                    omittedPages,
+                    modifiedPageMessages,
+                    medium,
                     keepPageLabels
                 );
         }
@@ -245,7 +252,9 @@ namespace Bloom.Publish
             Book.Book book,
             bool removeInactiveLanguages,
             EpubMaker epubMaker,
-            ISet<string> warningMessages,
+            Dictionary<string, int> omittedPages,
+            ISet<string> modifiedPageMessages,
+            PublishingMediums medium, // should normally only be one of them
             bool keepPageLabels = false
         )
         {
@@ -258,17 +267,25 @@ namespace Bloom.Publish
             var pageElts = new List<SafeXmlElement>();
             if (epubMaker != null)
             {
-                pageElts.Add((SafeXmlElement)dom.Body.FirstChild); // already have a single-page dom prepared for export
+                // The epub maker calls this function separately for each page,
+                // and each call passes a dom where a single page is the direct child of the body.
+                pageElts.Add((SafeXmlElement)dom.Body.FirstChild);
             }
             else
             {
-                foreach (SafeXmlElement page in book.GetPageElements())
+                foreach (SafeXmlElement page in dom.GetPageElements())
                     pageElts.Add(page);
             }
 
-            // Retiring this: We now stop you with the UI before you get this far:
-            // RemoveFeaturesThatExceedSubscription(book, pageElts, warningMessages);
-
+            RemovePagesByFeatureSystem(book, dom, pageElts, medium, omittedPages);
+            if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
+                RemoveEnterpriseOnlyAssets(book);
+            RemoveClassesAndAttrsToDisableFeatures(
+                pageElts,
+                book.CollectionSettings.Subscription,
+                book.BookData.BookIsDerivative(),
+                modifiedPageMessages
+            );
             // Remove any left-over bubbles
             foreach (SafeXmlElement elt in dom.RawDom.SafeSelectNodes("//label"))
             {
@@ -518,77 +535,168 @@ namespace Bloom.Publish
             );
         }
 
-        // Retiring this: We now stop you with the UI before you get this far
-        // public static void RemoveFeaturesThatExceedSubscription(
-        //     Book.Book book,
-        //     List<SafeXmlElement> pageElts,
-        //     ISet<string> warningMessages
-        // )
-        // {
-        //     var omittedPages = RemovePagesThatExceedSubscription(
-        //         book.BookData,
-        //         book.Storage.Dom,
-        //         pageElts
-        //     );
-        //     if (omittedPages.Count > 0)
-        //     {
-        //         warningMessages.Add(
-        //             LocalizationManager.GetString(
-        //                 "Publish.RemovingEnterprisePages",
-        //                 "Removing one or more pages which require Bloom Enterprise to be enabled"
-        //             )
-        //         );
-        //         foreach (var label in omittedPages.Keys.OrderBy(x => x))
-        //             warningMessages.Add($"{omittedPages[label]} {label}");
-        //     }
-        //     if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
-        //         RemoveEnterpriseOnlyAssets(book);
-        // }
+        /// <summary>
+        /// Typically called once after one or a sequence of calls to RemovePagesbyFeatureSystem,
+        /// generates any appropriate messages.
+        /// </summary>
+        /// <param name="omittedPages"></param>
+        public static List<string> MakePagesRemovedWarnings(Dictionary<string, int> omittedPages)
+        {
+            var warningMessages = new List<string>();
+            if (omittedPages.Count > 0)
+            {
+                warningMessages.Add(
+                    LocalizationManager.GetString(
+                        "Publish.RemovingDisallowedPages",
+                        "Removing one or more pages which require a higher subscription tier"
+                    )
+                );
+                foreach (var label in omittedPages.Keys.OrderBy(x => x))
+                    warningMessages.Add($"{omittedPages[label]} {label}");
+            }
+
+            return warningMessages;
+        }
 
         /// <summary>
-        /// Remove any pages that violate the current subscription.
+        /// Remove any pages that violate the current subscription for this type of book (derivative or original),
+        /// or which are inappropriate for the intended publishing medium.
         /// Also renumber the pages if any are removed.
+        /// Accumulates into omittedPages information about how many pages of each label were removed.
         /// </summary>
-        /// <returns>dictionary of types of pages removed and how many of each type (may be empty)</returns>
-        // Retiring this: We now stop you with the UI before you get this far
-        // public static Dictionary<string, int> RemovePagesThatExceedSubscription(
-        //     BookData bookData,
-        //     HtmlDom dom,
-        //     List<SafeXmlElement> pageElts
-        // )
-        // {
-        //     var omittedPages = new Dictionary<string, int>();
-        //     if (!bookData.CollectionSettings.Subscription.HaveActiveSubscription)
-        //     {
-        //         var pageRemoved = false;
-        //         foreach (var page in pageElts.ToList())
-        //         {
-        //             if (Book.Book.IsPageBloomSubscriptionOnly(page))
-        //             {
-        //                 CollectPageLabel(page, omittedPages);
-        //                 page.ParentNode.RemoveChild(page);
-        //                 pageElts.Remove(page);
-        //                 pageRemoved = true;
-        //             }
-        //         }
-        //         if (pageRemoved)
-        //         {
-        //             dom.UpdatePageNumberAndSideClassOfPages(
-        //                 bookData.CollectionSettings.CharactersForDigitsForPageNumbers,
-        //                 bookData.Language1.IsRightToLeft
-        //             );
-        //         }
-        //     }
-        //     return omittedPages;
-        // }
+        public static void RemovePagesByFeatureSystem(
+            Book.Book book,
+            // Usually book.OurHtmlDom, but Book.GetDomForPrinting makes a new dom without making a
+            // new book, and it's that dom we want to modify.
+            HtmlDom dom,
+            // usually dom.GetPageElements(), but EpubMaker calls this repeatedly with a DOM for each
+            // individual page
+            List<SafeXmlElement> pageElts,
+            PublishingMediums medium, // should normally only be one of them
+            Dictionary<string, int> omittedPages
+        )
+        {
+            var bookData = book.BookData;
+            var charactersForDigits = bookData.CollectionSettings.CharactersForDigitsForPageNumbers;
+            var language1IsRightToLeft = bookData.Language1.IsRightToLeft;
+            var isDerivative = bookData.BookIsDerivative();
+            var subscription = book.CollectionSettings.Subscription;
+            RemovePagesByFeatureSystem(
+                pageElts,
+                medium,
+                omittedPages,
+                subscription,
+                isDerivative,
+                charactersForDigits,
+                language1IsRightToLeft
+            );
+        }
 
-        // TODO BL-14565: this is apparently out of date but also something of mystery so I'm not sure how to clean it up
-        // Retiring this: We now stop you with the UI before you get this far
-        // private static void RemoveEnterpriseOnlyAssets(Book.Book book)
-        // {
-        //     RobustFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));
-        //     RobustFile.Delete(Path.Combine(book.FolderPath, kVideoPlaceholderImageFile));
-        // }
+        // This version is easier to test
+        internal static void RemovePagesByFeatureSystem(
+            List<SafeXmlElement> pageElts,
+            PublishingMediums medium,
+            // The string is a page label, and the int is a count of how many pages with that label have
+            // been removed. This can be accumulated over multiple calls to this method.
+            Dictionary<string, int> omittedPages,
+            Subscription subscription,
+            bool isDerivative,
+            string charactersForDigits,
+            bool language1IsRightToLeft
+        )
+        {
+            var pageRemoved = false;
+            foreach (var page in pageElts.ToList()) // make a copy because we will modify the original
+            {
+                var reasonForRemoval = FeatureStatus.ShouldPageBeRemovedForPublishing(
+                    page,
+                    subscription,
+                    isDerivative,
+                    medium
+                );
+                if (reasonForRemoval != FeatureStatus.ReasonForRemoval.None)
+                {
+                    if (reasonForRemoval == FeatureStatus.ReasonForRemoval.InsufficientSubscription)
+                        CollectPageLabel(page, omittedPages);
+                    // Enhance: if we want to report removal because of unsupported medium,
+                    // we could add another dictionary to track those.
+                    page.ParentNode.RemoveChild(page);
+                    pageElts.Remove(page);
+                    pageRemoved = true;
+                }
+            }
+            if (pageRemoved)
+            {
+                // This won't help with Epubs, because the dom we get only has the one page.
+                HtmlDom.UpdatePageNumberAndSideClassOfPages(
+                    charactersForDigits,
+                    language1IsRightToLeft,
+                    pageElts
+                );
+            }
+        }
+
+        internal static void RemoveClassesAndAttrsToDisableFeatures(
+            List<SafeXmlElement> pageElts,
+            Subscription subscription,
+            bool forDerivative,
+            // Each item is a message like "The feature 'Background music' was removed from this book because it requires a higher subscription tier".
+            // We use a set because order is not very important but we don't want to repeat for multiple pages with the same feature,
+            // even across multiple calls to this method.
+            ISet<string> messages
+        )
+        {
+            var disabledRemoveByModifyingFeatures = FeatureStatus.GetDisabledFeatures(
+                subscription,
+                forDerivative,
+                PublicationRestrictions.DisabledByModifyingDom
+            );
+            foreach (var page in pageElts)
+            {
+                foreach (var feature in disabledRemoveByModifyingFeatures)
+                {
+                    if (page.SafeSelectNodes(feature.ExistsInPageXPath).Length > 0)
+                    {
+                        if (feature.ClassesToRemoveToDisable != null)
+                        {
+                            // Remove the classes that would make this feature work.
+                            foreach (var className in feature.ClassesToRemoveToDisable.Split())
+                                page.RemoveClass(className);
+                        }
+
+                        if (feature.AttributesToRemoveToDisable != null)
+                        {
+                            // Remove the attributes that would make this feature work.
+                            foreach (var attr in feature.AttributesToRemoveToDisable.Split())
+                                page.RemoveAttribute(attr);
+                        }
+                        var messageFrame = LocalizationManager.GetString(
+                            "PublishTab.FeatureRequiresHigherTier",
+                            "The feature \"{0}\" was removed from this book because it requires a higher subscription tier",
+                            ""
+                        );
+                        var featureDescription = I18NApi.GetTranslation(feature.L10NId);
+                        var message = string.Format(messageFrame, featureDescription);
+                        messages.Add(message);
+                    }
+                }
+            }
+        }
+
+        // Called if we don't have any subscription level at all (basic tier), removes things we
+        // don't need in that case because pages that use them have been removed.
+        // Not really sure what we need here; embedding the simple comprehension quiz JS is
+        // probably obsolete in all situations, but there may be some old version of Bloom Player
+        // that needs it. But for sure we don't need it in a Basic tier publication which
+        // removes quiz pages.
+        // I don't know why the video placeholder ever needs to be published, but we used
+        // to remove it for enterprise publications, so it should still be safe to remove
+        // it for Basic tier, at least.
+        private static void RemoveEnterpriseOnlyAssets(Book.Book book)
+        {
+            RobustFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));
+            RobustFile.Delete(Path.Combine(book.FolderPath, kVideoPlaceholderImageFile));
+        }
 
         private bool IsDisplayed(SafeXmlElement elt, bool throwOnFailure)
         {
@@ -966,7 +1074,10 @@ namespace Bloom.Publish
                 if (imgContainer.AttributeNames.Contains("data-href"))
                     bloomCanvas.SetAttribute("data-href", imgContainer.GetAttribute("data-href"));
                 if (canvasElement.AttributeNames.Contains("data-sound"))
-                    bloomCanvas.SetAttribute("data-sound", canvasElement.GetAttribute("data-sound"));
+                    bloomCanvas.SetAttribute(
+                        "data-sound",
+                        canvasElement.GetAttribute("data-sound")
+                    );
                 canvasElement.ParentNode.RemoveChild(canvasElement);
                 if (
                     !bloomCanvas.ChildNodes.Any(
@@ -1173,7 +1284,7 @@ namespace Bloom.Publish
         }
 
         public static void SendBatchedWarningMessagesToProgress(
-            ISet<string> warningMessages,
+            List<string> warningMessages,
             IWebSocketProgress progress
         )
         {
@@ -1196,7 +1307,7 @@ namespace Bloom.Publish
         );
 
         public static void SendBatchedWarningMessagesToProgress(
-            ISet<string> warningMessages,
+            List<string> warningMessages,
             IProgress progress
         )
         {

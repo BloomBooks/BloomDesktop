@@ -306,6 +306,21 @@ namespace Bloom.SafeXml
                 return WrapNodes(_wrappedNode.SafeSelectNodes(xpath), _doc);
         }
 
+        /// <summary>
+        /// A variant of SafeSelectNodes for use where it is known that the xpath will return only elements.
+        /// This is the responsibility of the caller; this method will crash if it is not true.
+        /// </summary>
+        public SafeXmlElement[] SafeSelectElements(string xpath)
+        {
+            lock (_doc.Lock)
+                return _wrappedNode
+                    .SafeSelectNodes(xpath)
+                    .Cast<XmlNode>()
+                    .Select(node => WrapNode(node, _doc))
+                    .Cast<SafeXmlElement>()
+                    .ToArray();
+        }
+
         public SafeXmlNode[] SafeSelectNodes(string xpath, XmlNamespaceManager ns)
         {
             lock (_doc.Lock)

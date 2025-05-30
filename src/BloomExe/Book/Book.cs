@@ -18,6 +18,7 @@ using Bloom.FontProcessing;
 using Bloom.History;
 using Bloom.Publish;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
@@ -4332,12 +4333,25 @@ namespace Bloom.Book
                 p => p.GetAttribute("class").ToLowerInvariant().Contains("bloom-nonprinting")
             );
 
-            // Retiring this: We now stop you with the UI before you get this far
-            //PublishHelper.RemoveEnterprisePagesIfNeeded(
-            //    _bookData,
-            //    printingDom,
-            //    printingDom.GetPageElements().ToList()
-            //);
+            var omittedPages = new Dictionary<string, int>();
+            var modifiedPageMessages = new HashSet<string>();
+            var pageElts = printingDom.GetPageElements().ToList();
+            PublishHelper.RemovePagesByFeatureSystem(
+                this,
+                printingDom,
+                pageElts,
+                PublishingMediums.PDF,
+                omittedPages
+            );
+            PublishHelper.RemoveClassesAndAttrsToDisableFeatures(
+                pageElts,
+                CollectionSettings.Subscription,
+                BookData.BookIsDerivative(),
+                modifiedPageMessages
+            );
+            // var warnings = PublishHelper.MakePagesRemovedWarnings(omittedPages);
+            // warnings.AddRange(modifiedPageMessages);
+            // Display warnings somewhere?
 
             switch (bookletPortion)
             {
@@ -5604,19 +5618,6 @@ namespace Bloom.Book
                 doomedPage.ParentNode.RemoveChild(doomedPage);
             }
         }
-
-        // Retiring this: We now stop you with the UI before you get this far
-        //public static bool IsPageBloomSubscriptionOnly(SafeXmlElement page)
-        //{
-        //    var classAttrib = page.GetAttribute("class");
-        //    // if there is a data-feature, check the feature registry and determine if it is a subscription feature
-        //    return page.HasAttribute("data-feature")
-        //        ||
-        //        // legacy quiz pages don't have 'data-feature'
-        //        classAttrib.Contains("questions")
-        //        || page.SafeSelectNodes(".//div[contains(@class,'bloom-widgetContainer')]").Length
-        //            > 0;
-        //}
 
         /// <summary>
         /// Given a choice, what language should we use to display text on the page (not in the UI, which is controlled by the UI Language)
