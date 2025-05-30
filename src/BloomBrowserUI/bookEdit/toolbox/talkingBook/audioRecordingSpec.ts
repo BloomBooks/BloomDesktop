@@ -36,6 +36,23 @@ describe("audio recording tests", () => {
         await initializeTalkingBookToolAsync();
     });
 
+    // In an earlier version of our API, checkForAnyRecording was designed to fail (404) if there was no recording.
+    // That was inconvenient for the real code, but convenient for tests, since without the Bloom server running,
+    // we effortlessly got a 404 error wherever it was used. Once it was changed, a lot of tests had to be fixed
+    // so that this API call would succeed and return {data:false} for this call. This function sets that up.
+    // Unfortunately, we're not allowed to call it directly from describe(); it has to be called from an it() or beforeEach/All()
+    // It would be nice to call it more in beforeAll(), but some of the tests need to set up other things
+    // to return while spying on axios.get, and Jasmine doesn't allow more than one spy on the same function.
+    function setupDefaultApiResponses() {
+        spyOn(axios, "get").and.callFake((url: string) => {
+            if (url.includes("/bloom/api/audio/checkForAnyRecording")) {
+                return Promise.resolve({ data: false });
+            } else {
+                return Promise.reject("Fake 404 error 7.");
+            }
+        });
+    }
+
     // Returns the HTML for a single text box for a variety of recording modes
     function getTextBoxHtmlSimple1(scenario: AudioMode) {
         if (scenario === AudioMode.PureSentence) {
@@ -1320,6 +1337,7 @@ describe("audio recording tests", () => {
         function setupClearRecordingTest(
             scenario: AudioMode = AudioMode.PureSentence
         ) {
+            setupDefaultApiResponses();
             const divHtml = getTextBoxHtmlSimple1(scenario);
             SetupIFrameFromHtml(`<div id="page1">${divHtml}</div>`);
 
@@ -1412,7 +1430,7 @@ describe("audio recording tests", () => {
                     // Helps it test a more realistic scenario, instead of always testing the 404s
                     return Promise.resolve();
                 } else {
-                    return Promise.reject("Fake 404 error.");
+                    return Promise.reject("Fake 404 error 1.");
                 }
             });
 
@@ -1463,6 +1481,7 @@ describe("audio recording tests", () => {
 
     describe("- newPageReady()", () => {
         it("sets current to correct 1st element upon newPageReady", async () => {
+            setupDefaultApiResponses();
             // Regression test to make sure we don't set it to the qTip element or a different language's text box.
             const editable1 =
                 '<div id="div1" class="bloom-editable audio-sentence bloom-visibility-code-on" lang="es" data-audiorecordingmode="TextBox"><p>Uno. Dos.</p></div>';
@@ -1590,6 +1609,7 @@ describe("audio recording tests", () => {
         // BL-8425 The Jonah SuperBible comic book was found with data-audioRecordingMode, but no audio-sentences.
         // Not sure how that happened, but now the Talking Book Tool will repair this case.
         it("setupAndUpdateMarkupAsync() repairs faulty setup, TextBox div has no audio-sentence class", async () => {
+            setupDefaultApiResponses();
             const textBox1 =
                 "<div id='testId1' data-audioRecordingMode='TextBox' class='bloom-editable bloom-visibility-code-on' lang='en' tabindex='-1'><p>Sentence 1.</p></div>";
             const textBox2 =
@@ -1627,6 +1647,7 @@ describe("audio recording tests", () => {
         });
 
         it("setupAndUpdateMarkupAsync() repairs faulty setup, Sentence div has no spans", async () => {
+            setupDefaultApiResponses();
             SetupIFrameFromHtml(
                 "<div class='bloom-translationGroup'><div id='testId' data-audioRecordingMode='Sentence' class='bloom-editable bloom-visibility-code-on' lang='en'><p>Sentence 1.</p></div></div>"
             );
@@ -1648,6 +1669,7 @@ describe("audio recording tests", () => {
     });
 
     it("isRecordableDiv works", () => {
+        setupDefaultApiResponses();
         const recording = new AudioRecording();
 
         let elem = document.createElement("div");
@@ -1687,6 +1709,7 @@ describe("audio recording tests", () => {
     });
 
     it("getCurrentText works", () => {
+        setupDefaultApiResponses();
         SetupIFrameFromHtml("<div class='ui-audioCurrent'>Hello world</div>");
 
         const recording = new AudioRecording();
@@ -1697,6 +1720,7 @@ describe("audio recording tests", () => {
     });
 
     it("getAutoSegmentLanguageCode works", () => {
+        setupDefaultApiResponses();
         SetupIFrameFromHtml(
             "<div class='ui-audioCurrent' lang='es'>Hello world</div>"
         );
@@ -1708,6 +1732,7 @@ describe("audio recording tests", () => {
     });
 
     it("extractFragmentsForAudioSegmentation works", () => {
+        setupDefaultApiResponses();
         SetupIFrameFromHtml(
             "<div class='ui-audioCurrent' lang='es'>Sentence 1. Sentence 2.</div>"
         );
@@ -1725,6 +1750,7 @@ describe("audio recording tests", () => {
     });
 
     it("extractFragmentsForAudioSegmentation handles duplicate sentences separately", () => {
+        setupDefaultApiResponses();
         SetupIFrameFromHtml(
             "<div class='ui-audioCurrent' lang='en'>What color is the sky? Blue. What color is the ocean? Blue. Hello. Hello.</p></div>"
         );
@@ -1754,6 +1780,7 @@ describe("audio recording tests", () => {
     });
 
     it("normalizeText() works", () => {
+        setupDefaultApiResponses();
         function testAllFormsMatch(
             rawForm: string, // Directly after typing text, immediately upon clicking AutoSegment, before anything is modified
             processingForm: string, // After clicking AutoSegment and the response is being proc, during MakeAudioSentenceElementsLeaf
@@ -1793,8 +1820,12 @@ describe("audio recording tests", () => {
             spyOn(axios, "get").and.callFake((url: string, config) => {
                 if (url.endsWith("fileIO/chooseFile")) {
                     return Promise.resolve({ data: audioToCopyFilePath });
+                } else if (
+                    url.includes("/bloom/api/audio/checkForAnyRecording")
+                ) {
+                    return Promise.resolve({ data: false });
                 } else {
-                    return Promise.reject("Fake 404 Error");
+                    return Promise.reject("Fake 404 Error 2");
                 }
             });
 
@@ -1804,7 +1835,7 @@ describe("audio recording tests", () => {
                 } else if (url.endsWith("fileIO/copyFile")) {
                     return Promise.resolve({});
                 } else {
-                    return Promise.reject("Fake 404 Error");
+                    return Promise.reject("Fake 404 Error 3");
                 }
             });
         }

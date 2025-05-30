@@ -100,15 +100,10 @@ export default class Recordable {
             return false;
         }
 
-        try {
-            await axios.get(
-                `/bloom/api/audio/checkForAnyRecording?ids=${idsToCheck}`
-            );
-            return true;
-        } catch {
-            // If the recording is not there, it will return a 404 error aka it goes into the catch.
-            return false;
-        }
+        const response = await axios.get(
+            `/bloom/api/audio/checkForAnyRecording?ids=${idsToCheck}`
+        );
+        return response.data as boolean;
     }
 
     // Returns true (asynchronously) if every audio-sentence within this text box is recorded.
@@ -139,15 +134,10 @@ export default class Recordable {
                 new Error("id was falsy on sentence: " + sentence.outerHTML)
             );
         }
-
-        try {
-            await axios.get(
-                `/bloom/api/audio/checkForAnyRecording?ids=${sentence.id}`
-            );
-        } catch {
-            // Well, currently missing is coded up as returning a 404 error.
-            return Promise.resolve(false);
-        }
+        const response = await axios.get(
+            `/bloom/api/audio/checkForAnyRecording?ids=${sentence.id}`
+        );
+        return Promise.resolve(response.data as boolean);
 
         return Promise.resolve(true);
     }
