@@ -242,7 +242,7 @@ namespace Bloom.Publish
         }
 
         /// <summary>
-        /// f the publish tab should show a message indicating that we can't publish
+        /// If the publish tab should show a message indicating that we can't publish
         /// the current book with the current subscription tier, returns the code of the first
         /// feature we find that is a problem, else "".
         /// </summary>

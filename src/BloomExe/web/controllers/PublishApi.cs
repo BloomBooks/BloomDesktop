@@ -17,6 +17,7 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using SIL.Reporting;
 using Bloom.CollectionTab;
+using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.web.controllers
 {
@@ -533,6 +534,9 @@ namespace Bloom.web.controllers
             _progress.Reset(); // Otherwise errors get carried over between runs of the preview.
             InitializeLanguagesInBook(request);
             _lastSettings = GetSettings();
+            _lastSettings.PublishingMedium = forVideo
+                ? PublishingMediums.Video
+                : PublishingMediums.BloomPub;
             _lastThumbnailBackgroundColor = _thumbnailBackgroundColor;
             if (forVideo)
             {

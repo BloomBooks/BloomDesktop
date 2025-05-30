@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.FontProcessing;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
@@ -497,15 +498,19 @@ namespace Bloom.Publish.BloomPub
             using (var helper = new PublishHelper())
             {
                 helper.ControlForInvoke = ControlForInvoke;
-                ISet<string> warningMessages = new HashSet<string>();
+                var omittedPages = new Dictionary<string, int>();
                 helper.RemoveUnwantedContent(
                     modifiedBook.OurHtmlDom,
                     modifiedBook,
                     false,
-                    warningMessages,
+                    omittedPages,
+                    settings.PublishingMedium,
                     keepPageLabels: settings?.WantPageLabels ?? false
                 );
-                PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
+                PublishHelper.SendBatchedWarningMessagesToProgress(
+                    PublishHelper.MakePagesRemovedWarnings(omittedPages),
+                    progress
+                );
                 fontsUsed = helper.FontsUsed;
                 BloomPubFontsAndLangsUsed = helper.FontsAndLangsUsed;
             }
