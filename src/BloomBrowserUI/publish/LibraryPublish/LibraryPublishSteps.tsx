@@ -228,19 +228,25 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     function uploadOneBook() {
         setIsUploadComplete(false);
         setIsUploading(true);
-        get(
-            "libraryPublish/getUploadCollisionInfo?index=" + conflictIndex,
-            result => {
-                if (result.data.error) {
-                    // The API already sent an error message
-                    return;
-                }
-                if (result.data.shouldShow) {
-                    setUploadCollisionInfo(result.data);
-                    showUploadCollisionDialog();
-                } else post("libraryPublish/upload");
+        get("libraryPublish/checkSubscriptionMatch", result => {
+            if (result.data.error) {
+                // The API already sent an error message
+                return;
             }
-        );
+            get(
+                "libraryPublish/getUploadCollisionInfo?index=" + conflictIndex,
+                result => {
+                    if (result.data.error) {
+                        // The API already sent an error message
+                        return;
+                    }
+                    if (result.data.shouldShow) {
+                        setUploadCollisionInfo(result.data);
+                        showUploadCollisionDialog();
+                    } else post("libraryPublish/upload");
+                }
+            );
+        });
     }
 
     const changeConflictIndex = (index: number) => {

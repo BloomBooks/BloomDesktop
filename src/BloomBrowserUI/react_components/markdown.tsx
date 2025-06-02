@@ -8,9 +8,13 @@ import {
     LocalizableElement
 } from "./l10nComponents";
 import * as MarkdownIt from "markdown-it";
+import * as MarkdownItAttrs from "markdown-it-attrs";
 
 // This component expects its content to be a single string (like all localizable elements) that
 // contains Markdown. It will convert that into HTML and show it.
+const markd = new MarkdownIt();
+markd.use(MarkdownItAttrs, { allowedAttributes: ["id", "class"] });
+
 export class Markdown extends LocalizableElement<
     ILocalizationProps,
     ILocalizationState
@@ -30,9 +34,7 @@ export class Markdown extends LocalizableElement<
                     }
                 }}
                 dangerouslySetInnerHTML={{
-                    __html: new MarkdownIt().render(
-                        this.state.translation || ""
-                    )
+                    __html: markd.render(this.state.translation || "")
                 }}
             />
         );

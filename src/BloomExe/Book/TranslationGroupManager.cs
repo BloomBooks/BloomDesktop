@@ -334,10 +334,18 @@ namespace Bloom.Book
                     var brandingSettings = BrandingSettings.GetSettingsOrNull(
                         bookData.CollectionSettings.Subscription.BrandingKey
                     );
-                    languagesAttributeString = brandingSettings?.GetPresetKeyValueOrDefault(
-                        match.Groups["brandingPresetKey"].Value,
-                        match.Groups["default"].Value
-                    );
+                    if (brandingSettings != null)
+                    {
+                        languagesAttributeString = brandingSettings.GetPresetKeyValueOrDefault(
+                            match.Groups["brandingPresetKey"].Value,
+                            match.Groups["default"].Value
+                        );
+                    }
+                    else
+                    {
+                        // If we don't have branding settings, just use the default.
+                        languagesAttributeString = match.Groups["default"].Value;
+                    }
                 }
                 else
                 {

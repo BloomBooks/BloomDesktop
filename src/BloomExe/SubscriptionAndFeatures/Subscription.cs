@@ -377,9 +377,11 @@ namespace Bloom.SubscriptionAndFeatures
             else if (
                 descriptor == "Local-Community"
                 || descriptor == "Local Community" /* pre 4.4 */
-                || descriptor.EndsWith("-LC")
+                || descriptor.ToLowerInvariant().EndsWith("-lc")
             )
                 return SubscriptionTier.LocalCommunity;
+            else if (descriptor.ToLowerInvariant().EndsWith("-pro"))
+                return SubscriptionTier.Pro;
             else
                 return SubscriptionTier.Enterprise;
         }

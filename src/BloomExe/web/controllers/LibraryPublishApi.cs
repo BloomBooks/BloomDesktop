@@ -101,6 +101,10 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
+                "libraryPublish/checkSubscriptionMatch",
+                HandleCheckSubscriptionMatch,
+                true);
+            apiHandler.RegisterEndpointHandler(
                 "libraryPublish/uploadAfterChangingBookId",
                 HandleUploadAfterChangingBookId,
                 true
@@ -416,6 +420,20 @@ namespace Bloom.web.controllers
                 _existingBookObjectIdOrNull = collisionDialogInfo.existingBookObjectId.ToString();
 
             request.ReplyWithJson(collisionDialogInfo);
+        }
+
+        private void HandleCheckSubscriptionMatch(ApiRequest request)
+        {
+            var subscriptionMatch = Model.CheckSubscriptionMatchBeforeUpload();
+            if (subscriptionMatch != null)
+            {
+                _webSocketProgress.MessageWithoutLocalizing(subscriptionMatch, ProgressKind.Error);
+                request.ReplyWithJson(new { error = true });
+            }
+            else
+            {
+                request.ReplyWithJson(new { error = false });
+            }
         }
 
         private dynamic CollisionDialogInfoForErrorCondition =>
