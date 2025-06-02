@@ -72,6 +72,8 @@ export interface ITool {
 }
 
 export interface IReactTool {
+    // For tools that require a subscription. This will trigger an indicator communicating that this
+    // featureName requires a subscription.
     featureName?: string;
 }
 
@@ -945,8 +947,10 @@ function beginAddTool(
         // we don't do it to localizations. But in English, the code value beats the xlf one.
         let toolLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim();
         toolLabel = ToolBox.addToolToString(toolLabel, true);
+
+        // Currently, all subscription tools are React, so we haven't implemented a way to add the subscription badge to old-style tools
         const header = $(
-            "<h3 data-i18n='" + i18Id + "'>" + toolLabel + "</h3>"
+            `<h3><div class="toolbox-accordion-header-text" data-i18n=${i18Id}>${toolLabel}</div><span class="subscription-badge"></span></h3>`
         );
         const reactTool = (tool as unknown) as IReactTool;
         header.attr("data-toolId", toolName);
@@ -954,6 +958,9 @@ function beginAddTool(
 
         // Check feature status asynchronously and apply subscription requirements if needed
         if (reactTool.featureName) {
+            header.attr("data-feature", reactTool.featureName);
+            addFeatureStatusMessageTitlesToSubscriptionBadges(header);
+
             getFeatureStatusAsync(reactTool.featureName).then(featureStatus => {
                 if (
                     featureStatus &&
@@ -1064,7 +1071,7 @@ function handleKeyboardInput(): void {
             // Normally every editable box has a ckeditor attached. But some arithmetic template boxes are
             // intended to contain numbers not needing translation and don't get one...because the logic
             // that invokes WireToCKEditor is looking for classes like bloom-content1 that are not present
-            // in ArithmeticTemplate. Here we're presumng that if a block didn't get one attached,
+            // in ArithmeticTemplate. Here we're presuming that if a block didn't get one attached,
             // it's not true vernacular text and doesn't need markup. So all the code below is skipped
             // if we don't have one.
             if (ckeditorOfThisBox) {
@@ -1285,6 +1292,64 @@ function resizeToolbox() {
 }
 
 /**
+ * Gets the localized title text for a feature based on its status
+ * @param featureName The name of the feature to get status for
+ * @returns A Promise that resolves to the localized title text
+ */
+async function getFeatureStatusTitleText(featureName: string): Promise<string> {
+    return new Promise<string>(resolve => {
+        get(`features/status?featureName=${featureName}`, c => {
+            const featureStatus = c.data;
+            const localizedTier = featureStatus?.localizedTier;
+
+            let titleText: string;
+            if (featureStatus.enabled) {
+                titleText = theOneLocalizationManager.getText(
+                    "Subscription.FeatureIsIncludedSentence",
+                    "This feature is included in your {0} subscription.",
+                    localizedTier
+                );
+            } else {
+                titleText = theOneLocalizationManager.getText(
+                    "Subscription.RequiredTierForFeatureSentence",
+                    'This feature requires a Bloom subscription tier of at least "{0}".',
+                    localizedTier
+                );
+            }
+            resolve(titleText);
+        });
+    });
+}
+
+/**
+ * Adds feature status message titles to subscription badges found in the specified jQuery element
+ * @param element The jQuery element containing subscription badges
+ */
+async function addFeatureStatusMessageTitlesToSubscriptionBadges(
+    element: JQuery
+): Promise<void> {
+    const subscriptionBadges = element.find(".subscription-badge");
+    const promises: Promise<void>[] = [];
+    subscriptionBadges.each(function(_i, subscriptionBadge) {
+        if (subscriptionBadge.hasAttribute("title")) return;
+        const featureName = subscriptionBadge.parentElement?.getAttribute(
+            "data-feature"
+        );
+        if (!featureName) return;
+
+        const promise = (async () => {
+            const titleText = await getFeatureStatusTitleText(featureName);
+            subscriptionBadge.setAttribute("title", titleText);
+        })();
+
+        promises.push(promise);
+    });
+
+    // Wait for all the promises to complete
+    await Promise.all(promises);
+}
+
+/**
  * Adds one tool to the toolbox
  * @param {String} newContent
  * @param {String} toolId
@@ -1322,6 +1387,9 @@ function loadToolboxTool(
     const label = header.text();
     if (toolId === "settingsTool" && !showExperimentalTools) {
         content.addClass("hideExperimental");
+    }
+    if (toolId === "settingsTool") {
+        addFeatureStatusMessageTitlesToSubscriptionBadges(content);
     }
 
     // Where to insert the new tool? We want to keep them alphabetical except for More...which is always last,
