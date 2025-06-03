@@ -87,7 +87,7 @@ namespace BloomTests.Collection
 
         [TestCase(null, SubscriptionTier.Basic)]
         [TestCase("", SubscriptionTier.Basic)]
-        [TestCase("Legacy-LC-005809-2533", SubscriptionTier.LocalCommunity)]
+        [TestCase("Legacy-LC-005839-2533", SubscriptionTier.LocalCommunity)]
         [TestCase("Fake-006273-0501", SubscriptionTier.Enterprise)]
         [TestCase("Fake-LC-006273-1463", SubscriptionTier.LocalCommunity)]
         [TestCase("Test-Expired-005691-4935", SubscriptionTier.Basic)] // if expired, it's basic
