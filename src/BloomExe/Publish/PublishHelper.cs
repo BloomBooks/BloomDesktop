@@ -278,7 +278,10 @@ namespace Bloom.Publish
             }
 
             RemovePagesByFeatureSystem(book, dom, pageElts, medium, omittedPages);
-            if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
+            if (
+                !book.CollectionSettings.Subscription.HaveActiveSubscription
+                && !book.BookData.BookIsDerivative()
+            )
                 RemoveEnterpriseOnlyAssets(book);
             RemoveClassesAndAttrsToDisableFeatures(
                 pageElts,
@@ -646,10 +649,10 @@ namespace Bloom.Publish
             ISet<string> messages
         )
         {
-            var disabledRemoveByModifyingFeatures = FeatureStatus.GetDisabledFeatures(
+            var disabledRemoveByModifyingFeatures = FeatureStatus.GetFeaturesToDisableUsingMethod(
                 subscription,
                 forDerivative,
-                PublicationRestrictions.DisabledByModifyingDom
+                PreventionMethod.DisabledByModifyingDom
             );
             foreach (var page in pageElts)
             {
@@ -683,8 +686,9 @@ namespace Bloom.Publish
             }
         }
 
-        // Called if we don't have any subscription level at all (basic tier), removes things we
-        // don't need in that case because pages that use them have been removed.
+        // Called if we don't have any subscription level at all (basic tier) and the book
+        // is an original, removes things we don't need in that case because pages that use
+        // them have been removed.
         // Not really sure what we need here; embedding the simple comprehension quiz JS is
         // probably obsolete in all situations, but there may be some old version of Bloom Player
         // that needs it. But for sure we don't need it in a Basic tier publication which
@@ -692,6 +696,9 @@ namespace Bloom.Publish
         // I don't know why the video placeholder ever needs to be published, but we used
         // to remove it for enterprise publications, so it should still be safe to remove
         // it for Basic tier, at least.
+        // The old code did not distinguish derivatives, but we're moving more in the
+        // direction of allowing most things to be published in derivatives, so I decided
+        // to err on the side of safety by NOT deleting these assets when publishing a derivative.
         private static void RemoveEnterpriseOnlyAssets(Book.Book book)
         {
             RobustFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));

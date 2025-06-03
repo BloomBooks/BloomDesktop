@@ -57,9 +57,9 @@ namespace Bloom.SubscriptionAndFeatures
                     ".//div[contains(@class,'bloom-canvas') and @data-initial-rect]",
                 // PDFs can't move, and EPUB players won't know how to do it.
                 SupportedMediums = PublishingMediums.BloomPub | PublishingMediums.Video,
-                RestrictionInDerivativeBooks = PublicationRestrictions.None,
-                RestrictionInOriginalBooks = PublicationRestrictions.DisabledInUi,
-                RestrictionInUnsupportedMediums = PublicationRestrictions.DisabledInUi
+                PreventPublishingInDerivativeBooks = PreventionMethod.None,
+                PreventPublishingInOriginalBooks = PreventionMethod.DisabledInUi,
+                PreventPublishingInUnsupportedMediums = PreventionMethod.DisabledInUi
             },
             new FeatureInfo
             {
@@ -67,9 +67,9 @@ namespace Bloom.SubscriptionAndFeatures
                 SubscriptionTier = SubscriptionTier.Pro,
                 ExistsInPageXPath =
                     "self::div[@data-backgroundaudio and string-length(@data-backgroundaudio)!=0]",
-                RestrictionInDerivativeBooks = PublicationRestrictions.None,
-                RestrictionInOriginalBooks = PublicationRestrictions.DisabledByModifyingDom,
-                RestrictionInUnsupportedMediums = PublicationRestrictions.DisabledByModifyingDom,
+                PreventPublishingInDerivativeBooks = PreventionMethod.None,
+                PreventPublishingInOriginalBooks = PreventionMethod.DisabledByModifyingDom,
+                PreventPublishingInUnsupportedMediums = PreventionMethod.DisabledByModifyingDom,
                 AttributesToRemoveToDisable = "data-backgroundaudio",
                 L10NId = "PublishTab.Feature.Music"
             },
@@ -104,17 +104,17 @@ namespace Bloom.SubscriptionAndFeatures
                 // but haven't tested that. Definitely not in videos...no opportunity
                 // to interact with them.
                 SupportedMediums = PublishingMediums.BloomPub,
-                RestrictionInDerivativeBooks = PublicationRestrictions.None,
-                RestrictionInOriginalBooks = PublicationRestrictions.Remove,
-                RestrictionInUnsupportedMediums = PublicationRestrictions.Remove,
+                PreventPublishingInDerivativeBooks = PreventionMethod.None,
+                PreventPublishingInOriginalBooks = PreventionMethod.Remove,
+                PreventPublishingInUnsupportedMediums = PreventionMethod.Remove,
             },
             new FeatureInfo
             {
                 Feature = FeatureName.Overlay,
                 SubscriptionTier = SubscriptionTier.Pro,
                 SupportedMediums = PublishingMediums.All,
-                RestrictionInDerivativeBooks = PublicationRestrictions.None,
-                RestrictionInOriginalBooks = PublicationRestrictions.Block,
+                PreventPublishingInDerivativeBooks = PreventionMethod.None,
+                PreventPublishingInOriginalBooks = PreventionMethod.Block,
                 ExistsInPageXPath =
                     ".//div[contains(@class,'"
                     + Bloom.Book.HtmlDom.kCanvasElementClass
@@ -126,8 +126,8 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.Game,
                 SubscriptionTier = SubscriptionTier.Pro,
-                RestrictionInDerivativeBooks = PublicationRestrictions.Remove,
-                RestrictionInOriginalBooks = PublicationRestrictions.Remove,
+                PreventPublishingInDerivativeBooks = PreventionMethod.Remove,
+                PreventPublishingInOriginalBooks = PreventionMethod.Remove,
                 ExistsInPageXPath =
                     "self::div[@data-tool-id='game' or contains(@class,'simple-comprehension-quiz') or @data-activity='simple-dom-choice']",
                 // Many of our games can potentially be played on paper, though we think it's unlikely
@@ -140,7 +140,7 @@ namespace Bloom.SubscriptionAndFeatures
                 // OTOH, we're sure Games don't make sense in a Video publication, where there is no opportunity to play them,
                 // or in an EPUB, where the player will not have the code that makes them work.
                 SupportedMediums = PublishingMediums.BloomPub | PublishingMediums.PDF,
-                RestrictionInUnsupportedMediums = PublicationRestrictions.Remove,
+                PreventPublishingInUnsupportedMediums = PreventionMethod.Remove,
             },
             new FeatureInfo
             {
@@ -152,8 +152,8 @@ namespace Bloom.SubscriptionAndFeatures
                 // the AppearanceSettings.CoverIsImage and Subscription.HaveActiveSubscription.
                 // (The latter should be changed to something involving this feature, but even then,
                 // the class will be removed by the time we execute the code that processes these properties.)
-                RestrictionInDerivativeBooks = PublicationRestrictions.DisabledByModifyingDom,
-                RestrictionInOriginalBooks = PublicationRestrictions.DisabledByModifyingDom,
+                PreventPublishingInDerivativeBooks = PreventionMethod.DisabledByModifyingDom,
+                PreventPublishingInOriginalBooks = PreventionMethod.DisabledByModifyingDom,
                 ClassesToRemoveToDisable = "cover-is-image no-margin-page",
                 L10NId = "BookSettings.CoverIsImage"
             },

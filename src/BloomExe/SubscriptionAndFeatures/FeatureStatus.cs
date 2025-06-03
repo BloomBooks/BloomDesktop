@@ -21,7 +21,10 @@ namespace Bloom.SubscriptionAndFeatures
         All = Epub | Video | PDF | BloomPub
     }
 
-    public enum PublicationRestrictions
+    /// <summary>
+    /// Ways of preventing a feature being used (currently, specifically from being published) in a book.
+    /// </summary>
+    public enum PreventionMethod
     {
         // We will publish the feature if it is there, even though we don't allow creating it
         // (e.g., some tiers don't allow recording audio at the text block level, but if we have
@@ -66,16 +69,16 @@ namespace Bloom.SubscriptionAndFeatures
 
         // During publishing, what happens if we encounter this feature already in the book
         // but we don't have an adequate subscription tier?
-        public PublicationRestrictions RestrictionInDerivativeBooks;
-        public PublicationRestrictions RestrictionInOriginalBooks;
+        public PreventionMethod PreventPublishingInDerivativeBooks;
+        public PreventionMethod PreventPublishingInOriginalBooks;
 
         // And what happens if we're publishing in a medium that does not support this feature?
         // Note, currently only Remove and DisabledByModifyingDom are directly supported by the FeatureStatus code;
         // other features may be disabled in the UI, or by higher-level code that blocks publishing the book entirely.
-        public PublicationRestrictions RestrictionInUnsupportedMediums;
+        public PreventionMethod PreventPublishingInUnsupportedMediums;
 
         // An xpath that can be used to determine whether the feature exists in the page.
-        // This is required at least for features that have any Remove or DisabledByModifyingDom restriction.
+        // This is required at least for features that have any Remove or DisabledByModifyingDom method.
         internal string ExistsInPageXPath;
 
         public string ClassesToRemoveToDisable;
@@ -135,23 +138,25 @@ namespace Bloom.SubscriptionAndFeatures
             };
         }
 
-        // Get the features that are disabled for the given subscription and have the given publication restriction
+        // Get the features that should be disabled for the given subscription using the specified method
         // (given that the book is or is not a derivative)
-        public static IEnumerable<FeatureInfo> GetDisabledFeatures(
+        public static IEnumerable<FeatureInfo> GetFeaturesToDisableUsingMethod(
             Subscription subscription,
             bool forDerivative,
-            PublicationRestrictions restrictions
+            PreventionMethod method
         )
         {
             return FeatureRegistry.Features.Where(feature =>
             {
                 var featureStatus = GetFeatureStatus(subscription, feature);
-                return !featureStatus.Enabled
-                    && (
-                        forDerivative
-                            ? feature.RestrictionInDerivativeBooks == restrictions
-                            : feature.RestrictionInOriginalBooks == restrictions
-                    );
+                // which property of the feature should we look at to decide
+                // whether it uses this method of disabling?
+                var methodToMatch = forDerivative
+                    ? feature.PreventPublishingInDerivativeBooks
+                    : feature.PreventPublishingInOriginalBooks;
+                // It's interesting if it does in fact need to be disabled, and if the
+                // way we want to disable it matches the one the caller is looking for.
+                return !featureStatus.Enabled && method == methodToMatch;
             });
         }
 
@@ -172,10 +177,10 @@ namespace Bloom.SubscriptionAndFeatures
             if (
                 PageMatchesAnyFeature(
                     page,
-                    GetDisabledFeatures(
+                    GetFeaturesToDisableUsingMethod(
                         subscription,
                         bookIsDerivative,
-                        PublicationRestrictions.Remove
+                        PreventionMethod.Remove
                     )
                 )
             )
@@ -188,7 +193,7 @@ namespace Bloom.SubscriptionAndFeatures
                     page,
                     FeatureRegistry.Features.Where(
                         f =>
-                            f.RestrictionInUnsupportedMediums == PublicationRestrictions.Remove
+                            f.PreventPublishingInUnsupportedMediums == PreventionMethod.Remove
                             && (f.SupportedMediums & medium) == 0
                     )
                 )
@@ -255,7 +260,7 @@ namespace Bloom.SubscriptionAndFeatures
 
             var disabledFeaturesToLookFor = new List<FeatureInfo>();
             var removableFeatures = FeatureRegistry.Features
-                .Where(f => f.RestrictionInOriginalBooks == PublicationRestrictions.Remove)
+                .Where(f => f.PreventPublishingInOriginalBooks == PreventionMethod.Remove)
                 .ToList();
 
             foreach (
@@ -263,7 +268,7 @@ namespace Bloom.SubscriptionAndFeatures
                     // None obviously doesn't restrict anything; Remove gets rid of individual pages but doesn't completely forbid;
                     // The Disabled ones allow publishing but without the feature. So it's only Block ones that mustn't exist at all.
                     f =>
-                        f.RestrictionInOriginalBooks == PublicationRestrictions.Block
+                        f.PreventPublishingInOriginalBooks == PreventionMethod.Block
                         && !string.IsNullOrEmpty(f.ExistsInPageXPath)
                 )
             )
