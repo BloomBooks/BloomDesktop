@@ -777,6 +777,10 @@ namespace Bloom.Utils
         /// ISO 639-2 code), Yyyy is the script code, and ZZ is the country code.  ZZ and Yyyy are both optional.
         /// We need to ensure the pieces are properly capitalized.  (BL-14038)
         /// </summary>
+        /// <remarks>
+        /// This method doesn't try to do any normalization of the input tag apart from capitalization.
+        /// See BL-14597 for an example of a problem that has occurred when we tried to do more.
+        /// </remarks>
         /// <returns>possibly recapitalized language tag</returns>
         public static string NormalizeLanguageTagCapitalization(string tag)
         {
@@ -792,23 +796,41 @@ namespace Bloom.Utils
                 )
             )
             {
-                if (!string.IsNullOrEmpty(language))
-                    language = language.ToLowerInvariant();
+                // Using IetfLanguageTag.TryCreate() to create the new tag removes a Script if it's
+                // the one that is implied by the language code.  This is a gratuitous change that
+                // can cause problems.  See BL-14597.
+                StringBuilder bldr = new StringBuilder();
+
+                // language is set if TryGetParts() succeeds, so we can assert it is not null or empty.
+                Debug.Assert(!string.IsNullOrEmpty(language), "language code should never be null or empty after IetfLanguageTag.TryGetParts() succeeds");
+                // Language codes are always all lowercase.
+                language = language.ToLowerInvariant();
+                bldr.Append(language);
                 if (!string.IsNullOrEmpty(script))
+                {
+                    // Script codes are always capitalized, with only the first letter uppercase.
                     script =
                         script.Substring(0, 1).ToUpperInvariant()
                         + script.Substring(1).ToLowerInvariant();
-                if (!string.IsNullOrEmpty(region))
-                    region = region.ToUpperInvariant();
-                // Variants are freeform, so we don't try to recapitalize them.
-                if (IetfLanguageTag.TryCreate(language, script, region, variant, out var newTag))
-                {
-                    //if (newTag != tag)
-                    //    Debug.WriteLine(
-                    //        $"DEBUG NormalizeLanguageTag(): tag: {tag} normalized to {newTag}"
-                    //    );
-                    return newTag;
+                    bldr.Append('-');
+                    bldr.Append(script);
                 }
+                if (!string.IsNullOrEmpty(region))
+                {
+                    // Region codes are always all uppercase.
+                    region = region.ToUpperInvariant();
+                    bldr.Append('-');
+                    bldr.Append(region);
+                }
+                // Variants are freeform, so we don't try to recapitalize them.
+                if (!string.IsNullOrEmpty(variant))
+                {
+                    bldr.Append('-');
+                    bldr.Append(variant);
+                }
+                var newTag = bldr.ToString();
+                Debug.Assert(tag.ToLowerInvariant() == newTag.ToLowerInvariant(), $"Fixing capitalization in a language tag shouldn't greatly change it: {tag} => {newTag}");
+                return newTag;
             }
             return tag; // failed to parse: return the original
         }
