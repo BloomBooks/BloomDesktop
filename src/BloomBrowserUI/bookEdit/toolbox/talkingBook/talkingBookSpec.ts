@@ -3,7 +3,8 @@ import {
     theOneAudioRecorder,
     initializeTalkingBookToolAsync,
     AudioMode,
-    getAllAudioModes
+    getAllAudioModes,
+    kAnyRecordingApiUrl
 } from "./audioRecording";
 import { RecordingMode } from "./recordingMode";
 import {
@@ -158,11 +159,7 @@ describe("talking book tests", () => {
                 if (response) {
                     return response;
                 } else {
-                    if (
-                        url.includes(
-                            "/bloom/api/audio/checkForAnyRecording?ids="
-                        )
-                    ) {
+                    if (url.includes(kAnyRecordingApiUrl)) {
                         return Promise.resolve({ data: false });
                     } else {
                         return Promise.reject("Fake 404 error 4.");
@@ -781,7 +778,7 @@ function setAllAudioFilesPresent() {
     spyOn(axios, "get").and.callFake((url: string) => {
         if (url.includes("/bloom/api/audio/checkForAllRecording?ids=")) {
             return Promise.resolve({ data: true });
-        } else if (url.includes("/bloom/api/audio/checkForAnyRecording?ids=")) {
+        } else if (url.includes(kAnyRecordingApiUrl)) {
             return Promise.resolve({ data: true });
         } else {
             return Promise.reject("Fake 404 error 5");
