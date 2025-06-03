@@ -17,6 +17,8 @@ namespace Bloom.SubscriptionAndFeatures
         Music,
         FullPageCoverImage,
 
+        WholeTextBoxAudio,
+
         //PictureDictionary,
         //? CustomizableTemplates,
         ExportEPUB,
@@ -72,6 +74,13 @@ namespace Bloom.SubscriptionAndFeatures
                 PreventPublishingInUnsupportedMediums = PreventionMethod.DisabledByModifyingDom,
                 AttributesToRemoveToDisable = "data-backgroundaudio",
                 L10NId = "PublishTab.Feature.Music"
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.WholeTextBoxAudio,
+                SubscriptionTier = SubscriptionTier.Pro,
+                PreventPublishingInDerivativeBooks = PreventionMethod.None,
+                PreventPublishingInOriginalBooks = PreventionMethod.None,
             },
             //new FeatureInfo
             //{

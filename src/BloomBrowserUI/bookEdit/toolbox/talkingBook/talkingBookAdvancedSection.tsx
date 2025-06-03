@@ -12,6 +12,7 @@ import { RecordingMode } from "./recordingMode";
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 import { LocalizedString } from "../../../react_components/l10nComponents";
 import { useL10n } from "../../../react_components/l10nHooks";
+import { RequiresSubscriptionAdjacentIconWrapper } from "../../../react_components/requiresSubscription";
 
 export const TalkingBookAdvancedSection: React.FunctionComponent<{
     hasAudio: boolean;
@@ -153,12 +154,14 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             }}
                             {...commonTooltipProps}
                         >
-                            <MuiRadio
-                                disabled={!props.hasRecordableDivs}
-                                value={RecordingMode.TextBox}
-                                label="By Whole Text Box"
-                                l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox"
-                            />
+                            <RequiresSubscriptionAdjacentIconWrapper featureName="WholeTextBoxAudio">
+                                <MuiRadio
+                                    disabled={!props.hasRecordableDivs}
+                                    value={RecordingMode.TextBox}
+                                    label="By Whole Text Box"
+                                    l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox"
+                                />
+                            </RequiresSubscriptionAdjacentIconWrapper>
                         </BloomTooltip>
                     </RadioGroup>
                 </BloomTooltip>
