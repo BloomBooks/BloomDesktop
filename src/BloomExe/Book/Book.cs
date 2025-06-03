@@ -2464,7 +2464,12 @@ namespace Bloom.Book
                 _bookData.MetadataLanguage1Tag,
                 oldIds,
                 BookInfo.AppearanceSettings.CoverIsImage
-                    && CollectionSettings.Subscription.HaveActiveSubscription
+                    && FeatureStatus
+                        .GetFeatureStatus(
+                            CollectionSettings.Subscription,
+                            FeatureName.FullPageCoverImage
+                        )
+                        .Enabled
             );
 
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
