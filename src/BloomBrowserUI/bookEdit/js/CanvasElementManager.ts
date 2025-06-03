@@ -550,15 +550,15 @@ export class CanvasElementManager {
             x => !EditableDivUtils.isInHiddenLanguageBlock(x)
         ) as HTMLElement[];
         if (canvasElements.length > 0) {
-            // If we have no activeElement, or it's not in the list...deleted or belongs to
-            // another page, perhaps...pick an arbitrary one.
+            // If we have an activeElement and it's not in the list, clear it. (Left over from another page? Deleted?)
+            // An earlier version of this code would pick one and set the variable, but not properly select it
+            // with SetActiveElement. Don't know why. Definitely harmful when talking book tool wants to set an
+            // initial selection but doesn't because it thinks a canvas element is active.
             if (
-                !this.activeElement ||
+                this.activeElement &&
                 canvasElements.indexOf(this.activeElement) === -1
             ) {
-                this.activeElement = canvasElements[
-                    canvasElements.length - 1
-                ] as HTMLElement;
+                this.activeElement = undefined;
             }
             // This focus call doesn't seem to work, at least in a lasting fashion.
             // See the code in bloomEditing.ts/SetupElements() that sets focus after
