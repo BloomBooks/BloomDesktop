@@ -13,7 +13,9 @@ var markdownIt = require("markdown-it")({
 });
 var markdownItContainer = require("markdown-it-container");
 var markdownItAttrs = require("markdown-it-attrs");
-markdownIt.use(markdownItContainer);
+markdownIt.use(markdownItContainer, "warning");
+markdownIt.use(markdownItContainer, "info");
+markdownIt.use(markdownItContainer, "note");
 markdownIt.use(markdownItAttrs);
 
 var debug = require("gulp-debug");
