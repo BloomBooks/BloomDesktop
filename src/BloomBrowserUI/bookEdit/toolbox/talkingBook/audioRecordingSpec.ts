@@ -3,7 +3,8 @@ import AudioRecording, {
     AudioTextFragment,
     initializeTalkingBookToolAsync,
     AudioMode,
-    getAllAudioModes
+    getAllAudioModes,
+    kAnyRecordingApiUrl
 } from "./audioRecording";
 import { RecordingMode } from "./recordingMode";
 import { customJasmineMatchers } from "../../../utils/testHelper";
@@ -45,7 +46,7 @@ describe("audio recording tests", () => {
     // to return while spying on axios.get, and Jasmine doesn't allow more than one spy on the same function.
     function setupDefaultApiResponses() {
         spyOn(axios, "get").and.callFake((url: string) => {
-            if (url.includes("/bloom/api/audio/checkForAnyRecording")) {
+            if (url.includes(kAnyRecordingApiUrl)) {
                 return Promise.resolve({ data: false });
             } else {
                 return Promise.reject("Fake 404 error 7.");
@@ -1820,9 +1821,7 @@ describe("audio recording tests", () => {
             spyOn(axios, "get").and.callFake((url: string, config) => {
                 if (url.endsWith("fileIO/chooseFile")) {
                     return Promise.resolve({ data: audioToCopyFilePath });
-                } else if (
-                    url.includes("/bloom/api/audio/checkForAnyRecording")
-                ) {
+                } else if (url.includes(kAnyRecordingApiUrl)) {
                     return Promise.resolve({ data: false });
                 } else {
                     return Promise.reject("Fake 404 Error 2");

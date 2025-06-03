@@ -97,6 +97,8 @@ export function getAllAudioModes(): AudioMode[] {
     ];
 }
 
+export const kAnyRecordingApiUrl = "/bloom/api/audio/checkForAnyRecording?ids=";
+
 const kWebsocketContext = "audio-recording";
 const kSegmentClass = "bloom-highlightSegment";
 // Indicates that the element should be highlighted.
@@ -3639,7 +3641,7 @@ export default class AudioRecording implements IAudioRecorder {
         }
 
         const response: AxiosResponse<any> = await axios.get(
-            `/bloom/api/audio/checkForAnyRecording?ids=${idsToCheck}`
+            `${kAnyRecordingApiUrl}${idsToCheck}`
         );
 
         this.updateButtonStateHelper(expectedVerb, response);
@@ -3650,7 +3652,7 @@ export default class AudioRecording implements IAudioRecorder {
     ): Promise<boolean> {
         try {
             const response: AxiosResponse<any> = await axios.get(
-                `/bloom/api/audio/checkForAnyRecording?ids=${ids}`
+                `${kAnyRecordingApiUrl}${ids}`
             );
             return this.DoesNarrationExist(response);
         } catch {
@@ -3658,7 +3660,7 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
-    // Given a response (from "/bloom/api/audio/checkForAnyRecording?ids=..."), determines whether the response indicates that narration audio exists for any of the specified IDs
+    // Given a response (from "${kAnyRecordingApiUrl}..."), determines whether the response indicates that narration audio exists for any of the specified IDs
     private static DoesNarrationExist(response: AxiosResponse<any>): boolean {
         return response && response.data === true;
     }
@@ -3728,9 +3730,7 @@ export default class AudioRecording implements IAudioRecorder {
             ids.push(element.id);
         });
 
-        const response = await axios.get(
-            "/bloom/api/audio/checkForAnyRecording?ids=" + ids
-        );
+        const response = await axios.get(`${kAnyRecordingApiUrl}${ids}`);
         if (response.data === true) {
             this.setStatus("listen", Status.Enabled);
         } else {

@@ -1,5 +1,5 @@
 import * as XRegExp from "xregexp";
-import AudioRecording from "./audioRecording";
+import AudioRecording, { kAnyRecordingApiUrl } from "./audioRecording";
 import { RecordingMode } from "./recordingMode";
 import axios, { AxiosResponse } from "axios";
 
@@ -100,9 +100,7 @@ export default class Recordable {
             return false;
         }
 
-        const response = await axios.get(
-            `/bloom/api/audio/checkForAnyRecording?ids=${idsToCheck}`
-        );
+        const response = await axios.get(`${kAnyRecordingApiUrl}${idsToCheck}`);
         return response.data as boolean;
     }
 
@@ -135,7 +133,7 @@ export default class Recordable {
             );
         }
         const response = await axios.get(
-            `/bloom/api/audio/checkForAnyRecording?ids=${sentence.id}`
+            `${kAnyRecordingApiUrl}${sentence.id}`
         );
         return Promise.resolve(response.data as boolean);
 
