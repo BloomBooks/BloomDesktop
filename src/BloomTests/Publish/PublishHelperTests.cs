@@ -1082,18 +1082,15 @@ namespace BloomTests.Publish
                 "0123456789",
                 false
             );
-            void checkNotRemoved()
-            {
-                var assertThatXml = AssertThatXmlIn.Element(doc.DocumentElement);
-                assertThatXml.HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[contains(@class,'bloom-page')]",
-                    2
-                );
 
-                Assert.That(pageElts.Count, Is.EqualTo(2));
-                Assert.That(omittedPages.Count, Is.EqualTo(0));
-            }
-            checkNotRemoved();
+            var assertThatXml = AssertThatXmlIn.Element(doc.DocumentElement);
+            assertThatXml.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'bloom-page')]",
+                2
+            );
+
+            Assert.That(pageElts.Count, Is.EqualTo(2));
+            Assert.That(omittedPages.Count, Is.EqualTo(0));
         }
 
         [Test]
