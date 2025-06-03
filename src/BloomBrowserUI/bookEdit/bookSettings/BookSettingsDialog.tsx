@@ -106,15 +106,20 @@ export const BookSettingsDialog: React.FunctionComponent<{
     >("book/settings/appearanceUIOptions", {
         themeNames: []
     });
+    // If we pass a new default value to useApiObject on every render, it will query the host
+    // every time and then set the result, which triggers a new render, making an infinite loop.
+    const defaultOverrides = React.useMemo(() => {
+        return {
+            xmatter: {},
+            branding: {},
+            xmatterName: "",
+            brandingName: ""
+        };
+    }, []);
 
     const overrideInformation: IOverrideInformation | undefined = useApiObject<
         IOverrideInformation
-    >("book/settings/overrides", {
-        xmatter: {},
-        branding: {},
-        xmatterName: "",
-        brandingName: ""
-    });
+    >("book/settings/overrides", defaultOverrides);
 
     const xmatterLockedBy = useL10n(
         "Locked by {0} Front/Back matter",
