@@ -16,6 +16,8 @@ namespace Bloom.SubscriptionAndFeatures
         Motion,
         Music,
 
+        WholeTextBoxAudio,
+
         //PictureDictionary,
         //? CustomizableTemplates,
         ExportEPUB,
@@ -52,7 +54,8 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.Motion,
                 SubscriptionTier = SubscriptionTier.Pro,
-                ExistsInPageXPath = ".//div[contains(@class,'bloom-canvas') and @data-initial-rect]",
+                ExistsInPageXPath =
+                    ".//div[contains(@class,'bloom-canvas') and @data-initial-rect]",
                 SupportedMediums = PublishingMediums.BloomPub | PublishingMediums.Video,
                 RestrictionInDerivativeBooks = PublicationRestrictions.None,
                 RestrictionInOriginalBooks = PublicationRestrictions.Remove
@@ -61,7 +64,16 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.Music,
                 SubscriptionTier = SubscriptionTier.Pro,
-                ExistsInPageXPath = "self::div[@data-backgroundaudio and string-length(@data-backgroundaudio)!=0]",
+                ExistsInPageXPath =
+                    "self::div[@data-backgroundaudio and string-length(@data-backgroundaudio)!=0]",
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.WholeTextBoxAudio,
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExistsInPageXPath = "//*[@data-audiorecordingmode='TextBox']",
+                RestrictionInDerivativeBooks = PublicationRestrictions.None,
+                RestrictionInOriginalBooks = PublicationRestrictions.Block,
             },
             //new FeatureInfo
             //{
@@ -98,7 +110,11 @@ namespace Bloom.SubscriptionAndFeatures
                 RestrictionInDerivativeBooks = PublicationRestrictions.None,
                 RestrictionInOriginalBooks = PublicationRestrictions.Block,
                 ExistsInPageXPath =
-                    ".//div[contains(@class,'" + Bloom.Book.HtmlDom.kCanvasElementClass + "') and not(contains(@class,'" + Bloom.Book.HtmlDom.kBackgroundImageClass + "'))]"
+                    ".//div[contains(@class,'"
+                    + Bloom.Book.HtmlDom.kCanvasElementClass
+                    + "') and not(contains(@class,'"
+                    + Bloom.Book.HtmlDom.kBackgroundImageClass
+                    + "'))]"
             },
             new FeatureInfo
             {
@@ -106,8 +122,9 @@ namespace Bloom.SubscriptionAndFeatures
                 SubscriptionTier = SubscriptionTier.Pro,
                 RestrictionInDerivativeBooks = PublicationRestrictions.Remove,
                 RestrictionInOriginalBooks = PublicationRestrictions.Remove,
-                ExistsInPageXPath = "self::div[@data-tool-id='game' or contains(@class,'simple-comprehension-quiz') or @data-activity='simple-dom-choice']"
-			},
+                ExistsInPageXPath =
+                    "self::div[@data-tool-id='game' or contains(@class,'simple-comprehension-quiz') or @data-activity='simple-dom-choice']"
+            },
             // ----------------------------------------
             // LocalCommunity Tier Features
             // ----------------------------------------
