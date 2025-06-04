@@ -4438,9 +4438,9 @@
         <target xml:lang="fr" state="final">Produire un fichier .bloomshelf</target>
         <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
       </trans-unit>
-      <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true">
+      <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Removing one or more pages which require a higher subscription tier</source>
-        <target xml:lang="fr" state="needs-translation">Removing one or more pages which require a higher subscription tier</target>
+        <target xml:lang="fr" state="final">Supprimer une ou plusieurs pages ce qui nécessite un niveau d'abonnement supérieur</target>
         <note>ID: Publish.RemovingDisallowedPages</note>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm" approved="yes">
