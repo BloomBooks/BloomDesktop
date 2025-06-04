@@ -6178,6 +6178,11 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="needs-translation">This feature is included in your {0} subscription.</target>
         <note>ID: Subscription.FeatureIsIncludedSentence</note>
       </trans-unit>
+      <trans-unit id="Subscription.Pro.EmailMismatch" translate="no">
+        <source xml:lang="en">Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}.</target>
+        <note>ID: Subscription.Pro.EmailMismatch</note>
+      </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage" approved="yes">
         <source xml:lang="en">Your {0} subscription expires on {1}.</source>
         <target xml:lang="pt-PT" state="final">A sua assinatura do {0} expira em {1}.</target>
@@ -6192,6 +6197,21 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
         <target xml:lang="pt-PT" state="final">Usando assinatura: {0}. Expira {1}</target>
         <note>ID: SubscriptionStatus.DefaultMessage</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.UsingProSubscription" translate="no">
+        <source xml:lang="en">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</source>
+        <target xml:lang="pt-PT" state="needs-translation">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</target>
+        <note>ID: SubscriptionStatus.UsingProSubscription</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription" translate="no">
+        <source xml:lang="en">Using **Local Community** subscription for **{0}**. Expires {1}</source>
+        <target xml:lang="pt-PT" state="needs-translation">Using **Local Community** subscription for **{0}**. Expires {1}</target>
+        <note>ID: SubscriptionStatus.UsingLocalCommunitySubscription</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription" translate="no">
+        <source xml:lang="en">Using **Enterprise** subscription for **{0}**. Expires **{1}**</source>
+        <target xml:lang="pt-PT" state="needs-translation">Using **Enterprise** subscription for **{0}**. Expires **{1}**</target>
+        <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
       </trans-unit>
       <trans-unit id="TeamCollection.TeamCollection" approved="yes">
         <source xml:lang="en">Team Collection</source>
