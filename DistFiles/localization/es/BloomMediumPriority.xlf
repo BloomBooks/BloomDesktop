@@ -603,7 +603,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Music">
         <source xml:lang="en">Background Music</source>
-        <target xml:lang="es-ES" state="needs-translation">Background Music</target>
+        <target xml:lang="es-ES" state="translated">Música de fondo</target>
         <note>ID: PublishTab.Feature.Music</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.NoVideos" approved="yes">
