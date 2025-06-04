@@ -347,6 +347,8 @@ namespace Bloom
             string fileName
         )
         {
+            if (brandingNameOrFolderPath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+                return null;
             if (Path.IsPathRooted(brandingNameOrFolderPath)) //if it looks like a path
             {
                 var path = Path.Combine(brandingNameOrFolderPath, fileName);
