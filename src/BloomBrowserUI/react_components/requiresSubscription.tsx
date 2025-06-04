@@ -115,7 +115,9 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
                     node &&
                     // later version of react reportedly do support `inert`, but this version doesn't,
                     // so we are using this `ref` way to get it into the DOM.
-                    (featureStatus?.enabled || node.setAttribute("inert", ""))
+                    (featureStatus?.enabled
+                        ? node.removeAttribute("inert")
+                        : node.setAttribute("inert", ""))
                 }
             >
                 {children}
