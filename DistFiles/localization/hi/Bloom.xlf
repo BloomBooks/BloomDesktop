@@ -4439,6 +4439,11 @@
         <target xml:lang="hi" state="needs-translation">Produce a .bloomshelf file</target>
         <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
       </trans-unit>
+      <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true">
+        <source xml:lang="en">Removing one or more pages which require a higher subscription tier</source>
+        <target xml:lang="hi" state="needs-translation">Removing one or more pages which require a higher subscription tier</target>
+        <note>ID: Publish.RemovingDisallowedPages</note>
+      </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
         <source xml:lang="en">Web</source>
         <target xml:lang="hi" state="translated">वेब पर सांझा करें</target>
@@ -4608,6 +4613,11 @@
         <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
         <target xml:lang="hi" state="final">इसे विभिन्न इलेक्ट्रॉनिक रीडिंग डिवाइसों पर पढ़ने की अनुमति देते हुए, इसकी एक ePUB (इलेक्ट्रॉनिक पुस्तक) बनाएं।</target>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.FeatureRequiresHigherTier" translate="no">
+        <source xml:lang="en">The feature "{0}" was removed from this book because it requires a higher subscription tier</source>
+        <target xml:lang="hi" state="needs-translation">The feature "{0}" was removed from this book because it requires a higher subscription tier</target>
+        <note>ID: PublishTab.FeatureRequiresHigherTier</note>
       </trans-unit>
       <trans-unit id="PublishTab.NoBookletsMessage">
         <source xml:lang="en">This is disabled because Bloom cannot make booklets using the current size and orientation.</source>
