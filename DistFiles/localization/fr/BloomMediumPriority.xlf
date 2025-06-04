@@ -601,9 +601,9 @@
         <target xml:lang="fr" state="final">Sélectionnez cette option si vous voulez afficher le mouvement lorsqu'on le lit en mode paysage.</target>
         <note>ID: PublishTab.Feature.Motion.None</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Music">
+      <trans-unit id="PublishTab.Feature.Music" approved="yes">
         <source xml:lang="en">Background Music</source>
-        <target xml:lang="fr" state="needs-translation">Background Music</target>
+        <target xml:lang="fr" state="final">Musique de Fond</target>
         <note>ID: PublishTab.Feature.Music</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.NoVideos" approved="yes">
