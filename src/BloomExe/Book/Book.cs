@@ -4379,7 +4379,7 @@ namespace Bloom.Book
                     throw new ArgumentOutOfRangeException("bookletPortion");
             }
             // Do this after we remove unwanted pages; otherwise, the page removal code must also remove the media boxes.
-            if (FullBleed)
+            if (FullBleed && UserPrefs.FullBleed) // only if print is set for full bleed as well (BL-14863)
             {
                 InsertFullBleedMarkup(printingDom.Body);
             }
