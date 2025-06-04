@@ -577,8 +577,8 @@
         <note>ID: PublishTab.Feature.Activities.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
-        <source xml:lang="en">This is disabled because publishing interactive activities requires a subcription.</source>
-        <target xml:lang="prs" state="needs-translation">This is disabled because publishing interactive activities requires a subcription.</target>
+        <source xml:lang="en">This is disabled because publishing interactive activities requires a subscription.</source>
+        <target xml:lang="prs" state="needs-translation">This is disabled because publishing interactive activities requires a subscription.</target>
         <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None">
