@@ -31,6 +31,7 @@ import { NoteBox } from "../../react_components/boxes";
 import { P } from "../../react_components/l10nComponents";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
+import { RequiresSubscriptionOverlayWrapper } from "../../react_components/requiresSubscription";
 
 export const EPUBPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -260,7 +261,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
     const showProgressDialog = props.showPreview || publishStarted;
 
     return (
-        <React.Fragment>
+        <RequiresSubscriptionOverlayWrapper featureName="ExportEPUB">
             <PublishScreenTemplate
                 bannerTitleEnglish="Publish as ePUB"
                 bannerTitleL10nId="PublishTab.Epub.BannerTitle"
@@ -284,6 +285,6 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 />
             )}
             <BookMetadataDialog />
-        </React.Fragment>
+        </RequiresSubscriptionOverlayWrapper>
     );
 };
