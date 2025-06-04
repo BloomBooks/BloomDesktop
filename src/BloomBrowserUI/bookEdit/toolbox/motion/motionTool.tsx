@@ -20,6 +20,7 @@ import {
 import { css } from "@emotion/react";
 import { kMotionToolId } from "../toolIds";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
+import { getFeatureStatusAsync } from "../../../react_components/featureStatus";
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
@@ -67,9 +68,22 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     public newPageReady() {
         this.makeRectsVisible();
     }
+    private subscriptionAllowsMotion: boolean | undefined = undefined;
 
     private makeRectsVisible() {
-        // First, abort any preview that's in progress.
+        if (this.subscriptionAllowsMotion === undefined) {
+            // Find out if we're really allowed to show them, then do it or not.
+            getFeatureStatusAsync("motion").then(featureStatus => {
+                this.subscriptionAllowsMotion = !!(
+                    featureStatus && featureStatus.enabled
+                );
+                this.makeRectsVisible();
+            });
+            return;
+        }
+        if (!this.subscriptionAllowsMotion) {
+            return;
+        } // First, abort any preview that's in progress.
         if (this.rootControl.state.playing) {
             this.toggleMotionPreviewPlaying();
         }

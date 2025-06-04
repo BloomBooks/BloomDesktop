@@ -104,11 +104,16 @@ namespace Bloom.SubscriptionAndFeatures
         public string FirstPageNumber;
 
         // using a string (from typescript)
-        public static FeatureStatus GetFeatureStatus(Subscription subscription, string featureName)
+        public static FeatureStatus GetFeatureStatus(
+            Subscription subscription,
+            string featureName,
+            Book.Book book = null,
+            bool forPublishing = false
+        )
         {
             if (Enum.TryParse<FeatureName>(featureName, true, out FeatureName featureEnum))
             {
-                return GetFeatureStatus(subscription, featureEnum);
+                return GetFeatureStatus(subscription, featureEnum, book, forPublishing);
             }
             Debug.Assert(false, $"Feature '{featureName}' not found in FeatureName enum.");
             return null;
@@ -117,23 +122,45 @@ namespace Bloom.SubscriptionAndFeatures
         // using an enum (from c#)
         public static FeatureStatus GetFeatureStatus(
             Subscription subscription,
-            FeatureName featureName
+            FeatureName featureName,
+            Book.Book book = null,
+            bool forPublishing = false
         )
         {
             var feature = FeatureRegistry.Features.Find(f => f.Feature == featureName);
             Debug.Assert(feature != null, $"Feature '{featureName}' not found in registry.");
-            return GetFeatureStatus(subscription, feature);
+            return GetFeatureStatus(subscription, feature, book, forPublishing);
         }
 
         // if we already have a FeatureInfo (e.g., from iterating the registry)
-        public static FeatureStatus GetFeatureStatus(Subscription subscription, FeatureInfo feature)
+        public static FeatureStatus GetFeatureStatus(
+            Subscription subscription,
+            FeatureInfo feature,
+            Book.Book book = null,
+            bool forPublishing = false
+        )
         {
             var tier = subscription.Tier;
+            var enabled = (int)tier >= (int)feature.SubscriptionTier;
+            if (!enabled && forPublishing && book != null)
+            {
+                // for enabling certain publishing controls (currently motion book behavior),
+                // we have a special case for derivatives.
+                if (book.BookData.BookIsDerivative())
+                {
+                    enabled = feature.PreventPublishingInDerivativeBooks == PreventionMethod.None;
+                }
+                else
+                {
+                    enabled = feature.PreventPublishingInOriginalBooks == PreventionMethod.None;
+                }
+            }
+
             return new FeatureStatus
             {
                 FeatureName = feature.Feature,
                 SubscriptionTier = feature.SubscriptionTier,
-                Enabled = (int)tier >= (int)feature.SubscriptionTier,
+                Enabled = enabled,
                 Visible = true // for now, we have not hooked up the advanced/experimental flags yet.
             };
         }
