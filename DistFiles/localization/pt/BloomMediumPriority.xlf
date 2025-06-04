@@ -601,6 +601,11 @@
         <target xml:lang="pt-PT" state="final">Selecione esta opção se quiser exibir movimento quando o livro for lido em modo paisagem.</target>
         <note>ID: PublishTab.Feature.Motion.None</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Feature.Music">
+        <source xml:lang="en">Background Music</source>
+        <target xml:lang="pt-PT" state="needs-translation">Background Music</target>
+        <note>ID: PublishTab.Feature.Music</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.NoVideos" approved="yes">
         <source xml:lang="en">This is disabled because this book does not have any videos.</source>
         <target xml:lang="pt-PT" state="final">Isso está desabilitado porque o livro não tem áudio.</target>
