@@ -576,9 +576,9 @@
         <target xml:lang="fr" state="final">Ce livre contient des activités interactives.</target>
         <note>ID: PublishTab.Feature.Activities.None</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription" approved="yes">
-        <source xml:lang="en">This is disabled because publishing interactive activities requires a subcription.</source>
-        <target xml:lang="fr" state="final">Ceci est désactivé car la publication d'activités interactives est une fonctionnalité de Bloom Entreprise.</target>
+      <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
+        <source xml:lang="en">This is disabled because publishing interactive activities requires a subscription.</source>
+        <target xml:lang="fr" state="translated">Ceci est désactivé car la publication d'activités interactives est une fonctionnalité de Bloom Entreprise.</target>
         <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None" approved="yes">
