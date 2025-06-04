@@ -784,6 +784,9 @@ namespace Bloom.Utils
         /// <returns>possibly recapitalized language tag</returns>
         public static string NormalizeLanguageTagCapitalization(string tag)
         {
+            // Degenerate case that probably only ever occurs in unit tests.
+            if (tag.StartsWith("x-"))
+                return tag;
             // The IetfLanguageTag parser appears to be case insensitive.
             // We need to ensure the pieces are properly capitalized.
             if (
