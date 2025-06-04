@@ -531,6 +531,11 @@
         <note>ID: PublishTab.Feature.Motion.None</note>
         <note>This is a tooltip.</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Feature.Music">
+        <source xml:lang="en">Background Music</source>
+        <note>ID: PublishTab.Feature.Music</note>
+        <note>This is a tooltip.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.NoVideos">
         <source xml:lang="en">This is disabled because this book does not have any videos.</source>
         <note>ID: PublishTab.Feature.SignLanguage.NoVideos</note>

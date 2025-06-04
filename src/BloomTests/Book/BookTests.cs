@@ -6161,7 +6161,7 @@ namespace BloomTests.Book
         //    var doc = SafeXmlDocument.Create();
         //    doc.LoadXml(xml);
         //    var page = doc.DocumentElement;
-        //    Assert.True(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
+        //    Assert.True(Bloom.Book.Book.ShouldPageBeRemovedForCurrentSubscription(page));
         //}
 
 
@@ -6203,7 +6203,7 @@ namespace BloomTests.Book
         //           var doc = SafeXmlDocument.Create();
         //           doc.LoadXml(xml);
         //           var page = doc.DocumentElement;
-        //           Assert.False(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
+        //           Assert.False(Bloom.Book.Book.ShouldPageBeRemovedForCurrentSubscription(page));
         //       }
 
         // Retiring this: checking pages for the now more complex subscription complians is now part of the FeatureStatus class
@@ -6236,7 +6236,7 @@ namespace BloomTests.Book
         //           var doc = SafeXmlDocument.Create();
         //           doc.LoadXml(xml);
         //           var page = doc.DocumentElement;
-        //           Assert.False(Bloom.Book.Book.IsPageBloomSubscriptionOnly(page));
+        //           Assert.False(Bloom.Book.Book.ShouldPageBeRemovedForCurrentSubscription(page));
         //       }
 
         private const string kSentenceModeRecordingHtml =

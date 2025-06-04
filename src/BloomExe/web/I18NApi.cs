@@ -247,6 +247,27 @@ namespace Bloom.Api
             return false;
         }
 
+        public static string GetTranslation(string id)
+        {
+            if (LocalizationManager.UILanguageId != "en")
+            {
+                // Try to get a localization normally, but if we don't find one, it will fall back to
+                // the "English" passed as the second argument, rather than the English in the XLF.
+                var result = LocalizationManager.GetString(id, "***don'tusethis***");
+                if (result != "***don'tusethis***")
+                    return result;
+            }
+
+            // Use some magic to get around the LM's determination that the default must be the
+            // English in the code, and just get what the XLF has for English.
+            var result2 = GetLocalizedStringInOneLanguage(id, "en");
+            if (string.IsNullOrEmpty(result2))
+            {
+                return id; // sometimes this might be OK
+            }
+            return result2;
+        }
+
         private static string GetLocalizedStringInOneLanguage(string id, string langId)
         {
             // tricky. It might be in Bloom, or BloomMediumPriority, or BloomLowPriority.
@@ -261,7 +282,7 @@ namespace Bloom.Api
                 null,
                 langId
             );
-            if (string.IsNullOrEmpty(localizedString))
+            if (string.IsNullOrEmpty(localizedString) || localizedString == id)
                 localizedString = LocalizationManager.GetDynamicStringOrEnglish(
                     "BloomMediumPriority",
                     id,
@@ -269,7 +290,7 @@ namespace Bloom.Api
                     null,
                     langId
                 );
-            if (string.IsNullOrEmpty(localizedString))
+            if (string.IsNullOrEmpty(localizedString) || localizedString == id)
                 localizedString = LocalizationManager.GetDynamicStringOrEnglish(
                     "BloomLowPriority",
                     id,

@@ -14,6 +14,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.FontProcessing;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
@@ -375,7 +376,7 @@ namespace Bloom.Publish.Epub
             _svgItems = new List<string>();
             _firstContentPageItem = null;
             _fontsUsedInBook.Clear();
-            ISet<string> warningMessages = new HashSet<string>();
+            var warningMessages = new List<string>();
 
             Book.OurHtmlDom.AddPublishClassToBody("epub");
             if (!Unpaginated)
@@ -413,6 +414,8 @@ namespace Bloom.Publish.Epub
             var imageSettings = Book.BookInfo.PublishSettings.BloomPub.ImageSettings;
 
             var pageLabelProgress = progress.WithL10NPrefix("TemplateBooks.PageLabel.");
+            var omittedPages = new Dictionary<string, int>();
+            var modifiedPageMessages = new HashSet<string>();
             foreach (SafeXmlElement pageElement in Book.GetPageElements())
             {
                 var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
@@ -437,13 +440,24 @@ namespace Bloom.Publish.Epub
                 // We could check for this in a few more places, but once per page seems enough in practice.
                 if (AbortRequested)
                     break;
-                if (MakePageFile(pageElement, warningMessages, imageSettings))
+                if (
+                    MakePageFile(
+                        pageElement,
+                        omittedPages,
+                        modifiedPageMessages,
+                        warningMessages,
+                        imageSettings
+                    )
+                )
                 {
                     pageLabelProgress.Message(pageLabelEnglish, pageLabelEnglish);
                 }
                 ;
             }
-
+            // We don't want to add these for each page as we go, because we're accumulating the number
+            // of each type of page that gets deleted, and want one warning with one list of pages.
+            warningMessages.AddRange(PublishHelper.MakePagesRemovedWarnings(omittedPages));
+            warningMessages.AddRange(modifiedPageMessages);
             PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 
             if (_omittedPageLabels.Any())
@@ -1197,7 +1211,7 @@ namespace Bloom.Publish.Epub
         private void AddAudioOverlay(
             HtmlDom pageDom,
             string pageDocName,
-            ISet<string> warningMessages
+            List<string> warningMessages
         )
         {
             // These elements are marked as audio-sentence but we're not sure yet if the user actually recorded them yet
@@ -1454,7 +1468,7 @@ namespace Bloom.Publish.Epub
         /// </summary>
         private string MergeAudioElements(
             SafeXmlElement[] elementArray,
-            ISet<string> warningMessages
+            List<string> warningMessages
         )
         {
             var mergeFiles = elementArray
@@ -1654,7 +1668,9 @@ namespace Bloom.Publish.Epub
         /// </remarks>
         private bool MakePageFile(
             SafeXmlElement pageElement,
-            ISet<string> warningMessages,
+            Dictionary<string, int> omittedPages,
+            ISet<string> modifiedPageMessages,
+            List<string> warningMessages,
             ImagePublishSettings imageSettings
         )
         {
@@ -1696,7 +1712,17 @@ namespace Bloom.Publish.Epub
             }
 
             // Remove stuff that we don't want displayed. Some e-readers don't obey display:none. Also, not shipping it saves space.
-            _publishHelper.RemoveUnwantedContent(pageDom, this.Book, true, warningMessages, this);
+            _publishHelper.RemoveUnwantedContent(
+                pageDom,
+                this.Book,
+                true,
+                omittedPages,
+                modifiedPageMessages,
+                PublishingMediums.Epub,
+                this
+            );
+            if (pageDom.Body.FirstElementChild == null)
+                return false; // RemoveUnwantedContent decided the whole page should be omitted.
             _fontsUsedInBook.UnionWith(_publishHelper.FontsUsed); // filled in as side-effect of removing unwanted content
 
             pageDom.AddPublishClassToBody("epub");
@@ -2724,9 +2750,9 @@ namespace Bloom.Publish.Epub
         /// <returns>
         /// set of warning messages for any problems encountered (may be empty)
         /// </returns>
-        private ISet<string> EmbedFonts(WebSocketProgress progress)
+        private List<string> EmbedFonts(WebSocketProgress progress)
         {
-            ISet<string> warningMessages = new HashSet<string>();
+            var warningMessages = new List<string>();
             var fontFileFinder = FontFileFinder.GetInstance(Program.RunningUnitTests);
             PublishHelper.CheckFontsForEmbedding(
                 progress,

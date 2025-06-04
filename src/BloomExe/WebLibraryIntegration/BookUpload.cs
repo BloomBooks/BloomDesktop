@@ -846,7 +846,7 @@ namespace Bloom.WebLibraryIntegration
             // {
             //     // Remove enterprise features since they aren't allowed.
             //     ISet<string> warningMessages = new HashSet<string>();
-            //     PublishHelper.RemoveFeaturesThatExceedSubscription(
+            //     PublishHelper.RemovePagesByFeatureSystem(
             //         copiedBook,
             //         pages,
             //         warningMessages
