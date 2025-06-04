@@ -4437,6 +4437,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="translated">Tengeneza faili ya .bloomshelf</target>
         <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
       </trans-unit>
+      <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true">
+        <source xml:lang="en">Removing one or more pages which require a higher subscription tier</source>
+        <target xml:lang="sw" state="needs-translation">Removing one or more pages which require a higher subscription tier</target>
+        <note>ID: Publish.RemovingDisallowedPages</note>
+      </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
         <source xml:lang="en">Web</source>
         <target xml:lang="sw" state="translated">Weka kwenya wavuti</target>
@@ -4606,6 +4611,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
         <target xml:lang="sw" state="final">Tengeneza ePUB (kitabu cha kielektroniki) kutokana na kitabu hiki, ukikiruhusu kuweza kusomwa kwenye vifaa tofauti vya kusoma vya kielektroniki.</target>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.FeatureRequiresHigherTier" translate="no">
+        <source xml:lang="en">The feature "{0}" was removed from this book because it requires a higher subscription tier</source>
+        <target xml:lang="sw" state="needs-translation">The feature "{0}" was removed from this book because it requires a higher subscription tier</target>
+        <note>ID: PublishTab.FeatureRequiresHigherTier</note>
       </trans-unit>
       <trans-unit id="PublishTab.NoBookletsMessage">
         <source xml:lang="en">This is disabled because Bloom cannot make booklets using the current size and orientation.</source>
