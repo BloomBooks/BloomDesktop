@@ -5,7 +5,7 @@
 
 @toolboxBackgroundColor: @bloom-panelBackground;
 @helpLinkTopMargin: 45px;
-@bloomEnterpriseBadgeSize: 24px;
+@bloomEnterpriseBadgeSize: 20px;
 
 // The Games tool wants a white bar at the very top, so defeat the usual padding
 .ui-accordion .ui-accordion-content[data-toolid="dragActivityTool"] {
@@ -128,11 +128,19 @@ div.checkbox {
     -moz-user-select: none;
 }
 
-div.checkbox-label {
+div.toolbox-checkbox-label {
     position: relative;
     -moz-user-select: none;
     cursor: default;
     margin: 2px 0px 0px 0px;
+    width: 100%;
+    display: flex;
+    gap: 12px;
+    padding-right: 12px;
+}
+
+.toolbox-checkbox-label-text {
+    flex-grow: 1;
 }
 
 div.checkbox-and-label {
@@ -141,6 +149,17 @@ div.checkbox-and-label {
 
 .ui-accordion h3 {
     padding-left: 28px;
+}
+
+.ui-accordion h3[data-toolId] {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-right: 12px;
+}
+
+.ui-accordion-header .toolbox-accordion-header-text {
+    flex-grow: 1;
 }
 
 // We are fighting here to get our icons displayed instead of the ones the
@@ -188,18 +207,12 @@ div.checkbox-and-label {
     background-image: url("/bloom/images/microphone-white.svg") !important;
 }
 
-.ui-accordion [data-feature] {
-    // Add Bloom Subscription badge to tool header
-    &:after {
-        content: " ";
-        background: no-repeat center/80%
-            url("../../../images/bloom-enterprise-badge.svg") !important;
-        position: absolute;
-        right: 5px;
-        height: @bloomEnterpriseBadgeSize;
-        width: @bloomEnterpriseBadgeSize;
-        bottom: 2px;
-    }
+.subscription-badge {
+    background: no-repeat center/80%
+        url("../../../images/bloom-enterprise-badge.svg") !important;
+    height: @bloomEnterpriseBadgeSize;
+    width: @bloomEnterpriseBadgeSize;
+    flex-shrink: 0;
 }
 
 // Dialogs launched from the toolbox need to be in front of everything,
