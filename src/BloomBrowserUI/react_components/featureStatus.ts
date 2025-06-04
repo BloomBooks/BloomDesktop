@@ -26,22 +26,31 @@ export interface FeatureStatus {
  * Returns a Promise that resolves to the FeatureStatus or undefined.
  */
 export async function getFeatureStatusAsync(
-    featureName: string | undefined
+    featureName: string | undefined,
+    forPublishing: boolean = false
 ): Promise<FeatureStatus | undefined> {
     if (!featureName) return undefined;
 
     return new Promise<FeatureStatus | undefined>(resolve => {
-        get(`features/status?featureName=${featureName}`, result => {
-            resolve(result.data);
-        });
+        get(
+            `features/status?featureName=${featureName}&forPublishing=${
+                forPublishing ? "true" : "false"
+            }`,
+            result => {
+                resolve(result.data);
+            }
+        );
     });
 }
 
 export function useGetFeatureStatus(
-    featureName: string | undefined
+    featureName: string | undefined,
+    forPublishing: boolean = false
 ): FeatureStatus | undefined {
     const featureStatus = useApiObject<FeatureStatus | undefined>(
-        `features/status?featureName=${featureName}`,
+        `features/status?featureName=${featureName}&forPublishing=${
+            forPublishing ? "true" : "false"
+        }`,
         undefined,
         !featureName // skip the query if we don't have a feature name
     );
