@@ -5423,6 +5423,11 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: Subscription.FeatureIsIncludedSentence</note>
         <note>{0} is will be filled in with name of the tier. e.g "Pro" or "Enterprise"</note>
       </trans-unit>
+      <trans-unit id="Subscription.Pro.EmailMismatch" translate="no">
+        <source xml:lang="en">Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}.</source>
+        <note>ID: Subscription.Pro.EmailMismatch</note>
+        <note>{0} and {1} are placeholders for email addresses</note>
+      </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
         <source xml:lang="en">Your {0} subscription expires on {1}.</source>
         <note>ID: SubscriptionStatus.ExpiringSoonMessage</note>
@@ -5439,6 +5444,24 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Using subscription: {0}. Expires {1}</source>
         <note>ID: SubscriptionStatus.DefaultMessage</note>
         <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.UsingProSubscription" translate="no">
+        <source xml:lang="en">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</source>
+        <note>ID: SubscriptionStatus.UsingProSubscription</note>
+        <note>**{0}**{.bloom-Red} is the subscription descriptor (all of these characters must be left untranslated), {1} is the formatted expiration date</note>
+        <note>Leave the ** around the word(s) used to translate **Pro**</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription" translate="no">
+        <source xml:lang="en">Using **Local Community** subscription for **{0}**. Expires {1}</source>
+        <note>ID: SubscriptionStatus.UsingLocalCommunitySubscription</note>
+        <note>**{0}** is the subscription descriptor, {1} is the formatted expiration date</note>
+        <note>Leave the ** around the word(s) used to translate **Local Community**</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription" translate="no">
+        <source xml:lang="en">Using **Enterprise** subscription for **{0}**. Expires **{1}**</source>
+        <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
+        <note>**{0}** is the subscription descriptor, {1} is the formatted expiration date</note>
+        <note>Leave the ** around the word(s) used to translate **Enterprise**</note>
       </trans-unit>
       <trans-unit id="TeamCollection.TeamCollection">
         <source xml:lang="en">Team Collection</source>

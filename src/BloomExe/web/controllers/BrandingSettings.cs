@@ -120,9 +120,17 @@ namespace Bloom.Api
             out String subUnitName
         )
         {
-            if (subscriptionDescriptor.Contains("-LC"))
+            if (subscriptionDescriptor.ToLowerInvariant().EndsWith("-lc"))
             {
                 folderName = "Local-Community";
+                flavor = null;
+                subUnitName = null;
+                return;
+            }
+            if (subscriptionDescriptor.ToLowerInvariant().EndsWith("-pro"))
+            {
+                // Pro tier doesn't have brandings, so we use the default.
+                folderName = "Default";
                 flavor = null;
                 subUnitName = null;
                 return;
