@@ -278,11 +278,7 @@ namespace Bloom.Publish
             }
 
             RemovePagesByFeatureSystem(book, dom, pageElts, medium, omittedPages);
-            if (
-                !book.CollectionSettings.Subscription.HaveActiveSubscription
-                && !book.BookData.BookIsDerivative()
-            )
-                RemoveEnterpriseOnlyAssets(book);
+            RemoveAssetsWhichRequireSubscription(book);
             RemoveClassesAndAttrsToDisableFeatures(
                 pageElts,
                 book.CollectionSettings.Subscription,
@@ -686,23 +682,24 @@ namespace Bloom.Publish
             }
         }
 
-        // Called if we don't have any subscription level at all (basic tier) and the book
-        // is an original, removes things we don't need in that case because pages that use
-        // them have been removed.
         // Not really sure what we need here; embedding the simple comprehension quiz JS is
         // probably obsolete in all situations, but there may be some old version of Bloom Player
-        // that needs it. But for sure we don't need it in a Basic tier publication which
-        // removes quiz pages.
-        // I don't know why the video placeholder ever needs to be published, but we used
-        // to remove it for enterprise publications, so it should still be safe to remove
-        // it for Basic tier, at least.
+        // that needs it. But for sure we don't need it if the game feature is disabled and thus
+        // there are no games in the publication.
         // The old code did not distinguish derivatives, but we're moving more in the
         // direction of allowing most things to be published in derivatives, so I decided
         // to err on the side of safety by NOT deleting these assets when publishing a derivative.
-        private static void RemoveEnterpriseOnlyAssets(Book.Book book)
+        private static void RemoveAssetsWhichRequireSubscription(Book.Book book)
         {
-            RobustFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));
-            RobustFile.Delete(Path.Combine(book.FolderPath, kVideoPlaceholderImageFile));
+            if (!book.BookData.BookIsDerivative())
+            {
+                if (
+                    !FeatureStatus
+                        .GetFeatureStatus(book.CollectionSettings.Subscription, FeatureName.Game)
+                        .Enabled
+                )
+                    RobustFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));
+            }
         }
 
         private bool IsDisplayed(SafeXmlElement elt, bool throwOnFailure)

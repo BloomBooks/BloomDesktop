@@ -605,13 +605,10 @@ namespace Bloom.Book
             var headXml = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
             var originalBody = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/body");
 
-            var subcriptionStatusClasses = this.CollectionSettings
-                .Subscription
-                .HaveActiveSubscription
-                ? "subscription-yes"
-                : "subscription-no";
+            var subscriptionTierClass =
+                $"subscription-tier-{this.CollectionSettings.Subscription.Tier}";
             var dom = new HtmlDom(
-                @"<html>" + headXml + $"<body class='{subcriptionStatusClasses}'></body></html>"
+                @"<html>" + headXml + $"<body class='{subscriptionTierClass}'></body></html>"
             );
             dom = Storage.MakeDomRelocatable(dom);
             // Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
@@ -1207,7 +1204,7 @@ namespace Bloom.Book
                         if (goodDiv == null)
                         {
                             badDiv.SetAttribute("lang", tag);
-                            continue;   // we don't want to delete a div that has been fixed.  BL-14597
+                            continue; // we don't want to delete a div that has been fixed.  BL-14597
                         }
                         else if (
                             string.IsNullOrWhiteSpace(goodDiv.InnerText)
@@ -2464,13 +2461,7 @@ namespace Bloom.Book
                 BookInfo.UseDeviceXMatter,
                 _bookData.MetadataLanguage1Tag,
                 oldIds,
-                BookInfo.AppearanceSettings.CoverIsImage
-                    && FeatureStatus
-                        .GetFeatureStatus(
-                            CollectionSettings.Subscription,
-                            FeatureName.FullPageCoverImage
-                        )
-                        .Enabled
+                CoverIsImage
             );
 
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
@@ -4016,14 +4007,23 @@ namespace Bloom.Book
             }
         }
 
+        public bool CoverIsImage =>
+            BookInfo.AppearanceSettings.CoverIsImage
+            && FeatureStatus
+                .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.FullPageCoverImage)
+                .Enabled;
+
         public bool FullBleed =>
             (
                 // Wants to be
                 // BookInfo.AppearanceSettings.FullBleed
                 // but we haven't put that in the book settings yet.
                 BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-                || BookInfo.AppearanceSettings.CoverIsImage
-            ) && CollectionSettings.Subscription.HaveActiveSubscription;
+                || CoverIsImage
+            )
+            && FeatureStatus
+                .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.PrintShopReady)
+                .Enabled;
 
         /// <summary>
         /// Save the page content to the DOM.
@@ -5365,6 +5365,8 @@ namespace Bloom.Book
 
         public bool HasQuizPages => OurHtmlDom.HasQuizPages();
         public bool HasActivities => OurHtmlDom.HasActivityPages();
+        public bool HasGames => OurHtmlDom.HasGamePages();
+        public bool HasWidgets => OurHtmlDom.HasWidgetPages();
 
         public bool HasComicalOverlays => OurHtmlDom.HasComicalCanvasElements();
 
@@ -5504,14 +5506,17 @@ namespace Bloom.Book
             // If we wanted to, it is also possible to compute it as a language-specific feature.
             // (That is, check if the languages in the book have non-empty text for part of the quiz section)
             BookInfo.MetaData.Feature_Quiz =
-                CollectionSettings.Subscription.HaveActiveSubscription && HasQuizPages;
+                FeatureStatus
+                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .Enabled && HasQuizPages;
         }
 
         private void UpdateSimpleDomChoiceFeature()
         {
             BookInfo.MetaData.Feature_SimpleDomChoice =
-                CollectionSettings.Subscription.HaveActiveSubscription
-                && OurHtmlDom.HasSimpleDomChoicePages();
+                FeatureStatus
+                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .Enabled && OurHtmlDom.HasSimpleDomChoicePages();
         }
 
         /// <summary>

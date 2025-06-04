@@ -47,13 +47,6 @@ namespace Bloom.Spreadsheet
 
         public void ShowExportToSpreadsheetUI(Book.Book book)
         {
-            // Throw up a Requires Bloom Enterprise dialog if it's not turned on
-            if (!_collectionModel.CollectionSettings.Subscription.HaveActiveSubscription)
-            {
-                Enterprise.ShowRequiresEnterpriseNotice(Form.ActiveForm, "Export to Spreadsheet");
-                return;
-            }
-
             dynamic messageBundle = new DynamicJson();
             messageBundle.folderPath = GetSpreadsheetFolderFor(book, true);
             _webSocketServer.LaunchDialog("SpreadsheetExportDialog", messageBundle);
@@ -108,12 +101,6 @@ namespace Bloom.Spreadsheet
         /// </summary>
         public void HandleImportContentFromSpreadsheet(Book.Book book)
         {
-            if (!_collectionModel.CollectionSettings.Subscription.HaveActiveSubscription)
-            {
-                Enterprise.ShowRequiresEnterpriseNotice(Form.ActiveForm, "Import to Spreadsheet");
-                return;
-            }
-
             var bookPath = book.GetPathHtmlFile();
             try
             {

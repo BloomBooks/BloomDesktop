@@ -13,9 +13,10 @@ namespace Bloom.SubscriptionAndFeatures
         Widget, //HTML5 Widget
         Spreadsheet,
         TeamCollection,
+        ViewBookHistory, // Sort of tied to team collections now, but nothing says it has to be in the future...
         Motion,
         Music,
-        FullPageCoverImage,
+        FullPageCoverImage, // The whole front cover is one full-bleed image
 
         WholeTextBoxAudio,
 
@@ -31,6 +32,9 @@ namespace Bloom.SubscriptionAndFeatures
 
     public static class FeatureRegistry
     {
+        public static string kGamePageXPath =
+            "div[@data-tool-id='game' or contains(@class,'simple-comprehension-quiz') or @data-activity='simple-dom-choice']";
+
         //should match https://docs.google.com/document/d/1cfwC-ANSrujaIy5LBMA02qji-Ia7sbKXiUJFnh8hcuI
 
         public static readonly List<FeatureInfo> Features = new List<FeatureInfo>
@@ -137,8 +141,7 @@ namespace Bloom.SubscriptionAndFeatures
                 SubscriptionTier = SubscriptionTier.Pro,
                 PreventPublishingInDerivativeBooks = PreventionMethod.Remove,
                 PreventPublishingInOriginalBooks = PreventionMethod.Remove,
-                ExistsInPageXPath =
-                    "self::div[@data-tool-id='game' or contains(@class,'simple-comprehension-quiz') or @data-activity='simple-dom-choice']",
+                ExistsInPageXPath = $"self::{kGamePageXPath}",
                 // Many of our games can potentially be played on paper, though we think it's unlikely
                 // that most of our target audience will allow writing in books. PDFs may also be used in checking
                 // processes that need all the content. We even made a black-and-white theme specially for PDFs.
@@ -177,6 +180,11 @@ namespace Bloom.SubscriptionAndFeatures
             new FeatureInfo
             {
                 Feature = FeatureName.TeamCollection,
+                SubscriptionTier = SubscriptionTier.LocalCommunity
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.ViewBookHistory,
                 SubscriptionTier = SubscriptionTier.LocalCommunity
             },
             // ----------------------------------------
