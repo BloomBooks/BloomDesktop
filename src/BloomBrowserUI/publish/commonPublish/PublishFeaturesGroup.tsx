@@ -22,13 +22,22 @@ import { ComicIcon } from "../../react_components/icons/ComicIcon";
 import { VisuallyImpairedIcon } from "../../react_components/icons/VisuallyImpairedIcon";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
-import { useGetFeatureStatus } from "../../react_components/featureStatus";
+import {
+    useGetFeatureAvailabilityMessage,
+    useGetFeatureStatus
+} from "../../react_components/featureStatus";
+import { kMotionToolId } from "../../bookEdit/toolbox/toolIds";
 
 export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
     generation?: number; // bump this to force recalc of computed features
 }> = props => {
     const [motionEnabled] = useApiBoolean("publish/canHaveMotionMode", false);
+    const motionFeatureStatus = useGetFeatureStatus(kMotionToolId, true);
+    const motionFeatureMessage = useGetFeatureAvailabilityMessage(
+        motionFeatureStatus
+    );
+    const motionAllowed = motionFeatureStatus?.enabled ?? false;
     // hasGames includes quizzes, simple choice, and drag activities.
     const [hasGames] = useApiBoolean("publish/hasGames", false);
     const [hasWidgets] = useApiBoolean("publish/hasWidgets", false);
@@ -209,7 +218,11 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "Select this if you want to show motion when the book is read in landscape mode.",
         "PublishTab.Feature.Motion.Possible"
     );
-    const motionTooltip = motionEnabled ? hasMotionTooltip : noMotionTooltip;
+    const motionTooltip = motionEnabled
+        ? motionAllowed
+            ? hasMotionTooltip
+            : motionFeatureMessage
+        : noMotionTooltip;
 
     const noVisionTooltip = useL10n(
         "This is disabled because this book does not have any image descriptions in the primary language.",
@@ -316,7 +329,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                         apiEndpoint="publish/motionBookMode"
                         icon={<MotionIcon color={kBloomBlue} />}
                         onChange={props.onChange}
-                        disabled={!motionEnabled}
+                        disabled={!motionEnabled || !motionAllowed}
                     />
                 </BloomTooltip>
                 <BloomTooltip key={"visual-tooltip"} tip={visionTooltip}>
