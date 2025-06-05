@@ -24,7 +24,7 @@ export function useL10n(
     // Create an array of parameters, filtering out undefined values
     const l10nParams: string[] = React.useMemo(() => {
         return [l10nParam0, l10nParam1].filter(
-            (param): param is string => !!param
+            (param): param is string => param !== undefined
         );
     }, [l10nParam0, l10nParam1]);
 
