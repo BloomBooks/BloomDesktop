@@ -1270,16 +1270,22 @@ export default class StyleEditor {
     // Since both the font list popover and the FontInformationPane use the same root class, and since
     // both are well outside the dialog in the DOM, we can search the DOM for this class to determine
     // if either popover is active.
-    // We have to look for a class that starts with 'MuiPopover-root' because MUI tends to add random
-    // suffixes to the class names.
+    // (An old comment said that we have to look for a class that starts with 'MuiPopover-root' because MUI tends to add random
+    // suffixes to the class names, but currently it seems to be working to just look for the exact class names).
     // The same logic applies to popping up the color chooser dialog, except that its class name
-    // starts with MuiDialog-root.
+    // is MuiDialog-root.
     private popoverIsUp(): boolean {
-        const $body = $("body");
-        return (
-            $body.find("[class*='MuiPopover-root']").length > 0 ||
-            $body.find("[class*='MuiDialog-root']").length > 0
-        );
+        const popoovers = Array.from(
+            document.getElementsByClassName("MuiPopover-root")
+        )
+            .concat(
+                Array.from(document.getElementsByClassName("MuiDialog-root"))
+            )
+            // when the format dialog is launched from the context control on a canvas element,
+            // typically the menu for the context controls is present in the DOM, but not visible.
+            // That should not prevent us from closing the dialog!
+            .filter((el: Element) => !el.classList.contains("MuiModal-hidden"));
+        return popoovers.length > 0;
     }
 
     public closeDialog(
