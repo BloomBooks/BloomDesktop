@@ -5602,10 +5602,9 @@ namespace Bloom.Book
         public static bool IsPageBloomSubscriptionOnly(SafeXmlElement page)
         {
             var classAttrib = page.GetAttribute("class");
-            return classAttrib.Contains("enterprise-only")
-                ||
-                // legacy quiz pages don't have 'enterprise-only'
-                classAttrib.Contains("questions")
+            return classAttrib.Contains("questions")
+                || classAttrib.Contains("simple-comprehension-quiz")
+                || page.GetAttribute("data-activity") == "simple-dom-choice"
                 || page.SafeSelectNodes(".//div[contains(@class,'bloom-widgetContainer')]").Length
                     > 0;
         }

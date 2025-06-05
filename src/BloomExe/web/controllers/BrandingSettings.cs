@@ -107,6 +107,13 @@ namespace Bloom.Api
         }
 
         /// <summary>
+        /// We sometimes want temporary subscriptions that use the default branding files, but which provide
+        /// access to Enterprise level features.  The base branding names for these subscriptions are listed
+        /// here.  (This is useful for workshops and other training venues.)  See BL-14872.
+        /// </summary>
+        public static string[] SubscriptionsThatUseDefaultBranding = new[] { "BloomProgram", "Pretend-Project" };
+
+        /// <summary>
         /// extract the various parts of a Subscription Descriptor
         /// </summary>
         /// <param name="subscriptionDescriptor">the part of the subcription code before the numbers start</param>
@@ -198,6 +205,8 @@ namespace Bloom.Api
                         out flavor,
                         out var subUnitName
                     );
+                    if (SubscriptionsThatUseDefaultBranding.Contains(brandingFolderName))
+                        brandingFolderName = "Default";
 
                     // check to see if we have a special branding.json just for this flavor.
                     // Note that we could instead add code that allows a single branding.json to
