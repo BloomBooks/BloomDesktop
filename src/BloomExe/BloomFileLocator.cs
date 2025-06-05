@@ -356,6 +356,8 @@ namespace Bloom
             }
             if (Path.IsPathRooted(fileName) && RobustFile.Exists(fileName)) // also just for unit tests
                 return fileName;
+            if (BrandingSettings.SubscriptionsThatUseDefaultBranding.Contains(brandingNameOrFolderPath))
+                brandingNameOrFolderPath = "Default";
             return BloomFileLocator.GetBrowserFile(
                 true,
                 "branding",
@@ -372,6 +374,8 @@ namespace Bloom
                 out var flavor,
                 out var subUnitName
             );
+            if (BrandingSettings.SubscriptionsThatUseDefaultBranding.Contains(brandingFolderName))
+                brandingFolderName = "Default";
             return BloomFileLocator.GetOptionalBrowserDirectory("branding", brandingFolderName);
         }
 
