@@ -5630,6 +5630,43 @@ namespace Bloom.Book
             }
         }
 
+        public static bool IsPageBloomSubscriptionOnly(SafeXmlElement page)
+        {
+            var classAttrib = page.GetAttribute("class");
+            return classAttrib.Contains("questions")
+                || classAttrib.Contains("simple-comprehension-quiz")
+                || page.GetAttribute("data-activity") == "simple-dom-choice"
+                || page.SafeSelectNodes(".//div[contains(@class,'bloom-widgetContainer')]").Length
+                    > 0;
+        }
+
+        /// <summary>
+        /// Used by the publish tab to tell the user they can't publish a book with Overlay elements w/o Enterprise.
+        /// </summary>
+        /// <returns></returns>
+        public string GetNumberOfFirstPageWithOverlay()
+        {
+            var pageNodes = RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
+            if (pageNodes.Length == 0) // Unexpected!
+                return "";
+            foreach (var pageNode in pageNodes)
+            {
+                var resultNode = pageNode.SelectSingleNode(
+                    ".//div[contains(@class,'bloom-textOverPicture')]"
+                );
+                if (resultNode == null)
+                    continue;
+                var pageNumberAttribute = pageNode.GetAttribute("data-page-number");
+                if (!string.IsNullOrEmpty(pageNumberAttribute))
+                {
+                    return pageNumberAttribute;
+                }
+                // If at some point we allow overlay elements on xmatter,
+                // we will need to find and return the 'data-xmatter-page' attribute.
+            }
+            return ""; // Also unexpected!
+        }
+
         /// <summary>
         /// Given a choice, what language should we use to display text on the page (not in the UI, which is controlled by the UI Language)
         /// </summary>

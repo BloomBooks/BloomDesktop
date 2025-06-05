@@ -859,6 +859,8 @@ namespace Bloom.Collection
                 out var flavor,
                 out var subUnitName
             );
+            if (BrandingSettings.SubscriptionsThatUseDefaultBranding.Contains(folderName))
+                return "Default";
             return folderName;
         }
 
