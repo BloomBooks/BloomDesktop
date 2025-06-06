@@ -416,14 +416,36 @@ namespace Bloom.Collection
 
             if (_pendingSubscription != null)
             {
-                _collectionSettings.Subscription = _pendingSubscription;
-
-                if (_pendingSubscription.Descriptor != _collectionSettings.Subscription.Descriptor)
+                if (
+                    _pendingSubscription.Tier == SubscriptionTier.Pro
+                    && _currentCollectionIsTeamCollection
+                )
+                    // Pro tier is not allowed for team collections. It's a matter of policy that
+                    // Pro tier does not support the TC feature, but it's conceivable that someone wants
+                    // to do what is possible in a disconnected TC using Pro features. However, it
+                    // generates a mass of confusing corner cases, such as
+                    // - If we sync the collection settings with the Pro subscription to the repo,
+                    //   that encourages sharing a Pro subscription, which we don't want (and current code
+                    //   may not do the sync, if neither the old nor the new sub allow it).
+                    // - if we don't copy it to the repo, the change won't stick: the restart will sync
+                    //   whatever's in the repo to overwrite our collection settings with the old sub.
+                    // As we tried to think what special cases we might make to overcome those basic problems,
+                    // we just kept finding more and more corner cases. We decided to just not allow it.
+                    _pendingSubscription = null; // not allowed; dialog already explained this
+                else
                 {
-                    // The user has entered a different subscription code than what was previously saved.
-                    // We need to clear out the Bookshelf, since the new branding may not have the same bookshelf as the old one.
-                    // (We don't know if it does or not, so we have to assume it doesn't.)
-                    PendingDefaultBookshelf = string.Empty;
+                    _collectionSettings.Subscription = _pendingSubscription;
+
+                    if (
+                        _pendingSubscription.Descriptor
+                        != _collectionSettings.Subscription.Descriptor
+                    )
+                    {
+                        // The user has entered a different subscription code than what was previously saved.
+                        // We need to clear out the Bookshelf, since the new branding may not have the same bookshelf as the old one.
+                        // (We don't know if it does or not, so we have to assume it doesn't.)
+                        PendingDefaultBookshelf = string.Empty;
+                    }
                 }
             }
             string xmatterKeyForcedByBranding =
