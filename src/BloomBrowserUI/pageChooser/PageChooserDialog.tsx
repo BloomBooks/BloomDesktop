@@ -123,11 +123,17 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         HTMLDivElement | undefined
     >(undefined);
 
-    const [featureToCheck, setFeatureToCheck] = useState<string | undefined>(
-        undefined
+    const [
+        pendingDoubleClickActionData,
+        setPendingDoubleClickActionData
+    ] = useState<{
+        page: HTMLDivElement;
+        feature?: string;
+    } | null>(null);
+
+    const featureStatus = useGetFeatureStatus(
+        pendingDoubleClickActionData?.feature
     );
-    const isFeatureAvailable: boolean =
-        useGetFeatureStatus(featureToCheck)?.enabled || false;
 
     // Tell edit tab to disable everything when the dialog is up.
     // (Without this, the page list is not disabled since the modal
@@ -377,10 +383,19 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
 
         const featureName =
             selectedPageDiv.getAttribute("data-feature") || undefined;
-        setFeatureToCheck(featureName);
-        if (featureName && isFeatureAvailable !== true) {
-            return;
+
+        if (featureName) {
+            setPendingDoubleClickActionData({
+                page: selectedPageDiv,
+                feature: featureName
+            });
+        } else {
+            // No feature requirement, proceed immediately
+            executeDoubleClickAction(selectedPageDiv);
         }
+    };
+
+    function executeDoubleClickAction(selectedPageDiv: HTMLDivElement): void {
         const convertAnywayCheckbox = document.getElementById(
             "convertAnywayCheckbox"
         ) as HTMLInputElement;
@@ -401,7 +416,27 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
             selectedPageDiv.getAttribute("data-tool-id") ?? "",
             getToolId(selectedPageDiv)
         );
-    };
+    }
+
+    useEffect(() => {
+        if (
+            !pendingDoubleClickActionData ||
+            !pendingDoubleClickActionData.feature
+        ) {
+            // No pending action with a feature requirement
+            return;
+        }
+
+        // If feature status hasn't loaded yet, wait for it
+        if (featureStatus === undefined) return;
+
+        // Feature status loaded - proceed if enabled
+        if (featureStatus?.enabled)
+            executeDoubleClickAction(pendingDoubleClickActionData.page);
+
+        // Clear pending action data - we've either executed it or determined feature isn't available
+        setPendingDoubleClickActionData(null);
+    }, [pendingDoubleClickActionData, featureStatus]);
 
     const getTemplateBooks = (): JSX.Element[] | undefined => {
         if (bookData.length === 0) {
