@@ -21,7 +21,7 @@ import {
     kBloomCanvasClass,
     kBloomCanvasSelector
 } from "../bookEdit/js/bloomImages";
-import { useGetFeatureStatus } from "../react_components/featureStatus";
+import { getFeatureStatusAsync } from "../react_components/featureStatus";
 
 interface IPageChooserDialogProps {
     forChooseLayout: boolean;
@@ -122,12 +122,6 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
     const [selectedTemplatePageDiv, setSelectedTemplatePageDiv] = useState<
         HTMLDivElement | undefined
     >(undefined);
-
-    const [featureToCheck, setFeatureToCheck] = useState<string | undefined>(
-        undefined
-    );
-    const isFeatureAvailable: boolean =
-        useGetFeatureStatus(featureToCheck)?.enabled || false;
 
     // Tell edit tab to disable everything when the dialog is up.
     // (Without this, the page list is not disabled since the modal
@@ -373,14 +367,21 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
     const templatePageDoubleClickHandler = (
         selectedPageDiv: HTMLDivElement
     ): void => {
-        // N.B. The double click handler in the inner component does the single-click actions first.
+        executeDoubleClickActionAsync(selectedPageDiv);
+    };
 
+    // N.B. The double click handler in the inner component does the single-click actions first.
+    async function executeDoubleClickActionAsync(
+        selectedPageDiv: HTMLDivElement
+    ) {
+        // If the page has a feature, ensure the user has permission to use it.
         const featureName =
             selectedPageDiv.getAttribute("data-feature") || undefined;
-        setFeatureToCheck(featureName);
-        if (featureName && isFeatureAvailable !== true) {
-            return;
+        if (featureName) {
+            const featureStatus = await getFeatureStatusAsync(featureName);
+            if (!featureStatus || !featureStatus.enabled) return;
         }
+
         const convertAnywayCheckbox = document.getElementById(
             "convertAnywayCheckbox"
         ) as HTMLInputElement;
@@ -401,7 +402,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
             selectedPageDiv.getAttribute("data-tool-id") ?? "",
             getToolId(selectedPageDiv)
         );
-    };
+    }
 
     const getTemplateBooks = (): JSX.Element[] | undefined => {
         if (bookData.length === 0) {
