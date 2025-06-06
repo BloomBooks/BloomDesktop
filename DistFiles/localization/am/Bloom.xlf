@@ -6200,6 +6200,11 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="am" state="needs-translation">Using subscription: {0}. Expires {1}</target>
         <note>ID: SubscriptionStatus.DefaultMessage</note>
       </trans-unit>
+      <trans-unit id="SubscriptionStatus.ProTeamCollectionNotSupported" translate="no">
+        <source xml:lang="en">Pro subscriptions are not supported for Team Collections. Please use a Local Community or Enterprise subscription.</source>
+        <target xml:lang="am" state="needs-translation">Pro subscriptions are not supported for Team Collections. Please use a Local Community or Enterprise subscription.</target>
+        <note>ID: SubscriptionStatus.ProTeamCollectionNotSupported</note>
+      </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingProSubscription" translate="no">
         <source xml:lang="en">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</source>
         <target xml:lang="am" state="needs-translation">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</target>
