@@ -77,11 +77,6 @@
         <target xml:lang="es-ES" state="translated">Esta colección está en modo "Descargar para editar". El libro tiene la misma configuración de suscripción que la última vez que se cargó.</target>
         <note>ID: Settings.Subscription.DownloadForEdit</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.NeedsCode" sil:dynamic="true">
-        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
-        <target xml:lang="es-ES" state="translated">Este proyecto utilizaba anteriormente **%0**. Para seguir utilizándolo, deberá introducir un código de suscripción actual. </target>
-        <note>ID: Settings.Subscription.NeedsCode</note>
-      </trans-unit>
       <trans-unit id="Settings.Subscription.IntroText">
         <source xml:lang="en">To help cover a portion of the costs associated with providing Bloom, we offer [advanced features](%0) and customizations as a subscription service.</source>
         <target xml:lang="es-ES" state="translated">Para ayudar a cubrir una parte de los costes asociados a la prestación de Bloom, ofrecemos [funciones avanzadas](%0) y personalizaciones como servicio de suscripción.</target>
@@ -122,25 +117,6 @@
         <target xml:lang="es-ES" state="translated"> El código debe tener el formato NOMBRE-123456-7890</target>
         <note>ID: Settings.Subscription.Incomplete</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.Overview">
-        <source xml:lang="en">
-            Bloom Settings.Subscription adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
-        </source>
-        <target xml:lang="es-ES" state="translated">
-            Bloom Settings.Subscription añade funciones y servicios que son importantes para editores, gobiernos y organizaciones internacionales. Esta suscripción de pago satisface sus necesidades específicas al tiempo que apoya el desarrollo y la asistencia al usuario de Bloom para la comunidad en general.
-        </target>
-        <note>ID: Settings.Subscription.Overview</note>
-      </trans-unit>
-      <trans-unit id="Settings.Subscription.None">
-        <source xml:lang="en">None. Settings.Subscription features will be unavailable.</source>
-        <target xml:lang="es-ES" state="translated">No. Configuración.Las funciones de suscripción no estarán disponibles.</target>
-        <note>ID: Settings.Subscription.None</note>
-      </trans-unit>
-      <trans-unit id="Settings.Subscription.NeedsCode">
-        <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code.</source>
-        <target xml:lang="es-ES" state="translated">Este proyecto utilizaba anteriormente **%0**. Para seguir utilizándolo, deberá introducir un código de suscripción actual. </target>
-        <note>ID: Settings.Subscription.NeedsCode</note>
-      </trans-unit>
       <trans-unit id="Settings.Subscription.NotValid">
         <source xml:lang="en">That code appears to be incorrect.</source>
         <target xml:lang="es-ES" state="translated">Ese código parece estar incorrecto.</target>
@@ -151,16 +127,17 @@
         <target xml:lang="es-ES" state="translated">Esta versión de Bloom no contiene las ilustraciones que van con su suscripción.</target>
         <note>ID: Settings.Subscription.UnknownCode</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.WhatsThis">
-        <source xml:lang="en">What's This?</source>
-        <target xml:lang="es-ES" state="translated">¿Qué es esto?</target>
-        <note>ID: Settings.Subscription.WhatsThis</note>
-      </trans-unit>
-      <!-- Tiers -->
+      <!-- Tiers. These don't occur in code in their entirety, but are assembled by appending a particular
+      tier to "Subscription.Tier."-->
       <trans-unit id="Subscription.Tier.Basic">
         <source xml:lang="en">Basic</source>
         <target xml:lang="es-ES" state="translated">Básico</target>
         <note>ID: Subscription.Tier.Basic</note>
+      </trans-unit>
+      <trans-unit id="Subscription.Tier.Enterprise">
+        <source xml:lang="en">Enterprise</source>
+        <target xml:lang="es-ES" state="translated">Empresarial</target>
+        <note>ID: Subscription.Tier.Enterprise</note>
       </trans-unit>
       <trans-unit id="Subscription.Tier.LocalCommunity">
         <source xml:lang="en">Local Community</source>
@@ -172,10 +149,10 @@
         <target xml:lang="es-ES" state="translated">Pro</target>
         <note>ID: Subscription.Tier.Pro</note>
       </trans-unit>
-      <trans-unit id="Subscription.Tier.Enterprise">
-        <source xml:lang="en">Enterprise</source>
-        <target xml:lang="es-ES" state="translated">Empresarial</target>
-        <note>ID: Subscription.Tier.Enterprise</note>
+      <trans-unit id="Subscription.Tier.TierWithColon">
+        <source xml:lang="en">Tier:</source>
+        <target xml:lang="es-ES" state="needs-translation">Tier:</target>
+        <note>ID: Subscription.Tier.TierWithColon</note>
       </trans-unit>
       <!-- Other -->
       <trans-unit id="Subscription.OpenSettings">
