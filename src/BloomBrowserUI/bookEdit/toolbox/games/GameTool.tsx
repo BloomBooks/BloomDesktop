@@ -30,6 +30,7 @@ import {
     getTarget,
     playInitialElements,
     prepareActivity,
+    shuffle,
     undoPrepareActivity
 } from "bloom-player";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -1723,6 +1724,8 @@ export class GameTool extends ToolboxToolReactAdaptor {
 
     public newPageReady() {
         const page = GameTool.getBloomPage();
+        randomlyAssignTargetsIfNeeded(page);
+
         const pageFrameExports = getEditablePageBundleExports();
         if (!getCanvasElementManager() || !page || !pageFrameExports) {
             // probably the toolbox just finished loading before the page.
@@ -2049,3 +2052,24 @@ export const makeTargetForDraggable = (
     adjustTarget(canvasElement, target);
     return target;
 };
+
+function randomlyAssignTargetsIfNeeded(page): void {
+    if (page.classList.contains("draggables-need-shuffling")) {
+        const draggables = Array.from(
+            page.querySelectorAll("[data-draggable-id]")
+        ) as HTMLElement[];
+        shuffle(draggables, (_a, _b) => false);
+        const targets = Array.from(
+            page.querySelectorAll("[data-target-of]")
+        ) as HTMLElement[];
+        for (let i = 0; i < targets.length; i++) {
+            const target = targets[i];
+            target.setAttribute(
+                "data-target-of",
+                draggables[i].getAttribute("data-draggable-id") ?? ""
+            );
+        }
+
+        page.classList.remove("draggables-need-shuffling");
+    }
+}
