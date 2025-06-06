@@ -13,6 +13,7 @@ import { Markdown } from "../react_components/markdown";
 import { getSafeLocalizedDate } from "../collection/subscriptionCodeControl";
 import { useSubscriptionInfo } from "../collection/useSubscriptionInfo";
 import { SubscriptionTier } from "../react_components/featureStatus";
+import { useIsTeamCollection } from "../teamCollection/teamCollectionApi";
 
 export const SubscriptionStatus: React.FunctionComponent<{
     minimalUI?: boolean;
@@ -90,6 +91,7 @@ export const SubscriptionStatus: React.FunctionComponent<{
         descriptorToShow,
         localizedExpiryDate
     );
+    const isTeamCollection = useIsTeamCollection();
     if (!haveData) {
         return null;
     }
@@ -102,8 +104,34 @@ export const SubscriptionStatus: React.FunctionComponent<{
     // we only want to show it if the expiration is within 2 months (approximately 60 days).
     const kDaysBeforeWarningForNormalExpiration = 60;
 
+    if (subscriptionTier === "Pro" && isTeamCollection) {
+        // reasons for this are currently documented in the CollectionSettingsDialog okButton_Clicked function
+        return (
+            <BoxWithIconAndText
+                backgroundColor={kBloomWarning}
+                color={"black"}
+                borderColor={kBloomWarning}
+                hasBorder={true}
+                icon={<WarningIcon />}
+            >
+                <Markdown
+                    css={css`
+                        color: black;
+                        margin-top: 2px;
+                        margin-bottom: 10px;
+                    `}
+                    l10nKey="SubscriptionStatus.ProTeamCollectionNotSupported"
+                >
+                    Pro subscriptions are not supported for Team Collections.
+                    Please use a Local Community or Enterprise subscription.
+                </Markdown>
+            </BoxWithIconAndText>
+        );
+    }
+
     // no subscription
     if (expiryDateStringAsYYYYMMDD === "incomplete") return null;
+
     // else if it's already expired
     if (expiryDateStringAsYYYYMMDD < todayAsYYYYMMDD) {
         return (
