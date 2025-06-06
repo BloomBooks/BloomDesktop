@@ -137,7 +137,10 @@ namespace Bloom.Edit
                         "EditTab.ChooseLayoutButton",
                         "Choose Different Layout"
                     ),
-                    EnableFunction = (page) => page != null && !page.Required,
+                    EnableFunction = (page) =>
+                        page != null
+                        && !page.Required
+                        && !page.GetDivNodeForThisPage().HasAttribute("data-activity"),
                     ExecuteCommand = (page) =>
                     {
                         // While we have separate browsers running for this page list and the editing view, we switch
