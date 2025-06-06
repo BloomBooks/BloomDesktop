@@ -333,6 +333,8 @@ function getSplitPaneComponentInner() {
 function getAbovePageControlContainer(): JQuery {
     // for dragActivities we don't want the origami control, but we still make the
     // wrapper so that the dragActivity can put a different control in it.
+    // Note: We also have to disable the Choose Different layout option in
+    // the right click menu, in PageListView.cs
     if (
         document
             .getElementsByClassName("bloom-page")[0]
