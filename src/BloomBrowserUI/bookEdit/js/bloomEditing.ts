@@ -69,7 +69,10 @@ import { removeToolboxMarkup } from "../toolbox/toolbox";
 import WebSocketManager, {
     IBloomWebSocketEvent
 } from "../../utils/WebSocketManager";
-import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
+import {
+    randomlyAssignTargetsIfNeeded,
+    setupDragActivityTabControl
+} from "../toolbox/games/GameTool";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { showLinkGridSetupsDialog } from "../bookLinkSetup/LinkGridSetupDialog";
@@ -1035,6 +1038,7 @@ function OneTimeSetup() {
     setupOrigami();
     hookupLinkHandler();
     setupDragActivityTabControl();
+    randomlyAssignTargetsIfNeeded();
 }
 
 interface String {

@@ -30,6 +30,7 @@ import {
     getTarget,
     playInitialElements,
     prepareActivity,
+    shuffle,
     undoPrepareActivity
 } from "bloom-player";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -1977,3 +1978,27 @@ export const makeTargetForDraggable = (
     adjustTarget(canvasElement, target);
     return target;
 };
+
+export function randomlyAssignTargetsIfNeeded(): void {
+    const page = document.getElementsByClassName(
+        "bloom-page"
+    )[0] as HTMLElement;
+    if (page.classList.contains("draggables-need-shuffling")) {
+        const draggables = Array.from(
+            page.querySelectorAll("[data-draggable-id]")
+        ) as HTMLElement[];
+        shuffle(draggables, (_a, _b) => false);
+        const targets = Array.from(
+            page.querySelectorAll("[data-target-of]")
+        ) as HTMLElement[];
+        for (let i = 0; i < targets.length; i++) {
+            const target = targets[i];
+            target.setAttribute(
+                "data-target-of",
+                draggables[i].getAttribute("data-draggable-id") ?? ""
+            );
+        }
+
+        page.classList.remove("draggables-need-shuffling");
+    }
+}
