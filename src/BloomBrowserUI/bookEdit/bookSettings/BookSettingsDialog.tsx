@@ -210,9 +210,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
         "Fill the front cover with a single image",
         "BookSettings.CoverIsImage"
     );
-    //TODO real links (and change .xlf)
     const coverIsImageDescription = useL10n(
-        "Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
+        "Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
         "BookSettings.CoverIsImage.Description"
     );
 
