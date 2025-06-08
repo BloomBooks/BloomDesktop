@@ -3,7 +3,8 @@ import {
     theOneAudioRecorder,
     initializeTalkingBookToolAsync,
     AudioMode,
-    getAllAudioModes
+    getAllAudioModes,
+    kAnyRecordingApiUrl
 } from "./audioRecording";
 import { RecordingMode } from "./recordingMode";
 import {
@@ -52,6 +53,13 @@ describe("talking book tests", () => {
 
     describe("- updateMarkup()", () => {
         it("moves highlight after focus changes", async () => {
+            spyOn(axios, "get").and.callFake((url: string) => {
+                if (url.includes(kAnyRecordingApiUrl)) {
+                    return Promise.resolve({ data: false });
+                } else {
+                    return Promise.reject("Fake 404 error 7.");
+                }
+            });
             // Setup Initial HTML
             const textBox1 =
                 '<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on" id="div1"><p><span id="1.1" class="audio-sentence ui-audioCurrent">1.1</span></p></div></div>';
@@ -104,13 +112,7 @@ describe("talking book tests", () => {
             // Mark that the recording doesn't exist.
             // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
             spyOn(axios, "get").and.callFake((url: string) => {
-                if (
-                    url.includes("/bloom/api/audio/checkForAllRecording?ids=")
-                ) {
-                    return Promise.resolve({ data: false });
-                } else {
-                    return Promise.reject(new Error("Fake 404 Error"));
-                }
+                return Promise.resolve({ data: false });
             });
         }
 
@@ -123,12 +125,7 @@ describe("talking book tests", () => {
                 case AudioMode.PureSentence:
                 case AudioMode.PreTextBox:
                 case AudioMode.HardSplitTextBox: {
-                    anyPresent = [
-                        "ids=1.2",
-                        "ids=2.2",
-                        "ids=1.1,1.2",
-                        "ids=2.1,2.2"
-                    ];
+                    anyPresent = ["1.2", "2.2", "1.1,1.2", "2.1,2.2"];
                     allPresent = ["ids=1.2", "ids=2.2"];
                     break;
                 }
@@ -145,8 +142,8 @@ describe("talking book tests", () => {
 
             const urlToResponse = {};
             anyPresent.forEach(params => {
-                const url = "/bloom/api/audio/checkForAnyRecording?" + params;
-                urlToResponse[url] = Promise.resolve();
+                const url = kAnyRecordingApiUrl + params;
+                urlToResponse[url] = Promise.resolve({ data: true });
             });
             allPresent.forEach(params => {
                 const url = "/bloom/api/audio/checkForAllRecording?" + params;
@@ -157,7 +154,11 @@ describe("talking book tests", () => {
                 if (response) {
                     return response;
                 } else {
-                    return Promise.reject("Fake 404 error.");
+                    if (url.includes(kAnyRecordingApiUrl)) {
+                        return Promise.resolve({ data: false });
+                    } else {
+                        return Promise.reject("Fake 404 error 4.");
+                    }
                 }
             });
         }
@@ -772,10 +773,10 @@ function setAllAudioFilesPresent() {
     spyOn(axios, "get").and.callFake((url: string) => {
         if (url.includes("/bloom/api/audio/checkForAllRecording?ids=")) {
             return Promise.resolve({ data: true });
-        } else if (url.includes("/bloom/api/audio/checkForAnyRecording?ids=")) {
-            return Promise.resolve();
+        } else if (url.includes(kAnyRecordingApiUrl)) {
+            return Promise.resolve({ data: true });
         } else {
-            return Promise.reject("Fake 404 error");
+            return Promise.reject("Fake 404 error 5");
         }
     });
 }
