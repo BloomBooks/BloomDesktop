@@ -17,19 +17,13 @@
         margin-bottom: @vertical-space;
         flex-grow: 1;
     }
-    .QuizHeader-style {
-        font-size: 20pt;
-        text-align: center;
+    // in previous versions, a definition of Prompt-style set color:white.
+    // Migrating this causes a problem if the book is opened using an older Bloom.
+    // So, this stronger rule defeats that one.
+    .bloom-editable.Prompt-style,
+    .bloom-editable.QuizHeader-style {
         color: var(--game-header-color);
         background-color: var(--game-header-bg-color);
-        // Hide a problem where if there are multiple lines, the browser thinks there is overflow.
-        // https://issues.bloomlibrary.org/youtrack/issue/BL-9021
-        // We can make the scroll bar go away in at least 3 ways:
-        // overflow-y: visible !important;
-        // padding-bottom: 2px;
-        // line-height: 1.6em;
-
-        padding-bottom: 2px; // I like this one because it's so minimal
     }
     .checkbox-and-textbox-choice {
         display: flex; // horizontal;
