@@ -71,11 +71,11 @@ export const getTemplatePageImageSource = (
         encodeURIComponent(templateBookFolderUrl) +
         "/template/" +
         encodeURIComponent(label) +
-        (orientation === "landscape"
-            ? "-landscape"
-            : orientation === "square"
-            ? "-square"
-            : "") +
+        // Previously, we checked for a square size and sent "-square" here.
+        // But we don't actually have any square thumbnails we ship,
+        // so that caused all the thumbnails to be generated.
+        // It looks *much* better to just show the portrait ones.
+        (orientation === "landscape" ? "-landscape" : "") +
         ".svg?generateThumbnailIfNecessary=true"
     );
 };
