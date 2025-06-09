@@ -110,6 +110,8 @@ namespace Bloom.Book
         void MigrateToLevel6LegacyActivities();
         void MigrateToLevel7BloomCanvas();
         void MigrateToLevel8RemoveEnterpriseOnly();
+
+        void MigrateToLevel9GameHeader();
         void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
@@ -173,6 +175,7 @@ namespace Bloom.Book
         ///     (Previously was bloom-imageContainer, which conflicted with the use inside canvas
         ///     elements, and was inaccurate because it could contain many other things.)
         ///   Bloom 6.2  8 = Removed enterprise-only class on all pages that have it
+        ///   Bloom 6.2  9 = change old QuizHeader-style and Prompt-Style to uniform GameHeader-style
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
@@ -4038,12 +4041,40 @@ namespace Bloom.Book
         {
             if (GetMaintenanceLevel() >= 8)
                 return;
-            var enterpriseOnlyPages = Dom.SafeSelectNodes("//div[contains(@class, 'enterprise-only')]");
+            var enterpriseOnlyPages = Dom.SafeSelectNodes(
+                "//div[contains(@class, 'enterprise-only')]"
+            );
             foreach (SafeXmlElement page in enterpriseOnlyPages)
             {
                 page.RemoveClass("enterprise-only");
             }
             Dom.UpdateMetaElement("maintenanceLevel", "8");
+        }
+
+        /// <summary>
+        /// pages with class QuizHeader-style or Prompt-style change to GameHeader-style.
+        /// Review: if there is a non-standard definition for one of those styles, should we
+        /// migrate that, or at last whatever is non-standard in it, to GameHeader-style?
+        /// Should we remove the definitions of QuizHeader-style and Prompt-style?
+        /// For now we don't want to remove them in case they are used in 6.1.
+        /// </summary>
+        public void MigrateToLevel9GameHeader()
+        {
+            if (GetMaintenanceLevel() >= 9)
+                return;
+            var oldQuizPages = Dom.SafeSelectNodes("//div[contains(@class, 'QuizHeader-style')]");
+            foreach (SafeXmlElement page in oldQuizPages)
+            {
+                page.RemoveClass("QuizHeader-style");
+                page.AddClass("GameHeader-style");
+            }
+            var oldPromptPages = Dom.SafeSelectNodes("//div[contains(@class, 'Prompt-style')]");
+            foreach (SafeXmlElement page in oldPromptPages)
+            {
+                page.RemoveClass("Prompt-style");
+                page.AddClass("GameHeader-style");
+            }
+            Dom.UpdateMetaElement("maintenanceLevel", "9");
         }
 
         /// <summary>
@@ -4056,25 +4087,43 @@ namespace Bloom.Book
         {
             if (featureList.Count <= 1)
                 return; // life is simple
-                        // We want to keep the most specific feature, so we look for the highest subscription tier.
-                        // If we get down to the Pro tier, then we know that Game is more specific than Overlay,
-                        // and Overlay is more specific than the other features.
-            var enterpriseFeatures = featureList.FindAll(x => FeatureRegistry.Features.FindAll(
-                y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Enterprise).Count > 0);
+            // We want to keep the most specific feature, so we look for the highest subscription tier.
+            // If we get down to the Pro tier, then we know that Game is more specific than Overlay,
+            // and Overlay is more specific than the other features.
+            var enterpriseFeatures = featureList.FindAll(
+                x =>
+                    FeatureRegistry.Features
+                        .FindAll(
+                            y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Enterprise
+                        )
+                        .Count > 0
+            );
             if (enterpriseFeatures.Count > 0)
             {
                 featureList.RemoveAll(x => x != enterpriseFeatures[0]);
                 return;
             }
-            var communityFeatures = featureList.FindAll(x => FeatureRegistry.Features.FindAll(
-                y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.LocalCommunity).Count > 0);
+            var communityFeatures = featureList.FindAll(
+                x =>
+                    FeatureRegistry.Features
+                        .FindAll(
+                            y =>
+                                y.Feature == x
+                                && y.SubscriptionTier == SubscriptionTier.LocalCommunity
+                        )
+                        .Count > 0
+            );
             if (communityFeatures.Count > 0)
             {
                 featureList.RemoveAll(x => x != communityFeatures[0]);
                 return;
             }
-            var proFeatures = featureList.FindAll(x => FeatureRegistry.Features.FindAll(
-                y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Pro).Count > 0);
+            var proFeatures = featureList.FindAll(
+                x =>
+                    FeatureRegistry.Features
+                        .FindAll(y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Pro)
+                        .Count > 0
+            );
             if (proFeatures.Count > 0)
             {
                 // Game overlaps with Overlay, but Game is more specific.
