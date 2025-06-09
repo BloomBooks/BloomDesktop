@@ -60,6 +60,32 @@ export default class bloomQtipUtils {
         //gives an error $.fn.qtip.plugins.modal.zindex = 1000000 - 20;
     }
 
+    public static repositionPictureDictionaryTooltips(
+        container: HTMLElement
+    ): void {
+        // add drag and resize ability where elements call for it
+        //   $(".bloom-draggable").draggable({containment: "parent"});
+        $(container)
+            .find(".bloom-draggable")
+            .draggable({
+                containment: "parent",
+                handle: ".bloom-imageContainer",
+                stop: function(event, ui) {
+                    $(this)
+                        .find(".wordsDiv")
+                        .find("div")
+                        .each(function() {
+                            (<qtipInterface>$(this)).qtip("reposition");
+                        });
+                } //yes, this repositions *all* qtips on the page. Yuck.
+            });
+        // Without this "handle" restriction, clicks on the text boxes don't work.
+        // NB: ".moveButton" is really what we wanted, but didn't work, probably because the button is only created
+        //   on the mouseEnter event, and maybe that's too late.
+        // Later note: using a real button just absorbs the click event. Other things work better
+        //   http://stackoverflow.com/questions/10317128/how-to-make-a-div-contenteditable-and-draggable
+    }
+
     // In editing most (if not all) of the qtips need to be contained by a special div that handles
     // the zooming (scaling) of the page content.  If they are not contained by this div, 1) they don't
     // zoom/scale and 2) they appear on the screen in the same location as if the page content they are

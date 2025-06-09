@@ -670,6 +670,7 @@ export function SetupElements(
         });
 
     AddLanguageTags(container);
+    bloomQtipUtils.repositionPictureDictionaryTooltips(container);
 
     //only make things deletable if they have the deletable class *and* page customization is enabled
     $(container)
