@@ -177,6 +177,9 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const isBackgroundImage = props.canvasElement.classList.contains(
         kBackgroundImageClass
     );
+    const isInSentenceDragGame = props.canvasElement.classList.contains(
+        "drag-item-order-sentence"
+    );
     const children = props.canvasElement.parentElement?.querySelectorAll(
         ".bloom-canvas-element"
     );
@@ -269,7 +272,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
 
     menuOptions.push(divider);
 
-    if (!isBackgroundImage) {
+    if (!isBackgroundImage && !isInSentenceDragGame) {
         menuOptions.push({
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",
@@ -308,6 +311,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
         deleteEnabled = !!(
             img && !img.getAttribute("src")?.startsWith("placeHolder.png")
         );
+    } else if (isInSentenceDragGame) {
+        deleteEnabled = false; // don't allow deleting the single drag item in a sentence drag game
     }
 
     // last one
@@ -494,7 +499,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             `}
                         />
                     )}
-                    {!hasVideo && !isBackgroundImage && (
+                    {!hasVideo && !isBackgroundImage && !isInSentenceDragGame && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.Duplicate"
                             icon={DuplicateIcon}
@@ -508,7 +513,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     {// Not sure of the reasoning here, since we do have a way to 'delete' a background image,
                     // not by removing the canvas element but by setting the image back to a placeholder.
                     // But the mockup in BL-14069 definitely doesn't have it.
-                    isBackgroundImage || (
+                    isBackgroundImage || isInSentenceDragGame || (
                         <ButtonWithTooltip
                             tipL10nKey="Common.Delete"
                             icon={DeleteIcon}
