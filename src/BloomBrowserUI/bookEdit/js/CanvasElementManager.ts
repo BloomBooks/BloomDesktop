@@ -19,7 +19,12 @@ import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
 import { reportError } from "../../lib/errorHandler";
 import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
-import { SetupElements, attachToCkEditor } from "./bloomEditing";
+import {
+    IImageInfo,
+    SetupElements,
+    attachToCkEditor,
+    changeImageInfo
+} from "./bloomEditing";
 import {
     EnableAllImageEditing,
     getImageFromCanvasElement,
@@ -31,9 +36,17 @@ import {
     UpdateImageTooltipVisibility,
     HandleImageError,
     kBloomCanvasSelector,
-    kBloomCanvasClass
+    kBloomCanvasClass,
+    doImageCommand
 } from "./bloomImages";
-import { adjustTarget } from "../toolbox/games/GameTool";
+import {
+    adjustTarget,
+    correctTabIndex,
+    getActiveGameTab,
+    playTabIndex,
+    startTabIndex,
+    wrongTabIndex
+} from "../toolbox/games/GameTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
@@ -48,7 +61,10 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
-import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
+import {
+    CanvasElementType,
+    makeTargetAndMatchSize
+} from "../toolbox/overlay/CanvasElementItem";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
@@ -57,6 +73,7 @@ import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import { getExactClientSize } from "../../utils/elementUtils";
+import { copyContentToTarget, getTarget } from "bloom-player";
 
 export interface ITextColorInfo {
     color: string;
@@ -2613,7 +2630,7 @@ export class CanvasElementManager {
     // width as necessary, or possibly increasing one if the usual adjustment would make it too small.
     // After making the adjustment if necessary (which might be delayed if the image dimensions
     // are not available), align the control frame with the active element.
-    private adjustContainerAspectRatio(
+    public adjustContainerAspectRatio(
         canvasElement: HTMLElement,
         useSizeOfNewImage = false,
         // Sometimes we think we need to wait for onload, but the data arrives before we set up
@@ -2762,6 +2779,11 @@ export class CanvasElementManager {
         canvasElement.style.left = `${newLeft}px`;
         canvasElement.style.top = `${newTop}px`;
         this.alignControlFrameWithActiveElement();
+        if (this.doAfterNewImageAdjusted) {
+            this.doAfterNewImageAdjusted();
+            this.doAfterNewImageAdjusted = undefined;
+        }
+        copyContentToTarget(canvasElement);
     }
 
     // When the image is changed in a canvas element (e.g., choose or paste image),
@@ -2792,6 +2814,8 @@ export class CanvasElementManager {
             this.adjustContainerAspectRatio(canvasElement, true);
         }
     }
+
+    private doAfterNewImageAdjusted: (() => void) | undefined = undefined;
 
     private async getHandleTitlesAsync(
         controlFrame: HTMLElement,
@@ -4864,10 +4888,183 @@ export class CanvasElementManager {
         );
     }
 
+    public getActiveOrFirstBloomCanvasOnPage(): HTMLElement | null {
+        // If there is an active element, use its bloom canvas.
+        // Otherwise, return the first bloom canvas on the page.
+        if (this.activeElement) {
+            const bloomCanvas = CanvasElementManager.getBloomCanvas(
+                this.activeElement
+            );
+            if (bloomCanvas) {
+                return bloomCanvas;
+            }
+        }
+        const bloomCanvases = this.getAllBloomCanvasesOnPage();
+        return bloomCanvases.length > 0 ? bloomCanvases[0] : null;
+    }
+
+    // This is called when the user pastes an image from the clipboard.
+    // If there is an active canvas element that is an image, and it is empty (placeholder),
+    // set its image to the pasted image.
+    // Otherwise, if there is a bloom canvas on the page, it will pick the one that has the active element
+    // or the first one if none has an active element.
+    // (If there is no canvas, it returns false.)
+    // If the canvas is empty (including the background), set the background to the image.
+    // Else if overlay is allowed by the subscription tier, add the image as an overlay/game item.
+    // Make it up to 1/3 width and 1/3 height of the canvas, roughly centered on the canvas.
+    // Is it a draggable item? Yes, if we are in the "Start" mode of a game.
+    // In that case, we put it a bit higher and further left, so there is room for the target.
+    // Otherwise it's just a normal overlay item (restricted to the appropriate state, if we're
+    // in the Correct or Wrong state of a game).
+    public pasteImageFromClipboard(): boolean {
+        const bloomCanvas = this.getActiveOrFirstBloomCanvasOnPage();
+        if (!bloomCanvas) {
+            return false; // No canvas to paste into.
+        }
+        const activeGameTab = getActiveGameTab();
+        if (activeGameTab === playTabIndex) {
+            // Can't paste an image into the play tab.
+            return false;
+        }
+        // The rest of the job happens after the C# code calls changeImage(), passing this fake ID along
+        // with the rest of the information about the new image. The special ID causes a call back to
+        // finishPastingImageFromClipboard() with the real image information.
+        postJson("editView/pasteImage", {
+            imageId: "makeNewCanvasElement",
+            imageSrc: "",
+            imageIsGif: false
+        });
+        return true;
+    }
+    public finishPastingImageFromClipboard(imageInfo: IImageInfo): void {
+        const bloomCanvas = this.getActiveOrFirstBloomCanvasOnPage()!;
+        const canvasElements = bloomCanvas.getElementsByClassName(
+            kCanvasElementClass
+        );
+        // If it's an empty canvas, make this its background image
+        if (
+            canvasElements.length === 1 &&
+            canvasElements[0].classList.contains(kBackgroundImageClass)
+        ) {
+            const bgimg = canvasElements[0].getElementsByTagName("img")[0];
+            if (bgimg.getAttribute("src")?.startsWith("placeHolder.png")) {
+                changeImageInfo(bgimg, imageInfo);
+                this.adjustBackgroundImageSize(
+                    bloomCanvas,
+                    canvasElements[0] as HTMLElement,
+                    true
+                );
+                return;
+            }
+        }
+        // If there is an image canvas element (other than the background one) already selected
+        // and it is a placeholder, just set its image.
+        const activeElement = this.activeElement as HTMLElement | undefined;
+        if (
+            activeElement &&
+            !activeElement.classList.contains(kBackgroundImageClass)
+        ) {
+            const img = activeElement
+                .getElementsByClassName(kImageContainerClass)[0]
+                ?.getElementsByTagName("img")[0];
+            if (img && img.getAttribute("src")?.startsWith("placeHolder.png")) {
+                changeImageInfo(img, imageInfo);
+                this.adjustContainerAspectRatio(
+                    activeElement as HTMLElement,
+                    true
+                );
+                adjustTarget(activeElement, getTarget(activeElement));
+                return;
+            }
+        }
+        // otherwise we will add a new canvas element
+        const width = Math.max(
+            this.snapProvider.getSnappedX(
+                bloomCanvas.offsetWidth / 3,
+                undefined
+            ),
+            this.minWidth
+        );
+        const height = Math.max(
+            this.snapProvider.getSnappedY(
+                bloomCanvas.offsetHeight / 3,
+                undefined
+            ),
+            this.minHeight
+        );
+        if (
+            width > bloomCanvas.offsetWidth ||
+            height > bloomCanvas.offsetHeight
+        ) {
+            // Can't paste image into such a tiny canvas
+            return;
+        }
+        const activeGameTab = getActiveGameTab();
+        let positionX = (bloomCanvas.offsetWidth - width) / 2;
+        let positionY = (bloomCanvas.offsetHeight - height) / 2;
+        if (activeGameTab === startTabIndex) {
+            // If we're in the correct tab, we want to put it further towards the top left,
+            // so there is room for the target.
+            positionX = positionX / 2;
+            positionY = positionY / 2;
+        }
+        const { x: adjustedX, y: adjustedY } = this.snapProvider.getPosition(
+            undefined,
+            positionX,
+            positionY
+        );
+        const positionInBloomCanvas = new Point(
+            adjustedX,
+            adjustedY,
+            PointScaling.Scaled,
+            "pasteImageFromClipboard"
+        );
+        this.addPictureCanvasElement(
+            positionInBloomCanvas,
+            $(bloomCanvas),
+            undefined,
+            imageInfo,
+            { width, height },
+            newCanvasElement => {
+                switch (activeGameTab) {
+                    case startTabIndex:
+                        // make it a draggable, with a target.
+                        // We want to do this after its shape and position are stable, so we arrange for a callback
+                        // after the aspect ratio is adjusted.
+                        // (It would be nice to do this using async and await, or by passing this action as a param
+                        // all the way down to adjustContainerAspectRatio, but there are eight layers of methods
+                        // and at least one settimeout in between, and if each has to await the others, yet other
+                        // callers of those methods have to become async. It would be a mess.)
+                        // We do this as an action passes to addPictureCanvasElement so that doAfterNewImageAdjusted
+                        // is set before the call to adjustContainerAspectRatio, which would be hard to guarantee
+                        // if we did it after the call to addPictureCanvasElement.
+                        this.doAfterNewImageAdjusted = () => {
+                            makeTargetAndMatchSize(newCanvasElement);
+                        };
+                        break;
+                    case correctTabIndex:
+                        newCanvasElement.classList.add("drag-item-correct");
+                        break;
+                    case wrongTabIndex:
+                        newCanvasElement.classList.add("drag-item-wrong");
+                }
+            }
+        );
+    }
+
     private addPictureCanvasElement(
         location: Point,
         bloomCanvasJQuery: JQuery,
-        rightTopOffset?: string
+        rightTopOffset?: string,
+        imageInfo?: {
+            imageId: string;
+            src: string; // must already appropriately URL-encoded.
+            copyright: string;
+            creator: string;
+            license: string;
+        },
+        size?: { width: number; height: number },
+        doAfterElementCreated?: (newElement: HTMLElement) => void
     ): HTMLElement {
         const standardImageClasses =
             kImageContainerClass + " bloom-leadingElement";
@@ -4885,7 +5082,10 @@ export class CanvasElementManager {
             location,
             "none",
             true,
-            rightTopOffset
+            rightTopOffset,
+            imageInfo,
+            size,
+            doAfterElementCreated
         );
     }
 
@@ -4983,7 +5183,16 @@ export class CanvasElementManager {
         location: Point,
         comicalBubbleStyle?: string,
         setElementActive?: boolean,
-        rightTopOffset?: string
+        rightTopOffset?: string,
+        imageInfo?: {
+            imageId: string;
+            src: string; // must already appropriately URL-encoded.
+            copyright: string;
+            creator: string;
+            license: string;
+        },
+        size?: { width: number; height: number },
+        doAfterElementCreated?: (newElement: HTMLElement) => void
     ): HTMLElement {
         // add canvas element as last child of .bloom-canvas (BL-7883)
         const lastChildOfBloomCanvas = bloomCanvasJQuery.children().last();
@@ -5001,7 +5210,18 @@ export class CanvasElementManager {
             lastChildOfBloomCanvas
         );
         const canvasElement = canvasElementJQuery.get(0);
-        this.setDefaultHeightFromWidth(canvasElement);
+        if (imageInfo) {
+            const img = canvasElement.getElementsByTagName("img")[0];
+            if (img) {
+                changeImageInfo(img, imageInfo);
+            }
+        }
+        if (size) {
+            canvasElement.style.width = size.width + "px";
+            canvasElement.style.height = size.height + "px";
+        } else {
+            this.setDefaultHeightFromWidth(canvasElement);
+        }
         this.placeElementAtPosition(
             canvasElementJQuery,
             bloomCanvasJQuery.get(0),
@@ -5030,6 +5250,13 @@ export class CanvasElementManager {
         );
         bubble.setBubbleSpec(bubbleSpec);
         const bloomCanvas = bloomCanvasJQuery.get(0);
+        if (doAfterElementCreated) {
+            // It's not obvious when the best time to do this is. Obviously it has to be after
+            // the element is created. For the current purpose, the main thing is that it be
+            // before refreshBubbleEditing() is called, since (for picture elements) that is
+            // what gets the element selected and triggers a call to adjustContainerAspectRatio().
+            doAfterElementCreated(canvasElement);
+        }
         // background image in parent bloom-canvas may need to become canvas element
         // (before we refreshBubbleEditing, since we may change some canvas elements here.)
         this.handleResizeAdjustments();

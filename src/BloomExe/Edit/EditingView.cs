@@ -1547,7 +1547,7 @@ namespace Bloom.Edit
             ExecuteCommandSafely(_copyCommand);
         }
 
-        private void _pasteButton_Click(object sender, EventArgs e)
+        public void OnPaste(object sender, EventArgs e)
         {
             ExecuteCommandSafely(_pasteCommand);
         }

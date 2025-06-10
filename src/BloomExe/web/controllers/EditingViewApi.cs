@@ -78,6 +78,7 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler("editView/cutImage", HandleCutImage, true);
             apiHandler.RegisterEndpointHandler("editView/copyImage", HandleCopyImage, true);
             apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
+            apiHandler.RegisterEndpointHandler("editView/paste", HandlePaste, true);
             apiHandler.RegisterEndpointHandler(
                 "editView/sourceTextTab",
                 HandleSourceTextTab,
@@ -197,6 +198,14 @@ namespace Bloom.web.controllers
                 UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
                 data.imageIsGif
             );
+            request.PostSucceeded();
+        }
+
+        // Ctrl-V seems to be only possible to intercept in Javascript.
+        // This makes it do the same as the Paste button.
+        private void HandlePaste(ApiRequest request)
+        {
+            View.OnPaste(this, EventArgs.Empty);
             request.PostSucceeded();
         }
 
