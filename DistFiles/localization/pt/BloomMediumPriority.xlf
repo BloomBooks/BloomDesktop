@@ -11,23 +11,6 @@
         <note>ID: AvailableWithSubscription</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
-      <trans-unit id="EditTab.Toolbox.DragActivity.Check" approved="yes">
-        <source xml:lang="en">Check</source>
-        <target xml:lang="pt-PT" state="final">Verificar</target>
-        <note>ID: EditTab.Toolbox.DragActivity.Check</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.CheckAnswer" approved="yes">
-        <source xml:lang="en">Check Answer</source>
-        <target xml:lang="pt-PT" state="final">Verificar a Resposta</target>
-        <note>ID: EditTab.Toolbox.DragActivity.CheckAnswer</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.CheckHint" approved="yes">
-        <!-- Currently, if this is changed, RuntimeInformationInjector.AddHtmlUiStrings must be changed to match.
-        This is unfortunate, but our code for getting localization of hints is tricky to make async.-->
-        <source xml:lang="en">Clicking this validates the positions things have been dragged to.</source>
-        <note>ID: EditTab.Toolbox.DragActivity.CheckHint</note>
-        <target xml:lang="pt-PT" state="final">Clicando aqui vai validar as posições onde os objetos foram arrastados.</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound" approved="yes">
         <source xml:lang="en">Choose...</source>
         <target xml:lang="pt-PT" state="final">Escolher...</target>
