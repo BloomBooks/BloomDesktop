@@ -200,14 +200,14 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<PackageReference Include="RestSharp" Version="106.12.0" />
 		<PackageReference Include="Sentry" Version="3.9.4" />
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />
-		<PackageReference Include="SIL.Core" Version="16.0.1-beta0002" />
-		<PackageReference Include="SIL.Core.Desktop" Version="16.0.1-beta0002" />
+		<PackageReference Include="SIL.Core" Version="16.1.0-beta0004" />
+		<PackageReference Include="SIL.Core.Desktop" Version="16.1.0-beta0004" />
 		<PackageReference Include="SIL.DesktopAnalytics" Version="4.0.4" />
-		<PackageReference Include="SIL.Media" Version="16.0.1-beta0002" />
-		<PackageReference Include="SIL.Windows.Forms" Version="16.0.1-beta0002" />
-		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="16.0.1-beta0002" />
-		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="16.0.1-beta0002" />
-		<PackageReference Include="SIL.WritingSystems" Version="16.0.1-beta0002" />
+		<PackageReference Include="SIL.Media" Version="16.1.0-beta0004" />
+		<PackageReference Include="SIL.Windows.Forms" Version="16.1.0-beta0004" />
+		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="16.1.0-beta0004" />
+		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="16.1.0-beta0004" />
+		<PackageReference Include="SIL.WritingSystems" Version="16.1.0-beta0004" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.2" />
 		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.2" />

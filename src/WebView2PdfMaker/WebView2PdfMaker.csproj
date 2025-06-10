@@ -11,7 +11,7 @@
 		<AssemblyTitle>BloomPdfMaker</AssemblyTitle>
 		<Company>SIL</Company>
 		<Product>BloomPdfMaker</Product>
-		<Copyright>Â© SIL International 2023-2024</Copyright>
+		<Copyright>© SIL International 2023-2024</Copyright>
 		<Version>6.2.0.0</Version>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -50,7 +50,6 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="SIL.Core" Version="16.0.1-beta0002" />
 		<!-- In June 2025, when we upgraded libpalaso to 16.0.1-beta0002, 
 			 tests started failing saying they couldn't find 
 			 System.Runtime.CompilerServices.Unsafe 6.0.0.
@@ -61,6 +60,7 @@
 			 This works around the problem by making 6.0.0 a direct dependency.
 		 -->
 		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+		<PackageReference Include="SIL.Core" Version="16.1.0-beta0004" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="System.Windows.Forms" />

@@ -63,6 +63,7 @@ import {
 import { doesContainingPageHaveSameSizeMode } from "./gameUtilities";
 import { CanvasSnapProvider } from "../../js/CanvasSnapProvider";
 import { CanvasGuideProvider } from "../../js/CanvasGuideProvider";
+import { kidForDragActivityTabControl } from "./DragActivityTabControl";
 
 // This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -641,10 +642,10 @@ const stopDraggingTarget = (_: MouseEvent) => {
     page.removeEventListener("mousemove", dragTarget);
 };
 
-const startTabIndex = 0;
-const correctTabIndex = 1;
-const wrongTabIndex = 2;
-const playTabIndex = 3;
+export const startTabIndex = 0;
+export const correctTabIndex = 1;
+export const wrongTabIndex = 2;
+export const playTabIndex = 3;
 
 // Set a class that CSS rules can use to modify the appearance of elements based on which
 // tab we are in.
@@ -1644,6 +1645,19 @@ img {
 }
 }`;
 
+export function getActiveGameTab(): number {
+    const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
+    if (!toolbox) {
+        return -1; // some weird state early in initialization
+    }
+    const gameTool = toolbox.getTheOneGameTool();
+    if (gameTool) {
+        // always exists, even if we're not in it.
+        return gameTool.getActiveTab();
+    }
+    return -1;
+}
+
 export class GameTool extends ToolboxToolReactAdaptor {
     public static theOneDragActivityTool: GameTool | undefined;
 
@@ -1658,6 +1672,21 @@ export class GameTool extends ToolboxToolReactAdaptor {
     public setActiveTab(tab: number) {
         this.tab = tab;
         this.renderRoot();
+    }
+
+    // If we're on a game page, return which tab of the game tool is active (even if the game tool is not active).
+    // If we're not on a game page, return -1.
+    public getActiveTab(): number {
+        const page = GameTool.getBloomPage();
+        if (
+            !page ||
+            !page.ownerDocument.getElementById(kidForDragActivityTabControl)
+        ) {
+            // not a game page (at least not one that has the start/correct/wrong/play tabs)
+            return -1;
+        }
+
+        return this.tab;
     }
 
     // Activating the tool calls this right before newPageReady().
@@ -1861,7 +1890,7 @@ export function setActiveDragActivityTab(tab: number) {
     // I think we're OK, if for no other reason, because both the dragActivityTool code and the
     // code here agree that we start in the Start tab after switching pages.
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
-    toolbox?.getTheOneDragActivityTool()?.setActiveTab(tab);
+    toolbox?.getTheOneGameTool()?.setActiveTab(tab);
 
     //Slider: const wrapper = page.getElementsByClassName(
     //     "bloom-activity-slider"
@@ -1908,7 +1937,7 @@ export function setupDragActivityTabControl() {
         return;
     }
     const tabControl = page.ownerDocument.createElement("div");
-    tabControl.setAttribute("id", "drag-activity-tab-control");
+    tabControl.setAttribute("id", kidForDragActivityTabControl);
     const abovePageControlContainer = page.ownerDocument.getElementsByClassName(
         "above-page-control-container"
     )[0];
