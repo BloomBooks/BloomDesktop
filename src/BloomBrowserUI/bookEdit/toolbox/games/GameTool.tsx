@@ -641,10 +641,10 @@ const stopDraggingTarget = (_: MouseEvent) => {
     page.removeEventListener("mousemove", dragTarget);
 };
 
-const startTabIndex = 0;
-const correctTabIndex = 1;
-const wrongTabIndex = 2;
-const playTabIndex = 3;
+export const startTabIndex = 0;
+export const correctTabIndex = 1;
+export const wrongTabIndex = 2;
+export const playTabIndex = 3;
 
 // Set a class that CSS rules can use to modify the appearance of elements based on which
 // tab we are in.
@@ -1644,6 +1644,18 @@ img {
 }
 }`;
 
+export function getActiveGameTab(): number {
+    const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
+    if (!toolbox) {
+        return -1; // Not even a toolbox, can't be an active game tab
+    }
+    const gameTool = toolbox.getTheOneDragActivityTool();
+    if (gameTool) {
+        return gameTool.getActiveTab();
+    }
+    return -1;
+}
+
 export class GameTool extends ToolboxToolReactAdaptor {
     public static theOneDragActivityTool: GameTool | undefined;
 
@@ -1660,6 +1672,16 @@ export class GameTool extends ToolboxToolReactAdaptor {
         this.renderRoot();
     }
 
+    public getActiveTab(): number {
+        return this.isActive ? this.tab : -1;
+    }
+    isActive = false;
+    public showTool(): void {
+        this.isActive = true;
+    }
+    public hideTool(): void {
+        this.isActive = false;
+    }
     // Activating the tool calls this right before newPageReady().
     // Currently the latter does this.renderRoot(), so we don't need to do it here.
     // public showTool() {

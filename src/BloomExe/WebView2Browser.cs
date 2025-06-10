@@ -642,6 +642,8 @@ namespace Bloom
                 { }
                 var haveClipboardImage = clipboardImage == null ? "false" : "true";
 
+                clipboardImage?.Dispose();
+
                 RunJavascriptAsync(
                     $"editTabBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
                 );
@@ -694,7 +696,8 @@ namespace Bloom
                     var isTextSelection = IsThereACurrentTextSelection();
                     _cutCommand.Enabled = isTextSelection;
                     _copyCommand.Enabled = isTextSelection;
-                    _pasteCommand.Enabled = PortableClipboard.ContainsText();
+                    _pasteCommand.Enabled =
+                        PortableClipboard.ContainsText() || PortableClipboard.CanGetImage();
 
                     _undoCommand.Enabled = await CanUndoAsync();
                 }
