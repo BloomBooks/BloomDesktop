@@ -7026,6 +7026,11 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="sw" state="needs-translation">Match Words with Images</target>
         <note>ID: TemplateBooks.PageLabel.MatchWordsWithImages</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Order Words" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Order Words</source>
+        <target xml:lang="sw" state="needs-translation">Order Words</target>
+        <note>ID: TemplateBooks.PageLabel.Order Words</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Custom Game" sil:dynamic="true" translate="no">
         <source xml:lang="en">Custom Game</source>
         <target xml:lang="sw" state="needs-translation">Custom Game</target>
