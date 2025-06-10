@@ -190,10 +190,9 @@ namespace Bloom.Book
         /// <summary>
         /// For Bloom 2.0 this list is hard-coded
         /// </summary>
-        /// <param name="d"></param>
         private static void AddHtmlUiStrings(Dictionary<string, string> d)
         {
-            // ATTENTION: Currently, the english here must exactly match whats in the html.
+            // ATTENTION: Currently, the English here must exactly match what's in the html.
             // See comment in AddTranslationToDictionaryUsingEnglishAsKey
 
             AddTranslationToDictionaryUsingEnglishAsKey(
@@ -375,14 +374,9 @@ namespace Bloom.Book
 
             // "No Topic" localization for Topic Chooser
             AddTranslationToDictionaryUsingKey(d, "Topics.NoTopic", "No Topic");
-            // Used in Drag Activity
-            AddTranslationToDictionaryUsingKey(
-                d,
-                "EditTab.Toolbox.DragActivity.CheckHint",
-                "Clicking this validates the positions things have been dragged to."
-            );
+
             // Bloom games
-            AddTranslationToDictionaryUsingKey(
+            AddTranslationToDictionaryUsingEnglishAsKey(
                 d,
                 "EditTab.Toolbox.DragActivity.SentenceHint",
                 "Type a sentence. The reader will be asked to sort the words."

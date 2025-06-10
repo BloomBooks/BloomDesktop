@@ -18,14 +18,16 @@ const GameIntroText: React.FunctionComponent<{
             };
             break;
         case GameType.DragSortSentence:
-            // These are currently commented out in the .xlf since this
-            // template is turned off for now.
-            gameDetails = {
-                instructionsL10nKey:
-                    "EditTab.Toolbox.DragActivity.OrderSentenceInstructions",
-                headingL10nKey:
-                    "EditTab.Toolbox.DragActivity.OrderSentenceHeading"
-            };
+            // These are currently commented out in the .xlf.
+            // Decided not to show this for now, following the same
+            // pattern as DragLetterToTarget.
+            // See comment below.
+            // gameDetails = {
+            //     instructionsL10nKey:
+            //         "EditTab.Toolbox.DragActivity.OrderSentenceInstructions",
+            //     headingL10nKey:
+            //         "EditTab.Toolbox.DragActivity.OrderSentenceHeading"
+            // };
             break;
         case GameType.DragImageToTarget:
             // For now, we just aren't displaying instructions for this game.
