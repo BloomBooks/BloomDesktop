@@ -4440,7 +4440,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true">
         <source xml:lang="en">Removing one or more pages which require a higher subscription tier</source>
-        <target xml:lang="es-ES" state="needs-translation">Removing one or more pages which require a higher subscription tier</target>
+        <target xml:lang="es-ES" state="translated">Eliminar una o más páginas que requieren un nivel de suscripción más alto</target>
         <note>ID: Publish.RemovingDisallowedPages</note>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm" approved="yes">
