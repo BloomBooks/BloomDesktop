@@ -218,10 +218,6 @@
         <source xml:lang="en">Red on white</source>
         <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DraggableLetter">
-        <source></source>
-        <note>ID: EditTab.Toolbox.Games.Placeholder.DraggableLetter</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragLettersInstructions">
         <source>Drag the letters where they go</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragLettersInstructions</note>
@@ -236,8 +232,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions">
         <source>Match sounds with their words</source>
-        <note>ID: EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions
-        </note>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions">
         <source>Drag the correct sound to matching word</source>
@@ -250,6 +245,10 @@
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions">
         <source>Match each image to a word</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.OrderWordsInstructions" translate="no">
+        <source>Drag the words where they go</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.OrderInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.CustomGameInstructions">
         <source>Put instructions here</source>
