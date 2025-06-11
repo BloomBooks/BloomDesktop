@@ -60,6 +60,7 @@ import { kBloomDisabledOpacity } from "../../utils/colorUtils";
 import { Span } from "../../react_components/l10nComponents";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
+import { GameType, getGameType } from "../toolbox/games/GameInfo";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -165,9 +166,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
 
     // The audio menu item states the audio will play when the item is touched.
     // That isn't true yet outside of games, so don't show it.
-    const isInDraggableGame = page
-        ?.getAttribute("data-activity")
-        ?.startsWith("drag-");
+    const activityType = page?.getAttribute("data-activity") ?? "";
+    const isInDraggableGame = activityType.startsWith("drag-");
     const canChooseAudioForElement = isInDraggableGame && (hasImage || hasText);
 
     const [imageSound, setImageSound] = useState("none");
@@ -177,6 +177,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const isBackgroundImage = props.canvasElement.classList.contains(
         kBackgroundImageClass
     );
+    const isInSentenceDragGame =
+        getGameType(activityType, page) === GameType.DragSortSentence;
     const children = props.canvasElement.parentElement?.querySelectorAll(
         ".bloom-canvas-element"
     );
@@ -269,7 +271,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
 
     menuOptions.push(divider);
 
-    if (!isBackgroundImage) {
+    if (!isBackgroundImage && !isInSentenceDragGame) {
         menuOptions.push({
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",
@@ -308,6 +310,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
         deleteEnabled = !!(
             img && !img.getAttribute("src")?.startsWith("placeHolder.png")
         );
+    } else if (isInSentenceDragGame) {
+        deleteEnabled = false; // don't allow deleting the single drag item in a sentence drag game
     }
 
     // last one
@@ -494,7 +498,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             `}
                         />
                     )}
-                    {!hasVideo && !isBackgroundImage && (
+                    {!hasVideo && !isBackgroundImage && !isInSentenceDragGame && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.Duplicate"
                             icon={DuplicateIcon}
@@ -508,7 +512,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     {// Not sure of the reasoning here, since we do have a way to 'delete' a background image,
                     // not by removing the canvas element but by setting the image back to a placeholder.
                     // But the mockup in BL-14069 definitely doesn't have it.
-                    isBackgroundImage || (
+                    isBackgroundImage || isInSentenceDragGame || (
                         <ButtonWithTooltip
                             tipL10nKey="Common.Delete"
                             icon={DeleteIcon}
