@@ -4755,7 +4755,7 @@ namespace BloomTests.Book
 						<div class='bloom-canvas'>
 							<img src='placeHolder.png'></img>
 						</div>
-						<div class='bloom-canvas bloom-background-image-in-style' style="
+						<div class='bloom-canvas bloom-background-image-in-style-attr' style="
                     + "\"background-image:url('placeHolder.png')\""
                     + @" ></div>
 					</div>
@@ -4804,7 +4804,7 @@ namespace BloomTests.Book
 					</div>
 					<div class='bloom-page' id='guid2'>
 						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
-						<div class='bloom-canvas bloom-background-image-in-style' style="
+						<div class='bloom-canvas bloom-background-image-in-style-attr' style="
                     + "\"background-image:url('someImage.png')\""
                     + @" ></div>
 					</div>
