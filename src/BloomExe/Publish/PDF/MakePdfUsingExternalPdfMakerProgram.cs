@@ -373,9 +373,11 @@ namespace Bloom.Publish.PDF
                     width = Size6x9PortraitWidth + bleedExtra;
                     break;
                 default:
-                    throw new ArgumentException(
+                    var exception = new ArgumentException(
                         "Full bleed printing of paper sizes other than A5, A4, A3, USComic, and Size6x9 is not yet implemented"
                     );
+                    exception.Data["argument"] = "specs.PaperSizeName";
+                    throw exception;
             }
 
             if (specs.Landscape)
