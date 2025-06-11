@@ -1243,7 +1243,7 @@ namespace Bloom.web.controllers
                 }
                 bldr.AppendLine("```stacktrace");
                 bldr.Append(
-                    ExceptionHelper.GetHiearchicalExceptionInfo(_reportInfo.Exception, ref dummy)
+                    ExceptionHelper.GetHierarchicalExceptionInfo(_reportInfo.Exception, ref dummy)
                 );
                 bldr.AppendLine("```");
             }

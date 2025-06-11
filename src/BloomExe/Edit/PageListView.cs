@@ -100,7 +100,7 @@ namespace Bloom.Edit
                             );
                             var dlg = new ProblemNotificationDialog(msg, title);
                             dlg.Icon = SystemIcons.Information.ToBitmap();
-                            dlg.ReoccurenceMessage = null;
+                            dlg.ReoccurrenceMessage = null;
                             dlg.Show();
                         }
                     }
