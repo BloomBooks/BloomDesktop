@@ -252,10 +252,6 @@
         <target xml:lang="fr" state="final">Rouge sur blanc</target>
         <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DraggableLetter">
-        <source/>
-        <note>ID: EditTab.Toolbox.Games.Placeholder.DraggableLetter</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragLettersInstructions" approved="yes">
         <source>Drag the letters where they go</source>
         <target xml:lang="fr" state="final">Faites glisser les lettres là où il faut</target>
@@ -274,8 +270,7 @@
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions" approved="yes">
         <source>Match sounds with their words</source>
         <target xml:lang="fr" state="final">Faites correspondre chaque son avec le mot qui correspond</target>
-        <note>ID: EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions
-        </note>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions" approved="yes">
         <source>Drag the correct sound to matching word</source>
@@ -291,6 +286,11 @@
         <source>Match each image to a word</source>
         <target xml:lang="fr" state="final">Faites correspondre chaque image à un mot</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.OrderWordsInstructions" translate="no">
+        <source>Drag the words where they go</source>
+        <target xml:lang="fr" state="needs-translation">Drag the words where they go</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.OrderInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.CustomGameInstructions" approved="yes">
         <source>Put instructions here</source>
