@@ -531,7 +531,9 @@
     background-color: var(--game-draggable-bg-color);
     color: var(--game-draggable-color);
     border-radius: 10px;
-    padding: 0px 11px;
+    // Descenders (like in g or y) get cut off if we don't have any bottom padding. (BL-14885)
+    // Using ex rather than px so that it scales with the font size.
+    padding: 0px 11px 0.45ex 11px;
     margin-right: 5px;
 }
 
