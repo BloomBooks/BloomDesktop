@@ -232,6 +232,15 @@ namespace Bloom.Publish
                 );
                 BloomMessageBox.ShowWarning(msg);
             }
+            else if (
+                error is ArgumentException
+                && error.Data.Contains("argument")
+                && (string)error.Data["argument"] == "specs.PaperSizeName"
+            )
+            {
+                // Full bleed printing for this paper size is not supported. Notify user but don't let them report.
+                BloomMessageBox.ShowWarning(error.Message);
+            }
             else // for others, just give a generic message and include the original exception in the message
             {
                 ErrorReport.NotifyUserOfProblem(
