@@ -218,7 +218,7 @@ export class ToolBox {
         }
     }
 
-    public getTheOneDragActivityTool(): GameTool | undefined {
+    public getTheOneGameTool(): GameTool | undefined {
         return GameTool.theOneDragActivityTool;
     }
 
