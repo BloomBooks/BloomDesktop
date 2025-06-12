@@ -236,14 +236,14 @@ namespace Bloom.CollectionTab
             var bookFolderName = Path.GetFileName(origBookFolderPath);
             var newCollectionDir = TheOneEditableCollection.PathToDirectory;
             var newBookFolderPath = Path.Combine(newCollectionDir, bookFolderName);
-            SIL.IO.RobustIO.MoveDirectory(origBookFolderPath, newBookFolderPath);
             if (origCollectionIsTC)
             {
                 origTcManager.CurrentCollection.DeleteBookFromRepo(origBookFolderPath);
 
                 // Get rid of any TC status, etc,. that we copied over
-                BookStorage.RemoveLocalOnlyFiles(newBookFolderPath);
+                BookStorage.RemoveLocalOnlyFiles(origBookFolderPath);
             }
+            SIL.IO.RobustIO.MoveDirectory(origBookFolderPath, newBookFolderPath);
             Logger.WriteEvent("After BookStorage.DeleteBook({0})", origBook.BookInfo.FolderPath);
             origCollection.HandleBookDeletedFromCollection(origBookFolderPath);
             ReloadEditableCollection();
