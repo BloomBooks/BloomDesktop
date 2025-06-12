@@ -31,6 +31,8 @@ namespace Bloom.web.controllers
             // The following is a list of image files that we don't want to paste image credits for.
             // It includes CC license image, placeholder and branding images.
             _doNotPasteArray = GetImageFilesToNotPasteCreditsFor().ToArray();
+            for (int i = 0; i < _doNotPasteArray.Length; ++i)
+                _doNotPasteArray[i] = BookStorage.GetNormalizedPathForOS(_doNotPasteArray[i]);
         }
 
         private static IEnumerable<string> GetImageFilesToNotPasteCreditsFor()
@@ -43,18 +45,27 @@ namespace Bloom.web.controllers
                 imageFiles.AddRange(
                     Directory
                         .EnumerateFiles(brandDirectory)
-                        .Where(IsSvgOrPng)
+                        .Where(IsSvgOrPngOrGif)
+                        .Select(Path.GetFileName)
+                );
+            }
+            var templateDirectory = BloomFileLocator.GetBrowserDirectory("templates");
+            foreach (var templateDir in Directory.GetDirectories(Path.Combine(templateDirectory, "template books")))
+            {
+                imageFiles.AddRange(
+                    Directory
+                        .EnumerateFiles(templateDir)
+                        .Where(IsSvgOrPngOrGif)
                         .Select(Path.GetFileName)
                 );
             }
             return imageFiles;
         }
 
-        private static bool IsSvgOrPng(string filename)
+        private static bool IsSvgOrPngOrGif(string filename)
         {
-            var lcFilename = filename.ToLowerInvariant();
-            return Path.GetExtension(lcFilename) == ".svg"
-                || Path.GetExtension(lcFilename) == ".png";
+            var lcExtension = Path.GetExtension(filename).ToLowerInvariant();
+            return lcExtension == ".svg" || lcExtension == ".png" || lcExtension == ".gif";
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -119,6 +130,8 @@ namespace Bloom.web.controllers
                     missingCredits.Add(kvp.Key);
                 if (!string.IsNullOrEmpty(credit))
                 {
+                    // This common source of images has an overly verbose license. We don't need the URL portion. (BL-14829)
+                    credit = credit.Replace("Pixabay license (https://pixabay.com/service/license-summary/)", "Pixabay license");
                     var pageList = kvp.Value;
                     BuildCreditsDictionary(credits, credit, pageList);
                 }
@@ -311,7 +324,8 @@ namespace Bloom.web.controllers
         {
             // returns 'true' if 'name' is among the list of ones we don't want to paste image credits for
             // includes CC license image, placeholder and branding images
-            return _doNotPasteArray.Contains(name.ToLowerInvariant())
+            var normalName = BookStorage.GetNormalizedPathForOS(name);
+            return _doNotPasteArray.Contains(normalName)
                 || name.ToLowerInvariant().StartsWith("placeholder");
         }
 
