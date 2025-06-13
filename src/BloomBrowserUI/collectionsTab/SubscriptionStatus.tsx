@@ -119,6 +119,13 @@ export const SubscriptionStatus: React.FunctionComponent<{
                         color: black;
                         margin-top: 2px;
                         margin-bottom: 10px;
+                        display: flex;
+                        // something probably in markdown puts a lot of margin on paragraphs,
+                        // which messes up the alignment with the icon and makes the warning box
+                        // bigger than it needs to be. This gets rid of it.
+                        p {
+                            margin: 0;
+                        }
                     `}
                     l10nKey="SubscriptionStatus.ProTeamCollectionNotSupported"
                 >
