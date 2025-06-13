@@ -2916,9 +2916,13 @@ export class CanvasElementManager {
         // using pxToNumber here because the position and size of the canvas element are often fractional.
         // OTOH, clientWidth etc are whole numbers. If we allow that rounding in to affect where to
         // place the control frame, we can end up with a 1 pixel gap between the canvas element and
-        // the control frame, which looks bad.
+        // the control frame, which looks bad. In case we want to use some other unit (e.g., %) in a template
+        // we use the offsetWidth as a fallback.
         controlFrame.style.width =
-            CanvasElementManager.pxToNumber(this.activeElement.style.width) +
+            CanvasElementManager.pxToNumber(
+                this.activeElement.style.width,
+                this.activeElement.offsetWidth
+            ) +
             2 * extraPadding +
             "px";
         controlFrame.style.height = this.activeElement.style.height;
