@@ -17,6 +17,13 @@
         margin-bottom: @vertical-space;
         flex-grow: 1;
     }
+
+    // makes the quiz header look like those in other games (which are no-margin-page)
+    .quiz .bloom-translationGroup:first-child {
+        margin-top: calc(var(--page-margin-top) * -1);
+        margin-left: calc(var(--page-margin-left) * -1);
+        margin-right: calc(var(--page-margin-right) * -1);
+    }
     // in previous versions, a definition of Prompt-style set color:white.
     // Migrating this causes a problem if the book is opened using an older Bloom.
     // So, this stronger rule defeats that one.

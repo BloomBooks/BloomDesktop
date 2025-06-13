@@ -11,6 +11,12 @@
         .bloom-content3 {
             display: none;
         }
+        // makes the header look like those in other games (which are no-margin-page)
+        .bloom-translationGroup:first-child {
+            margin-top: calc(var(--page-margin-top) * -1);
+            margin-left: calc(var(--page-margin-left) * -1);
+            margin-right: calc(var(--page-margin-right) * -1);
+        }
 
         // When an image is the prompt, it looks bad if a closely-cropped image is right up against the colored background of the page.
         // When an image is the answer, there is a white border but it still looks better with some padding. These don't necessarily
