@@ -824,12 +824,6 @@ namespace Bloom.WebLibraryIntegration
             IProgress progress
         )
         {
-            if (
-                // See comment below.
-                //book.CollectionSettings.Subscription.HaveActiveSubscription &&
-                !PublishHelper.BookHasUnpublishableData(book))
-                return false; // no need to prune the book data
-
             // We need to be sure that any in-memory changes have been written to disk
             // before we start copying/loading the new book to/from disk
             book.Save();
@@ -843,19 +837,33 @@ namespace Bloom.WebLibraryIntegration
             var pages = new List<SafeXmlElement>();
             foreach (SafeXmlElement page in copiedBook.GetPageElements())
                 pages.Add(page);
-            // Retiring this: We now stop you with the UI before you get this far.
-            // If reinstating something like this, check the initial if condition above.
-            // if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
-            // {
-            //     // Remove enterprise features since they aren't allowed.
-            //     ISet<string> warningMessages = new HashSet<string>();
-            //     PublishHelper.RemovePagesByFeatureSystem(
-            //         copiedBook,
-            //         pages,
-            //         warningMessages
-            //     );
-            //     PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
-            // }
+
+            // Remove any material not allowed by the current subscription.
+            // (If the book has features that won't allow it to be published at all, that will have
+            // been caught earlier.)
+            var omittedPages = new Dictionary<string, int>();
+            PublishHelper.RemovePagesByFeatureSystem(
+                copiedBook,
+                copiedBook.OurHtmlDom,
+                pages,
+                // Currently no features are removed for BloomPub, so we're only getting
+                // subscription-based removals. If there's ever pages that can be
+                // published to the web but not to BloomPubs, or pages that can't
+                // be published purely because the destination is Web, we can add another
+                // enumeration member.
+                PublishingMediums.BloomPub,
+                omittedPages
+            );
+            var warnings = PublishHelper.MakePagesRemovedWarnings(omittedPages);
+            PublishHelper.SendBatchedWarningMessagesToProgress(warnings, progress);
+            var messages = new HashSet<string>();
+            PublishHelper.RemoveClassesAndAttrsToDisableFeatures(
+                pages,
+                copiedBook.CollectionSettings.Subscription,
+                copiedBook.BookData.BookIsDerivative(),
+                messages
+            );
+            PublishHelper.SendBatchedWarningMessagesToProgress(messages.ToList(), progress);
             // Remove any AI generated content from the book. (BL-14339)
             foreach (var page in pages)
                 PublishHelper.RemoveUnpublishableContent(page);
