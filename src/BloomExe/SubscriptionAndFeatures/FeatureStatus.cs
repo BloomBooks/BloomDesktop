@@ -17,6 +17,9 @@ namespace Bloom.SubscriptionAndFeatures
         Epub = 1 << 0,
         Video = 1 << 1,
         PDF = 1 << 2,
+
+        // This is also used for Web publishing. Neither medium causes any
+        // pages to be removed, and this seems unlikely to change.
         BloomPub = 1 << 3,
         All = Epub | Video | PDF | BloomPub
     }
