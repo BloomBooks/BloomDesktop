@@ -114,9 +114,15 @@ namespace Bloom.SubscriptionAndFeatures
             bool forPublishing = false
         )
         {
+            var subToUse = subscription;
+            if (book != null && book.IsPlayground)
+            {
+                subToUse = Subscription.ForUnitTestWithOverrideTier(SubscriptionTier.Enterprise);
+            }
+
             if (Enum.TryParse<FeatureName>(featureName, true, out FeatureName featureEnum))
             {
-                return GetFeatureStatus(subscription, featureEnum, book, forPublishing);
+                return GetFeatureStatus(subToUse, featureEnum, book, forPublishing);
             }
             Debug.Assert(false, $"Feature '{featureName}' not found in FeatureName enum.");
             return null;
