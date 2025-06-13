@@ -660,7 +660,8 @@ namespace Bloom.Edit
                 {
                     // If we have metadata with an official collectionUri
                     // just give a summary of the metadata
-                    if (ImageUpdater.ImageIsFromOfficialCollection(imageBeingModified.Metadata))
+                    if (ImageUpdater.ImageIsFromOfficialCollection(imageBeingModified.Metadata) ||
+                        ImageUpdater.ImageIsStockGameImage(fileName, imageBeingModified.Metadata))
                     {
                         MessageBox.Show(
                             imageBeingModified.Metadata.GetSummaryParagraph(
