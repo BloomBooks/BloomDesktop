@@ -1883,7 +1883,8 @@ namespace Bloom.Book
                 "data-wrong-sound",
                 "data-same-size",
                 "data-show-targets-during-play",
-                "data-show-answers-in-targets"
+                "data-show-answers-in-targets",
+                "data-missing-game-theme"
             };
             foreach (var attr in attrsToCopy)
             {

@@ -10,10 +10,9 @@
 export function getVariationsOnClass(
     prefix: string,
     doc: Document,
-    handleResults: (variations: string[]) => void,
-    minimal: string[] = [] // these should be in results, even if not found
+    handleResults: (variations: string[]) => void
 ): void {
-    const results = new Set<string>(minimal);
+    const results = new Set<string>();
 
     // This function does most of the work. It gets called immediately and possibly again
     // when the document is fully loaded.
