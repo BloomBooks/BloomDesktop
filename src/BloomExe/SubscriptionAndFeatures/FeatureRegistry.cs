@@ -81,6 +81,7 @@ namespace Bloom.SubscriptionAndFeatures
             },
             new FeatureInfo
             {
+                // This feature includes importing audio files, which would be for a whole text box.
                 Feature = FeatureName.WholeTextBoxAudio,
                 SubscriptionTier = SubscriptionTier.Pro,
                 PreventPublishingInDerivativeBooks = PreventionMethod.None,
