@@ -6382,6 +6382,25 @@ export class CanvasElementManager {
                     "src",
                     bgImage.getAttribute("src") || ""
                 );
+                // maintain the intellectual properties of the image (BL-14511)
+                const copyright = bgImage.getAttribute("data-copyright");
+                if (copyright) {
+                    mainImage.setAttribute("data-copyright", copyright);
+                } else {
+                    mainImage.removeAttribute("data-copyright");
+                }
+                const creator = bgImage.getAttribute("data-creator");
+                if (creator) {
+                    mainImage.setAttribute("data-creator", creator);
+                } else {
+                    mainImage.removeAttribute("data-creator");
+                }
+                const license = bgImage.getAttribute("data-license");
+                if (license) {
+                    mainImage.setAttribute("data-license", license);
+                } else {
+                    mainImage.removeAttribute("data-license");
+                }
                 bgo.remove();
             }
         }
