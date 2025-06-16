@@ -14,7 +14,7 @@ Internally, Bloom is a hybrid. It started as a C#/WinForms app with an embedded 
 ./build/getDependencies-windows.sh
 ```
 
-2. Install [volta](https://docs.volta.sh/guide/getting-started) globally on your computer. This will provide you with the correct node and yarn. You may need to restart your computer to complete the installation.
+2. Install [volta](https://docs.volta.sh/guide/getting-started) globally on your computer. This will provide you with the correct node and yarn.
 
 3. Install browser code dependencies:
 
