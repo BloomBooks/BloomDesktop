@@ -69,6 +69,10 @@ import {
     kCanvasElementClass
 } from "../overlay/canvasElementUtils";
 import { RecordingMode } from "./recordingMode";
+import {
+    FeatureStatus,
+    getFeatureStatusAsync
+} from "../../../react_components/featureStatus";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -188,6 +192,7 @@ export default class AudioRecording implements IAudioRecorder {
     private previousRecordMode: RecordingMode;
     private haveAudio: boolean;
     private inShowPlaybackOrderMode: boolean = false;
+    private wholeTextBoxAudioFeatureStatus: FeatureStatus | undefined;
 
     // Corresponds to the collection default recording mode which we would theoretically get via async call to C# API
     // This is rather annoying because then we have async calls being introduced all over the place.
@@ -310,6 +315,10 @@ export default class AudioRecording implements IAudioRecorder {
         toastr.options.timeOut = 10000;
         toastr.options.preventDuplicates = true;
 
+        this.wholeTextBoxAudioFeatureStatus = await getFeatureStatusAsync(
+            "WholeTextBoxAudio"
+        );
+
         return this.pullDefaultRecordingModeAsync();
     }
 
@@ -364,7 +373,7 @@ export default class AudioRecording implements IAudioRecorder {
         const currentTextBox = this.getCurrentTextBox();
 
         this.recordingMode = this.getRecordingModeOfTextBox(currentTextBox);
-        if (this.recordingMode == RecordingMode.Unknown) {
+        if (this.recordingMode === RecordingMode.Unknown) {
             this.recordingMode = RecordingMode.Sentence;
         }
 
@@ -385,7 +394,7 @@ export default class AudioRecording implements IAudioRecorder {
             const recordingMode = AudioRecording.getAudioRecordingModeFromString(
                 audioRecordingModeStr
             );
-            if (recordingMode != RecordingMode.Unknown) {
+            if (recordingMode !== RecordingMode.Unknown) {
                 return recordingMode;
             }
         }
@@ -1853,7 +1862,7 @@ export default class AudioRecording implements IAudioRecorder {
         }
         // First determine which IDs we need to delete.
         const elementIdsToDelete: string[] = [];
-        if (this.recordingMode == RecordingMode.Sentence) {
+        if (this.recordingMode === RecordingMode.Sentence) {
             elementIdsToDelete.push(this.currentAudioId);
         } else {
             // i.e., AudioRecordingMode = TextBox
@@ -1905,6 +1914,13 @@ export default class AudioRecording implements IAudioRecorder {
 
         await Promise.all(promisesToAwait);
 
+        if (
+            this.wholeTextBoxAudioFeatureStatus &&
+            !this.wholeTextBoxAudioFeatureStatus.enabled &&
+            this.recordingMode === RecordingMode.TextBox
+        ) {
+            await this.setRecordingModeAsync(RecordingMode.Sentence);
+        }
         await this.changeStateAndSetExpectedAsync("record");
         this.updateDisplay();
     }
@@ -2177,6 +2193,9 @@ export default class AudioRecording implements IAudioRecorder {
         recordingMode: RecordingMode,
         forceOverwrite: boolean = false
     ): Promise<void> {
+        if (this.previousRecordMode === undefined) {
+            this.previousRecordMode = this.recordingMode;
+        }
         this.recordingMode = recordingMode;
 
         // Check if there are any audio recordings present.
@@ -2185,8 +2204,8 @@ export default class AudioRecording implements IAudioRecorder {
         //   We detect this state by relying on the same logic that turns on the Listen button when an audio recording is present
         if (!forceOverwrite && this.doesRecordingExistForCurrentSelection()) {
             if (
-                this.recordingMode == RecordingMode.TextBox &&
-                this.getCurrentPlaybackMode() == RecordingMode.TextBox
+                this.recordingMode === RecordingMode.TextBox &&
+                this.getCurrentPlaybackMode() === RecordingMode.TextBox
             ) {
                 return;
             }
@@ -2199,7 +2218,7 @@ export default class AudioRecording implements IAudioRecorder {
 
         let result;
         // Update the UI after clicking the checkbox
-        if (this.previousRecordMode == RecordingMode.TextBox) {
+        if (this.previousRecordMode === RecordingMode.TextBox) {
             // This also implies converting the playback mode to Sentence, because we disallow Recording=Sentence,Playback=TextBox.
             // Enhance: Maybe don't bother if the current playback mode is already sentence?
             // Enhance: Maybe it means that you should be less aggressively trying to convert Markup into Playback=TextBox. Or that Clear should be more aggressively attempting ton convert into Playback=Sentence.
@@ -2497,6 +2516,7 @@ export default class AudioRecording implements IAudioRecorder {
     public async handleNewPageReady(
         deshroudPhraseDelimiters?: (page: HTMLElement | null) => void
     ): Promise<void> {
+        this.haveAudio = false; // assume the new page has no audio until we find out otherwise
         // Changing the page causes the previous page's audio to stop playing (be "emptied").
         ++this.currentAudioSessionNum;
 
@@ -4323,23 +4343,38 @@ export default class AudioRecording implements IAudioRecorder {
             // Won't exist for unit tests
             return;
         }
+        // It's a bit expensive to do the test for text present, but without it,
+        // Import Recording will be improperly enabled on an empty page.
+        const hasRecordableDivs =
+            this.getRecordableDivs(true, false).length > 0;
+        const currentPlaybackMode = this.getCurrentPlaybackMode(
+            maySetHighlight
+        );
+        let haveACurrentTextboxModeRecording =
+            this.haveAudio && currentPlaybackMode === RecordingMode.TextBox;
+        if (
+            this.wholeTextBoxAudioFeatureStatus &&
+            !this.wholeTextBoxAudioFeatureStatus.enabled &&
+            this.recordingMode === RecordingMode.TextBox
+        ) {
+            // If the feature is disabled, we can't record in TextBox mode, but can still play back.
+            // If we don't have any audio, we should switch to Sentence mode.
+            if (!haveACurrentTextboxModeRecording || !hasRecordableDivs) {
+                this.recordingMode = RecordingMode.Sentence;
+                haveACurrentTextboxModeRecording = false;
+            }
+        }
         ReactDOM.render(
             React.createElement(TalkingBookAdvancedSection, {
                 recordingMode: this.recordingMode,
-                haveACurrentTextboxModeRecording:
-                    this.haveAudio &&
-                    this.getCurrentPlaybackMode(maySetHighlight) ===
-                        RecordingMode.TextBox,
+                haveACurrentTextboxModeRecording: haveACurrentTextboxModeRecording,
                 setRecordingMode: async (recordingMode: RecordingMode) => {
                     this.setRecordingModeAsync(recordingMode);
                     this.updateDisplay();
                 },
                 //hasAudio: this.getStatus("clear") === Status.Enabled, // plausibly, we could instead require that we have *all* the audio
                 hasAudio: this.haveAudio,
-                hasRecordableDivs:
-                    // It's a bit expensive to do the test for text present, but without it,
-                    // Import Recording will be improperly enabled on an empty page.
-                    this.getRecordableDivs(true, false).length > 0,
+                hasRecordableDivs: hasRecordableDivs,
                 handleImportRecordingClick: () =>
                     this.handleImportRecordingClick(),
                 insertSegmentMarker: () => {
