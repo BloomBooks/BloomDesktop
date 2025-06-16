@@ -185,16 +185,20 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                         }}
                         {...commonTooltipProps}
                     >
-                        <BloomButton
-                            id="import-recording-button"
-                            iconBeforeText={React.createElement(ImportIcon)}
-                            hasText={true}
-                            variant="outlined"
-                            size="small"
-                            enabled={enabledImportRecordingButton}
-                            l10nKey="EditTab.Toolbox.TalkingBookTool.ImportRecording"
-                            onClick={() => props.handleImportRecordingClick()}
-                        />
+                        <RequiresSubscriptionAdjacentIconWrapper featureName="ImportAudioRecording">
+                            <BloomButton
+                                id="import-recording-button"
+                                iconBeforeText={React.createElement(ImportIcon)}
+                                hasText={true}
+                                variant="outlined"
+                                size="small"
+                                enabled={enabledImportRecordingButton}
+                                l10nKey="EditTab.Toolbox.TalkingBookTool.ImportRecording"
+                                onClick={() =>
+                                    props.handleImportRecordingClick()
+                                }
+                            />
+                        </RequiresSubscriptionAdjacentIconWrapper>
                     </BloomTooltip>
                 </div>
                 <Divider />

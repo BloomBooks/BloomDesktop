@@ -19,6 +19,7 @@ namespace Bloom.SubscriptionAndFeatures
         FullPageCoverImage, // The whole front cover is one full-bleed image
 
         WholeTextBoxAudio,
+        ImportAudioRecording,
 
         //PictureDictionary,
         //? CustomizableTemplates,
@@ -82,6 +83,13 @@ namespace Bloom.SubscriptionAndFeatures
             new FeatureInfo
             {
                 Feature = FeatureName.WholeTextBoxAudio,
+                SubscriptionTier = SubscriptionTier.Pro,
+                PreventPublishingInDerivativeBooks = PreventionMethod.None,
+                PreventPublishingInOriginalBooks = PreventionMethod.None,
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.ImportAudioRecording,
                 SubscriptionTier = SubscriptionTier.Pro,
                 PreventPublishingInDerivativeBooks = PreventionMethod.None,
                 PreventPublishingInOriginalBooks = PreventionMethod.None,
