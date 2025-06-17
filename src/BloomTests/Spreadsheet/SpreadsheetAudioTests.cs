@@ -49,7 +49,7 @@ namespace BloomTests.Spreadsheet
     DIV.bloom-page.coverColor       {               background-color: #C2A6BF !important;   }
     </style>
     <meta name=""maintenanceLevel"" content=""3""></meta>
-    <meta name=""FeatureRequirement"" content=""[{&quot;BloomDesktopMinVersion&quot;:&quot;4.7&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudioInXmatter&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio in Front/Back Matter&quot;},{&quot;BloomDesktopMinVersion&quot;:&quot;4.4&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio&quot;}]""></meta>
+    <meta name=""FeatureRequirement"" content=""[{&quot;BloomDesktopMinVersion&quot;:&quot;4.7&quot;,&quot;BloomPlayerMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudioInXmatter&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio in Front/Back Matter&quot;},{&quot;BloomDesktopMinVersion&quot;:&quot;4.4&quot;,&quot;BloomPlayerMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio&quot;}]""></meta>
     <link rel=""stylesheet"" href=""basePage.css"" type=""text/css""></link>
     <link rel=""stylesheet"" href=""previewMode.css"" type=""text/css""></link>
     <link rel=""stylesheet"" href=""origami.css"" type=""text/css""></link>
