@@ -21,6 +21,7 @@ using DesktopAnalytics;
 using SIL.IO;
 using Newtonsoft.Json;
 using SIL.Reporting;
+using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.Publish.BloomPub
 {
@@ -260,7 +261,14 @@ namespace Bloom.Publish.BloomPub
                             .BookInfo
                             .PublishSettings
                             .BloomPub
-                            .PublishAsMotionBookIfApplicable && request.CurrentBook.HasMotionPages;
+                            .PublishAsMotionBookIfApplicable
+                        && request.CurrentBook.HasMotionPages
+                        && FeatureStatus
+                            .GetFeatureStatus(
+                                request.CurrentBook.CollectionSettings.Subscription,
+                                FeatureName.Motion
+                            )
+                            .Enabled;
                 },
                 null, // no write action
                 false,

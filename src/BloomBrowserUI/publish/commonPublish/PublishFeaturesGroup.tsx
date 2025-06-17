@@ -330,6 +330,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                         icon={<MotionIcon color={kBloomBlue} />}
                         onChange={props.onChange}
                         disabled={!motionEnabled || !motionAllowed}
+                        forceDisabledValue={false}
                     />
                 </BloomTooltip>
                 <BloomTooltip key={"visual-tooltip"} tip={visionTooltip}>
