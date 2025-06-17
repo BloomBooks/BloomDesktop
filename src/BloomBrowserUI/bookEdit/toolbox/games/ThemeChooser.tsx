@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css, ThemeProvider } from "@emotion/react";
+import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { ToolBox } from "../toolbox";
@@ -15,6 +14,15 @@ import { Div } from "../../../react_components/l10nComponents";
 const getPage = () => {
     const pageBody = ToolBox.getPage();
     return pageBody?.getElementsByClassName("bloom-page")[0] as HTMLElement;
+};
+
+const kMissingThemeDataAttribute = "data-missing-game-theme";
+const kDefaultTheme = "blue-on-white";
+
+const isMissingTheme = (themeName: string): boolean => {
+    const page = getPage();
+    const missingTheme = page?.getAttribute(kMissingThemeDataAttribute);
+    return missingTheme === themeName;
 };
 
 export const ThemeChooser: React.FunctionComponent<{
@@ -44,18 +52,30 @@ export const ThemeChooser: React.FunctionComponent<{
                     page.classList.remove(className);
                 }
             }
-            page.classList.add(`${gameThemePrefix}${newTheme}`);
-            setCurrentTheme(newTheme);
+
+            if (isMissingTheme(newTheme)) {
+                // If selecting a missing theme, actually apply kDefaultTheme but show the missing theme as selected
+                page.classList.add(`${gameThemePrefix}${kDefaultTheme}`);
+                setCurrentTheme(newTheme);
+            } else {
+                // Clear any missing theme data when selecting an available theme
+                page.removeAttribute(kMissingThemeDataAttribute);
+                page.classList.add(`${gameThemePrefix}${newTheme}`);
+                setCurrentTheme(newTheme);
+            }
         }
     };
     useEffect(() => {
         const page = getPage();
-        const pageThemeClass = Array.from(page.classList)
-            .find(c => c.startsWith(gameThemePrefix))
-            ?.substring(gameThemePrefix.length);
+        const missingThemeName = page?.getAttribute(kMissingThemeDataAttribute);
+        const pageThemeName =
+            missingThemeName ||
+            Array.from(page.classList)
+                .find(c => c.startsWith(gameThemePrefix))
+                ?.substring(gameThemePrefix.length);
         if (
             currentTheme &&
-            !pageThemeClass &&
+            !pageThemeName &&
             page.getAttribute("data-tool-id") === "game"
         ) {
             // it's a new game page and we've been on a game page this session.
@@ -63,22 +83,55 @@ export const ThemeChooser: React.FunctionComponent<{
             // the theme of the page we were on previously.
             page.classList.add(`${gameThemePrefix}${currentTheme}`);
         } else {
-            setCurrentTheme(pageThemeClass || "blue-on-white");
+            setCurrentTheme(pageThemeName || kDefaultTheme);
         }
 
         // Figure out the values for the theme menu. We do this by finding ALL the style
         // definitions in the page that have a selector starting with game-theme-. The ones we expect
         // come from gameThemes.less, but if a user defines one in customStyles.css, we will find it
         // and offer it.
-        const minmalThemes = ["blue-on-white"];
-        if (pageThemeClass) {
-            minmalThemes.push(pageThemeClass);
-        }
         getVariationsOnClass(
             gameThemePrefix,
             page.ownerDocument,
-            setThemes,
-            minmalThemes
+            stylesheetThemes => {
+                // Ensure kDefaultTheme is always available
+                const availableThemes = stylesheetThemes.includes(kDefaultTheme)
+                    ? stylesheetThemes
+                    : [kDefaultTheme, ...stylesheetThemes];
+
+                const isThemeAvailableInStylesheets =
+                    pageThemeName && stylesheetThemes.includes(pageThemeName);
+
+                if (pageThemeName && !isThemeAvailableInStylesheets) {
+                    // Theme is missing - store it and fall back to kDefaultTheme
+                    page.setAttribute(
+                        kMissingThemeDataAttribute,
+                        pageThemeName
+                    );
+                    page.classList.remove(`${gameThemePrefix}${pageThemeName}`);
+                    page.classList.add(`${gameThemePrefix}${kDefaultTheme}`);
+                    setCurrentTheme(pageThemeName);
+
+                    // Add the missing theme to the list for display
+                    const themesWithMissing = [
+                        ...availableThemes,
+                        pageThemeName
+                    ];
+                    setThemes(themesWithMissing.sort());
+                } else {
+                    if (missingThemeName && isThemeAvailableInStylesheets) {
+                        // Theme was missing; now it isn't.
+                        page.removeAttribute(kMissingThemeDataAttribute);
+                        page.classList.remove(
+                            `${gameThemePrefix}${kDefaultTheme}`
+                        );
+                        page.classList.add(
+                            `${gameThemePrefix}${pageThemeName}`
+                        );
+                    }
+                    setThemes(availableThemes.sort());
+                }
+            }
         );
 
         // We don't need to run again if currentTheme changes, since it can only change to something
@@ -112,7 +165,9 @@ export const ThemeChooser: React.FunctionComponent<{
                 {themes.map(theme => (
                     <MenuItem value={theme} key={theme} disabled={false}>
                         <Div l10nKey={`EditTab.Toolbox.Games.Themes.${theme}`}>
-                            {theme}
+                            {isMissingTheme(theme)
+                                ? `(Missing) ${theme}`
+                                : theme}
                         </Div>
                     </MenuItem>
                 ))}
