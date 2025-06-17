@@ -1028,7 +1028,7 @@ namespace Bloom.Book
         /// </summary>
         public static string ComicalXpath = "//*[@class='comical-generated']";
 
-        // All current BloomPlayerMinVersions are arbitrary. Bloom Player 2.12 was the first that could
+        // All current BloomPlayerMinVersions are arbitrary. Bloom Player 2.13 was the first that could
         // recognize a need for a higher version, so any value below that means any version of BP
         // will at least attempt to read the book. We earlier had BloomReaderMinVersion with some features
         // set to 1.0 and others to 3.3, but that wasn't actually used by BR, either. For testing and
