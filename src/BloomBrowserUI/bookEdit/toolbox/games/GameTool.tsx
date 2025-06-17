@@ -2017,10 +2017,42 @@ function randomlyAssignTargetsIfNeeded(page): void {
         const draggables = Array.from(
             page.querySelectorAll("[data-draggable-id]")
         ) as HTMLElement[];
-        shuffle(draggables, (_a, _b) => false);
+        const origDraggableIdOrder = draggables.map(d =>
+            d.getAttribute("data-draggable-id")
+        );
+
         const targets = Array.from(
             page.querySelectorAll("[data-target-of]")
         ) as HTMLElement[];
+
+        // If there are the same number of draggables and targets, we don't ever want the situation where the draggables
+        // are already completely in the right order. But if there is a different number of targets, usually three
+        // draggables and one target, an occasional null shuffle is good because we want all of the draggables to be selected
+        // with similar frequency
+        const requireShuffleDifference = draggables.length === targets.length;
+
+        // If we get null shuffles, we will try again a few times
+        for (let i = 0; i < 5; i++) {
+            shuffle(
+                draggables,
+                (_a, _b) => false
+                // This uses fischer-yates shuffle. If we let it check for differences, it will ensure that no draggable
+                // ends up in the same place, which we don't want because with only 3 draggables this would mean very few
+                // possible arrangements.
+            );
+            const newDraggableIdOrder = draggables.map(d =>
+                d.getAttribute("data-draggable-id")
+            );
+            if (
+                !newDraggableIdOrder.every(
+                    (value, index) => value === origDraggableIdOrder[index]
+                ) ||
+                !requireShuffleDifference
+            ) {
+                break;
+            }
+        }
+
         for (let i = 0; i < targets.length; i++) {
             const target = targets[i];
             target.setAttribute(
