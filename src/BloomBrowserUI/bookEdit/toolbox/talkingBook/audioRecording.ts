@@ -2112,7 +2112,12 @@ export default class AudioRecording implements IAudioRecorder {
             element.parentElement!.removeChild(element);
         });
         this.setDisableEverythingMode(false);
-        this.setCurrentAudioElementToDefaultAsync();
+        if (!leaveChecked) {
+            // If we're staying on the same page, update the display to show the highlighted
+            // audio element.  If we're leaving the page, don't try to update the display.
+            // This leads to an unterminated recursion that freezes Bloom.  See BL-14898.
+            this.setCurrentAudioElementToDefaultAsync();
+        }
     }
 
     private getVisibleTranslationGroups(
@@ -2578,7 +2583,7 @@ export default class AudioRecording implements IAudioRecorder {
         if (!boxToSelect) {
             this.resetAudioIfPaused();
             this.removeAudioCurrent(this.getPageDocBody()!);
-            this.changeStateAndSetExpectedAsync("");
+            await this.changeStateAndSetExpectedAsync("");
             this.updateDisplay(false);
             return false;
         }
@@ -2589,7 +2594,7 @@ export default class AudioRecording implements IAudioRecorder {
                 newElement: boxToSelect,
                 shouldScrollToElement: true
             });
-            this.changeStateAndSetExpectedAsync("record");
+            await this.changeStateAndSetExpectedAsync("record");
         }
         return true;
     }
