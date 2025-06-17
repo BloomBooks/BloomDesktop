@@ -266,7 +266,9 @@ namespace Bloom.Publish.BloomPub
                         && FeatureStatus
                             .GetFeatureStatus(
                                 request.CurrentBook.CollectionSettings.Subscription,
-                                FeatureName.Motion
+                                FeatureName.Motion,
+                                request.CurrentBook,
+                                true
                             )
                             .Enabled;
                 },
