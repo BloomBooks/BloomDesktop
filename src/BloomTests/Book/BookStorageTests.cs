@@ -279,7 +279,7 @@ namespace BloomTests.Book
 
             // Note: No need to HTML-encode the XPath. The comparison will automatically figure that out (I guess by decoding the encoding version)
             string expectedContent =
-                "[{\"BloomDesktopMinVersion\":\"4.4\",\"BloomReaderMinVersion\":\"1.0\",\"FeatureId\":\"wholeTextBoxAudio\",\"FeaturePhrase\":\"Whole Text Box Audio\"}]";
+                "[{\"BloomDesktopMinVersion\":\"4.4\",\"BloomPlayerMinVersion\":\"1.0\",\"FeatureId\":\"wholeTextBoxAudio\",\"FeaturePhrase\":\"Whole Text Box Audio\"}]";
             AssertThatXmlIn
                 .HtmlFile(_bookPath)
                 .HasSpecifiedNumberOfMatchesForXpath($"//meta[@content='{expectedContent}']", 1);
@@ -290,7 +290,7 @@ namespace BloomTests.Book
         {
             // Enhance: need an example in the future to test the result if two are generated. But right now this is the only feature that generates it.
             GetInitialStorageWithCustomHtml(
-                "<html><head><meta name='FeatureRequirement' content='[{&quot;BloomDesktopMinVersion&quot;:&quot;4.4&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio&quot;}]'></meta></head><body><div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable'></div></div></div></body></html>"
+                "<html><head><meta name='FeatureRequirement' content='[{&quot;BloomDesktopMinVersion&quot;:&quot;4.4&quot;,&quot;BloomPlayerMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Whole Text Box Audio&quot;}]'></meta></head><body><div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable'></div></div></div></body></html>"
             );
             AssertThatXmlIn
                 .HtmlFile(_bookPath)
@@ -810,7 +810,7 @@ namespace BloomTests.Book
             var storage = GetInitialStorageWithCustomHtml(
                 @"<html>
 	<head>
-		<meta name=""FeatureRequirement"" content=""[{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.8&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Breaking Feature 1&quot;}]""></meta>
+		<meta name=""FeatureRequirement"" content=""[{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.8&quot;,&quot;BloomPlayerMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Breaking Feature 1&quot;}]""></meta>
 	</head>
 	<body>
 		<div class='bloom-page' id='someOtherId'><div class='marginBox'><div class='bloom-translationGroup'>
@@ -834,7 +834,7 @@ namespace BloomTests.Book
             var storage = GetInitialStorageWithCustomHtml(
                 @"<html>
 	<head>
-		<meta name=""FeatureRequirement"" content=""[{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.8&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Breaking Feature 1&quot;},{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.10&quot;,&quot;BloomReaderMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;customSpanAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Breaking Feature 2&quot;}]""></meta>
+		<meta name=""FeatureRequirement"" content=""[{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.8&quot;,&quot;BloomPlayerMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;wholeTextBoxAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Breaking Feature 1&quot;},{&quot;BloomDesktopMinVersion&quot;:&quot;999999999.10&quot;,&quot;BloomPlayerMinVersion&quot;:&quot;1.0&quot;,&quot;FeatureId&quot;:&quot;customSpanAudio&quot;,&quot;FeaturePhrase&quot;:&quot;Breaking Feature 2&quot;}]""></meta>
 	</head>
 	<body>
 		<div class='bloom-page' id='someOtherId'><div class='marginBox'><div class='bloom-translationGroup'>
@@ -1745,11 +1745,11 @@ namespace BloomTests.Book
             Assert.That(comicalFeature.FeatureId, Is.EqualTo("comical-1"));
             Assert.That(comicalFeature.FeaturePhrase, Is.EqualTo("Support for Comics"));
             Assert.That(comicalFeature.BloomDesktopMinVersion, Is.EqualTo("4.7"));
-            Assert.That(comicalFeature.BloomReaderMinVersion, Is.EqualTo("1.0"));
+            Assert.That(comicalFeature.BloomPlayerMinVersion, Is.EqualTo("1.0"));
 
             var canvasElementFeature = requiredVersions.First(x => x.FeatureId == "canvasElement");
             Assert.That(canvasElementFeature.BloomDesktopMinVersion, Is.EqualTo("6.2"));
-            Assert.That(canvasElementFeature.BloomReaderMinVersion, Is.EqualTo("3.3"));
+            Assert.That(canvasElementFeature.BloomPlayerMinVersion, Is.EqualTo("2.0"));
         }
 
         [Test]
@@ -2297,7 +2297,8 @@ These are similar but already have game-theme classes
         [Test]
         public void MigrateToLevel8RemoveEnterpriseOnly_WorksForGames()
         {
-            var threeGamesHtml = @"<html>
+            var threeGamesHtml =
+                @"<html>
   <head></head>
   <body>
     <div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage game-theme-red-on-white side-left Device16x9Landscape bloom-monolingual"" id=""2578f51a-d48c-458e-b658-892963b242a8"" data-page="""" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""1"" lang="""" 
@@ -2428,16 +2429,21 @@ These are similar but already have game-theme classes
 
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
                 "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]",
-                3);
-            assertThatDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-page') and @data-feature]");
+                3
+            );
+            assertThatDom.HasNoMatchForXpath(
+                "//div[contains(@class, 'bloom-page') and @data-feature]"
+            );
 
             //SUT
             storage.MigrateToLevel8RemoveEnterpriseOnly();
 
             assertThatDom.HasNoMatchForXpath(
-                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]");
+                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]"
+            );
             assertThatDom.HasNoMatchForXpath(
-                "//div[contains(@class,'bloom-page') and @data-feature]");
+                "//div[contains(@class,'bloom-page') and @data-feature]"
+            );
         }
 
         [Test]
@@ -2445,7 +2451,8 @@ These are similar but already have game-theme classes
         {
             // One overlay page is marked enterprise-only, but the other is not.
             // This means that one page gets the data-feature attribute, and the other does not.
-            var twoOverlayPagesHtml = @"<html>
+            var twoOverlayPagesHtml =
+                @"<html>
   <head></head>
   <body>
     <div class=""bloom-page comic enterprise-only no-margin-page numberedPage customPage side-right Device16x9Landscape bloom-monolingual"" id=""f90e38ad-9c81-4c40-ad57-f5d0576aa2ae"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398385;cc25eed1-74af-4d31-9120-aefd8d17205c"" data-page-number=""6"" data-page="""" lang="""" data-tool-id=""overlay"">
@@ -2505,28 +2512,36 @@ These are similar but already have game-theme classes
 ";
             var storage = GetInitialStorageWithCustomHtml(twoOverlayPagesHtml);
             var assertThatDom = AssertThatXmlIn.Dom(storage.Dom.RawDom);
-            var xpathOverlay = FeatureRegistry.Features.Find(f => f.Feature == FeatureName.Overlay).ExistsInPageXPath;
+            var xpathOverlay = FeatureRegistry.Features
+                .Find(f => f.Feature == FeatureName.Overlay)
+                .ExistsInPageXPath;
 
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
                 "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]",
-                1);
-            assertThatDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-page') and @data-feature]");
+                1
+            );
+            assertThatDom.HasNoMatchForXpath(
+                "//div[contains(@class, 'bloom-page') and @data-feature]"
+            );
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(xpathOverlay, 2);
 
             //SUT
             storage.MigrateToLevel8RemoveEnterpriseOnly();
 
             assertThatDom.HasNoMatchForXpath(
-                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]");
+                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]"
+            );
             assertThatDom.HasNoMatchForXpath(
-                "//div[contains(@class,'bloom-page') and @data-feature]");
+                "//div[contains(@class,'bloom-page') and @data-feature]"
+            );
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(xpathOverlay, 2);
         }
 
         [Test]
         public void MigrateToLevel8RemoveEnterpriseOnly_WorksForWidget()
         {
-            var oneWidgetPageHtml = @"<html>
+            var oneWidgetPageHtml =
+                @"<html>
   <head></head>
   <body>
     <div class=""bloom-page custom-widget-page customPage bloom-interactive-page enterprise-only no-margin-page numberedPage side-right Device16x9Landscape bloom-monolingual"" id=""4fdc1ae7-de23-47d4-8a1d-8e16d66d4682"" data-page="""" data-analyticscategories=""widget"" help-link=""https://docs.bloomlibrary.org/widgets"" data-pagelineage=""3a705ac1-c1f2-45cd-8a7d-011c009cf406"" data-page-number=""2"" lang="""">
@@ -2544,22 +2559,28 @@ These are similar but already have game-theme classes
 
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
                 "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]",
-                1);
-            assertThatDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-page') and @data-feature]");
+                1
+            );
+            assertThatDom.HasNoMatchForXpath(
+                "//div[contains(@class, 'bloom-page') and @data-feature]"
+            );
 
             //SUT
             storage.MigrateToLevel8RemoveEnterpriseOnly();
 
             assertThatDom.HasNoMatchForXpath(
-                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]");
+                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]"
+            );
             assertThatDom.HasNoMatchForXpath(
-                "//div[contains(@class,'bloom-page') and @data-feature]");
+                "//div[contains(@class,'bloom-page') and @data-feature]"
+            );
         }
 
         [Test]
         public void MigrateToLevel8RemoveEnterpriseOnly_WorksForOldActivities()
         {
-            var twoOldActivitiesHtml = @"<html>
+            var twoOldActivitiesHtml =
+                @"<html>
   <head></head>
   <body>
     <div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage A5Portrait side-right bloom-monolingual"" id=""f4c1a8c0-1ffa-4527-a2ba-b1b69224fea3"" data-page="""" data-analyticscategories=""comprehension"" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""1"" lang="""">
@@ -2651,16 +2672,21 @@ These are similar but already have game-theme classes
 
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
                 "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]",
-                2);
-            assertThatDom.HasNoMatchForXpath("//div[contains(@class, 'bloom-page') and @data-feature]");
+                2
+            );
+            assertThatDom.HasNoMatchForXpath(
+                "//div[contains(@class, 'bloom-page') and @data-feature]"
+            );
 
             //SUT
             storage.MigrateToLevel8RemoveEnterpriseOnly();
 
             assertThatDom.HasNoMatchForXpath(
-                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]");
+                "//div[contains(@class,'bloom-page') and contains(@class,'enterprise-only')]"
+            );
             assertThatDom.HasNoMatchForXpath(
-                "//div[contains(@class,'bloom-page') and @data-feature]");
+                "//div[contains(@class,'bloom-page') and @data-feature]"
+            );
         }
     }
 }
