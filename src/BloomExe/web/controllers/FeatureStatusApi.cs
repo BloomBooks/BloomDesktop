@@ -20,6 +20,7 @@ namespace Bloom.web.controllers
         public FeatureStatusApi(CollectionSettings collectionSettings, BookSelection bookSelection)
         {
             _collectionSettings = collectionSettings;
+            _bookSelection = bookSelection;
             _subscription = collectionSettings.Subscription;
             _bookSelection = bookSelection;
         }

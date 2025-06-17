@@ -1015,7 +1015,7 @@ namespace Bloom.Book
         class Feature
         {
             public string BloomDesktopMinVersion { get; set; }
-            public string BloomReaderMinVersion { get; set; }
+            public string BloomPlayerMinVersion { get; set; }
             public string FeatureId { get; set; }
             public string FeaturePhrase { get; set; }
 
@@ -1028,6 +1028,11 @@ namespace Bloom.Book
         /// </summary>
         public static string ComicalXpath = "//*[@class='comical-generated']";
 
+        // All current BloomPlayerMinVersions are arbitrary. Bloom Player 2.13 was the first that could
+        // recognize a need for a higher version, so any value below that means any version of BP
+        // will at least attempt to read the book. We earlier had BloomReaderMinVersion with some features
+        // set to 1.0 and others to 3.3, but that wasn't actually used by BR, either. For testing and
+        // historic reasons I've kept the distinction by changing the 3.3 ones to 2.0.
         static Feature[] _features =
         {
             new Feature()
@@ -1035,7 +1040,7 @@ namespace Bloom.Book
                 FeatureId = "wholeTextBoxAudio",
                 FeaturePhrase = "Whole Text Box Audio",
                 BloomDesktopMinVersion = "4.4",
-                BloomReaderMinVersion = "1.0",
+                BloomPlayerMinVersion = "1.0",
                 XPath = "//*[@data-audiorecordingmode='TextBox']"
             },
             new Feature()
@@ -1045,7 +1050,7 @@ namespace Bloom.Book
                 // and xmatter seems too technical a term for end users to see.
                 FeaturePhrase = "Whole Text Box Audio in Front/Back Matter",
                 BloomDesktopMinVersion = "4.7",
-                BloomReaderMinVersion = "1.0",
+                BloomPlayerMinVersion = "1.0",
                 XPath = "//div[@data-xmatter-page]//*[@data-audiorecordingmode='TextBox']"
             },
             new Feature()
@@ -1053,7 +1058,7 @@ namespace Bloom.Book
                 FeatureId = "comical-1",
                 FeaturePhrase = "Support for Comics",
                 BloomDesktopMinVersion = "4.7",
-                BloomReaderMinVersion = "1.0",
+                BloomPlayerMinVersion = "1.0",
                 // We've updated Bloom to only store SVGs in the file if they are non-transparent. So now a
                 // Bloom book is considered 'comical' for Publishing, etc. if it has a comical-generated SVG.
                 XPath = ComicalXpath
@@ -1063,7 +1068,7 @@ namespace Bloom.Book
                 FeatureId = "comical-2",
                 FeaturePhrase = "Support for Comic Captions with Straight Line Tails",
                 BloomDesktopMinVersion = "5.0",
-                BloomReaderMinVersion = "1.0",
+                BloomPlayerMinVersion = "1.0",
                 // Bloom now allows comical Captions to have straight line tails, but if we open such a book
                 // in an older version of Bloom which nevertheless has comical, it will give it a normal bubble tail.
                 // This xpath finds a canvas element with a "caption" style and a non-empty tail spec.
@@ -1077,7 +1082,7 @@ namespace Bloom.Book
                 FeatureId = "hiddenAudioSplitMarkers",
                 FeaturePhrase = "Hide audio split markers (|) outside the talking book tool",
                 BloomDesktopMinVersion = "5.5",
-                BloomReaderMinVersion = "1.0",
+                BloomPlayerMinVersion = "1.0",
                 XPath = "//span[contains(@class,'bloom-audio-split-marker')]"
             },
             new Feature()
@@ -1085,7 +1090,7 @@ namespace Bloom.Book
                 FeatureId = "croppedImages",
                 FeaturePhrase = "Cropped images",
                 BloomDesktopMinVersion = "6.1",
-                BloomReaderMinVersion = "1.0",
+                BloomPlayerMinVersion = "1.0",
                 XPath =
                     "//div[contains(@class,'"
                     + HtmlDom.kCanvasElementClass
@@ -1096,7 +1101,7 @@ namespace Bloom.Book
                 FeatureId = "bloomGames6.2",
                 FeaturePhrase = "Bloom Games added in 6.2",
                 BloomDesktopMinVersion = "6.2",
-                BloomReaderMinVersion = "3.3",
+                BloomPlayerMinVersion = "2.0",
                 XPath =
                     "//div[@data-activity='drag-letter-to-target' or @data-activity='drag-image-to-target' or @data-activity='drag-sort-sentence' ]"
             },
@@ -1107,7 +1112,7 @@ namespace Bloom.Book
                 // Plan is to make a special exception to this for late releases of 6.1 and 6.0,
                 // which will know how to reverse the migration.
                 BloomDesktopMinVersion = "6.2",
-                BloomReaderMinVersion = "3.3",
+                BloomPlayerMinVersion = "2.0",
                 XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
             },
             new Feature()
@@ -1117,7 +1122,7 @@ namespace Bloom.Book
                 // Plan is to make a special exception to this for late releases of 6.1 and 6.0,
                 // which will know how to reverse the migration.
                 BloomDesktopMinVersion = "6.2",
-                BloomReaderMinVersion = "3.3",
+                BloomPlayerMinVersion = "2.0",
                 // This is used for all images so will nearly always succeed fast.
                 XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
             }
@@ -1173,7 +1178,7 @@ namespace Bloom.Book
                             FeatureId = feature.FeatureId,
                             FeaturePhrase = feature.FeaturePhrase,
                             BloomDesktopMinVersion = feature.BloomDesktopMinVersion,
-                            BloomReaderMinVersion = feature.BloomReaderMinVersion
+                            BloomPlayerMinVersion = feature.BloomPlayerMinVersion
                         }
                     );
                 }
