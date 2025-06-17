@@ -5,6 +5,12 @@
             "lang": "*",
             "content": "<img class='branding' src='YPMD-KKT.svg'/>",
             "condition": "always"
+        },
+        {
+            "data-book": "title-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='YPMD-KKT.svg'/>",
+            "condition": "always"
         }
     ]
 }
