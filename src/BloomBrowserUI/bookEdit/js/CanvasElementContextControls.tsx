@@ -177,8 +177,12 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const isBackgroundImage = props.canvasElement.classList.contains(
         kBackgroundImageClass
     );
-    const isInSentenceDragGame =
-        getGameType(activityType, page) === GameType.DragSortSentence;
+    // We might eventually want a more general class for this, but for now, we want to prevent
+    // deleting and duplicating the special sentence object in the order words game, and this
+    // class is already in use to indicate it.
+    const isSpecialGameElementSelected = props.canvasElement.classList.contains(
+        "drag-item-order-sentence"
+    );
     const children = props.canvasElement.parentElement?.querySelectorAll(
         ".bloom-canvas-element"
     );
@@ -271,7 +275,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
 
     menuOptions.push(divider);
 
-    if (!isBackgroundImage && !isInSentenceDragGame) {
+    if (!isBackgroundImage && !isSpecialGameElementSelected) {
         menuOptions.push({
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",
@@ -310,7 +314,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         deleteEnabled = !!(
             img && !img.getAttribute("src")?.startsWith("placeHolder.png")
         );
-    } else if (isInSentenceDragGame) {
+    } else if (isSpecialGameElementSelected) {
         deleteEnabled = false; // don't allow deleting the single drag item in a sentence drag game
     }
 
@@ -498,21 +502,23 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             `}
                         />
                     )}
-                    {!hasVideo && !isBackgroundImage && !isInSentenceDragGame && (
-                        <ButtonWithTooltip
-                            tipL10nKey="EditTab.Toolbox.ComicTool.Options.Duplicate"
-                            icon={DuplicateIcon}
-                            relativeSize={0.9}
-                            onClick={() => {
-                                if (!props.canvasElement) return;
-                                makeDuplicateOfDragBubble();
-                            }}
-                        />
-                    )}
+                    {!hasVideo &&
+                        !isBackgroundImage &&
+                        !isSpecialGameElementSelected && (
+                            <ButtonWithTooltip
+                                tipL10nKey="EditTab.Toolbox.ComicTool.Options.Duplicate"
+                                icon={DuplicateIcon}
+                                relativeSize={0.9}
+                                onClick={() => {
+                                    if (!props.canvasElement) return;
+                                    makeDuplicateOfDragBubble();
+                                }}
+                            />
+                        )}
                     {// Not sure of the reasoning here, since we do have a way to 'delete' a background image,
                     // not by removing the canvas element but by setting the image back to a placeholder.
                     // But the mockup in BL-14069 definitely doesn't have it.
-                    isBackgroundImage || isInSentenceDragGame || (
+                    isBackgroundImage || isSpecialGameElementSelected || (
                         <ButtonWithTooltip
                             tipL10nKey="Common.Delete"
                             icon={DeleteIcon}
