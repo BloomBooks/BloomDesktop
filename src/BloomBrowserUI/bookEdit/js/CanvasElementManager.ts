@@ -433,9 +433,12 @@ export class CanvasElementManager {
     }
 
     // Convert string ending in pixels to a number
-    public static pxToNumber(px: string): number {
+    public static pxToNumber(px: string, fallback: number = NaN): number {
         if (!px) return 0;
-        return parseFloat(px.replace("px", ""));
+        if (px.endsWith("px")) {
+            return parseFloat(px.replace("px", ""));
+        }
+        return fallback;
     }
 
     // A visible, editable div is generally focusable, but sometimes (e.g. in Bloom games),
