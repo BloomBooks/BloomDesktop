@@ -593,7 +593,9 @@ namespace Bloom.Publish.BloomPub
 
             AddDistributionFile(modifiedBookFolderPath, creator, settings);
 
-            modifiedBook.Save();
+            // If we allow update from the data div we created when we made the book, we will undo changes
+            // we made intentionally (e.g., to attributes of pages in xmatter, BL-14907).
+            modifiedBook.Save(preventUpdateFromDataDiv: true);
 
             return modifiedBook;
         }

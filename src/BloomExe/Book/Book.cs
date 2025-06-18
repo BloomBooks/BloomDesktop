@@ -4709,7 +4709,7 @@ namespace Bloom.Book
             }
         }
 
-        public void Save()
+        public void Save(bool preventUpdateFromDataDiv = false)
         {
             // If you add something here, consider whether it is needed in SaveForPageChanged().
             // I believe all the things currently here before the actual Save are not needed
@@ -4733,10 +4733,17 @@ namespace Bloom.Book
 
             RemoveObsoleteSoundAttributes(OurHtmlDom);
             RemoveVideoWarnings();
-            // Note that at this point _bookData has already been updated with the edited page's data, if any.
-            // This will take priority over other data it finds in the book, even earlier in the book
-            // than the edited page.
-            _bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo); //will update the title if needed
+            if (!preventUpdateFromDataDiv)
+            {
+                // Note that at this point _bookData has already been updated with the edited page's data, if any.
+                // This will take priority over other data it finds in the book, even earlier in the book
+                // than the edited page.
+                // JohnT June 2025: not sure why we sometimes need to do this here, but it's definitely a problem
+                // when working on a duplicate to be published, because it can restore xmatter attributes that
+                // we carefully removed.
+                _bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo); //will update the title if needed
+            }
+
             if (OkToChangeFileAndFolderName)
             {
                 Storage.UpdateBookFileAndFolderName(CollectionSettings); //which will update the file name if needed
