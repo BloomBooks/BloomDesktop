@@ -139,7 +139,7 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.Game,
                 SubscriptionTier = SubscriptionTier.Pro,
-                PreventPublishingInDerivativeBooks = PreventionMethod.Remove,
+                PreventPublishingInDerivativeBooks = PreventionMethod.None,
                 PreventPublishingInOriginalBooks = PreventionMethod.Remove,
                 ExistsInPageXPath = $"self::{kGamePageXPath}",
                 // Many of our games can potentially be played on paper, though we think it's unlikely
