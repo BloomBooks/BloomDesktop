@@ -46,8 +46,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "publish/visuallyImpairedEnabled",
         false
     );
-    const mayPublishGames = useGetFeatureStatus("game")?.enabled;
-    const mayPublishWidgets = useGetFeatureStatus("widget")?.enabled;
+    const mayPublishGames = useGetFeatureStatus("game", true)?.enabled;
+    const mayPublishWidgets = useGetFeatureStatus("widget", true)?.enabled;
     const [langs, setLangs] = React.useState<ILanguagePublishInfo[]>([]);
     React.useEffect(() => {
         get(

@@ -117,7 +117,10 @@ namespace Bloom.SubscriptionAndFeatures
                 // but haven't tested that. Definitely not in videos...no opportunity
                 // to interact with them.
                 SupportedMediums = PublishingMediums.BloomPub,
-                PreventPublishingInDerivativeBooks = PreventionMethod.None,
+                // It's unusual to remove pages in derivatives, but (a) our feature matrix
+                // does not say we allow this; they are not 'localize-only' like Games, and
+                // (b) there isn't any way in Bloom to localize them.
+                PreventPublishingInDerivativeBooks = PreventionMethod.Remove,
                 PreventPublishingInOriginalBooks = PreventionMethod.Remove,
                 PreventPublishingInUnsupportedMediums = PreventionMethod.Remove,
             },
