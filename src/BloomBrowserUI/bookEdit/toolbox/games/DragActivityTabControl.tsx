@@ -61,7 +61,11 @@ export const DragActivityTabControl: React.FunctionComponent<{
                 `}
             >
                 {promptButtonContent && (
-                    <div>
+                    <div
+                        css={css`
+                            margin-right: 20px;
+                        `}
+                    >
                         {/* // This button is only visible in start mode. I'd prefer
                         to control that here but it's difficult. visibility
                         is controlled with #promptButton rules in editMode.less. */}
