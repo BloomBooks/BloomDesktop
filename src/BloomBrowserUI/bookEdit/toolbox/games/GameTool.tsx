@@ -1284,6 +1284,15 @@ const DragActivityControls: React.FunctionComponent<{
                     <div
                         css={css`
                             margin-left: 10px;
+                            // No idea why this is needed, but without it, simple dom choice games
+                            // result in the toolbar getting scroll bars. I've tried limiting the width
+                            // of the child elements and this whole div, but that does not prevent them.
+                            // I also tried deleting children; I have to delete all of the first three
+                            // children to get rid of the scroll bars. None of them has an explicit width;
+                            // they should naturally conform to the width of the parent (and they do).
+                            // They are entirely visible, so hiding overflow seems harmless, and I decided
+                            // it isn't worth further investigation.
+                            overflow-x: hidden;
                         `}
                     >
                         <GameIntroText
