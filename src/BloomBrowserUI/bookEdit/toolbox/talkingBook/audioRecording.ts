@@ -3028,6 +3028,12 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
+    // This is used to prevent unterminated recursive calls to setSoundAndHighlightAsync.
+    // The reproduction steps to achieve this are a bit unlikely, but it can happen in at
+    // least two related ways (BL-14898).  One can be prevented by not calling this method,
+    // but the other cannot be avoided so easily.
+    private canvasElementBeingHighlighted: HTMLElement | undefined;
+
     public async setCurrentAudioElementToDefaultAsync(): Promise<HTMLElement | null> {
         // Seems very strange that we would be doing this when the talking book tool is not active.
         // Unfortunately there's a weird sequence of events that happens when we add a page that calls
@@ -3047,7 +3053,12 @@ export default class AudioRecording implements IAudioRecorder {
         }
         const activeCanvasElement = getCanvasElementManager()?.getActiveElement();
         if (activeCanvasElement) {
-            await this.moveRecordingHighlightToElement(activeCanvasElement);
+            // Stop if this appears to be a recursive call. See BL-14898.
+            if (activeCanvasElement !== this.canvasElementBeingHighlighted) {
+                this.canvasElementBeingHighlighted = activeCanvasElement;
+                await this.moveRecordingHighlightToElement(activeCanvasElement);
+                this.canvasElementBeingHighlighted = undefined;
+            }
             // That may or may not make a highlight. In either case, given that there's an active canvas element,
             //  we don't want to highlight anything else.
             return null;
