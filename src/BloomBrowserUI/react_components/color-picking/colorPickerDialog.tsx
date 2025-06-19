@@ -365,6 +365,12 @@ export const showColorPickerDialog = (
     externalSetOpen(true);
 };
 
+export const hideColorPickerDialog = () => {
+    if (externalSetOpen) {
+        externalSetOpen(false);
+    }
+};
+
 const doRender = (
     props: IColorPickerDialogProps,
     container?: Element | null

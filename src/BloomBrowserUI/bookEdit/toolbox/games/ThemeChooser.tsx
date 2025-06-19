@@ -36,6 +36,12 @@ export const ThemeChooser: React.FunctionComponent<{
     // gameThemePrefix, or "default" if there is none (but migration code and this tool makes sure
     // that game pages always do).
     const [currentTheme, setCurrentTheme] = useState("");
+    // State to track and control whether the dropdown is open.
+    // We make it a controlled component so that we can close it when the tool closes.
+    const [isSelectOpen, setIsSelectOpen] = useState(false);
+    useEffect(() => {
+        ToolBox.addWhenClosingToolTask(() => setIsSelectOpen(false));
+    }, []);
     const handleChooseTheme = event => {
         const newTheme = event.target.value;
         if (newTheme === currentTheme) {
@@ -142,8 +148,12 @@ export const ThemeChooser: React.FunctionComponent<{
             <Select
                 variant="standard"
                 value={currentTheme}
+                open={isSelectOpen}
+                onOpen={() => setIsSelectOpen(true)}
+                onClose={() => setIsSelectOpen(false)}
                 onChange={event => {
                     handleChooseTheme(event);
+                    setIsSelectOpen(false);
                 }}
                 inputProps={{
                     name: "style",
