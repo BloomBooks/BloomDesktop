@@ -729,6 +729,11 @@ namespace Bloom
             propertiesThatGoWithEveryEvent.Remove("UserName");
             propertiesThatGoWithEveryEvent.Remove("UserDomainName");
             propertiesThatGoWithEveryEvent.Add("channel", ApplicationUpdateSupport.ChannelName);
+            // We would like to add 'subscription' here, but it is not available until a collection is loaded,
+            // so we set it in ProjectContext after we create the collection settings.
+            // That also gets it updated when we change projects, which I don't think would happen
+            // if we set it here.
+            // This unfortunately means "launch" events won't have subscription info.
 
             DesktopAnalytics.Analytics.UrlThatReturnsExternalIpAddress = "http://icanhazip.com";
 
