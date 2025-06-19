@@ -222,6 +222,33 @@ export class ToolBox {
         return GameTool.theOneDragActivityTool;
     }
 
+    // Generally prefer to use the standalone function detachCurrentTool() instead of this method.
+    // In some contexts where we want to detach, we may not be able to get the toolbox instance,
+    // and that function has some fallback behavior in that case.
+    public detachCurrentTool(): void {
+        for (const task of this.doWhenClosingTool) {
+            task();
+        }
+        this.doWhenClosingTool = [];
+        if (currentTool) {
+            currentTool.detachFromPage();
+        }
+    }
+    // A list of tasks to do when the current tool is closed. This is currently used to
+    // keep track of popups and dialogs that need to be closed when the tool goes away.
+    // We could make each tool responsible for this in its own detachFromPage() method,
+    // but I think it would make for some duplication, as well as some complexity for
+    // components that are used by particular (or multiple) tools and would need to find
+    // the right tool to notify. This gives us one place to track such cleanup tasks.
+    // (Of course the popup may get closed before we move away from the page or tool, so
+    // the task passed must be OK to call even after the popup is closed.)
+    private doWhenClosingTool: (() => void)[] = [];
+    public static addWhenClosingToolTask(task: () => void): void {
+        // This is used to add a task that should be run when the current tool is closed.
+        // It is used by the Talking Book tool to clean up the CkEditor markup.
+        getTheOneToolbox().doWhenClosingTool.push(task);
+    }
+
     // Append "Tool" to the tool name if it's not already there.
     // Put a space between the name and "Tool" if addSpace is true.
     public static addToolToString(
@@ -533,6 +560,22 @@ export function getTheOneToolbox() {
 const masterToolList: ITool[] = [];
 let currentTool: ITool | undefined = undefined;
 
+// This primarily calls the detachFromPage method of the current tool, if any.
+// It also tries to find the current toolbox instance (in the right iframe, wherever it is called),
+// and runs any cleanup tasks that have been registered for when closing the tool.
+// It's important to get the right toolbox (in the right iframe) beacause that's the one
+// that has the valid list of tasks to run when closing the tool.
+function detachCurrentTool() {
+    const toolbox = getTheOneToolbox();
+    if (toolbox) {
+        toolbox.detachCurrentTool();
+    } else if (currentTool) {
+        // If the toolbox is not available, we still may be able to detach the current tool.
+        // This is what we used to do before we had some extra behavior in the toolbox.
+        currentTool.detachFromPage();
+    }
+}
+
 let newToolId: string | undefined = undefined;
 export function getActiveToolId(): string | undefined {
     return newToolId ? newToolId : currentTool?.id();
@@ -704,9 +747,7 @@ function restoreToolboxSettingsWhenPageReady(settings: string) {
 // Remove any markup the toolbox is inserting. Called by a RunJavaScript() in EditingView
 // before saving the page.
 export function removeToolboxMarkup() {
-    if (currentTool != null) {
-        currentTool.detachFromPage();
-    }
+    detachCurrentTool();
 }
 
 function switchTool(newToolName: string): void {
@@ -726,7 +767,7 @@ function switchTool(newToolName: string): void {
     }
     if (currentTool !== newTool) {
         if (currentTool) {
-            currentTool.detachFromPage();
+            detachCurrentTool();
             currentTool.hideTool();
         }
         if (newTool) {
@@ -1439,7 +1480,7 @@ function showToolboxChanged(wasShowing: boolean): void {
     );
     if (currentTool) {
         if (wasShowing) {
-            currentTool.detachFromPage();
+            detachCurrentTool();
             currentTool.hideTool();
         } else {
             activateTool(currentTool);
