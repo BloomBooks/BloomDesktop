@@ -29,7 +29,6 @@ using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using BloomTests.web.controllers;
-using DesktopAnalytics;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
@@ -240,18 +239,7 @@ namespace Bloom
                             .Register<CollectionSettings>(c =>
                             {
                                 c.Resolve<TeamCollectionManager>();
-                                var settings = GetCollectionSettings(projectSettingsPath);
-                                // Note, we won't get this on launch events, but this seems to be the earliest we
-                                // can reasonably add this.
-                                // We decided that it is sufficient to report the Descriptor. That means we don't
-                                // have to be quite as careful with the analytics data as if it contained a
-                                // confidential subscription key. Note also that only valid subscriptions will be
-                                // reported; invalid ones leave the descriptor set to Basic.
-                                Analytics.SetApplicationProperty(
-                                    "subscription",
-                                    settings.Subscription.Descriptor
-                                );
-                                return settings;
+                                return GetCollectionSettings(projectSettingsPath);
                             })
                             .InstancePerLifetimeScope();
                     }
