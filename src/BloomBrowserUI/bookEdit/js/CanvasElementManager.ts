@@ -3279,6 +3279,9 @@ export class CanvasElementManager {
         canvasElements.forEach(canvasElement => {
             // If the canvas element is not visible, its width will be 0. Don't try to adjust it.
             if (canvasElement.clientWidth === 0) return;
+            // If we're in image description mode, the algorithm won't work right,
+            // and it probably isn't necessary.
+            if (canvasElement.closest(".bloom-describedImage")) return;
 
             // Careful. For older books, left and top might be percentages.
             const canvasElementRect = canvasElement.getBoundingClientRect();
