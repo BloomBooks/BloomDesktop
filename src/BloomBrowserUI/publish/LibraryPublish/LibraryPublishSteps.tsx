@@ -10,7 +10,8 @@ import {
     getBoolean,
     post,
     postBoolean,
-    postString
+    postString,
+    useApiBoolean
 } from "../../utils/bloomApi";
 import { kBloomDisabledOpacity } from "../../utils/colorUtils";
 import { BloomStepper } from "../../react_components/BloomStepper";
@@ -177,6 +178,11 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     const [agreementsAccepted, setAgreementsAccepted] = useState<boolean>(
         false
     );
+    const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
+        "publish/isPlaygroundBook",
+        true
+    );
+
     // This useRef silliness is to prevent the postBoolean from happening on the initial render.
     const hasRenderedRef = useRef(false);
     useEffect(() => {
@@ -388,6 +394,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 isCanceling ||
                 !isReadyForUpload() ||
                 !loggedInEmail ||
+                isPlaygroundBook ||
                 // If 'error', there's probably an internet problem that will
                 // hinder upload anyway.
                 // If 'bookshelfHasProblem', the collection settings have a
@@ -579,7 +586,9 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                 <BloomButton
                                     variant="contained"
                                     color="secondary"
-                                    enabled={isReadyForUpload()}
+                                    enabled={
+                                        isReadyForUpload() && !isPlaygroundBook
+                                    }
                                     l10nKey="PublishTab.Upload.SignIn"
                                     onClick={() => post("libraryPublish/login")}
                                 >
@@ -604,7 +613,9 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                             {loggedInEmail && (
                                 <BloomButton
                                     variant="text"
-                                    enabled={isReadyForUpload()}
+                                    enabled={
+                                        isReadyForUpload() && !isPlaygroundBook
+                                    }
                                     l10nKey="PublishTab.Upload.SignOut"
                                     l10nComment="The %0 will be replaced with the email address of the user."
                                     l10nParam0={loggedInEmail}
