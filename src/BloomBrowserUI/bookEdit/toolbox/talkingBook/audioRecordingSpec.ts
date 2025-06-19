@@ -10,6 +10,7 @@ import { RecordingMode } from "./recordingMode";
 import { customJasmineMatchers } from "../../../utils/testHelper";
 import axios from "axios";
 import * as $ from "jquery";
+import { mockReplies } from "../../../utils/bloomApi";
 
 // Notes:
 // For any async tests:
@@ -34,6 +35,17 @@ describe("audio recording tests", () => {
 
         SetupTalkingBookUIElements();
         await SetupIFrameAsync();
+
+        // initializeTalkingBookToolAsync will call this; if we don't set up a
+        // mock reply, it will throw an error and the whole test suite will fail.
+        mockReplies[
+            "features/status?featureName=WholeTextBoxAudio&forPublishing=false"
+        ] = {
+            data: {
+                enabled: true
+            }
+        };
+
         await initializeTalkingBookToolAsync();
     });
 
