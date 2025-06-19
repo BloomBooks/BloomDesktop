@@ -4032,7 +4032,7 @@ namespace Bloom.Book
         public bool CoverIsImage =>
             BookInfo.AppearanceSettings.CoverIsImage
             && FeatureStatus
-                .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.FullPageCoverImage)
+                .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.FullPageCoverImage, this)
                 .Enabled;
 
         public bool FullBleed =>
@@ -4044,7 +4044,7 @@ namespace Bloom.Book
                 || CoverIsImage
             )
             && FeatureStatus
-                .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.PrintShopReady)
+                .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.PrintShopReady, this)
                 .Enabled;
 
         /// <summary>
@@ -4375,7 +4375,8 @@ namespace Bloom.Book
                 pageElts,
                 CollectionSettings.Subscription,
                 BookData.BookIsDerivative(),
-                modifiedPageMessages
+                modifiedPageMessages,
+                this
             );
             // var warnings = PublishHelper.MakePagesRemovedWarnings(omittedPages);
             // warnings.AddRange(modifiedPageMessages);

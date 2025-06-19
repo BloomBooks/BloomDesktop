@@ -5140,7 +5140,7 @@ namespace BloomTests.Book
             );
 
             var book = CreateBook();
-            book.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
+            book.CollectionSettings.Subscription = Subscription.CreateTempSubscriptionForTier(
                 SubscriptionTier.Enterprise
             ); // Needed so Enterprise Features is considered enabled which is needed for quizzes
 
@@ -5169,7 +5169,7 @@ namespace BloomTests.Book
             );
 
             var book = CreateBook();
-            book.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
+            book.CollectionSettings.Subscription = Subscription.CreateTempSubscriptionForTier(
                 SubscriptionTier.Enterprise
             ); // Needed so Enterprise Features is considered enabled which is needed for quizzes
 

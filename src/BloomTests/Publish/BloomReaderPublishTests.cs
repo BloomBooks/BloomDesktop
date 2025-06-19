@@ -1863,7 +1863,7 @@ namespace BloomTests.Publish
         )
         {
             var testBook = CreateBookWithPhysicalFile(originalBookHtml, bringBookUpToDate: true);
-            testBook.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
+            testBook.CollectionSettings.Subscription = Subscription.CreateTempSubscriptionForTier(
                 tier
             );
 

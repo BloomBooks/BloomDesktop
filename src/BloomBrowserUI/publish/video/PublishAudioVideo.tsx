@@ -284,6 +284,11 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         "publish/av/videoSettings?regen=" + avSettings.pageTurnDelay,
         ""
     );
+    const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
+        "publish/isPlaygroundBook",
+        true
+    );
+
     let videoSettingsParam = "";
     if (videoSettings) {
         // videoSettings is sent as a url-encoded JSON string, which is exactly what we
@@ -575,7 +580,9 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                     <StepLabel>{save}</StepLabel>
                     <StepContent>
                         <BloomButton
-                            enabled={gotRecording && isLicenseOK}
+                            enabled={
+                                gotRecording && isLicenseOK && !isPlaygroundBook
+                            }
                             l10nKey="PublishTab.Save"
                             clickApiEndpoint="publish/av/saveVideo"
                             iconBeforeText={

@@ -283,7 +283,8 @@ namespace Bloom.Publish
                 pageElts,
                 book.CollectionSettings.Subscription,
                 book.BookData.BookIsDerivative(),
-                modifiedPageMessages
+                modifiedPageMessages,
+                book
             );
             // Remove any left-over bubbles
             foreach (SafeXmlElement elt in dom.RawDom.SafeSelectNodes("//label"))
@@ -580,6 +581,8 @@ namespace Bloom.Publish
             var language1IsRightToLeft = bookData.Language1.IsRightToLeft;
             var isDerivative = bookData.BookIsDerivative();
             var subscription = book.CollectionSettings.Subscription;
+            if (book.IsPlayground)
+                subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Enterprise);
             RemovePagesByFeatureSystem(
                 pageElts,
                 medium,
@@ -642,13 +645,15 @@ namespace Bloom.Publish
             // Each item is a message like "The feature 'Background music' was removed from this book because it requires a higher subscription tier".
             // We use a set because order is not very important but we don't want to repeat for multiple pages with the same feature,
             // even across multiple calls to this method.
-            ISet<string> messages
+            ISet<string> messages,
+            Book.Book book = null
         )
         {
             var disabledRemoveByModifyingFeatures = FeatureStatus.GetFeaturesToDisableUsingMethod(
                 subscription,
                 forDerivative,
-                PreventionMethod.DisabledByModifyingDom
+                PreventionMethod.DisabledByModifyingDom,
+                book
             );
             foreach (var page in pageElts)
             {

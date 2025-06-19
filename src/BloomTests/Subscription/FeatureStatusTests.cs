@@ -42,7 +42,7 @@ namespace BloomTests.FeatureStatusTests
         )
         {
             // Arrange
-            var subscription = Subscription.ForUnitTestWithOverrideTier(currentTier);
+            var subscription = Subscription.CreateTempSubscriptionForTier(currentTier);
 
             // Act - Overlay feature with Basic subscription
             var status = FeatureStatus.GetFeatureStatus(subscription, featureEnum);
@@ -66,7 +66,7 @@ namespace BloomTests.FeatureStatusTests
         )
         {
             // Arrange
-            var subscription = Subscription.ForUnitTestWithOverrideTier(currentTier);
+            var subscription = Subscription.CreateTempSubscriptionForTier(currentTier);
 
             // Act - Overlay feature with Basic subscription
             var status = FeatureStatus.GetFeatureStatus(subscription, featureName);
@@ -83,7 +83,7 @@ namespace BloomTests.FeatureStatusTests
         public void ToJson_CorrectlyFormatsSubscriptionTier()
         {
             // Arrange
-            var subscription = Subscription.ForUnitTestWithOverrideTier(SubscriptionTier.Pro);
+            var subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Pro);
             var status = FeatureStatus.GetFeatureStatus(subscription, FeatureName.Motion);
 
             // Act
@@ -101,7 +101,7 @@ namespace BloomTests.FeatureStatusTests
         public void ForSerialization_ReturnsValidObject()
         {
             // Arrange
-            var subscription = Subscription.ForUnitTestWithOverrideTier(SubscriptionTier.Pro);
+            var subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Pro);
             var status = FeatureStatus.GetFeatureStatus(subscription, FeatureName.Motion);
 
             // Act
@@ -125,7 +125,7 @@ namespace BloomTests.FeatureStatusTests
             string expectedPageNumber
         )
         {
-            var subscription = Subscription.ForUnitTestWithOverrideTier(tier);
+            var subscription = Subscription.CreateTempSubscriptionForTier(tier);
 
             var dom = new Bloom.Book.HtmlDom(
                 @"<html><body>

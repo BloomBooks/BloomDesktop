@@ -115,9 +115,9 @@ namespace Bloom.SubscriptionAndFeatures
         )
         {
             var subToUse = subscription;
-            if (book != null && book.IsPlayground)
+            if (book != null && book.IsPlayground && featureName.ToLowerInvariant() != "teamcollection")
             {
-                subToUse = Subscription.ForUnitTestWithOverrideTier(SubscriptionTier.Enterprise);
+                subToUse = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Enterprise);
             }
 
             if (Enum.TryParse<FeatureName>(featureName, true, out FeatureName featureEnum))
@@ -136,9 +136,14 @@ namespace Bloom.SubscriptionAndFeatures
             bool forPublishing = false
         )
         {
+            var subToUse = subscription;
+            if (book != null && book.IsPlayground && featureName != FeatureName.TeamCollection)
+            {
+                subToUse = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Enterprise);
+            }
             var feature = FeatureRegistry.Features.Find(f => f.Feature == featureName);
             Debug.Assert(feature != null, $"Feature '{featureName}' not found in registry.");
-            return GetFeatureStatus(subscription, feature, book, forPublishing);
+            return GetFeatureStatus(subToUse, feature, book, forPublishing);
         }
 
         // if we already have a FeatureInfo (e.g., from iterating the registry)
@@ -150,6 +155,8 @@ namespace Bloom.SubscriptionAndFeatures
         )
         {
             var tier = subscription.Tier;
+            if (book != null && book.IsPlayground && feature.Feature != FeatureName.TeamCollection)
+                tier = SubscriptionTier.Enterprise;
             var enabled = (int)tier >= (int)feature.SubscriptionTier;
             if (!enabled && forPublishing && book != null)
             {
@@ -179,12 +186,19 @@ namespace Bloom.SubscriptionAndFeatures
         public static IEnumerable<FeatureInfo> GetFeaturesToDisableUsingMethod(
             Subscription subscription,
             bool forDerivative,
-            PreventionMethod method
+            PreventionMethod method,
+            Book.Book book = null
         )
         {
+            var subToUse = subscription;
+            if (book != null && book.IsPlayground)
+                subToUse = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Enterprise);
             return FeatureRegistry.Features.Where(feature =>
             {
-                var featureStatus = GetFeatureStatus(subscription, feature);
+                // use the original subscription for the team collection feature
+                var featureStatus = GetFeatureStatus(
+                    feature.Feature == FeatureName.TeamCollection ? subscription : subToUse,
+                    feature);
                 // which property of the feature should we look at to decide
                 // whether it uses this method of disabling?
                 var methodToMatch = forDerivative
