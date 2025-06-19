@@ -49,7 +49,9 @@ export function getLanguageData(
         LanguageTag: languageTag || null,
         DefaultName: defaultName,
         DesiredName: selection?.customDetails?.customDisplayName || defaultName,
-        Country: languageTag ? defaultRegionForLangTag(languageTag)?.name : null
+        Country: languageTag
+            ? defaultRegionForLangTag(languageTag)?.name || null
+            : null
     };
 }
 
