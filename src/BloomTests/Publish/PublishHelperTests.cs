@@ -909,17 +909,17 @@ namespace BloomTests.Publish
         }
 
         [Test]
-        public void RemovePagesByFeatureSystem_RemovesWidgetPages()
+        public void RemovePagesByFeatureSystem_RemovesGamePages()
         {
             var doc = SafeXmlDocument.Create();
             var bookXml =
                 @"<div class=""bloom-book"">
-                    <div class=""bloom-page custom-widget-page numberedPage side-right"" id=""widgetPage1"" data-page-number=""1"">
-                        <div class=""pageLabel"">Widget Page</div>
+                    <div class=""bloom-page  numberedPage side-right"" id=""gamePage1"" data-page-number=""1"" data-tool-id=""game"">
+                        <div class=""pageLabel"">Game Page</div>
                     </div>
                     <div class=""bloom-page numberedPage side-left"" id=""normalPage1""  data-page-number=""2""/>
-                    <div class=""bloom-page custom-widget-page numberedPage side-right"" id=""widgetPage2""  data-page-number=""3"">
-                        <div class=""pageLabel"">Widget Page</div>
+                    <div class=""bloom-page numberedPage side-right"" id=""widgetPage2""  data-page-number=""3"" data-tool-id=""game"">
+                        <div class=""pageLabel"">Game Page</div>
                     </div>
                     <div class=""bloom-page numberedPage side-left"" id=""normalPage2""  data-page-number=""4""/>
                 </div>";
@@ -939,7 +939,7 @@ namespace BloomTests.Publish
                 false
             );
 
-            void widgetPagesRemoved()
+            void GamePagesRemoved()
             {
                 var assertThatXml = AssertThatXmlIn.Element(doc.DocumentElement);
                 assertThatXml.HasSpecifiedNumberOfMatchesForXpath(
@@ -957,10 +957,10 @@ namespace BloomTests.Publish
                 );
                 Assert.That(pageElts.Count, Is.EqualTo(2));
             }
-            widgetPagesRemoved();
+            GamePagesRemoved();
             Assert.That(omittedPages.Count, Is.EqualTo(1));
             Assert.That(
-                omittedPages["Widget Page"],
+                omittedPages["Game Page"],
                 Is.EqualTo(2) // 2 widget pages were removed
             );
 
@@ -972,30 +972,30 @@ namespace BloomTests.Publish
             subscription = new Subscription("Test-361769-1088"); // allows widgets
             PublishHelper.RemovePagesByFeatureSystem(
                 pageElts,
-                PublishingMediums.Epub, // does not allow widgets
+                PublishingMediums.Epub, // does not allow games
                 omittedPages,
                 subscription,
                 false,
                 "0123456789",
                 false
             );
-            widgetPagesRemoved();
+            GamePagesRemoved();
             // Currently we don't track pages omitted because of publishing medium
             Assert.That(omittedPages.Count, Is.EqualTo(0));
         }
 
         [Test]
-        public void RemovePagesByFeatureSystem_ProOrHigherTierOrDerivative_DoesNotRemoveWidgetPages()
+        public void RemovePagesByFeatureSystem_ProOrHigherTierOrDerivative_DoesNotRemoveGamePages()
         {
             var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"<div class=""bloom-book"">
-                    <div class=""bloom-page custom-widget-page numberedPage side-right"" id=""widgetPage1"" data-page-number=""1"">
-                        <div class=""pageLabel"">Widget Page</div>
+                    <div class=""bloom-page numberedPage side-right"" id=""gamePage1"" data-page-number=""1"" data-tool-id=""game"">
+                        <div class=""pageLabel"">Game Page</div>
                     </div>
                     <div class=""bloom-page numberedPage side-left"" id=""normalPage1""  data-page-number=""2""/>
-                    <div class=""bloom-page custom-widget-page numberedPage side-right"" id=""widgetPage2""  data-page-number=""3"">
-                        <div class=""pageLabel"">Widget Page</div>
+                    <div class=""bloom-page numberedPage side-right"" id=""gamePage2""  data-page-number=""3"" data-tool-id=""game"">
+                        <div class=""pageLabel"">Game Page</div>
                     </div>
                     <div class=""bloom-page numberedPage side-left"" id=""normalPage2""  data-page-number=""4""/>
                 </div>"
