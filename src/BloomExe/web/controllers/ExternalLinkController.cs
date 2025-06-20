@@ -19,7 +19,13 @@ namespace Bloom.web
             apiHandler.RegisterEndpointHandler("externalLink", HandleExternalLink, true);
             // This class feels like the right place to handle link elements that simply open a link
             // in the external browser.
-            apiHandler.RegisterEndpointHandler("link", HandleLink, true);
+            // This task doesn't access any resources outside the link or mess with WinForms controls,
+            // so it can complete on the server thread without any locks.
+            // This is helpful when invoked inside a dialog launched from another API,
+            // or when something else that would compete for the lock is running. In particular, when
+            // it runs on the UI thread and uses the lock, the link in the problem report dialog to
+            // view the new issue doesn't work immediately. See BL-14408.
+            apiHandler.RegisterEndpointHandler("link", HandleLink, false, false);
         }
 
         /// <summary>
