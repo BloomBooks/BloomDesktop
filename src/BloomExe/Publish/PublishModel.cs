@@ -261,6 +261,8 @@ namespace Bloom.Publish
                 return null;
             if (BookSelection.CurrentSelection.BookData?.BookIsDerivative() ?? false)
                 return null;
+            if (BookSelection.CurrentSelection.IsPlayground)
+                return null;
 
             return FeatureStatus.GetFirstFeatureThatIsInvalidForNewBooks(
                 // subscription of current collection

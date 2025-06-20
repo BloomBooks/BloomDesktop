@@ -123,6 +123,10 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
         "publish-epub",
         "publish/licenseOK"
     );
+    const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
+        "publish/isPlaygroundBook",
+        true
+    );
 
     const mainPanel = (
         <div
@@ -145,7 +149,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                             width: 100px;
                             margin-inline-end: 50px !important; // !important needed to override material button base
                         `}
-                        enabled={isLicenseOK}
+                        enabled={isLicenseOK && !isPlaygroundBook}
                         onClick={() => {
                             setPublishStarted(true);
                             setCurrentTaskApi("publish/epub/save");

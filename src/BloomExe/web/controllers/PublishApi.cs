@@ -413,6 +413,12 @@ namespace Bloom.web.controllers
                 },
                 false
             );
+            apiHandler.RegisterBooleanEndpointHandler(
+                "publish/isPlaygroundBook",
+                request => { return request.CurrentBook.IsPlayground; },
+                null,
+                false
+                );
         }
 
         public void getInitialPublishTabInfo(ApiRequest request)

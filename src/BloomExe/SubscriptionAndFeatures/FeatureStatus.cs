@@ -136,9 +136,14 @@ namespace Bloom.SubscriptionAndFeatures
             bool forPublishing = false
         )
         {
+            var subToUse = subscription;
+            if (book != null && book.IsPlayground)
+            {
+                subToUse = Subscription.ForUnitTestWithOverrideTier(SubscriptionTier.Enterprise);
+            }
             var feature = FeatureRegistry.Features.Find(f => f.Feature == featureName);
             Debug.Assert(feature != null, $"Feature '{featureName}' not found in registry.");
-            return GetFeatureStatus(subscription, feature, book, forPublishing);
+            return GetFeatureStatus(subToUse, feature, book, forPublishing);
         }
 
         // if we already have a FeatureInfo (e.g., from iterating the registry)
@@ -150,6 +155,8 @@ namespace Bloom.SubscriptionAndFeatures
         )
         {
             var tier = subscription.Tier;
+            if (book != null && book.IsPlayground && tier == SubscriptionTier.Basic)
+                tier = SubscriptionTier.Enterprise;
             var enabled = (int)tier >= (int)feature.SubscriptionTier;
             if (!enabled && forPublishing && book != null)
             {
@@ -179,12 +186,16 @@ namespace Bloom.SubscriptionAndFeatures
         public static IEnumerable<FeatureInfo> GetFeaturesToDisableUsingMethod(
             Subscription subscription,
             bool forDerivative,
-            PreventionMethod method
+            PreventionMethod method,
+            Book.Book book = null
         )
         {
+            var subToUse = subscription;
+            if (book != null && book.IsPlayground)
+                subToUse = Subscription.ForUnitTestWithOverrideTier(SubscriptionTier.Enterprise);
             return FeatureRegistry.Features.Where(feature =>
             {
-                var featureStatus = GetFeatureStatus(subscription, feature);
+                var featureStatus = GetFeatureStatus(subToUse, feature);
                 // which property of the feature should we look at to decide
                 // whether it uses this method of disabling?
                 var methodToMatch = forDerivative

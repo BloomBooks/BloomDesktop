@@ -861,7 +861,8 @@ namespace Bloom.WebLibraryIntegration
                 pages,
                 copiedBook.CollectionSettings.Subscription,
                 copiedBook.BookData.BookIsDerivative(),
-                messages
+                messages,
+                copiedBook
             );
             PublishHelper.SendBatchedWarningMessagesToProgress(messages.ToList(), progress);
             // Remove any AI generated content from the book. (BL-14339)

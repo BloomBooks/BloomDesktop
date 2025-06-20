@@ -28,6 +28,10 @@ body {
 .warning {
     border-color: #e1a300;
     background: linear-gradient(90deg, #fff8e1 80%, #fffbe7 100%);
+    p {
+        padding-left: 2rem;
+        margin-top: 0px;
+    }
 }
 
 .warning::before {

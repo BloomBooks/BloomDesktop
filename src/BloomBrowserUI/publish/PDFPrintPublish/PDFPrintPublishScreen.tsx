@@ -72,6 +72,10 @@ export const PDFPrintPublishScreen = () => {
         "publish/pdf/licenseOK",
         false
     );
+    const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
+        "publish/isPlaygroundBook",
+        true
+    );
 
     const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false);
 
@@ -191,7 +195,7 @@ export const PDFPrintPublishScreen = () => {
         <React.Fragment>
             <PrintSaveButton
                 onClick={handlePrint}
-                enabled={!!path}
+                enabled={!!path && !isPlaygroundBook}
                 l10nId="PublishTab.PrintButton"
                 imgSrc="/bloom/publish/PDFPrintPublish/Print.png"
                 label="Print..."
@@ -200,7 +204,7 @@ export const PDFPrintPublishScreen = () => {
                 onClick={() => {
                     post("publish/pdf/save");
                 }}
-                enabled={!!path}
+                enabled={!!path && !isPlaygroundBook}
                 l10nId="PublishTab.SaveButton"
                 imgSrc="/bloom/publish/PDFPrintPublish/Usb.png"
                 label="Save PDF..."

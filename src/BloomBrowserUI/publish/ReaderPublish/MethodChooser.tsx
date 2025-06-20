@@ -6,6 +6,7 @@ import { RadioGroup } from "../../react_components/RadioGroup";
 import BloomButton from "../../react_components/bloomButton";
 import {
     post,
+    useApiBoolean,
     useApiStringState,
     useWatchBooleanEvent
 } from "../../utils/bloomApi";
@@ -50,6 +51,10 @@ export const MethodChooser: React.FunctionComponent<{
         true,
         "publish-bloompub",
         "publish/licenseOK"
+    );
+    const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
+        "publish/isPlaygroundBook",
+        true
     );
 
     const methodImageFileName: string = methodNameToImageFileName[method];
@@ -121,6 +126,7 @@ export const MethodChooser: React.FunctionComponent<{
                     {getStartButton(
                         method,
                         isLicenseOK,
+                        isPlaygroundBook,
                         props.onStartButtonClick
                     )}
                 </div>
@@ -153,6 +159,7 @@ export const MethodChooser: React.FunctionComponent<{
 function getStartButton(
     method: string,
     licenseOK: boolean,
+    isPlaygroundBook: boolean,
     onStartButtonClick: (publishMethod: ReaderPublishMethods) => void
 ) {
     if (!isReaderPublishMethods(method)) {
@@ -164,6 +171,7 @@ function getStartButton(
     };
     const buttonCss =
         "align-self: flex-end; min-width: 120px; margin-top: 20px;";
+    const buttonEnabled = licenseOK && !isPlaygroundBook;
     switch (method) {
         case "file":
             return (
@@ -174,7 +182,7 @@ function getStartButton(
                     l10nKey="PublishTab.Save"
                     l10nComment="Button that tells Bloom to save the book in the current format."
                     onClick={onClick}
-                    enabled={licenseOK}
+                    enabled={buttonEnabled}
                     hasText={true}
                     size="large"
                 >
@@ -189,7 +197,7 @@ function getStartButton(
                     `}
                     l10nKey="PublishTab.Android.Usb.Start"
                     l10nComment="Button that tells Bloom to send the book to a device via USB cable."
-                    enabled={licenseOK}
+                    enabled={buttonEnabled}
                     onClick={onClick}
                     hidden={isLinux()}
                     hasText={true}
@@ -206,7 +214,7 @@ function getStartButton(
                     `}
                     l10nKey="PublishTab.Android.Wifi.Start"
                     l10nComment="Button that tells Bloom to begin offering this book on the wifi network."
-                    enabled={licenseOK}
+                    enabled={buttonEnabled}
                     onClick={onClick}
                     hasText={true}
                     size="large"
