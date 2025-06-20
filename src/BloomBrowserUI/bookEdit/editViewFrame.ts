@@ -4,7 +4,8 @@ import {
 } from "../react_components/confirmDialog";
 import {
     IColorPickerDialogProps,
-    showColorPickerDialog as doShowColorPickerDialog
+    showColorPickerDialog as doShowColorPickerDialog,
+    hideColorPickerDialog as doHideColorPickerDialog
 } from "../react_components/color-picking/colorPickerDialog";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 
@@ -18,6 +19,7 @@ export interface IEditViewFrameExports {
     getModalDialogContainer(): HTMLElement | null;
     showConfirmDialog(props: IConfirmDialogProps): void;
     showColorPickerDialog(props: IColorPickerDialogProps): void;
+    hideColorPickerDialog(): void;
     showCopyrightAndLicenseDialog(imageUrl?: string): void;
     showEditViewTopicChooserDialog(): void;
     showAdjustTimingsDialogFromEditViewFrame(
@@ -216,6 +218,9 @@ export function showConfirmDialog(props: IConfirmDialogProps): void {
 
 export function showColorPickerDialog(props: IColorPickerDialogProps): void {
     doShowColorPickerDialog(props);
+}
+export function hideColorPickerDialog(): void {
+    doHideColorPickerDialog();
 }
 
 export function showCopyrightAndLicenseDialog(imageUrl?: string) {

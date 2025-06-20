@@ -365,6 +365,16 @@ export const showColorPickerDialog = (
     externalSetOpen(true);
 };
 
+export const hideColorPickerDialog = () => {
+    // I'm not sure if this can be falsy, but whereas in the method above we're calling it
+    // immediately after we render the dialog, which sets it, this gets called long after
+    // when the tool is closed. Just in case it somehow gets cleared, now or in some future
+    // version of the code, I decided to leave in the check that CoPilot proposed.
+    if (externalSetOpen) {
+        externalSetOpen(false);
+    }
+};
+
 const doRender = (
     props: IColorPickerDialogProps,
     container?: Element | null
