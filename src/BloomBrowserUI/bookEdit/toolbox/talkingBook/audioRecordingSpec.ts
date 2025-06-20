@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import AudioRecording, {
     AudioTextFragment,
     initializeTalkingBookToolAsync,
@@ -33,20 +32,7 @@ describe("audio recording tests", () => {
     beforeAll(async () => {
         jasmine.addMatchers(customJasmineMatchers); // must be in a beforeAll/beforeEach or it
 
-        SetupTalkingBookUIElements();
-        await SetupIFrameAsync();
-
-        // initializeTalkingBookToolAsync will call this; if we don't set up a
-        // mock reply, it will throw an error and the whole test suite will fail.
-        mockReplies[
-            "features/status?featureName=WholeTextBoxAudio&forPublishing=false"
-        ] = {
-            data: {
-                enabled: true
-            }
-        };
-
-        await initializeTalkingBookToolAsync();
+        await setupForAudioRecordingTests();
     });
 
     // In an earlier version of our API, checkForAnyRecording was designed to fail (404) if there was no recording.
@@ -2183,9 +2169,7 @@ export function StripRecordingMd5(html: string): string {
 
 // Adds the iframe into the parent window.
 // Returns a Promise which resolves when the iframe is finished loading and its contentDocument is safe to use.
-export async function SetupIFrameAsync(
-    id = "page"
-): Promise<HTMLIFrameElement> {
+async function SetupIFrameAsync(id = "page"): Promise<HTMLIFrameElement> {
     let iframe: HTMLIFrameElement;
     const element = parent.window.document.getElementById(id);
     if (element) {
@@ -2238,8 +2222,25 @@ export function SetupIFrameFromHtml(bodyContentHtml: string, id = "page") {
     iframe.contentDocument!.body.innerHTML = bodyContentHtml;
 }
 
+export async function setupForAudioRecordingTests() {
+    SetupTalkingBookUIElements();
+    await SetupIFrameAsync();
+
+    // initializeTalkingBookToolAsync will call this endpoint; if we don't set up a
+    // mock reply, it will throw an error and the whole test suite will fail.
+    mockReplies[
+        "features/status?featureName=WholeTextBoxAudio&forPublishing=false"
+    ] = {
+        data: {
+            enabled: true
+        }
+    };
+
+    await initializeTalkingBookToolAsync();
+}
+
 // Just sets up some dummy elements so that they're non-null.
-export function SetupTalkingBookUIElements() {
+function SetupTalkingBookUIElements() {
     document.body.appendChild(document.createElement("div")); // Ensures there is always an element.
 
     const html =

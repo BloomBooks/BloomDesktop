@@ -1,19 +1,17 @@
 import TalkingBookTool from "./talkingBook";
 import {
     theOneAudioRecorder,
-    initializeTalkingBookToolAsync,
     AudioMode,
     getAllAudioModes,
     kAnyRecordingApiUrl
 } from "./audioRecording";
 import { RecordingMode } from "./recordingMode";
 import {
-    SetupTalkingBookUIElements,
-    SetupIFrameAsync,
     SetupIFrameFromHtml,
     getFrameElementById,
     StripPlayerSrcNoCacheSuffix,
-    StripRecordingMd5
+    StripRecordingMd5,
+    setupForAudioRecordingTests
 } from "./audioRecordingSpec";
 import * as XRegExp from "xregexp"; // Not sure why, but import * as XRegExp works better. import XRegExp causes "xregexp_1.default is undefined" error
 import { setSentenceEndingPunctuationForBloom } from "../readers/libSynphony/bloom_xregexp_categories";
@@ -21,13 +19,11 @@ import axios from "axios";
 
 describe("talking book tests", () => {
     beforeAll(async () => {
-        SetupTalkingBookUIElements();
-        await SetupIFrameAsync();
-        await initializeTalkingBookToolAsync();
+        await setupForAudioRecordingTests();
     });
 
-    describe("- de/enshroudPhraseMarkes", () => {
-        it("enshroud/deshroud phrase markers", () => {
+    describe("- de/enshroudPhraseDelimiters", () => {
+        it("enshroud/deshroud phrase delimiters", () => {
             // Setup Initial HTML
             const textBox1 =
                 '<div class="bloom-editable" id="div1"><p><span id="1.1" class="audio-sentence ui-audioCurrent">This is a test,| this is only a test.</span></p></div>';
