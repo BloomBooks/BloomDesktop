@@ -969,7 +969,7 @@ function addImageMenuOptions(
         );
     };
 
-    menuOptions.unshift(
+    const imageMenuOptions: IMenuItemWithSubmenu[] = [
         {
             l10nId: "EditTab.Image.ChooseImage",
             english: "Choose image from your computer...",
@@ -1012,9 +1012,12 @@ function addImageMenuOptions(
                     css={getMenuIconCss(1, "left: -1px; width: 22px;")}
                 />
             )
-        },
-        divider,
-        {
+        }
+    ];
+    // It would be too confusing and difficult for the element to be both draggable and clickable with different
+    //  behavior such that we'd have to distinguish between the two.
+    if (!canvasElement.hasAttribute("data-draggable-id")) {
+        imageMenuOptions.push({
             l10nId: "EditTab.PasteHyperlink",
             english: "Paste Hyperlink",
             subLabel: imgContainer.getAttribute("data-href") && (
@@ -1035,9 +1038,11 @@ function addImageMenuOptions(
             know if there was one when we last rendered.
             disabled: !haveHyperlinkOnClipboard
             */
-        }
+        });
         // Enhance: some way to remove a link you don't want anymore. For now, you can paste an empty string.
-    );
+    }
+
+    menuOptions.unshift(...imageMenuOptions);
 }
 function pasteLink(canvasElement: HTMLElement) {
     const imgContainer = canvasElement.getElementsByClassName(
