@@ -1677,3 +1677,21 @@ body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"]
     height: 100%;
     width: 100%;
 }
+// added from new basePage.less to impose playground watermark
+.playground .marginBox:after {
+    content: "PLAYGROUND";
+    color: red;
+    font-family: "Noto Sans", sans-serif;
+    font-size: 17px;
+    transform: rotate(-37deg);
+    transform-origin: 0 0;
+    z-index: 1000;
+    opacity: 0.5;
+    filter: blur(1px);
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border: solid;
+    border-radius: 7px;
+    padding: 5px;
+}
