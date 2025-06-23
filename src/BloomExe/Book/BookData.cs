@@ -2656,6 +2656,17 @@ namespace Bloom.Book
                     break;
                 }
             }
+
+            // sw is a macrolanguage code for Kiswahili.  Old practice was to assume it meant
+            // the same as swh in practice.  All of the translations from Crowdin use sw.  We
+            // have at least one user who has a book with swh as the language code, so we need
+            // to handle that in localization lookups.  (BL-14930)
+            for (int i = 0; i < langCodes.Count; i++)
+            {
+                if (langCodes[i] == "swh" && !langCodes.Contains("sw"))
+                    langCodes.Insert(i + 1, "sw");
+            }
+
             return langCodes;
         }
 
