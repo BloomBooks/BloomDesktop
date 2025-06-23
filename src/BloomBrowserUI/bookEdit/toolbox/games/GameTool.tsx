@@ -1010,7 +1010,7 @@ const DragActivityControls: React.FunctionComponent<{
     // const [dragObjectType, setDragObjectType] = useState("text");
     // Todo: something has to call setDragObjectType when a draggable is selected.
     // Not needed until we implement the order circle game.
-    // let titleId = "EditTab.Toolbox.DragActivity.Draggable";
+    // let titleId = "EditTab.Toolbox.DragActivity.ObjectsToDrag";
     // if (dragObjectType === "dragTarget") {
     //     titleId = "EditTab.Toolbox.DragActivity.DraggableTarget";
     // } else if (dragObjectType === "orderCircle") {
@@ -1165,7 +1165,7 @@ const DragActivityControls: React.FunctionComponent<{
                     <div>
                         {anyDraggables && (
                             <CanvasElementItemRegion
-                                l10nKey="EditTab.Toolbox.DragActivity.Draggable"
+                                l10nKey="EditTab.Toolbox.DragActivity.ObjectsToDrag"
                                 theme="blueOnTan"
                             >
                                 <CanvasElementItemRow>

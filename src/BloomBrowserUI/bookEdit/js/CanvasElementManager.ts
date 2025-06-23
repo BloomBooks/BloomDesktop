@@ -1467,7 +1467,7 @@ export class CanvasElementManager {
         const imgStyle = img.style;
         // left can't be greater than zero; that would leave empty space on the left.
         // also can't be so small as to make the right of the image (img.clientWidth + newLeft) less than
-        // the right of the canvas element (this.activeElement.clientLeft + this.activElement.clientWidth)
+        // the right of the canvas element (this.activeElement.clientLeft + this.activeElement.clientWidth)
         const newLeft = Math.max(
             Math.min(this.oldImageLeft + deltaX, 0),
             this.activeElement.clientLeft +
