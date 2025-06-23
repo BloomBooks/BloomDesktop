@@ -35,6 +35,14 @@
         <source xml:lang="en">Objects to Drag</source>
         <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.Draggability">
+        <source xml:lang="en">Draggable</source>
+        <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.DraggabilityMore">
+        <source xml:lang="en">During game play, this item can be moved around.</source>
+        <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
+      </trans-unit>
       <!-- <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading">
         <source xml:lang="en">Drag Images to Targets</source>
         <note>ID: EditTab.Toolbox.DragActivity.DragImageHeading</note>
