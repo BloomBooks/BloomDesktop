@@ -1602,6 +1602,7 @@ namespace Bloom.Publish
             return false;
         }
 
+        // TODO: (?) use the same file scanning in this method as StylesAndFontsApi.HandleGetDataRows.
         public static void ReportInvalidFonts(string destDirName, IProgress progress)
         {
             // For ePUB and BloomPub, we display the book to determine exactly which fonts are
@@ -1613,7 +1614,16 @@ namespace Bloom.Publish
             foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.css"))
             {
                 var cssContent = RobustFile.ReadAllText(filepath);
+                // basePage uses Comic Sans MS for the watermark in playground books, but these can't
+                // be published or uploaded, so we don't want to complain about it.  (BL-14932)
+                var comicSansExists = fontsFound.Contains("Comic Sans MS");
                 HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, includeFallbackFonts: true);
+                if (fontsFound.Contains("Comic Sans MS") && !comicSansExists)
+                {
+                    var filename = Path.GetFileName(filepath);
+                    if (filename == "basePage.css" || filename == "basePage-legacy-5-6.css")
+                        fontsFound.Remove("Comic Sans MS");
+                }
             }
             // There should be only one html file with the same name as the directory it's in, but let's
             // not make any assumptions here.
