@@ -27,6 +27,7 @@ import {
     findNextVideoContainer,
     findPreviousVideoContainer
 } from "./bloomVideo";
+import { kVideoContainerClass } from "./videoUtils";
 import {
     copyAndPlaySoundAsync,
     makeDuplicateOfDragBubble,
@@ -61,6 +62,7 @@ import { Span } from "../../react_components/l10nComponents";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { GameType, getGameType } from "../toolbox/games/GameInfo";
+import { setGeneratedDraggableId } from "../toolbox/overlay/CanvasElementItem";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -240,6 +242,12 @@ const CanvasElementContextControls: React.FunctionComponent<{
             onClick: theOneCanvasElementManager?.addChildCanvasElement
         });
     }
+    addMenuItemForTogglingDraggability(
+        menuOptions,
+        props.canvasElement,
+        currentDraggableTarget,
+        setCurrentDraggableTarget
+    );
     if (currentDraggableTargetId) {
         addMenuItemsForDraggable(
             menuOptions,
@@ -597,7 +605,10 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                 return (
                                     <LocalizableNestedMenuItem
                                         {...option}
-                                        key={index}
+                                        key={
+                                            option.l10nId + "-nestedMenuItem" ||
+                                            index
+                                        }
                                         truncateMainLabel={true}
                                     >
                                         {option.subMenu.map(
@@ -613,7 +624,11 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                                 }
                                                 return (
                                                     <LocalizableMenuItem
-                                                        key={subIndex}
+                                                        key={
+                                                            subOption.l10nId +
+                                                                "-subMenuItem" ||
+                                                            subIndex
+                                                        }
                                                         {...subOption}
                                                         css={css`
                                                             max-width: ${maxMenuWidth}px;
@@ -634,7 +649,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             }
                             return (
                                 <LocalizableMenuItem
-                                    key={index}
+                                    key={option.l10nId + "-menuItem" || index}
                                     {...option}
                                     onClick={e => {
                                         setMenuOpen(false);
@@ -1063,6 +1078,58 @@ function pasteLink(canvasElement: HTMLElement) {
     });
 }
 
+function canToggleDraggability(canvasElement: HTMLElement): boolean {
+    return (
+        canvasElement.querySelector(`.${kImageContainerClass}`) !== null ||
+        canvasElement.querySelector(`.${kVideoContainerClass}`) !== null
+    );
+}
+
+function isDraggable(canvasElement: HTMLElement): boolean {
+    return !!canvasElement.getAttribute("data-draggable-id");
+}
+
+function addMenuItemForTogglingDraggability(
+    menuOptions: IMenuItemWithSubmenu[],
+    canvasElement: HTMLElement,
+    currentDraggableTarget: HTMLElement | undefined,
+    setCurrentDraggableTarget: (target: HTMLElement | undefined) => void
+) {
+    const toggleDragability = () => {
+        if (isDraggable(canvasElement)) {
+            if (!canToggleDraggability(canvasElement)) {
+                return;
+            }
+            if (currentDraggableTarget) {
+                currentDraggableTarget.ownerDocument
+                    .getElementById("target-arrow")
+                    ?.remove();
+                currentDraggableTarget.remove();
+                setCurrentDraggableTarget(undefined);
+            }
+            canvasElement.removeAttribute("data-draggable-id");
+        } else {
+            if (!canToggleDraggability(canvasElement)) {
+                return;
+            }
+            setGeneratedDraggableId(canvasElement);
+            setCurrentDraggableTarget(makeTargetForDraggable(canvasElement));
+            theOneCanvasElementManager.setActiveElement(canvasElement);
+        }
+    };
+    menuOptions.push(divider, {
+        l10nId: "EditTab.Toolbox.DragActivity.Draggability",
+        english: "Draggable",
+        subLabelL10nId: "EditTab.Toolbox.DragActivity.DraggabilityMore",
+        onClick: toggleDragability,
+        icon: isDraggable(canvasElement) ? (
+            <CheckIcon css={getMenuIconCss()} />
+        ) : (
+            undefined
+        )
+    });
+}
+
 function addMenuItemsForDraggable(
     menuOptions: IMenuItemWithSubmenu[],
     canvasElement: HTMLElement,
@@ -1084,7 +1151,7 @@ function addMenuItemsForDraggable(
             setCurrentDraggableTarget(makeTargetForDraggable(canvasElement));
         }
     };
-    menuOptions.push(divider, {
+    menuOptions.push({
         l10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswer",
         english: "Part of the right answer",
         subLabelL10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore",
