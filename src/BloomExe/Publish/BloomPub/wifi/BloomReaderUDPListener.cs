@@ -74,7 +74,6 @@ namespace Bloom.Publish.BloomPub.wifi
             catch (SocketException e)
             {
                 //log then do nothing
-                Debug.WriteLine("UDPListener, SocketException-1 = " + e);
                 Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
             }
 
@@ -95,9 +94,9 @@ namespace Bloom.Publish.BloomPub.wifi
                     byte[] bytes = _listener.Receive(ref groupEP); // waits for packet from Android.
 
                     // DEBUG ONLY
-                    Debug.WriteLine("WM, UDPListener, got {0} bytes (raising \'NewMessageReceived\'):", bytes.Length);
-                    var bytesToString = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
-                    Debug.WriteLine("  " + bytesToString.Substring(0, bytes.Length));
+                    //Debug.WriteLine("UDPListener, got {0} bytes (raising \'NewMessageReceived\'):", bytes.Length);
+                    //var bytesToString = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
+                    //Debug.WriteLine("  " + bytesToString.Substring(0, bytes.Length));
                     // END DEBUG
 
                     //raise event
@@ -105,7 +104,6 @@ namespace Bloom.Publish.BloomPub.wifi
                 }
                 catch (SocketException se)
                 {
-                    Debug.WriteLine("UDPListener, SocketException-2 = " + se);
                     if (!_listening || se.SocketErrorCode == SocketError.Interrupted)
                     {
                         return; // no problem, we're just closing up shop

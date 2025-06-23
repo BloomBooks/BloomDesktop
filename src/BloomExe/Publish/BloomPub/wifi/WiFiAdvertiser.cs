@@ -153,7 +153,7 @@ namespace Bloom.Publish.BloomPub.wifi
 
             if (ifcResult == CommTypeToExpect.None)
             {
-                Debug.WriteLine("WiFiAdvertiser, local IP not found");
+                Debug.WriteLine("WiFiAdvertiser, ERROR getting local IP");
                 return;
             }
 
@@ -179,7 +179,7 @@ namespace Bloom.Publish.BloomPub.wifi
             _remoteIp = GetDirectedBroadcastAddress(_localIp, _subnetMask);
             if (_remoteIp.Length == 0)
             {
-                Debug.WriteLine("WiFiAdvertiser, ERROR: can't get broadcast address, bail");
+                Debug.WriteLine("WiFiAdvertiser, ERROR getting broadcast address");
                 return;
             }
 
@@ -191,14 +191,14 @@ namespace Bloom.Publish.BloomPub.wifi
                 epBroadcast = new IPEndPoint(IPAddress.Parse(_localIp), _portForBroadcast);
                 if (epBroadcast == null)
                 {
-                    Debug.WriteLine("WiFiAdvertiser, ERROR creating IPEndPoint, bail");
+                    Debug.WriteLine("WiFiAdvertiser, ERROR creating IPEndPoint");
                     return;
                 }
 
                 _clientBroadcast = new UdpClient(epBroadcast);
                 if (_clientBroadcast == null)
                 {
-                    Debug.WriteLine("WiFiAdvertiser, ERROR creating UdpClient, bail");
+                    Debug.WriteLine("WiFiAdvertiser, ERROR creating UdpClient");
                     return;
                 }
 
@@ -223,7 +223,7 @@ namespace Bloom.Publish.BloomPub.wifi
                     {
                         UpdateAdvertisementBasedOnCurrentIpAddress();
 
-                        Debug.WriteLine("WiFiAdvertiser, broadcasting advert to: {0}:{1}", _remoteEP.Address, _remoteEP.Port); // TEMPORARY!
+                        //Debug.WriteLine("WiFiAdvertiser, broadcasting advert to: {0}:{1}", _remoteEP.Address, _remoteEP.Port); // TEMPORARY!
                         _clientBroadcast.BeginSend(
                             _sendBytes,
                             _sendBytes.Length,
@@ -383,7 +383,7 @@ namespace Bloom.Publish.BloomPub.wifi
                 return CommTypeToExpect.Ethernet;
             }
 
-            Debug.WriteLine("UDP advertising: no suitable network interface found");
+            Debug.WriteLine("WiFiAdvertiser, ERROR, no suitable network interface found");
             return CommTypeToExpect.None;
         }
 
@@ -420,7 +420,7 @@ namespace Bloom.Publish.BloomPub.wifi
             }
             catch (OutOfMemoryException e)
             {
-                Debug.WriteLine("  GetMetricForInterface, ERROR creating buffer: " + e);
+                Debug.WriteLine("GetMetricForInterface, ERROR creating buffer: " + e);
                 return bestMetric;
             }
 
@@ -433,7 +433,7 @@ namespace Bloom.Publish.BloomPub.wifi
                     // Something went wrong so bail.
                     // It is tempting to add a dealloc call here, but don't. The
                     // dealloc in the 'finally' block *will* be done (I checked).
-                    Debug.WriteLine("  GetMetricForInterface, ERROR, GetIpForwardTable() = {0}, returning {1}", error, bestMetric);
+                    Debug.WriteLine("GetMetricForInterface, ERROR, GetIpForwardTable() = {0}, returning {1}", error, bestMetric);
                     return bestMetric;
                 }
 
@@ -461,7 +461,7 @@ namespace Bloom.Publish.BloomPub.wifi
             {
                 if (e is AccessViolationException || e is MissingMethodException)
                 {
-                    Debug.WriteLine("  GetMetricForInterface, ERROR: " + e);
+                    Debug.WriteLine("GetMetricForInterface, ERROR: " + e);
                 }
             }
             finally
@@ -522,12 +522,12 @@ namespace Bloom.Publish.BloomPub.wifi
                 {
                     Console.WriteLine("CalculateBroadcastAddress, ERROR, length mismatch, IP vs mask: {0}, {1}",
                         ipBytes.Length, maskBytes.Length);
+                    return "";
                 }
 
                 byte[] bcastBytes = new byte[ipBytes.Length];
                 for (int i = 0; i < ipBytes.Length; i++)
                 {
-                    //bcastBytes[i] = (byte)(ipBytes[i] | (maskBytes[i] ^ 255));
                     bcastBytes[i] = (byte)(ipBytes[i] | ~maskBytes[i]);
                 }
 
