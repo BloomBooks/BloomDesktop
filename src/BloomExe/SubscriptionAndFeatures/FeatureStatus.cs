@@ -114,15 +114,9 @@ namespace Bloom.SubscriptionAndFeatures
             bool forPublishing = false
         )
         {
-            var subToUse = subscription;
-            if (book != null && book.IsPlayground)
-            {
-                subToUse = Subscription.ForUnitTestWithOverrideTier(SubscriptionTier.Enterprise);
-            }
-
             if (Enum.TryParse<FeatureName>(featureName, true, out FeatureName featureEnum))
             {
-                return GetFeatureStatus(subToUse, featureEnum, book, forPublishing);
+                return GetFeatureStatus(subscription, featureEnum, book, forPublishing);
             }
             Debug.Assert(false, $"Feature '{featureName}' not found in FeatureName enum.");
             return null;
@@ -150,6 +144,8 @@ namespace Bloom.SubscriptionAndFeatures
         )
         {
             var tier = subscription.Tier;
+            if (book != null && book.IsPlayground && feature.Feature != FeatureName.TeamCollection)
+                tier = SubscriptionTier.Enterprise;
             var enabled = (int)tier >= (int)feature.SubscriptionTier;
             if (!enabled && forPublishing && book != null)
             {
@@ -179,12 +175,13 @@ namespace Bloom.SubscriptionAndFeatures
         public static IEnumerable<FeatureInfo> GetFeaturesToDisableUsingMethod(
             Subscription subscription,
             bool forDerivative,
-            PreventionMethod method
+            PreventionMethod method,
+            Book.Book book = null
         )
         {
             return FeatureRegistry.Features.Where(feature =>
             {
-                var featureStatus = GetFeatureStatus(subscription, feature);
+                var featureStatus = GetFeatureStatus(subscription, feature, book);
                 // which property of the feature should we look at to decide
                 // whether it uses this method of disabling?
                 var methodToMatch = forDerivative

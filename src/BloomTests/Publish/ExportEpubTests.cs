@@ -450,7 +450,7 @@ namespace BloomTests.Publish
         {
             if (tier != null && book.CollectionSettings.Subscription.Tier != tier)
             {
-                book.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
+                book.CollectionSettings.Subscription = Subscription.CreateTempSubscriptionForTier(
                     tier.Value
                 );
             }

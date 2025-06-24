@@ -413,11 +413,11 @@ namespace Bloom.SubscriptionAndFeatures
             return Code != code;
         }
 
-        internal static Subscription ForUnitTestWithOverrideTier(SubscriptionTier tier)
+        internal static Subscription CreateTempSubscriptionForTier(SubscriptionTier tier)
         {
             var subscription = new Subscription("");
 
-            // Directly set the tier for testing
+            // Directly set the tier for testing or playground
             subscription.Tier = tier;
 
             return subscription;
