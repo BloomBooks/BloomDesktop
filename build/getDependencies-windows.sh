@@ -98,9 +98,9 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"*.*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/Squirrel.Windows.git [refs/heads/master]
-# [3] build: Bloom Help 6.1 (Bloom_Help_BloomHelp61)
+# [3] build: Bloom Help 6.3 (Bloom_Help_BloomHelp63)
 #     project: Help
-#     URL: https://build.palaso.org/buildConfiguration/Bloom_Help_BloomHelp61?mode=builds
+#     URL: https://build.palaso.org/buildConfiguration/Bloom_Help_BloomHelp63?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
@@ -187,7 +187,7 @@ copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/signtool.exe ../lib/dotnet/signtool.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/squirrel.windows.props ../lib/dotnet/squirrel.windows.props
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/update.com ../lib/dotnet/update.com
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp61/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp63/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
