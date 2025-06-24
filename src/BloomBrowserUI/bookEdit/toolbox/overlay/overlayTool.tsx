@@ -73,15 +73,20 @@ const OverlayToolControls: React.FunctionComponent = () => {
     const [isOutlineColorSelectOpen, setIsOutlineColorSelectOpen] = useState(
         false
     );
-    useEffect(
-        () =>
-            // Make sure we don't leave the select open when the tool closes.
-            ToolBox.addWhenClosingToolTask(() => {
-                setIsStyleSelectOpen(false);
-                setIsOutlineColorSelectOpen(false);
-            }),
-        []
-    );
+    function openStyleSelect() {
+        setIsStyleSelectOpen(true);
+        // Make sure we don't leave the select open when the tool closes.
+        ToolBox.addWhenClosingToolTask(() => {
+            setIsStyleSelectOpen(false);
+        });
+    }
+    function openOutlineColorSelect() {
+        setIsOutlineColorSelectOpen(true);
+        // Make sure we don't leave the select open when the tool closes.
+        ToolBox.addWhenClosingToolTask(() => {
+            setIsOutlineColorSelectOpen(false);
+        });
+    }
 
     // Calls to useL10n
     const deleteTooltip = useL10n("Delete", "Common.Delete");
@@ -514,7 +519,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 variant="standard"
                                 value={style}
                                 open={isStyleSelectOpen}
-                                onOpen={() => setIsStyleSelectOpen(true)}
+                                onOpen={openStyleSelect}
                                 onClose={() => setIsStyleSelectOpen(false)}
                                 onChange={event => {
                                     handleStyleChanged(event);
@@ -642,7 +647,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 variant="standard"
                                 value={outlineColor ? outlineColor : "none"}
                                 open={isOutlineColorSelectOpen}
-                                onOpen={() => setIsOutlineColorSelectOpen(true)}
+                                onOpen={openOutlineColorSelect}
                                 onClose={() =>
                                     setIsOutlineColorSelectOpen(false)
                                 }
