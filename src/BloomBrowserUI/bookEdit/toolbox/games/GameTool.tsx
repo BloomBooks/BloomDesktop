@@ -1921,6 +1921,40 @@ export function setActiveDragActivityTab(tab: number) {
             /* nothing to do */
         });
         playInitialElements(page, true);
+
+        // Follow image hyperlinks to external sites.
+        // Bloom player has its own image hyperlink handling and follows both links to external sites and links to other
+        // pages and books, which we can't do here in the Edit tab.
+        const imagesWithLinks = Array.from(
+            page.querySelectorAll("[data-href]")
+        ).filter((elt: HTMLElement) => {
+            return (
+                elt.classList.contains("bloom-imageContainer") &&
+                !elt.closest("[data-draggable-id]")
+            );
+        });
+        imagesWithLinks.forEach((elt: HTMLElement) => {
+            elt.addEventListener("click", (e: MouseEvent) => {
+                const linkElement = (e.target as HTMLElement).closest(
+                    "[href], [data-href]"
+                ) as HTMLElement;
+                if (!linkElement) return;
+
+                const href: string | undefined =
+                    (linkElement.getAttribute("href") ||
+                        linkElement.getAttribute("data-href")) ??
+                    undefined;
+                if (!href) return;
+                if (href.startsWith("http://") || href.startsWith("https://")) {
+                    // This is a generic external link. We open it in a new window or tab.
+                    // (The host possibly could intercept this and open a browser to handle it.)
+                    window.open(href, "_blank", "noreferrer");
+                    return;
+                }
+                e.preventDefault(); // don't let a link click become a drag
+                e.stopPropagation();
+            });
+        });
         //Slider: wrapper?.removeEventListener("click", designTimeClickOnSlider);
     } else {
         undoPrepareActivity(page);
