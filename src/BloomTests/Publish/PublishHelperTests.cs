@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Bloom;
 using Bloom.Publish;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using NUnit.Framework;
+using SIL.TestUtilities;
 
 namespace BloomTests.Publish
 {
@@ -901,6 +905,261 @@ namespace BloomTests.Publish
                     fontStyle = "normal",
                     fontWeight = "400"
                 }
+            );
+        }
+
+        [Test]
+        public void RemovePagesByFeatureSystem_RemovesGamePages()
+        {
+            var doc = SafeXmlDocument.Create();
+            var bookXml =
+                @"<div class=""bloom-book"">
+                    <div class=""bloom-page  numberedPage side-right"" id=""gamePage1"" data-page-number=""1"" data-tool-id=""game"">
+                        <div class=""pageLabel"">Game Page</div>
+                    </div>
+                    <div class=""bloom-page numberedPage side-left"" id=""normalPage1""  data-page-number=""2""/>
+                    <div class=""bloom-page numberedPage side-right"" id=""widgetPage2""  data-page-number=""3"" data-tool-id=""game"">
+                        <div class=""pageLabel"">Game Page</div>
+                    </div>
+                    <div class=""bloom-page numberedPage side-left"" id=""normalPage2""  data-page-number=""4""/>
+                </div>";
+            doc.LoadXml(bookXml);
+            var pageElts = doc.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            var omittedPages = new Dictionary<string, int>();
+            var subscription = new Subscription("");
+            PublishHelper.RemovePagesByFeatureSystem(
+                pageElts,
+                PublishingMediums.BloomPub,
+                omittedPages,
+                subscription,
+                false,
+                "0123456789",
+                false
+            );
+
+            void GamePagesRemoved()
+            {
+                var assertThatXml = AssertThatXmlIn.Element(doc.DocumentElement);
+                assertThatXml.HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page')]",
+                    2
+                );
+                // changed to side-right since it's now an odd-numbered page
+                assertThatXml.HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='normalPage1' and @class='bloom-page numberedPage side-right' and @data-page-number='1']",
+                    1
+                );
+                assertThatXml.HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='normalPage2'and @class='bloom-page numberedPage side-left' and @data-page-number='2']",
+                    1
+                );
+                Assert.That(pageElts.Count, Is.EqualTo(2));
+            }
+            GamePagesRemoved();
+            Assert.That(omittedPages.Count, Is.EqualTo(1));
+            Assert.That(
+                omittedPages["Game Page"],
+                Is.EqualTo(2) // 2 widget pages were removed
+            );
+
+            doc.LoadXml(bookXml);
+            pageElts = doc.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            omittedPages = new Dictionary<string, int>();
+            subscription = new Subscription("Test-361769-1088"); // allows widgets
+            PublishHelper.RemovePagesByFeatureSystem(
+                pageElts,
+                PublishingMediums.Epub, // does not allow games
+                omittedPages,
+                subscription,
+                false,
+                "0123456789",
+                false
+            );
+            GamePagesRemoved();
+            // Currently we don't track pages omitted because of publishing medium
+            Assert.That(omittedPages.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void RemovePagesByFeatureSystem_ProOrHigherTierOrDerivative_DoesNotRemoveGamePages()
+        {
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml(
+                @"<div class=""bloom-book"">
+                    <div class=""bloom-page numberedPage side-right"" id=""gamePage1"" data-page-number=""1"" data-tool-id=""game"">
+                        <div class=""pageLabel"">Game Page</div>
+                    </div>
+                    <div class=""bloom-page numberedPage side-left"" id=""normalPage1""  data-page-number=""2""/>
+                    <div class=""bloom-page numberedPage side-right"" id=""gamePage2""  data-page-number=""3"" data-tool-id=""game"">
+                        <div class=""pageLabel"">Game Page</div>
+                    </div>
+                    <div class=""bloom-page numberedPage side-left"" id=""normalPage2""  data-page-number=""4""/>
+                </div>"
+            );
+            // Pro tier does not remove widgets
+            var pageElts = doc.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            var omittedPages = new Dictionary<string, int>();
+            var subscription = new Subscription("john_hatton@sil.org-005909-2753");
+            PublishHelper.RemovePagesByFeatureSystem(
+                pageElts,
+                PublishingMediums.BloomPub,
+                omittedPages,
+                subscription,
+                false,
+                "0123456789",
+                false
+            );
+            void checkNotRemoved()
+            {
+                var assertThatXml = AssertThatXmlIn.Element(doc.DocumentElement);
+                assertThatXml.HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page')]",
+                    4
+                );
+
+                Assert.That(pageElts.Count, Is.EqualTo(4));
+                Assert.That(omittedPages.Count, Is.EqualTo(0));
+            }
+            checkNotRemoved();
+
+            // higher tier is OK also
+            subscription = new Subscription("Test-361769-1088");
+            PublishHelper.RemovePagesByFeatureSystem(
+                pageElts,
+                PublishingMediums.BloomPub,
+                omittedPages,
+                subscription,
+                false,
+                "0123456789",
+                false
+            );
+            checkNotRemoved();
+
+            // In an original they would be removed for a basic subscription...
+            subscription = new Subscription("");
+            PublishHelper.RemovePagesByFeatureSystem(
+                pageElts,
+                PublishingMediums.BloomPub,
+                omittedPages,
+                subscription,
+                // ...but not when the book is a derivative
+                true,
+                "0123456789",
+                false
+            );
+            checkNotRemoved();
+        }
+
+        [Test]
+        public void RemovePagesByFeatureSystem_DoesNotRemoveFullCoverImagePages()
+        {
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml(
+                @"<div class=""bloom-book"">
+                    <div class=""bloom-page cover coverColor bloom-frontMatter cover-is-image no-margin-page frontCover outsideFrontCover side-right Device16x9Landscape"" id=""fullCoverImage"" data-page-number=""1"">
+                        <div class=""pageLabel"">Front Cover</div>
+                    </div>
+                    <div class=""bloom-page numberedPage side-left"" id=""normalPage1""  data-page-number=""2""/>
+                </div>"
+            );
+            var pageElts = doc.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            var omittedPages = new Dictionary<string, int>();
+            var subscription = new Subscription("");
+            PublishHelper.RemovePagesByFeatureSystem(
+                pageElts,
+                PublishingMediums.BloomPub,
+                omittedPages,
+                subscription,
+                false,
+                "0123456789",
+                false
+            );
+
+            var assertThatXml = AssertThatXmlIn.Element(doc.DocumentElement);
+            assertThatXml.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'bloom-page')]",
+                2
+            );
+
+            Assert.That(pageElts.Count, Is.EqualTo(2));
+            Assert.That(omittedPages.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void RemoveClassesToDisableFeatures_RemovesClassesFromFullCoverImagePages()
+        {
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml(
+                @"<div class=""bloom-book"">
+                    <div class=""bloom-page cover coverColor bloom-frontMatter cover-is-image no-margin-page frontCover outsideFrontCover side-right Device16x9Landscape"" id=""fullCoverImage"" data-page-number=""1"">
+                        <div class=""pageLabel"">Front Cover</div>
+                    </div>
+                    <div class=""bloom-page numberedPage side-left"" id=""normalPage1""  data-page-number=""2""/>
+                </div>"
+            );
+            var pageElts = doc.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            var subscription = new Subscription("");
+            var messages = new HashSet<string>();
+            PublishHelper.RemoveClassesAndAttrsToDisableFeatures(
+                pageElts,
+                subscription,
+                false,
+                messages
+            );
+            AssertThatXmlIn
+                .Element(pageElts[0])
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='fullCoverImage' and @class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right Device16x9Landscape']",
+                    1
+                );
+            Assert.That(
+                messages,
+                Has.Member(
+                    // Would like it to be this, but the localization manager doesn't work well enough in unit tests.
+                    //@"The feature ""Fill the front cover with a single image"" was removed from this book because it requires a higher subscription tier"
+                    @"The feature ""BookSettings.CoverIsImage"" was removed from this book because it requires a higher subscription tier"
+                )
+            );
+        }
+
+        [Test]
+        public void RemoveClassesToDisableFeatures_RemovesAttrsFromMusicPages()
+        {
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml(
+                @"<div class=""bloom-book"">
+                    <div class=""bloom-page numberedPage side-left"" id=""normalPage1""  data-backgroundaudio=""bird-eleven-labs.mp3"" data-page-number=""2""/>
+                </div>"
+            );
+            var pageElts = doc.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+            var subscription = new Subscription("");
+            var messages = new HashSet<string>();
+            PublishHelper.RemoveClassesAndAttrsToDisableFeatures(
+                pageElts,
+                subscription,
+                false,
+                messages
+            );
+            AssertThatXmlIn.Element(pageElts[0]).HasNoMatchForXpath("//div[@data-backgroundaudio]");
+            Assert.That(
+                messages,
+                Has.Member(
+                    // Would like it to be this, but the localization manager doesn't work well enough in unit tests.
+                    //@"The feature ""Background Audio"" was removed from this book because it requires a higher subscription tier"
+                    @"The feature ""PublishTab.Feature.Music"" was removed from this book because it requires a higher subscription tier"
+                )
             );
         }
     }

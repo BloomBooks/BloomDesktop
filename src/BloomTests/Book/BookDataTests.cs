@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Web;
+using System.Windows.Input;
 using System.Xml;
 using Bloom;
 using Bloom.Book;
@@ -17,7 +19,7 @@ using SIL.Reporting;
 using SIL.TestUtilities;
 using SIL.Text;
 using SIL.Windows.Forms.ClearShare;
-using SIL.Xml;
+using Bloom.SubscriptionAndFeatures;
 
 // TODO (default name BL-13703) currently, the Tag setter also automatically sets the name using LibPalasso logic.
 // If we make changes to that logic now that we are changing default names with the new
@@ -235,6 +237,122 @@ namespace BloomTests.Book
                 data.TextVariables["bookTitle"].TextAlternatives.ContainsAlternative("en"),
                 Is.False
             );
+        }
+
+        [Test]
+        public void GatherDataItemsFromXElement_BackgroundImage_GathersCroppingData()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+                <div id='bloomDataDiv'>
+                    
+                </div>
+                <div class='bloom-page' id='guid2'>
+                    <div class=""bloom-canvas bloom-has-canvas-element"" data-imgsizebasedon=""649,231"" >
+                        <div class=""bloom-canvas-element bloom-backgroundImage"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style=""width: 254.663px; top: 0px; left: 197.168px; height: 231px;"" data-bloom-active=""true"">
+                            <div class=""bloom-imageContainer"">
+                                <img data-book=""coverImage"" src=""macaw-parrot-sitting-on-a-tree-branch-4c6a4.jpg"" onerror=""this.classList.add('bloom-imageLoadError')"" style=""width: 308.031px; left: 0px; top: -29.3363px;""/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+             </body></html>"
+            );
+            DataSet data = new DataSet();
+            var itemsToDelete = new HashSet<Tuple<string, string>>();
+            var bookData = new BookData(
+                new HtmlDom("<html><body></body></html>"),
+                _collectionSettings,
+                null
+            );
+
+            //SUT
+            bookData.GatherDataItemsFromXElement(data, dom.RawDom.DocumentElement, itemsToDelete);
+
+            Assert.That(
+                data.TextVariables.TryGetValue("coverImage", out DataSetElementValue dsv),
+                Is.True
+            );
+            var attributes = dsv.GetAttributeList("*");
+            Assert.That(attributes, Is.Not.Null);
+            var imgStyle = attributes.FirstOrDefault(x => x.Item1 == "style");
+            Assert.That(imgStyle, Is.Not.Null);
+            Assert.That(
+                imgStyle.Item2.Unencoded,
+                Is.EqualTo("width: 308.031px; left: 0px; top: -29.3363px;")
+            );
+            var ceStyle = attributes.FirstOrDefault(x => x.Item1 == "data-canvas-element-style");
+            Assert.That(ceStyle, Is.Not.Null);
+            Assert.That(
+                ceStyle.Item2.Unencoded,
+                Is.EqualTo("width: 254.663px; top: 0px; left: 197.168px; height: 231px;")
+            );
+            var sizeBasedOnDefault = attributes.FirstOrDefault(
+                x => x.Item1 == "data-canvas-imgsizebasedon"
+            );
+            Assert.That(sizeBasedOnDefault, Is.Not.Null);
+            Assert.That(sizeBasedOnDefault.Item2.Unencoded, Is.EqualTo("649,231"));
+        }
+
+        [Test]
+        public void UpdateImageFromDataSet_CreatesBackgroundCanvasElement()
+        {
+            DataSet data = new DataSet();
+            var htmlDom = new HtmlDom(
+                @"
+<html><body>
+    <div id='bloomDataDiv'>
+    </div>
+    <div class='bloom-page' id='guid2'>
+        <div class=""bloom-canvas"" >
+            <img data-book=""coverImage"" src=""placeHolder.png""/>
+        </div>
+    </div>
+
+</body></html>"
+            );
+            var bookData = new BookData(htmlDom, _collectionSettings, null);
+            var dsv = new DataSetElementValue(new MultiTextBase(), false);
+            data.TextVariables["coverImage"] = dsv;
+            var attributes = new List<Tuple<string, XmlString>>
+            {
+                Tuple.Create(
+                    "style",
+                    XmlString.FromUnencoded("width: 308.031px; left: 0px; top: -29.3363px;")
+                ),
+                Tuple.Create(
+                    "data-canvas-element-style",
+                    XmlString.FromUnencoded(
+                        "width: 254.663px; top: 0px; left: 197.168px; height: 231px;"
+                    )
+                ),
+                Tuple.Create("data-canvas-imgsizebasedon", XmlString.FromUnencoded("649,231"))
+            };
+            dsv.SetAttributeList("*", attributes);
+            var imgNode =
+                htmlDom.RawDom.SelectSingleNode(
+                    "//div[@class='bloom-canvas']//img[@data-book='coverImage']"
+                ) as SafeXmlElement;
+            bookData.UpdateImageFromDataSet(data, imgNode, "coverImage");
+            Assert.That(
+                imgNode.GetAttribute("style"),
+                Is.EqualTo("width: 308.031px; left: 0px; top: -29.3363px;")
+            );
+            var imageContainer = imgNode.ParentElement;
+            Assert.That(imageContainer.GetAttribute("class"), Is.EqualTo("bloom-imageContainer"));
+            var ce = imageContainer.ParentElement;
+            Assert.That(ce, Is.Not.Null);
+            Assert.That(ce.HasClass(HtmlDom.kCanvasElementClass), Is.True);
+            Assert.That(ce.HasClass(HtmlDom.kBackgroundImageClass), Is.True);
+            Assert.That(
+                ce.GetAttribute("style"),
+                Is.EqualTo("width: 254.663px; top: 0px; left: 197.168px; height: 231px;")
+            );
+            var bloomCanvas = ce.ParentElement;
+            Assert.That(bloomCanvas, Is.Not.Null);
+            Assert.That(bloomCanvas.HasClass("bloom-canvas"), Is.True);
+            Assert.That(bloomCanvas.HasClass("bloom-has-canvas-element"), Is.True);
+            Assert.That(bloomCanvas.GetAttribute("data-imgsizebasedon"), Is.EqualTo("649,231"));
         }
 
         [Test]

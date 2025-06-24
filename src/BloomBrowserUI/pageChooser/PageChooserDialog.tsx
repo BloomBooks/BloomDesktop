@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useCallback, useEffect, useState } from "react";
@@ -16,13 +15,13 @@ import { getBloomApiPrefix } from "../utils/bloomApi";
 import { getToolboxBundleExports } from "../bookEdit/js/bloomFrames";
 import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
-import { useHaveSubscription } from "../react_components/requiresSubscription";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 import axios from "axios";
 import {
     kBloomCanvasClass,
     kBloomCanvasSelector
 } from "../bookEdit/js/bloomImages";
+import { getFeatureStatusAsync } from "../react_components/featureStatus";
 
 interface IPageChooserDialogProps {
     forChooseLayout: boolean;
@@ -72,11 +71,11 @@ export const getTemplatePageImageSource = (
         encodeURIComponent(templateBookFolderUrl) +
         "/template/" +
         encodeURIComponent(label) +
-        (orientation === "landscape"
-            ? "-landscape"
-            : orientation === "square"
-            ? "-square"
-            : "") +
+        // Previously, we checked for a square size and sent "-square" here.
+        // But we don't actually have any square thumbnails we ship,
+        // so that caused all the thumbnails to be generated.
+        // It looks *much* better to just show the portrait ones.
+        (orientation === "landscape" ? "-landscape" : "") +
         ".svg?generateThumbnailIfNecessary=true"
     );
 };
@@ -123,8 +122,6 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
     const [selectedTemplatePageDiv, setSelectedTemplatePageDiv] = useState<
         HTMLDivElement | undefined
     >(undefined);
-
-    const isEnterpriseAvailable = useHaveSubscription();
 
     // Tell edit tab to disable everything when the dialog is up.
     // (Without this, the page list is not disabled since the modal
@@ -370,13 +367,21 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
     const templatePageDoubleClickHandler = (
         selectedPageDiv: HTMLDivElement
     ): void => {
-        // N.B. The double click handler in the inner component does the single-click actions first.
-        const pageIsEnterpriseOnly = selectedPageDiv.classList.contains(
-            "enterprise-only"
-        );
-        if (pageIsEnterpriseOnly && !isEnterpriseAvailable) {
-            return;
+        executeDoubleClickActionAsync(selectedPageDiv);
+    };
+
+    // N.B. The double click handler in the inner component does the single-click actions first.
+    async function executeDoubleClickActionAsync(
+        selectedPageDiv: HTMLDivElement
+    ) {
+        // If the page has a feature, ensure the user has permission to use it.
+        const featureName =
+            selectedPageDiv.getAttribute("data-feature") || undefined;
+        if (featureName) {
+            const featureStatus = await getFeatureStatusAsync(featureName);
+            if (!featureStatus || !featureStatus.enabled) return;
         }
+
         const convertAnywayCheckbox = document.getElementById(
             "convertAnywayCheckbox"
         ) as HTMLInputElement;
@@ -397,7 +402,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
             selectedPageDiv.getAttribute("data-tool-id") ?? "",
             getToolId(selectedPageDiv)
         );
-    };
+    }
 
     const getTemplateBooks = (): JSX.Element[] | undefined => {
         if (bookData.length === 0) {
@@ -667,10 +672,11 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                             )}
                             pageId={selectedTemplatePageDiv.id}
                             imageSource={getPreviewImageSource()}
-                            enterpriseAvailable={isEnterpriseAvailable}
-                            pageIsEnterpriseOnly={selectedTemplatePageDiv.classList.contains(
-                                "enterprise-only"
-                            )}
+                            featureName={
+                                selectedTemplatePageDiv.getAttribute(
+                                    "data-feature"
+                                ) ?? undefined
+                            }
                             pageIsMarkedBilingual={
                                 selectedTemplatePageDiv.getAttribute(
                                     "data-ui-mark-bilingual"

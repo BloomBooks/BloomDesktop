@@ -31,6 +31,8 @@ namespace Bloom.web.controllers
             // The following is a list of image files that we don't want to paste image credits for.
             // It includes CC license image, placeholder and branding images.
             _doNotPasteArray = GetImageFilesToNotPasteCreditsFor().ToArray();
+            for (int i = 0; i < _doNotPasteArray.Length; ++i)
+                _doNotPasteArray[i] = BookStorage.GetNormalizedPathForOS(_doNotPasteArray[i]);
         }
 
         private static IEnumerable<string> GetImageFilesToNotPasteCreditsFor()
@@ -311,7 +313,8 @@ namespace Bloom.web.controllers
         {
             // returns 'true' if 'name' is among the list of ones we don't want to paste image credits for
             // includes CC license image, placeholder and branding images
-            return _doNotPasteArray.Contains(name.ToLowerInvariant())
+            var normalName = BookStorage.GetNormalizedPathForOS(name);
+            return _doNotPasteArray.Contains(normalName)
                 || name.ToLowerInvariant().StartsWith("placeholder");
         }
 
@@ -335,6 +338,8 @@ namespace Bloom.web.controllers
                 if (IsImgNotInAPage(img))
                     continue;
                 if (IsImgInsideBrandingElement(img))
+                    continue;
+                if (IsImgInsideGameButton(img))
                     continue;
                 var name = HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded;
                 var pageNum = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(img, langs);
@@ -368,6 +373,13 @@ namespace Bloom.web.controllers
         {
             return imgElement.SelectSingleNode(
                     "ancestor-or-self::div[contains(@data-book,'branding')]"
+                ) is SafeXmlElement;
+        }
+
+        private static bool IsImgInsideGameButton(SafeXmlElement img)
+        {
+            return img.SelectSingleNode(
+                    "ancestor-or-self::button[contains(@class,'game-button') or contains(@class,'page-turn-button')]"
                 ) is SafeXmlElement;
         }
 

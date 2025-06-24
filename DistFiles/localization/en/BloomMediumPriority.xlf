@@ -10,20 +10,6 @@
         <note>ID: AvailableWithSubscription</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
-      <trans-unit id="EditTab.Toolbox.DragActivity.Check">
-        <source xml:lang="en">Check</source>
-        <note>ID: EditTab.Toolbox.DragActivity.Check</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.CheckAnswer">
-        <source xml:lang="en">Check Answer</source>
-        <note>ID: EditTab.Toolbox.DragActivity.CheckAnswer</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.CheckHint">
-        <!-- Currently, if this is changed, RuntimeInformationInjector.AddHtmlUiStrings must be changed to match.
-        This is unfortunate, but our code for getting localization of hints is tricky to make async.-->
-        <source xml:lang="en">Clicking this validates the positions things have been dragged to.</source>
-        <note>ID: EditTab.Toolbox.DragActivity.CheckHint</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
@@ -506,7 +492,7 @@
         <note>This is a tooltip.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
-        <source xml:lang="en">This is disabled because publishing interactive activities requires a subcription.</source>
+        <source xml:lang="en">This is disabled because publishing interactive activities requires a subscription.</source>
         <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
         <note>This is a tooltip.</note>
       </trans-unit>
@@ -528,6 +514,11 @@
       <trans-unit id="PublishTab.Feature.Motion.Possible">
         <source xml:lang="en">Select this if you want to show motion when the book is read in landscape mode.</source>
         <note>ID: PublishTab.Feature.Motion.None</note>
+        <note>This is a tooltip.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Music">
+        <source xml:lang="en">Background Music</source>
+        <note>ID: PublishTab.Feature.Music</note>
         <note>This is a tooltip.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.NoVideos">
@@ -700,7 +691,7 @@
         <note>BookSettings.CoverIsImage</note>
       </trans-unit>
       <trans-unit id="BookSettings.CoverIsImage.Description" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
+        <source xml:lang="en">Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
         <note>BookSettings.CoverIsImage.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true">

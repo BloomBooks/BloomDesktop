@@ -279,6 +279,47 @@
         <target xml:lang="fr" state="final">Le livre n'est pas Déchiffrable</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragLettersInstructions" approved="yes">
+        <source>Drag the letters where they go</source>
+        <target xml:lang="fr" state="final">Faites glisser les lettres là où il faut</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragLettersInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions" approved="yes">
+        <source>Drag the pictures where they go</source>
+        <target xml:lang="fr" state="final">Faites glisser les photos là où il faut</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions" approved="yes">
+        <source>Drag the pictures to their shadows</source>
+        <target xml:lang="fr" state="final">Faites glisser les images chacune vers son ombre</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions" approved="yes">
+        <source>Match sounds with their words</source>
+        <target xml:lang="fr" state="final">Faites correspondre chaque son avec le mot qui correspond</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions
+        </note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions" approved="yes">
+        <source>Drag the correct sound to matching word</source>
+        <target xml:lang="fr" state="final">Faites glisser le son correct vers le mot qui correspond</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions" approved="yes">
+        <source>Drag the word to the matching image</source>
+        <target xml:lang="fr" state="final">Faites glisser le mot vers l'image qui correspond</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions" approved="yes">
+        <source>Match each image to a word</source>
+        <target xml:lang="fr" state="final">Faites correspondre chaque image à un mot</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.CustomGameInstructions" approved="yes">
+        <source>Put instructions here</source>
+        <target xml:lang="fr" state="final">Affichez ici les consignes</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.CustomGameInstructions</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool">
         <source xml:lang="en">
           Game Tool

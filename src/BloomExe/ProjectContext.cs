@@ -162,6 +162,7 @@ namespace Bloom
                                     typeof(AccessibilityCheckApi),
                                     typeof(CollectionSettingsApi),
                                     typeof(SubscriptionSettingsEditorApi),
+                                    typeof(FeatureStatusApi),
                                     typeof(CollectionApi),
                                     typeof(PageControlsApi),
                                     typeof(ReadersApi),
@@ -220,12 +221,12 @@ namespace Bloom
                                     new TeamCollectionManager(
                                         projectSettingsPath,
                                         c.Resolve<BloomWebSocketServer>(),
-                                        c.Resolve<BookRenamedEvent>(),
                                         c.Resolve<BookStatusChangeEvent>(),
                                         c.Resolve<BookSelection>(),
                                         c.Resolve<CollectionClosing>(),
                                         c.Resolve<BookCollectionHolder>(),
-                                        _collectionLock
+                                        _collectionLock,
+                                        c.Resolve<BookRenamedEvent>()
                                     )
                             )
                             .InstancePerLifetimeScope();
@@ -415,6 +416,7 @@ namespace Bloom
             _scope
                 .Resolve<SubscriptionSettingsEditorApi>()
                 .RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<FeatureStatusApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<BookCommandsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<SpreadsheetApi>().RegisterWithApiHandler(server.ApiHandler);

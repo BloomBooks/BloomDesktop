@@ -45,13 +45,6 @@ namespace Bloom.web.controllers
             this._bookSelection = bookSelection;
         }
 
-        private bool IsSubscriptionEnabled(bool failIfLockedToOneBook)
-        {
-            if (failIfLockedToOneBook && _collectionSettings.EditingABlorgBook)
-                return false;
-            return _collectionSettings.Subscription.HaveActiveSubscription;
-        }
-
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler(
@@ -75,34 +68,6 @@ namespace Bloom.web.controllers
                 request => _collectionSettings.EditingABlorgBook,
                 null,
                 false
-            );
-
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "subscriptionEnabled",
-                request =>
-                {
-                    if (request.HttpMethod == HttpMethods.Get)
-                    {
-                        lock (request)
-                        {
-                            // Some things (currently only creating a Team Collection) are not allowed if we're only
-                            // in subscription mode as a concession to allowing editing of a book that was downloaded
-                            // for direct editing.
-                            var failIfLockedToOneBook =
-                                (request.GetParamOrNull("failIfLockedToOneBook") ?? "false")
-                                == "true";
-                            request.ReplyWithBoolean(IsSubscriptionEnabled(failIfLockedToOneBook));
-                        }
-                    }
-                    else // post
-                    {
-                        System.Diagnostics.Debug.Fail(
-                            "We shouldn't ever be using the 'post' version."
-                        );
-                        request.PostSucceeded();
-                    }
-                },
-                true
             );
 
             // Enhance: The get here has one signature {descriptor, defaultBookshelf} while the post has another (defaultBookshelfId:string).
@@ -283,7 +248,9 @@ namespace Bloom.web.controllers
                 kApiUrlPart + "deprecatedBrandingsExpiryDate",
                 request =>
                 {
-                    request.ReplyWithText(Subscription.kExpiryDateForDeprecatedCodes);
+                    request.ReplyWithText(
+                        SubscriptionAndFeatures.Subscription.kExpiryDateForDeprecatedCodes
+                    );
                 },
                 false
             );

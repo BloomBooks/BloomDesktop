@@ -1308,23 +1308,29 @@ body.hideAllCKEditors .cke_chrome {
 
 // we want :blank, but it's not in browsers yet. So we simulate it by a mutation observer
 // that adds a class to the editable when it is empty.
-// In theory, the first rule handles an English editable that is followed by a blank bloom-content1,
-// while the second handles the case where the blank is before the English.
-// I have not been able to test the former because Bloom seems to reorder the bloom-content1 first.
-// Enhance: possibly we could add a class that would let us identify the language that is the current
-// default for the source bubble, rather than fixing on English. But the main thing is to see that
-// there is a block there that should get some attention. The source bubble provides all the options.
-.bloom-show-en-when-blank
-    .bloom-editable[lang="en"]:has(~ .bloom-content1.bloom-blank),
-.bloom-show-en-when-blank
-    .bloom-content1.bloom-blank
-    ~ .bloom-editable[lang="en"] {
-    display: block; // overcomes rule that usually hides it (since it's not content1)
-    position: absolute; // put it over the space where the bloom-content1 usually is
-    top: 0;
-    left: 0;
-    pointer-events: none; // We can click right through it to the bloom-content1
-    opacity: 40%; // dim a bit to make it look like a prompt.
+// The data-place-holder-value gets set from the best available localization of
+// data-placeholder-l10n-id or data-eager-placeholder-l10n-id.
+// The :before is put on the paragraph so that it gets all the normal styling
+// that the paragraph should have. (:after is sometimes already used for something).
+// The blank-prompt variable makes it possible to use the text from the data-placeholder-value
+// attribute as the content of a pseudo-element on a child element (the attr() function
+// can only get an attribute from the current element, not a parent).
+// Since bloom-blank is only added to empty elements, there would not normally be more than
+// one paragraph in the parent, but first-child makes sure we we don't get multiple
+// placeholders if there is a sequence of empty paragraphs.
+[data-placeholder-value] {
+    --blank-prompt: attr(data-placeholder-value);
+    .bloom-blank p:first-child:before {
+        content: var(--blank-prompt);
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none; // We can click right through it to the bloom-content1
+        opacity: 40%; // dim a bit to make it look like a prompt.
+        background-color: transparent;
+    }
 }
 
 canvas.moving {
@@ -1554,15 +1560,6 @@ canvas.moving {
             left: 1px;
         }
     }
-}
-
-// Temporarily (we hope) cropping does not work on the cover. But the handles are part of the
-// expected look of a selected canvas element. This rule dims and disables them.
-.outsideFrontCover
-    #canvas-element-control-frame
-    .bloom-ui-canvas-element-side-handle {
-    opacity: 0.5;
-    pointer-events: none;
 }
 
 #canvas-element-context-controls {

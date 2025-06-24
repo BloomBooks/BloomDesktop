@@ -110,6 +110,10 @@ div.bloomPlayer-page {
         display: none;
     }
 
+    .pageLabel {
+        display: none;
+    }
+
     .bloom-translationGroup {
         // Height in ems so it is sensitive to font size. The '1 transparent/3 grey' here is not necessarily
         // ideal, and was just arrived at through experimentation, balancing accuracy
@@ -693,6 +697,23 @@ div.bloom-page.coverColor {
     }
 }
 
+.playground .marginBox:after {
+    content: "PLAYGROUND";
+    color: red;
+    font-family: "Noto Sans", sans-serif;
+    font-size: 17px;
+    transform: rotate(-37deg);
+    transform-origin: 0 0;
+    z-index: 1000;
+    opacity: 0.5;
+    filter: blur(1px);
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border: solid;
+    border-radius: 7px;
+    padding: 5px;
+}
 .bloom-page {
     display: block;
     box-sizing: border-box;

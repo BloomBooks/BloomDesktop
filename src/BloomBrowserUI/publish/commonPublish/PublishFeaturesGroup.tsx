@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import FormGroup from "@mui/material/FormGroup";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
@@ -23,20 +22,32 @@ import { ComicIcon } from "../../react_components/icons/ComicIcon";
 import { VisuallyImpairedIcon } from "../../react_components/icons/VisuallyImpairedIcon";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
-import { useHaveSubscription } from "../../react_components/requiresSubscription";
+import {
+    useGetFeatureAvailabilityMessage,
+    useGetFeatureStatus
+} from "../../react_components/featureStatus";
+import { kMotionToolId } from "../../bookEdit/toolbox/toolIds";
 
 export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
     generation?: number; // bump this to force recalc of computed features
 }> = props => {
     const [motionEnabled] = useApiBoolean("publish/canHaveMotionMode", false);
-    const [hasActivities] = useApiBoolean("publish/hasActivities", false);
+    const motionFeatureStatus = useGetFeatureStatus(kMotionToolId, true);
+    const motionFeatureMessage = useGetFeatureAvailabilityMessage(
+        motionFeatureStatus
+    );
+    const motionAllowed = motionFeatureStatus?.enabled ?? false;
+    // hasGames includes quizzes, simple choice, and drag activities.
+    const [hasGames] = useApiBoolean("publish/hasGames", false);
+    const [hasWidgets] = useApiBoolean("publish/hasWidgets", false);
     const [comicEnabled] = useApiBoolean("publish/comicEnabled", false);
     const [visuallyImpairedEnabled] = useApiBoolean(
         "publish/visuallyImpairedEnabled",
         false
     );
-    const enterpriseAvailable = useHaveSubscription();
+    const mayPublishGames = useGetFeatureStatus("game", true)?.enabled;
+    const mayPublishWidgets = useGetFeatureStatus("widget", true)?.enabled;
     const [langs, setLangs] = React.useState<ILanguagePublishInfo[]>([]);
     React.useEffect(() => {
         get(
@@ -172,18 +183,22 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "PublishTab.Feature.Activities.Present"
     );
 
-    const enterpriseRequiredTooltip = useL10n(
-        "This is disabled because publishing interactive activities requires a subcription.",
+    const subscriptionRequiredTooltip = useL10n(
+        "This is disabled because publishing interactive activities requires a subscription.",
         "PublishTab.Feature.Activities.RequiresSubscription"
     );
 
+    const hasActivities = hasGames || hasWidgets;
+    const hasActivitiesUserMayPublish =
+        (hasGames && mayPublishGames) || (hasWidgets && mayPublishWidgets);
+
     const activitiesTooltip = hasActivities
-        ? enterpriseAvailable
+        ? hasActivitiesUserMayPublish
             ? hasActivitiesTooltip
-            : enterpriseRequiredTooltip
+            : subscriptionRequiredTooltip
         : noActivitiesTooltip;
 
-    const checkTheActivityBox = hasActivities && enterpriseAvailable;
+    const checkTheActivityBox = hasActivitiesUserMayPublish;
 
     const noComicTooltip = useL10n(
         "This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.",
@@ -203,7 +218,11 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "Select this if you want to show motion when the book is read in landscape mode.",
         "PublishTab.Feature.Motion.Possible"
     );
-    const motionTooltip = motionEnabled ? hasMotionTooltip : noMotionTooltip;
+    const motionTooltip = motionEnabled
+        ? motionAllowed
+            ? hasMotionTooltip
+            : motionFeatureMessage
+        : noMotionTooltip;
 
     const noVisionTooltip = useL10n(
         "This is disabled because this book does not have any image descriptions in the primary language.",
@@ -310,7 +329,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                         apiEndpoint="publish/motionBookMode"
                         icon={<MotionIcon color={kBloomBlue} />}
                         onChange={props.onChange}
-                        disabled={!motionEnabled}
+                        disabled={!motionEnabled || !motionAllowed}
+                        forceDisabledValue={false}
                     />
                 </BloomTooltip>
                 <BloomTooltip key={"visual-tooltip"} tip={visionTooltip}>

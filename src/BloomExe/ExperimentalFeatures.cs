@@ -26,6 +26,13 @@ namespace Bloom
             }
             // remove obsolete experimental feature that has gone mainstream
             SetValue("webView2", false);
+
+            // In June 2025, the only one of these sources was the Picture Dictionary,
+            // and it had issues which had been introduced in an earlier version.
+            // We decided just to turn it off. We could clean up the code above, but
+            // I'm actually leaving the code as much like it previously was as possible
+            // so we can reinstate it easily if we want to.
+            SetValue(kExperimentalSourceBooks, false);
         }
 
         public static void SetValue(string featureName, bool isEnabled)

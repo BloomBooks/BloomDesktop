@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.FontProcessing;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
@@ -294,7 +295,7 @@ namespace Bloom.Publish.BloomPub
                     !String.IsNullOrEmpty(style)
                     && (
                         style.Contains("bloom-backgroundImage")
-                        || style.Contains("bloom-background-image-in-style")
+                        || style.Contains("bloom-background-image-in-style-attr")
                     )
                 )
                 {
@@ -333,7 +334,7 @@ namespace Bloom.Publish.BloomPub
                     !string.IsNullOrEmpty(style)
                     && (
                         style.Contains("bloom-backgroundImage")
-                        || style.Contains("bloom-background-image-in-style")
+                        || style.Contains("bloom-background-image-in-style-attr")
                     )
                 )
                 {
@@ -423,7 +424,14 @@ namespace Bloom.Publish.BloomPub
             //    than the one written to the .htm file.
             string modifiedBookFolderPath = modifiedBook.FolderPath;
 
-            if (modifiedBook.CollectionSettings.Subscription.HaveActiveSubscription)
+            if (
+                FeatureStatus
+                    .GetFeatureStatus(
+                        modifiedBook.CollectionSettings.Subscription,
+                        FeatureName.Game
+                    )
+                    .Enabled
+            )
                 ProcessQuizzes(modifiedBookFolderPath, modifiedBook.RawDom);
 
             // Right here, let's maintain the history of what the BloomdVersion signifies to a reader.
@@ -497,14 +505,19 @@ namespace Bloom.Publish.BloomPub
             using (var helper = new PublishHelper())
             {
                 helper.ControlForInvoke = ControlForInvoke;
-                ISet<string> warningMessages = new HashSet<string>();
+                var omittedPages = new Dictionary<string, int>();
+                var modifiedPageMessages = new HashSet<string>();
                 helper.RemoveUnwantedContent(
                     modifiedBook.OurHtmlDom,
                     modifiedBook,
                     false,
-                    warningMessages,
+                    omittedPages,
+                    modifiedPageMessages,
+                    settings.PublishingMedium,
                     keepPageLabels: settings?.WantPageLabels ?? false
                 );
+                var warningMessages = PublishHelper.MakePagesRemovedWarnings(omittedPages);
+                warningMessages.AddRange(modifiedPageMessages);
                 PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
                 fontsUsed = helper.FontsUsed;
                 BloomPubFontsAndLangsUsed = helper.FontsAndLangsUsed;
@@ -579,7 +592,15 @@ namespace Bloom.Publish.BloomPub
             ConvertCoverLinkToRealPageId(modifiedBook);
 
             AddDistributionFile(modifiedBookFolderPath, creator, settings);
-
+            // Make sure the bookdata we save is consistent with any changes we made (for example,
+            // to attributes of xmatter pages, BL-14907). Such changes are typically not made to the DataDiv itself,
+            // so we need to suck in the data from the edited DOM WITHOUT the DataDiv.
+            var dataDiv = modifiedBook.OurHtmlDom.SelectSingleNode("//div[@id='bloomDataDiv']");
+            var parent = dataDiv.ParentElement;
+            var next = dataDiv.NextSibling;
+            parent.RemoveChild(dataDiv);
+            modifiedBook.BookData.SuckInDataFromEditedDom(modifiedBook.OurHtmlDom);
+            parent.InsertBefore(dataDiv, next);
             modifiedBook.Save();
 
             return modifiedBook;
@@ -756,7 +777,7 @@ namespace Bloom.Publish.BloomPub
         /// - Copy any data-x attributes from the img element to the div
         /// - Convert the src attribute of the img to style="background-image:url('...')" (with the same source) on the parent div
         ///    (any pre-existing style attribute on the div is lost)
-        /// - Add the class bloom-background-image-in-style to the div
+        /// - Add the class bloom-background-image-in-style-attr to the div
         ///    (6.1 and earlier used bloom-backgroundImage, but 6.2 started using that class for background canvas elements.
         ///    so we're now using a different one for this publishing change.)
         /// - delete the img element
@@ -791,7 +812,7 @@ namespace Bloom.Publish.BloomPub
                         imgContainer.SetAttribute(attr.Name, attr.Value);
                 }
 
-                var classesToAdd = " bloom-background-image-in-style";
+                var classesToAdd = " bloom-background-image-in-style-attr";
                 // This is a nasty special case; see BL-11712. This class causes images to grow to
                 // cover the container, so when we convert to a background image, somehow we need to
                 // do the same thing. If we have other similar classes we will have to do it again,

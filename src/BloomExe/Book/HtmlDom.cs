@@ -7,11 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Windows.Controls;
+using System.Windows.Markup;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Publish; // for DynamicJson
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
@@ -612,6 +615,7 @@ namespace Bloom.Book
         public static string kBloomCanvasClass = "bloom-canvas";
         public static string kBloomCanvasSelector = "." + kBloomCanvasClass;
         public static string kBackgroundImageClass = "bloom-backgroundImage";
+        public static string kImageContainerClass = "bloom-imageContainer";
 
         public static bool HasBackgroundImage(SafeXmlElement imageContainer)
         {
@@ -1879,7 +1883,8 @@ namespace Bloom.Book
                 "data-wrong-sound",
                 "data-same-size",
                 "data-show-targets-during-play",
-                "data-show-answers-in-targets"
+                "data-show-answers-in-targets",
+                "data-missing-game-theme"
             };
             foreach (var attr in attrsToCopy)
             {
@@ -2821,6 +2826,12 @@ namespace Bloom.Book
                 || HasWidgetPages();
         }
 
+        public bool HasGamePages()
+        {
+            var nodes = _dom.SafeSelectNodes($"//{FeatureRegistry.kGamePageXPath}");
+            return nodes?.Length >= 1;
+        }
+
         public static bool IsActivityPage(SafeXmlElement pageElement)
         {
             var classes = pageElement.GetAttribute("class");
@@ -3047,8 +3058,17 @@ namespace Bloom.Book
         /// </summary>
         public int GetPageNumberOfPage(SafeXmlElement pageDiv)
         {
-            var allPages = RawDom.SafeSelectNodes("html/body/div[contains(@class,'bloom-page')]");
+            return GetPageNumberOfPage(
+                pageDiv,
+                RawDom.SafeSelectElements("html/body/div[contains(@class,'bloom-page')]")
+            );
+        }
 
+        private static int GetPageNumberOfPage(
+            SafeXmlElement pageDiv,
+            IEnumerable<SafeXmlElement> allPages
+        )
+        {
             var pageNumber = 0;
             foreach (SafeXmlElement p in allPages)
             {
@@ -3081,15 +3101,29 @@ namespace Bloom.Book
             bool languageIsRightToLeft
         )
         {
+            var pageDivs = GetPageElements();
+            UpdatePageNumberAndSideClassOfPages(
+                charactersForDigits,
+                languageIsRightToLeft,
+                pageDivs
+            );
+        }
+
+        public static void UpdatePageNumberAndSideClassOfPages(
+            string charactersForDigits,
+            bool languageIsRightToLeft,
+            IEnumerable<SafeXmlElement> pageDivs
+        )
+        {
             var i = 0;
-            foreach (var pageDiv in GetPageElements())
+            foreach (var pageDiv in pageDivs)
             {
                 UpdateSideClass(pageDiv, i, languageIsRightToLeft);
                 // enhance: we could optimize this since we are doing them all in sequence...
                 // we'd have to call this until we get a non-empty page number, but perhaps
                 // we could keep going through the back cover so long as the stylesheet
                 // ignores the numbers on those so no one will see them?
-                var number = GetPageNumberOfPage(pageDiv);
+                var number = GetPageNumberOfPage(pageDiv, pageDivs);
                 // Don't set data-page-number for xmatter (or other unnumbered) pages.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7303.
                 var numberInScript =
                     (number > 0 && pageDiv.HasClass("numberedPage"))
@@ -3104,7 +3138,10 @@ namespace Bloom.Book
         /// Simplified from https://stackoverflow.com/a/35099462/723299
         /// If there are number systems that can't be represented by just exchanging digits, this won't work for them.
         /// </summary>
-        private string GetNumberStringRepresentation(int postiveInteger, string charactersForDigits)
+        private static string GetNumberStringRepresentation(
+            int postiveInteger,
+            string charactersForDigits
+        )
         {
             if (String.IsNullOrEmpty(charactersForDigits))
                 return postiveInteger.ToString(CultureInfo.InvariantCulture);
@@ -3682,6 +3719,100 @@ namespace Bloom.Book
             {
                 RawDom.RemoveClassFromBody(className);
             }
+        }
+
+        /// <summary>
+        /// Gather some data from an img node and its parents that we need to reconstruct a
+        /// (possibly cropped) background image from attributes stored in the data div.
+        /// </summary>
+        public static List<Tuple<string, string>> GetDataForReconstructingBackgroundImgWrapper(
+            SafeXmlElement node
+        )
+        {
+            var result = new List<Tuple<string, string>>();
+            var ce = node.ParentElement?.ParentElement;
+            if (ce != null)
+            {
+                if (ce.HasClass(HtmlDom.kCanvasElementClass))
+                {
+                    result.Add(Tuple.Create("data-canvas-element-style", ce.GetAttribute("style")));
+                }
+
+                var bloomCanvas = ce.ParentElement;
+                if (bloomCanvas != null && bloomCanvas.HasClass(HtmlDom.kBloomCanvasClass))
+                {
+                    result.Add(
+                        Tuple.Create(
+                            "data-canvas-imgsizebasedon",
+                            bloomCanvas.GetAttribute("data-imgsizebasedon")
+                        )
+                    );
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a list of the tuple names created by GetDataForReconstructingBackgroundImgWrapper
+        /// and whose data is passed to ReconstructBackgroundImgWrapper
+        /// </summary>
+        public static string[] BackgroundImgTupleNames =>
+            new string[] { "data-canvas-imgsizebasedon", "data-canvas-element-style" };
+
+        /// <summary>
+        /// Use the data saved by GetDataForReconstructingBackgroundImgWrapper to restore the background
+        /// image structure and state. The input node may already have the required wrappers, which just
+        /// need to be updated, or they may need to be constructed.
+        /// </summary>
+        public static void ReconstructBackgroundImgWrapper(
+            SafeXmlElement node,
+            // One value for each item in BackgroundImgTupleNames, in that order
+            string[] backgroundImgValues
+        )
+        {
+            // The situation we want to establish is that the image is inside an imageContainer
+            // inside a canvasElement inside a bloomCanvas. That may not be true initially.
+            var imageContainer = node.ParentElement;
+            var canvasElement = imageContainer?.ParentElement;
+            var bloomCanvas = canvasElement?.ParentElement;
+            if (imageContainer.HasClass(HtmlDom.kBloomCanvasClass))
+            {
+                // Often, the image starts out directly inside a bloomCanvas and we have to create the two
+                // intermediate levels. (We have retained the simpler structure in our various xmatter templates,
+                // because when we don't have this extra data saved, we can do a better job of positioning
+                // the image when we let the TS code convert it to the new structure. So that's what we'll
+                // find if we are copying data from the data-div to an updated xmatter element.)
+                bloomCanvas = imageContainer;
+                imageContainer = node.OwnerDocument.CreateElement("div");
+                imageContainer.SetAttribute("class", HtmlDom.kImageContainerClass);
+                canvasElement = node.OwnerDocument.CreateElement("div");
+                // Currently this only works for images that are, in fact, background canvas images. If we use this for
+                // something that is not it will need adjusting.
+                canvasElement.SetAttribute(
+                    "class",
+                    HtmlDom.kCanvasElementClass + " " + HtmlDom.kBackgroundImageClass
+                );
+                canvasElement.AppendChild(imageContainer);
+                bloomCanvas.InsertAfter(canvasElement, node); // before we move node!
+                imageContainer.AppendChild(node); // move it
+            }
+            else if (
+                bloomCanvas == null
+                || !bloomCanvas.HasClass(HtmlDom.kBloomCanvasClass)
+                || !canvasElement.HasClass(HtmlDom.kCanvasElementClass)
+                || !imageContainer.HasClass(HtmlDom.kImageContainerClass)
+            )
+            {
+                // If it's not an xmatter situation, we expect to already have the correct structure.
+                // If that's not true, we don't have either of the situations we can handle. Safest to do
+                // nothing.
+                return;
+            }
+            // Either pre-existing or just created, we have the expected structure.
+            bloomCanvas.AddClass("bloom-has-canvas-element"); // probably only necessary if we added the canvas element
+            bloomCanvas.SetAttribute("data-imgsizebasedon", backgroundImgValues[0]);
+            canvasElement.SetAttribute("style", backgroundImgValues[1]);
         }
     }
 }

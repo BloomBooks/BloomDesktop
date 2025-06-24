@@ -12,8 +12,8 @@ import {
     getPageIFrame,
     getPageIframeBody
 } from "../../utils/shared";
-import { EditableDivUtils } from "../js/editableDivUtils";
 import { GameTool } from "./games/GameTool";
+import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
@@ -71,10 +71,10 @@ export interface ITool {
     makeRootElement(): HTMLDivElement;
 }
 
-// The newer React tools also implement this interface
 export interface IReactTool {
-    // toolbox beginAddTool() calls this to determine if this is a Bloom Enterprise only tool
-    toolRequiresEnterprise(): boolean;
+    // For tools that require a subscription. This will trigger an indicator communicating that this
+    // featureName requires a subscription.
+    featureName?: string;
 }
 
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
@@ -218,8 +218,35 @@ export class ToolBox {
         }
     }
 
-    public getTheOneDragActivityTool(): GameTool | undefined {
+    public getTheOneGameTool(): GameTool | undefined {
         return GameTool.theOneDragActivityTool;
+    }
+
+    // Generally prefer to use the standalone function detachCurrentTool() instead of this method.
+    // In some contexts where we want to detach, we may not be able to get the toolbox instance,
+    // and that function has some fallback behavior in that case.
+    public detachCurrentTool(): void {
+        for (const task of this.doWhenClosingTool) {
+            task();
+        }
+        this.doWhenClosingTool = [];
+        if (currentTool) {
+            currentTool.detachFromPage();
+        }
+    }
+    // A list of tasks to do when the current tool is closed. This is currently used to
+    // keep track of popups and dialogs that need to be closed when the tool goes away.
+    // We could make each tool responsible for this in its own detachFromPage() method,
+    // but I think it would make for some duplication, as well as some complexity for
+    // components that are used by particular (or multiple) tools and would need to find
+    // the right tool to notify. This gives us one place to track such cleanup tasks.
+    // (Of course the popup may get closed before we move away from the page or tool, so
+    // the task passed must be OK to call even after the popup is closed.)
+    private doWhenClosingTool: (() => void)[] = [];
+    public static addWhenClosingToolTask(task: () => void): void {
+        // This is used to add a task that should be run when the current tool is closed.
+        // It is used by the Talking Book tool to clean up the CkEditor markup.
+        getTheOneToolbox().doWhenClosingTool.push(task);
     }
 
     // Append "Tool" to the tool name if it's not already there.
@@ -533,6 +560,22 @@ export function getTheOneToolbox() {
 const masterToolList: ITool[] = [];
 let currentTool: ITool | undefined = undefined;
 
+// This primarily calls the detachFromPage method of the current tool, if any.
+// It also tries to find the current toolbox instance (in the right iframe, wherever it is called),
+// and runs any cleanup tasks that have been registered for when closing the tool.
+// It's important to get the right toolbox (in the right iframe) beacause that's the one
+// that has the valid list of tasks to run when closing the tool.
+function detachCurrentTool() {
+    const toolbox = getTheOneToolbox();
+    if (toolbox) {
+        toolbox.detachCurrentTool();
+    } else if (currentTool) {
+        // If the toolbox is not available, we still may be able to detach the current tool.
+        // This is what we used to do before we had some extra behavior in the toolbox.
+        currentTool.detachFromPage();
+    }
+}
+
 let newToolId: string | undefined = undefined;
 export function getActiveToolId(): string | undefined {
     return newToolId ? newToolId : currentTool?.id();
@@ -704,9 +747,7 @@ function restoreToolboxSettingsWhenPageReady(settings: string) {
 // Remove any markup the toolbox is inserting. Called by a RunJavaScript() in EditingView
 // before saving the page.
 export function removeToolboxMarkup() {
-    if (currentTool != null) {
-        currentTool.detachFromPage();
-    }
+    detachCurrentTool();
 }
 
 function switchTool(newToolName: string): void {
@@ -726,7 +767,7 @@ function switchTool(newToolName: string): void {
     }
     if (currentTool !== newTool) {
         if (currentTool) {
-            currentTool.detachFromPage();
+            detachCurrentTool();
             currentTool.hideTool();
         }
         if (newTool) {
@@ -947,19 +988,34 @@ function beginAddTool(
         // we don't do it to localizations. But in English, the code value beats the xlf one.
         let toolLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim();
         toolLabel = ToolBox.addToolToString(toolLabel, true);
-        const header = $(
-            "<h3 data-i18n='" + i18Id + "'>" + toolLabel + "</h3>"
-        );
+
         const reactTool = (tool as unknown) as IReactTool;
-        const requiresEnterprise = reactTool
-            ? reactTool.toolRequiresEnterprise()
-            : false;
-        // must both have this attr and value for removing if disabled.
+
+        // Currently, all subscription tools are React, so we haven't implemented a way to add the subscription badge to old-style tools
+        const possibleSubscriptionBadge = reactTool.featureName
+            ? `<span class="subscription-badge"></span>`
+            : "";
+        const header = $(
+            `<h3><div class="toolbox-accordion-header-text" data-i18n=${i18Id}>${toolLabel}</div>${possibleSubscriptionBadge}</span></h3>`
+        );
         header.attr("data-toolId", toolName);
         content.attr("data-toolId", toolName);
-        if (requiresEnterprise) {
-            header.addClass("requiresEnterprise");
+
+        // Check feature status asynchronously and apply subscription requirements if needed
+        if (reactTool.featureName) {
+            header.attr("data-feature", reactTool.featureName);
+            addFeatureStatusMessageTitlesToSubscriptionBadges(header);
+
+            getFeatureStatusAsync(reactTool.featureName).then(featureStatus => {
+                if (
+                    featureStatus &&
+                    featureStatus.subscriptionTier !== "Basic"
+                ) {
+                    header.addClass("requiresSubscription");
+                }
+            });
         }
+
         loadToolboxTool(header, content, toolId, openTool);
         if (whenLoaded) {
             whenLoaded();
@@ -1060,7 +1116,7 @@ function handleKeyboardInput(): void {
             // Normally every editable box has a ckeditor attached. But some arithmetic template boxes are
             // intended to contain numbers not needing translation and don't get one...because the logic
             // that invokes WireToCKEditor is looking for classes like bloom-content1 that are not present
-            // in ArithmeticTemplate. Here we're presumng that if a block didn't get one attached,
+            // in ArithmeticTemplate. Here we're presuming that if a block didn't get one attached,
             // it's not true vernacular text and doesn't need markup. So all the code below is skipped
             // if we don't have one.
             if (ckeditorOfThisBox) {
@@ -1281,6 +1337,64 @@ function resizeToolbox() {
 }
 
 /**
+ * Gets the localized title text for a feature based on its status
+ * @param featureName The name of the feature to get status for
+ * @returns A Promise that resolves to the localized title text
+ */
+async function getFeatureStatusTitleText(featureName: string): Promise<string> {
+    return new Promise<string>(resolve => {
+        get(`features/status?featureName=${featureName}`, c => {
+            const featureStatus = c.data;
+            const localizedTier = featureStatus?.localizedTier;
+
+            let titleText: string;
+            if (featureStatus.enabled) {
+                titleText = theOneLocalizationManager.getText(
+                    "Subscription.FeatureIsIncludedSentence",
+                    "This feature is included in your {0} subscription.",
+                    localizedTier
+                );
+            } else {
+                titleText = theOneLocalizationManager.getText(
+                    "Subscription.RequiredTierForFeatureSentence",
+                    'This feature requires a Bloom subscription tier of at least "{0}".',
+                    localizedTier
+                );
+            }
+            resolve(titleText);
+        });
+    });
+}
+
+/**
+ * Adds feature status message titles to subscription badges found in the specified jQuery element
+ * @param element The jQuery element containing subscription badges
+ */
+async function addFeatureStatusMessageTitlesToSubscriptionBadges(
+    element: JQuery
+): Promise<void> {
+    const subscriptionBadges = element.find(".subscription-badge");
+    const promises: Promise<void>[] = [];
+    subscriptionBadges.each(function(_i, subscriptionBadge) {
+        if (subscriptionBadge.hasAttribute("title")) return;
+        const featureName = subscriptionBadge.parentElement?.getAttribute(
+            "data-feature"
+        );
+        if (!featureName) return;
+
+        const promise = (async () => {
+            const titleText = await getFeatureStatusTitleText(featureName);
+            subscriptionBadge.setAttribute("title", titleText);
+        })();
+
+        promises.push(promise);
+    });
+
+    // Wait for all the promises to complete
+    await Promise.all(promises);
+}
+
+/**
  * Adds one tool to the toolbox
  * @param {String} newContent
  * @param {String} toolId
@@ -1318,6 +1432,9 @@ function loadToolboxTool(
     const label = header.text();
     if (toolId === "settingsTool" && !showExperimentalTools) {
         content.addClass("hideExperimental");
+    }
+    if (toolId === "settingsTool") {
+        addFeatureStatusMessageTitlesToSubscriptionBadges(content);
     }
 
     // Where to insert the new tool? We want to keep them alphabetical except for More...which is always last,
@@ -1363,7 +1480,7 @@ function showToolboxChanged(wasShowing: boolean): void {
     );
     if (currentTool) {
         if (wasShowing) {
-            currentTool.detachFromPage();
+            detachCurrentTool();
             currentTool.hideTool();
         } else {
             activateTool(currentTool);

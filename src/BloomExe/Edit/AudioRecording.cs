@@ -192,17 +192,17 @@ namespace Bloom.Edit
             {
                 if (RobustFile.Exists(GetPathToRecordableAudioForSegment(id)))
                 {
-                    request.PostSucceeded();
+                    request.ReplyWithBoolean(true);
                     return;
                 }
 
                 if (RobustFile.Exists(GetPathToPublishableAudioForSegment(id)))
                 {
-                    request.PostSucceeded();
+                    request.ReplyWithBoolean(true);
                     return;
                 }
             }
-            request.Failed("no audio");
+            request.ReplyWithBoolean(false);
         }
 
         private void HandleCheckForAllRecording(ApiRequest request)

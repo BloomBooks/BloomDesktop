@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { get } from "../utils/bloomApi";
+import { useL10n2 } from "../react_components/l10nHooks";
 
 export type SubscriptionCodeIntegrity =
     | "none"
@@ -15,7 +16,7 @@ interface SubscriptionData {
     Expiration: string;
     CodeIntegrity: string;
     SubscriptionDescriptor: string;
-    HaveBrandingFiles: boolean;
+    MissingBrandingFiles: boolean;
     EditingBlorgBook: boolean;
 }
 
@@ -29,7 +30,7 @@ export const useSubscriptionInfo = () => {
         Expiration: "",
         CodeIntegrity: "none",
         SubscriptionDescriptor: "",
-        HaveBrandingFiles: false,
+        MissingBrandingFiles: false,
         EditingBlorgBook: false
     });
     const [haveData, setHaveData] = useState(false);
@@ -64,12 +65,21 @@ export const useSubscriptionInfo = () => {
 
     return {
         code: subscriptionData.Code,
+        tier: subscriptionData.Tier,
         subscriptionCodeIntegrity: subscriptionData.CodeIntegrity as SubscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD: subscriptionData.Expiration || "",
         subscriptionDescriptor: subscriptionData.SubscriptionDescriptor,
         subscriptionSummary: subscriptionData.Summary,
-        haveBrandingFiles: subscriptionData.HaveBrandingFiles,
+        missingBrandingFiles: subscriptionData.MissingBrandingFiles,
         editingBlorgBook: subscriptionData.EditingBlorgBook,
         haveData
     };
 };
+
+// useLocalizedTier
+export function useLocalizedTier(tier: string) {
+    return useL10n2({
+        english: tier,
+        key: "Subscription.Tier." + tier
+    });
+}

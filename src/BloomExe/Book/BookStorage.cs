@@ -16,6 +16,7 @@ using Bloom.ErrorReporter;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
@@ -108,7 +109,7 @@ namespace Bloom.Book
         void MigrateToLevel5CanvasElement();
         void MigrateToLevel6LegacyActivities();
         void MigrateToLevel7BloomCanvas();
-
+        void MigrateToLevel8RemoveEnterpriseOnly();
         void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
@@ -171,12 +172,13 @@ namespace Bloom.Book
         ///   Bloom 6.2  7 = Changed name of element that contains canvas elements to bloom-canvas
         ///     (Previously was bloom-imageContainer, which conflicted with the use inside canvas
         ///     elements, and was inaccurate because it could contain many other things.)
+        ///   Bloom 6.2  8 = Removed enterprise-only class on all pages that have it
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 7;
+        public const int kMaintenanceLevel = 8;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -1013,7 +1015,7 @@ namespace Bloom.Book
         class Feature
         {
             public string BloomDesktopMinVersion { get; set; }
-            public string BloomReaderMinVersion { get; set; }
+            public string BloomPlayerMinVersion { get; set; }
             public string FeatureId { get; set; }
             public string FeaturePhrase { get; set; }
 
@@ -1026,6 +1028,11 @@ namespace Bloom.Book
         /// </summary>
         public static string ComicalXpath = "//*[@class='comical-generated']";
 
+        // All current BloomPlayerMinVersions are arbitrary. Bloom Player 2.13 was the first that could
+        // recognize a need for a higher version, so any value below that means any version of BP
+        // will at least attempt to read the book. We earlier had BloomReaderMinVersion with some features
+        // set to 1.0 and others to 3.3, but that wasn't actually used by BR, either. For testing and
+        // historic reasons I've kept the distinction by changing the 3.3 ones to 2.0.
         static Feature[] _features =
         {
             new Feature()
@@ -1033,7 +1040,7 @@ namespace Bloom.Book
                 FeatureId = "wholeTextBoxAudio",
                 FeaturePhrase = "Whole Text Box Audio",
                 BloomDesktopMinVersion = "4.4",
-                BloomReaderMinVersion = "1.0",
+                BloomPlayerMinVersion = "1.0",
                 XPath = "//*[@data-audiorecordingmode='TextBox']"
             },
             new Feature()
@@ -1043,7 +1050,7 @@ namespace Bloom.Book
                 // and xmatter seems too technical a term for end users to see.
                 FeaturePhrase = "Whole Text Box Audio in Front/Back Matter",
                 BloomDesktopMinVersion = "4.7",
-                BloomReaderMinVersion = "1.0",
+                BloomPlayerMinVersion = "1.0",
                 XPath = "//div[@data-xmatter-page]//*[@data-audiorecordingmode='TextBox']"
             },
             new Feature()
@@ -1051,7 +1058,7 @@ namespace Bloom.Book
                 FeatureId = "comical-1",
                 FeaturePhrase = "Support for Comics",
                 BloomDesktopMinVersion = "4.7",
-                BloomReaderMinVersion = "1.0",
+                BloomPlayerMinVersion = "1.0",
                 // We've updated Bloom to only store SVGs in the file if they are non-transparent. So now a
                 // Bloom book is considered 'comical' for Publishing, etc. if it has a comical-generated SVG.
                 XPath = ComicalXpath
@@ -1061,7 +1068,7 @@ namespace Bloom.Book
                 FeatureId = "comical-2",
                 FeaturePhrase = "Support for Comic Captions with Straight Line Tails",
                 BloomDesktopMinVersion = "5.0",
-                BloomReaderMinVersion = "1.0",
+                BloomPlayerMinVersion = "1.0",
                 // Bloom now allows comical Captions to have straight line tails, but if we open such a book
                 // in an older version of Bloom which nevertheless has comical, it will give it a normal bubble tail.
                 // This xpath finds a canvas element with a "caption" style and a non-empty tail spec.
@@ -1075,7 +1082,7 @@ namespace Bloom.Book
                 FeatureId = "hiddenAudioSplitMarkers",
                 FeaturePhrase = "Hide audio split markers (|) outside the talking book tool",
                 BloomDesktopMinVersion = "5.5",
-                BloomReaderMinVersion = "1.0",
+                BloomPlayerMinVersion = "1.0",
                 XPath = "//span[contains(@class,'bloom-audio-split-marker')]"
             },
             new Feature()
@@ -1083,7 +1090,7 @@ namespace Bloom.Book
                 FeatureId = "croppedImages",
                 FeaturePhrase = "Cropped images",
                 BloomDesktopMinVersion = "6.1",
-                BloomReaderMinVersion = "1.0",
+                BloomPlayerMinVersion = "1.0",
                 XPath =
                     "//div[contains(@class,'"
                     + HtmlDom.kCanvasElementClass
@@ -1094,7 +1101,7 @@ namespace Bloom.Book
                 FeatureId = "bloomGames6.2",
                 FeaturePhrase = "Bloom Games added in 6.2",
                 BloomDesktopMinVersion = "6.2",
-                BloomReaderMinVersion = "3.3",
+                BloomPlayerMinVersion = "2.0",
                 XPath =
                     "//div[@data-activity='drag-letter-to-target' or @data-activity='drag-image-to-target' or @data-activity='drag-sort-sentence' ]"
             },
@@ -1105,7 +1112,7 @@ namespace Bloom.Book
                 // Plan is to make a special exception to this for late releases of 6.1 and 6.0,
                 // which will know how to reverse the migration.
                 BloomDesktopMinVersion = "6.2",
-                BloomReaderMinVersion = "3.3",
+                BloomPlayerMinVersion = "2.0",
                 XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
             },
             new Feature()
@@ -1115,7 +1122,7 @@ namespace Bloom.Book
                 // Plan is to make a special exception to this for late releases of 6.1 and 6.0,
                 // which will know how to reverse the migration.
                 BloomDesktopMinVersion = "6.2",
-                BloomReaderMinVersion = "3.3",
+                BloomPlayerMinVersion = "2.0",
                 // This is used for all images so will nearly always succeed fast.
                 XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
             }
@@ -1171,7 +1178,7 @@ namespace Bloom.Book
                             FeatureId = feature.FeatureId,
                             FeaturePhrase = feature.FeaturePhrase,
                             BloomDesktopMinVersion = feature.BloomDesktopMinVersion,
-                            BloomReaderMinVersion = feature.BloomReaderMinVersion
+                            BloomPlayerMinVersion = feature.BloomPlayerMinVersion
                         }
                     );
                 }
@@ -4027,6 +4034,67 @@ namespace Bloom.Book
             MigrateList(quizzes, "game-theme-red-on-white");
             MigrateList(choices, "game-theme-white-and-orange-on-blue");
             Dom.UpdateMetaElement("maintenanceLevel", "6");
+        }
+
+        /// <summary>
+        /// Remove the "enterprise-only" class on all pages that have it.
+        /// </summary>
+        public void MigrateToLevel8RemoveEnterpriseOnly()
+        {
+            if (GetMaintenanceLevel() >= 8)
+                return;
+            var enterpriseOnlyPages = Dom.SafeSelectNodes("//div[contains(@class, 'enterprise-only')]");
+            foreach (SafeXmlElement page in enterpriseOnlyPages)
+            {
+                page.RemoveClass("enterprise-only");
+            }
+            Dom.UpdateMetaElement("maintenanceLevel", "8");
+        }
+
+        /// <summary>
+        /// This method reduces the list of features to the most specific one, based largely on the
+        /// subscription tier.  If there are multiple features that are at the same subscription
+        /// tier, then either the first one at that level is kept, or at the Pro tier, Game is
+        /// preferred over Overlay, and Overlay is preferred over everything else.
+        /// </summary>
+        private void ReduceListToMainFeature(List<FeatureName> featureList)
+        {
+            if (featureList.Count <= 1)
+                return; // life is simple
+                        // We want to keep the most specific feature, so we look for the highest subscription tier.
+                        // If we get down to the Pro tier, then we know that Game is more specific than Overlay,
+                        // and Overlay is more specific than the other features.
+            var enterpriseFeatures = featureList.FindAll(x => FeatureRegistry.Features.FindAll(
+                y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Enterprise).Count > 0);
+            if (enterpriseFeatures.Count > 0)
+            {
+                featureList.RemoveAll(x => x != enterpriseFeatures[0]);
+                return;
+            }
+            var communityFeatures = featureList.FindAll(x => FeatureRegistry.Features.FindAll(
+                y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.LocalCommunity).Count > 0);
+            if (communityFeatures.Count > 0)
+            {
+                featureList.RemoveAll(x => x != communityFeatures[0]);
+                return;
+            }
+            var proFeatures = featureList.FindAll(x => FeatureRegistry.Features.FindAll(
+                y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Pro).Count > 0);
+            if (proFeatures.Count > 0)
+            {
+                // Game overlaps with Overlay, but Game is more specific.
+                if (featureList.Contains(FeatureName.Game))
+                    featureList.RemoveAll(x => x != FeatureName.Game);
+                // If Overlay overlaps with anything else, choose Overlay.
+                else if (featureList.Contains(FeatureName.Overlay))
+                    featureList.RemoveAll(x => x != FeatureName.Overlay);
+                else
+                    featureList.RemoveAll(x => x != proFeatures[0]);
+                return;
+            }
+            // featureList is all at the basic tier, which I don't think can happen, but if it does,
+            // we just take the first one.
+            featureList.RemoveRange(1, featureList.Count - 1);
         }
 
         /// <summary>

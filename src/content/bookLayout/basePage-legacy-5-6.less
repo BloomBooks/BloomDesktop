@@ -38,7 +38,7 @@ textarea,
 .bloom-editable {
     flex-direction: column;
 }
-.bloom-background-image-in-style {
+.bloom-background-image-in-style-attr {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -503,6 +503,9 @@ div.bloomPlayer-page {
     overflow: clip;
 }
 .bloom-templateThumbnail .numberedPage:after {
+    display: none;
+}
+.bloom-templateThumbnail .pageLabel {
     display: none;
 }
 .bloom-templateThumbnail .bloom-translationGroup {
@@ -1663,4 +1666,32 @@ body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"]
 // Added from newer basePage.less to keep cover images working
 .bloom-canvas .bloom-canvas-element .bloom-imageContainer {
     margin: 0;
+}
+
+// added from new basePage.less to make cropping work
+.bloom-imageContainer {
+    overflow: hidden;
+}
+.bloom-canvas-element .bloom-imageContainer {
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+}
+// added from new basePage.less to impose playground watermark
+.playground .marginBox:after {
+    content: "PLAYGROUND";
+    color: red;
+    font-family: "Noto Sans", sans-serif;
+    font-size: 17px;
+    transform: rotate(-37deg);
+    transform-origin: 0 0;
+    z-index: 1000;
+    opacity: 0.5;
+    filter: blur(1px);
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border: solid;
+    border-radius: 7px;
+    padding: 5px;
 }

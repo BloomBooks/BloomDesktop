@@ -604,8 +604,9 @@ namespace Bloom.Collection
 			this._showExperimentalBookSources.Size = new System.Drawing.Size(229, 23);
 			this._showExperimentalBookSources.TabIndex = 7;
 			this._showExperimentalBookSources.Text = "Show Experimental Book Sources";
-			this._showExperimentalBookSources.UseVisualStyleBackColor = false;
-			this._showExperimentalBookSources.CheckedChanged += new System.EventHandler(this._showExperimentalBookSources_CheckedChanged);
+            this._showExperimentalBookSources.UseVisualStyleBackColor = false;
+            this._showExperimentalBookSources.Visible = false;
+            this._showExperimentalBookSources.CheckedChanged += new System.EventHandler(this._showExperimentalBookSources_CheckedChanged);
 			//
 			// _enterpriseRequiredForTeamCollection
 			//
@@ -613,7 +614,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForTeamCollection, "To use this feature, you\'ll need a Bloom Subscription.");
 			this._L10NSharpExtender.SetLocalizationComment(this._enterpriseRequiredForTeamCollection, null);
 			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForTeamCollection, "CollectionSettingsDialog.RequiresSubscription");
-			this._enterpriseRequiredForTeamCollection.Location = new System.Drawing.Point(0, 129);
+			this._enterpriseRequiredForTeamCollection.Location = new System.Drawing.Point(0, 100);
 			this._enterpriseRequiredForTeamCollection.Name = "_enterpriseRequiredForTeamCollection";
 			this._enterpriseRequiredForTeamCollection.Size = new System.Drawing.Size(23, 23);
 			this._enterpriseRequiredForTeamCollection.TabIndex = 8;
@@ -625,7 +626,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizationComment(this._allowTeamCollection, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._allowTeamCollection, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._allowTeamCollection, "TeamCollection.TeamCollections");
-			this._allowTeamCollection.Location = new System.Drawing.Point(27, 129);
+			this._allowTeamCollection.Location = new System.Drawing.Point(27, 100);
 			this._allowTeamCollection.Name = "_allowTeamCollection";
 			this._allowTeamCollection.Size = new System.Drawing.Size(130, 23);
 			this._allowTeamCollection.TabIndex = 9;

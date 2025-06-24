@@ -243,6 +243,9 @@ namespace Bloom
             {
                 additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
             }
+            #region DEBUG
+            additionalBrowserArgs += " --remote-debugging-port=9222 "; // allow external inspector connect
+            #endregion
 
             var op = new CoreWebView2EnvironmentOptions(additionalBrowserArgs);
 
@@ -639,6 +642,8 @@ namespace Bloom
                 { }
                 var haveClipboardImage = clipboardImage == null ? "false" : "true";
 
+                clipboardImage?.Dispose();
+
                 RunJavascriptAsync(
                     $"editTabBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
                 );
@@ -691,7 +696,8 @@ namespace Bloom
                     var isTextSelection = IsThereACurrentTextSelection();
                     _cutCommand.Enabled = isTextSelection;
                     _copyCommand.Enabled = isTextSelection;
-                    _pasteCommand.Enabled = PortableClipboard.ContainsText();
+                    _pasteCommand.Enabled =
+                        PortableClipboard.ContainsText() || PortableClipboard.CanGetImage();
 
                     _undoCommand.Enabled = await CanUndoAsync();
                 }

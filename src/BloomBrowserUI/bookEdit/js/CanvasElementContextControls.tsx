@@ -551,6 +551,11 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         <MenuIcon color="primary" />
                     </button>
                     <Menu
+                        // if we don't keep the menu mounted, then whenever the menu opens it calculates its size and
+                        // the localizations aren't done yet at that point so it positions itself incorrectly (BL-14549).
+                        // The other option would be to put a resize observer on the menu, and use an action prop and
+                        // call updatePosition() whenever it resizes
+                        keepMounted
                         css={css`
                             ul {
                                 max-width: ${maxMenuWidth}px;
@@ -668,7 +673,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             onClick: () => {},
             icon: <VolumeUpIcon css={getMenuIconCss(1, "left:2px;")} />,
-            requiresAnySubscription: true,
+            featureName: "overlay",
             subMenu
         };
     }
@@ -964,7 +969,7 @@ function addImageMenuOptions(
         );
     };
 
-    menuOptions.unshift(
+    const imageMenuOptions: IMenuItemWithSubmenu[] = [
         {
             l10nId: "EditTab.Image.ChooseImage",
             english: "Choose image from your computer...",
@@ -1007,9 +1012,12 @@ function addImageMenuOptions(
                     css={getMenuIconCss(1, "left: -1px; width: 22px;")}
                 />
             )
-        },
-        divider,
-        {
+        }
+    ];
+    // It would be too confusing and difficult for the element to be both draggable and clickable with different
+    //  behavior such that we'd have to distinguish between the two.
+    if (!canvasElement.hasAttribute("data-draggable-id")) {
+        imageMenuOptions.push({
             l10nId: "EditTab.PasteHyperlink",
             english: "Paste Hyperlink",
             subLabel: imgContainer.getAttribute("data-href") && (
@@ -1020,7 +1028,7 @@ function addImageMenuOptions(
                     Currently: %0
                 </Span>
             ),
-            requiresAnySubscription: true,
+            featureName: "overlay",
             onClick: () => pasteLink(canvasElement)
 
             /*
@@ -1030,9 +1038,11 @@ function addImageMenuOptions(
             know if there was one when we last rendered.
             disabled: !haveHyperlinkOnClipboard
             */
-        }
+        });
         // Enhance: some way to remove a link you don't want anymore. For now, you can paste an empty string.
-    );
+    }
+
+    menuOptions.unshift(...imageMenuOptions);
 }
 function pasteLink(canvasElement: HTMLElement) {
     const imgContainer = canvasElement.getElementsByClassName(

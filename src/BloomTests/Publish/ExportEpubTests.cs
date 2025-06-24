@@ -16,8 +16,8 @@ using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.PlatformUtilities;
-using static Subscription;
 using BloomBook = Bloom.Book.Book;
+using Bloom.SubscriptionAndFeatures;
 
 namespace BloomTests.Publish
 {
@@ -450,7 +450,7 @@ namespace BloomTests.Publish
         {
             if (tier != null && book.CollectionSettings.Subscription.Tier != tier)
             {
-                book.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
+                book.CollectionSettings.Subscription = Subscription.CreateTempSubscriptionForTier(
                     tier.Value
                 );
             }

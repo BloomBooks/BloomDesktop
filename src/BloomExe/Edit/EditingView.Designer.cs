@@ -286,7 +286,7 @@ namespace Bloom.Edit
             this._betterToolTip1.SetToolTip(this._pasteButton, "Paste (Ctrl+V)");
             this._betterToolTip1.SetToolTipWhenDisabled(this._pasteButton, "There is nothing on the Clipboard that you can paste here.");
             this._pasteButton.UseVisualStyleBackColor = false;
-            this._pasteButton.Click += new System.EventHandler(this._pasteButton_Click);
+            this._pasteButton.Click += new System.EventHandler(this.OnPaste);
             // 
             // _copyButton
             // 

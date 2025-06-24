@@ -12,6 +12,8 @@ import { RecordingMode } from "./recordingMode";
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 import { LocalizedString } from "../../../react_components/l10nComponents";
 import { useL10n } from "../../../react_components/l10nHooks";
+import { RequiresSubscriptionAdjacentIconWrapper } from "../../../react_components/requiresSubscription";
+import { useGetFeatureStatus } from "../../../react_components/featureStatus";
 
 export const TalkingBookAdvancedSection: React.FunctionComponent<{
     hasAudio: boolean;
@@ -32,8 +34,13 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
 }> = props => {
     // return a triangle button. Its children are normally hidden. When you click it, it rotates and shows its children.
 
+    const wholeTextBoxAudioFeatureStatus = useGetFeatureStatus(
+        "WholeTextBoxAudio",
+        false
+    );
     const enabledImportRecordingButton =
         props.recordingMode === RecordingMode.TextBox &&
+        !!wholeTextBoxAudioFeatureStatus?.enabled &&
         props.hasRecordableDivs;
     // The toolbox is currently its own iframe, so we can't spill out to the left yet.
     // Unfortunately, we can't spill out the bottom without bad side effects either (BL-12366), so we go topside.
@@ -153,12 +160,14 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             }}
                             {...commonTooltipProps}
                         >
-                            <MuiRadio
-                                disabled={!props.hasRecordableDivs}
-                                value={RecordingMode.TextBox}
-                                label="By Whole Text Box"
-                                l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox"
-                            />
+                            <RequiresSubscriptionAdjacentIconWrapper featureName="WholeTextBoxAudio">
+                                <MuiRadio
+                                    disabled={!props.hasRecordableDivs}
+                                    value={RecordingMode.TextBox}
+                                    label="By Whole Text Box"
+                                    l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox"
+                                />
+                            </RequiresSubscriptionAdjacentIconWrapper>
                         </BloomTooltip>
                     </RadioGroup>
                 </BloomTooltip>

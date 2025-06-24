@@ -28,9 +28,8 @@ export default abstract class ToolboxToolReactAdaptor
     public isExperimental(): boolean {
         return false;
     }
-    public toolRequiresEnterprise(): boolean {
-        return false;
-    }
+    public featureName?: string;
+
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         const result = $.Deferred<void>();

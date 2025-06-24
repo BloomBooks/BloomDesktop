@@ -5,9 +5,6 @@ import {
     ConfigrGroup,
     ConfigrSubgroup,
     ConfigrCustomStringInput,
-    ConfigrCustomNumberInput,
-    ConfigrColorPicker,
-    ConfigrInput,
     ConfigrCustomObjectInput,
     ConfigrBoolean,
     ConfigrSelect
@@ -25,20 +22,14 @@ import {
     DialogCancelButton,
     DialogOkButton
 } from "../../react_components/BloomDialog/commonDialogComponents";
-import {
-    BloomPalette,
-    getDefaultColorsFromPalette
-} from "../../react_components/color-picking/bloomPalette";
-import ColorPicker from "../../react_components/color-picking/colorPicker";
+import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import {
     ColorDisplayButton,
     DialogResult
 } from "../../react_components/color-picking/colorPickerDialog";
-import { IColorInfo } from "../../react_components/color-picking/colorSwatch";
 import {
     post,
     postJson,
-    postString,
     useApiObject,
     useApiStringState
 } from "../../utils/bloomApi";
@@ -50,10 +41,8 @@ import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { PWithLink } from "../../react_components/pWithLink";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 import { StyleAndFontTable } from "./StyleAndFontTable";
-import {
-    BloomSubscriptionIndicatorIconAndText,
-    useHaveSubscription
-} from "../../react_components/requiresSubscription";
+import { BloomSubscriptionIndicatorIconAndText } from "../../react_components/requiresSubscription";
+import { useGetFeatureStatus } from "../../react_components/featureStatus";
 
 let isOpenAlready = false;
 
@@ -106,15 +95,20 @@ export const BookSettingsDialog: React.FunctionComponent<{
     >("book/settings/appearanceUIOptions", {
         themeNames: []
     });
+    // If we pass a new default value to useApiObject on every render, it will query the host
+    // every time and then set the result, which triggers a new render, making an infinite loop.
+    const defaultOverrides = React.useMemo(() => {
+        return {
+            xmatter: {},
+            branding: {},
+            xmatterName: "",
+            brandingName: ""
+        };
+    }, []);
 
     const overrideInformation: IOverrideInformation | undefined = useApiObject<
         IOverrideInformation
-    >("book/settings/overrides", {
-        xmatter: {},
-        branding: {},
-        xmatterName: "",
-        brandingName: ""
-    });
+    >("book/settings/overrides", defaultOverrides);
 
     const xmatterLockedBy = useL10n(
         "Locked by {0} Front/Back matter",
@@ -216,9 +210,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
         "Fill the front cover with a single image",
         "BookSettings.CoverIsImage"
     );
-    //TODO real links (and change .xlf)
     const coverIsImageDescription = useL10n(
-        "Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
+        "Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
         "BookSettings.CoverIsImage.Description"
     );
 
@@ -320,7 +313,9 @@ export const BookSettingsDialog: React.FunctionComponent<{
         setMigratedTheme("");
     };
 
-    const haveSubscription = useHaveSubscription();
+    const tierAllowsFullPageCoverImage = useGetFeatureStatus(
+        "fullPageCoverImage"
+    )?.enabled;
 
     function saveSettingsAndCloseDialog() {
         if (settingsToReturnLater) {
@@ -423,7 +418,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         )}
                                         disabled={
                                             appearanceDisabled ||
-                                            !haveSubscription
+                                            !tierAllowsFullPageCoverImage
                                         }
                                     />
                                     <div
@@ -435,6 +430,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `}
                                     >
                                         <BloomSubscriptionIndicatorIconAndText
+                                            feature="fullPageCoverImage"
                                             css={css`
                                                 margin-left: auto;
                                             `}

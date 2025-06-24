@@ -373,9 +373,11 @@ namespace Bloom.Publish.PDF
                     width = Size6x9PortraitWidth + bleedExtra;
                     break;
                 default:
-                    throw new ArgumentException(
+                    var exception = new ArgumentException(
                         "Full bleed printing of paper sizes other than A5, A4, A3, USComic, and Size6x9 is not yet implemented"
                     );
+                    exception.Data["argument"] = "specs.PaperSizeName";
+                    throw exception;
             }
 
             if (specs.Landscape)
@@ -401,7 +403,7 @@ namespace Bloom.Publish.PDF
         public bool SaveMemoryMode; // true if PDF file is to be produced using less memory (but more time)
         public bool BookIsFullBleed; // True if the book is laid out for full-bleed printing (and Enterprise is enabled)
         public bool PrintWithFullBleed; // True if (BookIsFullBleed and) full bleed is requested in the PdfOptions menu and we're not making a booklet
-        public bool Cmyk; // true if the Cmyk option is checked in the PdfOptions menu
+        public string ColorProfile; // the name of the ICC color profile file to use, empty string if none
         public int HtmlPageCount;
 
         // metadata
