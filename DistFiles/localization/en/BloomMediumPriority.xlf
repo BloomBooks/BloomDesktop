@@ -794,6 +794,18 @@
         <source xml:lang="en">Advanced Layout</source>
         <note>BookSettings.AdvancedLayoutLabel</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Gutter.DefaultLabel" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Default (set by Theme)</source>
+        <note>BookSettings.Gutter.DefaultLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Gutter.Description" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Extra space between pages near the book spine. Increase this for books with many pages to ensure text isn't lost in the binding. This gap is applied to each side of the spine.</source>
+        <note>BookSettings.Gutter.Description</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Gutter.Label" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Page Gutter</source>
+        <note>BookSettings.Gutter.Label</note>
+      </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPaddingLabel" sil:dynamic="true">
         <source xml:lang="en">Text Padding</source>
         <note>BookSettings.TopLevelTextPaddingLabel</note>
@@ -807,7 +819,7 @@
         <note>BookSettings.TopLevelTextPadding.DefaultLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPadding.1emLabel" sil:dynamic="true">
-        <source xml:lang="en">1em (font size)</source>
+        <source xml:lang="en">1 em (font size)</source>
         <note>BookSettings.TopLevelTextPadding.1emLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.Problematic" sil:dynamic="true">
