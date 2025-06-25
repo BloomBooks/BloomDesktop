@@ -417,12 +417,14 @@ namespace Bloom.Workspace
             var saveable = _bookSelection.CurrentSelection?.IsSaveable ?? false;
             if (forceNotSaveable)
                 saveable = false;
+            var deletable = _bookSelection.CurrentSelection?.IsDeletable ?? false;
             // notify browser components that are listening to this event
             var result = JsonConvert.SerializeObject(
                 new
                 {
                     id = book?.ID,
                     saveable,
+                    deletable,
                     collectionKind,
                     aboutBookInfoUrl,
                     isTemplate = book?.IsTemplateBook

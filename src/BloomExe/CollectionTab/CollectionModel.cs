@@ -458,7 +458,7 @@ namespace Bloom.CollectionTab
             {
                 if (IsCurrentBookInCollection())
                 {
-                    if (!_bookSelection.CurrentSelection.IsSaveable)
+                    if (!_bookSelection.CurrentSelection.IsDeletable)
                     {
                         var msg = LocalizationManager.GetString(
                             "TeamCollection.CheckOutForDelete",
