@@ -292,10 +292,18 @@
             data-wrong-sound="wrong_twoDownElectronic2_pixabay.webm"
             data-initial-page-orientation="landscape"
         >
+            <!-- Note: template pages have a special localization strategy.The trimmed text of the pageLabel becomes
+             a key for both Label and Description: for example, our XLF file has keys
+             "TemplateBooks.PageLabel.Drag Images to Targets" (yes, with the spaces) and
+             "TemplateBooks.PageDescription.Drag Images to Targets".
+             As far as I know, the data-i18n attribute here is not used; but I'm keeping it in case
+             it has a purpose I don't know about, or we one day decide to show it again in the added page. It might be
+             useful for localizing in that context, even though it is not used in the Add Page dialog.
+             It should be consistent with the generated IDs, that is, TemplateBooks.PageLabel.[content of label]-->
             <div
                 class="pageLabel"
                 lang="en"
-                data-i18n="TemplateBooks.PageLabel.DragImagesTargets"
+                data-i18n="TemplateBooks.PageLabel.Drag Images to Targets"
             >
                 Drag Images to Targets
             </div>
@@ -570,7 +578,7 @@
             <div
                 class="pageLabel"
                 lang="en"
-                data-i18n="TemplateBooks.PageLabel.DragImagesTargets"
+                data-i18n="TemplateBooks.PageLabel.Drag Images to Targets"
             >
                 Drag Images to Targets
             </div>
@@ -848,7 +856,7 @@
             <div
                 class="pageLabel"
                 lang="en"
-                data-i18n="TemplateBooks.PageLabel.DragImagesShadows"
+                data-i18n="TemplateBooks.PageLabel.Drag Images to Shadows"
             >
                 Drag Images to Shadows
             </div>
@@ -1127,7 +1135,7 @@
             <div
                 class="pageLabel"
                 lang="en"
-                data-i18n="TemplateBooks.PageLabel.DragImagesShadows"
+                data-i18n="TemplateBooks.PageLabel.Drag Images to Shadows"
             >
                 Drag Images to Shadows
             </div>
@@ -1402,9 +1410,9 @@
             <div
                 class="pageLabel"
                 lang="en"
-                data-i18n="TemplateBooks.PageLabel.MatchWordsWithImages"
+                data-i18n="TemplateBooks.PageLabel.Match Word with Image"
             >
-                Match Words with Images
+                Match Word with Image
             </div>
             <div class="pageDescription" lang="en"></div>
 
@@ -1683,9 +1691,9 @@
             <div
                 class="pageLabel"
                 lang="en"
-                data-i18n="TemplateBooks.PageLabel.MatchWordsWithImages"
+                data-i18n="TemplateBooks.PageLabel.Match Word with Image"
             >
-                Match Words with Images
+                Match Word with Image
             </div>
             <div class="pageDescription" lang="en"></div>
 
@@ -1964,7 +1972,7 @@
             <div
                 class="pageLabel"
                 lang="en"
-                data-i18n="TemplateBooks.PageLabel.DragImagesTargets"
+                data-i18n="TemplateBooks.PageLabel.Drag Images to Words"
             >
                 Drag Images to Words
             </div>
@@ -2404,7 +2412,7 @@
             <div
                 class="pageLabel"
                 lang="en"
-                data-i18n="TemplateBooks.PageLabel.DragImagesTargets"
+                data-i18n="TemplateBooks.PageLabel.Drag Images to Words"
             >
                 Drag Images to Words
             </div>
@@ -2849,9 +2857,9 @@
             <div
                 class="pageLabel"
                 lang="en"
-                data-i18n="TemplateBooks.PageLabel.Drag Sound to Word Target"
+                data-i18n="TemplateBooks.PageLabel.Drag Sound to Word"
             >
-                Drag Sound to Word Target
+                Drag Sound to Word
             </div>
             <div class="pageDescription" lang="en"></div>
 
@@ -3214,9 +3222,9 @@
             <div
                 class="pageLabel"
                 lang="en"
-                data-i18n="TemplateBooks.PageLabel.Drag Sound to Word Target"
+                data-i18n="TemplateBooks.PageLabel.Drag Sound to Word"
             >
-                Drag Sound to Word Target
+                Drag Sound to Word
             </div>
             <div class="pageDescription" lang="en"></div>
 
@@ -3577,9 +3585,9 @@
             <div
                 class="pageLabel"
                 lang="en"
-                data-i18n="TemplateBooks.PageLabel.Drag Sounds to Word Targets"
+                data-i18n="TemplateBooks.PageLabel.Drag Sounds to Words"
             >
-                Drag Sounds to Word Targets
+                Drag Sounds to Words
             </div>
             <div class="pageDescription" lang="en"></div>
 
@@ -4135,9 +4143,9 @@
             <div
                 class="pageLabel"
                 lang="en"
-                data-i18n="TemplateBooks.PageLabel.Drag Sounds to Word Targets"
+                data-i18n="TemplateBooks.PageLabel.Drag Sounds to Words"
             >
-                Drag Sounds to Word Targets
+                Drag Sounds to Words
             </div>
             <div class="pageDescription" lang="en"></div>
 

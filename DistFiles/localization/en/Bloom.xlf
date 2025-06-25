@@ -5746,9 +5746,20 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">A page with one language above the image and another below it.</source>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true" translate="no">
+        <source xml:lang="en">A simple quiz game that checks if readers understand key parts of the story they just read.</source>
+        <note>ID: TemplateBooks.PageDescription.Comprehension Quiz</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true">
         <source xml:lang="en">A blank page that allows you to add items.</source>
         <note>ID: TemplateBooks.PageDescription.Custom</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Custom Game" sil:dynamic="true" translate="no">
+        <source xml:lang="en">
+          Start with a blank page and create your own game from scratch using the Game Tool.
+          Best for advanced users.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Custom Game</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Flyleaf" sil:dynamic="true">
         <source xml:lang="en">This page was automatically inserted because the following page is marked as part of a two page spread.</source>
@@ -5765,14 +5776,73 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
+        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Picture" sil:dynamic="true">
-        <source xml:lang="en">An interactive page with an image and some text buttons.</source>
-        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Image from Word</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Readers see one image and three words. They pick the word that matches the picture. The word order changes each time the game is played.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true">
         <source xml:lang="en">An interactive page with a text and some picture buttons.</source>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+        <note>Obsolete as of Bloom 6.2</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Picture" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with an image and some text buttons.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+        <note>Obsolete as of Bloom 6.2</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Shadows" sil:dynamic="true" translate="no">
+        <source xml:lang="en">
+          ℹ️ This game requires images with transparent backgrounds.
+          Readers drag images to match their shadow shapes.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Drag Images to Shadows</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Targets" sil:dynamic="true" translate="no">
+        <source xml:lang="en">
+          Readers drag images to the correct target areas on the screen.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Drag Images to Targets</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Words" sil:dynamic="true" translate="no">
+        <source xml:lang="en">
+          Readers match each image to the correct word.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Drag Images to Words</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Sound to Word" sil:dynamic="true" translate="no">
+        <source xml:lang="en">
+          Readers listen to several sound recordings and choose the one that matches a word.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Drag Sound to Word</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Sounds to Words" sil:dynamic="true" translate="no">
+        <source xml:lang="en">
+          Readers match several sound recordings to the correct words.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Drag Sounds to Words</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Match Word with Image" sil:dynamic="true" translate="no">
+        <source xml:lang="en">
+          Readers see an image and drag one of several words to match. This game can be customized in many ways using the Game Tool.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Match Word with Image</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Order Words" sil:dynamic="true" translate="no">
+        <source xml:lang="en">
+          Readers see a clue (an image, GIF, or Sign Language video) and must arrange scrambled words into a complete sentence.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Order Words</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
@@ -5943,13 +6013,23 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Captive Widget Page</source>
         <note>ID: TemplateBooks.PageLabel.Captive Widget Page</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Choose Image from Word" sil:dynamic="true">
+        <source xml:lang="en">Choose Image from Word</source>
+        <note>ID: TemplateBooks.PageLabel.Choose Image from Word</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Choose Word from Image" sil:dynamic="true">
+        <source xml:lang="en">Choose Word from Image</source>
+        <note>ID: TemplateBooks.PageLabel.Choose Word from Image</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Choose Picture from Word" sil:dynamic="true">
         <source xml:lang="en">Choose Picture from Word</source>
         <note>ID: TemplateBooks.PageLabel.Choose Picture from Word</note>
+        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Choose Word from Picture" sil:dynamic="true">
         <source xml:lang="en">Choose Word from Picture</source>
         <note>ID: TemplateBooks.PageLabel.Choose Word from Picture</note>
+        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comic" sil:dynamic="true">
         <source xml:lang="en">Comic</source>
@@ -5958,6 +6038,10 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.PageLabel.Comic Full Page" sil:dynamic="true">
         <source xml:lang="en">Comic Full Page</source>
         <note>ID: TemplateBooks.PageLabel.Comic Full Page</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Comprehension Quiz" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Comprehension Quiz</source>
+        <note>ID: TemplateBooks.PageLabel.Comprehension Quiz</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comic Full Page with Footer" sil:dynamic="true">
         <source xml:lang="en">Comic Full Page with Footer</source>
@@ -6093,6 +6177,7 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.PageLabel.Quiz Page" sil:dynamic="true">
         <source xml:lang="en">Quiz Page</source>
         <note>ID: TemplateBooks.PageLabel.Quiz Page</note>
+        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
         <source xml:lang="en">SIL-Cameroon</source>
@@ -6135,13 +6220,17 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Widget Page</source>
         <note>ID: TemplateBooks.PageLabel.Widget Page</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Drag Letters to Targets" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Drag Letters to Targets</source>
-        <note>ID: TemplateBooks.PageLabel.Drag Letters to Targets</note>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Shadows" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag Images to Shadows</source>
+        <note>ID: TemplateBooks.PageLabel.Drag Images to Shadows</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.DragImagesTargets" sil:dynamic="true" translate="no">
+      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Targets" sil:dynamic="true" translate="no">
         <source xml:lang="en">Drag Images to Targets</source>
-        <note>ID: TemplateBooks.PageLabel.DragImagesTargets</note>
+        <note>ID: TemplateBooks.PageLabel.Drag Images to Targets</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Words" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag Images to Words</source>
+        <note>ID: TemplateBooks.PageLabel.Drag Images to Words</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true" translate="no">
         <source xml:lang="en">Drag Sound to Word Target</source>
@@ -6151,13 +6240,9 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Drag Sounds to Word Targets</source>
         <note>ID: TemplateBooks.PageLabel.Drag Sounds to Word Targets</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.DragImagesShadows" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Drag Images to Shadows</source>
-        <note>ID: TemplateBooks.PageLabel.DragImagesShadows</note>
-      </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.MatchWordsWithImages" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Match Words with Images</source>
-        <note>ID: TemplateBooks.PageLabel.MatchWordsWithImages</note>
+      <trans-unit id="TemplateBooks.PageLabel.Match Word with Image" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Match Word with Image</source>
+        <note>ID: TemplateBooks.PageLabel.Match Word with Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Order Words" sil:dynamic="true" translate="no">
         <source xml:lang="en">Order Words</source>
