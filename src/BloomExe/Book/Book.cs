@@ -817,7 +817,7 @@ namespace Bloom.Book
 
         // BL-2678: we want the user to be able to delete troublesome/no longer needed books
         // downloaded from BloomLibrary.org
-        public virtual bool CanDelete => IsSaveable || IsDownloaded;
+        public virtual bool CanDelete => IsDeletable || IsDownloaded;
 
         /// <summary>
         /// In the Bloom app, only one collection at a time is editable; that's the library they opened.
@@ -841,6 +841,12 @@ namespace Bloom.Book
         /// </summary>
         /// <remarks>Making this virtual allows tests to mock it.</remarks>
         public virtual bool IsSaveable => IsInEditableCollection && BookInfo.IsSaveable;
+
+        // This is subtly different. BookInfo.IsSaveable actually includes checking that the
+        // book is in the editable collection; but the BOOK version of IsInEditableCollection
+        // also checks that the book is not in an error state. Most commands are disabled for
+        // books in the error state, but we still want to allow deletion of such books
+        public bool IsDeletable => BookInfo.IsSaveable;
 
         /// <summary>
         /// First page in the book (or null if there are none)
@@ -4032,7 +4038,11 @@ namespace Bloom.Book
         public bool CoverIsImage =>
             BookInfo.AppearanceSettings.CoverIsImage
             && FeatureStatus
-                .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.FullPageCoverImage, this)
+                .GetFeatureStatus(
+                    CollectionSettings.Subscription,
+                    FeatureName.FullPageCoverImage,
+                    this
+                )
                 .Enabled;
 
         public bool FullBleed =>
