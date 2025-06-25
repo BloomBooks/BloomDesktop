@@ -284,8 +284,8 @@ namespace Bloom.Book
         public string SubscriptionDescriptor
         {
             get { return MetaData.SubscriptionDescriptor; }
-            set { MetaData.SubscriptionDescriptor = value; }
-        }
+            set { MetaData.SubscriptionDescriptor = value; } //"Sample-Book"; } //overwrite the set method to always keep the value at "Sample-Book" when publishing a new sample book for Bloom Reader.
+            }
 
         // When license is 'custom' this contains the license information. For other types in may contain additional permissions
         // (or possibly restrictions).
