@@ -39,9 +39,10 @@ export const ThemeChooser: React.FunctionComponent<{
     // State to track and control whether the dropdown is open.
     // We make it a controlled component so that we can close it when the tool closes.
     const [isSelectOpen, setIsSelectOpen] = useState(false);
-    useEffect(() => {
+    function openSelect() {
+        setIsSelectOpen(true);
         ToolBox.addWhenClosingToolTask(() => setIsSelectOpen(false));
-    }, []);
+    }
     const handleChooseTheme = event => {
         const newTheme = event.target.value;
         if (newTheme === currentTheme) {
@@ -149,7 +150,7 @@ export const ThemeChooser: React.FunctionComponent<{
                 variant="standard"
                 value={currentTheme}
                 open={isSelectOpen}
-                onOpen={() => setIsSelectOpen(true)}
+                onOpen={() => openSelect()}
                 onClose={() => setIsSelectOpen(false)}
                 onChange={event => {
                     handleChooseTheme(event);

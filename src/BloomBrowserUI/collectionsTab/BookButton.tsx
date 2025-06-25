@@ -242,7 +242,7 @@ export const BookButton: React.FunctionComponent<{
                 l10nId: "CollectionTab.BookMenu.DeleteBook",
                 command: "collections/deleteBook",
                 icon: <DeleteIcon></DeleteIcon>,
-                requiresSavePermission: true,
+                requiresDeletePermission: true,
                 addEllipsis: true,
                 // Allowed for the downloaded books collection and the editable collection
                 hide: () =>
@@ -445,11 +445,13 @@ export const BookButton: React.FunctionComponent<{
     // method at all, the menu does not show. (Showing a menu with no items results
     // in a small white square that is confusing.)
     let items: MenuItemSpec[] = [];
+    const bookInfo = props.manager.getSelectedBookInfo()!;
     if (selected) {
         items = makeMenuItems(
             getBookMenuItemsSpecs(),
             props.collection.isEditableCollection,
-            props.manager.getSelectedBookInfo()!.saveable,
+            bookInfo.saveable,
+            bookInfo.deleteable,
             handleClose,
             props.book.id,
             props.collection.id,
