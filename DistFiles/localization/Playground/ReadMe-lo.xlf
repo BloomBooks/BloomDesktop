@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="lo">
+    <body>
+      <trans-unit id="playground.template.title">
+        <source xml:lang="en">Playground</source>
+        <target xml:lang="lo" state="needs-translation">Playground</target>
+        <note>ID: playground.template.title</note>
+      </trans-unit>
+      <trans-unit id="playground.template.use">
+        <source xml:lang="en">Use this source book to explore all the features Bloom offers with a subscription. It's a great way to try out advanced tools and layout options before upgrading.</source>
+        <target xml:lang="lo" state="needs-translation">Use this source book to explore all the features Bloom offers with a subscription. It's a great way to try out advanced tools and layout options before upgrading.</target>
+        <note>ID: playground.template.use</note>
+      </trans-unit>
+      <trans-unit id="playground.template.warning">
+        <source xml:lang="en">Books created with this template will include a watermark and cannot be printed, published or distributed.</source>
+        <target xml:lang="lo" state="needs-translation">Books created with this template will include a watermark and cannot be printed, published or distributed.</target>
+        <note>ID: playground.template.warning</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
