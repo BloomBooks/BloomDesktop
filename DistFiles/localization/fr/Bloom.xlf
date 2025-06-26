@@ -2139,7 +2139,7 @@
         <target xml:lang="fr" state="needs-translation">Image credits, copyright, &amp; license</target>
         <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true">
         <source xml:lang="en">This sound will play when the item is touched.</source>
         <target xml:lang="fr" state="needs-translation">This sound will play when the item is touched.</target>
         <note>ID: EditTab.Image.PlayWhenTouched</note>

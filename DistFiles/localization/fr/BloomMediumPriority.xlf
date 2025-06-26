@@ -5,7 +5,7 @@
       <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
-      <trans-unit id="AvailableWithEnterprise" translate="no">
+      <trans-unit id="AvailableWithEnterprise">
         <source xml:lang="en">Available with your Enterprise Subscription</source>
         <target xml:lang="fr" state="needs-translation">Available with your Enterprise Subscription</target>
         <note>ID: AvailableWithEnterprise</note>
@@ -93,7 +93,7 @@
         <target xml:lang="fr" state="needs-translation">Place the targets in the places needed for the correct answer.</target>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.EditWordToSpell" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.EditWordToSpell">
         <source xml:lang="en">Edit word to spell</source>
         <target xml:lang="fr" state="needs-translation">Edit word to spell</target>
         <note>ID: EditTab.Toolbox.DragActivity.EditWordToSpell</note>
@@ -252,7 +252,7 @@
         <target xml:lang="fr" state="needs-translation">Word</target>
         <note>ID: EditTab.Toolbox.DragActivity.Word</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.WordToSpell" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.WordToSpell">
         <source xml:lang="en">Enter the word to spell</source>
         <target xml:lang="fr" state="needs-translation">Enter the word to spell</target>
         <note>ID: EditTab.Toolbox.DragActivity.WordToSpell</note>
@@ -380,17 +380,17 @@
         <target xml:lang="fr" state="final">Modifier le Fichier des Timings...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings" sil:dynamic="true">
         <source xml:lang="en">Adjust Timings...</source>
         <target xml:lang="fr" state="needs-translation">Adjust Timings...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title" sil:dynamic="true">
         <source xml:lang="en">Adjust Timings</source>
         <target xml:lang="fr" state="needs-translation">Adjust Timings</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip" sil:dynamic="true">
         <source xml:lang="en">This is disabled because there is not a whole text box recording</source>
         <target xml:lang="fr" state="needs-translation">This is disabled because there is not a whole text box recording</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip</note>
@@ -731,12 +731,12 @@
         <target xml:lang="fr" state="final">Couverture</target>
         <note>BookSettings.CoverGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage" sil:dynamic="true" translate="no">
+      <trans-unit id="BookSettings.CoverIsImage" sil:dynamic="true">
         <source xml:lang="en">Fill the front cover with a single image</source>
         <target xml:lang="fr" state="needs-translation">Fill the front cover with a single image</target>
         <note>BookSettings.CoverIsImage</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage.Description" sil:dynamic="true" translate="no">
+      <trans-unit id="BookSettings.CoverIsImage.Description" sil:dynamic="true">
         <source xml:lang="en">Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org) for information on sizing your image to fit.</source>
         <target xml:lang="fr" state="needs-translation">Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org) for information on sizing your image to fit.</target>
         <note>BookSettings.CoverIsImage.Description</note>

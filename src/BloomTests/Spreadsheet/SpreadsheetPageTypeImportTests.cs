@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -276,7 +276,7 @@ namespace BloomTests.Spreadsheet
             // But the point of adding this case is to test that we get the appropriate
             // user-defined style imported.
             var contentRow20 = CreateTextRow(ss, columnForEn, "Choose the matching word");
-            contentRow20.SetCell(columnForPageType, "Choose Word from Picture");
+            contentRow20.SetCell(columnForPageType, "Choose Word from Image");
             CreateTextRow(ss, columnForEn, "horse");
 
             pageText.Append(SpreadsheetImageAndTextImportTests.insideBackCoverPage);

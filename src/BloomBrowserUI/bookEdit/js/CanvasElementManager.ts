@@ -40,6 +40,7 @@ import {
     kBloomCanvasClass,
     doImageCommand
 } from "./bloomImages";
+import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import {
     adjustTarget,
     correctTabIndex,
@@ -299,14 +300,23 @@ export class CanvasElementManager {
         // So instead, we force the container to scroll back to the top.
         bloomCanvas.scrollTop = 0;
 
+        if (growAsMuchAsPossible === undefined) {
+            growAsMuchAsPossible = !canvasElement.classList.contains(
+                "bloom-noAutoHeight"
+            );
+        }
         // Check if required height exceeds available height
         if (newHeight + canvasElement.offsetTop > bloomCanvas.clientHeight) {
             if (growAsMuchAsPossible) {
                 // If we are allowed to grow as much as possible, we can set the height to the max available height.
                 newHeight = bloomCanvas.clientHeight - canvasElement.offsetTop;
+                overflowY =
+                    overflowY - (newHeight - canvasElement.clientHeight);
             } else {
                 return overflowY;
             }
+        } else {
+            overflowY = 0; // We won't overflow anymore, so return 0 from this method.
         }
 
         canvasElement.style.height = newHeight + "px";
@@ -318,7 +328,7 @@ export class CanvasElementManager {
         );
         this.adjustTarget(canvasElement);
         this.alignControlFrameWithActiveElement();
-        return 0; // success; we fixed it
+        return overflowY;
     }
 
     private getMaxVisibleSiblingHeight(
@@ -375,9 +385,7 @@ export class CanvasElementManager {
     // Note that when we experimented with just calling AdjustSizeOrMarkOverflow, we ran into issues with
     // nicescroll being turned on and off while the canvas element was being resized. This caused
     // flickering of the text extending beyond the canvas element.
-    // Note that we *would* actually like nicescroll to be updated when resizing the element, otherwise
-    // the scrollbar can end up out of position horizontally. But maybe that should happen on some
-    // kind of timeout, e.g. if we stop calling AdjustSizeOrMarkOverflow for a second.
+    // The code here now (June 2025) fixes niceScroll on a timeout.
     public adjustCanvasElementHeightToContentOrMarkOverflow(
         editable: HTMLElement
     ): void {
@@ -399,7 +407,19 @@ export class CanvasElementManager {
         if (!isInDragActivity(editable)) {
             editable.classList.toggle("overflow", overflowY > 0);
         }
+        if (this.fixNiceScrollTimeout) {
+            clearTimeout(this.fixNiceScrollTimeout);
+        }
+        // We want to clean up niceScroll so the scroll bars are not left behind, but we get
+        // flicker if we do it continuously. This is hopefully a long enough delay so it
+        // just happens after the user stops dragging.
+        this.fixNiceScrollTimeout = window.setTimeout(() => {
+            cleanupNiceScroll();
+            addScrollbarsToPage(editable.closest(".bloom-page") as HTMLElement);
+        }, 200);
     }
+
+    private fixNiceScrollTimeout = 0;
 
     // When the format dialog changes the amount of padding for canvas elements, adjust their sizes
     // and positions (keeping the text in the same place).

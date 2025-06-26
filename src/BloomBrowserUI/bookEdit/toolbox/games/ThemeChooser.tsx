@@ -10,6 +10,7 @@ import {
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { Div } from "../../../react_components/l10nComponents";
+import { InfoIconUrl } from "../../../react_components/icons/InfoIconUrl";
 
 const getPage = () => {
     const pageBody = ToolBox.getPage();
@@ -146,43 +147,79 @@ export const ThemeChooser: React.FunctionComponent<{
     }, [props.pageGeneration]);
     return (
         <ThemeProvider theme={toolboxMenuPopupTheme}>
-            <Select
-                variant="standard"
-                value={currentTheme}
-                open={isSelectOpen}
-                onOpen={() => openSelect()}
-                onClose={() => setIsSelectOpen(false)}
-                onChange={event => {
-                    handleChooseTheme(event);
-                    setIsSelectOpen(false);
-                }}
-                inputProps={{
-                    name: "style",
-                    id: "game-theme-dropdown"
-                }}
+            <div
                 css={css`
-                    svg.MuiSvgIcon-root {
-                        color: white !important;
-                    }
-                    ul {
-                        background-color: ${kOptionPanelBackgroundColor} !important;
-                    }
-                    fieldset {
-                        border-color: rgba(255, 255, 255, 0.5) !important;
-                    }
+                    display: flex;
                 `}
-                size="small"
             >
-                {themes.map(theme => (
-                    <MenuItem value={theme} key={theme} disabled={false}>
-                        <Div l10nKey={`EditTab.Toolbox.Games.Themes.${theme}`}>
-                            {isMissingTheme(theme)
-                                ? `(Missing) ${theme}`
-                                : theme}
-                        </Div>
-                    </MenuItem>
-                ))}
-            </Select>
+                <Select
+                    variant="standard"
+                    value={currentTheme}
+                    open={isSelectOpen}
+                    onOpen={() => openSelect()}
+                    onClose={() => setIsSelectOpen(false)}
+                    onChange={event => {
+                        handleChooseTheme(event);
+                        setIsSelectOpen(false);
+                    }}
+                    inputProps={{
+                        name: "style",
+                        id: "game-theme-dropdown"
+                    }}
+                    css={css`
+                        svg.MuiSvgIcon-root {
+                            color: white !important;
+                        }
+                        ul {
+                            background-color: ${kOptionPanelBackgroundColor} !important;
+                        }
+                        fieldset {
+                            border-color: rgba(255, 255, 255, 0.5) !important;
+                        }
+                    `}
+                    size="small"
+                >
+                    {themes.map(theme => (
+                        <MenuItem value={theme} key={theme} disabled={false}>
+                            <Div
+                                l10nKey={`EditTab.Toolbox.Games.Themes.${theme}`}
+                            >
+                                {isMissingTheme(theme)
+                                    ? `(Missing) ${theme}`
+                                    : theme}
+                            </Div>
+                        </MenuItem>
+                    ))}
+                </Select>
+                <InfoIconUrl
+                    href="https://docs.bloomlibrary.org/custom-game-theme"
+                    css={css`
+                        margin: 0 5px;
+                        max-width: 100px;
+                    `}
+                    // This is the best placement I could find. Below, the tooltip merges
+                    // with the next row of icons. Placed on the left, it covers the control it's
+                    // providing information about, and worse, MUI makes it too wide and a bit
+                    // gets clipped on the left. There's no doubt some way to override but I
+                    // haven't found it. Above seems to work best, with an offset to bring it
+                    // closer to the icon than the default. That is important because the popup
+                    // tends to close as the mouse moves from the icon to the tooltip, especially
+                    // if the mouse moves across the Select.
+                    placement="top-start"
+                    slotProps={{
+                        popper: {
+                            modifiers: [
+                                {
+                                    name: "offset",
+                                    options: {
+                                        offset: [0, -8]
+                                    }
+                                }
+                            ]
+                        }
+                    }}
+                />
+            </div>
         </ThemeProvider>
     );
 };
