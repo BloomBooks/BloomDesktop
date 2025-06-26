@@ -136,9 +136,9 @@
         <note>ID: Subscription.Tier.Pro</note>
         <note>"Pro" is short for "Professional" in English. This is a subscription tier.</note>
       </trans-unit>
-      <trans-unit id="Subscription.Tier.TierWithColon">
+      <trans-unit id="Subscription.TierWithColon">
         <source xml:lang="en">Tier:</source>
-        <note>ID: Subscription.Tier.TierWithColon</note>
+        <note>ID: Subscription.TierWithColon</note>
         <note>This is not one of the tiers, just a label</note>
       </trans-unit>
       <!-- Other -->
