@@ -799,11 +799,12 @@ namespace Bloom.Book
                         ", ",
                         sortedFilepaths.Values.Except(filePathsToChange).Select(Path.GetFileName)
                     );
-                    throw new FatalException(
-                        "Bloom found two or more books that are already shared in your Team Collection and have the same ID ("
-                            + problemPaths
-                            + "). You will need help from the Bloom Team to sort this out."
+                    var pattern = LocalizationManager.GetString(
+                        "TeamCollection.DuplicateIds",
+                        "Bloom found two or more books that are already shared in your Team Collection and have the same ID ({0})."
                     );
+                    var message = string.Format(pattern, problemPaths);
+                    throw new FatalException(message);
                 }
 
                 Logger.WriteEvent($"***Fixing {filePathsToChange.Count()} duplicate ids for: {id}");
