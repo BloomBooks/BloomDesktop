@@ -2088,7 +2088,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.BackgroundImage" sil:dynamic="true">
         <source xml:lang="en">Background Image</source>
-        <target xml:lang="es-ES" state="needs-translation">Background Image</target>
+        <target xml:lang="es-ES" state="translated">Imagen de fondo</target>
         <note>ID: EditTab.Image.BackgroundImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
