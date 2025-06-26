@@ -1504,14 +1504,13 @@ export function attachToCkEditor(element) {
         return;
     }
 
-    // Skip any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup)
-    if (
+    // For any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup),
+    // we never want to show the toolbar.  We do want to allow pasting and other editing tasks. (BL-14947)
+    const alwaysHideToolbar =
         $(element).hasClass("bloom-userCannotModifyStyles") ||
         $(element)
             .parentsUntil(".marginBox")
-            .hasClass("bloom-userCannotModifyStyles")
-    )
-        return;
+            .hasClass("bloom-userCannotModifyStyles");
 
     if ($(element).css("cursor") === "not-allowed") return;
 
@@ -1529,7 +1528,8 @@ export function attachToCkEditor(element) {
         // endpoints of the first range.  Mozilla can return multiple
         // ranges with the first one being empty.
         const textSelected = editor.getSelection().getSelectedText();
-        const show = textSelected && textSelected.length > 0;
+        const show =
+            !alwaysHideToolbar && textSelected && textSelected.length > 0;
         const bar = $("body").find("." + editor.id);
         localizeCkeditorTooltips(bar);
         if (show) {
