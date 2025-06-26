@@ -282,12 +282,12 @@
         <target xml:lang="sw" state="needs-translation">Finished</target>
         <note>Common.Finished</note>
       </trans-unit>
-      <trans-unit id="EditTab.PasteHyperlink.Currently" translate="no">
+      <trans-unit id="EditTab.PasteHyperlink.Currently">
         <source xml:lang="en">Currently %0</source>
         <target xml:lang="sw" state="needs-translation">Currently %0</target>
         <note>ID: EditTab.PasteHyperlink.Currently</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.MoveToCurrentCollection" translate="no">
+      <trans-unit id="CollectionTab.BookMenu.MoveToCurrentCollection">
         <source xml:lang="en">Move into {0}</source>
         <target xml:lang="sw" state="needs-translation">Move into {0}</target>
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
