@@ -299,14 +299,23 @@ export class CanvasElementManager {
         // So instead, we force the container to scroll back to the top.
         bloomCanvas.scrollTop = 0;
 
+        if (growAsMuchAsPossible === undefined) {
+            growAsMuchAsPossible = !canvasElement.classList.contains(
+                "bloom-noAutoHeight"
+            );
+        }
         // Check if required height exceeds available height
         if (newHeight + canvasElement.offsetTop > bloomCanvas.clientHeight) {
             if (growAsMuchAsPossible) {
                 // If we are allowed to grow as much as possible, we can set the height to the max available height.
                 newHeight = bloomCanvas.clientHeight - canvasElement.offsetTop;
+                overflowY =
+                    overflowY - (newHeight - canvasElement.clientHeight);
             } else {
                 return overflowY;
             }
+        } else {
+            overflowY = 0; // We won't overflow anymore, so return 0 from this method.
         }
 
         canvasElement.style.height = newHeight + "px";
@@ -318,7 +327,7 @@ export class CanvasElementManager {
         );
         this.adjustTarget(canvasElement);
         this.alignControlFrameWithActiveElement();
-        return 0; // success; we fixed it
+        return overflowY;
     }
 
     private getMaxVisibleSiblingHeight(
