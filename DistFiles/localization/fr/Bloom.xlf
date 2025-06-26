@@ -6565,9 +6565,9 @@ is mostly status, which shows on the Collection Tab -->
           Readers drag images to the correct target areas on the screen.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="fr" state="needs-translation">
-          Readers drag images to the correct target areas on the screen.
-          This game can be customized in many ways using the Game Tool.
+        <target xml:lang="fr" state="translated">
+          Les lecteurs font glisser des images vers les zones cibles correctes à l'écran.
+          On peut personnaliser ce jeu de plusieurs façons à l'aide de l'Outil de Jeu.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Targets</note>
       </trans-unit>
@@ -6576,9 +6576,9 @@ is mostly status, which shows on the Collection Tab -->
           Readers match each image to the correct word.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="fr" state="needs-translation">
-          Readers match each image to the correct word.
-          This game can be customized in many ways using the Game Tool.
+        <target xml:lang="fr" state="translated">
+          Les lecteurs font glisser des images vers les zones cibles correctes à l'écran.
+          On peut personnaliser ce jeu de plusieurs façons à l'aide de l'Outil de Jeu.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Words</note>
       </trans-unit>
