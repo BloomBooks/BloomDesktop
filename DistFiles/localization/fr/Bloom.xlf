@@ -6489,7 +6489,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true">
         <source xml:lang="en">A simple quiz game that checks if readers understand key parts of the story they just read.</source>
-        <target xml:lang="fr" state="needs-translation">A simple quiz game that checks if readers understand key parts of the story they just read.</target>
+        <target xml:lang="fr" state="translated">Un jeu de quiz simple qui vérifie si les lecteurs comprennent les parties clés du récit qu'ils viennent de lire.</target>
         <note>ID: TemplateBooks.PageDescription.Comprehension Quiz</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true" approved="yes">
@@ -6502,9 +6502,8 @@ is mostly status, which shows on the Collection Tab -->
           Start with a blank page and create your own game from scratch using the Game Tool.
           Best for advanced users.
         </source>
-        <target xml:lang="fr" state="needs-translation">
-          Start with a blank page and create your own game from scratch using the Game Tool.
-          Best for advanced users.
+        <target xml:lang="fr" state="translated">
+          Commencez par une page vide et créez votre propre jeu à partir de rien en utilisant l'Outil de Jeu. Mieux pour des utilisateurs avancés.
         </target>
         <note>ID: TemplateBooks.PageDescription.Custom Game</note>
       </trans-unit>
@@ -6530,12 +6529,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true">
         <source xml:lang="en">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</source>
-        <target xml:lang="fr" state="needs-translation">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</target>
+        <target xml:lang="fr" state="translated">Les lecteurs voient un mot et trois images. Ils choisissent l'image qui correspond au mot. L'ordre des images change chaque fois qu'on joue.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Image from Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true">
         <source xml:lang="en">Readers see one image and three words. They pick the word that matches the picture. The word order changes each time the game is played.</source>
-        <target xml:lang="fr" state="needs-translation">Readers see one image and three words. They pick the word that matches the picture. The word order changes each time the game is played.</target>
+        <target xml:lang="fr" state="translated">Les lecteurs voient une image et trois mots. Ils choisissent le mot qui correspond à l'image. L'ordre des mots change chaque fois qu'on joue.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true" approved="yes">
