@@ -192,8 +192,11 @@ span.bloom-linebreak {
 // Text wrapping algorithms.
 .bloom-page .bloom-editable.bloom-visibility-code-on {
     // Very long words should just allow themselves to be broken at the end of a line if they're
-    // longer than a line.  See BL-12330.
-    overflow-wrap: break-word;
+    // longer than a line.  See BL-12330. (Changed to anywhere while trying to fix BL-14920.
+    // Not sure it makes much if any difference. The difference between anywhere and break-word
+    // is so subtle I have not yet figured it out. I think the critical fix was setting the
+    // min-width of the child p to zero below.)
+    overflow-wrap: anywhere;
     text-wrap: pretty;
     &.Title-On-Cover-style,
     &.Cover-Default-style,
@@ -204,6 +207,20 @@ span.bloom-linebreak {
         // Ensure that the text wrapping in canvas elements is generally stable.  See BL-13135.
         // We would use the "stable" keyword, but that isn't implemented in most browsers.
         text-wrap: wrap;
+    }
+    p {
+        // In some contexts, bloom-editables are set to display: flex in the row direction.
+        // In that context, the flex layout attempts to determine the minimum width of the
+        // child p element, and the answer it gets by default is the width of the longest word.
+        // We instead want to break words if necessary (see overflow-wrap above), but that
+        // doesn't have the expected effect if the parent has already decided it needs to
+        // stretch the width of the child p to fit the longest word. The child is made that
+        // wide, and then the child doesn't need to break the long word, because it is wide
+        // enough to fit it! Meanwhile the overlay either shows text outside its bounds or
+        // clips it.
+        // An explicit min-width of 0 tells the parent that it can shrink the child to fit,
+        // and then the child can deal with any long words.
+        min-width: 0;
     }
 }
 

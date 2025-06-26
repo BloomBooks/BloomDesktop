@@ -1022,6 +1022,25 @@ function addImageMenuOptions(
             english: "Paste Hyperlink",
             subLabel: imgContainer.getAttribute("data-href") && (
                 <Span
+                    // This is tricky and I don't fully understand it myself.
+                    // The default behavior seems to be to extend the string beyond the width of
+                    // a couple of containers, so it extends all the way to the right edge of the menu
+                    // before it wraps. However, this span is nested inside an element that is to the left
+                    // of the Subscription icon, so most approaches limit the width to that, leaving more
+                    // space on the right than we really want. Providing a min-width actually makes
+                    // a very long URL smaller than it otherwise would be, overriding what I think is
+                    // the default: the min-width of the longest 'word' (usually the whole URL).
+                    // Making it 110% rather than zero makes it use up a bit more of the available space;
+                    // I adjusted it so that (a) the margins are about even when there is a long URL, and
+                    // (b) by happy coincidence, the URL only fits on the same line as "Currently: "
+                    // when it is short enough to stop just before it runs into the Subscription icon.
+                    // I think the other parameters don't take effect in a span unless display is set
+                    // to block.
+                    css={css`
+                        min-width: 110%;
+                        overflow-wrap: anywhere; /* so it wraps */
+                        display: block;
+                    `}
                     l10nKey="EditTab.PasteHyperlink.Currently"
                     l10nParam0={imgContainer.getAttribute("data-href") || ""}
                 >
