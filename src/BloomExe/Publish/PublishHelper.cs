@@ -967,7 +967,9 @@ namespace Bloom.Publish
             {
                 RobustFile.Copy(collectionStylesSource, collectionStylesDest, true);
             }
-            else
+            // The file customCollectionStyles.css has already been copied to the book folder if we
+            // are running in harvester mode, and we don't want to delete it in that case.
+            else if (!Program.RunningHarvesterMode)
             {
                 RobustFile.Delete(collectionStylesDest);
             }
