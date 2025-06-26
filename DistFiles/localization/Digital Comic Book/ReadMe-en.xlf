@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en">
+    <body>
+      <trans-unit id="comic.template.digital.title">
+        <source xml:lang="en">Digital Comic Book</source>
+        <target />
+        <note>ID: comic.template.digital.title</note>
+      </trans-unit>
+      <trans-unit id="comic.template.subscription">
+        <source xml:lang="en">Note: The Overlay Tool requires that you have a valid <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</g>. However, you can localize a shellbook that contains overlay elements into your own language without a Bloom subscription.</source>
+        <target />
+        <note>ID: comic.template.subscription</note>
+      </trans-unit>
+      <trans-unit id="comic.template.digital.use">
+        <source xml:lang="en">Use this template as a starting point for comics designed for use on screens.</source>
+        <target />
+        <note>ID: comic.template.digital.use</note>
+      </trans-unit>
+      <trans-unit id="comic.template.tips.lettering.header">
+        <source xml:lang="en">Tips on "lettering"</source>
+        <target />
+        <note>ID: comic.template.tips.lettering.header</note>
+      </trans-unit>
+      <trans-unit id="comic.template.tips.lettering">
+        <source xml:lang="en"><g id="genid-2" ctype="x-html-em">"Lettering"</g> is the term used for adding bubbles and text to comics. Take some time to learn what professional <g id="genid-3" ctype="x-html-em">letterers</g> say about making good-looking comics. Bloom takes care of some of these things for you, but there are many things that require training your eye. See <g id="genid-4" ctype="x-html-a" html:href="https://blambot.com/pages/lettering-tips">https://blambot.com/pages/lettering-tips</g>. Note, you do <g id="genid-5" ctype="x-html-em">not</g> need to only use upper case letters. It does look cool because we are used to seeing comics done this way, but you should do whatever is best for your audience. If you do choose upper case <g id="genid-6" ctype="x-html-em">and</g> have a script that is widely supported, consider using a special comic book font. See <g id="genid-7" ctype="x-html-a" html:href="https://blambot.com/collections/all-fonts/dialogue">here</g> and <g id="genid-8" ctype="x-html-a" html:href="https://jasonthibault.com/comic-book-fonts/">here</g>.</source>
+        <target />
+        <note>ID: comic.template.tips.lettering</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
