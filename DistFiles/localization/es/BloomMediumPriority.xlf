@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Text">
         <source xml:lang="en">Text</source>
-        <target xml:lang="es-ES" state="needs-translation">Text</target>
+        <target xml:lang="es-ES" state="translated">Texto</target>
         <note>ID: EditTab.Toolbox.DragActivity.Text</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Letter">
