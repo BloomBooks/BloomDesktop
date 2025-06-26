@@ -149,10 +149,10 @@
         <target xml:lang="fr" state="final">Pro</target>
         <note>ID: Subscription.Tier.Pro</note>
       </trans-unit>
-      <trans-unit id="Subscription.Tier.TierWithColon" approved="yes">
+      <trans-unit id="Subscription.TierWithColon">
         <source xml:lang="en">Tier:</source>
-        <target xml:lang="fr" state="final">Palier :</target>
-        <note>ID: Subscription.Tier.TierWithColon</note>
+        <target xml:lang="fr" state="needs-translation">Tier:</target>
+        <note>ID: Subscription.TierWithColon</note>
       </trans-unit>
       <!-- Other -->
       <trans-unit id="Subscription.OpenSettings" approved="yes">
