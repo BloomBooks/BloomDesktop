@@ -6487,9 +6487,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="needs-translation">A page with one language above the image and another below it.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A simple quiz game that checks if readers understand key parts of the story they just read.</source>
-        <target xml:lang="fr" state="translated">Un jeu de quiz simple qui vérifie si les lecteurs comprennent les parties clés du récit qu'ils viennent de lire.</target>
+        <target xml:lang="fr" state="final">Un jeu de quiz simple qui vérifie si les lecteurs comprennent les parties clés du récit qu'ils viennent de lire.</target>
         <note>ID: TemplateBooks.PageDescription.Comprehension Quiz</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true" approved="yes">
@@ -6497,12 +6497,12 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">Une page vierge permettant d'ajouter des éléments</target>
         <note>ID: TemplateBooks.PageDescription.Custom</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Custom Game" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Custom Game" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Start with a blank page and create your own game from scratch using the Game Tool.
           Best for advanced users.
         </source>
-        <target xml:lang="fr" state="translated">
+        <target xml:lang="fr" state="final">
           Commencez par une page vide et créez votre propre jeu à partir de rien en utilisant l'Outil de Jeu. Mieux pour des utilisateurs avancés.
         </target>
         <note>ID: TemplateBooks.PageDescription.Custom Game</note>
@@ -6527,14 +6527,14 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">Une page interactive avec une question et quelques réponses. Fonctionne sur le web et avec Bloom Reader. Lorsqu'on l utilise avec Bloom Reader, le tableau de bord de votre projet peut afficher les notes de compréhension agrégées.</target>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</source>
-        <target xml:lang="fr" state="translated">Les lecteurs voient un mot et trois images. Ils choisissent l'image qui correspond au mot. L'ordre des images change chaque fois qu'on joue.</target>
+        <target xml:lang="fr" state="final">Les lecteurs voient un mot et trois images. Ils choisissent l'image qui correspond au mot. L'ordre des images change chaque fois qu'on joue.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Image from Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Readers see one image and three words. They pick the word that matches the picture. The word order changes each time the game is played.</source>
-        <target xml:lang="fr" state="translated">Les lecteurs voient une image et trois mots. Ils choisissent le mot qui correspond à l'image. L'ordre des mots change chaque fois qu'on joue.</target>
+        <target xml:lang="fr" state="final">Les lecteurs voient une image et trois mots. Ils choisissent le mot qui correspond à l'image. L'ordre des mots change chaque fois qu'on joue.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true" approved="yes">
@@ -6560,65 +6560,65 @@ is mostly status, which shows on the Collection Tab -->
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Shadows</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Targets" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Targets" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Readers drag images to the correct target areas on the screen.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="fr" state="translated">
+        <target xml:lang="fr" state="final">
           Les lecteurs font glisser des images vers les zones cibles correctes à l'écran.
           On peut personnaliser ce jeu de plusieurs façons à l'aide de l'Outil de Jeu.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Targets</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Words" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Words" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Readers match each image to the correct word.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="fr" state="translated">
+        <target xml:lang="fr" state="final">
           Les lecteurs font glisser des images vers les zones cibles correctes à l'écran.
           On peut personnaliser ce jeu de plusieurs façons à l'aide de l'Outil de Jeu.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Words</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Drag Sound to Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Drag Sound to Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Readers listen to several sound recordings and choose the one that matches a word.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="fr" state="needs-translation">
-          Readers listen to several sound recordings and choose the one that matches a word.
-          This game can be customized in many ways using the Game Tool.
+        <target xml:lang="fr" state="final">
+          Les lecteurs écoutent plusieurs enregistrements sonores et choisissent celui qui correspond à un mot.
+          Ce jeu peut être personnalisé de plusieurs façons à l'aide de l'Outil de Jeu.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Sound to Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Drag Sounds to Words" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Drag Sounds to Words" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Readers match several sound recordings to the correct words.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="fr" state="needs-translation">
-          Readers match several sound recordings to the correct words.
-          This game can be customized in many ways using the Game Tool.
+        <target xml:lang="fr" state="final">
+          Les lecteurs associent des enregistrements sonores aux mots corrects.
+          Ce jeu peut être personnalisé de plusieurs façons à l'aide de l'Outil de Jeu.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Sounds to Words</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Match Word with Image" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Match Word with Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Readers see an image and drag one of several words to match. This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="fr" state="needs-translation">
-          Readers see an image and drag one of several words to match. This game can be customized in many ways using the Game Tool.
+        <target xml:lang="fr" state="final">
+          Les lecteurs voient une image et y associe un d'entre plusieurs mots en le faisant glisser. Ce jeu peut être personnalisé de plusieurs façons à l'aide de l'Outil de Jeu.
         </target>
         <note>ID: TemplateBooks.PageDescription.Match Word with Image</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Order Words" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Order Words" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Readers see a clue (an image, GIF, or Sign Language video) and must arrange scrambled words into a complete sentence.
         </source>
-        <target xml:lang="fr" state="needs-translation">
-          Readers see a clue (an image, GIF, or Sign Language video) and must arrange scrambled words into a complete sentence.
+        <target xml:lang="fr" state="final">
+          Les lecteurs voient un indice (image, GIF ou clip en Langue des Signes) et doivent arranger les mots brouillés pour faire une phrase complète.
         </target>
         <note>ID: TemplateBooks.PageDescription.Order Words</note>
       </trans-unit>
@@ -6827,14 +6827,14 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">Page du Widget captif</target>
         <note>ID: TemplateBooks.PageLabel.Captive Widget Page</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Choose Image from Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Choose Image from Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose Image from Word</source>
-        <target xml:lang="fr" state="needs-translation">Choose Image from Word</target>
+        <target xml:lang="fr" state="final">Choisir l'Image à partir du Mot</target>
         <note>ID: TemplateBooks.PageLabel.Choose Image from Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Choose Word from Image" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Choose Word from Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose Word from Image</source>
-        <target xml:lang="fr" state="needs-translation">Choose Word from Image</target>
+        <target xml:lang="fr" state="final">Choisir le Mot à partir de l'Image</target>
         <note>ID: TemplateBooks.PageLabel.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Choose Picture from Word" sil:dynamic="true" approved="yes">
@@ -6857,9 +6857,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">BD Page Entière</target>
         <note>ID: TemplateBooks.PageLabel.Comic Full Page</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Comprehension Quiz" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Comprehension Quiz" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Comprehension Quiz</source>
-        <target xml:lang="fr" state="needs-translation">Comprehension Quiz</target>
+        <target xml:lang="fr" state="final">Quiz de Compréhension</target>
         <note>ID: TemplateBooks.PageLabel.Comprehension Quiz</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comic Full Page with Footer" sil:dynamic="true" approved="yes">
@@ -7077,19 +7077,19 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">Page des widgets</target>
         <note>ID: TemplateBooks.PageLabel.Widget Page</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Shadows" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Shadows" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Drag Images to Shadows</source>
-        <target xml:lang="fr" state="needs-translation">Drag Images to Shadows</target>
+        <target xml:lang="fr" state="final">Faire glisser des Images vers leurs Ombres</target>
         <note>ID: TemplateBooks.PageLabel.Drag Images to Shadows</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Targets" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Targets" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Drag Images to Targets</source>
-        <target xml:lang="fr" state="needs-translation">Drag Images to Targets</target>
+        <target xml:lang="fr" state="final">Faire glisser des Images vers des Cibles</target>
         <note>ID: TemplateBooks.PageLabel.Drag Images to Targets</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Words" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Words" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Drag Images to Words</source>
-        <target xml:lang="fr" state="needs-translation">Drag Images to Words</target>
+        <target xml:lang="fr" state="final">Faites glisser des Images vers des Mots</target>
         <note>ID: TemplateBooks.PageLabel.Drag Images to Words</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true">
@@ -7102,9 +7102,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="needs-translation">Drag Sounds to Word Targets</target>
         <note>ID: TemplateBooks.PageLabel.Drag Sounds to Word Targets</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Match Word with Image" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Match Word with Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Match Word with Image</source>
-        <target xml:lang="fr" state="needs-translation">Match Word with Image</target>
+        <target xml:lang="fr" state="final">Faire correspondre le Mot avec l'Image</target>
         <note>ID: TemplateBooks.PageLabel.Match Word with Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Order Words" sil:dynamic="true">
