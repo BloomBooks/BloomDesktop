@@ -305,7 +305,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         collectionMenuItemsSpecs,
         true,
         bookInfo?.saveable ?? false,
-        bookInfo?.deleteable ?? false,
+        bookInfo?.deletable ?? false,
         handleClose,
         // the collection menu commands don't actually use the ID of
         // a particular book
@@ -583,7 +583,7 @@ export interface MenuItemSpec {
     // Involves making changes to the book; therefore, can only be done in the one editable collection
     // and if we're in a Team Collection, the book must be checked out.
     requiresSavePermission?: boolean;
-    requiresDeletePermision?: boolean;
+    requiresDeletePermission?: boolean;
     submenu?: MenuItemSpec[];
     icon?: React.ReactNode;
     // if true, menu item is rendered as an ApiCheckbox with the command as its api.
@@ -650,7 +650,7 @@ export const makeMenuItems = (
             // books in it as either savable or deletable.
             let disabled = false;
             if (isEditableCollection) {
-                if (spec.requiresDeletePermision) {
+                if (spec.requiresDeletePermission) {
                     disabled = !isBookDeletable;
                 } else if (spec.requiresSavePermission) {
                     disabled = !isBookSavable;
