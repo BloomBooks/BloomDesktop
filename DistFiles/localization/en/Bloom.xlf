@@ -5426,6 +5426,20 @@ is mostly status, which shows on the Collection Tab -->
         <note>**{0}** is the subscription descriptor, {1} is the formatted expiration date</note>
         <note>Leave the ** around the word(s) used to translate **Enterprise**</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.DuplicateIds">
+        <source xml:lang="en">
+          Bloom found two or more books that are already shared in your Team Collection and have the same ID ({0}).
+        </source>
+        <note>ID: TeamCollection.DuplicateIds</note>
+        <note>{0} will become a list of book names. Make sure there's a {0} in your translation.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.GetHelp">
+        <source xml:lang="en">
+          For help with Team Collection problems, click {here}.
+        </source>
+        <note>ID: TeamCollection.GetHelp</note>
+        <note>{here} will become a hyperlink to get help. Make sure the translation has something appropriate enclosed in braces.</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.TeamCollection">
         <source xml:lang="en">Team Collection</source>
         <note>ID: TeamCollection.TeamCollection</note>
