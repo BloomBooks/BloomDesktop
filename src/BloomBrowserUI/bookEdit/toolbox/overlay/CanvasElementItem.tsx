@@ -22,6 +22,10 @@ import {
     StyleDefnProps,
     createStyleDefnIfUndefined
 } from "../../StyleEditor/StyleEditor";
+import {
+    getAllDraggables,
+    kDraggableIdAttribute
+} from "../../js/CanvasElementManager";
 
 export type CanvasElementType =
     | "image"
@@ -252,9 +256,9 @@ export function makeTargetAndMatchSize(canvasElement: HTMLElement) {
         // will also fix the new one, and then when it gets selected, it won't change the others
         // (though the arrow will move back to it).
         const page = canvasElement.closest(".bloom-page") as HTMLElement;
-        const anotherDraggable = Array.from(
-            page.querySelectorAll("[data-draggable-id]")
-        ).find(el => el !== canvasElement) as HTMLElement;
+        const anotherDraggable = getAllDraggables(page).find(
+            el => el !== canvasElement
+        ) as HTMLElement;
         if (anotherDraggable) {
             // adjustTarget won't do the right thing at this point, because the new
             // draggable doesn't have a draggable ID or target yet. But calling makeTargetForDraggable
@@ -297,13 +301,15 @@ export const setGeneratedDraggableId = (draggable: HTMLElement): string => {
         .toString(36)
         .substring(2, 9);
     while (
-        draggable.ownerDocument.querySelector(`[data-draggable-id="${id}"]`)
+        draggable.ownerDocument.querySelector(
+            `[${kDraggableIdAttribute}="${id}"]`
+        )
     ) {
         id = Math.random()
             .toString(36)
             .substring(2, 9);
     }
-    draggable.setAttribute("data-draggable-id", id);
+    draggable.setAttribute(kDraggableIdAttribute, id);
     return id;
 };
 

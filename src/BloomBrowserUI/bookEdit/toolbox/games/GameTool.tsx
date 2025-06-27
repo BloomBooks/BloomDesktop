@@ -52,7 +52,10 @@ import { setPlayerUrlPrefixFromWindowLocationHref } from "bloom-player";
 import { renderGamePromptDialog } from "./GamePromptDialog";
 import {
     CanvasElementManager,
-    kBackgroundImageClass
+    getAllDraggables,
+    isDraggable,
+    kBackgroundImageClass,
+    kDraggableIdAttribute
 } from "../../js/CanvasElementManager";
 import {
     getCanvasElementManager,
@@ -190,7 +193,7 @@ export const adjustTarget = (
     }
     // This may get called when we click something that isn't a draggable at all.
     // That gets rid of any arrow. It shouldn't do anything else.
-    if (!draggable?.getAttribute("data-draggable-id")) {
+    if (!isDraggable(draggable)) {
         return;
     }
     const allSameSize = doesContainingPageHaveSameSizeMode(draggable);
@@ -234,9 +237,9 @@ export const adjustTarget = (
         const page = draggable.closest(".bloom-page") as HTMLElement;
         const otherDraggables: HTMLElement[] = [];
         const draggableImages: HTMLElement[] = [];
-        const draggables: HTMLElement[] = Array.from(
-            page.querySelectorAll("[data-draggable-id]")
-        );
+        const draggables: HTMLElement[] = getAllDraggables(
+            page
+        ) as HTMLElement[];
         draggables.forEach(x => {
             const img = getImageFromCanvasElement(x);
             // I don't think we want to increase the minimum size of targets to account
@@ -601,7 +604,7 @@ const draggableOfTarget = (
         return undefined;
     }
     return target.ownerDocument.querySelector(
-        `[data-draggable-id="${targetId}"]`
+        `[${kDraggableIdAttribute}="${targetId}"]`
     ) as HTMLElement;
 };
 
@@ -833,7 +836,7 @@ const DragActivityControls: React.FunctionComponent<{
         currentCanvasElement = undefined;
     }
     const currentCanvasElementTargetId = currentCanvasElement?.getAttribute(
-        "data-draggable-id"
+        kDraggableIdAttribute
     );
     const [currentDraggableTarget, setCurrentDraggableTarget] = useState<
         HTMLElement | undefined
@@ -883,7 +886,7 @@ const DragActivityControls: React.FunctionComponent<{
             if (
                 !currentDraggableTarget ||
                 currentDraggableTarget.getAttribute("data-target-of") ===
-                    currentCanvasElement.getAttribute("data-draggable-id")
+                    currentCanvasElement.getAttribute(kDraggableIdAttribute)
             ) {
                 adjustTarget(currentCanvasElement, currentDraggableTarget);
             }
@@ -1071,13 +1074,10 @@ const DragActivityControls: React.FunctionComponent<{
         page.setAttribute("data-same-size", newAllSameSize ? "true" : "false");
         if (newAllSameSize) {
             let someDraggable = getCanvasElementManager()!.getActiveElement(); // prefer the selected one
-            if (
-                !someDraggable ||
-                !someDraggable.getAttribute("data-draggable-id")
-            ) {
+            if (!someDraggable || !isDraggable(someDraggable)) {
                 // find something
                 someDraggable = page.querySelector(
-                    "[data-draggable-id]"
+                    kDraggableIdAttribute
                 ) as HTMLElement;
             }
             if (!someDraggable) {
@@ -1541,7 +1541,7 @@ export const makeDuplicateOfDragBubble = () => {
         return;
     }
     const oldTarget = getTarget(old);
-    if (old.getAttribute("data-draggable-id")) {
+    if (isDraggable(old)) {
         const oldAttributes = old.attributes;
         for (let i = 0; i < oldAttributes.length; i++) {
             const attr = oldAttributes[i];
@@ -1935,7 +1935,7 @@ export function setActiveDragActivityTab(tab: number) {
         ).filter((elt: HTMLElement) => {
             return (
                 elt.classList.contains("bloom-imageContainer") &&
-                !elt.closest("[data-draggable-id]")
+                !elt.closest(kDraggableIdAttribute)
             );
         });
         imagesWithLinks.forEach((elt: HTMLElement) => {
@@ -2026,7 +2026,7 @@ function pxToNumber(dimension: string): number {
 export const makeTargetForDraggable = (
     canvasElement: HTMLElement
 ): HTMLElement => {
-    const id = canvasElement.getAttribute("data-draggable-id");
+    const id = canvasElement.getAttribute(kDraggableIdAttribute);
     if (!id) {
         throw new Error("Bubble does not have a data-draggable-id attribute");
     }
@@ -2067,11 +2067,9 @@ export const makeTargetForDraggable = (
 
 function randomlyAssignTargetsIfNeeded(page): void {
     if (page.classList.contains("draggables-need-shuffling")) {
-        const draggables = Array.from(
-            page.querySelectorAll("[data-draggable-id]")
-        ) as HTMLElement[];
+        const draggables = getAllDraggables(page) as HTMLElement[];
         const origDraggableIdOrder = draggables.map(d =>
-            d.getAttribute("data-draggable-id")
+            d.getAttribute(kDraggableIdAttribute)
         );
 
         const targets = Array.from(
@@ -2094,7 +2092,7 @@ function randomlyAssignTargetsIfNeeded(page): void {
                 // possible arrangements.
             );
             const newDraggableIdOrder = draggables.map(d =>
-                d.getAttribute("data-draggable-id")
+                d.getAttribute(kDraggableIdAttribute)
             );
             if (
                 !newDraggableIdOrder.every(
@@ -2110,7 +2108,7 @@ function randomlyAssignTargetsIfNeeded(page): void {
             const target = targets[i];
             target.setAttribute(
                 "data-target-of",
-                draggables[i].getAttribute("data-draggable-id") ?? ""
+                draggables[i].getAttribute(kDraggableIdAttribute) ?? ""
             );
         }
 

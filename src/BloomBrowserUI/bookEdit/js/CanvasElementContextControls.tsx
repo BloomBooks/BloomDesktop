@@ -46,7 +46,9 @@ import { Divider } from "@mui/material";
 import { DuplicateIcon } from "./DuplicateIcon";
 import {
     CanvasElementManager,
+    isDraggable,
     kBackgroundImageClass,
+    kDraggableIdAttribute,
     theOneCanvasElementManager
 } from "./CanvasElementManager";
 import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
@@ -143,7 +145,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const aRecordingLabel = useL10n("A Recording", "ARecording", "");
 
     const currentDraggableTargetId = props.canvasElement?.getAttribute(
-        "data-draggable-id"
+        kDraggableIdAttribute
     );
     const [currentDraggableTarget, setCurrentDraggableTarget] = useState<
         HTMLElement | undefined
@@ -1040,7 +1042,7 @@ function addImageMenuOptions(
     ];
     // It would be too confusing and difficult for the element to be both draggable and clickable with different
     //  behavior such that we'd have to distinguish between the two.
-    if (!canvasElement.hasAttribute("data-draggable-id")) {
+    if (!isDraggable(canvasElement)) {
         imageMenuOptions.push({
             l10nId: "EditTab.PasteHyperlink",
             english: "Paste Hyperlink",
@@ -1111,10 +1113,6 @@ function pasteLink(canvasElement: HTMLElement) {
     });
 }
 
-function isDraggable(canvasElement: HTMLElement): boolean {
-    return !!canvasElement.getAttribute("data-draggable-id");
-}
-
 // applies the modification to all classes of element
 function modifyClassNames(
     element: HTMLElement,
@@ -1152,7 +1150,7 @@ function addMenuItemForTogglingDraggability(
                 currentDraggableTarget.remove();
                 setCurrentDraggableTarget(undefined);
             }
-            canvasElement.removeAttribute("data-draggable-id");
+            canvasElement.removeAttribute(kDraggableIdAttribute);
             if (
                 canvasElement.getElementsByClassName("bloom-editable").length >
                 0
