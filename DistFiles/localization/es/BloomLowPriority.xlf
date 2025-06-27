@@ -151,7 +151,7 @@
       </trans-unit>
       <trans-unit id="Subscription.TierWithColon">
         <source xml:lang="en">Tier:</source>
-        <target xml:lang="es-ES" state="needs-translation">Tier:</target>
+        <target xml:lang="es-ES" state="translated">Nivel:</target>
         <note>ID: Subscription.TierWithColon</note>
       </trans-unit>
       <!-- Other -->
