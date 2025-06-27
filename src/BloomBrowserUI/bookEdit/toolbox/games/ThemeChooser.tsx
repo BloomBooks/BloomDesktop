@@ -152,61 +152,25 @@ export const ThemeChooser: React.FunctionComponent<{
                     display: flex;
                 `}
             >
-                <Select
-                    variant="standard"
-                    value={currentTheme}
-                    open={isSelectOpen}
-                    onOpen={() => openSelect()}
-                    onClose={() => setIsSelectOpen(false)}
-                    onChange={event => {
-                        handleChooseTheme(event);
-                        setIsSelectOpen(false);
-                    }}
-                    inputProps={{
-                        name: "style",
-                        id: "game-theme-dropdown"
-                    }}
+                <Div
                     css={css`
-                        svg.MuiSvgIcon-root {
-                            color: white !important;
-                        }
-                        ul {
-                            background-color: ${kOptionPanelBackgroundColor} !important;
-                        }
-                        fieldset {
-                            border-color: rgba(255, 255, 255, 0.5) !important;
-                        }
+                        margin-top: 10px;
+                        margin-bottom: 5px;
                     `}
-                    size="small"
-                >
-                    {themes.map(theme => (
-                        <MenuItem value={theme} key={theme} disabled={false}>
-                            <Div
-                                l10nKey={`EditTab.Toolbox.Games.Themes.${theme}`}
-                            >
-                                {isMissingTheme(theme)
-                                    ? `(Missing) ${theme}`
-                                    : theme}
-                            </Div>
-                        </MenuItem>
-                    ))}
-                </Select>
+                    l10nKey="EditTab.Toolbox.Games.Theme"
+                ></Div>
                 <InfoIconUrl
                     href="https://docs.bloomlibrary.org/custom-game-theme"
+                    l10nKey="Common.LearnMore"
                     css={css`
-                        margin: 0 5px;
+                        margin: 5px 10px 0 5px;
                         max-width: 100px;
                     `}
-                    // This is the best placement I could find. Below, the tooltip merges
-                    // with the next row of icons. Placed on the left, it covers the control it's
-                    // providing information about, and worse, MUI makes it too wide and a bit
-                    // gets clipped on the left. There's no doubt some way to override but I
-                    // haven't found it. Above seems to work best, with an offset to bring it
-                    // closer to the icon than the default. That is important because the popup
-                    // tends to close as the mouse moves from the icon to the tooltip, especially
-                    // if the mouse moves across the Select.
-                    placement="top-start"
+                    placement="top"
                     slotProps={{
+                        // This pulls the whole thing closer to the icon, which I think looks better,
+                        // and may help make it easier to move the mouse to the link in the tooltip.
+                        // without it going away.
                         popper: {
                             modifiers: [
                                 {
@@ -216,10 +180,58 @@ export const ThemeChooser: React.FunctionComponent<{
                                     }
                                 }
                             ]
+                        },
+                        // This fiddle, suggested by copilot, prevents the tooltip from
+                        // being much wider than the text inside it. It might be a problem
+                        // having nowrap if a localization of "Learn More" is very long,
+                        // but I think it's unlikely, and it makes the English look much better.
+                        tooltip: {
+                            sx: {
+                                maxWidth: "fit-content",
+                                width: "auto",
+                                whiteSpace: "nowrap"
+                            }
                         }
                     }}
                 />
             </div>
+            <Select
+                variant="standard"
+                value={currentTheme}
+                open={isSelectOpen}
+                onOpen={() => openSelect()}
+                onClose={() => setIsSelectOpen(false)}
+                onChange={event => {
+                    handleChooseTheme(event);
+                    setIsSelectOpen(false);
+                }}
+                inputProps={{
+                    name: "style",
+                    id: "game-theme-dropdown"
+                }}
+                css={css`
+                    svg.MuiSvgIcon-root {
+                        color: white !important;
+                    }
+                    ul {
+                        background-color: ${kOptionPanelBackgroundColor} !important;
+                    }
+                    fieldset {
+                        border-color: rgba(255, 255, 255, 0.5) !important;
+                    }
+                `}
+                size="small"
+            >
+                {themes.map(theme => (
+                    <MenuItem value={theme} key={theme} disabled={false}>
+                        <Div l10nKey={`EditTab.Toolbox.Games.Themes.${theme}`}>
+                            {isMissingTheme(theme)
+                                ? `(Missing) ${theme}`
+                                : theme}
+                        </Div>
+                    </MenuItem>
+                ))}
+            </Select>
         </ThemeProvider>
     );
 };
