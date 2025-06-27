@@ -1,6 +1,8 @@
 // This file is a work-in-progress, trying to isolate game-related functionality that
 // is needed both in the toolbox and in the content page.
 
+import { getAllDraggables, isDraggable } from "../../js/CanvasElementManager";
+
 export function doesContainingPageHaveSameSizeMode(
     refElt: HTMLElement
 ): boolean {
@@ -22,12 +24,12 @@ function doesPageHaveSameSizeMode(
 // (b) it is an element that obeys this constraint (currently has data-draggable-id attribute),
 // and (c) there is at least one other element in the group that it must match.
 export function needsToBeKeptSameSize(elt: HTMLElement): boolean {
-    if (!elt.hasAttribute("data-draggable-id")) {
+    if (!isDraggable(elt)) {
         return false;
     }
     const page = elt.closest(".bloom-page") as HTMLElement;
     if (!doesPageHaveSameSizeMode(page)) {
         return false;
     }
-    return page.querySelectorAll("[data-draggable-id]").length > 1;
+    return getAllDraggables(page).length > 1;
 }

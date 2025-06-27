@@ -27,6 +27,7 @@ import * as ReactDOM from "react-dom";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import {
     CanvasElementManager,
+    getAllDraggables,
     theOneCanvasElementManager
 } from "../../js/CanvasElementManager";
 import { Bubble } from "comicaljs";
@@ -270,9 +271,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
     originalContents = [];
     originalTargetContents = [];
     draggableX = draggableY = targetX = targetY = 1000000; // will get reduced to minimums
-    const draggables = Array.from(
-        page.querySelectorAll("[data-draggable-id]")
-    ) as HTMLElement[];
+    const draggables = getAllDraggables(page) as HTMLElement[];
     const first = draggables[0];
     const firstEditable = first.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
@@ -357,9 +356,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         const promptText = editable.textContent ?? "";
         // Split the prompt text into letter groups consisting of a base letter and any combining marks.
         const letters = splitIntoGraphemes(promptText);
-        const draggables = Array.from(
-            page.getElementsByClassName(kCanvasElementClass + " draggable-text")
-        ) as HTMLElement[];
+        const draggables = getAllDraggables(page) as HTMLElement[];
         // make sure we get some reasonable offsetWidth for the first one, if there are
         // any letters. (Can become display:none if we have no letters.)
         setDraggableText(draggables[0], letters[0]);
