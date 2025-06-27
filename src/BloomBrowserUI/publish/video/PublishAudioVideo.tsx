@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useState, useContext } from "react";
 import PlayIcon from "@mui/icons-material/PlayCircleFilledWhite";
@@ -13,7 +12,6 @@ import {
     HelpGroup,
     SettingsPanel
 } from "../commonPublish/PublishScreenBaseComponents";
-import * as ReactDOM from "react-dom";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import {
     darkTheme,
@@ -183,7 +181,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     );
     const gotRecording = useWatchBooleanEvent(false, "recordVideo", "ready");
 
-    const [hasActivities] = useApiBoolean("publish/av/hasActivities", false);
+    const [hasGamesOrWidgets] = useApiBoolean(
+        "publish/av/hasGamesOrWidgets",
+        false
+    );
     React.useEffect(() => {
         if (activeStep < 2 && gotRecording) {
             setActiveStep(2);
@@ -247,9 +248,9 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         sendMessageToPlayer({ reset: true });
         setPlaying(false);
     };
-    const activitiesSkipped = useL10n(
-        "Activities will be skipped",
-        "PublishTab.RecordVideo.ActivitiesSkipped"
+    const gamesSkipped = useL10n(
+        "Games will be skipped",
+        "PublishTab.RecordVideo.GamesSkipped"
     );
     const isPauseButtonDisabled = !playing;
     useEffect(() => {
@@ -639,7 +640,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                     margin-top: auto;
                 `}
             />
-            {hasActivities && <NoteBox>{activitiesSkipped}</NoteBox>}
+            {hasGamesOrWidgets && <NoteBox>{gamesSkipped}</NoteBox>}
             <HelpGroup>
                 <HelpLink
                     l10nKey="PublishTab.RecordVideo.OverviewHelpLink"
