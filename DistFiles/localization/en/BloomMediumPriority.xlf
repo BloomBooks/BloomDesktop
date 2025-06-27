@@ -485,16 +485,31 @@
         <source xml:lang="en">This book does not have any interactive activities.</source>
         <note>ID: PublishTab.Feature.Activities.None</note>
         <note>This is a tooltip.</note>
+        <note>Obsolete as of 6.2</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.Present">
         <source xml:lang="en">This book has interactive activities.</source>
-        <note>ID: PublishTab.Feature.Activities.None</note>
+        <note>ID: PublishTab.Feature.Activities.Present</note>
         <note>This is a tooltip.</note>
+        <note>Obsolete as of 6.2</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
         <source xml:lang="en">This is disabled because publishing interactive activities requires a subscription.</source>
         <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
         <note>This is a tooltip.</note>
+        <note>Obsolete as of 6.2</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Games.None">
+        <source xml:lang="en">This book does not have any games.</source>
+        <note>ID: PublishTab.Feature.Games.None</note>
+        <note>This is a tooltip.</note>
+        <note>Obsolete as of 6.2</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Games.Present">
+        <source xml:lang="en">This book has games.</source>
+        <note>ID: PublishTab.Feature.Games.Present</note>
+        <note>This is a tooltip.</note>
+        <note>Obsolete as of 6.2</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None">
         <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>

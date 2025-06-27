@@ -1529,8 +1529,12 @@ namespace Bloom.Book
                 if (Feature_Motion)
                     features.Add("motion");
                 // Feature code is unchanged despite the toolbox tool rename to Overlay Tool.
+                // Also, in an ideal world, we only set this for actual comic books.
                 if (Feature_Comic)
                     features.Add("comic");
+                // We now call these games, but we originally called them activities.
+                // We're leaving that to avoid migration.
+                // Activity is a broad category of which quiz, widget, simple-dom-choice, and drag-game are types.
                 if (Feature_Activity)
                     features.Add("activity");
                 if (Feature_Quiz)
@@ -1539,6 +1543,8 @@ namespace Bloom.Book
                     features.Add("widget");
                 if (Feature_SimpleDomChoice)
                     features.Add("simple-dom-choice");
+                if (Feature_DragGame)
+                    features.Add("drag-game");
 
                 return features.ToArray();
             }
@@ -1551,6 +1557,7 @@ namespace Bloom.Book
                 Feature_Quiz = value.Contains("quiz");
                 Feature_Widget = value.Contains("widget");
                 Feature_SimpleDomChoice = value.Contains("simple-dom-choice");
+                Feature_DragGame = value.Contains("drag-game");
 
                 Feature_Blind_LangCodes = new HashSet<string>();
                 Feature_TalkingBook_LangCodes = new HashSet<string>();
@@ -1637,11 +1644,12 @@ namespace Bloom.Book
         // Note:
         //   Originally, Feature_Activity was true if and only if the book was a widget.
         //   Then, Bloom Library decided that quizzes should be renamed to activity instead.
-        //   So now, Bloom Desktop will make it so that quizzes, widgets, and simple-choice pages
+        //   So now, Bloom Desktop will make it so that widgets and all other games
         //   count as the more general "activity", and each of these will also get a more
-        //   specific tag applied too.
+        //   specific tag applied, too.
         [JsonIgnore]
-        public bool Feature_Activity => Feature_Quiz || Feature_Widget || Feature_SimpleDomChoice;
+        public bool Feature_Activity =>
+            Feature_Quiz || Feature_Widget || Feature_SimpleDomChoice || Feature_DragGame;
 
         [JsonIgnore]
         public bool Feature_TalkingBook
@@ -1675,6 +1683,9 @@ namespace Bloom.Book
 
         [JsonIgnore]
         public bool Feature_SimpleDomChoice { get; set; }
+
+        [JsonIgnore]
+        public bool Feature_DragGame { get; set; }
 
         [JsonProperty("page-number-style")]
         public string PageNumberStyle { get; set; }

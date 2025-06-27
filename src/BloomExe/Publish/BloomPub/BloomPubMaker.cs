@@ -453,11 +453,11 @@ namespace Bloom.Publish.BloomPub
 
             if (settings?.RemoveInteractivePages ?? false)
             {
-                var activities = modifiedBook
+                var gameOrWidgetPages = modifiedBook
                     .GetPageElements()
-                    .Where(x => x is SafeXmlElement elt && HtmlDom.IsActivityPage(elt))
+                    .Where(x => x is SafeXmlElement elt && HtmlDom.IsGameOrWidgetPage(elt))
                     .ToArray();
-                foreach (var page in activities)
+                foreach (var page in gameOrWidgetPages)
                     page.ParentNode.RemoveChild(page);
             }
 

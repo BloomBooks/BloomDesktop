@@ -14,7 +14,7 @@ import {
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { ILanguagePublishInfo } from "./PublishLanguagesGroup";
 import { Link as MuiLink } from "@mui/material";
-import { ActivityIcon } from "../../react_components/icons/ActivityIcon";
+import { GameIcon } from "../../react_components/icons/GameIcon";
 import { TalkingBookIcon } from "../../react_components/icons/TalkingBookIcon";
 import { SignLanguageIcon } from "../../react_components/icons/SignLanguageIcon";
 import { MotionIcon } from "../../react_components/icons/MotionIcon";
@@ -38,16 +38,29 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         motionFeatureStatus
     );
     const motionAllowed = motionFeatureStatus?.enabled ?? false;
-    // hasGames includes quizzes, simple choice, and drag activities.
-    const [hasGames] = useApiBoolean("publish/hasGames", false);
+
+    const [hasNonWidgetGames] = useApiBoolean(
+        "publish/hasNonWidgetGames",
+        false
+    );
+    const nonWidgetGameFeatureStatus = useGetFeatureStatus("game", true);
+    const mayPublishNonWidgetGames =
+        nonWidgetGameFeatureStatus?.enabled ?? false;
     const [hasWidgets] = useApiBoolean("publish/hasWidgets", false);
+    const widgetFeatureStatus = useGetFeatureStatus("widget", true);
+    const nonWidgetGameFeatureMessage = useGetFeatureAvailabilityMessage(
+        nonWidgetGameFeatureStatus
+    );
+    const widgetFeatureMessage = useGetFeatureAvailabilityMessage(
+        widgetFeatureStatus
+    );
+    const mayPublishWidgets = widgetFeatureStatus?.enabled ?? false;
+
     const [comicEnabled] = useApiBoolean("publish/comicEnabled", false);
     const [visuallyImpairedEnabled] = useApiBoolean(
         "publish/visuallyImpairedEnabled",
         false
     );
-    const mayPublishGames = useGetFeatureStatus("game", true)?.enabled;
-    const mayPublishWidgets = useGetFeatureStatus("widget", true)?.enabled;
     const [langs, setLangs] = React.useState<ILanguagePublishInfo[]>([]);
     React.useEffect(() => {
         get(
@@ -174,31 +187,24 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         );
     }
 
-    const noActivitiesTooltip = useL10n(
-        "This book does not have any interactive activities.",
-        "PublishTab.Feature.Activities.None"
+    const noGamesTooltip = useL10n(
+        "This book does not have any games.",
+        "PublishTab.Feature.Games.None"
     );
-    const hasActivitiesTooltip = useL10n(
-        "This book has interactive activities.",
-        "PublishTab.Feature.Activities.Present"
-    );
-
-    const subscriptionRequiredTooltip = useL10n(
-        "This is disabled because publishing interactive activities requires a subscription.",
-        "PublishTab.Feature.Activities.RequiresSubscription"
+    const hasGamesTooltip = useL10n(
+        "This book has games.",
+        "PublishTab.Feature.Games.Present"
     );
 
-    const hasActivities = hasGames || hasWidgets;
-    const hasActivitiesUserMayPublish =
-        (hasGames && mayPublishGames) || (hasWidgets && mayPublishWidgets);
-
-    const activitiesTooltip = hasActivities
-        ? hasActivitiesUserMayPublish
-            ? hasActivitiesTooltip
-            : subscriptionRequiredTooltip
-        : noActivitiesTooltip;
-
-    const checkTheActivityBox = hasActivitiesUserMayPublish;
+    let gamesTooltip = noGamesTooltip;
+    const hasGamesUserMayPublish =
+        (hasNonWidgetGames && mayPublishNonWidgetGames) ||
+        (hasWidgets && mayPublishWidgets);
+    if (hasGamesUserMayPublish) gamesTooltip = hasGamesTooltip;
+    else if (hasNonWidgetGames && !mayPublishNonWidgetGames)
+        gamesTooltip = nonWidgetGameFeatureMessage;
+    else if (hasWidgets && !mayPublishWidgets)
+        gamesTooltip = widgetFeatureMessage;
 
     const noComicTooltip = useL10n(
         "This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.",
@@ -287,14 +293,14 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                         disabled={!signLanguageEnabled}
                     />
                 </BloomTooltip>
-                <BloomTooltip key={"activity-tooltip"} tip={activitiesTooltip}>
+                <BloomTooltip key={"games-tooltip"} tip={gamesTooltip}>
                     <BloomCheckbox
-                        label="Activity"
-                        l10nKey="PublishTab.Activity"
-                        icon={<ActivityIcon />}
+                        label="Game"
+                        l10nKey="PublishTab.Game"
+                        icon={<GameIcon />}
                         iconScale={0.9}
-                        disabled={!checkTheActivityBox}
-                        checked={checkTheActivityBox}
+                        disabled={!hasGamesUserMayPublish}
+                        checked={hasGamesUserMayPublish}
                         onCheckChanged={() => {}}
                         hideBox={true}
                     />

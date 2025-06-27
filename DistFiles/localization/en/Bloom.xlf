@@ -3506,6 +3506,11 @@
       <trans-unit id="PublishTab.Activity">
         <source xml:lang="en">Activity</source>
         <note>ID: PublishTab.Activity</note>
+        <note>obsolete as of Bloom 6.2</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Game">
+        <source xml:lang="en">Game</source>
+        <note>ID: PublishTab.Game</note>
       </trans-unit>
       <trans-unit id="PublishTab.Comic">
         <source xml:lang="en">Comic</source>
@@ -4300,6 +4305,11 @@
       <trans-unit id="PublishTab.RecordVideo.ActivitiesSkipped">
         <source xml:lang="en">Activities will be skipped</source>
         <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
+        <note>Obsolete as of 6.2</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.GamesSkipped">
+        <source xml:lang="en">Games will be skipped</source>
+        <note>ID: PublishTab.RecordVideo.GamesSkipped</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AudioFile">
         <source xml:lang="en">Audio File</source>

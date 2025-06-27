@@ -171,10 +171,10 @@ namespace Bloom.Publish.Video
             );
 
             apiHandler.RegisterBooleanEndpointHandler(
-                kApiUrlPart + "hasActivities",
+                kApiUrlPart + "hasGamesOrWidgets",
                 request =>
                 {
-                    return request.CurrentBook.HasActivities;
+                    return request.CurrentBook.HasGamesOrWidgets;
                 },
                 null, // no write action
                 false,

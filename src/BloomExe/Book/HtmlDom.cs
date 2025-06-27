@@ -2814,10 +2814,16 @@ namespace Bloom.Book
             return nodes?.Length >= 1;
         }
 
-        // An Activity can be either a user-supplied html widget or a built-in interactive page like quizzes or multiple-choice pages
-        public bool HasActivityPages()
+        public bool HasDragGamePages()
         {
-            // I think the test for bloom-interactivePage is sufficient for all current activity pages,
+            var nodes = _dom.SafeSelectNodes("//*[starts-with(@data-activity, 'drag-')]");
+            return nodes?.Length >= 1;
+        }
+
+        // Can be either a user-supplied html widget or a built-in game page like quizzes, simple-choice, or drag-game pages
+        public bool HasGamesOrWidgetsPages()
+        {
+            // I think the test for bloom-interactivePage is sufficient for all current game pages,
             // but for compatibility with legacy books (and in case I'm wrong) I'm keeping the other checks.
             // This test should be consistent with the isActivity method in bloom player's bloom-player-core code.
             return _dom.SelectSingleNode("//div[contains(@class, 'bloom-interactive-page')]")
@@ -2826,18 +2832,17 @@ namespace Bloom.Book
                 || HasWidgetPages();
         }
 
-        public bool HasGamePages()
+        public bool HasNonWidgetGamePages()
         {
-            var nodes = _dom.SafeSelectNodes($"//{FeatureRegistry.kGamePageXPath}");
+            var nodes = _dom.SafeSelectNodes($"//{FeatureRegistry.kNonWidgetGamePageXPath}");
             return nodes?.Length >= 1;
         }
 
-        public static bool IsActivityPage(SafeXmlElement pageElement)
+        public static bool IsGameOrWidgetPage(SafeXmlElement pageElement)
         {
             var classes = pageElement.GetAttribute("class");
             // I'd say it's impossible for this to be empty or null, but...
             Debug.Assert(!string.IsNullOrEmpty(classes), "How did we get a page with no classes!?");
-            // The class is for 4.6, the attribute is for later versions.
             if (
                 classes.Contains("bloom-interactive-page")
                 || pageElement.HasAttribute("data-activity")

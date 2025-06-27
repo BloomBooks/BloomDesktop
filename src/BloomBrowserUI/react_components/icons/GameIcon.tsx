@@ -3,7 +3,7 @@ import * as React from "react";
 // The same SVG as the content of the icon file we use in Blorg; but because this is not a
 // Create React App there is apparently no easy way to adapt an SVG into a color-controllable
 // component.
-export const ActivityIcon: React.FunctionComponent<{
+export const GameIcon: React.FunctionComponent<{
     className?: string;
     color?: string;
 }> = props => {

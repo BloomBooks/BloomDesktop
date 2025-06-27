@@ -9,7 +9,7 @@ namespace Bloom.SubscriptionAndFeatures
         DeleteBook, // we don't really need this, it's just a basic feature and not experimental or anything. It's for test cases.
 
         Overlay,
-        Game,
+        Game, // This does not include HTML5 widgets
         Widget, //HTML5 Widget
         Spreadsheet,
         TeamCollection,
@@ -32,7 +32,7 @@ namespace Bloom.SubscriptionAndFeatures
 
     public static class FeatureRegistry
     {
-        public static string kGamePageXPath =
+        public static string kNonWidgetGamePageXPath =
             "div[@data-tool-id='game' or contains(@class,'simple-comprehension-quiz') or @data-activity='simple-dom-choice']";
 
         //should match https://docs.google.com/document/d/1cfwC-ANSrujaIy5LBMA02qji-Ia7sbKXiUJFnh8hcuI
@@ -141,11 +141,12 @@ namespace Bloom.SubscriptionAndFeatures
             },
             new FeatureInfo
             {
+                // Note, this refers to games which are NOT widgets, which is its own feature.
                 Feature = FeatureName.Game,
                 SubscriptionTier = SubscriptionTier.Pro,
                 PreventPublishingInDerivativeBooks = PreventionMethod.None,
                 PreventPublishingInOriginalBooks = PreventionMethod.Remove,
-                ExistsInPageXPath = $"self::{kGamePageXPath}",
+                ExistsInPageXPath = $"self::{kNonWidgetGamePageXPath}",
                 // Many of our games can potentially be played on paper, though we think it's unlikely
                 // that most of our target audience will allow writing in books. PDFs may also be used in checking
                 // processes that need all the content. We even made a black-and-white theme specially for PDFs.
