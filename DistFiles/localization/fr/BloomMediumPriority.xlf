@@ -888,19 +888,19 @@
         <target xml:lang="fr" state="final">Mise en page Avancée</target>
         <note>BookSettings.AdvancedLayoutLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Gutter.DefaultLabel" sil:dynamic="true">
+      <trans-unit id="BookSettings.Gutter.DefaultLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Default (set by Theme)</source>
-        <target xml:lang="fr" state="needs-translation">Default (set by Theme)</target>
+        <target xml:lang="fr" state="final">Par défaut (selon le Thème)</target>
         <note>BookSettings.Gutter.DefaultLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Gutter.Description" sil:dynamic="true">
+      <trans-unit id="BookSettings.Gutter.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Extra space between pages near the book spine. Increase this for books with many pages to ensure text isn't lost in the binding. This gap is applied to each side of the spine.</source>
-        <target xml:lang="fr" state="needs-translation">Extra space between pages near the book spine. Increase this for books with many pages to ensure text isn't lost in the binding. This gap is applied to each side of the spine.</target>
+        <target xml:lang="fr" state="final">Espace supplémentaire entre les pages à proximité du dos du livre. Augmentez ceci pour les livres avec de nombreuses pages pour assurer que le texte ne soit pas perdu dans la reliure. On applique cet écart à chaque côté du dos du livre.</target>
         <note>BookSettings.Gutter.Description</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Gutter.Label" sil:dynamic="true">
+      <trans-unit id="BookSettings.Gutter.Label" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page Gutter</source>
-        <target xml:lang="fr" state="needs-translation">Page Gutter</target>
+        <target xml:lang="fr" state="final">Gouttière de la Page</target>
         <note>BookSettings.Gutter.Label</note>
       </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPaddingLabel" sil:dynamic="true" approved="yes">
