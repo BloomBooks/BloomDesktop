@@ -582,7 +582,9 @@ namespace Bloom.Publish
             var isDerivative = bookData.BookIsDerivative();
             var subscription = book.CollectionSettings.Subscription;
             if (book.IsPlayground)
-                subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Enterprise);
+                subscription = Subscription.CreateTempSubscriptionForTier(
+                    SubscriptionTier.Enterprise
+                );
             RemovePagesByFeatureSystem(
                 pageElts,
                 medium,

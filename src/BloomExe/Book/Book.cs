@@ -5239,7 +5239,7 @@ namespace Bloom.Book
                     .ToArray()
             )
             {
-                if (HtmlDom.IsActivityPage(page))
+                if (HtmlDom.IsGameOrWidgetPage(page))
                     continue;
                 if (PageHasImages(page))
                     continue;
@@ -5397,8 +5397,8 @@ namespace Bloom.Book
         public bool HasMotionPages => OurHtmlDom.HasMotionPages();
 
         public bool HasQuizPages => OurHtmlDom.HasQuizPages();
-        public bool HasActivities => OurHtmlDom.HasActivityPages();
-        public bool HasGames => OurHtmlDom.HasGamePages();
+        public bool HasGamesOrWidgets => OurHtmlDom.HasGamesOrWidgetsPages();
+        public bool HasNonWidgetGames => OurHtmlDom.HasNonWidgetGamePages();
         public bool HasWidgets => OurHtmlDom.HasWidgetPages();
 
         public bool HasComicalOverlays => OurHtmlDom.HasComicalCanvasElements();
@@ -5446,6 +5446,7 @@ namespace Bloom.Book
             // Language-independent features
             UpdateQuizFeature();
             UpdateSimpleDomChoiceFeature();
+            UpdateDragGameFeature();
             UpdateMotionFeature();
             UpdateComicFeature();
             UpdateWidgetFeature();
@@ -5550,6 +5551,14 @@ namespace Bloom.Book
                 FeatureStatus
                     .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game)
                     .Enabled && OurHtmlDom.HasSimpleDomChoicePages();
+        }
+
+        private void UpdateDragGameFeature()
+        {
+            BookInfo.MetaData.Feature_DragGame =
+                FeatureStatus
+                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .Enabled && OurHtmlDom.HasDragGamePages();
         }
 
         /// <summary>
