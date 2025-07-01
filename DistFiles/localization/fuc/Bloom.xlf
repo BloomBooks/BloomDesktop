@@ -4034,6 +4034,11 @@
         <target xml:lang="fuc" state="needs-translation">Activity</target>
         <note>ID: PublishTab.Activity</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Game">
+        <source xml:lang="en">Game</source>
+        <target xml:lang="fuc" state="needs-translation">Game</target>
+        <note>ID: PublishTab.Game</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Comic">
         <source xml:lang="en">Comic</source>
         <target xml:lang="fuc" state="needs-translation">Comic</target>
@@ -4892,6 +4897,11 @@
         <source xml:lang="en">Activities will be skipped</source>
         <target xml:lang="fuc" state="needs-translation">Activities will be skipped</target>
         <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.GamesSkipped">
+        <source xml:lang="en">Games will be skipped</source>
+        <target xml:lang="fuc" state="needs-translation">Games will be skipped</target>
+        <note>ID: PublishTab.RecordVideo.GamesSkipped</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AudioFile">
         <source xml:lang="en">Audio File</source>
@@ -6184,6 +6194,24 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Using **Enterprise** subscription for **{0}**. Expires **{1}**</source>
         <target xml:lang="fuc" state="needs-translation">Using **Enterprise** subscription for **{0}**. Expires **{1}**</target>
         <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.DuplicateIds">
+        <source xml:lang="en">
+          Bloom found two or more books that are already shared in your Team Collection and have the same ID ({0}).
+        </source>
+        <target xml:lang="fuc" state="needs-translation">
+          Bloom found two or more books that are already shared in your Team Collection and have the same ID ({0}).
+        </target>
+        <note>ID: TeamCollection.DuplicateIds</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.GetHelp">
+        <source xml:lang="en">
+          For help with Team Collection problems, click {here}.
+        </source>
+        <target xml:lang="fuc" state="needs-translation">
+          For help with Team Collection problems, click {here}.
+        </target>
+        <note>ID: TeamCollection.GetHelp</note>
       </trans-unit>
       <trans-unit id="TeamCollection.TeamCollection">
         <source xml:lang="en">Team Collection</source>
