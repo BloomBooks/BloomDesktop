@@ -969,7 +969,7 @@ namespace BloomTests.Publish
                 .Cast<SafeXmlElement>()
                 .ToList();
             omittedPages = new Dictionary<string, int>();
-            subscription = new Subscription("Test-361769-1088"); // allows widgets
+            subscription = new Subscription("Test-727011-1339"); // allows widgets
             PublishHelper.RemovePagesByFeatureSystem(
                 pageElts,
                 PublishingMediums.Epub, // does not allow games
@@ -1005,7 +1005,7 @@ namespace BloomTests.Publish
                 .Cast<SafeXmlElement>()
                 .ToList();
             var omittedPages = new Dictionary<string, int>();
-            var subscription = new Subscription("john_hatton@sil.org-005909-2753");
+            var subscription = new Subscription("john_hatton@sil.org-123456-3028");
             PublishHelper.RemovePagesByFeatureSystem(
                 pageElts,
                 PublishingMediums.BloomPub,
@@ -1029,7 +1029,7 @@ namespace BloomTests.Publish
             checkNotRemoved();
 
             // higher tier is OK also
-            subscription = new Subscription("Test-361769-1088");
+            subscription = new Subscription("Test-727011-1339");
             PublishHelper.RemovePagesByFeatureSystem(
                 pageElts,
                 PublishingMediums.BloomPub,

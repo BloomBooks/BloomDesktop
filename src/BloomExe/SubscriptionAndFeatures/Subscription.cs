@@ -3,7 +3,8 @@ using System.Globalization;
 using System.Linq;
 
 namespace Bloom.SubscriptionAndFeatures
-{ // NB: this must match c# enum SubscriptionTier in FeaturesStatus.ts
+{
+    // NB: this must match c# enum SubscriptionTier in FeaturesStatus.ts
     // Tiers are ordered, so if you have a higher tier, you can use the features of the lower tiers.
     public enum SubscriptionTier
     {
