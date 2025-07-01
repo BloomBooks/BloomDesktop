@@ -557,12 +557,22 @@
       <trans-unit id="PublishTab.Feature.Activities.Present">
         <source xml:lang="en">This book has interactive activities.</source>
         <target xml:lang="ru" state="needs-translation">This book has interactive activities.</target>
-        <note>ID: PublishTab.Feature.Activities.None</note>
+        <note>ID: PublishTab.Feature.Activities.Present</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
         <source xml:lang="en">This is disabled because publishing interactive activities requires a subscription.</source>
         <target xml:lang="ru" state="needs-translation">This is disabled because publishing interactive activities requires a subscription.</target>
         <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Games.None">
+        <source xml:lang="en">This book does not have any games.</source>
+        <target xml:lang="ru" state="needs-translation">This book does not have any games.</target>
+        <note>ID: PublishTab.Feature.Games.None</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Games.Present">
+        <source xml:lang="en">This book has games.</source>
+        <target xml:lang="ru" state="needs-translation">This book has games.</target>
+        <note>ID: PublishTab.Feature.Games.Present</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None">
         <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
