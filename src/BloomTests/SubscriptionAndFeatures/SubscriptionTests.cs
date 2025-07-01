@@ -4,7 +4,7 @@ using System.Threading;
 using NUnit.Framework;
 using Bloom.SubscriptionAndFeatures;
 
-namespace BloomTests.Collection
+namespace BloomTests.SubscriptionAndFeatures
 {
     [TestFixture]
     public class SubscriptionTests

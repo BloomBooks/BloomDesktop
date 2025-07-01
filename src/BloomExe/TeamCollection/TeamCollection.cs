@@ -2722,7 +2722,7 @@ namespace Bloom.TeamCollection
                             titleIcon = "/bloom/teamCollection/Team Collection.svg",
                             titleColor = "white",
                             titleBackgroundColor = Palette.kBloomBlueHex,
-                            showReportButton = "if-error"
+                            showReportButton = "never"
                         },
                         "Sync Team Collection"
                     )
@@ -2734,6 +2734,24 @@ namespace Bloom.TeamCollection
                 doWhat,
                 doWhenMainActionFalse
             );
+        }
+
+        public void AddHelpMessageIfProblems(IWebSocketProgress progress)
+        {
+            if (progress.HaveProblemsBeenReported)
+            {
+                var message = LocalizationManager.GetString(
+                    "TeamCollection.GetHelp",
+                    "For help with Team Collection problems, click {here}."
+                );
+                message = message
+                    .Replace(
+                        "{",
+                        "<a href='https://docs.bloomlibrary.org/team-collections-problems'>"
+                    )
+                    .Replace("}", "</a>");
+                progress.MessageWithoutLocalizing(message);
+            }
         }
 
         /// <summary>
@@ -2759,40 +2777,54 @@ namespace Bloom.TeamCollection
                 title,
                 (progress, worker) =>
                 {
-                    // Not useful to have the date and time in the progress dialog, but definitely
-                    // handy to record at the start of each section in the saved log. Tells us when anything it
-                    // had to do to sync things actually happened.
-                    progress.Message(
-                        "StartingSync",
-                        "",
-                        "Starting sync with Team Collection",
-                        ProgressKind.Progress
-                    );
+                    bool waitForUserToCloseDialogOrReportProblems;
+                    try
+                    {
+                        // Not useful to have the date and time in the progress dialog, but definitely
+                        // handy to record at the start of each section in the saved log. Tells us when anything it
+                        // had to do to sync things actually happened.
+                        progress.Message(
+                            "StartingSync",
+                            "",
+                            "Starting sync with Team Collection",
+                            ProgressKind.Progress
+                        );
 
-                    bool doingFirstTimeJoinCollectionMerge =
-                        TeamCollectionManager.NextMergeIsFirstTimeJoinCollection;
-                    TeamCollectionManager.NextMergeIsFirstTimeJoinCollection = false;
-                    // don't want messages about the collection being changed while we're synchronizing,
-                    // and in some cases we might be the source of several changes (for example, multiple
-                    // check ins while joining a collection). Normally we suppress notifications for
-                    // our own checkins, but remembering the last thing we checked in might not be
-                    // enough when we do several close together.
-                    StopMonitoring();
+                        bool doingFirstTimeJoinCollectionMerge =
+                            TeamCollectionManager.NextMergeIsFirstTimeJoinCollection;
+                        TeamCollectionManager.NextMergeIsFirstTimeJoinCollection = false;
+                        // don't want messages about the collection being changed while we're synchronizing,
+                        // and in some cases we might be the source of several changes (for example, multiple
+                        // check ins while joining a collection). Normally we suppress notifications for
+                        // our own checkins, but remembering the last thing we checked in might not be
+                        // enough when we do several close together.
+                        StopMonitoring();
 
-                    MigrateStatusFiles();
-                    var waitForUserToCloseDialogOrReportProblems = SyncAtStartup(
-                        progress,
-                        doingFirstTimeJoinCollectionMerge
-                    );
+                        MigrateStatusFiles();
+                        waitForUserToCloseDialogOrReportProblems = SyncAtStartup(
+                            progress,
+                            doingFirstTimeJoinCollectionMerge
+                        );
 
-                    // Now that we've finished synchronizing, update these icons based on the post-sync result
-                    // REVIEW: What do we want to happen if exception throw here? Should we add to {problems} list?
-                    UpdateStatusOfAllCheckedOutBooks();
+                        // Now that we've finished synchronizing, update these icons based on the post-sync result
+                        // REVIEW: What do we want to happen if exception throw here? Should we add to {problems} list?
+                        UpdateStatusOfAllCheckedOutBooks();
 
-                    progress.Message("Done", "Done");
+                        progress.Message("Done", "Done");
 
-                    // Tasks that are waiting for the sync may be done now, whether or not it had errors.
-                    whenDone?.Invoke();
+                        // Tasks that are waiting for the sync may be done now, whether or not it had errors.
+                        whenDone?.Invoke();
+                    }
+                    catch (Exception ex)
+                    {
+                        waitForUserToCloseDialogOrReportProblems = true;
+                        progress.MessageWithoutLocalizing(
+                            "Something went wrong: " + ex.Message,
+                            ex is FatalException ? ProgressKind.Fatal : ProgressKind.Error
+                        );
+                    }
+                    AddHelpMessageIfProblems(progress);
+
                     // The dialog may continue to show for a bit, but other idle-time startup tasks
                     // (possibly queued during whenDone()) may continue.
                     StartupScreenManager.ConsiderCurrentTaskDone();

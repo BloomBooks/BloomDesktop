@@ -5,7 +5,7 @@ import { useSubscribeToWebSocketForObjectInMessageParam } from "../utils/WebSock
 export interface ISelectedBookInfo {
     id: string | undefined;
     saveable: boolean; // changes can safely be saved, including considering whether checked out if necessary
-    deleteable: boolean; // if true, the book can be deleted, even if not saveable (e.g., book in error state)
+    deletable: boolean; // if true, the book can be deleted, even if not saveable (e.g., book in error state)
     collectionKind: "main" | "factory" | "error" | "other"; //error indicates the book is not usable for anything.
     aboutBookInfoUrl: string | undefined;
     isTemplate: boolean;
@@ -14,7 +14,7 @@ export interface ISelectedBookInfo {
 export const DefaultSelectedBookInfo: ISelectedBookInfo = {
     id: undefined,
     saveable: false,
-    deleteable: false,
+    deletable: false,
     collectionKind: "error", // better to see no button at all until we know which it is
     aboutBookInfoUrl: undefined,
     isTemplate: false

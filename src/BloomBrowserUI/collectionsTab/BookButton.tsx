@@ -203,7 +203,9 @@ export const BookButton: React.FunctionComponent<{
     );
 
     const getBookMenuItemsSpecs: () => MenuItemSpec[] = () => {
-        return [
+        // If we just return this array, without declaring it to be an array of MenuItemSpec,
+        // TypeScript fails to complain if we mis-spell a property name.
+        const items: MenuItemSpec[] = [
             {
                 label: "Rename Book",
                 l10nId: "CollectionTab.BookMenu.RenameBook",
@@ -266,6 +268,7 @@ export const BookButton: React.FunctionComponent<{
                 hide: () => !props.collection.isEditableCollection
             }
         ];
+        return items;
     };
 
     useEffect(() => {
@@ -451,7 +454,7 @@ export const BookButton: React.FunctionComponent<{
             getBookMenuItemsSpecs(),
             props.collection.isEditableCollection,
             bookInfo.saveable,
-            bookInfo.deleteable,
+            bookInfo.deletable,
             handleClose,
             props.book.id,
             props.collection.id,

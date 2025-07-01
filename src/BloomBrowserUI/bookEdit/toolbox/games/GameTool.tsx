@@ -1303,14 +1303,6 @@ const DragActivityControls: React.FunctionComponent<{
                         <GameIntroText
                             gameType={getGameType(activityType, getPage())}
                         />
-                        <Div
-                            css={css`
-                                margin-top: 10px;
-                                margin-bottom: 5px;
-                                margin-right: 10px;
-                            `}
-                            l10nKey="EditTab.Toolbox.Games.Theme"
-                        ></Div>
                         <ThemeChooser pageGeneration={props.pageGeneration} />
                         {anyOptions && (
                             <Div
