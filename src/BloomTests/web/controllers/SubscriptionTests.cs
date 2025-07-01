@@ -33,7 +33,7 @@ namespace BloomTests.Collection
 
         [TestCase(null, "Default")]
         [TestCase("", "Default")]
-        //[TestCase("Sample-361769-1709", "Sample")] temporarily disabled; failing due to expiration of the code
+        [TestCase("Sample-361769-1709", "Sample")]
         [TestCase("Foo-Bar-Blah", "Default")] // missing parts, invalid, thus branding is "Default"
         [TestCase("Fake-LC-006273-1463", "Local-Community")] // this code will eventually expire, after which it should be replaced
         [TestCase("Test-Expired-005691-4935", "Default")] //  expired, thus "Default"
@@ -87,7 +87,7 @@ namespace BloomTests.Collection
 
         [TestCase(null, SubscriptionTier.Basic)]
         [TestCase("", SubscriptionTier.Basic)]
-        //[TestCase("Legacy-LC-005839-2533", SubscriptionTier.LocalCommunity)] temporarily disabled; failing due to expiration of the code
+        [TestCase("Legacy-LC-005839-2533", SubscriptionTier.LocalCommunity)]
         [TestCase("Fake-006273-0501", SubscriptionTier.Enterprise)]
         [TestCase("Fake-LC-006273-1463", SubscriptionTier.LocalCommunity)]
         [TestCase("Test-Expired-005691-4935", SubscriptionTier.Basic)] // if expired, it's basic
