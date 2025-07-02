@@ -36,19 +36,19 @@
         <target xml:lang="fr" state="needs-translation">Add items that will show when the learner gets the correct answer. For example, you might add a text that says “Correct!” with a GIF of a dancing chicken.</target>
         <note>ID: EditTab.Toolbox.DragActivity.CorrectInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ObjectsToDrag">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ObjectsToDrag" approved="yes">
         <source xml:lang="en">Objects to Drag</source>
-        <target xml:lang="fr" state="translated">Objets à Faire Glisser</target>
+        <target xml:lang="fr" state="final">Objets à Faire Glisser</target>
         <note>ID: EditTab.Toolbox.DragActivity.ObjectsToDrag</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Draggability">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Draggability" approved="yes">
         <source xml:lang="en">Draggable</source>
-        <target xml:lang="fr" state="translated">Déplaçable</target>
+        <target xml:lang="fr" state="final">Déplaçable</target>
         <note>ID: EditTab.Toolbox.DragActivity.Draggability</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.DraggabilityMore">
+      <trans-unit id="EditTab.Toolbox.DragActivity.DraggabilityMore" approved="yes">
         <source xml:lang="en">During game play, this item can be moved around.</source>
-        <target xml:lang="fr" state="needs-translation">During game play, this item can be moved around.</target>
+        <target xml:lang="fr" state="final">Au cours du jeu, on peut déplacer cet objet.</target>
         <note>ID: EditTab.Toolbox.DragActivity.DraggabilityMore</note>
       </trans-unit>
       <!-- <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading">
