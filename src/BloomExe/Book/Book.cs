@@ -1039,6 +1039,7 @@ namespace Bloom.Book
             _pagesCache = null;
 
             EnsureUpToDateMemory(progress);
+            UpdateSupportFiles();
 
             Storage.MigrateToMediaLevel1ShrinkLargeImages();
 
@@ -1669,10 +1670,13 @@ namespace Bloom.Book
         ///
         /// The code here was historically used, roughly, to bring a book as far up to date as possible
         /// without changing files in the book folder. In the course of switching to the Appearance/Theme
-        /// system, we realized that isn't really feasible. So now we either bring a book up to date or
-        /// don't, and we only bring it up to date if we can save it. This method should only be called
-        /// by the main Update method. We may inline it at some point, but for now, that would make
-        /// seeing changes more difficult.
+        /// system, we realized that isn't really feasible. So now in the main collection we either
+        /// bring a book up to date or don't, and we only bring it up to date if we can save it.
+        /// There is currently one other case: when we load a template book in order to add pages from
+        /// it to the current book. We can't mess with its files, which might be in a locked location,
+        /// but we need an up-to-date page added to the new book (e.g., it might be an old template from
+        /// bloom library that doesn't use canvas-element or bloom-canvas). So calling this should fix
+        /// any problems that will affect using a book's pages to add to an existing book.
         ///
         /// If we need to reinstate the ability to bring a book up to date without saving it, JohnT's fork
         /// has two branches, AppearanceChanges3 and AppearanceChanges4. The changes made going from 3
@@ -1683,12 +1687,8 @@ namespace Bloom.Book
         /// SaveAsBloomSourceFile should draw from the cache if we allow it to save a book that isn't
         /// all the way up to date.
         /// </summary>
-        private void EnsureUpToDateMemory(IProgress progress)
+        public void EnsureUpToDateMemory(IProgress progress)
         {
-            Guard.Against(
-                !IsSaveable,
-                "EnsureUpToDateMemory should only now be called for Saveable books as part of the main book updating"
-            );
             string oldMetaData = "";
             if (RobustFile.Exists(BookInfo.MetaDataPath))
             {
@@ -1828,8 +1828,6 @@ namespace Bloom.Book
             // but I think it would only be in the very rare case of repeatedly needing to update
             // a pre-4.9 book when we can't Save().
             OurHtmlDom.FixDivOrdering();
-
-            UpdateSupportFiles();
         }
 
         private void AddLanguageAttributesToBody(HtmlDom bookDom)
@@ -5932,7 +5930,11 @@ namespace Bloom.Book
 
         public bool IsPlayground
         {
-            get { return BookInfo.BookLineage.Contains("aeb176bc-76fa-44e2-bb9d-6350698fce47"); }
+            get
+            {
+                return BookInfo.BookLineage?.Contains("aeb176bc-76fa-44e2-bb9d-6350698fce47")
+                    ?? false;
+            }
         }
     }
 }
