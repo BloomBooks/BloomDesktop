@@ -89,6 +89,15 @@ export const kBackgroundImageClass = "bloom-backgroundImage"; // split-pane.js a
 
 type ResizeDirection = "ne" | "nw" | "sw" | "se";
 
+export const kDraggableIdAttribute = "data-draggable-id";
+export function isDraggable(canvasElement): boolean {
+    return !!canvasElement?.getAttribute(kDraggableIdAttribute);
+}
+
+export function getAllDraggables(page: HTMLElement | Document) {
+    return Array.from(page.querySelectorAll(`[${kDraggableIdAttribute}]`));
+}
+
 // Canvas elements are the movable items that can be placed over images (or empty image containers).
 // Some of them are associated with ComicalJs bubbles. Earlier in Bloom's history, they were variously
 // called TextOverPicture boxes, TOPs, Overlays, OverPictures, and Bubbles. We have attempted to clean up all such
@@ -1467,7 +1476,7 @@ export class CanvasElementManager {
         const imgStyle = img.style;
         // left can't be greater than zero; that would leave empty space on the left.
         // also can't be so small as to make the right of the image (img.clientWidth + newLeft) less than
-        // the right of the canvas element (this.activeElement.clientLeft + this.activElement.clientWidth)
+        // the right of the canvas element (this.activeElement.clientLeft + this.activeElement.clientWidth)
         const newLeft = Math.max(
             Math.min(this.oldImageLeft + deltaX, 0),
             this.activeElement.clientLeft +
@@ -4496,9 +4505,7 @@ export class CanvasElementManager {
                     b => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0
                 )
             );
-            const draggables = canvasElements.filter(b =>
-                b.getAttribute("data-draggable-id")
-            );
+            const draggables = canvasElements.filter(b => isDraggable(b));
             if (
                 draggables.length === 0 ||
                 canvasElements.indexOf(draggables[0]) ===
@@ -5412,7 +5419,7 @@ export class CanvasElementManager {
             adjustTarget(document.firstElementChild as HTMLElement, undefined);
             return;
         }
-        const targetId = draggable.getAttribute("data-draggable-id");
+        const targetId = draggable.getAttribute(kDraggableIdAttribute);
         const target = targetId
             ? document.querySelector(`[data-target-of="${targetId}"]`)
             : undefined;
@@ -5997,11 +6004,11 @@ export class CanvasElementManager {
         const detachedTargets = Array.from(
             document.querySelectorAll("[data-target-of]")
         );
-        const canvasElements = Array.from(
-            document.querySelectorAll("[data-draggable-id]")
-        );
+        const canvasElements = getAllDraggables(document);
         canvasElements.forEach(canvasElement => {
-            const draggableId = canvasElement.getAttribute("data-draggable-id");
+            const draggableId = canvasElement.getAttribute(
+                kDraggableIdAttribute
+            );
             if (draggableId) {
                 const index = detachedTargets.findIndex(
                     (target: Element) =>

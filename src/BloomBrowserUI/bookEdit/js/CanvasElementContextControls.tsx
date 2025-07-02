@@ -46,7 +46,9 @@ import { Divider } from "@mui/material";
 import { DuplicateIcon } from "./DuplicateIcon";
 import {
     CanvasElementManager,
+    isDraggable,
     kBackgroundImageClass,
+    kDraggableIdAttribute,
     theOneCanvasElementManager
 } from "./CanvasElementManager";
 import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
@@ -61,6 +63,7 @@ import { Span } from "../../react_components/l10nComponents";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { GameType, getGameType } from "../toolbox/games/GameInfo";
+import { setGeneratedDraggableId } from "../toolbox/overlay/CanvasElementItem";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -142,7 +145,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const aRecordingLabel = useL10n("A Recording", "ARecording", "");
 
     const currentDraggableTargetId = props.canvasElement?.getAttribute(
-        "data-draggable-id"
+        kDraggableIdAttribute
     );
     const [currentDraggableTarget, setCurrentDraggableTarget] = useState<
         HTMLElement | undefined
@@ -193,6 +196,21 @@ const CanvasElementContextControls: React.FunctionComponent<{
     );
     const canExpandBackgroundImage = theOneCanvasElementManager?.canExpandToFillSpace();
 
+    const canToggleDraggability =
+        isInDraggableGame &&
+        getGameType(activityType, page) !== GameType.DragSortSentence &&
+        // wrong and correct view items cannot be made draggable
+        !props.canvasElement.classList.contains("drag-item-wrong") &&
+        !props.canvasElement.classList.contains("drag-item-correct") &&
+        // Gifs and rectangles cannot be made draggable
+        !props.canvasElement.classList.contains("bloom-gif") &&
+        !props.canvasElement.querySelector(`.bloom-rectangle`) &&
+        !isSpecialGameElementSelected &&
+        // Don't let them make the background image draggable
+        !isBackgroundImage &&
+        // Audio currently cannot be made non-draggable
+        !props.canvasElement.querySelector(`[data-icon-type="audio"]`);
+
     const [textHasAudio, setTextHasAudio] = useState(true);
     useEffect(() => {
         if (!props.menuOpen || !props.canvasElement) return;
@@ -239,6 +257,14 @@ const CanvasElementContextControls: React.FunctionComponent<{
             english: "Add Child Bubble",
             onClick: theOneCanvasElementManager?.addChildCanvasElement
         });
+    }
+    if (canToggleDraggability) {
+        addMenuItemForTogglingDraggability(
+            menuOptions,
+            props.canvasElement,
+            currentDraggableTarget,
+            setCurrentDraggableTarget
+        );
     }
     if (currentDraggableTargetId) {
         addMenuItemsForDraggable(
@@ -597,7 +623,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                 return (
                                     <LocalizableNestedMenuItem
                                         {...option}
-                                        key={index}
+                                        key={option.l10nId}
                                         truncateMainLabel={true}
                                     >
                                         {option.subMenu.map(
@@ -613,7 +639,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                                 }
                                                 return (
                                                     <LocalizableMenuItem
-                                                        key={subIndex}
+                                                        key={subOption.l10nId}
                                                         {...subOption}
                                                         css={css`
                                                             max-width: ${maxMenuWidth}px;
@@ -634,7 +660,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             }
                             return (
                                 <LocalizableMenuItem
-                                    key={index}
+                                    key={option.l10nId}
                                     {...option}
                                     onClick={e => {
                                         setMenuOpen(false);
@@ -1016,7 +1042,7 @@ function addImageMenuOptions(
     ];
     // It would be too confusing and difficult for the element to be both draggable and clickable with different
     //  behavior such that we'd have to distinguish between the two.
-    if (!canvasElement.hasAttribute("data-draggable-id")) {
+    if (!isDraggable(canvasElement)) {
         imageMenuOptions.push({
             l10nId: "EditTab.PasteHyperlink",
             english: "Paste Hyperlink",
@@ -1087,6 +1113,98 @@ function pasteLink(canvasElement: HTMLElement) {
     });
 }
 
+// applies the modification to all classes of element
+function modifyClassNames(
+    element: HTMLElement,
+    modification: (className: string) => string
+): void {
+    const classList = Array.from(element.classList);
+    const newClassList = classList
+        .map(modification)
+        .filter(className => className !== "");
+    element.classList.remove(...classList);
+    element.classList.add(...newClassList);
+}
+
+// applies the modification to all classes of element and all its descendants
+function modifyAllDescendantsClassNames(
+    element: HTMLElement,
+    modification: (className: string) => string
+): void {
+    const descendants = element.querySelectorAll("*");
+    descendants.forEach(descendant => {
+        modifyClassNames(descendant as HTMLElement, modification);
+    });
+}
+
+function addMenuItemForTogglingDraggability(
+    menuOptions: IMenuItemWithSubmenu[],
+    canvasElement: HTMLElement,
+    currentDraggableTarget: HTMLElement | undefined,
+    setCurrentDraggableTarget: (target: HTMLElement | undefined) => void
+) {
+    const toggleDragability = () => {
+        if (isDraggable(canvasElement)) {
+            if (currentDraggableTarget) {
+                currentDraggableTarget.ownerDocument
+                    .getElementById("target-arrow")
+                    ?.remove();
+                currentDraggableTarget.remove();
+                setCurrentDraggableTarget(undefined);
+            }
+            canvasElement.removeAttribute(kDraggableIdAttribute);
+            if (
+                canvasElement.getElementsByClassName("bloom-editable").length >
+                0
+            ) {
+                modifyAllDescendantsClassNames(canvasElement, className =>
+                    className.replace(
+                        /GameDrag((?:Small|Medium|Large)(?:Start|Center))-style/,
+                        "GameText$1-style"
+                    )
+                );
+                canvasElement.classList.remove("draggable-text");
+            }
+        } else {
+            setGeneratedDraggableId(canvasElement);
+            setCurrentDraggableTarget(makeTargetForDraggable(canvasElement));
+            // Draggables cannot have hyperlinks, otherwise Bloom Player will launch the hyperlink when you click on it
+            // and you won't be able to drag it.
+            const imageContainer = canvasElement.getElementsByClassName(
+                kImageContainerClass
+            )[0] as HTMLElement;
+            if (imageContainer) {
+                imageContainer.removeAttribute("data-href");
+            }
+
+            theOneCanvasElementManager.setActiveElement(canvasElement);
+            if (
+                canvasElement.getElementsByClassName("bloom-editable").length >
+                0
+            ) {
+                modifyAllDescendantsClassNames(canvasElement, className =>
+                    className.replace(
+                        /GameText((?:Small|Medium|Large)(?:Start|Center))-style/,
+                        "GameDrag$1-style"
+                    )
+                );
+                canvasElement.classList.add("draggable-text");
+            }
+        }
+    };
+    menuOptions.push(divider, {
+        l10nId: "EditTab.Toolbox.DragActivity.Draggability",
+        english: "Draggable",
+        subLabelL10nId: "EditTab.Toolbox.DragActivity.DraggabilityMore",
+        onClick: toggleDragability,
+        icon: isDraggable(canvasElement) ? (
+            <CheckIcon css={getMenuIconCss()} />
+        ) : (
+            undefined
+        )
+    });
+}
+
 function addMenuItemsForDraggable(
     menuOptions: IMenuItemWithSubmenu[],
     canvasElement: HTMLElement,
@@ -1108,7 +1226,7 @@ function addMenuItemsForDraggable(
             setCurrentDraggableTarget(makeTargetForDraggable(canvasElement));
         }
     };
-    menuOptions.push(divider, {
+    menuOptions.push({
         l10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswer",
         english: "Part of the right answer",
         subLabelL10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore",
