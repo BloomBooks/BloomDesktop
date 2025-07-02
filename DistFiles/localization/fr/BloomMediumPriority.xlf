@@ -564,14 +564,14 @@
         <target xml:lang="fr" state="translated">Ceci est désactivé car la publication d'activités interactives est une fonctionnalité de Bloom Entreprise.</target>
         <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Games.None">
+      <trans-unit id="PublishTab.Feature.Games.None" approved="yes">
         <source xml:lang="en">This book does not have any games.</source>
-        <target xml:lang="fr" state="needs-translation">This book does not have any games.</target>
+        <target xml:lang="fr" state="final">Ce livre ne contient aucune activité de jeu.</target>
         <note>ID: PublishTab.Feature.Games.None</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Games.Present">
+      <trans-unit id="PublishTab.Feature.Games.Present" approved="yes">
         <source xml:lang="en">This book has games.</source>
-        <target xml:lang="fr" state="needs-translation">This book has games.</target>
+        <target xml:lang="fr" state="final">Ce livre contient des activités de jeu.</target>
         <note>ID: PublishTab.Feature.Games.Present</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None" approved="yes">
