@@ -4034,9 +4034,9 @@
         <target xml:lang="fr" state="final">Activités</target>
         <note>ID: PublishTab.Activity</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Game">
+      <trans-unit id="PublishTab.Game" approved="yes">
         <source xml:lang="en">Game</source>
-        <target xml:lang="fr" state="needs-translation">Game</target>
+        <target xml:lang="fr" state="final">Jeu</target>
         <note>ID: PublishTab.Game</note>
       </trans-unit>
       <trans-unit id="PublishTab.Comic" approved="yes">
@@ -4898,9 +4898,9 @@
         <target xml:lang="fr" state="final">Certaines activités vont sauter</target>
         <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
       </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.GamesSkipped">
+      <trans-unit id="PublishTab.RecordVideo.GamesSkipped" approved="yes">
         <source xml:lang="en">Games will be skipped</source>
-        <target xml:lang="fr" state="needs-translation">Games will be skipped</target>
+        <target xml:lang="fr" state="final">Les activités de jeu seront ignorées</target>
         <note>ID: PublishTab.RecordVideo.GamesSkipped</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AudioFile" approved="yes">
@@ -6195,21 +6195,21 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="needs-translation">Using **Enterprise** subscription for **{0}**. Expires **{1}**</target>
         <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.DuplicateIds">
+      <trans-unit id="TeamCollection.DuplicateIds" approved="yes">
         <source xml:lang="en">
           Bloom found two or more books that are already shared in your Team Collection and have the same ID ({0}).
         </source>
-        <target xml:lang="fr" state="needs-translation">
-          Bloom found two or more books that are already shared in your Team Collection and have the same ID ({0}).
+        <target xml:lang="fr" state="final">
+          Bloom a trouvé deux livres ou plus qui sont déjà partagés dans votre Collection d'Équipe et qui portent le même ID ({0}).
         </target>
         <note>ID: TeamCollection.DuplicateIds</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.GetHelp">
+      <trans-unit id="TeamCollection.GetHelp" approved="yes">
         <source xml:lang="en">
           For help with Team Collection problems, click {here}.
         </source>
-        <target xml:lang="fr" state="needs-translation">
-          For help with Team Collection problems, click {here}.
+        <target xml:lang="fr" state="final">
+          Pour obtenir de l'aide sur les problèmes liés à une Collection d'Équipe, cliquez {here}.
         </target>
         <note>ID: TeamCollection.GetHelp</note>
       </trans-unit>
