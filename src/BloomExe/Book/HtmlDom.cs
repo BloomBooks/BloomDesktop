@@ -443,10 +443,12 @@ namespace Bloom.Book
 
             var x = builder.ToString().Trim();
             if (x.Length == 0)
-                Logger.WriteEvent(
-                    "HtmlDom.ValidateBook({0}): No Errors",
-                    descriptionOfBookForErrorLog
-                );
+            {
+                //Logger.WriteEvent(
+                //    "HtmlDom.ValidateBook({0}): No Errors",
+                //    descriptionOfBookForErrorLog
+                //);
+            }
             else
             {
                 Logger.WriteEvent(

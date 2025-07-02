@@ -447,6 +447,7 @@ namespace Bloom
             _scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<WorkspaceApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ExternalApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<LoggerApi>().RegisterWithApiHandler(server.ApiHandler);
         }
 
         public static string[] SourceRootFolders()

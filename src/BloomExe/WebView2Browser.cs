@@ -38,8 +38,15 @@ namespace Bloom
         private UndoCommand _undoCommand;
         private CutCommand _cutCommand;
 
+        private string _stackTopForLog;
+
         public WebView2Browser()
         {
+            var stack = Environment.StackTrace.Split(new string[] { "\r\n", "\n", "\r" },
+                StringSplitOptions.RemoveEmptyEntries).Where(x => x.Contains("at Bloom.") && !x.Contains("Browser.") && !x.Contains(".web.")).ToArray();
+            if (stack.Length > 0)
+                _stackTopForLog = stack[0];
+
             InitializeComponent();
 
             // I don't think anything we're doing here will take long enough for us to need to await it.
@@ -68,8 +75,10 @@ namespace Bloom
                 try
                 {
                     Logger.WriteEvent(
-                        $"Initialized a WebView2  {_webview.CoreWebView2.Environment.BrowserVersionString} with UserDataFolder at '{_webview.CoreWebView2.Environment.UserDataFolder}"
+                        $"Initialized a WebView2 (version {_webview.CoreWebView2.Environment.BrowserVersionString}) with UserDataFolder=\"{_webview.CoreWebView2.Environment.UserDataFolder}\""
                     );
+                    if (!string.IsNullOrEmpty(_stackTopForLog))
+                        Logger.WriteEvent(_stackTopForLog);
 
                     // prevent the browser from opening external links, by intercepting NavigationStarting
                     _webview.CoreWebView2.NavigationStarting += (

@@ -827,6 +827,8 @@ async function activateToolInternalAsync(
     // happen after showTool.
     await newTool.showTool();
 
+    postString("logger/logEvent", `Toolbox activated: ${newTool.id()}`);
+
     // Note: Allowed to begin some async work too, and we will await its result.
     // (This apparently solves the single flash mentioned in BL-10471.)
     await newTool.newPageReady();
@@ -1482,6 +1484,10 @@ function showToolboxChanged(wasShowing: boolean): void {
         if (wasShowing) {
             detachCurrentTool();
             currentTool.hideTool();
+            postString(
+                "logger/logEvent",
+                `Toolbox deactivating: ${currentTool.id()}`
+            );
         } else {
             activateTool(currentTool);
         }

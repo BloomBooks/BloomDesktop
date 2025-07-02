@@ -14,7 +14,7 @@ import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 import { ReaderPublishScreen } from "../ReaderPublish/ReaderPublishScreen";
 import { useL10n } from "../../react_components/l10nHooks";
-import { get, post } from "../../utils/bloomApi";
+import { get, post, postString } from "../../utils/bloomApi";
 import { useSubscribeToWebSocketForEvent } from "../../utils/WebSocketManager";
 import { LibraryPublishScreen } from "../LibraryPublish/LibraryPublishScreen";
 import { PDFPrintPublishScreen } from "../PDFPrintPublish/PDFPrintPublishScreen";
@@ -131,6 +131,27 @@ export const PublishTabPane: React.FunctionComponent = () => {
         );
     }
 
+    function logPublishTabSelected(idx: number) {
+        const tabNames = [
+            "PDF & Print",
+            "Web",
+            "BloomPUB",
+            "ePUB",
+            "Audio or Video"
+        ];
+        if (idx < 0 || idx >= tabNames.length) {
+            postString(
+                "logger/logEvent",
+                `Publish tab selected: ${idx} (unknown)`
+            );
+        } else {
+            postString(
+                "logger/logEvent",
+                `Publish tab selected: ${tabNames[idx]}`
+            );
+        }
+    }
+
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={lightTheme}>
@@ -150,6 +171,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                             selectedIndex={tabIndex}
                             onSelect={newIndex => {
                                 post("publish/switchingPublishMode");
+                                logPublishTabSelected(newIndex);
                                 setTabIndex(newIndex);
                             }}
                             css={css`
