@@ -36,10 +36,20 @@
         <target xml:lang="es-ES" state="translated">Añadir elementos que se mostrarán cuando el estudiante reciba la respuesta correcta. Por ejemplo, puedes añadir un texto que dice “Correcto!” con un GIF de un pollo bailando.</target>
         <note>ID: EditTab.Toolbox.DragActivity.CorrectInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Draggable">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ObjectsToDrag">
         <source xml:lang="en">Objects to Drag</source>
-        <target xml:lang="es-ES" state="translated">Objetos para arrastrar</target>
-        <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
+        <target xml:lang="es-ES" state="needs-translation">Objects to Drag</target>
+        <note>ID: EditTab.Toolbox.DragActivity.ObjectsToDrag</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.Draggability">
+        <source xml:lang="en">Draggable</source>
+        <target xml:lang="es-ES" state="needs-translation">Draggable</target>
+        <note>ID: EditTab.Toolbox.DragActivity.Draggability</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.DraggabilityMore">
+        <source xml:lang="en">During game play, this item can be moved around.</source>
+        <target xml:lang="es-ES" state="needs-translation">During game play, this item can be moved around.</target>
+        <note>ID: EditTab.Toolbox.DragActivity.DraggabilityMore</note>
       </trans-unit>
       <!-- <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading">
         <source xml:lang="en">Drag Images to Targets</source>
