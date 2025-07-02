@@ -513,8 +513,9 @@ namespace Bloom.Edit
             )
             {
                 // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
-                Logger.WriteEvent("changing page via editTabBundle.switchContentPage()");
                 var pageUrl = _model.GetUrlForCurrentPage();
+                var urlFile = Path.GetFileName(pageUrl);    // this actually works with a leading http://.
+                Logger.WriteEvent($"changing page via editTabBundle.switchContentPage('{urlFile}')");
                 _browser1.RunJavascriptFireAndForget(
                     "editTabBundle.switchContentPage('" + pageUrl + "');"
                 );
@@ -576,28 +577,28 @@ namespace Bloom.Edit
             var beginGarbageCollect = DateTime.Now;
             if (UseBackgroundGC())
             {
-                Logger.WriteEvent("performing backgound garbage collection without finalizers");
+                //Logger.WriteEvent("performing backgound garbage collection without finalizers");
                 GC.Collect(2, GCCollectionMode.Optimized, false, true);
                 //GC.WaitForPendingFinalizers();
             }
             else
             {
-                Logger.WriteEvent("performing blocking garbage collection with finalizers");
+                //Logger.WriteEvent("performing blocking garbage collection with finalizers");
                 GC.Collect( /*2, GCCollectionMode.Optimized, false, true*/
                 );
                 GC.WaitForPendingFinalizers();
             }
             var endPageLoad = DateTime.Now;
-            Logger.WriteEvent(
-                $"update page elapsed time = {endPageLoad - _beginPageLoad} (garbage collect took {endPageLoad - beginGarbageCollect})"
-            );
+            //Logger.WriteEvent(
+            //    $"update page elapsed time = {endPageLoad - _beginPageLoad} (garbage collect took {endPageLoad - beginGarbageCollect})"
+            //);
             //#if MEMORYCHECK
             // Check memory for the benefit of developers.
-            Bloom.Utils.MemoryManagement.CheckMemory(
-                false,
-                "EditingView - display page updated",
-                false
-            );
+            //Bloom.Utils.MemoryManagement.CheckMemory(
+            //    false,
+            //    "EditingView - display page updated",
+            //    false
+            //);
             //#endif
         }
 

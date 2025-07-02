@@ -313,11 +313,11 @@ namespace Bloom.Publish
                     BookletLayoutMethod layoutMethod = GetBookletLayoutMethod();
 
                     // Check memory for the benefit of developers.  The user won't see anything.
-                    Bloom.Utils.MemoryManagement.CheckMemory(
-                        true,
-                        "about to create PDF file",
-                        false
-                    );
+                    //Bloom.Utils.MemoryManagement.CheckMemory(
+                    //    true,
+                    //    "about to create PDF file",
+                    //    false
+                    //);
                     _pdfMaker.MakePdf(
                         new PdfMakingSpecs()
                         {
@@ -343,11 +343,11 @@ namespace Bloom.Publish
                         owner
                     );
                     // Warn the user if we're starting to use too much memory.
-                    Bloom.Utils.MemoryManagement.CheckMemory(
-                        false,
-                        "finished creating PDF file",
-                        true
-                    );
+                    //Bloom.Utils.MemoryManagement.CheckMemory(
+                    //    false,
+                    //    "finished creating PDF file",
+                    //    true
+                    //);
                 }
             }
             catch (Exception e)

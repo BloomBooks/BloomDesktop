@@ -643,7 +643,7 @@ namespace Bloom
             finally
             {
                 // Check memory one final time for the benefit of developers.  The user won't see anything.
-                Bloom.Utils.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
+                //Bloom.Utils.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
                 if (gotUniqueToken)
                     UniqueToken.ReleaseToken();
 

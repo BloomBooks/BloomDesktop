@@ -14,7 +14,7 @@ import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 import { ReaderPublishScreen } from "../ReaderPublish/ReaderPublishScreen";
 import { useL10n } from "../../react_components/l10nHooks";
-import { get, post } from "../../utils/bloomApi";
+import { get, post, postString } from "../../utils/bloomApi";
 import { useSubscribeToWebSocketForEvent } from "../../utils/WebSocketManager";
 import { LibraryPublishScreen } from "../LibraryPublish/LibraryPublishScreen";
 import { PDFPrintPublishScreen } from "../PDFPrintPublish/PDFPrintPublishScreen";
@@ -131,6 +131,59 @@ export const PublishTabPane: React.FunctionComponent = () => {
         );
     }
 
+    interface PublishTabProps {
+        tipL10nKey: string;
+        iconSrc: string;
+        labelL10nKey: string;
+        label: string;
+    }
+    const publishTabs: PublishTabProps[] = [
+        {
+            tipL10nKey: "PublishTab.PdfPrintButton-tooltip",
+            iconSrc: "/bloom/publish/PublishTab/PdfPrint.png",
+            labelL10nKey: "PublishTab.PdfPrint.Button",
+            label: "PDF & Print"
+        },
+        {
+            tipL10nKey: "PublishTab.ButtonThatShowsUploadForm-tooltip",
+            iconSrc: "/bloom/publish/PublishTab/upload.png",
+            labelL10nKey: "PublishTab.ButtonThatShowsUploadForm",
+            label: "Web"
+        },
+        {
+            tipL10nKey: "PublishTab.bloomPUBButton-tooltip",
+            iconSrc: "/bloom/publish/PublishTab/BloomPUB.png",
+            labelL10nKey: "PublishTab.bloomPUBButton",
+            label: "BloomPUB"
+        },
+        {
+            tipL10nKey: "PublishTab.EpubRadio-tooltip",
+            iconSrc: "/bloom/publish/PublishTab/ePUBPublishButton.png",
+            labelL10nKey: "PublishTab.EpubButton",
+            label: "ePUB"
+        },
+        {
+            tipL10nKey: "PublishTab.RecordVideoButton-tooltip",
+            iconSrc: "/bloom/publish/PublishTab/publish video.png",
+            labelL10nKey: "PublishTab.RecordVideoButton",
+            label: "Audio or Video"
+        }
+    ];
+
+    function logPublishTabSelected(idx: number) {
+        if (idx < 0 || idx >= publishTabs.length) {
+            postString(
+                "logger/writeEvent",
+                `Publish tab selected: ${idx} (unknown)`
+            );
+        } else {
+            postString(
+                "logger/writeEvent",
+                `Publish tab selected: ${publishTabs[idx].label}`
+            );
+        }
+    }
+
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={lightTheme}>
@@ -150,6 +203,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                             selectedIndex={tabIndex}
                             onSelect={newIndex => {
                                 post("publish/switchingPublishMode");
+                                logPublishTabSelected(newIndex);
                                 setTabIndex(newIndex);
                             }}
                             css={css`
@@ -212,86 +266,23 @@ export const PublishTabPane: React.FunctionComponent = () => {
                             `}
                         >
                             <TabList>
-                                <Tab>
-                                    <BloomTooltip
-                                        tip={{
-                                            l10nKey:
-                                                "PublishTab.PdfPrintButton-tooltip"
-                                        }}
-                                    >
-                                        <img src="/bloom/publish/PublishTab/PdfPrint.png" />
-                                        <Span
-                                            l10nKey="PublishTab.PdfPrint.Button"
-                                            className="sidebar-tab-label"
+                                {publishTabs.map((tab, index) => (
+                                    <Tab key={index}>
+                                        <BloomTooltip
+                                            tip={{
+                                                l10nKey: tab.tipL10nKey
+                                            }}
                                         >
-                                            PDF & Print
-                                        </Span>
-                                    </BloomTooltip>
-                                </Tab>
-                                <Tab>
-                                    <BloomTooltip
-                                        tip={{
-                                            l10nKey:
-                                                "PublishTab.ButtonThatShowsUploadForm-tooltip"
-                                        }}
-                                    >
-                                        <img src="/bloom/publish/PublishTab/upload.png" />
-                                        <Span
-                                            l10nKey="PublishTab.ButtonThatShowsUploadForm"
-                                            className="sidebar-tab-label"
-                                        >
-                                            Web
-                                        </Span>
-                                    </BloomTooltip>
-                                </Tab>
-                                <Tab>
-                                    <BloomTooltip
-                                        tip={{
-                                            l10nKey:
-                                                "PublishTab.bloomPUBButton-tooltip"
-                                        }}
-                                    >
-                                        <img src="/bloom/publish/PublishTab/BloomPUB.png" />
-                                        <Span
-                                            l10nKey="PublishTab.bloomPUBButton"
-                                            className="sidebar-tab-label"
-                                        >
-                                            BloomPUB
-                                        </Span>
-                                    </BloomTooltip>
-                                </Tab>
-                                <Tab>
-                                    <BloomTooltip
-                                        tip={{
-                                            l10nKey:
-                                                "PublishTab.EpubRadio-tooltip"
-                                        }}
-                                    >
-                                        <img src="/bloom/publish/PublishTab/ePUBPublishButton.png" />
-                                        <Span
-                                            l10nKey="PublishTab.EpubButton"
-                                            className="sidebar-tab-label"
-                                        >
-                                            ePUB
-                                        </Span>
-                                    </BloomTooltip>
-                                </Tab>
-                                <Tab>
-                                    <BloomTooltip
-                                        tip={{
-                                            l10nKey:
-                                                "PublishTab.RecordVideoButton-tooltip"
-                                        }}
-                                    >
-                                        <img src="/bloom/publish/PublishTab/publish video.png" />
-                                        <Span
-                                            l10nKey="PublishTab.RecordVideoButton"
-                                            className="sidebar-tab-label"
-                                        >
-                                            Audio or Video
-                                        </Span>
-                                    </BloomTooltip>
-                                </Tab>
+                                            <img src={tab.iconSrc} />
+                                            <Span
+                                                l10nKey={tab.labelL10nKey}
+                                                className="sidebar-tab-label"
+                                            >
+                                                {tab.label}
+                                            </Span>
+                                        </BloomTooltip>
+                                    </Tab>
+                                ))}
 
                                 <Tab className={"invisible_tab"}>
                                     {/* The default tab for before user has selected a publish mode. Should not be visible or clickable */}

@@ -1081,7 +1081,7 @@ namespace Bloom.Workspace
 
             CurrentTabView = view as IBloomTabArea;
             // Warn the user if we're starting to use too much memory.
-            MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
+            //MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
 
             if (_previouslySelectedControl != null)
             {
@@ -1190,7 +1190,7 @@ namespace Bloom.Workspace
             TabStripButton btn = (TabStripButton)e.SelectedTab;
             _tabStrip.BackColor = btn.BarColor;
             _toolSpecificPanel.BackColor = _panelHoldingToolStrip.BackColor = _tabStrip.BackColor;
-            Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
+            //Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
             SelectPage((Control)e.SelectedTab.Tag);
             AdjustTabStripDisplayForScreenSize();
             if (_tabSelection.ActiveTab == WorkspaceTab.collection && _collectionTabView != null)
