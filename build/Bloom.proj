@@ -1,14 +1,20 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- This makes defaults for various properties unless they are set from the command line or TeamCity parameter settings.
 	Typically command line includes /p:BUILD_NUMBER=3.1.22.0 (all 4 digits required).
-	May include something like /p:channel=Alpha.-->
+	May include something like /p:channel=Alpha.
+  To build locally, you need a Developer shell (currently start menu, Developer Command Prompt for Visual Studio 2022).
+  CD to this build directory. Then use a command like
+  MSbuild /p:InstallerOutputFolder=C:\github\BloomDesktop\output\installer\result;BUILD_NUMBER=6.3.1001.0;channel=LocalBuilt /t:Installer
+  To test updating, modify ApplicationUpdateSupport.GetUpdateUrl to return an absolute path to the directory
+  where the output is placed (InstallerOutputFolder in the command line above).
+  -->
   <PropertyGroup>
     <isOnTeamCity Condition="'$(teamcity_version)' == ''">false</isOnTeamCity>
     <isOnTeamCity Condition="'$(teamcity_version)' != ''">true</isOnTeamCity>
     <RootDir Condition="$(isOnTeamCity) == false Or '$(OS)'!='Windows_NT'">$(MSBuildProjectDirectory)\..</RootDir>
     <RootDir Condition="$(isOnTeamCity) == true And '$(OS)'=='Windows_NT'">$(teamcity_build_checkoutDir)</RootDir>
     <Solution>Bloom.sln</Solution>
-    <!-- This controls the following things; the some of them pretty much have to match for Squirrel:
+    <!-- This controls the following things; some of them pretty much have to match for Velopack:
 			- the nupkg ID (Bloom<channel>)
 			- the name that occurs in the (Uninstall) Programs and Features control panel (Bloom <version> <channel>)
 			- the folder in appdata/local in which Bloom (and subsequent versions in the same channel) will be installed (Bloom<channel>)
@@ -20,7 +26,10 @@
 			- It controls which DownloadPointers.htm we generate and upload (DownloadPointers<channel>.htm)
 			It is an empty string for plain Bloom, which is intended to be the stable release.
 			(The line below leaves it empty, and thus does nothing except to let an editor know this is
-			a valid, known property group.)-->
+			a valid, known property group.)
+      Note that we do NOT use channel as the value of the 'channel' command line arg to Vpk. We get output file names more consistent
+      with previous (Squirrel) history by making it part of the product ID. It's also possible that having distinct product IDs
+      better supports parallel installation. -->
     <channel Condition="'$(channel)'==''"></channel>
     <!-- channelRelease is 'Release' if channel is empty, otherwise same as channel-->
     <channelRelease>$(channel)</channelRelease>
@@ -40,7 +49,6 @@
     <BuildTasksDll>$(RootDir)/packages/SIL.BuildTasks/tools/SIL.BuildTasks.dll</BuildTasksDll>
     <BuildTasksAwsDll>$(RootDir)/packages/SIL.BuildTasks.AWS/tools/SIL.BuildTasks.AWS.dll</BuildTasksAwsDll>
     <SharedBuildDir>Z:</SharedBuildDir>
-    <SquirrelLogPath>$(RootDir)\lib\dotnet\Squirrel-Releasify.log</SquirrelLogPath>
     <NuGetPackageDir Condition="'$(OS)'=='Windows_NT'">$(UserProfile)/.nuget/packages</NuGetPackageDir>
     <NuGetPackageDir Condition="'$(OS)'!='Windows_NT'">$(Home)/.nuget/packages</NuGetPackageDir>
     <RestartBuild Condition="!Exists('$(BuildTasksDll)') Or !Exists('$(BuildTasksAwsDll)')">true</RestartBuild>
@@ -86,22 +94,19 @@
     <CreateProperty Value="$(Version).$(BuildHash)">
       <Output PropertyName="FullVersion" TaskParameter="Value"/>
     </CreateProperty>
-    <CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).msi">
+    <CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).exe">
       <Output PropertyName="InstallerFileName" TaskParameter="Value"/>
     </CreateProperty>
-    <CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).exe">
-      <Output PropertyName="SquirrelInstallerFileName" TaskParameter="Value"/>
-    </CreateProperty>
     <CreateProperty Value="Bloom$(channel)-$(Version)-full.nupkg">
-      <Output PropertyName="SquirrelFullPkg" TaskParameter="Value"/>
+      <Output PropertyName="VelopackFullPkg" TaskParameter="Value"/>
     </CreateProperty>
     <CreateProperty Value="Bloom$(channel)-$(Version)-delta.nupkg">
-      <Output PropertyName="SquirrelDeltaPkg" TaskParameter="Value"/>
+      <Output PropertyName="VelopackDeltaPkg" TaskParameter="Value"/>
     </CreateProperty>
     <!-- Z drive is set up for data shared by all build agents on TeamCity. If running on a dev machine,
-		you should set your preferred release folder from the command line, usually /p:SquirrelReleaseFolder=<root>/output/installer-->
-    <CreateProperty Value="$(SharedBuildDir)\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
-      <Output PropertyName="SquirrelReleaseFolder" TaskParameter="Value"/>
+		you should set your preferred release folder from the command line, usually /p:InstallerOutputFolder=<root>/output/installer/result-->
+    <CreateProperty Value="$(SharedBuildDir)\Bloom$(channel)" Condition="$(InstallerOutputFolder)==''">
+      <Output PropertyName="InstallerOutputFolder" TaskParameter="Value"/>
     </CreateProperty>
     <Message Text="Version: $(Version)" Importance="high"/>
     <Message Text="FullVersion: $(FullVersion)" Importance="high"/>
@@ -180,7 +185,7 @@
     <!-- we customize and upload a version of DownloadPointers, named after our channel (RELEASE or BETA), and upload it.
 			That file is then iframe'd in to a download page somewhere.	-->
     <!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
-    <Copy SourceFiles ="$(RootDir)\src\SquirrelInstaller\DownloadPointers.htm"
+    <Copy SourceFiles ="$(RootDir)\src\Installer\DownloadPointers.htm"
 				 DestinationFolder ="$(RootDir)\output\installer"/>
     <!-- replace some parts of the file with the version number & date & channel info -->
     <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
@@ -214,58 +219,51 @@
 			DestinationFolder="channels"
 			IsPublicRead="true" />
   </Target>
-  <Target Name="Installer" DependsOnTargets="VersionNumbers; Build ">
-    <!-- set the version number in the script that configures squirrel.  Perhaps there's a way to just send in the variables rather than this brute-force
-		changing of the script, but I haven't figured that out. -->
-    <FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;version&gt;[^&lt;]*&lt;"
-					ReplacementText ="&lt;version&gt;$(Version)&lt;" />
-    <!-- insert the version number in the description also (for Windows uninstaller UI, ultimately)-->
-    <FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;description&gt;[^&lt;]*&lt;"
-					ReplacementText ="&lt;description&gt;Bloom $(Version) $(channel)&lt;" />
-    <!-- insert the Label into the product ID, which also controls the folder where Squirrel installs.-->
-    <FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;id&gt;[^&lt;]*&lt;"
-					ReplacementText ="&lt;id&gt;Bloom$(channel)&lt;" />
+  
+  <Target Name="Installer" DependsOnTargets="VersionNumbers; Build">
     <CallTarget Targets="SignExesIfPossible"/>
     <!-- the name of the exe must also match the application product name. Use move rather than rename in case the destination
-		already exists from a previous build. -->
+		already exists from a previous build. Review: we could do this in installer\content after the following copies.-->
     <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe $(RootDir)\output\$(Configuration)\Bloom$(channel).exe"/>
     <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe.config $(RootDir)\output\$(Configuration)\Bloom$(channel).exe.config"/>
-    <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.pdb $(RootDir)\output\$(Configuration)\Bloom.pdb"/>
-    <Message Text="Making Nuget package: $(Version)" Importance="high"  />
-    <!-- Bloom expects an icon with a name corresponding to the EXE, which gets used for the desktop shortcut.
-		If we one day make distinct icons for the channels, we'll need to revise this to get the right channel-specific icon.-->
-    <Copy SourceFiles="$(RootDir)\src\SquirrelInstaller\Bloom.ico"  DestinationFiles="$(RootDir)\output\Release\Bloom$(channelRelease).ico"/>
-    <!-- The same is true for an initial splash image.  Right now, all channels use the same splash image for the instant splash. -->
-    <Copy SourceFiles="$(RootDir)\src\BloomSplash.png"  DestinationFiles="$(RootDir)\output\$(Configuration)\Bloom$(channel)Splash.png"/>
-    <Exec Command="$(RootDir)\.nuget\NuGet pack $(RootDir)\src\SquirrelInstaller\Bloom.nuspec"/>
-    <!-- This is the command that actually runs Squirrel. Usually the exe invoked here is called Squirrel. However, we're building our own
-			version, and it's easiest to go with the exe name that the Squirrel build process actually produces.
+    <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.pdb $(RootDir)\output\$(Configuration)\Bloom$(channel).pdb"/>
+    <!-- Copy everything we want installed on the user's computer into ../installer/content. (First we remove the directory,
+    so as not to include anything obsolete from an earlier build).-->
+    <ItemGroup>
+      <ReleaseFiles
+        Include="..\output\release\**\*.*"
+        Exclude="**\*.xml;Bloom.vshost.exe;**\*.pdb;**\BloomTests.*;remoteDebugging;**\Moq.*;**\nunit.*.dll;**\NUnit3.*.dll" />
+      <PdbFiles
+        Include="..\output\release\Bloom*.pdb"
+        Exclude="**\*Tests.*" />
+      <BrowserFiles
+        Include="..\output\browser\**\*"
+        Exclude="**\*.ts;**\*.tsx;**\*.map;**\*.pug;**\*.jade;**\*.less;**\*Spec.js;**\*.jsx" />
+      <DistFiles
+        Include="..\DistFiles\**\*"/>
+    </ItemGroup>
+
+    <RemoveDir Directories="..\output\installer\content" />
+    <Copy SourceFiles="@(ReleaseFiles)" DestinationFolder="..\output\installer\content\%(RecursiveDir)" />
+    <Copy SourceFiles="@(PdbFiles)" DestinationFolder="..\output\installer\content\%(RecursiveDir)" />
+    <Copy SourceFiles="@(DistFiles)" DestinationFolder="..\output\installer\content\%(RecursiveDir)" />
+    <Copy SourceFiles="@(BrowserFiles)" DestinationFolder="..\output\installer\content\browser\%(RecursiveDir)" />
+    <Message Text="Running Vpk: $(Version)" Importance="high"  />
+    <!-- This is the command that actually runs Velopack. It generates a complete installer as well as full and delta nupkg packages,
+      a json file which Velopack uses to figure out what deltas to download, and a RELEASES file which tells old Squirrel-based
+      installers how to update.
 			The releaseDir here is a shared drive for all the build agents (though for now we only use one, because only it has the signing data).
-			We continue on error so we can output the log contents. -->
+			The vpk command doesn't appear to create a log file; any output it produces, which may contain error messages, goes to the console.
+      If there's a problem it returns a non-zero exit code, which ends the build.
+      There's a long list of possible dependencies that the installer can be told to check for using the framework argument
+      at https://docs.velopack.io/packaging/bootstrapping#:~:text=By%20default%2C%20Velopack%20will%20accept,dotnet.
+      It will help the user try to fix things if they are not.-->
     <Exec
-			ContinueOnError="true"
-			Command="$(RootDir)\lib\dotnet\Update --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) --no-msi -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop,StartMenu'">
-      <Output TaskParameter="ExitCode" PropertyName="SquirrelReleasifyExitCode"/>
-    </Exec>
-    <CallTarget Targets="HandleSquirrelReleasifyError" Condition="$(SquirrelReleasifyExitCode)!=0" />
-    <Copy SourceFiles="$(SquirrelReleaseFolder)\Setup.exe"
-				DestinationFiles="$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"
-			/>
-    <Message Text="Copied installer to $(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)" Importance="high"/>
-  </Target>
-  <Target Name="HandleSquirrelReleasifyError">
-    <CallTarget Condition="Exists($(SquirrelLogPath))" Targets="SquirrelLogExists" />
-    <CallTarget Condition="!Exists($(SquirrelLogPath))" Targets="SquirrelLogDoesNotExist" />
-    <Error Text="Squirrel releasify failed. See log contents above." />
-  </Target>
-  <Target Name="SquirrelLogExists">
-    <Message Text="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" Importance="high"	/>
-    <Message Text="Contents of $(SquirrelLogPath):" Importance="high"	/>
-    <Exec Command="type $(SquirrelLogPath)" />
-    <Message Text="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" Importance="high"	/>
-  </Target>
-  <Target Name="SquirrelLogDoesNotExist">
-    <Message Text="Squirrel log does not exist at expected location ($(SquirrelLogPath))." Importance="high" />
+      Command="vpk pack --packId Bloom$(channel) --packVersion $(Version) --packDir ..\output\installer\content --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net47,webview2=" />
+    <Copy SourceFiles="$(InstallerOutputFolder)\Bloom$(channel)-win-Setup.exe"
+          DestinationFiles="$(InstallerOutputFolder)\$(InstallerFileName)"
+    />
+    <Message Text="Copied installer to $(InstallerOutputFolder)\$(InstallerFileName)" Importance="high"/>
   </Target>
   <Target Name="SignExesIfPossible">
     <PropertyGroup>
@@ -277,11 +275,11 @@
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
   </Target>
-  <!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: squirrel itself
+  <!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: Velopack itself
 	can sign things if passed the right command line arguments. Is that a better thing to do? -->
   <Target Name="SignInstaller" DependsOnTargets="VersionNumbers; Installer">
-    <Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"'></Exec>
-    <Message Text="Signed squirrel installer at $(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)" Importance="high"/>
+    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileName)"'></Exec>
+    <Message Text="Signed Velopack installer at $(InstallerOutputFolder)\$(InstallerFileName)" Importance="high"/>
   </Target>
   <Target Name="Upload" DependsOnTargets="VersionNumbers; SignInstaller" >
     <CallTarget Targets="UploadCore"/>
@@ -292,52 +290,62 @@
     <CallTarget Targets="UploadCore"/>
   </Target>
   <Target Name="UploadCore">
-    <Message Text="Attempting rsync of $(SquirrelInstallerFileName)" Importance="high"/>
+    <Message Text="Attempting rsync of $(InstallerFileName)" Importance="high"/>
     <!-- The way the web site generates the list of old installers requires that they be the only files in the
-		destination folder. For now I'm keeping them out of the actual installers folder that the web site uses.
-		When we're ready to go live with squirrel we can change this target folder or the web site.-->
+		destination folder. For now I'm keeping them out of the actual installers folder that the web site uses.-->
     <!--Note: S3BuildPublisher needs AWSSDK.dll it its own folder, so TeamCity should do that. Do it youself if you want to build locally-->
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelInstallerFileName)"
+		SourceFiles="$(InstallerOutputFolder)/$(InstallerFileName)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="installers$(channel)"
 		IsPublicRead="true" />
-    <!-- The delta, full, and RELEASES files must all be in the same directory, the one indicated by Program.SquirrelUpdateUrl.
-		This MUST NOT CHANGE once we start shipping squirrel installers, because it's where all the old versions will look for
-		newer ones.-->
+    <!-- The delta, full, releases.win.json, and RELEASES files must all be in the same directory,
+    the one InstallerSupport.LookupUrlOfVelopackUpdate finds.
+		This MUST NOT CHANGE, because it's where all the old versions will look for newer ones, unless we also change the S3 file
+    that tells bloom where to find it.
+    The RELEASES file is used by the old Squirrel-based update managers to find out what the latest version is and how to upgrade to it.
+    We could omit it for any new channels.
+    The releases.win.json file is used by the new Velopack-based update managers to find out what the latest version is and how to upgrade to it.
+    -->
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelDeltaPkg)"
+		SourceFiles="$(InstallerOutputFolder)/$(VelopackDeltaPkg)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelFullPkg)"
+		SourceFiles="$(InstallerOutputFolder)/$(VelopackFullPkg)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(SquirrelReleaseFolder)/RELEASES"
+		SourceFiles="$(InstallerOutputFolder)/RELEASES"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
+    <S3BuildPublisher
+      CredentialStoreProfileName ="$(ProfileName)"
+      SourceFiles="$(InstallerOutputFolder)/releases.win.json"
+      DestinationBucket="$(Bucket)"
+      DestinationFolder="deltas$(channel)"
+      IsPublicRead="true" />
     <CallTarget Targets ='MakeDownloadPointers'/>
     <CallTarget Targets="CleanUpObsoleteInstallerFiles"/>
   </Target>
-  <!-- Now that we've uploaded for this run, we can delete any obsolete files still in our Squirrel Release Folder. -->
+  <!-- Now that we've uploaded for this run, we can delete any obsolete files still in our Velopack Release Folder. -->
   <!-- We don't need any installers (BloomInstaller.*.exe) or any full nuget packages (*.-full.nupkg) besides the one for this run. -->
   <!-- We keep the full nuget package for this run so the next one can create a delta. -->
   <Target Name="CleanUpObsoleteInstallerFiles" DependsOnTargets="VersionNumbers">
     <ItemGroup>
-      <FilesToDelete Include="$(SquirrelReleaseFolder)\BloomInstaller.*.exe;$(SquirrelReleaseFolder)\*-full.nupkg" Exclude="$(SquirrelReleaseFolder)/$(SquirrelFullPkg)" />
+      <FilesToDelete Include="$(InstallerOutputFolder)\BloomInstaller.*.exe;$(InstallerOutputFolder)\*-full.nupkg" Exclude="$(InstallerOutputFolder)/$(VelopackFullPkg)" />
     </ItemGroup>
     <Delete Files="@(FilesToDelete)" />
   </Target>
   <Target Name="SignIfPossible" DependsOnTargets="VersionNumbers; Installer">
-    <Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"' ContinueOnError="true"></Exec>
+    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileName)"' ContinueOnError="true"></Exec>
   </Target>
   <Target Name="DownloadDistFiles">
     <Message Text="Downloading Bloom.chm help file" Importance="high"  />

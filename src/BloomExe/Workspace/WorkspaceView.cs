@@ -603,9 +603,9 @@ namespace Bloom.Workspace
             _applicationUpdateCheckTimer.Enabled = false;
             if (!Debugger.IsAttached && Platform.IsWindows)
             {
-                ApplicationUpdateSupport.CheckForASquirrelUpdate(
+                ApplicationUpdateSupport.CheckForAVelopackUpdate(
                     ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet,
-                    newInstallDir => RestartBloom(newInstallDir),
+                    () => RestartBloom(),
                     Settings.Default.AutoUpdate
                 );
             }
@@ -1433,7 +1433,7 @@ namespace Bloom.Workspace
         {
             if (ApplicationUpdateSupport.BloomUpdateInProgress)
             {
-                //enhance: ideally, what this would do is show a toast of whatever it is squirrel is doing: checking, downloading, waiting for a restart.
+                //enhance: ideally, what this would do is show a toast of whatever it is Velopack is doing: checking, downloading, waiting for a restart.
                 MessageBox.Show(
                     this,
                     LocalizationManager.GetString(
@@ -1466,15 +1466,15 @@ namespace Bloom.Workspace
             }
             else
             {
-                ApplicationUpdateSupport.CheckForASquirrelUpdate(
+                ApplicationUpdateSupport.CheckForAVelopackUpdate(
                     ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Verbose,
-                    newInstallDir => RestartBloom(newInstallDir),
+                    () => RestartBloom(),
                     Settings.Default.AutoUpdate
                 );
             }
         }
 
-        private void RestartBloom(string newInstallDir)
+        private void RestartBloom()
         {
             Control ancestor = Parent;
             while (ancestor != null && !(ancestor is Shell))
@@ -1482,15 +1482,7 @@ namespace Bloom.Workspace
             if (ancestor == null)
                 return;
             var shell = (Shell)ancestor;
-            var pathToNewExe = Path.Combine(
-                newInstallDir,
-                Path.ChangeExtension(Application.ProductName, ".exe")
-            );
-            if (!RobustFile.Exists(pathToNewExe))
-                return; // aargh!
             shell.QuitForVersionUpdate = true;
-            Process.Start(pathToNewExe);
-            Thread.Sleep(2000);
             shell.Close();
         }
 

@@ -221,6 +221,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Velopack" Version="0.0.1350-g3ba32af" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="PresentationCore" />
