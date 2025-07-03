@@ -1,12 +1,16 @@
-using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
 using Bloom.Book;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.web;
 using Bloom.Workspace;
+using L10NSharp;
 using Newtonsoft.Json;
+using SIL.IO;
+using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 
 namespace Bloom.Api
 {
@@ -125,6 +129,27 @@ namespace Bloom.Api
                     request.PostSucceeded();
                 },
                 true
+            );
+
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "versionNumber", request =>
+                {
+                    var assembly = Assembly.GetEntryAssembly();
+                    var ver = assembly.GetName().Version;
+                    request.ReplyWithText($"{ver.Major}.{ver.Minor}.{ver.Build}");
+                },
+                false
+            );
+
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "versionBuildDate", request =>
+                {
+                    var assembly = Assembly.GetEntryAssembly();
+                    var file = PathHelper.StripFilePrefix(assembly.Location);
+                    var fi = new FileInfo(file);
+                    request.ReplyWithText(fi.LastWriteTimeUtc.ToString("dd-MMM-yyyy"));
+                },
+                false
             );
         }
 
