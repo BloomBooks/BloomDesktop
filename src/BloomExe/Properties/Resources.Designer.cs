@@ -616,16 +616,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap SIL_Logo_80pxTall {
-            get {
-                object obj = ResourceManager.GetObject("SIL_Logo_80pxTall", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap simplePages {
             get {
                 object obj = ResourceManager.GetObject("simplePages", resourceCulture);
