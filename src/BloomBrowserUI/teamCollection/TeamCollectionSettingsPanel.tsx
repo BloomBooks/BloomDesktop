@@ -22,6 +22,7 @@ import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { useEffect } from "react";
 import { Label } from "../react_components/l10nComponents";
 import { TextField } from "@mui/material";
+import { DialogHelpButton } from "../react_components/BloomDialog/commonDialogComponents";
 
 // The contents of the Team Collection panel of the Settings dialog.
 
@@ -114,20 +115,13 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                 Need help adding someone to your Team Collection?
             </P>
             <div className="align-right">
-                <BloomButton
+                <DialogHelpButton
                     l10nKey="TeamCollection.HowToAddSomeone"
                     temporarilyDisableI18nWarning={true}
                     variant="text"
-                    enabled={true}
-                    hasText={true}
-                    onClick={() =>
-                        post(
-                            "help?topic=Tasks/Basic_tasks/Team_Collections/Add_someone_to_a_Team_Collection.htm"
-                        )
-                    }
-                >
-                    How to add someone to this Team Collection
-                </BloomButton>
+                    helpId="Tasks/Basic_tasks/Team_Collections/Add_someone_to_a_Team_Collection.htm"
+                    buttonText="How to add someone to this Team Collection"
+                />
             </div>
         </div>
     );
@@ -158,20 +152,13 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                 your Team?
             </P>
             <div className="align-right">
-                <BloomButton
+                <DialogHelpButton
                     l10nKey="TeamCollection.Joining"
-                    enabled={true}
-                    hasText={true}
-                    variant="text"
                     temporarilyDisableI18nWarning={true}
-                    onClick={() =>
-                        post(
-                            "help?topic=Tasks/Basic_tasks/Team_Collections/Join_a_Team_Collection.htm"
-                        )
-                    }
-                >
-                    How to join an existing Team Collection
-                </BloomButton>
+                    variant="text"
+                    helpId="Tasks/Basic_tasks/Team_Collections/Join_a_Team_Collection.htm"
+                    buttonText="How to join an existing Team Collection"
+                />
             </div>
         </div>
     );

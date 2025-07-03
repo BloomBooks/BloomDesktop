@@ -5188,6 +5188,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderTemplateBloomPackDialog.HelpButtonLabel">
         <source xml:lang="en">Help</source>
         <note>ID: ReaderTemplateBloomPackDialog.HelpButtonLabel</note>
+        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel">
         <source xml:lang="en">The following books will be made into templates:</source>

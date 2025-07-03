@@ -9,6 +9,7 @@ import * as mobxReact from "mobx-react";
 import BloomButton from "../../react_components/bloomButton";
 import { DialogTitle, DialogActions, DialogContent } from "@mui/material";
 import { LocalizedString } from "../../react_components/l10nComponents";
+import { DialogHelpButton } from "../../react_components/BloomDialog/commonDialogComponents";
 
 interface IState {
     isOpen: boolean;
@@ -94,16 +95,10 @@ export default class BookMetadataDialog extends React.Component<
                         />
                     </DialogContent>
                     <DialogActions>
-                        <BloomButton
+                        <DialogHelpButton
                             id="helpButton"
-                            variant="outlined"
-                            enabled={true}
-                            l10nKey="Common.Help"
-                            clickApiEndpoint="help?topic=User_Interface/Dialog_boxes/Book_Metadata_dialog_box.htm"
-                            hasText={true}
-                        >
-                            Help
-                        </BloomButton>
+                            helpId="User_Interface/Dialog_boxes/Book_Metadata_dialog_box.htm"
+                        />
                         <BloomButton
                             id="okButton"
                             enabled={true}

@@ -423,19 +423,6 @@ namespace Bloom.CollectionTab
                 AttemptMissingImageReplacements(selectedPath);
         }
 
-        public void MakeReaderTemplateBloompack()
-        {
-            using (var dlg = new MakeReaderTemplateBloomPackDlg())
-            {
-                dlg.SetLanguage(LanguageName);
-                dlg.SetTitles(BookTitles);
-                var mainWindow = MainShell;
-                if (dlg.ShowDialog(mainWindow) != DialogResult.OK)
-                    return;
-                MakeBloomPack(forReaderTools: true);
-            }
-        }
-
         public void SelectBook(Book.Book book)
         {
             _bookSelection.SelectBook(book);
