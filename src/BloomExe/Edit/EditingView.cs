@@ -93,21 +93,24 @@ namespace Bloom.Edit
             // This used to be part of InitializeComponent, but we want to make which browser to use
             // configurable. It can possibly move back to the Designer code once we settle on WebView2.
             // Turning off for this PR because it's not working well enough yet.
-            this._browser1 = BrowserMaker.MakeBrowser();
-            //
-            // _browser1
-            //
-            this._browser1.BackColor = System.Drawing.Color.DarkGray;
-            this._browser1.ContextMenuProvider = null;
-            this._browser1.ReplaceContextMenu = null;
-            this._browser1.ControlKeyEvent = null;
-            this._browser1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._browser1.Location = new System.Drawing.Point(0, 0);
-            this._browser1.Margin = new System.Windows.Forms.Padding(5);
-            this._browser1.Name = "_browser1";
-            this._browser1.Size = new System.Drawing.Size(826, 561);
-            this._browser1.TabIndex = 1;
-            this._splitContainer2.Panel1.Controls.Add(this._browser1);
+            if (!Program.RunningHarvesterMode)
+            {
+                this._browser1 = BrowserMaker.MakeBrowser();
+                //
+                // _browser1
+                //
+                this._browser1.BackColor = System.Drawing.Color.DarkGray;
+                this._browser1.ContextMenuProvider = null;
+                this._browser1.ReplaceContextMenu = null;
+                this._browser1.ControlKeyEvent = null;
+                this._browser1.Dock = System.Windows.Forms.DockStyle.Fill;
+                this._browser1.Location = new System.Drawing.Point(0, 0);
+                this._browser1.Margin = new System.Windows.Forms.Padding(5);
+                this._browser1.Name = "_browser1";
+                this._browser1.Size = new System.Drawing.Size(826, 561);
+                this._browser1.TabIndex = 1;
+                this._splitContainer2.Panel1.Controls.Add(this._browser1);
+            }
 
             this._splitContainer2.BackColor = Palette.GeneralBackground;
             SetupThumnailLists();
@@ -122,9 +125,11 @@ namespace Bloom.Edit
             _copyrightAndLicenseApi = copyrightAndLicenseApi;
             copyrightAndLicenseApi.Model = _model;
             copyrightAndLicenseApi.View = this;
-            _browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
-
-            _browser1.ControlKeyEvent = controlKeyEvent;
+            if (!Program.RunningHarvesterMode)
+            {
+                _browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
+                _browser1.ControlKeyEvent = controlKeyEvent;
+            }
 
             if (SIL.PlatformUtilities.Platform.IsMono)
             {

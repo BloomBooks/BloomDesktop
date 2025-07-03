@@ -72,7 +72,7 @@ namespace Bloom.Edit
         {
             InitializeComponent();
 
-            if (!ReallyDesignMode)
+            if (!ReallyDesignMode && !Program.RunningHarvesterMode)
             {
                 _browser = BrowserMaker.MakeBrowser();
                 _browser.BackColor = Color.DarkGray;
