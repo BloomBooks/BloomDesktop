@@ -19,7 +19,6 @@ import {
 } from "../../react_components/BloomDialog/commonDialogComponents";
 
 import { kVerticalSpacingBetweenDialogSections } from "../../bloomMaterialUITheme";
-import { ExperimentalBadge } from "../../react_components/experimentalBadge";
 import { Div } from "../../react_components/l10nComponents";
 import { useEventLaunchedBloomDialog } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { WarningBox } from "../../react_components/boxes";
@@ -58,9 +57,7 @@ const SpreadsheetExportDialog: React.FunctionComponent<{
 
     return (
         <BloomDialog {...props.propsForBloomDialog}>
-            <DialogTitle title={title}>
-                <ExperimentalBadge />
-            </DialogTitle>
+            <DialogTitle title={title}></DialogTitle>
             <DialogMiddle
                 css={css`
                     // our geckofx60 doesn't support this. So there is a <p></p> below instead
