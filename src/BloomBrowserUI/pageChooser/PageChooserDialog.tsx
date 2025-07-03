@@ -172,7 +172,14 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
             const results = result.data;
             setDefaultPageId(results["defaultPageToSelect"]);
             setOrientation(results["orientation"]);
-            setTemplateBooks(results["templateBooks"]);
+            setTemplateBooks(
+                results["templateBooks"].filter(
+                    (book: ITemplateBookInfo) =>
+                        !props.forChooseLayout ||
+                        (!book.templateBookPath.includes("Games") &&
+                            !book.templateBookPath.includes("Activity"))
+                )
+            );
         });
         return () => {
             WebSocketManager.removeListener(
