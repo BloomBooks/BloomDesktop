@@ -1,12 +1,16 @@
-using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
 using Bloom.Book;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.web;
 using Bloom.Workspace;
+using L10NSharp;
 using Newtonsoft.Json;
+using SIL.IO;
+using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 
 namespace Bloom.Api
 {
@@ -126,6 +130,38 @@ namespace Bloom.Api
                 },
                 true
             );
+
+            // These 3 version information code sections from https://github.com/sillsdev/libpalaso/blob/master/SIL.Windows.Forms/Miscellaneous/SILAboutBox.cs
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "fullVersionNumber", request =>
+                {
+                    var assembly = Assembly.GetEntryAssembly();
+                    var ver = assembly.GetName().Version;
+                    request.ReplyWithText($"{ver.Major}.{ver.Minor}.{ver.Build}.{ver.Revision}");
+                },
+                false);
+
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "shortVersionNumber", request =>
+                {
+                    var assembly = Assembly.GetEntryAssembly();
+                    var ver = assembly.GetName().Version;
+                    request.ReplyWithText($"{ver.Major}.{ver.Minor}.{ver.Build}");
+                },
+                false);
+
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "versionBuildDate", request =>
+                {
+                    var assembly = Assembly.GetEntryAssembly();
+                    var file = PathHelper.StripFilePrefix(assembly.Location);
+                    var fi = new FileInfo(file);
+                    /*request.ReplyWithText(string.Format(LocalizationManager.GetString("AboutDialog.BuiltOnDate",
+                        "Built on {0}", "{0} is the date the application was built"),
+                        fi.LastWriteTimeUtc.ToString("dd-MMM-yyyy")));*/
+                    request.ReplyWithText(fi.LastWriteTimeUtc.ToString("dd-MMM-yyyy"));
+                },
+                false);
         }
 
         private void HandleMakeFromSelectedBook(ApiRequest request)

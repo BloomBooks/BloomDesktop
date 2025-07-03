@@ -31,6 +31,7 @@ import {
     normalDialogEnvironmentForStorybook,
     useSetupBloomDialog
 } from "./BloomDialogPlumbing";
+import { AboutDialog } from "../aboutDialog";
 
 const circularProgress = (
     <CircularProgress
@@ -298,6 +299,16 @@ export const _NumberChooserDialog = () => {
     };
     return React.createElement(() => {
         return <NumberChooserDialog {...props}></NumberChooserDialog>;
+    });
+};
+
+export const _AboutDialog = () => {
+    return React.createElement(() => {
+        return (
+            <AboutDialog
+                dialogEnvironment={normalDialogEnvironmentForStorybook}
+            ></AboutDialog>
+        );
     });
 };
 
