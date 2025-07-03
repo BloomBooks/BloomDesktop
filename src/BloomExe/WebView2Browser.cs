@@ -68,7 +68,7 @@ namespace Bloom
                 try
                 {
                     Logger.WriteEvent(
-                        $"Initialized a WebView2  {_webview.CoreWebView2.Environment.BrowserVersionString} with UserDataFolder at '{_webview.CoreWebView2.Environment.UserDataFolder}"
+                        $"Initialized a WebView2 (version {_webview.CoreWebView2.Environment.BrowserVersionString}) with UserDataFolder=\"{_webview.CoreWebView2.Environment.UserDataFolder}\""
                     );
 
                     // prevent the browser from opening external links, by intercepting NavigationStarting

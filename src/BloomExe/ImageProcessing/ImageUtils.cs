@@ -329,7 +329,7 @@ namespace Bloom.ImageProcessing
             bool isSameFile
         )
         {
-            LogMemoryUsage();
+            //LogMemoryUsage();
 
             // If we go through all the processing and saving machinations for the placeholder image,
             // we just get more and more placeholders when we cut images (BL-9011).
