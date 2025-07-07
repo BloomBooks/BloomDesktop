@@ -7,25 +7,10 @@
         <target xml:lang="ne-NP" state="needs-translation">Built on {0}</target>
         <note>ID: AboutDialog.BuiltOnDate</note>
       </trans-unit>
-      <trans-unit id="AboutDialog.NoUpdates" approved="yes">
-        <source xml:lang="en">No Updates</source>
-        <target xml:lang="ne-NP" state="final">कुनै अद्यावधिक छैन</target>
-        <note>ID: AboutDialog.NoUpdates</note>
-      </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle">
         <source xml:lang="en">About {0}</source>
         <target xml:lang="ne-NP" state="needs-translation">About {0}</target>
         <note>ID: AboutDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
-        <source xml:lang="en">Check For Updates</source>
-        <target xml:lang="ne-NP" state="final">अद्यावधिकहरू जाँच्नुहोस्</target>
-        <note>ID: AboutDialog._checkForUpdates</note>
-      </trans-unit>
-      <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
-        <source xml:lang="en">Release Notes</source>
-        <target xml:lang="ne-NP" state="final">रिलिज नोटहरू</target>
-        <note>ID: AboutDialog._releaseNotesLabel</note>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General" approved="yes">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
