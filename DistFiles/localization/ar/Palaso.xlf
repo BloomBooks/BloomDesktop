@@ -7,25 +7,10 @@
         <target xml:lang="ar" state="final">تصميم يعتمد على {0}</target>
         <note>ID: AboutDialog.BuiltOnDate</note>
       </trans-unit>
-      <trans-unit id="AboutDialog.NoUpdates" approved="yes">
-        <source xml:lang="en">No Updates</source>
-        <target xml:lang="ar" state="final">لا توجد تحديثات</target>
-        <note>ID: AboutDialog.NoUpdates</note>
-      </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle" approved="yes">
         <source xml:lang="en">About {0}</source>
         <target xml:lang="ar" state="final">معلومات حول {0}</target>
         <note>ID: AboutDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
-        <source xml:lang="en">Check For Updates</source>
-        <target xml:lang="ar" state="final">التحقق من وجود تحديثات</target>
-        <note>ID: AboutDialog._checkForUpdates</note>
-      </trans-unit>
-      <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
-        <source xml:lang="en">Release Notes</source>
-        <target xml:lang="ar" state="final">ملاحظات الإصدار</target>
-        <note>ID: AboutDialog._releaseNotesLabel</note>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General" approved="yes">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
