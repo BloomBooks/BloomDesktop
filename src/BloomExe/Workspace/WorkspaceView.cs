@@ -1230,17 +1230,9 @@ namespace Bloom.Workspace
 
         private void OnAboutBoxClick(object sender, EventArgs e)
         {
-            string path = BloomFileLocator.GetBrowserFile(
-                true,
-                "infoPages",
-                "aboutBox-" + LocalizationManager.UILanguageId + ".htm"
-            );
-            if (String.IsNullOrEmpty(path))
+            using (var dlg = new ReactDialog("aboutDialogBundle", null, "About Bloom"))
             {
-                path = BloomFileLocator.GetBrowserFile(false, "infoPages", "aboutBox.htm");
-            }
-            using (var dlg = new SILAboutBox(path))
-            {
+                dlg.ClientSize = new System.Drawing.Size(580, 555);
                 dlg.ShowDialog();
             }
         }
