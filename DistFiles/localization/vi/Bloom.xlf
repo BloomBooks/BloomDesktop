@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="AboutDialog.AboutBloom">
         <source xml:lang="en">About {0}</source>
-        <target xml:lang="vi" state="needs-translation">About {0}</target>
+        <target xml:lang="vi" state="needs-review-translation" state-qualifier="leveraged-tm">Về chúng tôi{0}</target>
         <note>ID: AboutDialog.WindowTitle</note>
       </trans-unit>
       <trans-unit id="AboutDialog.BuiltOnDate">
         <source xml:lang="en">Built on {0}</source>
-        <target xml:lang="vi" state="needs-translation">Built on {0}</target>
+        <target xml:lang="vi" state="needs-review-translation" state-qualifier="leveraged-tm">Tạo ra vào {0}</target>
         <note>ID: AboutDialog.BuiltOnDate</note>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true">
