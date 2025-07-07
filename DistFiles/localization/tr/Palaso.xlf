@@ -7,25 +7,10 @@
         <target xml:lang="tr" state="translated">{0} üzerine kurulu</target>
         <note>ID: AboutDialog.BuiltOnDate</note>
       </trans-unit>
-      <trans-unit id="AboutDialog.NoUpdates">
-        <source xml:lang="en">No Updates</source>
-        <target xml:lang="tr" state="translated">Güncelleme Yok</target>
-        <note>ID: AboutDialog.NoUpdates</note>
-      </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle" approved="yes">
         <source xml:lang="en">About {0}</source>
         <target xml:lang="tr" state="final">{0} Hakkında</target>
         <note>ID: AboutDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="AboutDialog._checkForUpdates">
-        <source xml:lang="en">Check For Updates</source>
-        <target xml:lang="tr" state="translated">Güncellemeleri Kontrol Et</target>
-        <note>ID: AboutDialog._checkForUpdates</note>
-      </trans-unit>
-      <trans-unit id="AboutDialog._releaseNotesLabel">
-        <source xml:lang="en">Release Notes</source>
-        <target xml:lang="tr" state="translated">Sürüm Notları</target>
-        <note>ID: AboutDialog._releaseNotesLabel</note>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
