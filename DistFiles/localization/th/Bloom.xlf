@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="AboutDialog.AboutBloom">
         <source xml:lang="en">About {0}</source>
-        <target xml:lang="th" state="needs-translation">About {0}</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">เกี่ยวกับ{0}</target>
         <note>ID: AboutDialog.WindowTitle</note>
       </trans-unit>
       <trans-unit id="AboutDialog.BuiltOnDate">
