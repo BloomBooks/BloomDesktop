@@ -24,14 +24,9 @@ import {
     WaitBox
 } from "../boxes";
 import {
-    INumberChooserDialogProps,
-    NumberChooserDialog
-} from "../numberChooserDialog";
-import {
     normalDialogEnvironmentForStorybook,
     useSetupBloomDialog
 } from "./BloomDialogPlumbing";
-import { AboutDialog } from "../aboutDialog";
 
 const circularProgress = (
     <CircularProgress
@@ -284,32 +279,6 @@ export const DialogWithTheKitchenSink = () => {
 
 DialogWithTheKitchenSink.story = {
     name: "Dialog with the kitchen sink"
-};
-
-export const _NumberChooserDialog = () => {
-    const props: INumberChooserDialogProps = {
-        min: 2,
-        max: 777,
-        title: "My Random Chooser Title",
-        prompt: "Enter some number from 2 to 777",
-        onClick: num => {
-            console.log(`We chose ${num}.`);
-        },
-        dialogEnvironment: normalDialogEnvironmentForStorybook
-    };
-    return React.createElement(() => {
-        return <NumberChooserDialog {...props}></NumberChooserDialog>;
-    });
-};
-
-export const _AboutDialog = () => {
-    return React.createElement(() => {
-        return (
-            <AboutDialog
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-            ></AboutDialog>
-        );
-    });
 };
 
 export const TestDragResize = () => (

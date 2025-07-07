@@ -8,6 +8,11 @@ import {
 import { AutoUpdateSoftwareDialog } from "../AutoUpdateSoftwareDialog";
 import { ForumInvitationDialogLauncher } from "../forumInvitationDialog";
 import {
+    INumberChooserDialogProps,
+    NumberChooserDialog
+} from "../numberChooserDialog";
+import { AboutDialog } from "../aboutDialog";
+import {
     StorybookDialogWrapper,
     normalDialogEnvironmentForStorybook
 } from "../BloomDialog/BloomDialogPlumbing";
@@ -88,5 +93,34 @@ export const ForumInvitationDialogStory: Story = {
         <StorybookDialogWrapper id="ForumInvitationDialog" params={{}}>
             <ForumInvitationDialogLauncher />
         </StorybookDialogWrapper>
+    )
+};
+
+const numberChooserDialogProps: INumberChooserDialogProps = {
+    min: 2,
+    max: 777,
+    title: "My Random Chooser Title",
+    prompt: "Enter some number from 2 to 777",
+    onClick: num => {
+        console.log(`We chose ${num}.`);
+    },
+    dialogEnvironment: normalDialogEnvironmentForStorybook
+};
+
+export const NumberChooserDialogStory: Story = {
+    name: "NumberChooserDialog",
+    render: () => (
+        <NumberChooserDialog
+            {...numberChooserDialogProps}
+        ></NumberChooserDialog>
+    )
+};
+
+export const AboutDialogStory: Story = {
+    name: "AboutDialog",
+    render: () => (
+        <AboutDialog
+            dialogEnvironment={normalDialogEnvironmentForStorybook}
+        ></AboutDialog>
     )
 };

@@ -14,6 +14,7 @@ import { useL10n } from "./l10nHooks";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { getBloomApiPrefix, useApiString } from "../utils/bloomApi";
 import { Div } from "./l10nComponents";
+import { kBloomBlue } from "../bloomMaterialUITheme";
 
 export const AboutDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
@@ -94,13 +95,15 @@ export const AboutDialog: React.FunctionComponent<{
                 </div>
                 <div
                     css={css`
-                        font-family: arial;
                         font-size: 8pt;
                         width: 350px;
-                        padding-left: 10px;
+                        padding: 0px 10px;
                         overflow-y: scroll; // This always shows a scrollbar.  'auto' only displays one when needed.
                         background-color: #ffffff;
 
+                        a {
+                            color: ${kBloomBlue};
+                        }
                         h3 {
                             font-size: 14pt;
                             font-weight: bold;
@@ -118,7 +121,7 @@ export const AboutDialog: React.FunctionComponent<{
                     `}
                 >
                     <h3>
-                        Copyright 2011-{new Date().getFullYear()}&nbsp;
+                        Copyright 2011-{new Date().getFullYear()}{" "}
                         <a
                             href="https://sil.org"
                             target="_blank"
@@ -141,7 +144,7 @@ export const AboutDialog: React.FunctionComponent<{
                     </p>
                     <h3>Credits</h3>
                     <p>
-                        Noel Chou&nbsp;(
+                        Noel Chou (
                         <a
                             href="https://sil.org"
                             target="_blank"
@@ -149,11 +152,11 @@ export const AboutDialog: React.FunctionComponent<{
                         >
                             SIL Global
                         </a>
-                        ):&nbsp;Programming
+                        ): Programming
                     </p>
                     <br></br>
                     <p>
-                        John Hatton&nbsp;(
+                        John Hatton (
                         <a
                             href="https://sil.org"
                             target="_blank"
@@ -161,11 +164,11 @@ export const AboutDialog: React.FunctionComponent<{
                         >
                             SIL Global
                         </a>
-                        ):&nbsp;Program Manager, UX Design, Programming
+                        ): Program Manager, UX Design, Programming
                     </p>
                     <br></br>
                     <p>
-                        Marlon Hovland&nbsp;(
+                        Marlon Hovland (
                         <a
                             href="https://sil.org"
                             target="_blank"
@@ -173,11 +176,11 @@ export const AboutDialog: React.FunctionComponent<{
                         >
                             SIL Global
                         </a>
-                        ):&nbsp;Documentation
+                        ): Documentation
                     </p>
                     <br></br>
                     <p>
-                        Stephen McConnel&nbsp;(
+                        Stephen McConnel (
                         <a
                             href="https://sil.org"
                             target="_blank"
@@ -185,11 +188,11 @@ export const AboutDialog: React.FunctionComponent<{
                         >
                             SIL Global
                         </a>
-                        ):&nbsp;Programming
+                        ): Programming
                     </p>
                     <br></br>
                     <p>
-                        Andrew Polk&nbsp;(
+                        Andrew Polk (
                         <a
                             href="https://sil.org"
                             target="_blank"
@@ -197,11 +200,11 @@ export const AboutDialog: React.FunctionComponent<{
                         >
                             SIL Global
                         </a>
-                        ):&nbsp;Dev Lead, Programming
+                        ): Dev Lead, Programming
                     </p>
                     <br></br>
                     <p>
-                        Colin Suggett&nbsp;(
+                        Colin Suggett (
                         <a
                             href="https://sil.org"
                             target="_blank"
@@ -209,11 +212,11 @@ export const AboutDialog: React.FunctionComponent<{
                         >
                             SIL Global
                         </a>
-                        ):&nbsp;Testing
+                        ): Testing
                     </p>
                     <br></br>
                     <p>
-                        John Thomson&nbsp;(
+                        John Thomson (
                         <a
                             href="https://sil.org"
                             target="_blank"
@@ -221,7 +224,7 @@ export const AboutDialog: React.FunctionComponent<{
                         >
                             SIL Global
                         </a>
-                        ):&nbsp;Programming
+                        ): Programming
                     </p>
                     <br></br>
                     <p>
@@ -373,7 +376,7 @@ export const AboutDialog: React.FunctionComponent<{
                             : empira Software GmbH
                         </li>
                         <li>
-                            PortableDevice library from&nbsp;
+                            PortableDevice library from{" "}
                             <a
                                 href="https://github.com/derekwilson/PodcastUtilities"
                                 target="_blank"
@@ -517,7 +520,7 @@ export const AboutDialog: React.FunctionComponent<{
                         >
                             BrowserStack
                         </a>
-                        , for a free open-source subscription to their&nbsp;
+                        , for a free open-source subscription to their{" "}
                         <strong>amazing</strong> multi-browser, multi-platform
                         testing service.
                     </p>
