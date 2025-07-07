@@ -7,25 +7,10 @@
         <target xml:lang="vi" state="translated">Tạo ra vào {0}</target>
         <note>ID: AboutDialog.BuiltOnDate</note>
       </trans-unit>
-      <trans-unit id="AboutDialog.NoUpdates">
-        <source xml:lang="en">No Updates</source>
-        <target xml:lang="vi" state="translated">Không có cập nhật mới</target>
-        <note>ID: AboutDialog.NoUpdates</note>
-      </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle">
         <source xml:lang="en">About {0}</source>
         <target xml:lang="vi" state="translated">Về chúng tôi{0}</target>
         <note>ID: AboutDialog.WindowTitle</note>
-      </trans-unit>
-      <trans-unit id="AboutDialog._checkForUpdates">
-        <source xml:lang="en">Check For Updates</source>
-        <target xml:lang="vi" state="translated">Kiểm tra cập nhật mới</target>
-        <note>ID: AboutDialog._checkForUpdates</note>
-      </trans-unit>
-      <trans-unit id="AboutDialog._releaseNotesLabel">
-        <source xml:lang="en">Release Notes</source>
-        <target xml:lang="vi" state="translated">Ghi chú Phát hành</target>
-        <note>ID: AboutDialog._releaseNotesLabel</note>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
