@@ -167,8 +167,11 @@ namespace Bloom.Api
         /// <summary>
         /// Sends a message & parameters that will get picked up a React dialog that is using the useSetupBloomDialogFromServer hook.
         /// </summary>
-        public void LaunchDialog(string dialogId, dynamic dialogParameters)
+        public void LaunchDialog(string dialogId, dynamic dialogParameters = null)
         {
+            if (dialogParameters == null)
+                dialogParameters = new DynamicJson();
+
             SendBundle("LaunchDialog", dialogId, dialogParameters);
         }
 

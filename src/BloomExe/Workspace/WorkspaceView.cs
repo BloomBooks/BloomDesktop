@@ -1230,11 +1230,10 @@ namespace Bloom.Workspace
 
         private void OnAboutBoxClick(object sender, EventArgs e)
         {
-            using (var dlg = new ReactDialog("aboutDialogBundle", null, "About Bloom"))
-            {
-                dlg.ClientSize = new System.Drawing.Size(580, 555);
-                dlg.ShowDialog();
-            }
+            if (_tabStrip.SelectedTab == _editTab)
+                _editingView.ShowAboutDialog();
+            else
+                _webSocketServer.LaunchDialog("AboutDialog");
         }
 
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
@@ -1364,7 +1363,7 @@ namespace Bloom.Workspace
                             return;
                         Settings.Default.ForumInvitationLastShown = today;
                         Settings.Default.Save();
-                        _webSocketServer.LaunchDialog("ForumInvitationDialog", new DynamicJson());
+                        _webSocketServer.LaunchDialog("ForumInvitationDialog");
                     },
                     shouldHideSplashScreen: true,
                     lowPriority: true,

@@ -36,7 +36,7 @@ export const StorybookDialogWrapper: React.FunctionComponent<{
 }> = props => {
     useEffect(() => {
         // I'm not certain this delay is needed, but I do want to make sure the dialog
-        // function runs first so it can wire up its even receiver.
+        // function runs first so it can wire up its event receiver.
         window.setTimeout(
             () =>
                 document.dispatchEvent(
