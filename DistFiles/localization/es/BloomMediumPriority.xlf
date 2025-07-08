@@ -299,7 +299,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.OrderWordsInstructions">
         <source>Drag the words where they go</source>
-        <target xml:lang="es-ES" state="needs-translation">Drag the words where they go</target>
+        <target xml:lang="es-ES" state="translated">Arrastra las palabras donde vayan</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.OrderInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.CustomGameInstructions">
@@ -576,12 +576,12 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Games.None">
         <source xml:lang="en">This book does not have any games.</source>
-        <target xml:lang="es-ES" state="needs-translation">This book does not have any games.</target>
+        <target xml:lang="es-ES" state="translated">Este libro no tiene ningún juego.</target>
         <note>ID: PublishTab.Feature.Games.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Games.Present">
         <source xml:lang="en">This book has games.</source>
-        <target xml:lang="es-ES" state="needs-translation">This book has games.</target>
+        <target xml:lang="es-ES" state="translated">Este libro tiene juegos.</target>
         <note>ID: PublishTab.Feature.Games.Present</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None">
