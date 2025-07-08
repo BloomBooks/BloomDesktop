@@ -38,12 +38,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ObjectsToDrag">
         <source xml:lang="en">Objects to Drag</source>
-        <target xml:lang="es-ES" state="needs-translation">Objects to Drag</target>
+        <target xml:lang="es-ES" state="translated">Objetos para arrastrar</target>
         <note>ID: EditTab.Toolbox.DragActivity.ObjectsToDrag</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Draggability">
         <source xml:lang="en">Draggable</source>
-        <target xml:lang="es-ES" state="needs-translation">Draggable</target>
+        <target xml:lang="es-ES" state="translated">Arrastrable</target>
         <note>ID: EditTab.Toolbox.DragActivity.Draggability</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DraggabilityMore">
