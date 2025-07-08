@@ -4048,7 +4048,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Game">
         <source xml:lang="en">Game</source>
-        <target xml:lang="es-ES" state="needs-translation">Game</target>
+        <target xml:lang="es-ES" state="translated">Juego</target>
         <note>ID: PublishTab.Game</note>
       </trans-unit>
       <trans-unit id="PublishTab.Comic" approved="yes">
@@ -7123,12 +7123,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Images to Targets" sil:dynamic="true">
         <source xml:lang="en">Drag Images to Targets</source>
-        <target xml:lang="es-ES" state="needs-translation">Drag Images to Targets</target>
+        <target xml:lang="es-ES" state="translated">Arrastra imágenes a objetivos</target>
         <note>ID: TemplateBooks.PageLabel.Drag Images to Targets</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Images to Words" sil:dynamic="true">
         <source xml:lang="en">Drag Images to Words</source>
-        <target xml:lang="es-ES" state="needs-translation">Drag Images to Words</target>
+        <target xml:lang="es-ES" state="translated">Arrastra imágenes a palabras</target>
         <note>ID: TemplateBooks.PageLabel.Drag Images to Words</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true">
@@ -7153,7 +7153,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Custom Game" sil:dynamic="true">
         <source xml:lang="en">Custom Game</source>
-        <target xml:lang="es-ES" state="needs-translation">Custom Game</target>
+        <target xml:lang="es-ES" state="translated">Juego personalizado</target>
         <note>ID: TemplateBooks.PageLabel.Custom Game</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog" approved="yes">
