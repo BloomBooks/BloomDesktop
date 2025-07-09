@@ -179,6 +179,10 @@
 .drag-activity-play .drag-item-order-sentence {
     display: none;
 }
+// In PDF, we display the sentence without making a game of it. (BL-14978)
+.pdfPublishMode.drag-activity-play .drag-item-order-sentence {
+    display: block;
+}
 .drag-activity-play .uibloomSourceTextsBubble {
     display: none !important;
 }
