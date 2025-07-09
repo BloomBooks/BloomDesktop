@@ -184,7 +184,7 @@ namespace Bloom.web.controllers
                                             folderPath
                                         );
                                     var msg = "Error selecting book: " + folderPath;
-                                    var ex = new Exception(msg, e);
+                                    var ex = new Exception(msg, MiscUtils.UnwrapUntilInterestingException(e));
                                     // For some reason, BookInfo can't be serialized, so we'll add the pieces to the exception.
                                     ex.Data.Add("ErrorBookFolder", folderPath);
                                     if (
