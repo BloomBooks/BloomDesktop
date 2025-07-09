@@ -837,5 +837,25 @@ namespace Bloom.Utils
             }
             return tag; // failed to parse: return the original
         }
+
+        /// <summary>
+        /// Unwraps an exception until it finds an "interesting" exception.  An interesting
+        /// exception is either the innermost exception or one that was not thrown by Autofac.
+        /// </summary>
+        /// <remarks>
+        /// See https://issues.bloomlibrary.org/youtrack/issue/BL-13484/Revamp-Book-Log.
+        /// </remarks>
+        public static Exception UnwrapUntilInterestingException(Exception exception)
+        {
+            if (exception == null)
+                return null;
+            // If the exception was thrown by Autofac, we want to unwrap it until we find an
+            // exception that was not thrown by Autofac.
+            while (exception.InnerException != null && Regex.IsMatch(exception.StackTrace, "^\\s*at Autofac\\."))
+            {
+                exception = exception.InnerException;
+            }
+            return exception;
+        }
     }
 }

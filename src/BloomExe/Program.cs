@@ -1339,6 +1339,8 @@ namespace Bloom
             // FileException is a Bloom exception to capture the filepath. We want to report the inner, original exception.
             Exception originalError = FileException.UnwrapIfFileException(error);
             string errorFilePath = FileException.GetFilePathIfPresent(error);
+            // We want to skip over exceptions thrown by Autofac.
+            originalError = MiscUtils.UnwrapUntilInterestingException(originalError);
             Logger.WriteError(
                 $"*** Error loading collection {Path.GetFileNameWithoutExtension(projectPath)}, on filepath: {errorFilePath}",
                 originalError
