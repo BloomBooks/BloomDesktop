@@ -6103,21 +6103,6 @@
         <target xml:lang="zh-CN" state="needs-translation">Search online</target>
         <note>ID: ReportProblemDialog.SearchOnline</note>
       </trans-unit>
-      <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
-        <source xml:lang="en">I get it. Do not show this again.</source>
-        <target xml:lang="zh-CN" state="final">我知道了。不再显示此对话框。</target>
-        <note>ID: SamplePrintNotification.IGetIt</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.PleaseNotice" approved="yes">
-        <source xml:lang="en">Please notice the sample printer settings below. Use them as a guide while you set up the printer.</source>
-        <target xml:lang="zh-CN" state="final">设置打印机时请先看下面的设置示范</target>
-        <note>ID: SamplePrintNotification.PleaseNotice</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.WindowTitle" approved="yes">
-        <source xml:lang="en">Sample Print Settings</source>
-        <target xml:lang="zh-CN" state="final">样本打印设置</target>
-        <note>ID: SamplePrintNotification.WindowTitle</note>
-      </trans-unit>
       <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Default line spacing</source>
         <target xml:lang="zh-CN" state="final">默认行间距</target>
