@@ -6101,21 +6101,6 @@
         <target xml:lang="mam" state="needs-translation">Search online</target>
         <note>ID: ReportProblemDialog.SearchOnline</note>
       </trans-unit>
-      <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
-        <source xml:lang="en">I get it. Do not show this again.</source>
-        <target xml:lang="mam" state="final">Ma tz'el niky' ti'j. Min tzaj yek'et tqanil jun majtl.</target>
-        <note>ID: SamplePrintNotification.IGetIt</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.PleaseNotice" approved="yes">
-        <source xml:lang="en">Please notice the sample printer settings below. Use them as a guide while you set up the printer.</source>
-        <target xml:lang="mam" state="final">B'inchama xtalb'il, kye'yin oka tilb'ilal ntzaj tyek'an te uk'sb'il u'j. Tz'ajb'en tu'na tu'n tok lape'ya ti'j axpin nb'inchet tten uk'sb'il u'j.</target>
-        <note>ID: SamplePrintNotification.PleaseNotice</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.WindowTitle" approved="yes">
-        <source xml:lang="en">Sample Print Settings</source>
-        <target xml:lang="mam" state="final">Yek'bil kye b'inchb'il uk'sb'il u'j</target>
-        <note>ID: SamplePrintNotification.WindowTitle</note>
-      </trans-unit>
       <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Default line spacing</source>
         <target xml:lang="mam" state="final">B'ananmaj sqitb'il txoltib'</target>
