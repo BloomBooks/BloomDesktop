@@ -6103,21 +6103,6 @@
         <target xml:lang="fr" state="final">Chercher en ligne</target>
         <note>ID: ReportProblemDialog.SearchOnline</note>
       </trans-unit>
-      <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
-        <source xml:lang="en">I get it. Do not show this again.</source>
-        <target xml:lang="fr" state="final">Je comprends. Ne plus afficher.</target>
-        <note>ID: SamplePrintNotification.IGetIt</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.PleaseNotice" approved="yes">
-        <source xml:lang="en">Please notice the sample printer settings below. Use them as a guide while you set up the printer.</source>
-        <target xml:lang="fr" state="final">Merci de prendre note des paramètres d'imprimante par défaut ci-dessous. Servez-vous en pour paramétrer l'imprimante.</target>
-        <note>ID: SamplePrintNotification.PleaseNotice</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.WindowTitle" approved="yes">
-        <source xml:lang="en">Sample Print Settings</source>
-        <target xml:lang="fr" state="final">Echantillon des paramètres d'impression</target>
-        <note>ID: SamplePrintNotification.WindowTitle</note>
-      </trans-unit>
       <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Default line spacing</source>
         <target xml:lang="fr" state="final">Interligne par défaut</target>
