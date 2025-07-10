@@ -6103,21 +6103,6 @@
         <target xml:lang="kw" state="needs-translation">Search online</target>
         <note>ID: ReportProblemDialog.SearchOnline</note>
       </trans-unit>
-      <trans-unit id="SamplePrintNotification.IGetIt">
-        <source xml:lang="en">I get it. Do not show this again.</source>
-        <target xml:lang="kw" state="needs-translation">I get it. Do not show this again.</target>
-        <note>ID: SamplePrintNotification.IGetIt</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.PleaseNotice">
-        <source xml:lang="en">Please notice the sample printer settings below. Use them as a guide while you set up the printer.</source>
-        <target xml:lang="kw" state="needs-translation">Please notice the sample printer settings below. Use them as a guide while you set up the printer.</target>
-        <note>ID: SamplePrintNotification.PleaseNotice</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.WindowTitle">
-        <source xml:lang="en">Sample Print Settings</source>
-        <target xml:lang="kw" state="needs-translation">Sample Print Settings</target>
-        <note>ID: SamplePrintNotification.WindowTitle</note>
-      </trans-unit>
       <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing" sil:dynamic="true">
         <source xml:lang="en">Default line spacing</source>
         <target xml:lang="kw" state="needs-translation">Default line spacing</target>
