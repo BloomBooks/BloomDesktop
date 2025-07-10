@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
+using SIL.Progress;
 
 namespace Bloom
 {
@@ -86,7 +87,23 @@ namespace Bloom
         private Book.Book CreateTemplateBookByFolderPath(string folderPath)
         {
             var bookInfo = new BookInfo(folderPath, false);
-            return _bookFactory(bookInfo, _storageFactory(bookInfo));
+            var book = _bookFactory(bookInfo, _storageFactory(bookInfo));
+            // Books that shipped with Bloom (usually most of the available template books)
+            // shouldn't need updating so we can save some time.
+            // For other books, I don't like that this (new in 6.2) use of EnsureUpToDateMemory
+            // violates the rule we introduced in 6.0 that we should not try to bring a book
+            // up to date if we can't bring it all the way up to date and save the changes
+            // including any updated support files. However, some of the changes that
+            // EnsureUpToDate makes as of 6.2 are necessary for added pages to work.
+            // The alternative seems to be to make some hack with independent knowledge of
+            // how to update pages we want to add. That's error prone and likely to break
+            // when we forget this special case the next time we make a breaking change
+            // to page structure. So I think it's better to reinstate EnsureUpToDateMemory
+            // as something that does all the updating we can do without saving, and in
+            // particular, does anything that is necessary to make pages usable as templates.
+            if (!BloomFileLocator.IsInstalledFileOrDirectory(book.FolderPath))
+                book.EnsureUpToDateMemory(new NullProgress());
+            return book;
         }
 
         public Book.Book FindAndCreateTemplateBook(Func<string, bool> predicate)

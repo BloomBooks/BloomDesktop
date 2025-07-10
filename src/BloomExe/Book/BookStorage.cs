@@ -3860,10 +3860,12 @@ namespace Bloom.Book
         /// </summary>
         public void MigrateToLevel4UseAppearanceSystem()
         {
-            Guard.Against(
-                !BookInfo.IsSaveable,
-                "We should not even think about migrating a book that is not Saveable"
-            );
+            // The only case where this should be called and the book is not saveable is
+            // preparing a temporary book to be used as source for the add page dialog.
+            // We can live without the appearance system migration for that case, and since
+            // this migration involves writing files, we don't want to do it.
+            if (!BookInfo.IsSaveable)
+                return;
             if (GetMaintenanceLevel() >= 4)
                 return;
 
@@ -4043,7 +4045,9 @@ namespace Bloom.Book
         {
             if (GetMaintenanceLevel() >= 8)
                 return;
-            var enterpriseOnlyPages = Dom.SafeSelectNodes("//div[contains(@class, 'enterprise-only')]");
+            var enterpriseOnlyPages = Dom.SafeSelectNodes(
+                "//div[contains(@class, 'enterprise-only')]"
+            );
             foreach (SafeXmlElement page in enterpriseOnlyPages)
             {
                 page.RemoveClass("enterprise-only");
@@ -4061,25 +4065,43 @@ namespace Bloom.Book
         {
             if (featureList.Count <= 1)
                 return; // life is simple
-                        // We want to keep the most specific feature, so we look for the highest subscription tier.
-                        // If we get down to the Pro tier, then we know that Game is more specific than Overlay,
-                        // and Overlay is more specific than the other features.
-            var enterpriseFeatures = featureList.FindAll(x => FeatureRegistry.Features.FindAll(
-                y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Enterprise).Count > 0);
+            // We want to keep the most specific feature, so we look for the highest subscription tier.
+            // If we get down to the Pro tier, then we know that Game is more specific than Overlay,
+            // and Overlay is more specific than the other features.
+            var enterpriseFeatures = featureList.FindAll(
+                x =>
+                    FeatureRegistry.Features
+                        .FindAll(
+                            y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Enterprise
+                        )
+                        .Count > 0
+            );
             if (enterpriseFeatures.Count > 0)
             {
                 featureList.RemoveAll(x => x != enterpriseFeatures[0]);
                 return;
             }
-            var communityFeatures = featureList.FindAll(x => FeatureRegistry.Features.FindAll(
-                y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.LocalCommunity).Count > 0);
+            var communityFeatures = featureList.FindAll(
+                x =>
+                    FeatureRegistry.Features
+                        .FindAll(
+                            y =>
+                                y.Feature == x
+                                && y.SubscriptionTier == SubscriptionTier.LocalCommunity
+                        )
+                        .Count > 0
+            );
             if (communityFeatures.Count > 0)
             {
                 featureList.RemoveAll(x => x != communityFeatures[0]);
                 return;
             }
-            var proFeatures = featureList.FindAll(x => FeatureRegistry.Features.FindAll(
-                y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Pro).Count > 0);
+            var proFeatures = featureList.FindAll(
+                x =>
+                    FeatureRegistry.Features
+                        .FindAll(y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Pro)
+                        .Count > 0
+            );
             if (proFeatures.Count > 0)
             {
                 // Game overlaps with Overlay, but Game is more specific.
