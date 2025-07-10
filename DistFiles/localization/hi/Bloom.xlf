@@ -6104,21 +6104,6 @@
         <target xml:lang="hi" state="needs-translation">Search online</target>
         <note>ID: ReportProblemDialog.SearchOnline</note>
       </trans-unit>
-      <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
-        <source xml:lang="en">I get it. Do not show this again.</source>
-        <target xml:lang="hi" state="final">मैं समझ गया। इसे फिर से न दिखाएं।</target>
-        <note>ID: SamplePrintNotification.IGetIt</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.PleaseNotice" approved="yes">
-        <source xml:lang="en">Please notice the sample printer settings below. Use them as a guide while you set up the printer.</source>
-        <target xml:lang="hi" state="final">कृपया नीचे दिए नमूने प्रिंटर सेटिंग्स पर ध्यान दें। प्रिंटर सेट अप करते हुए उनका मार्गदर्शिका की तरह उपयोग करें।</target>
-        <note>ID: SamplePrintNotification.PleaseNotice</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.WindowTitle" approved="yes">
-        <source xml:lang="en">Sample Print Settings</source>
-        <target xml:lang="hi" state="final">नमूने प्रिंट सेटिंग्स</target>
-        <note>ID: SamplePrintNotification.WindowTitle</note>
-      </trans-unit>
       <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Default line spacing</source>
         <target xml:lang="hi" state="final">डिफ़ॉल्ट लाइन स्पेसिंग</target>
