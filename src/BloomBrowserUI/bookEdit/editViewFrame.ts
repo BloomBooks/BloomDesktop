@@ -50,6 +50,8 @@ export { showPageChooserDialog };
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
 export { showBookSettingsDialog };
+import { showAboutDialog } from "../react_components/aboutDialog";
+export { showAboutDialog };
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
@@ -234,4 +236,8 @@ export function showEditViewBookSettingsDialog(
     initiallySelectedGroupIndex?: number
 ) {
     showBookSettingsDialog(initiallySelectedGroupIndex);
+}
+
+export function showAboutDialogInEditTab() {
+    showAboutDialog();
 }

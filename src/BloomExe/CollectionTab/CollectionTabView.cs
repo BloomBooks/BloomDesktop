@@ -394,7 +394,7 @@ namespace Bloom.CollectionTab
 
         private void _settingsButton_Click(object sender, EventArgs e)
         {
-            _webSocketServer.LaunchDialog("CollectionSettingsDialog", new DynamicJson());
+            _webSocketServer.LaunchDialog("CollectionSettingsDialog");
         }
 
         private void _openCreateCollectionButton_Click(object sender, EventArgs e)

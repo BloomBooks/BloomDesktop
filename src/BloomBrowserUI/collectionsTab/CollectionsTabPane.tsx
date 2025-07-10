@@ -36,6 +36,7 @@ import { ForumInvitationDialogLauncher } from "../react_components/forumInvitati
 import { CollectionSettingsDialog } from "../collection/CollectionSettingsDialog";
 import { BooksOnBlorgProgressBar } from "../booksOnBlorg/BooksOnBlorgProgressBar";
 import { SubscriptionStatus } from "./SubscriptionStatus";
+import { AboutDialogLauncher } from "../react_components/aboutDialog";
 
 const kResizerSize = 10;
 
@@ -564,6 +565,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             <TeamCollectionDialogLauncher />
             <SpreadsheetExportDialogLauncher />
             <ForumInvitationDialogLauncher />
+            <AboutDialogLauncher />
             <CollectionSettingsDialog />
             <EmbeddedProgressDialog id="collectionTab" />
         </div>

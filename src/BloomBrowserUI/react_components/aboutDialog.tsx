@@ -1,46 +1,55 @@
 import { css } from "@emotion/react";
-import {
-    IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
-} from "../react_components/BloomDialog/BloomDialogPlumbing";
+import { useEventLaunchedBloomDialog } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
+    IBloomDialogProps
 } from "./BloomDialog/BloomDialog";
 import { DialogCloseButton } from "./BloomDialog/commonDialogComponents";
 import { useL10n } from "./l10nHooks";
-import { WireUpForWinforms } from "../utils/WireUpWinform";
-import { getBloomApiPrefix, useApiString } from "../utils/bloomApi";
+import { getBloomApiPrefix, postString, useApiString } from "../utils/bloomApi";
 import { Div } from "./l10nComponents";
 import { kBloomBlue } from "../bloomMaterialUITheme";
+import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 
-export const AboutDialog: React.FunctionComponent<{
-    dialogEnvironment?: IBloomDialogEnvironmentParams;
-}> = props => {
+export const AboutDialogLauncher: React.FunctionComponent = () => {
     const {
         showDialog,
         closeDialog,
         propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
-
-    const logoURI = getBloomApiPrefix(false) + "images/SIL_Logo_80pxTall.png";
-
-    const buildNumber = useApiString("app/versionNumber", "");
-
-    const builtOnDate = useApiString("app/versionBuildDate", "");
+    } = useEventLaunchedBloomDialog("AboutDialog");
 
     show = showDialog;
 
+    return propsForBloomDialog.open ? (
+        <AboutDialog
+            closeDialog={closeDialog}
+            showDialog={showDialog}
+            propsForBloomDialog={propsForBloomDialog}
+        />
+    ) : null;
+};
+
+export const AboutDialog: React.FunctionComponent<{
+    closeDialog: () => void;
+    showDialog: () => void;
+    propsForBloomDialog: IBloomDialogProps;
+}> = props => {
+    const logoURI = getBloomApiPrefix(false) + "images/SIL_Logo_80pxTall.png";
+
+    const buildNumber = useApiString("app/versionNumber", "");
+    const builtOnDate = useApiString("app/versionBuildDate", "");
+
+    const closeDialog = () => {
+        // notify the server that we're closing the dialog.
+        postString("app/closeDialog", "AboutDialog");
+        props.closeDialog();
+    };
+
     return (
-        <BloomDialog
-            {...propsForBloomDialog}
-            css={css`
-                height: 555px;
-                background-color: #f5f5f5;
-            `}
-        >
+        <BloomDialog {...props.propsForBloomDialog}>
             <DialogTitle
                 title={useL10n(
                     "About {0}",
@@ -51,6 +60,7 @@ export const AboutDialog: React.FunctionComponent<{
             />
             <DialogMiddle
                 css={css`
+                    height: 500px;
                     display: grid;
                     grid-template-columns: 150px auto; // Logo only needs specific amount of space
                 `}
@@ -573,8 +583,9 @@ export const AboutDialog: React.FunctionComponent<{
     );
 };
 
-let show: () => void = () => {
-    window.alert("LanguageChooserDialog is not set up yet.");
-};
+let show: () => void = () => {};
 
-WireUpForWinforms(AboutDialog);
+export function showAboutDialog() {
+    ShowEditViewDialog(<AboutDialogLauncher />);
+    show();
+}

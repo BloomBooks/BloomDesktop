@@ -25,6 +25,7 @@ import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { kBloomUnselectedTabBackground } from "../../utils/colorUtils";
 import { PublishingBookRequiresHigherTierNotice } from "./PublishingBookRequiresHigherTierNotice";
 import { FeatureStatus } from "../../react_components/featureStatus";
+import { AboutDialogLauncher } from "../../react_components/aboutDialog";
 
 export const CheckoutNeededScreen: React.FunctionComponent<{
     titleForDisplay: string;
@@ -334,6 +335,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                         </BloomTabs>
                     )}
                 </div>
+                <AboutDialogLauncher />
             </ThemeProvider>
         </StyledEngineProvider>
     );
