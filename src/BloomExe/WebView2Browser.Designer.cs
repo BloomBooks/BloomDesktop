@@ -1,3 +1,4 @@
+using SIL.Windows.Forms.Miscellaneous;
 using System.IO;
 
 namespace Bloom
@@ -8,31 +9,6 @@ namespace Bloom
 		/// Required designer variable.
 		/// </summary>
 		private System.ComponentModel.IContainer components = null;
-
-		/// <summary> 
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing)
-		{
-			var uprocId = _webview?.CoreWebView2?.BrowserProcessId;
-			var procId = uprocId.HasValue ? (int)uprocId.Value : 0;
-			var userFolder = _webview?.CoreWebView2?.Environment?.UserDataFolder;
-			if (disposing && (components != null))
-			{
-				components.Dispose();
-			}
-			else if (disposing && _webview != null)
-			{
-				_webview.Dispose();
-			}
-			if (disposing && procId > 0 && userFolder != null && Directory.Exists(userFolder))
-			{
-				// We need to wait until the process finishes to reliably delete the folder.
-				Program.WebView2ProcessToUserFolder.Add(procId, userFolder);
-			}
-			base.Dispose(disposing);
-		}
 
 		#region Component Designer generated code
 
