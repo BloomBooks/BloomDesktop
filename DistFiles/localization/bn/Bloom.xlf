@@ -6103,21 +6103,6 @@
         <target xml:lang="bn" state="needs-translation">Search online</target>
         <note>ID: ReportProblemDialog.SearchOnline</note>
       </trans-unit>
-      <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
-        <source xml:lang="en">I get it. Do not show this again.</source>
-        <target xml:lang="bn" state="final">আমি এটা বুঝতে পেরেছি।এটি পুনরায় দেখাবেন না।</target>
-        <note>ID: SamplePrintNotification.IGetIt</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.PleaseNotice" approved="yes">
-        <source xml:lang="en">Please notice the sample printer settings below. Use them as a guide while you set up the printer.</source>
-        <target xml:lang="bn" state="final">অনুগ্রহ করে নীচে নমুনা প্রিন্টার সেটিংস লক্ষ্য করুন।সেগুলো একটি নির্দেশিকা হিসেবে ব্যবহার করুন আপনি যখন প্রিন্টার সেটআপ করবেন।</target>
-        <note>ID: SamplePrintNotification.PleaseNotice</note>
-      </trans-unit>
-      <trans-unit id="SamplePrintNotification.WindowTitle" approved="yes">
-        <source xml:lang="en">Sample Print Settings</source>
-        <target xml:lang="bn" state="final">নমুনা মুদ্রণ সেটিংস</target>
-        <note>ID: SamplePrintNotification.WindowTitle</note>
-      </trans-unit>
       <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Default line spacing</source>
         <target xml:lang="bn" state="final">পূর্ব-নির্ধারিত সারির ব্যবধান</target>
