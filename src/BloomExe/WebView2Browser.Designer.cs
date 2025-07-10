@@ -1,3 +1,4 @@
+using SIL.Windows.Forms.Miscellaneous;
 using System.IO;
 
 namespace Bloom
@@ -29,7 +30,24 @@ namespace Bloom
 			if (disposing && procId > 0 && userFolder != null && Directory.Exists(userFolder))
 			{
 				// We need to wait until the process finishes to reliably delete the folder.
-				Program.WebView2ProcessToUserFolder.Add(procId, userFolder);
+				// Unit tests can produce WebView2 processes that reuse the same id.  This
+				// could conceivably happen in Bloom Desktop, so I've added code to handle it.
+				// If needed, the prior user folder is stored so that we can delete it after
+				// all of the processes have finished.
+				if (Program.WebView2ProcessToUserFolder.ContainsKey(procId))
+				{
+					var priorUserFolder = Program.WebView2ProcessToUserFolder[procId];
+					if (priorUserFolder != userFolder)
+					{
+						if (Directory.Exists(priorUserFolder))
+							Program.WebView2UserFoldersToDelete.Add(priorUserFolder);
+						Program.WebView2ProcessToUserFolder[procId] = userFolder;
+					}
+				}
+				else
+				{
+					Program.WebView2ProcessToUserFolder.Add(procId, userFolder);
+				}
 			}
 			base.Dispose(disposing);
 		}

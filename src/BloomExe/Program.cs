@@ -1080,6 +1080,7 @@ namespace Bloom
         /// method is called.
         /// </remarks>
         public static readonly Dictionary<int, string> WebView2ProcessToUserFolder = new Dictionary<int, string>();
+        public static HashSet<string> WebView2UserFoldersToDelete = new HashSet<string>();
         private static void CleanupWebView2UserFolders()
         {
             try
@@ -1119,6 +1120,19 @@ namespace Bloom
                         // so 30 should be plenty.
                         Logger.WriteEvent("Timeout cleaning up WebView2 user folders.");
                         break;
+                    }
+                }
+                foreach (var userFolder in WebView2UserFoldersToDelete)
+                {
+                    if (Directory.Exists(userFolder))
+                    {
+                        try
+                        {
+                            RobustIO.DeleteDirectory(userFolder, true);
+                        }
+                        catch (Exception)
+                        {
+                        }
                     }
                 }
             }
