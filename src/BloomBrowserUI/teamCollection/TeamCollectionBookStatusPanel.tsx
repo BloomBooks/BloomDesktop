@@ -408,9 +408,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             );
                         else {
                             showRegistrationDialog({
-                                mayChangeEmail: true,
                                 registrationIsOptional: false,
-                                emailRequiredForTeamCollection: true,
                                 onSave: isValidEmail => {
                                     if (isValidEmail)
                                         post(

@@ -1387,28 +1387,17 @@ namespace Bloom.Workspace
 
         private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
         {
-            ShowRegistrationDialog(_tcManager.UserMayChangeEmail, true, false);
+            ShowRegistrationDialog(true);
         }
 
-        public void ShowRegistrationDialog(
-            bool mayChangeEmail,
-            bool registrationIsOptional,
-            bool emailRequiredForTeamCollection
-        )
+        public void ShowRegistrationDialog(bool registrationIsOptional)
         {
             if (_tabStrip.SelectedTab == _editTab)
-                _editingView.ShowRegistrationDialog(
-                    mayChangeEmail,
-                    registrationIsOptional,
-                    emailRequiredForTeamCollection
-                );
+                _editingView.ShowRegistrationDialog(registrationIsOptional);
             else
             {
                 dynamic messageBundle = new DynamicJson();
-                messageBundle.mayChangeEmail = mayChangeEmail;
                 messageBundle.registrationIsOptional = registrationIsOptional;
-                messageBundle.emailRequiredForTeamCollection = emailRequiredForTeamCollection;
-                messageBundle.onSave = null;
                 _webSocketServer.LaunchDialog("RegistrationDialog", messageBundle);
             }
         }

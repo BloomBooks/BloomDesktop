@@ -15,21 +15,14 @@ namespace Bloom.Registration
         /// Creates the Registration form in a React Dialog and blocks the caller from continuing until this Dialog is closed
         /// </summary>
         public static void ShowRegistrationDialog(
-            bool mayChangeEmail = true,
             bool registrationIsOptional = true,
-            bool emailRequiredForTeamCollection = false,
             Form projectWindow = null
         )
         {
             using (
                 var registrationDialog = new ReactDialog(
                     "registrationDialogBundle",
-                    new
-                    {
-                        mayChangeEmail,
-                        registrationIsOptional,
-                        emailRequiredForTeamCollection
-                    },
+                    new { registrationIsOptional },
                     "Registration Dialog"
                 )
             )
@@ -148,7 +141,7 @@ namespace Bloom.Registration
 
             // It is good to have this dialog with a task bar since no other window is giving a task bar,
             // so if someone brings another window to the foreground, it will be easier to get this back
-            ShowRegistrationDialog(true, false, true);
+            ShowRegistrationDialog(false);
 
             return !string.IsNullOrWhiteSpace(Registration.Default.Email);
         }

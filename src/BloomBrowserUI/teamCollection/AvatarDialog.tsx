@@ -14,6 +14,7 @@ import {
     DialogBottomLeftButtons,
     DialogTitle
 } from "../react_components/BloomDialog/BloomDialog";
+import { get } from "../utils/bloomApi";
 import { showRegistrationDialog } from "../react_components/registrationDialog";
 
 // Dialog shown (when props.open is true) in response to the "About my Avatar..." menu item
@@ -89,9 +90,7 @@ export const AvatarDialog: React.FunctionComponent<{
                         onClick={() => {
                             props.close();
                             showRegistrationDialog({
-                                mayChangeEmail: true,
-                                registrationIsOptional: true,
-                                emailRequiredForTeamCollection: true
+                                registrationIsOptional: false
                             });
                         }}
                         hasText={true}

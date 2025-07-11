@@ -19,13 +19,13 @@ import { useEffect, useRef, useState } from "react";
 import { H1 } from "./l10nComponents";
 import { TextFieldProps } from "@mui/material";
 import { MuiTextField } from "./muiTextField";
-import { get, postJson } from "../utils/bloomApi";
+import { get, getBoolean, postJson } from "../utils/bloomApi";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { isValidEmail } from "../problemDialog/EmailField";
+import { useIsTeamCollection } from "../teamCollection/teamCollectionApi";
 
 interface IRegistrationDialogProps {
-    mayChangeEmail?: boolean;
     registrationIsOptional?: boolean;
     emailRequiredForTeamCollection?: boolean;
     onSave?: (isValidEmail: boolean) => void;
@@ -53,20 +53,11 @@ export const RegistrationDialogLauncher: React.FunctionComponent<IRegistrationDi
             showDialog={showDialog}
             propsForBloomDialog={propsForBloomDialog}
             // openingEvent only exists when using the Get Help... menu from Collections and Publish
-            // it needs precedence over props because CollectionsTabPane uses props for the sake of
-            // Check Out Book, so the event has to overwrite those props
-            mayChangeEmail={
-                openingEvent?.mayChangeEmail ?? props.mayChangeEmail
-            }
+            // props are used from WinForms (Join, the On Opening Program Registration) and Edit Tab
             registrationIsOptional={
                 openingEvent?.registrationIsOptional ??
                 props.registrationIsOptional
             }
-            emailRequiredForTeamCollection={
-                openingEvent?.emailRequiredForTeamCollection ??
-                props.emailRequiredForTeamCollection
-            }
-            onSave={openingEvent ? openingEvent.onSave : props.onSave}
         />
     ) : null;
 };
@@ -76,18 +67,17 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
     showDialog: () => void;
     propsForBloomDialog: IBloomDialogProps;
 }> = props => {
-    const mayChangeEmail =
-        props.mayChangeEmail ??
-        externallySetRegistrationDialogProps?.mayChangeEmail ??
-        true;
+    const [mayChangeEmail, setMayChangeEmail] = useState(true);
     const registrationIsOptional =
         props.registrationIsOptional ??
         externallySetRegistrationDialogProps?.registrationIsOptional ??
         true;
+    // externalProp - emailRequired only needs to be used when creating a team collection
+    const inTeamCollection = useIsTeamCollection();
     const emailRequiredForTeamCollection =
-        props.emailRequiredForTeamCollection ??
         externallySetRegistrationDialogProps?.emailRequiredForTeamCollection ??
-        false;
+        inTeamCollection;
+
     const [formIsFilled, setFormIsFilled] = useState(false);
     const [info, setInfo] = useState({
         firstName: "",
@@ -98,9 +88,13 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
         hadEmailAlready: false
     });
 
-    // Update the fields every time the dialog is opened
+    // Every time the dialog is opened, set MayChangeEmail and User Info fields
     useEffect(() => {
         if (!props.propsForBloomDialog.open) return;
+        getBoolean("teamCollection/mayChangeRegistrationEmail", mayChange => {
+            setMayChangeEmail(mayChange);
+        });
+
         get("registration/userInfo", userInfo => {
             if (userInfo?.data) {
                 setInfo(userInfo?.data);
@@ -120,8 +114,8 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
         );
     }, [info]);
 
-    // lets the registration text expand if the buttons are wider than DialogMiddle's minimum width
-    // seems to be dependent on the translations loading faster than this rewrites the width
+    // lets the registration text expand if the buttons are wider than DialogMiddle's initial width
+    // seems to be dependent on the translations loading faster than this rewrites the width, though it does finish expanding when we start typing in a field
     const mustRegisterText = useRef<HTMLDivElement>(null);
     const bottomButtons = $("#bottomButtons");
     useEffect(() => {
@@ -313,15 +307,11 @@ let show: () => void = () => {};
 let externallySetRegistrationDialogProps: IRegistrationDialogProps | undefined;
 
 export function showRegistrationDialogForEditTab(
-    mayChangeEmail?: boolean,
-    registrationIsOptional?: boolean,
-    emailRequiredForTeamCollection?: boolean
+    registrationIsOptional?: boolean
 ) {
     ShowEditViewDialog(
         <RegistrationDialogLauncher
-            mayChangeEmail={mayChangeEmail}
             registrationIsOptional={registrationIsOptional}
-            emailRequiredForTeamCollection={emailRequiredForTeamCollection}
         />
     );
     show();

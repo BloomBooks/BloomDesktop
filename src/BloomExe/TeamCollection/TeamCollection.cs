@@ -651,12 +651,9 @@ namespace Bloom.TeamCollection
         // We must ensure that the user has registered a valid email address before making the call to the API endpoint which calls this.
         public bool AttemptLock(string bookName, string email = null)
         {
-            if (email != null)
-                Debug.Assert(!string.IsNullOrWhiteSpace(email));
-            else
-                Debug.Assert(!string.IsNullOrWhiteSpace(TeamCollectionManager.CurrentUser));
-
             var whoBy = email ?? TeamCollectionManager.CurrentUser;
+            Debug.Assert(!string.IsNullOrWhiteSpace(whoBy));
+
             var status = GetStatus(bookName);
             if (String.IsNullOrEmpty(status.lockedBy) && !IsDisconnected)
             {

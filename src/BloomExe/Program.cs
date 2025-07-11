@@ -1113,12 +1113,7 @@ namespace Bloom
         private static void CheckRegistration()
         {
             if (RegistrationManager.ShouldWeShowRegistrationDialog() && !_supressRegistrationDialog)
-                RegistrationManager.ShowRegistrationDialog(
-                    _projectContext.TeamCollectionManager.UserMayChangeEmail,
-                    false,
-                    false,
-                    _projectContext.ProjectWindow
-                );
+                RegistrationManager.ShowRegistrationDialog(false, _projectContext.ProjectWindow);
         }
 
 #if PerProjectMutex

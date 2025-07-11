@@ -5,7 +5,6 @@ using Bloom.CollectionTab;
 using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.Publish;
-using Bloom.Registration;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;
@@ -22,7 +21,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace Bloom.TeamCollection
 {
@@ -137,6 +135,15 @@ namespace Bloom.TeamCollection
             apiHandler.RegisterEndpointHandler(
                 "teamCollection/reportBadZip",
                 HandleReportBadZip,
+                true,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/mayChangeRegistrationEmail",
+                request =>
+                {
+                    request.ReplyWithBoolean(_tcManager.UserMayChangeEmail);
+                },
                 true,
                 false
             );

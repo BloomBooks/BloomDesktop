@@ -102,15 +102,10 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         if (emailExists) create();
         else
             showRegistrationDialog({
-                mayChangeEmail: true,
                 registrationIsOptional: false,
                 emailRequiredForTeamCollection: true,
                 onSave: isValidEmail => {
-                    if (isValidEmail)
-                        postString(
-                            "teamCollection/createTeamCollection",
-                            repoFolderPath
-                        );
+                    if (isValidEmail) create();
                 }
             });
     }

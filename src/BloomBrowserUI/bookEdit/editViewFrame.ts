@@ -269,13 +269,7 @@ export function showRequiresSubscriptionDialog(featureName: string): void {
 }
 
 export function showRegistrationDialogInEditTab(
-    mayChangeEmail?: boolean,
-    registrationIsOptional?: boolean,
-    emailRequiredForTeamCollection?: boolean
+    registrationIsOptional?: boolean
 ) {
-    showRegistrationDialogForEditTab(
-        mayChangeEmail,
-        registrationIsOptional,
-        emailRequiredForTeamCollection
-    );
+    showRegistrationDialogForEditTab(registrationIsOptional);
 }
