@@ -16,7 +16,6 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.History;
-using Bloom.Registration;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
@@ -651,9 +650,6 @@ namespace Bloom.TeamCollection
         // Lock the book, making it available for the specified user to edit. Return true if successful.
         public bool AttemptLock(string bookName, string email = null)
         {
-            if (!PromptForSufficientRegistrationIfNeeded())
-                return false;
-
             var whoBy = email ?? TeamCollectionManager.CurrentUser;
             var status = GetStatus(bookName);
             if (String.IsNullOrEmpty(status.lockedBy) && !IsDisconnected)
@@ -3000,16 +2996,6 @@ namespace Bloom.TeamCollection
             // ENHANCE: Right now, if the book selection is checked in or checked out by another user,
             // we will update the icon in LibraryListView, but not the one in the book preview pane.
             // It'd be nice to update the book preview pane data too.
-        }
-
-        /// <summary>
-        /// Returns true if registration is sufficient (after prompting the user if needed); false otherwise
-        /// </summary>
-        public static bool PromptForSufficientRegistrationIfNeeded()
-        {
-            return RegistrationDialog.RequireRegistrationEmail(
-                "You will need to register this copy of Bloom with an email address before participating in a Team Collection"
-            );
         }
 
         public virtual bool CannotDeleteBecauseDisconnected(string bookFolderPath)

@@ -519,8 +519,10 @@ namespace Bloom.Edit
             {
                 // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
                 var pageUrl = _model.GetUrlForCurrentPage();
-                var urlFile = Path.GetFileName(pageUrl);    // this actually works with a leading http://.
-                Logger.WriteEvent($"changing page via editTabBundle.switchContentPage('{urlFile}')");
+                var urlFile = Path.GetFileName(pageUrl); // this actually works with a leading http://.
+                Logger.WriteEvent(
+                    $"changing page via editTabBundle.switchContentPage('{urlFile}')"
+                );
                 _browser1.RunJavascriptFireAndForget(
                     "editTabBundle.switchContentPage('" + pageUrl + "');"
                 );
@@ -666,8 +668,10 @@ namespace Bloom.Edit
                 {
                     // If we have metadata with an official collectionUri
                     // just give a summary of the metadata
-                    if (ImageUpdater.ImageIsFromOfficialCollection(imageBeingModified.Metadata) ||
-                        ImageUpdater.ImageIsStockGameImage(fileName, imageBeingModified.Metadata))
+                    if (
+                        ImageUpdater.ImageIsFromOfficialCollection(imageBeingModified.Metadata)
+                        || ImageUpdater.ImageIsStockGameImage(fileName, imageBeingModified.Metadata)
+                    )
                     {
                         MessageBox.Show(
                             imageBeingModified.Metadata.GetSummaryParagraph(
@@ -1948,6 +1952,17 @@ namespace Bloom.Edit
             PageTemplatesApi.ForPageLayout = true;
             //if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
             RunJavascriptAsync("editTabBundle.showPageChooserDialog(true);");
+        }
+
+        internal void ShowRegistrationDialog(
+            bool mayChangeEmail,
+            bool registrationIsOptional,
+            bool emailRequiredForTeamCollection
+        )
+        {
+            var command =
+                $"editTabBundle.showRegistrationDialogInEditTab({(mayChangeEmail ? "true" : "false")}, {(registrationIsOptional ? "true" : "false")}, {(emailRequiredForTeamCollection ? "true" : "false")});";
+            RunJavascriptAsync(command);
         }
 
         internal void ShowAboutDialog()

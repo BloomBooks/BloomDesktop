@@ -5,7 +5,7 @@ import * as React from "react";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { useMemo, useRef, useState } from "react";
-import { post, postString } from "../utils/bloomApi";
+import { get, post, postString } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";
 import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
@@ -21,6 +21,7 @@ import WarningIcon from "@mui/icons-material/Warning";
 import { IBookTeamCollectionStatus } from "./teamCollectionApi";
 import { ForceUnlockDialog } from "./ForceUnlockDialog";
 import { kBloomRed } from "../utils/colorUtils";
+import { showRegistrationDialog } from "../react_components/registrationDialog";
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
@@ -389,18 +390,28 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
             case "unlocked": {
                 const checkoutHandler = () => {
                     setBusy(true);
-                    post(
-                        "teamCollection/attemptLockOfCurrentBook",
-                        response => {
-                            // Not much to do. Change of state is handled by websocket notifications.
-                            // We want to keep it that way, so we don't have to worry here about
-                            // whether the checkout attempt succeeded or not.
-                            setBusy(false);
-                        },
-                        error => {
+
+                    // need to check for email each time checkout is pressed
+                    get("registration/userInfo", userInfo => {
+                        if (userInfo?.data.Email ? true : false)
+                            post(
+                                "teamCollection/attemptLockOfCurrentBook",
+                                () => {
+                                    // Not much to do. Change of state is handled by websocket notifications.
+                                    // We want to keep it that way, so we don't have to worry here about
+                                    // whether the checkout attempt succeeded or not.
+                                    setBusy(false);
+                                },
+                                () => {
+                                    setBusy(false);
+                                }
+                            );
+                        else {
+                            showRegistrationDialog(); // component and parameters in CollectionsTabPane
+                            // We can't setBusy after the dialog closes because no access to setBusy in the onSave() parameter
                             setBusy(false);
                         }
-                    );
+                    });
                 };
 
                 return (
