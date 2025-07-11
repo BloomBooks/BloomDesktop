@@ -1220,6 +1220,10 @@ namespace Bloom.TeamCollection
             {
                 dlg.Width = 560;
                 dlg.Height = 400;
+                // This dialog is neater without a title bar. We don't need to be able to
+                // drag it around. There's nothing left to give it one if we don't set a title
+                // and remove the control box.
+                dlg.ControlBox = false;
                 // It is good to have this dialog with a task bar since no other window is giving a task bar,
                 // so if someone brings another window to the foreground, it will be easier to get this back
                 dlg.ShowInTaskbar = true;

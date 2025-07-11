@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -22,6 +15,14 @@ using Newtonsoft.Json;
 using Sentry;
 using SIL.IO;
 using SIL.Reporting;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace Bloom.TeamCollection
 {
@@ -1131,11 +1132,14 @@ namespace Bloom.TeamCollection
             return "";
         }
 
+        // We must ensure that the user has registered a valid email address before making the call to the API endpoint which calls this.
         public void HandleCreateTeamCollection(ApiRequest request)
         {
             string repoFolderParentPath = null;
             try
             {
+                Debug.Assert(!string.IsNullOrWhiteSpace(CurrentUser));
+
                 repoFolderParentPath = request.RequiredPostString();
 
                 _tcManager.ConnectToTeamCollection(repoFolderParentPath, _settings.CollectionId);

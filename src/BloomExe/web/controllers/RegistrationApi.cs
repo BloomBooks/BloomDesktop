@@ -1,13 +1,10 @@
 using Bloom.Api;
 using Bloom.Registration;
-using Newtonsoft.Json;
-using System;
-using TagLib.Png;
 
 namespace Bloom.web.controllers
 {
     /// <summary>
-    /// API functions common to various areas of Bloom's HTML UI.
+    /// API functions for managing user registration in Bloom's HTML UI.
     /// </summary>
     public class RegistrationApi
     {
@@ -16,41 +13,42 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "userInfo", HandleUserInfo, false);
-
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "tryToSave",
-                request =>
-                {
-                    var info = DynamicJson.Parse(request.RequiredPostJson());
-                    RegistrationManager.SaveAndSendIfPossible(
-                        info.firstName,
-                        info.surname,
-                        info.email,
-                        info.organization,
-                        info.usingFor,
-                        info.hadEmailAlready
-                    );
-
-                    request.PostSucceeded();
-                },
-                false
-            );
         }
 
         private void HandleUserInfo(ApiRequest request)
         {
-            var info = RegistrationManager.GetAnalyticsUserInfo();
-            var Organization = "";
-            var HowUsing = "";
-            info.OtherProperties.TryGetValue("Organization", out Organization);
-            info.OtherProperties.TryGetValue("HowUsing", out HowUsing);
+            if (request.HttpMethod == HttpMethods.Get)
+            {
+                var info = RegistrationManager.GetAnalyticsUserInfo();
+                info.OtherProperties.TryGetValue("Organization", out string organization);
+                info.OtherProperties.TryGetValue("HowUsing", out string usingFor);
 
-            var otherPropertiesJsonString =
-                $"{{\"Organization\":\"{Organization}\",\"HowUsing\":\"{HowUsing}\"}}";
-            var jsonString =
-                $"{{\"FirstName\":\"{info.FirstName}\",\"LastName\":\"{info.LastName}\",\"Email\":\"{info.Email}\",\"OtherProperties\":{$"{{\"Organization\":\"{Organization}\",\"HowUsing\":\"{HowUsing}\"}}"},\"UILanguageCode\":\"{info.UILanguageCode}\"}}";
+                request.ReplyWithJson(
+                    new
+                    {
+                        firstName = info.FirstName,
+                        surname = info.LastName,
+                        email = info.Email,
+                        organization,
+                        usingFor,
+                        hadEmailAlready = !string.IsNullOrWhiteSpace(info.Email)
+                    }
+                );
+            }
+            else // post
+            {
+                var info = DynamicJson.Parse(request.RequiredPostJson());
+                RegistrationManager.SaveAndSendIfPossible(
+                    info.firstName,
+                    info.surname,
+                    info.email,
+                    info.organization,
+                    info.usingFor,
+                    info.hadEmailAlready
+                );
 
-            request.ReplyWithJson(jsonString);
+                request.PostSucceeded();
+            }
         }
     }
 }

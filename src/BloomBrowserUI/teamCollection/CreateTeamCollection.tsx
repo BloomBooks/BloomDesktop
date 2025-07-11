@@ -89,15 +89,30 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
     useEffect(() => {
         get("registration/userInfo", userInfo => {
             if (userInfo?.data) {
-                setEmailExists(userInfo.data.Email ? true : false);
+                setEmailExists(userInfo.data.email ? true : false);
             }
         });
     }, []);
 
+    function create() {
+        postString("teamCollection/createTeamCollection", repoFolderPath);
+    }
+
     function tryToCreate() {
-        if (emailExists)
-            postString("teamCollection/createTeamCollection", repoFolderPath);
-        else showRegistrationDialog(); // the onSave callback below will try To Create again
+        if (emailExists) create();
+        else
+            showRegistrationDialog({
+                mayChangeEmail: true,
+                registrationIsOptional: false,
+                emailRequiredForTeamCollection: true,
+                onSave: isValidEmail => {
+                    if (isValidEmail)
+                        postString(
+                            "teamCollection/createTeamCollection",
+                            repoFolderPath
+                        );
+                }
+            });
     }
 
     return (
@@ -203,18 +218,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                     onClick_DEPRECATED={() => post("common/closeReactDialog")}
                 />
             </DialogBottomButtons>
-            <RegistrationDialogLauncher
-                mayChangeEmail={true}
-                registrationIsOptional={false}
-                emailRequiredForTeamCollection={true}
-                onSave={isValidEmail => {
-                    if (isValidEmail)
-                        postString(
-                            "teamCollection/createTeamCollection",
-                            repoFolderPath
-                        );
-                }}
-            />
+            <RegistrationDialogLauncher />
         </BloomDialog>
     );
 };

@@ -393,7 +393,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
 
                     // need to check for email each time checkout is pressed
                     get("registration/userInfo", userInfo => {
-                        if (userInfo?.data.Email ? true : false)
+                        if (userInfo?.data.email)
                             post(
                                 "teamCollection/attemptLockOfCurrentBook",
                                 () => {
@@ -407,8 +407,17 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                 }
                             );
                         else {
-                            showRegistrationDialog(); // component and parameters in CollectionsTabPane
-                            // We can't setBusy after the dialog closes because no access to setBusy in the onSave() parameter
+                            showRegistrationDialog({
+                                mayChangeEmail: true,
+                                registrationIsOptional: false,
+                                emailRequiredForTeamCollection: true,
+                                onSave: isValidEmail => {
+                                    if (isValidEmail)
+                                        post(
+                                            "teamCollection/attemptLockOfCurrentBook"
+                                        );
+                                }
+                            });
                             setBusy(false);
                         }
                     });

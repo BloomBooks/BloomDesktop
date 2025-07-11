@@ -15,20 +15,24 @@ import {
 import { DialogCancelButton } from "./BloomDialog/commonDialogComponents";
 import { useL10n } from "./l10nHooks";
 import BloomButton from "./bloomButton";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { H1 } from "./l10nComponents";
 import { TextFieldProps } from "@mui/material";
 import { MuiTextField } from "./muiTextField";
 import { get, postJson } from "../utils/bloomApi";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
+import { isValidEmail } from "../problemDialog/EmailField";
 
-export const RegistrationDialogLauncher: React.FunctionComponent<{
-    dialogEnvironment?: IBloomDialogEnvironmentParams;
+interface IRegistrationDialogProps {
     mayChangeEmail?: boolean;
     registrationIsOptional?: boolean;
     emailRequiredForTeamCollection?: boolean;
     onSave?: (isValidEmail: boolean) => void;
+}
+
+export const RegistrationDialogLauncher: React.FunctionComponent<IRegistrationDialogProps & {
+    dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
     // eslint needed useSetup and useEvent to be in the same order on every render
     const useSetup = useSetupBloomDialog(props.dialogEnvironment);
@@ -67,20 +71,23 @@ export const RegistrationDialogLauncher: React.FunctionComponent<{
     ) : null;
 };
 
-export const RegistrationDialog: React.FunctionComponent<{
+export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProps & {
     closeDialog: () => void;
     showDialog: () => void;
     propsForBloomDialog: IBloomDialogProps;
-    mayChangeEmail?: boolean;
-    registrationIsOptional?: boolean;
-    emailRequiredForTeamCollection?: boolean;
-    onSave?: (isValidEmail: boolean) => void;
 }> = props => {
-    const mayChangeEmail = props.mayChangeEmail ?? true;
-    const registrationIsOptional = props.registrationIsOptional ?? true;
+    const mayChangeEmail =
+        props.mayChangeEmail ??
+        externallySetRegistrationDialogProps?.mayChangeEmail ??
+        true;
+    const registrationIsOptional =
+        props.registrationIsOptional ??
+        externallySetRegistrationDialogProps?.registrationIsOptional ??
+        true;
     const emailRequiredForTeamCollection =
-        props.emailRequiredForTeamCollection ?? false;
-    const [isValidEmail, setIsValidEmail] = useState(true);
+        props.emailRequiredForTeamCollection ??
+        externallySetRegistrationDialogProps?.emailRequiredForTeamCollection ??
+        false;
     const [formIsFilled, setFormIsFilled] = useState(false);
     const [info, setInfo] = useState({
         firstName: "",
@@ -96,23 +103,10 @@ export const RegistrationDialog: React.FunctionComponent<{
         if (!props.propsForBloomDialog.open) return;
         get("registration/userInfo", userInfo => {
             if (userInfo?.data) {
-                setInfo({
-                    firstName: userInfo.data.FirstName,
-                    surname: userInfo.data.LastName,
-                    email: userInfo.data.Email,
-                    organization: userInfo.data.OtherProperties.Organization,
-                    usingFor: userInfo.data.OtherProperties.HowUsing,
-                    hadEmailAlready: userInfo.data.Email !== ""
-                });
+                setInfo(userInfo?.data);
             }
         });
     }, [props.propsForBloomDialog.open]);
-
-    // from https://github.com/angular/angular.js/blob/65f800e19ec669ab7d5abbd2f6b82bf60110651a/src/ng/directive/input.js
-    const email_regex = /^(?=.{1,254}$)(?=.{1,64}@)[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+(\.[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+)*@[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/;
-    useEffect(() => {
-        setIsValidEmail(email_regex.test(info.email.trim()));
-    }, [info.email]);
 
     useEffect(() => {
         let emailIsProvided = info.email.trim() !== "";
@@ -120,29 +114,40 @@ export const RegistrationDialog: React.FunctionComponent<{
             !!info.firstName.trim() &&
                 !!info.surname.trim() &&
                 (!emailRequiredForTeamCollection || emailIsProvided) &&
-                (isValidEmail || !emailIsProvided) &&
+                (isValidEmail(info.email) || !emailIsProvided) &&
                 !!info.organization.trim() &&
                 !!info.usingFor.trim()
         );
-    }, [info, isValidEmail]);
+    }, [info]);
+
+    // lets the registration text expand if the buttons are wider than DialogMiddle's minimum width
+    // seems to be dependent on the translations loading faster than this rewrites the width
+    const mustRegisterText = useRef<HTMLDivElement>(null);
+    const bottomButtons = $("#bottomButtons");
+    useEffect(() => {
+        if (mustRegisterText.current)
+            mustRegisterText.current.style.width =
+                bottomButtons[0]?.offsetWidth + "px";
+    }, [mustRegisterText, bottomButtons[0]?.offsetWidth]);
 
     const textFieldProps: TextFieldProps = {
         autoFocus: false,
         margin: "normal",
         multiline: false,
-        fullWidth: true,
-        css: css`
-            width: 188px;
-        `
+        fullWidth: true
     };
 
     function tryToSave() {
-        // close dialog after data save is attempted
-        postJson("registration/tryToSave", info, closeDialog);
+        // wait for data save attempt to finish before continuing
+        postJson("registration/userInfo", info, () => {
+            const onSave =
+                props.onSave ?? externallySetRegistrationDialogProps?.onSave;
+            onSave?.(isValidEmail(info.email));
+            closeDialog();
+        });
     }
 
     const closeDialog = () => {
-        props.onSave?.(isValidEmail);
         props.closeDialog();
     };
 
@@ -165,23 +170,26 @@ export const RegistrationDialog: React.FunctionComponent<{
                 title={useL10n(
                     "Register {0}",
                     "RegisterDialog.WindowTitle",
-                    "Dialog Title",
+                    "Place a {0} where the name of the program goes.",
                     "Bloom"
                 )}
                 preventCloseButton={true}
             />
             <DialogMiddle
                 css={css`
-                    width: 400px;
+                    min-width: 400px;
 
                     h1 {
                         font-size: 14px;
                     }
+
+                    #mustRegisterText {
+                        width: 400px;
+                    }
+
                     .row {
                         display: flex;
-                        justify-content: space-between;
-                    }
-                    .MuiInputBase-input {
+                        column-gap: 26px;
                     }
 
                     .MuiInputLabel-root {
@@ -194,11 +202,15 @@ export const RegistrationDialog: React.FunctionComponent<{
                     }
                 `}
             >
-                <H1 l10nKey="RegisterDialog.Heading" l10nParam0="Bloom">
+                <H1
+                    l10nKey="RegisterDialog.Heading"
+                    l10nParam0="Bloom"
+                    l10nComment="Place a {0} where the name of the program goes."
+                >
                     Please take a minute to register {0}.
                 </H1>
                 {emailRequiredForTeamCollection ? (
-                    <div>
+                    <div id="mustRegisterText" ref={mustRegisterText}>
                         You will need to register this copy of Bloom with an
                         email address before participating in a Team Collection
                     </div>
@@ -265,36 +277,40 @@ export const RegistrationDialog: React.FunctionComponent<{
                     }
                     multiline={true}
                     rows="3"
-                    css={css`
-                        width: 400px;
-                    `}
                 />
             </DialogMiddle>
-            <DialogBottomButtons>
-                <DialogBottomLeftButtons>
+            <div id="bottomButtons">
+                <DialogBottomButtons>
+                    <DialogBottomLeftButtons>
+                        <BloomButton
+                            l10nKey="RegisterDialog.IAmStuckLabel"
+                            enabled={true}
+                            variant="text"
+                            onClick={tryToSave}
+                            css={css`
+                                font-size: 10px;
+                            `}
+                        >
+                            I'm stuck, I'll finish this later.
+                        </BloomButton>
+                    </DialogBottomLeftButtons>
                     <BloomButton
-                        l10nKey="RegisterDialog.IAmStuckLabel"
-                        enabled={true}
-                        variant="text"
+                        l10nKey="RegisterDialog.RegisterButton"
+                        enabled={formIsFilled}
                         onClick={tryToSave}
                     >
-                        I'm stuck, I'll finish this later.
+                        Register
                     </BloomButton>
-                </DialogBottomLeftButtons>
-                <BloomButton
-                    l10nKey="RegisterDialog.RegisterButton"
-                    enabled={formIsFilled}
-                    onClick={tryToSave}
-                >
-                    Register
-                </BloomButton>
-                {registrationIsOptional && <DialogCancelButton />}
-            </DialogBottomButtons>
+                    {registrationIsOptional && <DialogCancelButton />}
+                </DialogBottomButtons>
+            </div>
         </BloomDialog>
     );
 };
 
 let show: () => void = () => {};
+
+let externallySetRegistrationDialogProps: IRegistrationDialogProps | undefined;
 
 export function showRegistrationDialogForEditTab(
     mayChangeEmail?: boolean,
@@ -311,7 +327,10 @@ export function showRegistrationDialogForEditTab(
     show();
 }
 
-export function showRegistrationDialog() {
+export function showRegistrationDialog(
+    registrationDialogProps: IRegistrationDialogProps
+) {
+    externallySetRegistrationDialogProps = registrationDialogProps;
     show();
 }
 
