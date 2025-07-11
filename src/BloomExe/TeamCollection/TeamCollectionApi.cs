@@ -140,12 +140,6 @@ namespace Bloom.TeamCollection
                 true,
                 false
             );
-            apiHandler.RegisterEndpointHandler(
-                "teamCollection/showRegistrationDialog",
-                HandleShowRegistrationDialog,
-                true,
-                false
-            );
             apiHandler.RegisterEndpointHandler("teamCollection/getHistory", HandleGetHistory, true);
             apiHandler.RegisterEndpointHandler(
                 "teamCollection/checkinMessage",
@@ -262,12 +256,6 @@ namespace Bloom.TeamCollection
                 ),
                 additionalFilesToInclude: new[] { file }
             );
-        }
-
-        private void HandleShowRegistrationDialog(ApiRequest request)
-        {
-            WorkspaceView.ShowRegistrationDialog(_tcManager.UserMayChangeEmail, false, true);
-            request.PostSucceeded();
         }
 
         private void HandleShowCreateTeamCollectionDialog(ApiRequest request)
