@@ -83,6 +83,16 @@ namespace Bloom.Publish
             _webSocketServer.SendEvent("publish", "switchOutOfPublishTab");
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _reactControl?.Dispose();
+                _publishEpubApi?.EpubMaker?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
         private void Activate()
         {
             PublishHelper.InPublishTab = true;
