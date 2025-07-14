@@ -75,6 +75,7 @@ import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { showLinkGridSetupsDialog } from "../bookLinkSetup/LinkGridSetupDialog";
 import { Link } from "../bookLinkSetup/BookLinkTypes";
 import PlaceholderProvider from "./PlaceholderProvider";
+import { insertIntoInputAtSelection } from "../../react_components/muiTextField";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -1434,20 +1435,55 @@ async function pasteImpl(imageAvailable: boolean) {
         // a selection.
         return;
     }
-    // Using ckeditor here because it's the only way I've found to integrate clipboard
-    // ops into an Undo stack that we can operate from an external button.
-    // We do a Save before and after to make sure that the cut is distinct from
-    // any other editing and that ckEditor actually has an item in its undo stack
-    // so that the Undo gets activated.
-    (<any>CKEDITOR.currentInstance).undoManager.save(true);
-    CKEDITOR.currentInstance.insertText(textToPaste);
-    (<any>CKEDITOR.currentInstance).undoManager.save(true);
-    // We need to update the canvas element height (BL-14004).
-    if (
-        activeCanvasElementEditable &&
-        activeElement === canvasElementManager.theCanvasElementWeAreTextEditing
-    ) {
-        canvasElementManager.updateAutoHeight();
+    if (CKEDITOR.currentInstance) {
+        // Using ckeditor here because it's the only way I've found to integrate clipboard
+        // ops into an Undo stack that we can operate from an external button.
+        // We do a Save before and after to make sure that the cut is distinct from
+        // any other editing and that ckEditor actually has an item in its undo stack
+        // so that the Undo gets activated.
+        (<any>CKEDITOR.currentInstance).undoManager.save(true);
+        CKEDITOR.currentInstance.insertText(textToPaste);
+        (<any>CKEDITOR.currentInstance).undoManager.save(true);
+        // We need to update the canvas element height (BL-14004).
+        if (
+            activeCanvasElementEditable &&
+            activeElement ===
+                canvasElementManager.theCanvasElementWeAreTextEditing
+        ) {
+            canvasElementManager.updateAutoHeight();
+        }
+    } else {
+        // If we don't have a CKEditor, we just paste the text into the active editable.
+        // This is not undoable, but it works. Do NOT try to get the element to check from
+        // document.selection; debugging indicates that none of its properties point at the
+        // <input>, even when the selection is actually an insertion point in the middle of
+        // its text.
+        const eltToEdit = document.activeElement;
+        if (
+            eltToEdit instanceof HTMLInputElement
+            // the default code may also be a problem for textareas, but I don't think we have any
+            // text areas not controlled by ckeditor
+        ) {
+            // The code below doesn't work for <input>s (and probably <textarea>s),
+            // I think because these classes can't have child nodes.
+            // In debugging, the selection obtained from document.getSelection() has the parent
+            // div as all the objects it points to, and the text node gets inserted before the
+            // <input>. Things get way more complicated still if the <input> is part of a
+            // controlled React component. So I built the handling for it into our wrapper.
+            const input = eltToEdit as HTMLInputElement;
+            insertIntoInputAtSelection(input, textToPaste);
+        } else {
+            // Handle normal contentEditable elements (Copilot code)
+            const sel = document.getSelection();
+            if (sel && sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                range.deleteContents(); // Clear any selected text.
+                range.insertNode(document.createTextNode(textToPaste));
+                range.collapse(false); // Move the caret to the end of the inserted text.
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }
     }
 }
 
