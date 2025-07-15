@@ -40,6 +40,7 @@ import {
     MakeReaderTemplateBloomPackDialog,
     showMakeReaderTemplateBloomPackDialog
 } from "../react_components/makeReaderTemplateBloomPackDialog";
+import { AboutDialogLauncher } from "../react_components/aboutDialog";
 
 const kResizerSize = 10;
 
@@ -570,6 +571,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             <TeamCollectionDialogLauncher />
             <SpreadsheetExportDialogLauncher />
             <ForumInvitationDialogLauncher />
+            <AboutDialogLauncher />
             <CollectionSettingsDialog />
             <EmbeddedProgressDialog id="collectionTab" />
             <MakeReaderTemplateBloomPackDialog />

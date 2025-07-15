@@ -1950,6 +1950,11 @@ namespace Bloom.Edit
             RunJavascriptAsync("editTabBundle.showPageChooserDialog(true);");
         }
 
+        internal void ShowAboutDialog()
+        {
+            RunJavascriptAsync($"editTabBundle.showAboutDialogInEditTab();");
+        }
+
         public int Zoom => EditingView.ZoomSetting;
 
         // The zoom factor that is shown in the top right of the toolbar (a percent).

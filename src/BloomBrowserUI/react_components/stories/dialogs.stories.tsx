@@ -11,7 +11,7 @@ import {
     INumberChooserDialogProps,
     NumberChooserDialog
 } from "../numberChooserDialog";
-import { AboutDialog } from "../aboutDialog";
+import { AboutDialogLauncher } from "../aboutDialog";
 import {
     StorybookDialogWrapper,
     normalDialogEnvironmentForStorybook
@@ -120,9 +120,9 @@ export const NumberChooserDialogStory: Story = {
 export const AboutDialogStory: Story = {
     name: "AboutDialog",
     render: () => (
-        <AboutDialog
-            dialogEnvironment={normalDialogEnvironmentForStorybook}
-        ></AboutDialog>
+        <StorybookDialogWrapper id="AboutDialog" params={{}}>
+            <AboutDialogLauncher />
+        </StorybookDialogWrapper>
     )
 };
 
