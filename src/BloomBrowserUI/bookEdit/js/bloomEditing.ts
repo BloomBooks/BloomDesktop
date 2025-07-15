@@ -1375,9 +1375,16 @@ export const pasteClipboard = (imageAvailable: boolean) => {
     pasteImpl(imageAvailable);
 };
 document.addEventListener("keydown", e => {
-    if (e.key === "v" && e.ctrlKey) {
+    if (
+        e.key === "v" &&
+        e.ctrlKey &&
+        !(document.activeElement instanceof HTMLInputElement)
+    ) {
         // If the user pressed Ctrl+V we want to do exactly what the paste button does.
         // We'll invoke it through C#.
+        // Except, if the active element is an <input>, our paste button code does not
+        // currently work. (See the branch pasteToInput for a very ugly way to make it do so.)
+        // So in that case we will just let the browser do its default paste behavior.
         postJson("editView/paste", {});
         e.preventDefault(); // Prevent the default paste behavior.
     }
