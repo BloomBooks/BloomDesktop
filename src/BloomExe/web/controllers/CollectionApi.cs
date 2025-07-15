@@ -280,7 +280,7 @@ namespace Bloom.web.controllers
                 kApiUrlPart + "makeBloompack/",
                 (request) =>
                 {
-                    _collectionModel.MakeReaderTemplateBloompack();
+                    _collectionModel.MakeBloomPack(forReaderTools: true);
                     request.PostSucceeded();
                 },
                 true

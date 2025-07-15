@@ -36,6 +36,10 @@ import { ForumInvitationDialogLauncher } from "../react_components/forumInvitati
 import { CollectionSettingsDialog } from "../collection/CollectionSettingsDialog";
 import { BooksOnBlorgProgressBar } from "../booksOnBlorg/BooksOnBlorgProgressBar";
 import { SubscriptionStatus } from "./SubscriptionStatus";
+import {
+    MakeReaderTemplateBloomPackDialog,
+    showMakeReaderTemplateBloomPackDialog
+} from "../react_components/makeReaderTemplateBloomPackDialog";
 import { AboutDialogLauncher } from "../react_components/aboutDialog";
 
 const kResizerSize = 10;
@@ -274,7 +278,9 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             label: "Make Reader Template Bloom Pack...",
             l10nId:
                 "CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem",
-            command: "collections/makeBloompack"
+            onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+                showMakeReaderTemplateBloomPackDialog();
+            }
         },
         {
             label: "Troubleshooting",
@@ -568,6 +574,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             <AboutDialogLauncher />
             <CollectionSettingsDialog />
             <EmbeddedProgressDialog id="collectionTab" />
+            <MakeReaderTemplateBloomPackDialog />
         </div>
     );
 };

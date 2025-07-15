@@ -18,6 +18,7 @@ import {
 } from "../BloomDialog/BloomDialogPlumbing";
 
 import { Meta, StoryObj } from "@storybook/react";
+import { MakeReaderTemplateBloomPackDialog } from "../makeReaderTemplateBloomPackDialog";
 
 const meta: Meta = {
     title: "Misc/Dialogs"
@@ -122,5 +123,14 @@ export const AboutDialogStory: Story = {
         <StorybookDialogWrapper id="AboutDialog" params={{}}>
             <AboutDialogLauncher />
         </StorybookDialogWrapper>
+    )
+};
+
+export const MakeReaderTemplateBloomPackDialogStory: Story = {
+    name: "MakeReaderTemplateBloomPackDialog",
+    render: () => (
+        <MakeReaderTemplateBloomPackDialog
+            dialogEnvironment={normalDialogEnvironmentForStorybook}
+        ></MakeReaderTemplateBloomPackDialog>
     )
 };

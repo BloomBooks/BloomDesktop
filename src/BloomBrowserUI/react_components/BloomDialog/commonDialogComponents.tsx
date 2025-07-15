@@ -175,6 +175,7 @@ export const DialogCancelButton: React.FunctionComponent<{
         </BloomButton>
     );
 };
+
 export const DialogReportButton: React.FunctionComponent<{
     className?: string; // also supports Emotion CSS
     buttonText?: string; // defaults to 'Report'
@@ -203,5 +204,32 @@ export const DialogReportButton: React.FunctionComponent<{
         `}
     >
         {props.buttonText ?? "Report"}
+    </BloomButton>
+);
+
+export const DialogHelpButton: React.FunctionComponent<{
+    helpId: string;
+    className?: string; // also supports Emotion CSS
+    id?: string;
+    buttonText?: string; // defaults to 'Help'
+    l10nKey?: string; // MUST replace this if you change buttonText
+    default?: boolean;
+    variant?: "text" | "contained" | "outlined" | undefined; // an explicit variant will overwrite default button variant
+    temporarilyDisableI18nWarning?: boolean; // may use this if the passed L10nKey is temporarily disabled
+}> = props => (
+    <BloomButton
+        className={props.className}
+        id={props.id}
+        l10nKey={props.l10nKey ?? "Common.Help"}
+        hasText={true}
+        enabled={true}
+        // by default, Help is NOT the default button
+        variant={
+            props.variant ?? (props.default === true ? "contained" : "outlined")
+        }
+        temporarilyDisableI18nWarning={props.temporarilyDisableI18nWarning}
+        clickApiEndpoint={"help?topic=" + props.helpId}
+    >
+        {props.buttonText ?? "Help"}
     </BloomButton>
 );
