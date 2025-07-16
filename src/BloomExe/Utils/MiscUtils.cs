@@ -15,6 +15,7 @@ using Bloom.Book;
 using Microsoft.Win32;
 using Mono.Unix;
 using NAudio.Wave;
+using SIL.Extensions;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.WritingSystems;
@@ -836,6 +837,72 @@ namespace Bloom.Utils
                 return newTag;
             }
             return tag; // failed to parse: return the original
+        }
+
+        /// <summary>
+        /// Unwraps an exception until it finds an "interesting" exception.  An interesting
+        /// exception is either the innermost exception or one that was not thrown by Autofac.
+        /// </summary>
+        /// <remarks>
+        /// See https://issues.bloomlibrary.org/youtrack/issue/BL-13484/Revamp-Book-Log.
+        /// </remarks>
+        public static Exception UnwrapUntilInterestingException(Exception exception)
+        {
+            if (exception == null)
+                return null;
+
+            // If we unwrap the exception, we want to keep track of information from the outermost exception.
+            string outerExceptionType = null;
+            string outerSource = null;
+            var outerStackTrace = new StringBuilder();
+            while (exception.InnerException != null && Regex.IsMatch(exception.StackTrace, "^\\s*at Autofac\\."))
+            {
+                if (outerExceptionType == null)
+                    outerExceptionType = exception.GetType().FullName;
+                if (outerSource == null)
+                    outerSource = exception.Source;
+                outerStackTrace.Append(PruneStackTraceOfAutofac(exception));
+                exception = exception.InnerException;
+            }
+            if (!string.IsNullOrEmpty(outerExceptionType))
+                exception.Data["OuterExceptionType"] = outerExceptionType;
+            if (!string.IsNullOrEmpty(outerSource))
+                exception.Data["OuterSource"] = outerSource;
+            if (outerStackTrace.Length > 0)
+                exception.Data["OuterStackTrace"] = outerStackTrace.ToString();
+
+            return exception;
+        }
+
+        /// <summary>
+        /// If the stack trace starts with contiguous Autofac lines, this removes all but the last one.
+        /// If it consists solely of Autofac lines, it returns a message indicating how many lines were omitted.
+        /// </summary>
+        private static string PruneStackTraceOfAutofac(Exception ex)
+        {
+            var stacklines = ex.StackTrace.SplitLines();
+            var index = stacklines.Length;
+            for (int i = 0; i < stacklines.Length; i++)
+            {
+                if (!stacklines[i].Contains(" at Autofac."))
+                {
+                    index = i;
+                    break;
+                }
+            }
+            if (index == 0)
+                return ex.StackTrace;
+            var sb = new StringBuilder();
+            if (index == stacklines.Length)
+            {
+                sb.AppendLineFormat("   ... ({0} lines omitted)", index);
+                return sb.ToString();
+            }
+            if (index > 1)
+                sb.AppendLineFormat("   ... ({0} lines omitted)", index - 1);
+            for (int i = index - 1; i < stacklines.Length; i++)
+                sb.AppendLine(stacklines[i]);
+            return sb.ToString();
         }
     }
 }

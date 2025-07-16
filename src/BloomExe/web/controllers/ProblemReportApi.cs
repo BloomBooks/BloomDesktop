@@ -845,6 +845,9 @@ namespace Bloom.web.controllers
                 }
                 return;
             }
+            // OneDriveUtils.CheckForAndHandleOneDriveExceptions recurses through inner exceptions as needed,
+            // but if we get here, we want to skip over exceptions thrown by Autofac.
+            originalException = MiscUtils.UnwrapUntilInterestingException(originalException);
 
             GatherReportInfoExceptScreenshot(
                 originalException,
