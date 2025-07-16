@@ -1040,6 +1040,7 @@ namespace Bloom
             {
                 if (FileMeddlerManager.IsMeddling)
                     FileMeddlerManager.Stop();
+                WebView2Browser.CleanupWebView2UserFolders();
             }
 
             try
