@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using SIL.IO;
+using SIL.Linq;
+using System;
 using System.Diagnostics;
 using System.Dynamic;
 using System.IO; // Add this for Path operations
 using System.Linq;
-using Newtonsoft.Json;
-using SIL.IO;
-using SIL.Linq;
+using System.Text;
 
 namespace Bloom.Api
 {
@@ -117,7 +118,7 @@ namespace Bloom.Api
         /// extract the various parts of a Subscription Descriptor
         /// </summary>
         /// <param name="subscriptionDescriptor">the part of the subcription code before the numbers start</param>
-        /// <param name="folderName">the name before any branding; this will match the folder holding all the files.</param>
+        /// <param name="folderName">the name before any flavor or subUnitName; this will match the folder holding all the files.</param>
         /// <param name="flavor">a name or empty string</param>
         /// <param name="subUnitName">a name (normally a country) or empty string</param>
         public static void ParseSubscriptionDescriptor(
@@ -130,16 +131,24 @@ namespace Bloom.Api
             if (subscriptionDescriptor.ToLowerInvariant().EndsWith("-lc"))
             {
                 folderName = "Local-Community";
-                flavor = null;
-                subUnitName = null;
+                flavor = "";
+                subUnitName = "";
                 return;
             }
             if (subscriptionDescriptor.ToLowerInvariant().EndsWith("-pro"))
             {
                 // Pro tier doesn't have brandings, so we use the default.
                 folderName = "Default";
-                flavor = null;
-                subUnitName = null;
+                flavor = "";
+                subUnitName = "";
+                return;
+            }
+            if (subscriptionDescriptor.ToLowerInvariant().EndsWith("-trainer"))
+            {
+                // Trainer subscriptions don't have brandings, so we use the default.
+                folderName = "Default";
+                flavor = "";
+                subUnitName = "";
                 return;
             }
 
@@ -157,6 +166,15 @@ namespace Bloom.Api
             parts = folderName.Split('(');
             folderName = parts[0];
             subUnitName = parts.Length > 1 ? parts[1].Replace(")", "") : "";
+
+            // If the branding is for a subscription that uses the default branding, we want to use the "Default" folder.
+            // In this case, the flavor and subUnitName are irrelevant, so we set them to empty strings.
+            if (BrandingSettings.SubscriptionsThatUseDefaultBranding.Contains(folderName))
+            {
+                folderName = "Default";
+                flavor = "";
+                subUnitName = "";
+            }
         }
 
         /// <summary>
@@ -213,8 +231,6 @@ namespace Bloom.Api
                         out flavor,
                         out var subUnitName
                     );
-                    if (SubscriptionsThatUseDefaultBranding.Contains(brandingFolderName))
-                        brandingFolderName = "Default";
 
                     // check to see if we have a special branding.json just for this flavor.
                     // Note that we could instead add code that allows a single branding.json to
@@ -324,5 +340,21 @@ namespace Bloom.Api
             }
             return null; // it is normal not to find the brandings. We hand out license keys before the brandings have been fully developed and shipped.
         }
+        public static string GetSummaryHtml(string branding)
+        {
+            BrandingSettings.ParseSubscriptionDescriptor(
+                branding,
+                out var baseKey,
+                out var flavor,
+                out var subUnitName
+            );
+            var summaryFile = BloomFileLocator.GetOptionalBrandingFile(baseKey, "summary.htm");
+            if (summaryFile == null)
+                return "";
+
+            var html = RobustFile.ReadAllText(summaryFile, Encoding.UTF8);
+            return html.Replace("{flavor}", flavor).Replace("SUBUNIT", subUnitName);
+        }
+
     }
 }

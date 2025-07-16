@@ -1,3 +1,4 @@
+using Bloom.Api;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -137,21 +138,25 @@ namespace Bloom.SubscriptionAndFeatures
             return new Subscription(code);
         }
 
-        // A BrandingKey must match a folder name under the src/content/branding folder,
+        // A BrandingKey is associated with a folder name under the src/content/branding folder,
         // unless that branding isn't yet supported by the current running Bloom.
         // The BrandingKey will sometimes be the same as the descriptor, e.g. "Acme-Literacy".
         // But a descriptor like "Acme-LC" will have a BrandingKey of "Local-Community".
+        // A descriptor like Steve-Trainer will have a BrandingKey of "Default".
         // An empty descriptor will have a BrandingKey of "Default".
+        // A descriptor like "OurProject[Literacy](Scotland)" will have a BrandingKey of "OurProject[Literacy](Scotland)",
+        // with the associated folder name being "OurProject".  Files within that folder may use "Literacy" to substitute
+        // for "{flavor}" in various places.  "Scotland" is used to replace "SUBUNIT" in the branding's summary.html,
+        // but otherwise has no effect.
         public string BrandingKey
         {
             get
             {
-                if (IsExpired())
+                if (IsExpired() || string.IsNullOrWhiteSpace(Descriptor))
                     return "Default";
-                if (Descriptor.Contains("-LC"))
-                    return "Local-Community";
-                if (string.IsNullOrWhiteSpace(Descriptor))
-                    return "Default";
+                BrandingSettings.ParseSubscriptionDescriptor(Descriptor, out var folder, out var flavor, out var subUnitName);
+                if (folder == "Default" || folder == "Local-Community")
+                    return folder;
                 return Descriptor; // a normal Enterprise code, perhaps with a region or flavor
             }
         }

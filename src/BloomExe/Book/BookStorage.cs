@@ -269,10 +269,13 @@ namespace Bloom.Book
         {
             if (useInstalledBranding && relativePath == "branding.css")
             {
-                return BloomFileLocator.GetOptionalBrandingFile(
+                BrandingSettings.ParseSubscriptionDescriptor(
                     _collectionSettings.Subscription.Descriptor,
-                    "branding.css"
+                    out var brandingFolder,
+                    out var flavor,
+                    out var subUnitName
                 );
+                return BloomFileLocator.GetOptionalBrandingFile(brandingFolder, "branding.css");
             }
             if (BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(relativePath))
             {
