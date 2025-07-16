@@ -32,7 +32,7 @@ namespace BloomTests.Collection
 
         [TestCase(null, "Default")]
         [TestCase("", "Default")]
-        [TestCase("Sample-361769-1709", "Sample")]
+        [TestCase("Test-727011-1339", "Test")]
         [TestCase("Foo-Bar-Blah", "Default")] // missing parts, invalid, thus branding is "Default"
         [TestCase("Fake-LC-006273-1463", "Local-Community")] // this code will eventually expire, after which it should be replaced
         [TestCase("Test-Expired-005691-4935", "Default")] //  expired, thus "Default"
@@ -82,7 +82,7 @@ namespace BloomTests.Collection
 
         [TestCase(null, Subscription.SubscriptionTier.None)]
         [TestCase("", Subscription.SubscriptionTier.None)]
-        [TestCase("Legacy-LC-005839-2533", Subscription.SubscriptionTier.Community)]
+        [TestCase("Legacy-LC-005839-2533", Subscription.SubscriptionTier.None)] // expired, so none
         [TestCase("Fake-006273-0501", Subscription.SubscriptionTier.Enterprise)]
         [TestCase("Fake-LC-006273-1463", Subscription.SubscriptionTier.Community)]
         [TestCase("Test-Expired-005691-4935", Subscription.SubscriptionTier.None)] // if expired, it's none
@@ -139,7 +139,7 @@ namespace BloomTests.Collection
         [TestCase(null, false)]
         [TestCase("", false)]
         [TestCase("Test-Expired-005691-4935", false)]
-        [TestCase("Legacy-LC-005839-2533", true)]
+        [TestCase("Legacy-LC-005839-2533", false)]
         [TestCase("Fake-006273-0501", true)]
         [TestCase("Fake-LC-006273-1463", true)]
         public void HaveActiveSubscription_ReturnsCorrectValue(string code, bool hasSubscription)
