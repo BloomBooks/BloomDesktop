@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
@@ -159,6 +161,36 @@ namespace Bloom.Publish
 		}
 	});
 	return { results: elementsInfo };
+})();";
+
+        // A bit of JavaScript we can run, after hacking the DOM to make all languages visible
+        // in bloom-editables, to get all the font families that are needed to render it in
+        // any of the included languages.
+        // Review: what elements should we retrieve font data for? I don't want to just use *,
+        // because there are many elements that don't hold text (or only children with different
+        // font settings hold text), and we don't care what font they may be set to use.
+        // OTOH, it's just possible that there are elements that are not our expected Bloom
+        // multilingual fields that do contain text that uses a problem font. We ought to be
+        // able to assume that Branding data has suitable fonts. Is there anything else we
+        // might want to include?
+        // Note: it would be something of an optimization to make this code return a set
+        // of the first font in each family, since that's all we really want. However, this
+        // bit of Javascript is completely outside our build process; there's no compile time
+        // checking, no access to libraries, no help at all getting it right. I want to keep
+        // it as simple as will possibly do the job. And I don't think the performance cost
+        // of passing more results back will be significant. (Moreover, we already had the
+        // quite tricky code to extract the first font family in C#.)
+        public const string GetElementFontFamilyInfoJavascript =
+            @"(() =>
+{
+	const elementsInfo = [];
+	document.querySelectorAll(""textarea, .bloom-editable *"").forEach(elt => {
+		const style = getComputedStyle(elt, null);
+		if (style) {
+			elementsInfo.push(style.getPropertyValue(""font-family""));
+		}
+	});
+	return elementsInfo;
 })();";
 
         /// <summary>
@@ -732,7 +764,7 @@ namespace Bloom.Publish
         public Dictionary<string, HashSet<string>> FontsAndLangsUsed =
             new Dictionary<string, HashSet<string>>();
 
-        private string ExtractFontNameFromFontFamily(string fontFamily)
+        private static string ExtractFontNameFromFontFamily(string fontFamily)
         {
             // we actually can get a comma-separated list with fallback font options: split into an array so we can
             // use just the first one.  We don't need to worry about the fallback fonts, just the primary one.  It
@@ -1238,7 +1270,11 @@ namespace Bloom.Publish
                 {
                     if (_browser != null) // Don't use BrowserForPageChecks here...if we don't have one we don't want to make it now!
                     {
-                        if (ControlForInvoke != null &&  ControlForInvoke.IsHandleCreated && !ControlForInvoke.IsDisposed)
+                        if (
+                            ControlForInvoke != null
+                            && ControlForInvoke.IsHandleCreated
+                            && !ControlForInvoke.IsDisposed
+                        )
                         {
                             // Seems safest of all to invoke using the thing we use for all other invokes.
                             // Also, seems our WebView2Browser may not actually get a handle, yet its
@@ -1611,26 +1647,133 @@ namespace Bloom.Publish
             return false;
         }
 
-        public static void ReportInvalidFonts(string destDirName, IProgress progress)
+        public static async Task ReportInvalidFontsAsync(
+            string destDirName,
+            IProgress progress,
+            Control controlToInvokeOn
+        )
         {
-            // For ePUB and BloomPub, we display the book to determine exactly which fonts are
-            // actually used.  We don't have a browser available to do that for uploads, so we scan
-            // css files and the styles set in the html file to see what font-family values are present.
-            // There's also the question of multilanguage books having data that isn't actively
-            // displayed but could potentially be displayed.
+            // Make a browser so we can accurately determine what fonts are actually requested by
+            // the stylesheets in the book, or might be if other languages being uploaded are activated.
             HashSet<string> fontsFound = new HashSet<string>();
-            foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.css"))
+            var bookPath = BookStorage.FindBookHtmlInFolder(destDirName);
+            var dom = HtmlDom.CreateFromHtmlFile(bookPath);
+            dom.BaseForRelativePaths = destDirName;
+            foreach (
+                var editable in dom.RawDom.SafeSelectElements(
+                    "//div[contains(@class, 'bloom-editable')]"
+                )
+            )
             {
-                var cssContent = RobustFile.ReadAllText(filepath);
-                HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, includeFallbackFonts: true);
+                // stuff has to be visible for us to compute the font family used for it
+                // We can make all the bloom-editable elements visible, since we already removed
+                // the ones that are not going to be uploaded, and we are not going to use this
+                // DOM for anything else.
+                if (editable.GetAttribute("lang") == "z")
+                    continue; // will never be visible.
+                editable.AddClass("bloom-visibility-code-on");
             }
-            // There should be only one html file with the same name as the directory it's in, but let's
-            // not make any assumptions here.
-            foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.htm"))
+
+            // This function, which is what we want to do next, may be either invoked
+            // or simply run, depending on whether we need to force running it on the UI thread.
+            // We can only manipulate the browser on the UI thread (except in tests).
+            var getFontsAction = async () =>
             {
-                var cssContent = RobustFile.ReadAllText(filepath);
-                HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, includeFallbackFonts: true); // works on HTML files as well
+                // This will usually be the main UI thread, but in tests it could be anything.
+                // In production, we must make sure we're on the UI thread to create and manipulate a browser,
+                // but we may no longer be after we await RunJavaScriptAsync. We have to be on the same
+                // thread to dispose it, so keep track of which thread it is.
+                var threadWhereWeMadeBrowser = Thread.CurrentThread;
+                var browser = await WebView2Browser.CreateAsync();
+                try
+                {
+                    // Logically, if any await can result in a thread switch, we might need to invoke again here.
+                    // But in practice, I haven't observed a problem. Maybe, even though the browser init code
+                    // is async, it somehow stays on the original thread? I'm not inclined to handle such a
+                    // complication unless we need to.
+                    if (
+                        !browser.NavigateAndWaitTillDone(
+                            dom,
+                            10000,
+                            InMemoryHtmlFileSource.JustCheckingPage,
+                            () => false,
+                            false
+                        )
+                    )
+                    {
+                        // We had problems with timeouts here in similar code (BL-7892).
+                        // We may as well carry on and detect as many problem fonts as we can.
+                        Debug.WriteLine("Failed to navigate fully to ReportInvalidFontsAsync DOM");
+                        Logger.WriteEvent(
+                            "Failed to navigate fully to ReportInvalidFontsAsync DOM"
+                        );
+                    }
+
+                    // Get and store the display and font information for each element in the DOM.
+                    var rawInfo = await browser.GetObjectFromJavascriptAsync(
+                        GetElementFontFamilyInfoJavascript
+                    );
+                    var fontFamilyInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(
+                        rawInfo
+                    );
+
+                    if (fontFamilyInfo != null)
+                    {
+                        foreach (var family in fontFamilyInfo)
+                        {
+                            var font = ExtractFontNameFromFontFamily(family);
+                            if (!string.IsNullOrEmpty(font))
+                            {
+                                fontsFound.Add(font);
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    if (threadWhereWeMadeBrowser == Thread.CurrentThread)
+                    {
+                        // This seems to happen in tests. In live code, given the bizarre way
+                        // Windows.Forms implements await and resumes on a different thread,
+                        // we don't take this branch, but we normally have a controlToInvokeOn,
+                        // which is usually null in tests.
+                        browser.Dispose();
+                    }
+                    else if (controlToInvokeOn != null)
+                    {
+                        // If we made the browser on this control's thread, we can dispose of it properly by invoking
+                        // to that thread. This is the usual path in production.
+                        controlToInvokeOn.Invoke(() => browser.Dispose());
+                    }
+                    // Otherwise, we just can't dispose of it properly. Probably we're running tests
+                    // and it doesn't matter much.
+                }
+            };
+            if (controlToInvokeOn == null)
+            {
+                await getFontsAction();
             }
+            else
+            {
+                await (Task)controlToInvokeOn.Invoke(getFontsAction);
+            }
+
+            // The old approach. Enhance: this is probably much faster to run. We think its only
+            // problem is false positives. Possibly if it finds no problems, we don't need to run
+            /// the more expensive browser-based approach.
+            //foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.css"))
+            //{
+            //    var cssContent = RobustFile.ReadAllText(filepath);
+            //    HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, includeFallbackFonts: true);
+            //}
+            //// There should be only one html file with the same name as the directory it's in, but let's
+            //// not make any assumptions here.
+            //foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.htm"))
+            //{
+            //    var cssContent = RobustFile.ReadAllText(filepath);
+            //    HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, includeFallbackFonts: true); // works on HTML files as well
+            //}
+
             if (_fontMetadataMap == null)
             {
                 _fontMetadataMap = new Dictionary<string, FontMetadata>();

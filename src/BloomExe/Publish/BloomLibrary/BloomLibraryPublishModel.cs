@@ -16,6 +16,7 @@ using Bloom.Book;
 using System.Globalization;
 using Bloom.ImageProcessing;
 using System.Drawing;
+using System.Threading.Tasks;
 using Bloom.Collection;
 using Bloom.ToPalaso;
 using Newtonsoft.Json.Linq;
@@ -318,7 +319,7 @@ namespace Bloom.Publish.BloomLibrary
             Book.BookInfo.IsSuitableForMakingShells || Book.HasOnlyPictureOnlyPages();
 
         /// <returns>On success, returns the book objectId; on failure, returns empty string</returns>
-        internal string UploadOneBook(
+        internal async Task<string> UploadOneBook(
             BookInstance book,
             IProgress progress,
             PublishModel publishModel,
@@ -346,7 +347,7 @@ namespace Bloom.Publish.BloomLibrary
                     ExcludeMusic = excludeMusic,
                     PreserveThumbnails = false,
                 };
-                return _uploader.FullUpload(
+                return await _uploader.FullUpload(
                     book,
                     progress,
                     publishModel,
@@ -1009,10 +1010,15 @@ namespace Bloom.Publish.BloomLibrary
             if (subscription != null && subscription.ToLowerInvariant().EndsWith("-pro"))
             {
                 var subscriptionEmail = subscription.Substring(0, subscription.Length - 4);
-                if (WebUserId == null || WebUserId.ToLowerInvariant() != subscriptionEmail.ToLowerInvariant())
+                if (
+                    WebUserId == null
+                    || WebUserId.ToLowerInvariant() != subscriptionEmail.ToLowerInvariant()
+                )
                 {
-                    var message = LocalizationManager.GetString("Subscription.Pro.EmailMismatch",
-                        "Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}.");
+                    var message = LocalizationManager.GetString(
+                        "Subscription.Pro.EmailMismatch",
+                        "Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}."
+                    );
                     return string.Format(message, subscriptionEmail, WebUserId);
                 }
             }
