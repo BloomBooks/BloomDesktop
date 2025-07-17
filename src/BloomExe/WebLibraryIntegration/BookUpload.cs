@@ -15,6 +15,7 @@ using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
@@ -25,6 +26,14 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Windows.Forms;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -236,7 +245,11 @@ namespace Bloom.WebLibraryIntegration
 
             if (!String.IsNullOrEmpty(collectionSettings?.DefaultBookshelf))
             {
-                if (collectionSettings.Subscription.HaveActiveSubscription)
+                var bookshelfFeatureStatus = FeatureStatus.GetFeatureStatus(
+                    collectionSettings.Subscription,
+                    FeatureName.Bookshelf
+                );
+                if (bookshelfFeatureStatus.Enabled)
                     tags = tags.Concat(
                         new[] { "bookshelf:" + collectionSettings.DefaultBookshelf }
                     );
@@ -245,9 +258,7 @@ namespace Bloom.WebLibraryIntegration
                     // At least at this point, we aren't localizing this message, because the people with Enterprise
                     // bookshelves likely know enough English to understand this message.
                     progress.WriteWarning(
-                        "This book was not uploaded to the '"
-                            + collectionSettings.DefaultBookshelf
-                            + "' bookshelf. Uploading to a bookshelf requires a valid Enterprise subscription."
+                        $"This book was not uploaded to the '{collectionSettings.DefaultBookshelf}' bookshelf. Uploading to a bookshelf requires a Bloom subscription tier of at least '{bookshelfFeatureStatus.SubscriptionTier}'."
                     );
                 }
             }
@@ -804,7 +815,7 @@ namespace Bloom.WebLibraryIntegration
         }
 
         /// <summary>
-        /// If we do not have enterprise enabled, copy the book and remove all enterprise level features.
+        /// Save, make a copy, and remove unpublishable content from the copy
         /// </summary>
         internal static bool PrepareBookForUpload(
             ref Book.Book book,
@@ -813,12 +824,6 @@ namespace Bloom.WebLibraryIntegration
             IProgress progress
         )
         {
-            if (
-                book.CollectionSettings.Subscription.HaveActiveSubscription
-                && !PublishHelper.BookHasUnpublishableData(book)
-            )
-                return false; // no need to prune the book data
-
             // We need to be sure that any in-memory changes have been written to disk
             // before we start copying/loading the new book to/from disk
             book.Save();
@@ -832,13 +837,34 @@ namespace Bloom.WebLibraryIntegration
             var pages = new List<SafeXmlElement>();
             foreach (SafeXmlElement page in copiedBook.GetPageElements())
                 pages.Add(page);
-            if (!book.CollectionSettings.Subscription.HaveActiveSubscription)
-            {
-                // Remove enterprise features since they aren't allowed.
-                ISet<string> warningMessages = new HashSet<string>();
-                PublishHelper.RemoveEnterpriseFeaturesIfNeeded(copiedBook, pages, warningMessages);
-                PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
-            }
+
+            // Remove any material not allowed by the current subscription.
+            // (If the book has features that won't allow it to be published at all, that will have
+            // been caught earlier.)
+            var omittedPages = new Dictionary<string, int>();
+            PublishHelper.RemovePagesByFeatureSystem(
+                copiedBook,
+                copiedBook.OurHtmlDom,
+                pages,
+                // Currently no features are removed for BloomPub, so we're only getting
+                // subscription-based removals. If there's ever pages that can be
+                // published to the web but not to BloomPubs, or pages that can't
+                // be published purely because the destination is Web, we can add another
+                // enumeration member.
+                PublishingMediums.BloomPub,
+                omittedPages
+            );
+            var warnings = PublishHelper.MakePagesRemovedWarnings(omittedPages);
+            PublishHelper.SendBatchedWarningMessagesToProgress(warnings, progress);
+            var messages = new HashSet<string>();
+            PublishHelper.RemoveClassesAndAttrsToDisableFeatures(
+                pages,
+                copiedBook.CollectionSettings.Subscription,
+                copiedBook.BookData.BookIsDerivative(),
+                messages,
+                copiedBook
+            );
+            PublishHelper.SendBatchedWarningMessagesToProgress(messages.ToList(), progress);
             // Remove any AI generated content from the book. (BL-14339)
             foreach (var page in pages)
                 PublishHelper.RemoveUnpublishableContent(page);

@@ -17,6 +17,7 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using SIL.Reporting;
 using Bloom.CollectionTab;
+using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.web.controllers
 {
@@ -40,12 +41,12 @@ namespace Bloom.web.controllers
         private Color _lastThumbnailBackgroundColor;
 
         // This constant must match the ID that is used for the listener set up in the client
-        private const string kWebsocketEventId_Preview = "bloomPubPreview";
+        private const string kWebSocketEventId_Preview = "bloomPubPreview";
         private Book.Book _coverColorSourceBook;
         public const string kStagingFolder = "PlaceForStagingBook";
 
         // This constant must match the ID used for the useWatchString called by the React component MethodChooser.
-        private const string kWebsocketState_LicenseOK = "publish/licenseOK";
+        private const string kWebSocketState_LicenseOK = "publish/licenseOK";
 
         internal const string kWebSocketContext = "publish-bloompub"; // must match client
 
@@ -146,8 +147,14 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterBooleanEndpointHandler(
-                "publish/hasActivities",
-                request => Model.Book.HasActivities,
+                "publish/hasNonWidgetGames",
+                request => Model.Book.HasNonWidgetGames,
+                null,
+                true
+            );
+            apiHandler.RegisterBooleanEndpointHandler(
+                "publish/hasWidgets",
+                request => Model.Book.HasWidgets,
                 null,
                 true
             );
@@ -406,6 +413,15 @@ namespace Bloom.web.controllers
                 },
                 false
             );
+            apiHandler.RegisterBooleanEndpointHandler(
+                "publish/isPlaygroundBook",
+                request =>
+                {
+                    return request.CurrentBook.IsPlayground;
+                },
+                null,
+                false
+            );
         }
 
         public void getInitialPublishTabInfo(ApiRequest request)
@@ -423,26 +439,22 @@ namespace Bloom.web.controllers
                 _publishModel
             );
             Logger.WriteEvent("Entered Publish Tab");
-            request.ReplyWithJson(
-                JsonConvert.SerializeObject(
-                    new
-                    {
-                        canUpload = _publishModel
-                            .BookSelection
-                            .CurrentSelection
-                            .BookInfo
-                            .AllowUploading,
-                        cannotPublishWithoutEnterprise = _publishModel.CannotPublishWithoutEnterprise,
-                        cannotPublishWithoutCheckout = _publishModel.CannotPublishWithoutCheckout,
-                        canDownloadPDF = _publishModel.PdfGenerationSucceeded, // To be used for the context menu
-                        titleForDisplay = _publishModel
-                            .BookSelection
-                            .CurrentSelection
-                            .TitleBestForUserDisplay,
-                        numberOfFirstPageWithCanvasElement = _publishModel.BookSelection.CurrentSelection.GetNumberOfFirstPageWithCanvasElement(),
-                    }
-                )
-            );
+            var featureStatus = _publishModel.GetFeaturePreventingPublishingOrNull();
+            var featureStatusForSerialization = featureStatus?.ForSerialization();
+            var resultObject = new
+            {
+                canUpload = _publishModel.BookSelection.CurrentSelection.BookInfo.AllowUploading,
+                cannotPublishWithoutCheckout = _publishModel.CannotPublishWithoutCheckout,
+                canDownloadPDF = _publishModel.PdfGenerationSucceeded, // To be used for the context menu
+                titleForDisplay = _publishModel
+                    .BookSelection
+                    .CurrentSelection
+                    .TitleBestForUserDisplay,
+                featurePreventingPublishing = featureStatusForSerialization
+            };
+
+            var result = JsonConvert.SerializeObject(resultObject);
+            request.ReplyWithJson(result);
         }
 
         private void HandleChooseSignLanguage(ApiRequest request)
@@ -537,6 +549,9 @@ namespace Bloom.web.controllers
             _progress.Reset(); // Otherwise errors get carried over between runs of the preview.
             InitializeLanguagesInBook(request);
             _lastSettings = GetSettings();
+            _lastSettings.PublishingMedium = forVideo
+                ? PublishingMediums.Video
+                : PublishingMediums.BloomPub;
             _lastThumbnailBackgroundColor = _thumbnailBackgroundColor;
             if (forVideo)
             {
@@ -581,12 +596,12 @@ namespace Bloom.web.controllers
                 // the preview spinner.
                 _webSocketServer.SendString(
                     kWebSocketContext,
-                    kWebsocketEventId_Preview,
+                    kWebSocketEventId_Preview,
                     "stopPreview"
                 );
                 return false;
             }
-            _webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
+            _webSocketServer.SendString(kWebSocketContext, kWebSocketEventId_Preview, PreviewUrl);
             return true;
         }
 
@@ -648,7 +663,7 @@ namespace Bloom.web.controllers
                     LicenseOK = false;
                     _webSocketServer.SendString(
                         kWebSocketContext,
-                        kWebsocketState_LicenseOK,
+                        kWebSocketState_LicenseOK,
                         "false"
                     );
                     return false;
@@ -674,7 +689,7 @@ namespace Bloom.web.controllers
             progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview"); // message shared with Epub publishing
             if (!IsBookLicenseOK(book, settings, progress))
                 return null;
-            _webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "true");
+            _webSocketServer.SendString(kWebSocketContext, kWebSocketState_LicenseOK, "true");
 
             _stagingFolder?.Dispose();
             if (AudioProcessor.IsAnyCompressedAudioMissing(book.FolderPath, book.RawDom))

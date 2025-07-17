@@ -559,7 +559,7 @@ namespace BloomTests.Spreadsheet
         {
             var builder = new StringBuilder(
                 @"
-<div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage side-right A5Portrait bloom-monolingual"" id=""ca363e76-9474-4e54-bd99-c3f554b67784"" data-page="""" data-analyticscategories=""comprehension"" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""1"" lang="""">
+<div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page  numberedPage side-right A5Portrait bloom-monolingual"" data-feature=""game"" id=""ca363e76-9474-4e54-bd99-c3f554b67784"" data-page="""" data-analyticscategories=""comprehension"" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""1"" lang="""">
     <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Quiz Page"">
         Quiz Page
     </div>
@@ -717,14 +717,14 @@ namespace BloomTests.Spreadsheet
                 </div>
                 <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Cover-style"" lang=""*"" contenteditable=""true"" data-book=""bookTitle""></div>
             </div>
-            <div class=""bloom-canvas bloom-background-image-in-style"" data-book=""coverImage"" style=""background-image:url('Othello 199.jpg')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd"">
+            <div class=""bloom-canvas bloom-background-image-in-style-attr"" data-book=""coverImage"" style=""background-image:url('Othello 199.jpg')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd"">
 				<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"" data-default-languages=""auto"">
 					<div class=""bloom-editable ImageDescriptionEdit-style"" lang=""z"" contenteditable=""true"" data-book=""coverImageDescription""></div>
 				</div>
 			</div>
 
             <div class=""bottomBlock"">
-                <img class=""branding"" src=""/bloom/api/branding/image?id=cover-bottom-left.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img> 
+                <img class=""branding"" src=""/bloom/api/branding/image?id=cover-bottom-left.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img>
 
                 <div class=""bottomTextContent"">
                     <div class=""creditsRow"" data-hint=""You may use this space for author/illustrator, or anything else."">
@@ -1296,7 +1296,7 @@ namespace BloomTests.Spreadsheet
         <div class=""pageDescription"" lang=""en""></div>
 
         <div class=""split-pane-component marginBox"" style="""">
-            
+
         </div>
     </div>",
                 pageNumber

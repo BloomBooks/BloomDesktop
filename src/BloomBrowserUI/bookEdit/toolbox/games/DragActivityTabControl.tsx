@@ -42,7 +42,8 @@ export const DragActivityTabControl: React.FunctionComponent<{
     const prompt = document.getElementsByClassName(
         "bloom-game-prompt"
     )[0] as HTMLElement;
-    const promptL10nId = prompt?.getAttribute("data-prompt-button-l10nid");
+    const promptL10nId =
+        prompt?.getAttribute("data-prompt-button-l10nid") ?? null;
     const promptButtonContent = useL10n("", promptL10nId);
 
     return (
@@ -119,6 +120,9 @@ const buttonCss = css`
     }
 `;
 
+// also occurs in less files
+export const kIdForDragActivityTabControl = "drag-activity-tab-control";
+
 // This is the function that the editable page iframe exports so that the toolbox can call it
 // to render the Start/Correct/Wrong/Play control.
 // This deliberately does NOT use the cross-iframe getPage() function, because it MUST be
@@ -127,7 +131,7 @@ const buttonCss = css`
 // This is because ReactDOM.render seems to have trouble if we pass it an element that
 // belongs to a different document.
 export function renderDragActivityTabControl(currentTab: number) {
-    const root = document.getElementById("drag-activity-tab-control");
+    const root = document.getElementById(kIdForDragActivityTabControl);
     if (!root) {
         // not created yet, try later
         setTimeout(() => renderDragActivityTabControl(currentTab), 200);

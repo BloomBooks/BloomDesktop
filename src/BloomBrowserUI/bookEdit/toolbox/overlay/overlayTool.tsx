@@ -45,6 +45,8 @@ import {
 import { getCanvasElementManager } from "./canvasElementUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
+import { ToolBox } from "../toolbox";
+import { hideColorPickerDialog } from "../../editViewFrame";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -65,6 +67,26 @@ const OverlayToolControls: React.FunctionComponent = () => {
     const [isXmatter, setIsXmatter] = useState(true);
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
     const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
+
+    // Add state to track whether each dropdown is open
+    const [isStyleSelectOpen, setIsStyleSelectOpen] = useState(false);
+    const [isOutlineColorSelectOpen, setIsOutlineColorSelectOpen] = useState(
+        false
+    );
+    function openStyleSelect() {
+        setIsStyleSelectOpen(true);
+        // Make sure we don't leave the select open when the tool closes.
+        ToolBox.addWhenClosingToolTask(() => {
+            setIsStyleSelectOpen(false);
+        });
+    }
+    function openOutlineColorSelect() {
+        setIsOutlineColorSelectOpen(true);
+        // Make sure we don't leave the select open when the tool closes.
+        ToolBox.addWhenClosingToolTask(() => {
+            setIsOutlineColorSelectOpen(false);
+        });
+    }
 
     // Calls to useL10n
     const deleteTooltip = useL10n("Delete", "Common.Delete");
@@ -398,6 +420,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
             //defaultColor???
         };
         getEditTabBundleExports().showColorPickerDialog(colorPickerDialogProps);
+        ToolBox.addWhenClosingToolTask(() => {
+            getEditTabBundleExports().hideColorPickerDialog();
+        });
     };
 
     // The background color chooser uses an alpha slider for transparency.
@@ -420,6 +445,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
         if (colorPickerDialogProps.initialColor.opacity === 0)
             colorPickerDialogProps.initialColor.opacity = 100;
         getEditTabBundleExports().showColorPickerDialog(colorPickerDialogProps);
+        ToolBox.addWhenClosingToolTask(() => {
+            getEditTabBundleExports().hideColorPickerDialog();
+        });
     };
 
     const needToCalculateTransparency = (): boolean => {
@@ -490,8 +518,12 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             <Select
                                 variant="standard"
                                 value={style}
+                                open={isStyleSelectOpen}
+                                onOpen={openStyleSelect}
+                                onClose={() => setIsStyleSelectOpen(false)}
                                 onChange={event => {
                                     handleStyleChanged(event);
+                                    setIsStyleSelectOpen(false);
                                 }}
                                 className="canvasElementOptionDropdown"
                                 inputProps={{
@@ -614,6 +646,11 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             <Select
                                 variant="standard"
                                 value={outlineColor ? outlineColor : "none"}
+                                open={isOutlineColorSelectOpen}
+                                onOpen={openOutlineColorSelect}
+                                onClose={() =>
+                                    setIsOutlineColorSelectOpen(false)
+                                }
                                 className="canvasElementOptionDropdown"
                                 inputProps={{
                                     name: "outlineColor",
@@ -624,8 +661,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                         "canvasElement-options-dropdown-menu"
                                 }}
                                 onChange={event => {
-                                    if (isBubble(currentFamilySpec))
+                                    if (isBubble(currentFamilySpec)) {
                                         handleOutlineColorChanged(event);
+                                        setIsOutlineColorSelectOpen(false);
+                                    }
                                 }}
                             >
                                 <MenuItem value="none">
@@ -652,8 +691,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
 
     return (
         <div id="overlayToolControls">
-            <RequiresSubscriptionOverlayWrapper>
-                {// Using most kinds of canvas elements is problematic in various ways in Bloom games, so we don't allow it.
+            <RequiresSubscriptionOverlayWrapper
+                featureName={kOverlayToolId as string}
+            >
+                {// Using most kinds of comic bubbles is problematic in various ways in Bloom games, so we don't allow it.
                 // We may eventually want to allow some controls to be used, but for now we just disable the whole thing.
                 // If we don't change our minds this string should get localized.
                 // issues:
@@ -797,12 +838,10 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
         return kOverlayToolId;
     }
 
+    public featureName? = kOverlayToolId;
+
     public isExperimental(): boolean {
         return false;
-    }
-
-    public toolRequiresEnterprise(): boolean {
-        return true;
     }
 
     public beginRestoreSettings(settings: string): JQueryPromise<void> {

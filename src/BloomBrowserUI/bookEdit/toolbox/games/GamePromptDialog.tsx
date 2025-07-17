@@ -27,6 +27,7 @@ import * as ReactDOM from "react-dom";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import {
     CanvasElementManager,
+    getAllDraggables,
     theOneCanvasElementManager
 } from "../../js/CanvasElementManager";
 import { Bubble } from "comicaljs";
@@ -260,9 +261,6 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
     // From here on is specific to the letter drag activity.
     // capture where the top left draggable and target are (before we add or remove any).
     // Also capture various bits of initial state that cancel() might need.
-    originalDraggables = Array.from(
-        page.getElementsByClassName(kCanvasElementClass + " draggable-text")
-    ) as HTMLElement[];
     createdBubbles = [];
     originalClassLists = [];
     originalStyles = [];
@@ -270,13 +268,9 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
     originalContents = [];
     originalTargetContents = [];
     draggableX = draggableY = targetX = targetY = 1000000; // will get reduced to minimums
-    const draggables = Array.from(
-        page.querySelectorAll("[data-draggable-id]")
-    ) as HTMLElement[];
+    const originalDraggables = getAllDraggables(page) as HTMLElement[];
+    const draggables = [...originalDraggables];
     const first = draggables[0];
-    const firstEditable = first.getElementsByClassName(
-        "bloom-editable bloom-visibility-code-on"
-    )[0];
     if (!promptEditable.textContent?.trim()) {
         // We are probably showing this language for the first time, and only one letter is going
         // to be visible initially. We want to move that first letter to the
@@ -345,12 +339,8 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
             return;
         }
         p.textContent = text ?? "";
-        // And we need to make sure the blank class is set correctly, otherwise,
-        // we can get shadow English letters in canvas elements that have content in the
-        // current language. This is usually handled by a mutation observer, but
-        // it doesn't get attached to extra letters we create here. Their content
-        // mainly gets changed by this method, so I think this is good enough.
-        GameTool.setBlankClass(ed);
+        // We're not putting any placeholder attrs on the letters, so we don't need
+        // to handle those.
     };
     // Set up an observer to keep the draggables in sync with the prompt during typing.
     const promptObserver = new MutationObserver(() => {
@@ -361,9 +351,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         const promptText = editable.textContent ?? "";
         // Split the prompt text into letter groups consisting of a base letter and any combining marks.
         const letters = splitIntoGraphemes(promptText);
-        const draggables = Array.from(
-            page.getElementsByClassName(kCanvasElementClass + " draggable-text")
-        ) as HTMLElement[];
+        const draggables = getAllDraggables(page) as HTMLElement[];
         // make sure we get some reasonable offsetWidth for the first one, if there are
         // any letters. (Can become display:none if we have no letters.)
         setDraggableText(draggables[0], letters[0]);
@@ -396,7 +384,6 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 );
                 paras.forEach(p => {
                     p.textContent = "";
-                    GameTool.setBlankClass(p.parentElement as HTMLElement);
                 });
                 lastDraggable.parentElement?.appendChild(newDraggable);
                 makeTargetForDraggable(newDraggable);

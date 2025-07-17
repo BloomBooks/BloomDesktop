@@ -1,9 +1,12 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34003.232
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BloomExe", "src\BloomExe\BloomExe.csproj", "{304D5612-167C-4725-AF27-B9F2BB788B57}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F697DD7A-2D74-4850-8381-7E4ADB1E4431} = {F697DD7A-2D74-4850-8381-7E4ADB1E4431}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BloomTests", "src\BloomTests\BloomTests.csproj", "{57E7AC72-D901-4A80-A50B-71319AC96CDC}"
 EndProject

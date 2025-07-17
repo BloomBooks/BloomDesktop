@@ -5,30 +5,16 @@
       <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
-      <trans-unit id="AvailableWithSubscription" translate="no">
+      <trans-unit id="AvailableWithSubscription">
         <source xml:lang="en">Available with your Bloom Subscription</source>
         <note>ID: AvailableWithSubscription</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
-      <trans-unit id="EditTab.Toolbox.DragActivity.Check">
-        <source xml:lang="en">Check</source>
-        <note>ID: EditTab.Toolbox.DragActivity.Check</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.CheckAnswer">
-        <source xml:lang="en">Check Answer</source>
-        <note>ID: EditTab.Toolbox.DragActivity.CheckAnswer</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.CheckHint">
-        <!-- Currently, if this is changed, RuntimeInformationInjector.AddHtmlUiStrings must be changed to match.
-        This is unfortunate, but our code for getting localization of hints is tricky to make async.-->
-        <source xml:lang="en">Clicking this validates the positions things have been dragged to.</source>
-        <note>ID: EditTab.Toolbox.DragActivity.CheckHint</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound.Help" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound.Help">
         <source xml:lang="en">You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to “elevenlabs.io”.</source>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound.Help</note>
       </trans-unit>
@@ -45,9 +31,17 @@
         <source xml:lang="en">Add items that will show when the learner gets the correct answer. For example, you might add a text that says “Correct!” with a GIF of a dancing chicken.</source>
         <note>ID: EditTab.Toolbox.DragActivity.CorrectInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Draggable">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ObjectsToDrag">
         <source xml:lang="en">Objects to Drag</source>
-        <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
+        <note>ID: EditTab.Toolbox.DragActivity.ObjectsToDrag</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.Draggability">
+        <source xml:lang="en">Draggable</source>
+        <note>ID: EditTab.Toolbox.DragActivity.Draggability</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.DraggabilityMore">
+        <source xml:lang="en">During game play, this item can be moved around.</source>
+        <note>ID: EditTab.Toolbox.DragActivity.DraggabilityMore</note>
       </trans-unit>
       <!-- <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading">
         <source xml:lang="en">Drag Images to Targets</source>
@@ -77,7 +71,7 @@
         <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.EditWordToSpell" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.EditWordToSpell">
         <source xml:lang="en">Edit Word to Spell</source>
         <note>ID: EditTab.Toolbox.DragActivity.EditWordToSpell</note>
       </trans-unit>
@@ -85,7 +79,7 @@
         <source xml:lang="en">Instructions</source>
         <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Text" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Text">
         <source xml:lang="en">Text</source>
         <note>ID: EditTab.Toolbox.DragActivity.Text</note>
       </trans-unit>
@@ -195,7 +189,7 @@
         <note>ID: EditTab.Toolbox.DragActivity.Word</note>
         <note>This is the label of an item that can be dragged onto the canvas to hold text, typically about the length of a word.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.WordToSpell" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.WordToSpell">
         <source xml:lang="en">Enter the word to spell</source>
         <note>ID: EditTab.Toolbox.DragActivity.WordToSpell</note>
       </trans-unit>
@@ -216,19 +210,19 @@
         <source xml:lang="en">Book is not Decodable</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Theme" translate="no">
+      <trans-unit id="EditTab.Toolbox.Games.Theme">
         <source xml:lang="en">Theme</source>
         <note>ID: EditTab.Toolbox.Games.Theme</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.blue-on-white" translate="no">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.blue-on-white">
         <source xml:lang="en">Blue on white</source>
         <note>ID: EditTab.Toolbox.Games.Themes.blue-on-white</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.white-and-orange-on-blue" translate="no">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.white-and-orange-on-blue">
         <source xml:lang="en">White and orange on blue</source>
         <note>ID: EditTab.Toolbox.Games.Themes.white-and-orange-on-blue</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.red-on-white" translate="no">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.red-on-white">
         <source xml:lang="en">Red on white</source>
         <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
       </trans-unit>
@@ -260,7 +254,7 @@
         <source>Match each image to a word</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Placeholder.OrderWordsInstructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.OrderWordsInstructions">
         <source>Drag the words where they go</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.OrderInstructions</note>
       </trans-unit>
@@ -272,27 +266,27 @@
         <source xml:lang="en">Game Tool</source>
         <note>ID: EditTab.Toolbox.GameTool</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.GameTool.CheckboxQuizHeading" translate="no">
+      <trans-unit id="EditTab.Toolbox.GameTool.CheckboxQuizHeading">
         <source xml:lang="en">Checkbox Quiz</source>
         <note>ID: EditTab.Toolbox.GameTool.CheckboxQuizHeading</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.GameTool.CheckboxQuizInstructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.GameTool.CheckboxQuizInstructions">
         <source xml:lang="en">Check the box next to each correct answer.</source>
         <note>ID: EditTab.Toolbox.GameTool.CheckboxQuizInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.GameTool.ChooseImageFromWordHeading" translate="no">
+      <trans-unit id="EditTab.Toolbox.GameTool.ChooseImageFromWordHeading">
         <source xml:lang="en">Choose Image from Word</source>
         <note>ID: EditTab.Toolbox.GameTool.ChooseImageFromWordHeading</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions">
         <source xml:lang="en">Place the correct image in the highlighted button, put other pictures in the other buttons. When it is time to play, Bloom will shuffle the order of buttons.</source>
         <note>ID: EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.GameTool.ChooseWordFromImageHeading" translate="no">
+      <trans-unit id="EditTab.Toolbox.GameTool.ChooseWordFromImageHeading">
         <source xml:lang="en">Choose Word from Image</source>
         <note>ID: EditTab.Toolbox.GameTool.ChooseWordFromImageHeading</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.GameTool.ChooseWordFromImageInstructions" translate="no">
+      <trans-unit id="EditTab.Toolbox.GameTool.ChooseWordFromImageInstructions">
         <source xml:lang="en">Type the correct word in the highlighted button, put other words in the other buttons. When it is time to play, Bloom will shuffle the order of buttons.</source>
         <note>ID: EditTab.Toolbox.GameTool.ChooseWordFromImageInstructions</note>
       </trans-unit>
@@ -347,38 +341,38 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile</note>
         <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Extra" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Extra" sil:dynamic="true">
         <source xml:lang="en">Use an external tool like Audacity. When you're done, use "Apply Timings File..."</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Extra</note>
         <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings" sil:dynamic="true">
         <source xml:lang="en">Adjust Timings...</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas" sil:dynamic="true">
         <source xml:lang="en">Use Aeneas to guess timings</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas.Extra" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas.Extra" sil:dynamic="true">
         <source xml:lang="en">If Bloom's timing guesses based on pauses aren't accurate enough, you can use this more advanced tool instead. Keep in mind that this will erase any changes you've made. Check [here] for more details.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Aeneas.Extra</note>
         <note>The part inside square brackets will become a link.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun" sil:dynamic="true">
         <source xml:lang="en">Re-run pause-based timing guesses</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun.Extra" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun.Extra" sil:dynamic="true">
         <source xml:lang="en">This will remove any adjustments you have made.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Rerun.Extra</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title" sil:dynamic="true">
         <source xml:lang="en">Adjust Timings</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title</note>
         <note>Title of the dialog launched by the previous command. Usually they differ only by leaving out the ...</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip" sil:dynamic="true">
         <source xml:lang="en">This is disabled because there is not a whole text box recording</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip</note>
       </trans-unit>
@@ -499,16 +493,31 @@
         <source xml:lang="en">This book does not have any interactive activities.</source>
         <note>ID: PublishTab.Feature.Activities.None</note>
         <note>This is a tooltip.</note>
+        <note>Obsolete as of 6.2</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.Present">
         <source xml:lang="en">This book has interactive activities.</source>
-        <note>ID: PublishTab.Feature.Activities.None</note>
+        <note>ID: PublishTab.Feature.Activities.Present</note>
         <note>This is a tooltip.</note>
+        <note>Obsolete as of 6.2</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
-        <source xml:lang="en">This is disabled because publishing interactive activities requires a subcription.</source>
+        <source xml:lang="en">This is disabled because publishing interactive activities requires a subscription.</source>
         <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
         <note>This is a tooltip.</note>
+        <note>Obsolete as of 6.2</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Games.None">
+        <source xml:lang="en">This book does not have any games.</source>
+        <note>ID: PublishTab.Feature.Games.None</note>
+        <note>This is a tooltip.</note>
+        <note>Obsolete as of 6.2</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Games.Present">
+        <source xml:lang="en">This book has games.</source>
+        <note>ID: PublishTab.Feature.Games.Present</note>
+        <note>This is a tooltip.</note>
+        <note>Obsolete as of 6.2</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None">
         <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
@@ -528,6 +537,11 @@
       <trans-unit id="PublishTab.Feature.Motion.Possible">
         <source xml:lang="en">Select this if you want to show motion when the book is read in landscape mode.</source>
         <note>ID: PublishTab.Feature.Motion.None</note>
+        <note>This is a tooltip.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Music">
+        <source xml:lang="en">Background Music</source>
+        <note>ID: PublishTab.Feature.Music</note>
         <note>This is a tooltip.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.NoVideos">
@@ -695,12 +709,12 @@
         <source xml:lang="en">Cover</source>
         <note>BookSettings.CoverGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage" sil:dynamic="true" translate="no">
+      <trans-unit id="BookSettings.CoverIsImage" sil:dynamic="true">
         <source xml:lang="en">Fill the front cover with a single image</source>
         <note>BookSettings.CoverIsImage</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage.Description" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
+      <trans-unit id="BookSettings.CoverIsImage.Description" sil:dynamic="true">
+        <source xml:lang="en">Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
         <note>BookSettings.CoverIsImage.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true">
@@ -803,6 +817,18 @@
         <source xml:lang="en">Advanced Layout</source>
         <note>BookSettings.AdvancedLayoutLabel</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Gutter.DefaultLabel" sil:dynamic="true">
+        <source xml:lang="en">Default (set by Theme)</source>
+        <note>BookSettings.Gutter.DefaultLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Gutter.Description" sil:dynamic="true">
+        <source xml:lang="en">Extra space between pages near the book spine. Increase this for books with many pages to ensure text isn't lost in the binding. This gap is applied to each side of the spine.</source>
+        <note>BookSettings.Gutter.Description</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Gutter.Label" sil:dynamic="true">
+        <source xml:lang="en">Page Gutter</source>
+        <note>BookSettings.Gutter.Label</note>
+      </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPaddingLabel" sil:dynamic="true">
         <source xml:lang="en">Text Padding</source>
         <note>BookSettings.TopLevelTextPaddingLabel</note>
@@ -816,7 +842,7 @@
         <note>BookSettings.TopLevelTextPadding.DefaultLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.TopLevelTextPadding.1emLabel" sil:dynamic="true">
-        <source xml:lang="en">1em (font size)</source>
+        <source xml:lang="en">1 em (font size)</source>
         <note>BookSettings.TopLevelTextPadding.1emLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.Problematic" sil:dynamic="true">
@@ -873,15 +899,15 @@
         <source xml:lang="en">Legacy (Bloom 5.6)</source>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
-      <trans-unit id="EditTab.PasteHyperlink" translate="no">
+      <trans-unit id="EditTab.PasteHyperlink">
         <source xml:lang="en">Paste Hyperlink</source>
         <note>ID: EditTab.PasteHyperlink</note>
       </trans-unit>
-      <trans-unit id="UseTalkingBookTool" translate="no">
+      <trans-unit id="UseTalkingBookTool">
         <source xml:lang="en">Use Talking Book Tool</source>
         <note>ID: UseTalkingBookTool</note>
       </trans-unit>
-      <trans-unit id="ARecording" translate="no">
+      <trans-unit id="ARecording">
         <source xml:lang="en">A Recording</source>
         <note>ID: ARecording</note>
       </trans-unit>

@@ -2725,7 +2725,7 @@ p {
 		</style>
 	</head>
 	<body>
-		<div class='A5Portrait bloom-page simple-comprehension-quiz bloom-interactive-page enterprise-only numberedPage bloom-monolingual' id='F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D' data-page='extra' data-analyticscategories='comprehension' data-reader-version='2'>
+		<div class='A5Portrait bloom-page simple-comprehension-quiz bloom-interactive-page numberedPage bloom-monolingual' id='F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D' data-feature='game' data-page='extra' data-analyticscategories='comprehension' data-reader-version='2'>
 			<div class='marginBox'>
 				<div class='quiz'>
 					<div class='bloom-translationGroup QuizHeader-style ' data-default-languages='auto'>

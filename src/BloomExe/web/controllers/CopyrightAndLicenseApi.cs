@@ -118,9 +118,10 @@ namespace Bloom.web.controllers
                         () =>
                         { // Saved DOM must be up to date with possibly new imageUrl
                             bool wasNormalSuccessfulSave = View.SaveImageMetadata(metadata);
-                            bool isNormalImageType = ImageUpdater.IsNormalImagePath(
-                                View.FileNameOfImageBeingModified
-                            );
+							// The filename can be null if coming in from the libpalaso toolbox callback,
+							// in which case wasNormalSuccessfulSave will be false anyway.
+							bool isNormalImageType = View.FileNameOfImageBeingModified != null &&
+								ImageUpdater.IsNormalImagePath(View.FileNameOfImageBeingModified);
                             bool shouldAskUserIfCopyMetadataToAllImages =
                                 wasNormalSuccessfulSave && isNormalImageType;
                             bool copyMetadataToAllImages = shouldAskUserIfCopyMetadataToAllImages

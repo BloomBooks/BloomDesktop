@@ -1,5 +1,6 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
+import "SubscriptionStatus.less";
 import { useApiString } from "../utils/bloomApi";
 import * as React from "react";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -11,6 +12,8 @@ import { kBloomBlue } from "../bloomMaterialUITheme";
 import { Markdown } from "../react_components/markdown";
 import { getSafeLocalizedDate } from "../collection/subscriptionCodeControl";
 import { useSubscriptionInfo } from "../collection/useSubscriptionInfo";
+import { SubscriptionTier } from "../react_components/featureStatus";
+import { useIsTeamCollection } from "../teamCollection/teamCollectionApi";
 
 export const SubscriptionStatus: React.FunctionComponent<{
     minimalUI?: boolean;
@@ -26,8 +29,36 @@ export const SubscriptionStatus: React.FunctionComponent<{
         haveData
     } = useSubscriptionInfo();
 
-    let descriptorToShow = subscriptionDescriptor;
-
+    let descriptorToShow = "";
+    let subscriptionTier: SubscriptionTier = "Basic"; // default value
+    let subscriptionMessageKey = "SubscriptionStatus.DefaultMessage";
+    if (
+        haveData &&
+        subscriptionDescriptor &&
+        subscriptionCodeIntegrity === "ok"
+    ) {
+        if (subscriptionDescriptor.toLowerCase().endsWith("-pro")) {
+            subscriptionTier = "Pro";
+            descriptorToShow = subscriptionDescriptor.slice(
+                0,
+                subscriptionDescriptor.length - 4
+            );
+            subscriptionMessageKey = "SubscriptionStatus.UsingProSubscription";
+        } else if (subscriptionDescriptor.toLowerCase().endsWith("-lc")) {
+            subscriptionTier = "LocalCommunity";
+            descriptorToShow = subscriptionDescriptor.slice(
+                0,
+                subscriptionDescriptor.length - 3
+            );
+            subscriptionMessageKey =
+                "SubscriptionStatus.UsingLocalCommunitySubscription";
+        } else {
+            subscriptionTier = "Enterprise"; // everything else is Enterprise
+            descriptorToShow = subscriptionDescriptor; // no change needed
+            subscriptionMessageKey =
+                "SubscriptionStatus.UsingEnterpriseSubscription";
+        }
+    }
     if (props.minimalUI) descriptorToShow = ""; // in the Settings Dialog context, the backend doesn't yet know what the user is clicking on, so it will give the wrong branding
 
     // a "deprecated" subscription is one that used to be eternal but is now being phased out
@@ -60,6 +91,7 @@ export const SubscriptionStatus: React.FunctionComponent<{
         descriptorToShow,
         localizedExpiryDate
     );
+    const isTeamCollection = useIsTeamCollection();
     if (!haveData) {
         return null;
     }
@@ -72,8 +104,41 @@ export const SubscriptionStatus: React.FunctionComponent<{
     // we only want to show it if the expiration is within 2 months (approximately 60 days).
     const kDaysBeforeWarningForNormalExpiration = 60;
 
+    if (subscriptionTier === "Pro" && isTeamCollection) {
+        // reasons for this are currently documented in the CollectionSettingsDialog okButton_Clicked function
+        return (
+            <BoxWithIconAndText
+                backgroundColor={kBloomWarning}
+                color={"black"}
+                borderColor={kBloomWarning}
+                hasBorder={true}
+                icon={<WarningIcon />}
+            >
+                <Markdown
+                    css={css`
+                        color: black;
+                        margin-top: 2px;
+                        margin-bottom: 10px;
+                        display: flex;
+                        // something probably in markdown puts a lot of margin on paragraphs,
+                        // which messes up the alignment with the icon and makes the warning box
+                        // bigger than it needs to be. This gets rid of it.
+                        p {
+                            margin: 0;
+                        }
+                    `}
+                    l10nKey="SubscriptionStatus.ProTeamCollectionNotSupported"
+                >
+                    Pro subscriptions are not supported for Team Collections.
+                    Please use a Local Community or Enterprise subscription.
+                </Markdown>
+            </BoxWithIconAndText>
+        );
+    }
+
     // no subscription
     if (expiryDateStringAsYYYYMMDD === "incomplete") return null;
+
     // else if it's already expired
     if (expiryDateStringAsYYYYMMDD < todayAsYYYYMMDD) {
         return (
@@ -101,16 +166,18 @@ export const SubscriptionStatus: React.FunctionComponent<{
     // in the collection tab, we show a subtle message
     else {
         return (
-            <div
+            <Markdown
                 css={css`
                     font-size: 12px;
                     color: ${kBloomBlue};
                     margin-top: 2px;
                     margin-bottom: 10px;
                 `}
+                l10nKey={subscriptionMessageKey}
+                l10nParams={[descriptorToShow, localizedExpiryDate]}
             >
                 {defaultStatusMessage}
-            </div>
+            </Markdown>
         );
     }
 };

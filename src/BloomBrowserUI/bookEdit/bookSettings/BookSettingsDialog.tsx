@@ -5,9 +5,6 @@ import {
     ConfigrGroup,
     ConfigrSubgroup,
     ConfigrCustomStringInput,
-    ConfigrCustomNumberInput,
-    ConfigrColorPicker,
-    ConfigrInput,
     ConfigrCustomObjectInput,
     ConfigrBoolean,
     ConfigrSelect
@@ -25,20 +22,14 @@ import {
     DialogCancelButton,
     DialogOkButton
 } from "../../react_components/BloomDialog/commonDialogComponents";
-import {
-    BloomPalette,
-    getDefaultColorsFromPalette
-} from "../../react_components/color-picking/bloomPalette";
-import ColorPicker from "../../react_components/color-picking/colorPicker";
+import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import {
     ColorDisplayButton,
     DialogResult
 } from "../../react_components/color-picking/colorPickerDialog";
-import { IColorInfo } from "../../react_components/color-picking/colorSwatch";
 import {
     post,
     postJson,
-    postString,
     useApiObject,
     useApiStringState
 } from "../../utils/bloomApi";
@@ -50,10 +41,8 @@ import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { PWithLink } from "../../react_components/pWithLink";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 import { StyleAndFontTable } from "./StyleAndFontTable";
-import {
-    BloomSubscriptionIndicatorIconAndText,
-    useHaveSubscription
-} from "../../react_components/requiresSubscription";
+import { BloomSubscriptionIndicatorIconAndText } from "../../react_components/requiresSubscription";
+import { useGetFeatureStatus } from "../../react_components/featureStatus";
 
 let isOpenAlready = false;
 
@@ -106,15 +95,20 @@ export const BookSettingsDialog: React.FunctionComponent<{
     >("book/settings/appearanceUIOptions", {
         themeNames: []
     });
+    // If we pass a new default value to useApiObject on every render, it will query the host
+    // every time and then set the result, which triggers a new render, making an infinite loop.
+    const defaultOverrides = React.useMemo(() => {
+        return {
+            xmatter: {},
+            branding: {},
+            xmatterName: "",
+            brandingName: ""
+        };
+    }, []);
 
     const overrideInformation: IOverrideInformation | undefined = useApiObject<
         IOverrideInformation
-    >("book/settings/overrides", {
-        xmatter: {},
-        branding: {},
-        xmatterName: "",
-        brandingName: ""
-    });
+    >("book/settings/overrides", defaultOverrides);
 
     const xmatterLockedBy = useL10n(
         "Locked by {0} Front/Back matter",
@@ -208,17 +202,26 @@ export const BookSettingsDialog: React.FunctionComponent<{
         "BookSettings.TopLevelTextPadding.DefaultLabel"
     );
     const textPadding1emLabel = useL10n(
-        "1em (font size)",
+        "1 em (font size)",
         "BookSettings.TopLevelTextPadding.1emLabel"
+    );
+
+    const gutterLabel = useL10n("Page Gutter", "BookSettings.Gutter.Label");
+    const gutterDescription = useL10n(
+        "Extra space between pages near the book spine. Increase this for books with many pages to ensure text isn't lost in the binding. This gap is applied to each side of the spine.",
+        "BookSettings.Gutter.Description"
+    );
+    const gutterDefaultLabel = useL10n(
+        "Default (set by Theme)",
+        "BookSettings.Gutter.DefaultLabel"
     );
 
     const coverIsImageLabel = useL10n(
         "Fill the front cover with a single image",
         "BookSettings.CoverIsImage"
     );
-    //TODO real links (and change .xlf)
     const coverIsImageDescription = useL10n(
-        "Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
+        "Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
         "BookSettings.CoverIsImage.Description"
     );
 
@@ -320,7 +323,9 @@ export const BookSettingsDialog: React.FunctionComponent<{
         setMigratedTheme("");
     };
 
-    const haveSubscription = useHaveSubscription();
+    const tierAllowsFullPageCoverImage = useGetFeatureStatus(
+        "fullPageCoverImage"
+    )?.enabled;
 
     function saveSettingsAndCloseDialog() {
         if (settingsToReturnLater) {
@@ -423,7 +428,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         )}
                                         disabled={
                                             appearanceDisabled ||
-                                            !haveSubscription
+                                            !tierAllowsFullPageCoverImage
                                         }
                                     />
                                     <div
@@ -435,6 +440,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `}
                                     >
                                         <BloomSubscriptionIndicatorIconAndText
+                                            feature="fullPageCoverImage"
                                             css={css`
                                                 margin-left: auto;
                                             `}
@@ -648,9 +654,9 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                             label: textPaddingDefaultLabel,
                                             value: "" // use whatever the theme provides
                                         },
-                                        { label: "0mm", value: "0mm" },
-                                        { label: "2mm", value: "2mm" },
-                                        { label: "4mm", value: "4mm" },
+                                        { label: "0 mm", value: "0mm" },
+                                        { label: "2 mm", value: "2mm" },
+                                        { label: "4 mm", value: "4mm" },
                                         {
                                             label: textPadding1emLabel,
                                             value: "1em"
@@ -659,6 +665,24 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     description={textPaddingDescription}
                                     {...getAdditionalProps<string>(
                                         `topLevel-text-padding`
+                                    )}
+                                />
+                                <ConfigrSelect
+                                    label={gutterLabel}
+                                    options={[
+                                        {
+                                            label: gutterDefaultLabel,
+                                            value: "" // use whatever the theme provides
+                                        },
+                                        { label: "0 mm", value: "0mm" },
+                                        { label: "2 mm", value: "2mm" },
+                                        { label: "4 mm", value: "4mm" },
+                                        { label: "6 mm", value: "6mm" },
+                                        { label: "10 mm", value: "10mm" }
+                                    ]}
+                                    description={gutterDescription}
+                                    {...getAdditionalProps<string>(
+                                        `page-gutter`
                                     )}
                                 />
                             </ConfigrSubgroup>

@@ -388,20 +388,44 @@ export function removeImageId(imageId: string) {
     imgOrImageContainer?.removeAttribute("id");
 }
 
-// called by c# so be careful about changing the signature, including names of parameters
-export function changeImage(imageInfo: {
-    imageId: string;
+export interface IImageInfo {
+    imageId: string; // the id of the image element, or "makeNewCanvasElement" to paste an image from the clipboard
     src: string; // must already appropriately URL-encoded.
     copyright: string;
     creator: string;
     license: string;
-}) {
+}
+
+export const kMakeNewCanvasElement = "makeNewCanvasElement";
+
+// called by c# so be careful about changing the signature, including names of parameters
+export function changeImage(imageInfo: IImageInfo) {
+    if (imageInfo.imageId === kMakeNewCanvasElement) {
+        theOneCanvasElementManager.finishPasteImageFromClipboard(imageInfo);
+        return;
+    }
     const imgOrImageContainer = document.getElementById(imageInfo.imageId);
     if (!imgOrImageContainer) {
         throw new Error(
             `changeImage: imageOrImageContainerId: "${imageInfo.imageId}" not found`
         );
     }
+    changeImageInfo(imgOrImageContainer, imageInfo);
+    const ancestor = imgOrImageContainer.parentElement?.parentElement;
+    if (ancestor) {
+        SetupMetadataButton(ancestor);
+    }
+    // id is just a temporary expedient to find the right image easily in this method.
+    imgOrImageContainer.removeAttribute("id");
+    theOneCanvasElementManager.updateCanvasElementForChangedImage(
+        imgOrImageContainer
+    );
+}
+
+export function changeImageInfo(
+    imgOrImageContainer: HTMLElement,
+    imageInfo: IImageInfo
+) {
     // I can't remember why, but what this is doing is saying that if the imageContainer
     // ...or just possibly bloom-canvas in legacy or publication mode?...
     // has an <img> element, we're setting the src on that. But if it does not, we're
@@ -428,15 +452,6 @@ export function changeImage(imageInfo: {
     imgOrImageContainer.setAttribute("data-copyright", imageInfo.copyright);
     imgOrImageContainer.setAttribute("data-creator", imageInfo.creator);
     imgOrImageContainer.setAttribute("data-license", imageInfo.license);
-    const ancestor = imgOrImageContainer.parentElement?.parentElement;
-    if (ancestor) {
-        SetupMetadataButton(ancestor);
-    }
-    // id is just a temporary expedient to find the right image easily in this method.
-    imgOrImageContainer.removeAttribute("id");
-    theOneCanvasElementManager.updateCanvasElementForChangedImage(
-        imgOrImageContainer
-    );
 }
 
 // This origami checking business is related BL-13120
@@ -1359,38 +1374,42 @@ async function cutSelectionImpl() {
 export const pasteClipboard = (imageAvailable: boolean) => {
     pasteImpl(imageAvailable);
 };
+document.addEventListener("keydown", e => {
+    if (
+        e.key === "v" &&
+        e.ctrlKey &&
+        !(document.activeElement instanceof HTMLInputElement)
+    ) {
+        // If the user pressed Ctrl+V we want to do exactly what the paste button does.
+        // We'll invoke it through C#.
+        // Except, if the active element is an <input>, our paste button code does not
+        // currently work. (See the branch pasteToInput for a very ugly way to make it do so.)
+        // So in that case we will just let the browser do its default paste behavior.
+        postJson("editView/paste", {});
+        e.preventDefault(); // Prevent the default paste behavior.
+    }
+});
 
 async function pasteImpl(imageAvailable: boolean) {
     const canvasElementManager = theOneCanvasElementManager;
-    // Enhance: in what case would we consider a bloom-canvas to be the natural destination for pasting?
-    const activeElement = canvasElementManager?.getActiveElement();
-    const imageContainer = activeElement?.getElementsByClassName(
-        "bloom-imageContainer"
-    )[0];
-    if (imageContainer) {
-        if (imageAvailable) {
-            const img = imageContainer.getElementsByTagName("img")[0];
-            if (!img) {
-                return; // unexpected, maybe log??
-            }
-            doImageCommand(img, "paste");
-        } else {
-            const imageIsGif =
-                activeElement?.classList.contains("bloom-gif") ?? false;
-            BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
-                imageIsGif
-                    ? "EditTab.NoGifFoundOnClipboard"
-                    : "EditTab.NoImageFoundOnClipboard",
-                "No image found",
-                ""
-            );
-        }
-        return; // can't paste anything but an image into an image-container
+    if (
+        imageAvailable &&
+        canvasElementManager &&
+        canvasElementManager.pasteImageFromClipboard()
+    ) {
+        return;
     }
+    // Enhance: might there be a case where text should be pasted as a new canvas element?
+    // Enhance: we'd like to be able to copy and paste entire overlays (including target if any).
+    const activeElement = canvasElementManager?.getActiveElement();
     const activeCanvasElementEditable = activeElement?.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on"
     )[0] as HTMLElement;
 
+    const textToPaste = await navigator.clipboard.readText();
+    if (!textToPaste) {
+        return;
+    }
     if (
         activeCanvasElementEditable &&
         activeElement !== canvasElementManager.theCanvasElementWeAreTextEditing
@@ -1400,7 +1419,6 @@ async function pasteImpl(imageAvailable: boolean) {
         const editor = (activeCanvasElementEditable as any).bloomCkEditor;
         if (editor) {
             const manager = editor.undoManager;
-            const textToPaste = await navigator.clipboard.readText();
             editor.focus();
             manager.save(true);
             // The description of these arguments is quite mysterious, but by experiment, if both are passed true,
@@ -1423,7 +1441,6 @@ async function pasteImpl(imageAvailable: boolean) {
         // a selection.
         return;
     }
-    const textToPaste = await navigator.clipboard.readText();
     // Using ckeditor here because it's the only way I've found to integrate clipboard
     // ops into an Undo stack that we can operate from an external button.
     // We do a Save before and after to make sure that the cut is distinct from
@@ -1494,14 +1511,13 @@ export function attachToCkEditor(element) {
         return;
     }
 
-    // Skip any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup)
-    if (
+    // For any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup),
+    // we never want to show the toolbar.  We do want to allow pasting and other editing tasks. (BL-14947)
+    const alwaysHideToolbar =
         $(element).hasClass("bloom-userCannotModifyStyles") ||
         $(element)
             .parentsUntil(".marginBox")
-            .hasClass("bloom-userCannotModifyStyles")
-    )
-        return;
+            .hasClass("bloom-userCannotModifyStyles");
 
     if ($(element).css("cursor") === "not-allowed") return;
 
@@ -1519,7 +1535,8 @@ export function attachToCkEditor(element) {
         // endpoints of the first range.  Mozilla can return multiple
         // ranges with the first one being empty.
         const textSelected = editor.getSelection().getSelectedText();
-        const show = textSelected && textSelected.length > 0;
+        const show =
+            !alwaysHideToolbar && textSelected && textSelected.length > 0;
         const bar = $("body").find("." + editor.id);
         localizeCkeditorTooltips(bar);
         if (show) {

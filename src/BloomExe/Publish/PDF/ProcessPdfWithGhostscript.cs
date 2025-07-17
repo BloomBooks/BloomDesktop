@@ -40,15 +40,18 @@ namespace Bloom.Publish.PDF
         };
 
         private readonly OutputType _type;
+        private readonly string _colorProfile; // for CMYK conversion
         private DoWorkEventArgs _doWorkEventArgs;
 
         public ProcessPdfWithGhostscript(
             OutputType type,
+            string colorProfile,
             BackgroundWorker worker,
             DoWorkEventArgs doWorkEventArgs
         )
         {
             _type = type;
+            _colorProfile = colorProfile;
             _worker = worker;
             _doWorkEventArgs = doWorkEventArgs;
         }
@@ -239,6 +242,7 @@ namespace Bloom.Publish.PDF
                     bldr.Append(" -dMonoImageResolution=1200");
                     break;
                 case OutputType.Printshop:
+                    Debug.Assert(!string.IsNullOrEmpty(_colorProfile), "color profile must be set for printshop");
                     // This reduces images to 300dpi, converting the color to CMYK.
                     bldr.Append(" -dPDFSETTINGS=/prepress");
                     bldr.Append(" -sColorConversionStrategy=CMYK");
@@ -248,9 +252,24 @@ namespace Bloom.Publish.PDF
                     var rgbProfile = FileLocationUtilities.GetFileDistributedWithApplication(
                         "ColorProfiles/RGB/AdobeRGB1998.icc"
                     );
-                    var cmykProfile = FileLocationUtilities.GetFileDistributedWithApplication(
-                        "ColorProfiles/CMYK/USWebCoatedSWOP.icc"
-                    );
+                    var distFolder = PdfMaker.GetDistributedColorProfilesFolder();
+                    var cmykProfile = Path.Combine(distFolder, _colorProfile + ".icc");
+                    if (!RobustFile.Exists(cmykProfile))
+                    {
+                        var userFolder = PdfMaker.GetUserColorProfilesFolder();
+                        cmykProfile = Path.Combine(userFolder, _colorProfile + ".icc");
+                        if (!RobustFile.Exists(cmykProfile))
+                        {
+                            SIL.Reporting.Logger.WriteEvent(
+                                "Could not find CMYK color profile {0} in {1} or {2}, using default USWebCoatedSWOP.icc",
+                                _colorProfile,
+                                distFolder,
+                                userFolder
+                            );
+                            // fall back to the default CMYK profile.
+                            cmykProfile = Path.Combine(PdfMaker.GetDistributedColorProfilesFolder(), "USWebCoatedSWOP.icc");
+                        }
+                    }
                     bldr.AppendFormat(" -sDefaultRGBProfile=\"{0}\"", rgbProfile);
                     bldr.AppendFormat(" -sDefaultCMYKProfile=\"{0}\"", cmykProfile);
                     bldr.AppendFormat(" -sOutputICCProfile=\"{0}\"", cmykProfile);

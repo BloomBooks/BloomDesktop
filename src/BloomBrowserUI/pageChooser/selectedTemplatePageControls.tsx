@@ -14,14 +14,16 @@ import {
     kMutedTextGray,
     kWarningColor
 } from "../bloomMaterialUITheme";
+import { useGetFeatureStatus } from "../react_components/featureStatus";
 
 interface ISelectedTemplatePageProps {
-    enterpriseAvailable: boolean;
     caption: string | null;
     imageSource?: string;
     pageDescription: string | null;
     pageIsDigitalOnly: boolean;
-    pageIsEnterpriseOnly?: boolean;
+    // In theory, in the future, a template page could require multiple subscription features.
+    // If these were in different tiers, we would need to start handling an array.
+    featureName?: string;
     pageIsMarkedBilingual?: boolean;
     templateBookPath: string;
     pageId: string;
@@ -67,12 +69,9 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
         ? "Use This Layout"
         : "Add Page";
 
-    // If this function returns <true>, we need to let the user know that they need a
-    // Bloom Enterprise subscription to use this page.
-    const enterpriseSubscriptionFault = (
-        pageNeedsEnterprise: boolean | undefined
-    ): boolean => {
-        return !props.enterpriseAvailable && !!pageNeedsEnterprise;
+    const featureStatus = useGetFeatureStatus(props.featureName) ?? {
+        enabled: true,
+        visible: true
     };
 
     const isAddOrChoosePageButtonEnabled = (): boolean => {
@@ -178,69 +177,65 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                     </div>
                 )}
             </div>
-            {props.forChangeLayout &&
-                !enterpriseSubscriptionFault(props.pageIsEnterpriseOnly) && (
-                    <div>
-                        <Checkbox
-                            id="convertWholeBookCheckbox"
-                            css={css`
-                                margin-left: ${previewPaneLeftPadding}px;
-                                margin-right: ${previewPaneLeftPadding}px;
-                                margin-top: 10px;
-                                .disabled {
-                                    color: ${kBloomBuff};
-                                }
-                            `}
-                            l10nKey="EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox"
-                            name="WholeBook"
-                            checked={convertWholeBookChecked}
-                            disabled={props.willLoseData && !continueChecked}
-                            tristate={false}
-                            onCheckChanged={() =>
-                                setConvertWholeBookChecked(
-                                    !convertWholeBookChecked
-                                )
+            {props.forChangeLayout && featureStatus?.enabled && (
+                <div>
+                    <Checkbox
+                        id="convertWholeBookCheckbox"
+                        css={css`
+                            margin-left: ${previewPaneLeftPadding}px;
+                            margin-right: ${previewPaneLeftPadding}px;
+                            margin-top: 10px;
+                            .disabled {
+                                color: ${kBloomBuff};
                             }
+                        `}
+                        l10nKey="EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox"
+                        name="WholeBook"
+                        checked={convertWholeBookChecked}
+                        disabled={props.willLoseData && !continueChecked}
+                        tristate={false}
+                        onCheckChanged={() =>
+                            setConvertWholeBookChecked(!convertWholeBookChecked)
+                        }
+                    >
+                        Change all similar pages in this book to this layout.
+                    </Checkbox>
+                    {props.willLoseData && (
+                        <div
+                            css={css`
+                                color: ${kWarningColor};
+                                margin-left: 15px; // rather arbitrary. I'd like it to be left-aligned with the picture.
+                                margin-right: 15px;
+                                margin-top: 10px;
+                                line-height: 1.5em;
+                            `}
                         >
-                            Change all similar pages in this book to this
-                            layout.
-                        </Checkbox>
-                        {props.willLoseData && (
-                            <div
+                            <Div l10nKey="EditTab.AddPageDialog.ChooseLayoutWillLoseData">
+                                Converting to this layout will cause some
+                                content to be lost.
+                            </Div>
+                            <Checkbox
+                                id="convertAnywayCheckbox"
+                                l10nKey="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox"
+                                name="Continue"
+                                checked={continueChecked}
+                                tristate={false}
                                 css={css`
                                     color: ${kWarningColor};
-                                    margin-left: 15px; // rather arbitrary. I'd like it to be left-aligned with the picture.
+                                    margin-left: 15px;
                                     margin-right: 15px;
-                                    margin-top: 10px;
-                                    line-height: 1.5em;
                                 `}
+                                onCheckChanged={() =>
+                                    setContinueChecked(!continueChecked)
+                                }
                             >
-                                <Div l10nKey="EditTab.AddPageDialog.ChooseLayoutWillLoseData">
-                                    Converting to this layout will cause some
-                                    content to be lost.
-                                </Div>
-                                <Checkbox
-                                    id="convertAnywayCheckbox"
-                                    l10nKey="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox"
-                                    name="Continue"
-                                    checked={continueChecked}
-                                    tristate={false}
-                                    css={css`
-                                        color: ${kWarningColor};
-                                        margin-left: 15px;
-                                        margin-right: 15px;
-                                    `}
-                                    onCheckChanged={() =>
-                                        setContinueChecked(!continueChecked)
-                                    }
-                                >
-                                    Continue anyway
-                                </Checkbox>
-                            </div>
-                        )}
-                    </div>
-                )}
-            {!enterpriseSubscriptionFault(props.pageIsEnterpriseOnly) && (
+                                Continue anyway
+                            </Checkbox>
+                        </div>
+                    )}
+                </div>
+            )}
+            {featureStatus?.enabled && (
                 <div
                     css={css`
                         display: flex;
@@ -309,7 +304,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                     </div>
                 </div>
             )}
-            {enterpriseSubscriptionFault(props.pageIsEnterpriseOnly) && (
+            {!featureStatus?.enabled && (
                 <div
                     css={css`
                         display: flex;
@@ -318,7 +313,9 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                         flex: 1;
                     `}
                 >
-                    <RequiresSubscriptionNotice />
+                    <RequiresSubscriptionNotice
+                        featureName={props.featureName}
+                    />
                 </div>
             )}
         </div>

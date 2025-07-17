@@ -100,7 +100,7 @@ namespace Bloom.Edit
                             );
                             var dlg = new ProblemNotificationDialog(msg, title);
                             dlg.Icon = SystemIcons.Information.ToBitmap();
-                            dlg.ReoccurenceMessage = null;
+                            dlg.ReoccurrenceMessage = null;
                             dlg.Show();
                         }
                     }
@@ -137,7 +137,14 @@ namespace Bloom.Edit
                         "EditTab.ChooseLayoutButton",
                         "Choose Different Layout"
                     ),
-                    EnableFunction = (page) => page != null && !page.Required,
+                    // We don't want to allow layout changes for game pages (except Widget pages).
+                    // Note: we also have to disable the Change Layout switch, in origami.ts
+                    EnableFunction = (page) =>
+                        page != null
+                        && !page.Required
+                        && !page.GetDivNodeForThisPage()
+                            .GetAttribute("data-tool-id")
+                            .Equals("game"),
                     ExecuteCommand = (page) =>
                     {
                         // While we have separate browsers running for this page list and the editing view, we switch

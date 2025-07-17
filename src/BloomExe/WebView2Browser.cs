@@ -243,6 +243,9 @@ namespace Bloom
             {
                 additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
             }
+            #region DEBUG
+            additionalBrowserArgs += " --remote-debugging-port=9222 "; // allow external inspector connect
+            #endregion
 
             var op = new CoreWebView2EnvironmentOptions(additionalBrowserArgs);
 
@@ -639,6 +642,8 @@ namespace Bloom
                 { }
                 var haveClipboardImage = clipboardImage == null ? "false" : "true";
 
+                clipboardImage?.Dispose();
+
                 RunJavascriptAsync(
                     $"editTabBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
                 );
@@ -691,7 +696,8 @@ namespace Bloom
                     var isTextSelection = IsThereACurrentTextSelection();
                     _cutCommand.Enabled = isTextSelection;
                     _copyCommand.Enabled = isTextSelection;
-                    _pasteCommand.Enabled = PortableClipboard.ContainsText();
+                    _pasteCommand.Enabled =
+                        PortableClipboard.ContainsText() || PortableClipboard.CanGetImage();
 
                     _undoCommand.Enabled = await CanUndoAsync();
                 }
@@ -754,6 +760,147 @@ namespace Bloom
             catch (WebView2RuntimeNotFoundException)
             {
                 return kWebView2NotInstalled;
+            }
+        }
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                int procId = 0;
+                string userFolder = null;
+                try
+                {
+                    var uprocId = _webview?.CoreWebView2?.BrowserProcessId;
+                    procId = uprocId.HasValue ? (int)uprocId.Value : 0;
+                    userFolder = _webview?.CoreWebView2?.Environment?.UserDataFolder;
+                }
+                catch
+                {
+                    // If we can't get the process id or user folder, just ignore it.
+                    // This can happen if the WebView2 control is not initialized.
+                }
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+                else if (_webview != null)
+                {
+                    _webview.Dispose();
+                }
+                if (procId > 0 && userFolder != null && Directory.Exists(userFolder))
+                {
+                    // We need to wait until the process finishes to reliably delete the folder.
+                    // Unit tests can produce WebView2 processes that reuse the same id.  This
+                    // could conceivably happen in Bloom Desktop, so I've added code to handle it.
+                    // If needed, the prior user folder is stored so that we can delete it after
+                    // all of the processes have finished.
+                    if (WebView2ProcessToUserFolder.ContainsKey(procId))
+                    {
+                        var priorUserFolder = WebView2ProcessToUserFolder[procId];
+                        if (priorUserFolder != userFolder)
+                        {
+                            // Since we're not absolutely sure that folder names are unique, we
+                            // save the prior user folder so that we can safely delete it later
+                            // if needed.
+                            if (Directory.Exists(priorUserFolder))
+                                ObsoleteWebView2UserFolders.Add(priorUserFolder);
+                            WebView2ProcessToUserFolder[procId] = userFolder;
+                        }
+                    }
+                    else
+                    {
+                        WebView2ProcessToUserFolder.Add(procId, userFolder);
+                    }
+                }
+            }
+            base.Dispose(disposing);
+        }
+
+        /// <summary>
+        /// Mapping of WebView2 process IDs to their user folder paths.  We want to delete these user folders
+        /// because they don't contain anything we need to persist, and they can take up a lot of space.  New ones
+        /// are usually created, so they accumulate over time and can hold gigabytes of useless data.
+        /// </summary>
+        /// <remarks>
+        /// The WebView2 browser engines run in separate processes, and we have to wait until each process has
+        /// exited before we can reliably delete its user folder.
+        /// https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/user-data-folder?tabs=win32#deleting-user-data-folders
+        /// The WebView2Browser.Dispose method fills in this dictionary with the process ID and user folder path.
+        /// All of the browsers will have been disposed by the the application shutting down before the following
+        /// method is called.
+        /// </remarks>
+        private static readonly Dictionary<int, string> WebView2ProcessToUserFolder = new Dictionary<int, string>();
+        /// <summary>
+        /// Unit tests in particular can create WebView2 processes that reuse the same process IDs.  This set of
+        /// files are those that we had already recorded in the dictionary with the same process ID but which have
+        /// different names.  We want to delete these as well, since they are no longer needed.
+        /// </summary>
+        private static HashSet<string> ObsoleteWebView2UserFolders = new HashSet<string>();
+        public static void CleanupWebView2UserFolders()
+        {
+            try
+            {
+                int loopCount = 0;
+                while (WebView2ProcessToUserFolder.Count > 0)
+                {
+                    foreach (var key in WebView2ProcessToUserFolder.Keys.ToArray())
+                    {
+                        try
+                        {
+                            var process = Process.GetProcessById((int)key);
+                        }
+                        catch (ArgumentException)
+                        {
+                            // The process is no longer running, so we can delete the folder.
+                            var userFolder = WebView2ProcessToUserFolder[key];
+                            if (Directory.Exists(userFolder))
+                            {
+                                try
+                                {
+                                    RobustIO.DeleteDirectory(userFolder, true);
+                                }
+                                catch (Exception)
+                                {
+                                }
+                            }
+                            WebView2ProcessToUserFolder.Remove(key);
+                        }
+                    }
+                    if (WebView2ProcessToUserFolder.Count > 0)
+                        Thread.Sleep(100); // Wait a bit before checking again
+                    if (++loopCount > 30)
+                    {
+                        // If we can't clean up the folders after 3 seconds, give up.
+                        // The developer machine took no more than 4 iterations in this loop,
+                        // so 30 should be plenty.
+                        Logger.WriteEvent("Timeout cleaning up WebView2 user folders.");
+                        break;
+                    }
+                }
+                foreach (var userFolder in ObsoleteWebView2UserFolders)
+                {
+                    if (Directory.Exists(userFolder))
+                    {
+                        try
+                        {
+                            RobustIO.DeleteDirectory(userFolder, true);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                // If we can't delete the folders, we don't want to crash Bloom.
+                // This is not a critical operation, so just log the error and continue.
+                Logger.WriteError("Error cleaning up WebView2 user folders: ", e);
             }
         }
     }

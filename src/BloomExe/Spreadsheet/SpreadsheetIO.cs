@@ -317,7 +317,9 @@ namespace Bloom.Spreadsheet
             var key = row.Spreadsheet.Header.GetRow(0).GetCell(index).Content;
             // PageType column holds what is basically the InnerText of an element;
             // the InnerText property handles any XML escaping.
-            return key != InternalSpreadsheet.PageTypeColumnLabel;
+            // Image source column holds the actual path to the file; it will be url encoded when set as the src.
+            return key != InternalSpreadsheet.PageTypeColumnLabel
+                && key != InternalSpreadsheet.ImageSourceColumnLabel;
         }
 
         private static bool IsWysiwygFormattedColumn(SpreadsheetRow row, int index)

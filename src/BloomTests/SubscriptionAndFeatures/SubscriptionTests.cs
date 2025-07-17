@@ -2,8 +2,9 @@ using System;
 using System.Globalization;
 using System.Threading;
 using NUnit.Framework;
+using Bloom.SubscriptionAndFeatures;
 
-namespace BloomTests.Collection
+namespace BloomTests.SubscriptionAndFeatures
 {
     [TestFixture]
     public class SubscriptionTests
@@ -32,7 +33,7 @@ namespace BloomTests.Collection
 
         [TestCase(null, "Default")]
         [TestCase("", "Default")]
-        [TestCase("Sample-361769-1709", "Sample")]
+        [TestCase("Test-727011-1339", "Test")]
         [TestCase("Foo-Bar-Blah", "Default")] // missing parts, invalid, thus branding is "Default"
         [TestCase("Fake-LC-006273-1463", "Local-Community")] // this code will eventually expire, after which it should be replaced
         [TestCase("Test-Expired-005691-4935", "Default")] //  expired, thus "Default"
@@ -65,7 +66,11 @@ namespace BloomTests.Collection
             string expectedCode
         )
         {
-            var subscription = Subscription.FromCollectionSettingsInfo(code, branding, editingABlorgBook);
+            var subscription = Subscription.FromCollectionSettingsInfo(
+                code,
+                branding,
+                editingABlorgBook
+            );
             Assert.AreEqual(expectedCode, subscription.Code);
         }
 
@@ -80,13 +85,14 @@ namespace BloomTests.Collection
             Assert.AreEqual(expectedResult, subscription.IsExpired());
         }
 
-        [TestCase(null, Subscription.SubscriptionTier.None)]
-        [TestCase("", Subscription.SubscriptionTier.None)]
-        [TestCase("Legacy-LC-005839-2533", Subscription.SubscriptionTier.Community)]
-        [TestCase("Fake-006273-0501", Subscription.SubscriptionTier.Enterprise)]
-        [TestCase("Fake-LC-006273-1463", Subscription.SubscriptionTier.Community)]
-        [TestCase("Test-Expired-005691-4935", Subscription.SubscriptionTier.None)] // if expired, it's none
-        public void Tier_ReturnsCorrectEnum(string code, Subscription.SubscriptionTier expectedTier)
+        [TestCase(null, SubscriptionTier.Basic)]
+        [TestCase("", SubscriptionTier.Basic)]
+        [TestCase("Legacy-LC-005839-2533", SubscriptionTier.Basic)] // expired, so basic
+        [TestCase("Fake-006273-0501", SubscriptionTier.Enterprise)]
+        [TestCase("Fake-LC-006273-1463", SubscriptionTier.LocalCommunity)]
+        [TestCase("Fake-Pro-006273-2126", SubscriptionTier.Pro)]
+        [TestCase("Test-Expired-005691-4935", SubscriptionTier.Basic)] // if expired, it's basic
+        public void Tier_ReturnsCorrectEnum(string code, SubscriptionTier expectedTier)
         {
             var subscription = new Subscription(code);
             Assert.AreEqual(expectedTier, subscription.Tier);
@@ -134,18 +140,6 @@ namespace BloomTests.Collection
         {
             var subscription = new Subscription(oldCode);
             Assert.AreEqual(expectedResult, subscription.IsDifferent(newCode));
-        }
-
-        [TestCase(null, false)]
-        [TestCase("", false)]
-        [TestCase("Test-Expired-005691-4935", false)]
-        [TestCase("Legacy-LC-005839-2533", true)]
-        [TestCase("Fake-006273-0501", true)]
-        [TestCase("Fake-LC-006273-1463", true)]
-        public void HaveActiveSubscription_ReturnsCorrectValue(string code, bool hasSubscription)
-        {
-            var subscription = new Subscription(code);
-            Assert.AreEqual(hasSubscription, subscription.HaveActiveSubscription);
         }
 
         [TestCase(null, "")]

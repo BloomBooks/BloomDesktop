@@ -48,10 +48,10 @@
         <target xml:lang="my" state="needs-translation">Add items that will show when the learner gets the correct answer. For example, you might add a text that says “Correct!” with a GIF of a dancing chicken.</target>
         <note>ID: EditTab.Toolbox.DragActivity.CorrectInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Draggable">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ObjectsToDrag">
         <source xml:lang="en">Draggable</source>
         <target xml:lang="my" state="needs-translation">Draggable</target>
-        <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
+        <note>ID: EditTab.Toolbox.DragActivity.ObjectsToDrag</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading">
         <source xml:lang="en">Drag Images to Targets</source>

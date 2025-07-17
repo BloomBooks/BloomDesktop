@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useState, useContext } from "react";
 import PlayIcon from "@mui/icons-material/PlayCircleFilledWhite";
@@ -13,7 +12,6 @@ import {
     HelpGroup,
     SettingsPanel
 } from "../commonPublish/PublishScreenBaseComponents";
-import * as ReactDOM from "react-dom";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import {
     darkTheme,
@@ -32,7 +30,7 @@ import {
 } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
 import { Link } from "../../react_components/link";
-import { RequiresSubscriptionDialog } from "../../react_components/requiresSubscription";
+import { RequiresSubscriptionOverlayWrapper } from "../../react_components/requiresSubscription";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
@@ -183,7 +181,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     );
     const gotRecording = useWatchBooleanEvent(false, "recordVideo", "ready");
 
-    const [hasActivities] = useApiBoolean("publish/av/hasActivities", false);
+    const [hasGamesOrWidgets] = useApiBoolean(
+        "publish/av/hasGamesOrWidgets",
+        false
+    );
     React.useEffect(() => {
         if (activeStep < 2 && gotRecording) {
             setActiveStep(2);
@@ -247,9 +248,9 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         sendMessageToPlayer({ reset: true });
         setPlaying(false);
     };
-    const activitiesSkipped = useL10n(
-        "Activities will be skipped",
-        "PublishTab.RecordVideo.ActivitiesSkipped"
+    const gamesSkipped = useL10n(
+        "Games will be skipped",
+        "PublishTab.RecordVideo.GamesSkipped"
     );
     const isPauseButtonDisabled = !playing;
     useEffect(() => {
@@ -284,6 +285,11 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         "publish/av/videoSettings?regen=" + avSettings.pageTurnDelay,
         ""
     );
+    const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
+        "publish/isPlaygroundBook",
+        true
+    );
+
     let videoSettingsParam = "";
     if (videoSettings) {
         // videoSettings is sent as a url-encoded JSON string, which is exactly what we
@@ -575,7 +581,9 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                     <StepLabel>{save}</StepLabel>
                     <StepContent>
                         <BloomButton
-                            enabled={gotRecording && isLicenseOK}
+                            enabled={
+                                gotRecording && isLicenseOK && !isPlaygroundBook
+                            }
                             l10nKey="PublishTab.Save"
                             clickApiEndpoint="publish/av/saveVideo"
                             iconBeforeText={
@@ -632,7 +640,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                     margin-top: auto;
                 `}
             />
-            {hasActivities && <NoteBox>{activitiesSkipped}</NoteBox>}
+            {hasGamesOrWidgets && <NoteBox>{gamesSkipped}</NoteBox>}
             <HelpGroup>
                 <HelpLink
                     l10nKey="PublishTab.RecordVideo.OverviewHelpLink"
@@ -655,38 +663,39 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     }, []);
 
     return (
-        <Typography
-            component={"div"}
-            css={css`
-                height: 100%;
-            `}
-        >
-            <RequiresSubscriptionDialog />
-            <PublishScreenTemplate
-                bannerTitleEnglish="Publish as Audio or Video"
-                bannerTitleL10nId="PublishTab.RecordVideo.BannerTitle"
-                bannerDescriptionMarkdown="Create video files that you can upload to sites like Facebook and YouTube. You can also make videos to share with people who use inexpensive “feature phones” and even audio-only files for listening."
-                bannerDescriptionL10nId="PublishTab.RecordVideo.BannerDescription"
-                optionsPanelContents={optionsPanel}
+        <RequiresSubscriptionOverlayWrapper featureName="ExportAudioVideo">
+            <Typography
+                component={"div"}
+                css={css`
+                    height: 100%;
+                `}
             >
-                {mainPanel}
-            </PublishScreenTemplate>
-            {/* In storybook, there's no bloom backend to run the progress dialog */}
-            {inStorybookMode ||
-                (props.showPreview && (
-                    <PublishProgressDialog
-                        heading={heading}
-                        apiForStartingTask="publish/av/updatePreview"
-                        onTaskComplete={setClosePendingToTrue}
-                        webSocketClientContext="publish-bloompub"
-                        progressState={progressState}
-                        setProgressState={setProgressState}
-                        closePending={closePending}
-                        setClosePending={setClosePending}
-                        onUserStopped={setClosePendingToTrue}
-                    />
-                ))}
-            <EmbeddedProgressDialog id="avPublish" />
-        </Typography>
+                <PublishScreenTemplate
+                    bannerTitleEnglish="Publish as Audio or Video"
+                    bannerTitleL10nId="PublishTab.RecordVideo.BannerTitle"
+                    bannerDescriptionMarkdown="Create video files that you can upload to sites like Facebook and YouTube. You can also make videos to share with people who use inexpensive “feature phones” and even audio-only files for listening."
+                    bannerDescriptionL10nId="PublishTab.RecordVideo.BannerDescription"
+                    optionsPanelContents={optionsPanel}
+                >
+                    {mainPanel}
+                </PublishScreenTemplate>
+                {/* In storybook, there's no bloom backend to run the progress dialog */}
+                {inStorybookMode ||
+                    (props.showPreview && (
+                        <PublishProgressDialog
+                            heading={heading}
+                            apiForStartingTask="publish/av/updatePreview"
+                            onTaskComplete={setClosePendingToTrue}
+                            webSocketClientContext="publish-bloompub"
+                            progressState={progressState}
+                            setProgressState={setProgressState}
+                            closePending={closePending}
+                            setClosePending={setClosePending}
+                            onUserStopped={setClosePendingToTrue}
+                        />
+                    ))}
+                <EmbeddedProgressDialog id="avPublish" />
+            </Typography>
+        </RequiresSubscriptionOverlayWrapper>
     );
 };

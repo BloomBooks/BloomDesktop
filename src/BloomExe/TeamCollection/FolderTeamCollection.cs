@@ -876,7 +876,7 @@ namespace Bloom.TeamCollection
             var pathToBookFileInRepo = GetPathToBookFileInRepo(Path.GetFileName(bookFolderPath));
             // The test here is mostly unnecessary, since Delete won't throw if the file doesn't exist
             // (as indeed it might not, even after the test, in a rare race condition with someone else
-            // deleting it). It does serve to make sure at least the containing folder exists, which
+            // deleting it, or if this is called as part of MoveBookToCollection). It does serve to make sure at least the containing folder exists, which
             // WOULD cause an exception if by any chance it did not.
             if (RobustFile.Exists(pathToBookFileInRepo))
                 RobustFile.Delete(pathToBookFileInRepo);
@@ -1122,13 +1122,21 @@ namespace Bloom.TeamCollection
                         ProgressKind.Progress
                     );
 
-                    SetupTeamCollection(repoFolder, progress);
-
+                    try
+                    {
+                        SetupTeamCollection(repoFolder, progress);
+                    }
+                    catch (Exception ex)
+                    {
+                        // this will ensure that progress.HaveProblemsBeenReported is true.
+                        progress.MessageWithoutLocalizing(
+                            "Something went wrong: " + ex.Message,
+                            ex is FatalException ? ProgressKind.Fatal : ProgressKind.Error
+                        );
+                    }
                     progress.Message("Done", "Done");
-                    return false; // always close dialog when done
-
-                    // Review: I (JH) notice that the TeamCollection.SynchronizeRepoAndLocal() version of this
-                    // returns true if an error was found. Why doesn't this one?
+                    AddHelpMessageIfProblems(progress);
+                    return progress.HaveProblemsBeenReported;
                 }
             );
         }

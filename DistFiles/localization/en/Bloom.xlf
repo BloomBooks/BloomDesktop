@@ -571,6 +571,7 @@
         <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
         <note>ID: CollectionSettingsDialog.RequiresSubscription_ToolTip_</note>
         <note>Same as the text for "EditTab.RequiresSubscription"</note>
+        <note>Obsolete as of 6.2</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart">
         <source xml:lang="en">Restart</source>
@@ -952,6 +953,11 @@
       <trans-unit id="Common.SubscriptionRequired">
         <source xml:lang="en">Subscription Required</source>
         <note>ID: Common.SubscriptionRequired</note>
+        <note>Obsolete as of 6.2</note>
+      </trans-unit>
+      <trans-unit id="Common.HigherSubscriptionTierRequired">
+        <source xml:lang="en">Feature Requires Higher Subscription Tier</source>
+        <note>ID: Common.HigherSubscriptionTierRequired</note>
       </trans-unit>
       <trans-unit id="Common.Error">
         <source xml:lang="en">Error</source>
@@ -1441,6 +1447,7 @@
         <source xml:lang="en">Your subscription includes this feature.</source>
         <note>ID: EditTab.SubscriptionEnabled</note>
         <note>Appears in a tooltip on the Subscription button when the user DOES have a subcription (cf EditTab.RequiresSubscription).</note>
+        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="EditTab.SubscriptionSettingsButton" sil:dynamic="true">
         <source xml:lang="en">Bloom Subscription Settings</source>
@@ -1807,7 +1814,7 @@
         <note>ID: EditTab.Image.AltMsg</note>
         <note>The {0} is replaced by the filename of the picture.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.BackgroundImage" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Image.BackgroundImage" sil:dynamic="true">
         <source xml:lang="en">Background Image</source>
         <note>ID: EditTab.Image.BackgroundImage</note>
       </trans-unit>
@@ -1861,7 +1868,7 @@
         <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
         <note xml:lang="en">Appears in smaller, lighter text right under EditMetadataOverlay</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true">
         <source xml:lang="en">This sound will play when the item is touched.</source>
         <note>ID: EditTab.Image.PlayWhenTouched</note>
         <note xml:lang="en">Appears in smaller, lighter text right under sound file's name in popup menu</note>
@@ -1970,11 +1977,6 @@
       <trans-unit id="EditTab.PastePage">
         <source xml:lang="en">Paste Page</source>
         <note>ID: EditTab.PastePage</note>
-      </trans-unit>
-      <trans-unit id="EditTab.RequiresSubscription" sil:dynamic="true">
-        <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
-        <note>ID: EditTab.RequiresSubscription</note>
-        <note>Appears in notice (possibly obscuring other controls when they may not be used) because no Bloom Subcription project has been selected.</note>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
@@ -2200,12 +2202,6 @@
         <source xml:lang="en">Rounded Corners</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.RoundedCorners</note>
         <note>This checkbox indicates whether a text box has rounded corners instead of square corners.</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool" sil:dynamic="true">
-        <source xml:lang="en">Show Sign Language Tool</source>
-        <note>ID: EditTab.Toolbox.ComicTool.Options.ShowSignLanguageTool</note>
-        <note>This button shows if a video bubble is selected.</note>
-        <note>Obsolete as of Bloom 6.1</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowTail" sil:dynamic="true">
         <source xml:lang="en">Show Tail</source>
@@ -3510,6 +3506,11 @@
       <trans-unit id="PublishTab.Activity">
         <source xml:lang="en">Activity</source>
         <note>ID: PublishTab.Activity</note>
+        <note>obsolete as of Bloom 6.2</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Game">
+        <source xml:lang="en">Game</source>
+        <note>ID: PublishTab.Game</note>
       </trans-unit>
       <trans-unit id="PublishTab.Comic">
         <source xml:lang="en">Comic</source>
@@ -3819,12 +3820,6 @@
         <note>ID: PublishTab.Android.bloomdFileFormatLabel</note>
         <note>This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Audio.ElementsMissingId">
-        <source xml:lang="en">Some audio elements are missing ids</source>
-        <note>ID: PublishTab.Audio.ElementsMissingId</note>
-        <note>Message briefly displayed to the user in a toast</note>
-        <note>Obsolete as of Bloom 6.0</note>
-      </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio">
         <source xml:lang="en">Booklet Insides</source>
         <note>ID: PublishTab.BodyOnlyRadio</note>
@@ -3881,6 +3876,10 @@
       <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true">
         <source xml:lang="en">Produce a .bloomshelf file</source>
         <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
+      </trans-unit>
+      <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true">
+        <source xml:lang="en">Removing one or more pages which require a higher subscription tier</source>
+        <note>ID: Publish.RemovingDisallowedPages</note>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
         <source xml:lang="en">Web</source>
@@ -4027,6 +4026,10 @@
       <trans-unit id="PublishTab.EpubRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.FeatureRequiresHigherTier">
+        <source xml:lang="en">The feature "{0}" was removed from this book because it requires a higher subscription tier</source>
+        <note>ID: PublishTab.FeatureRequiresHigherTier</note>
       </trans-unit>
       <trans-unit id="PublishTab.NoBookletsMessage">
         <source xml:lang="en">This is disabled because Bloom cannot make booklets using the current size and orientation.</source>
@@ -4276,18 +4279,18 @@
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.FirstOverlayPage">
-        <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
-        <note>ID: PublishTab.PublishRequiresSubscription.FirstOverlayPage</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage">
+        <source xml:lang="en">Page {0} is the first page that uses this feature.</source>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage</note>
         <note>The {0} will be replaced by a page number.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.Options">
-        <source xml:lang="en">In order to publish your book, you need to either have an active Bloom Subscription, or remove the Overlay elements from your book.</source>
-        <note>ID: PublishTab.PublishRequiresSubscription.Options</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.Options">
+        <source xml:lang="en">In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.</source>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.Options</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresSubscription.ProblemExplanation">
-        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Subscription feature.</source>
-        <note>ID: PublishTab.PublishRequiresSubscription.ProblemExplanation</note>
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation">
+        <source xml:lang="en">The book titled "{0}" uses the "{1}" feature.</source>
+        <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation</note>
         <note>{0} will be replaced with the book's title.</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute">
@@ -4302,6 +4305,11 @@
       <trans-unit id="PublishTab.RecordVideo.ActivitiesSkipped">
         <source xml:lang="en">Activities will be skipped</source>
         <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
+        <note>Obsolete as of 6.2</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.GamesSkipped">
+        <source xml:lang="en">Games will be skipped</source>
+        <note>ID: PublishTab.RecordVideo.GamesSkipped</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AudioFile">
         <source xml:lang="en">Audio File</source>
@@ -4506,11 +4514,6 @@
       <trans-unit id="PublishTab.Upload.Cancelled">
         <source xml:lang="en">Upload was cancelled</source>
         <note>ID: PublishTab.Upload.Cancelled</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Upload.CheckingVersionEligibility">
-        <source xml:lang="en">Checking Bloom version eligibility...</source>
-        <note>ID: PublishTab.Upload.CheckingVersionEligibility</note>
-        <note>Obsolete as of Bloom 6.0</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckingExistingCopy">
         <source xml:lang="en">Checking for existing copy on server...</source>
@@ -4772,12 +4775,6 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.UploadCollisionDialog.HaveMany</note>
         <note>{0} is the number of additional languages the book has that we don't have room to show</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne">
-        <source xml:lang="en">BloomLibrary.org already has a book with this ID from you ({0}).</source>
-        <note>ID: PublishTab.UploadCollisionDialog.HaveOne</note>
-        <note>This is the dialog subtitle. The {0} will be replaced with the uploader's email address.</note>
-        <note>Obsolete as of Bloom 6.0 (replaced by similar PublishTab.UploadCollisionDialog.HaveOne2)</note>
-      </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.HaveOne2">
         <source xml:lang="en">BloomLibrary.org already has a book with this ID.</source>
         <note>ID: PublishTab.UploadCollisionDialog.HaveOne2</note>
@@ -4803,33 +4800,15 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks</note>
         <note>This is the label on a radio button.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary">
-        <source xml:lang="en">Add a new book. Bloom will fix the ID of your book and upload it. The old book on Bloom Library will stay the same.</source>
-        <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary</note>
-        <note>This is explanatory commentary on a radio button.</note>
-        <note>Obsolete as of Bloom 6.0 (replaced by similar PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2)</note>
-      </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2">
         <source xml:lang="en">Bloom will fix the ID of your book and upload it as a new book. The old book on Bloom Library will stay the same.</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2</note>
         <note>This is explanatory commentary on a radio button. Slightly modified from previous PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary</note>
       </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook">
-        <source xml:lang="en">Yes, this is an update of my book</source>
-        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook</note>
-        <note>This is the label on a radio button.</note>
-        <note>Obsolete as of Bloom 6.0 (replaced by similar PublishTab.UploadCollisionDialog.Radio.SameBook2)</note>
-      </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2">
         <source xml:lang="en">Yes, I want to update this book</source>
         <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook2</note>
         <note>This is the label on a radio button. Slightly modified from previous PublishTab.UploadCollisionDialog.Radio.SameBook.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary">
-        <source xml:lang="en">Update the book. Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
-        <note>ID: PublishTab.UploadCollisionDialog.Radio.SameBook.Commentary</note>
-        <note>This is explanatory commentary on a radio button. Don't translate the website reference in brackets ([bloomlibrary.org]). It will be replaced by a link to bloomlibrary.org.</note>
-        <note>Obsolete as of Bloom 6.0 (replaced by similar PublishTab.UploadCollisionDialog.Radio.SameBook2.Commentary)</note>
       </trans-unit>
       <trans-unit id="PublishTab.UploadCollisionDialog.Radio.SameBook2.Commentary">
         <source xml:lang="en">Bloom will remove the version on [bloomlibrary.org] and replace it with your upload.</source>
@@ -5396,14 +5375,27 @@ Do you want to go ahead?</note>
         <note>ID: Common.BloomSubscription</note>
         <note>This is paid subscription for advanced features.</note>
       </trans-unit>
-
-<!-- Most subscription labels are in the BloomLowPriority. What we want here
+      <!-- Most subscription labels are in the BloomLowPriority. What we want here
 is mostly status, which shows on the Collection Tab -->
-
       <trans-unit id="SubscriptionStatus.RenewalMessage">
         <source xml:lang="en">Please email [subscriptions@bloomlibrary.org](%0) to renew.</source>
         <note>ID: SubscriptionStatus.RenewalMessage</note>
         <note>Make sure to keep the brackets around [subscriptions@bloomlibrary.org] and do not change it at all.  Do not change the (%0) part either. The %0 will become a hyperlink that opens an email program to the correct email address.  To repeat, the text starting from the opening bracket [ and ending with the closing parenthesis ) should not be translated or changed in any way.</note>
+      </trans-unit>
+      <trans-unit id="Subscription.RequiredTierForFeatureSentence">
+        <source xml:lang="en">This feature requires a Bloom subscription tier of at least "{0}".</source>
+        <note>ID: Subscription.RequiredTierForFeatureSentence</note>
+        <note>{0} is will be filled in with name of the tier. e.g "Pro" or "Enterprise"</note>
+      </trans-unit>
+      <trans-unit id="Subscription.FeatureIsIncludedSentence">
+        <source xml:lang="en">This feature is included in your {0} subscription.</source>
+        <note>ID: Subscription.FeatureIsIncludedSentence</note>
+        <note>{0} is will be filled in with name of the tier. e.g "Pro" or "Enterprise"</note>
+      </trans-unit>
+      <trans-unit id="Subscription.Pro.EmailMismatch">
+        <source xml:lang="en">Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}.</source>
+        <note>ID: Subscription.Pro.EmailMismatch</note>
+        <note>{0} and {1} are placeholders for email addresses</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage">
         <source xml:lang="en">Your {0} subscription expires on {1}.</source>
@@ -5422,10 +5414,42 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: SubscriptionStatus.DefaultMessage</note>
         <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
       </trans-unit>
-
-
-
-
+      <trans-unit id="SubscriptionStatus.ProTeamCollectionNotSupported">
+        <source xml:lang="en">Pro subscriptions are not supported for Team Collections. Please use a Local Community or Enterprise subscription.</source>
+        <note>ID: SubscriptionStatus.ProTeamCollectionNotSupported</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.UsingProSubscription">
+        <source xml:lang="en">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</source>
+        <note>ID: SubscriptionStatus.UsingProSubscription</note>
+        <note>**{0}**{.bloom-Red} is the subscription descriptor (all of these characters must be left untranslated), {1} is the formatted expiration date</note>
+        <note>Leave the ** around the word(s) used to translate **Pro**</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">
+        <source xml:lang="en">Using **Local Community** subscription for **{0}**. Expires {1}</source>
+        <note>ID: SubscriptionStatus.UsingLocalCommunitySubscription</note>
+        <note>**{0}** is the subscription descriptor, {1} is the formatted expiration date</note>
+        <note>Leave the ** around the word(s) used to translate **Local Community**</note>
+      </trans-unit>
+      <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription">
+        <source xml:lang="en">Using **Enterprise** subscription for **{0}**. Expires **{1}**</source>
+        <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
+        <note>**{0}** is the subscription descriptor, {1} is the formatted expiration date</note>
+        <note>Leave the ** around the word(s) used to translate **Enterprise**</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.DuplicateIds">
+        <source xml:lang="en">
+          Bloom found two or more books that are already shared in your Team Collection and have the same ID ({0}).
+        </source>
+        <note>ID: TeamCollection.DuplicateIds</note>
+        <note>{0} will become a list of book names. Make sure there's a {0} in your translation.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.GetHelp">
+        <source xml:lang="en">
+          For help with Team Collection problems, click {here}.
+        </source>
+        <note>ID: TeamCollection.GetHelp</note>
+        <note>{here} will become a hyperlink to get help. Make sure the translation has something appropriate enclosed in braces.</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.TeamCollection">
         <source xml:lang="en">Team Collection</source>
         <note>ID: TeamCollection.TeamCollection</note>
@@ -5701,13 +5725,24 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Use for comprehension testing on devices.</source>
         <note>ID: TemplateBooks.PageDescription.Bloom Reader Quiz</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle" sil:dynamic="true" translate="no">
+      <trans-unit id="TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle" sil:dynamic="true">
         <source xml:lang="en">A page with one language above the image and another below it.</source>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true">
+        <source xml:lang="en">A simple quiz game that checks if readers understand key parts of the story they just read.</source>
+        <note>ID: TemplateBooks.PageDescription.Comprehension Quiz</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true">
         <source xml:lang="en">A blank page that allows you to add items.</source>
         <note>ID: TemplateBooks.PageDescription.Custom</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Custom Game" sil:dynamic="true">
+        <source xml:lang="en">
+          Start with a blank page and create your own game from scratch using the Game Tool.
+          Best for advanced users.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Custom Game</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Flyleaf" sil:dynamic="true">
         <source xml:lang="en">This page was automatically inserted because the following page is marked as part of a two page spread.</source>
@@ -5724,14 +5759,73 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
+        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Picture" sil:dynamic="true">
-        <source xml:lang="en">An interactive page with an image and some text buttons.</source>
-        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true">
+        <source xml:lang="en">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Image from Word</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true">
+        <source xml:lang="en">Readers see one image and three words. They pick the word that matches the picture. The word order changes each time the game is played.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true">
         <source xml:lang="en">An interactive page with a text and some picture buttons.</source>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+        <note>Obsolete as of Bloom 6.2</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Picture" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with an image and some text buttons.</source>
+        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
+        <note>Obsolete as of Bloom 6.2</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Shadows" sil:dynamic="true">
+        <source xml:lang="en">
+          ℹ️ This game requires images with transparent backgrounds.
+          Readers drag images to match their shadow shapes.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Drag Images to Shadows</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Targets" sil:dynamic="true">
+        <source xml:lang="en">
+          Readers drag images to the correct target areas on the screen.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Drag Images to Targets</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Words" sil:dynamic="true">
+        <source xml:lang="en">
+          Readers match each image to the correct word.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Drag Images to Words</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Sound to Word" sil:dynamic="true">
+        <source xml:lang="en">
+          Readers listen to several sound recordings and choose the one that matches a word.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Drag Sound to Word</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Drag Sounds to Words" sil:dynamic="true">
+        <source xml:lang="en">
+          Readers match several sound recordings to the correct words.
+          This game can be customized in many ways using the Game Tool.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Drag Sounds to Words</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Match Word with Image" sil:dynamic="true">
+        <source xml:lang="en">
+          Readers see an image and drag one of several words to match. This game can be customized in many ways using the Game Tool.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Match Word with Image</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Order Words" sil:dynamic="true">
+        <source xml:lang="en">
+          Readers see a clue (an image, GIF, or Sign Language video) and must arrange scrambled words into a complete sentence.
+        </source>
+        <note>ID: TemplateBooks.PageDescription.Order Words</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
@@ -5902,13 +5996,23 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Captive Widget Page</source>
         <note>ID: TemplateBooks.PageLabel.Captive Widget Page</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Choose Image from Word" sil:dynamic="true">
+        <source xml:lang="en">Choose Image from Word</source>
+        <note>ID: TemplateBooks.PageLabel.Choose Image from Word</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Choose Word from Image" sil:dynamic="true">
+        <source xml:lang="en">Choose Word from Image</source>
+        <note>ID: TemplateBooks.PageLabel.Choose Word from Image</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Choose Picture from Word" sil:dynamic="true">
         <source xml:lang="en">Choose Picture from Word</source>
         <note>ID: TemplateBooks.PageLabel.Choose Picture from Word</note>
+        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Choose Word from Picture" sil:dynamic="true">
         <source xml:lang="en">Choose Word from Picture</source>
         <note>ID: TemplateBooks.PageLabel.Choose Word from Picture</note>
+        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comic" sil:dynamic="true">
         <source xml:lang="en">Comic</source>
@@ -5917,6 +6021,10 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.PageLabel.Comic Full Page" sil:dynamic="true">
         <source xml:lang="en">Comic Full Page</source>
         <note>ID: TemplateBooks.PageLabel.Comic Full Page</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Comprehension Quiz" sil:dynamic="true">
+        <source xml:lang="en">Comprehension Quiz</source>
+        <note>ID: TemplateBooks.PageLabel.Comprehension Quiz</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comic Full Page with Footer" sil:dynamic="true">
         <source xml:lang="en">Comic Full Page with Footer</source>
@@ -6032,7 +6140,7 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Picture in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Picture in Middle</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle" sil:dynamic="true" translate="no">
+      <trans-unit id="TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle" sil:dynamic="true">
         <source xml:lang="en">Bilingual &amp; Picture in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
@@ -6052,6 +6160,7 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.PageLabel.Quiz Page" sil:dynamic="true">
         <source xml:lang="en">Quiz Page</source>
         <note>ID: TemplateBooks.PageLabel.Quiz Page</note>
+        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
         <source xml:lang="en">SIL-Cameroon</source>
@@ -6094,31 +6203,35 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Widget Page</source>
         <note>ID: TemplateBooks.PageLabel.Widget Page</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Drag Letters to Targets" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Drag Letters to Targets</source>
-        <note>ID: TemplateBooks.PageLabel.Drag Letters to Targets</note>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Shadows" sil:dynamic="true">
+        <source xml:lang="en">Drag Images to Shadows</source>
+        <note>ID: TemplateBooks.PageLabel.Drag Images to Shadows</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.DragImagesTargets" sil:dynamic="true" translate="no">
+      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Targets" sil:dynamic="true">
         <source xml:lang="en">Drag Images to Targets</source>
-        <note>ID: TemplateBooks.PageLabel.DragImagesTargets</note>
+        <note>ID: TemplateBooks.PageLabel.Drag Images to Targets</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true" translate="no">
+      <trans-unit id="TemplateBooks.PageLabel.Drag Images to Words" sil:dynamic="true">
+        <source xml:lang="en">Drag Images to Words</source>
+        <note>ID: TemplateBooks.PageLabel.Drag Images to Words</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true">
         <source xml:lang="en">Drag Sound to Word Target</source>
         <note>ID: TemplateBooks.PageLabel.Drag Sound to Word Target</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Drag Sounds to Word Targets" sil:dynamic="true" translate="no">
+      <trans-unit id="TemplateBooks.PageLabel.Drag Sounds to Word Targets" sil:dynamic="true">
         <source xml:lang="en">Drag Sounds to Word Targets</source>
         <note>ID: TemplateBooks.PageLabel.Drag Sounds to Word Targets</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.DragImagesShadows" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Drag Images to Shadows</source>
-        <note>ID: TemplateBooks.PageLabel.DragImagesShadows</note>
+      <trans-unit id="TemplateBooks.PageLabel.Match Word with Image" sil:dynamic="true">
+        <source xml:lang="en">Match Word with Image</source>
+        <note>ID: TemplateBooks.PageLabel.Match Word with Image</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.MatchWordsWithImages" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Match Words with Images</source>
-        <note>ID: TemplateBooks.PageLabel.MatchWordsWithImages</note>
+      <trans-unit id="TemplateBooks.PageLabel.Order Words" sil:dynamic="true">
+        <source xml:lang="en">Order Words</source>
+        <note>ID: TemplateBooks.PageLabel.Order Words</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Custom Game" sil:dynamic="true" translate="no">
+      <trans-unit id="TemplateBooks.PageLabel.Custom Game" sil:dynamic="true">
         <source xml:lang="en">Custom Game</source>
         <note>ID: TemplateBooks.PageLabel.Custom Game</note>
       </trans-unit>
@@ -6127,7 +6240,6 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
         <note>This is the dialog used to set up the wall calendar</note>
       </trans-unit>
-
       <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true">
         <source xml:lang="en">Put a possible answer here. Check it if it is correct.</source>
         <note>ID: TemplateBooks.Quiz.HintBubble.Answer</note>

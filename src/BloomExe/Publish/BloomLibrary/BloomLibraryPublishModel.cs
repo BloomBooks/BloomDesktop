@@ -20,6 +20,7 @@ using Bloom.Collection;
 using Bloom.ToPalaso;
 using Newtonsoft.Json.Linq;
 using SIL.Reporting;
+using L10NSharp;
 
 namespace Bloom.Publish.BloomLibrary
 {
@@ -147,7 +148,7 @@ namespace Bloom.Publish.BloomLibrary
             // So if we are working with a book that had that, then just convert it to the new model.
             if (!result.ContainsKey("subscriptionCode") && result.ContainsKey("branding"))
             {
-                result["subscriptionCode"] = Subscription
+                result["subscriptionCode"] = SubscriptionAndFeatures.Subscription
                     .FromLegacyBranding(result["branding"].ToString())
                     .Code;
             }
@@ -992,6 +993,30 @@ namespace Bloom.Publish.BloomLibrary
         internal void UpdateLangDataCache()
         {
             Book.BookData.UpdateCache();
+        }
+
+        /// <summary>
+        /// If the user has a "Pro" subscription, verify that the email portion of the subscription
+        /// code matches the email used to log in to BloomLibrary.org.  If they don't match,
+        /// return a message string indicating the mismatch.  If they do match, return null.
+        /// </summary>
+        /// <remarks>
+        /// What about the registration email?  Should it match with the subscription email?
+        /// </remarks>
+        internal string CheckSubscriptionMatchBeforeUpload()
+        {
+            var subscription = Book.BookInfo.SubscriptionDescriptor;
+            if (subscription != null && subscription.ToLowerInvariant().EndsWith("-pro"))
+            {
+                var subscriptionEmail = subscription.Substring(0, subscription.Length - 4);
+                if (WebUserId == null || WebUserId.ToLowerInvariant() != subscriptionEmail.ToLowerInvariant())
+                {
+                    var message = LocalizationManager.GetString("Subscription.Pro.EmailMismatch",
+                        "Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}.");
+                    return string.Format(message, subscriptionEmail, WebUserId);
+                }
+            }
+            return null;
         }
 
         private string CurrentSignLanguageName

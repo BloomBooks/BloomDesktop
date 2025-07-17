@@ -23,65 +23,8 @@ import { EPUBPublishScreen } from "../ePUBPublish/ePUBPublishScreen";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { kBloomUnselectedTabBackground } from "../../utils/colorUtils";
-
-export const EnterpriseNeededScreen: React.FunctionComponent<{
-    titleForDisplay: string;
-    firstCanvasElementPage: number;
-}> = props => {
-    const needsEnterpriseText1 = useL10n(
-        "The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.",
-        "PublishTab.PublishRequiresSubscription.ProblemExplanation",
-        "",
-        props.titleForDisplay
-    );
-
-    const needsEnterpriseText2 = useL10n(
-        "In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.",
-        "PublishTab.PublishRequiresSubscription.Options"
-    );
-
-    const needsEnterpriseText3 = useL10n(
-        "Page {0} is the first page that uses Overlay elements.",
-        "PublishTab.PublishRequiresSubscription.FirstOverlayPage",
-        "",
-        "" + props.firstCanvasElementPage
-    );
-
-    return (
-        <div
-            css={css`
-                background-color: ${kBloomUnselectedTabBackground};
-                margin: 0;
-                height: 100%;
-                width: 100%;
-                position: absolute;
-            `}
-        >
-            <NoteBox
-                css={css`
-                    max-width: 800px;
-                    width: fit-content;
-                    margin: 30px;
-                `}
-                iconSize="large"
-            >
-                <div>
-                    <H2
-                        l10nKey="Common.SubscriptionRequired"
-                        css={css`
-                            margin-top: 0;
-                        `}
-                    >
-                        Enterprise Required
-                    </H2>
-                    <p>{needsEnterpriseText1}</p>
-                    <p>{needsEnterpriseText2}</p>
-                    <p>{needsEnterpriseText3}</p>
-                </div>
-            </NoteBox>
-        </div>
-    );
-};
+import { PublishingBookRequiresHigherTierNotice } from "./PublishingBookRequiresHigherTierNotice";
+import { FeatureStatus } from "../../react_components/featureStatus";
 
 export const CheckoutNeededScreen: React.FunctionComponent<{
     titleForDisplay: string;
@@ -131,11 +74,10 @@ export const PublishTabPane: React.FunctionComponent = () => {
 
     const [publishTabReady, setPublishTabReady] = React.useState(false);
     const [publishTabInfo, setPublishTabInfo] = React.useState({
-        enterpriseNeeded: false,
         checkoutNeeded: false,
         canUpload: false,
         bookTitle: "",
-        firstCanvasElementPage: 0
+        featurePreventingPublishing: undefined as FeatureStatus | undefined
     });
     const [tabIndex, setTabIndex] = React.useState(
         kWaitForUserToChooseTabIndex
@@ -148,12 +90,11 @@ export const PublishTabPane: React.FunctionComponent = () => {
                 return;
             }
             setPublishTabInfo({
-                enterpriseNeeded: result.data.cannotPublishWithoutEnterprise,
                 checkoutNeeded: result.data.cannotPublishWithoutCheckout,
                 canUpload: result.data.canUpload,
                 bookTitle: result.data.titleForDisplay,
-                firstCanvasElementPage:
-                    result.data.numberOfFirstPageWithCanvasElement
+                featurePreventingPublishing:
+                    result.data.featurePreventingPublishing
             });
             setPublishTabReady(true);
         });
@@ -175,11 +116,13 @@ export const PublishTabPane: React.FunctionComponent = () => {
     if (!publishTabReady) {
         // Show a blank screen until we get initial data for the publish tab
         altContent = <div></div>;
-    } else if (publishTabInfo.enterpriseNeeded) {
+    } else if (publishTabInfo.featurePreventingPublishing) {
         altContent = (
-            <EnterpriseNeededScreen
+            <PublishingBookRequiresHigherTierNotice
                 titleForDisplay={publishTabInfo.bookTitle}
-                firstCanvasElementPage={publishTabInfo.firstCanvasElementPage}
+                featurePreventingPublishing={
+                    publishTabInfo.featurePreventingPublishing
+                }
             />
         );
     } else if (publishTabInfo.checkoutNeeded) {

@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import FormGroup from "@mui/material/FormGroup";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
@@ -15,7 +14,7 @@ import {
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { ILanguagePublishInfo } from "./PublishLanguagesGroup";
 import { Link as MuiLink } from "@mui/material";
-import { ActivityIcon } from "../../react_components/icons/ActivityIcon";
+import { GameIcon } from "../../react_components/icons/GameIcon";
 import { TalkingBookIcon } from "../../react_components/icons/TalkingBookIcon";
 import { SignLanguageIcon } from "../../react_components/icons/SignLanguageIcon";
 import { MotionIcon } from "../../react_components/icons/MotionIcon";
@@ -23,20 +22,45 @@ import { ComicIcon } from "../../react_components/icons/ComicIcon";
 import { VisuallyImpairedIcon } from "../../react_components/icons/VisuallyImpairedIcon";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
-import { useHaveSubscription } from "../../react_components/requiresSubscription";
+import {
+    useGetFeatureAvailabilityMessage,
+    useGetFeatureStatus
+} from "../../react_components/featureStatus";
+import { kMotionToolId } from "../../bookEdit/toolbox/toolIds";
 
 export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
     generation?: number; // bump this to force recalc of computed features
 }> = props => {
     const [motionEnabled] = useApiBoolean("publish/canHaveMotionMode", false);
-    const [hasActivities] = useApiBoolean("publish/hasActivities", false);
+    const motionFeatureStatus = useGetFeatureStatus(kMotionToolId, true);
+    const motionFeatureMessage = useGetFeatureAvailabilityMessage(
+        motionFeatureStatus
+    );
+    const motionAllowed = motionFeatureStatus?.enabled ?? false;
+
+    const [hasNonWidgetGames] = useApiBoolean(
+        "publish/hasNonWidgetGames",
+        false
+    );
+    const nonWidgetGameFeatureStatus = useGetFeatureStatus("game", true);
+    const nonWidgetGameFeatureMessage = useGetFeatureAvailabilityMessage(
+        nonWidgetGameFeatureStatus
+    );
+    const mayPublishNonWidgetGames =
+        nonWidgetGameFeatureStatus?.enabled ?? false;
+    const [hasWidgets] = useApiBoolean("publish/hasWidgets", false);
+    const widgetFeatureStatus = useGetFeatureStatus("widget", true);
+    const widgetFeatureMessage = useGetFeatureAvailabilityMessage(
+        widgetFeatureStatus
+    );
+    const mayPublishWidgets = widgetFeatureStatus?.enabled ?? false;
+
     const [comicEnabled] = useApiBoolean("publish/comicEnabled", false);
     const [visuallyImpairedEnabled] = useApiBoolean(
         "publish/visuallyImpairedEnabled",
         false
     );
-    const enterpriseAvailable = useHaveSubscription();
     const [langs, setLangs] = React.useState<ILanguagePublishInfo[]>([]);
     React.useEffect(() => {
         get(
@@ -163,27 +187,24 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         );
     }
 
-    const noActivitiesTooltip = useL10n(
-        "This book does not have any interactive activities.",
-        "PublishTab.Feature.Activities.None"
+    const noGamesTooltip = useL10n(
+        "This book does not have any games.",
+        "PublishTab.Feature.Games.None"
     );
-    const hasActivitiesTooltip = useL10n(
-        "This book has interactive activities.",
-        "PublishTab.Feature.Activities.Present"
-    );
-
-    const enterpriseRequiredTooltip = useL10n(
-        "This is disabled because publishing interactive activities requires a subcription.",
-        "PublishTab.Feature.Activities.RequiresSubscription"
+    const hasGamesTooltip = useL10n(
+        "This book has games.",
+        "PublishTab.Feature.Games.Present"
     );
 
-    const activitiesTooltip = hasActivities
-        ? enterpriseAvailable
-            ? hasActivitiesTooltip
-            : enterpriseRequiredTooltip
-        : noActivitiesTooltip;
-
-    const checkTheActivityBox = hasActivities && enterpriseAvailable;
+    let gamesTooltip = noGamesTooltip;
+    const hasGamesUserMayPublish =
+        (hasNonWidgetGames && mayPublishNonWidgetGames) ||
+        (hasWidgets && mayPublishWidgets);
+    if (hasGamesUserMayPublish) gamesTooltip = hasGamesTooltip;
+    else if (hasNonWidgetGames && !mayPublishNonWidgetGames)
+        gamesTooltip = nonWidgetGameFeatureMessage;
+    else if (hasWidgets && !mayPublishWidgets)
+        gamesTooltip = widgetFeatureMessage;
 
     const noComicTooltip = useL10n(
         "This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.",
@@ -203,7 +224,11 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "Select this if you want to show motion when the book is read in landscape mode.",
         "PublishTab.Feature.Motion.Possible"
     );
-    const motionTooltip = motionEnabled ? hasMotionTooltip : noMotionTooltip;
+    const motionTooltip = motionEnabled
+        ? motionAllowed
+            ? hasMotionTooltip
+            : motionFeatureMessage
+        : noMotionTooltip;
 
     const noVisionTooltip = useL10n(
         "This is disabled because this book does not have any image descriptions in the primary language.",
@@ -268,14 +293,14 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                         disabled={!signLanguageEnabled}
                     />
                 </BloomTooltip>
-                <BloomTooltip key={"activity-tooltip"} tip={activitiesTooltip}>
+                <BloomTooltip key={"games-tooltip"} tip={gamesTooltip}>
                     <BloomCheckbox
-                        label="Activity"
-                        l10nKey="PublishTab.Activity"
-                        icon={<ActivityIcon />}
+                        label="Game"
+                        l10nKey="PublishTab.Game"
+                        icon={<GameIcon />}
                         iconScale={0.9}
-                        disabled={!checkTheActivityBox}
-                        checked={checkTheActivityBox}
+                        disabled={!hasGamesUserMayPublish}
+                        checked={hasGamesUserMayPublish}
                         onCheckChanged={() => {}}
                         hideBox={true}
                     />
@@ -310,7 +335,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                         apiEndpoint="publish/motionBookMode"
                         icon={<MotionIcon color={kBloomBlue} />}
                         onChange={props.onChange}
-                        disabled={!motionEnabled}
+                        disabled={!motionEnabled || !motionAllowed}
+                        forceDisabledValue={false}
                     />
                 </BloomTooltip>
                 <BloomTooltip key={"visual-tooltip"} tip={visionTooltip}>

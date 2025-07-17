@@ -260,6 +260,28 @@ export class LocalizationManager {
         );
     }
 
+    // This method tries to get the translation in the given language. If we don't have it,
+    // we try other languages: L1, N1, N2, current UI language, any fallback langauges
+    // currently configured in L10NSharp, and finally English.
+    // There is deliberately no English default; we will retrieve whatever English is in the
+    // XLF for this ID, if there is no better alternative available (or if langId is "en").
+    // The result includes both the text and the identifier of the language that was found.
+    public async asyncGetTextInLangWithLangFound(
+        id: string,
+        langId
+    ): Promise<{ text: string; langFound: string }> {
+        return axios
+            .get(`${getBloomApiPrefix()}i18n/getStringInLang`, {
+                params: {
+                    key: id,
+                    langId: langId
+                }
+            })
+            .then(
+                response => response.data as { text: string; langFound: string }
+            );
+    }
+
     public asyncGetTextInLangCommon(
         id: string,
         englishText: string,

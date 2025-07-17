@@ -39,7 +39,6 @@ html
 			+bookVariable-title('en', 'Games Pages')
 			+bookVariable('styleNumberSequence', '*', '0')
 
-		//- Make sure any pages you (developers) add here include the '.enterprise-only' class at the page level.
 		+preview-outsideFrontCover
 		+quizPage
 		+customWidgetPage
@@ -48,7 +47,7 @@ html
 		+choosePictureFromWord
 
 		//- This will eventually be reinstated in the Games template, but temporarily we will reinstate it here and convert pug to HTML.
-		//-Slider: +page("Word Picture Slider Activity", "An interactive page where the user chooses pictures to match words.").customPage.bloom-ignoreForReaderStats.bloom-interactive-page.enterprise-only.no-margin-page.numberedPage#3325A8B6-EA15-4FB7-9F8D-271D7B3C8D58(data-page='extra' data-analyticscategories="drag-activity" data-activity="drag-word-chooser-slider" data-tool-id="dragActivity")
+		//-Slider: +page("Word Picture Slider Activity", "An interactive page where the user chooses pictures to match words.").customPage.bloom-ignoreForReaderStats.bloom-interactive-page.no-margin-page.numberedPage#3325A8B6-EA15-4FB7-9F8D-271D7B3C8D58(data-page='extra' data-analyticscategories="drag-activity" data-activity="drag-word-chooser-slider" data-tool-id="game" data-feature="game")
 		//- 	.split-pane-component-inner
 		//- 		//- there's a background image that fills the page. Todo: find a good one that doesn't take much space for a demo
 		//- 		+image

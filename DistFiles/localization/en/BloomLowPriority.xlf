@@ -69,11 +69,6 @@
         <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>
         <note>ID: Settings.Subscription.DownloadForEdit</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.NeedsCode" sil:dynamic="true">
-        <source xml:lang="en">This project previously used **%0**. To continue to use this you will need to enter a current subscription code. </source>
-        <note>ID: Settings.Subscription.NeedsCode</note>
-        <note>**%0** should be kept. It will become the subscription descriptor.</note>
-      </trans-unit>
       <trans-unit id="Settings.Subscription.IntroText">
         <source xml:lang="en">To help cover a portion of the costs associated with providing Bloom, we offer [advanced features](%0) and customizations as a subscription service.</source>
         <note>ID: Settings.Subscription.IntroText</note>
@@ -108,21 +103,6 @@
         <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
         <note>ID: Settings.Subscription.Incomplete</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.Overview">
-        <source xml:lang="en">
-            Bloom Settings.Subscription adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
-        </source>
-        <note>ID: Settings.Subscription.Overview</note>
-      </trans-unit>
-      <trans-unit id="Settings.Subscription.None">
-        <source xml:lang="en">None. Settings.Subscription features will be unavailable.</source>
-        <note>ID: Settings.Subscription.None</note>
-      </trans-unit>
-      <trans-unit id="Settings.Subscription.NeedsCode">
-        <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code.</source>
-        <note>ID: Settings.Subscription.NeedsCode</note>
-        <note>%0 will be replaced with the name of the subscription. Keep surrounding **...**.</note>
-      </trans-unit>
       <trans-unit id="Settings.Subscription.NotValid">
         <source xml:lang="en">That code appears to be incorrect.</source>
         <note>ID: Settings.Subscription.NotValid</note>
@@ -131,11 +111,55 @@
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
         <note>ID: Settings.Subscription.UnknownCode</note>
       </trans-unit>
-      <trans-unit id="Settings.Subscription.WhatsThis">
-        <source xml:lang="en">What's This?</source>
-        <note>ID: Settings.Subscription.WhatsThis</note>
-        <note>A link offering more information about the Funded Local Community Only option</note>
+      <!-- Tiers. These don't occur in code in their entirety, but are assembled by appending a particular
+      tier to "Subscription.Tier."-->
+      <trans-unit id="Subscription.Tier.Basic">
+        <source xml:lang="en">Basic</source>
+        <note>ID: Subscription.Tier.Basic</note>
+        <note>Basic subscription tier</note>
+        <note>Available for users with the lowest level of subscription.</note>
       </trans-unit>
+      <trans-unit id="Subscription.Tier.Enterprise">
+        <source xml:lang="en">Enterprise</source>
+        <note>ID: Subscription.Tier.Enterprise</note>
+        <note>Enterprise subscription tier</note>
+        <note>This is the highest level of subscription, serving projects that need publisher and sponsor logos, teams, etc.</note>
+      </trans-unit>
+      <trans-unit id="Subscription.Tier.LocalCommunity">
+        <source xml:lang="en">Local Community</source>
+        <note>ID: Subscription.Tier.LocalCommunity</note>
+        <note>Local Community subscription tier.</note>
+        <note>Available for projects that do not receive external funding.</note>
+      </trans-unit>
+        <trans-unit id="Subscription.Tier.Pro">
+        <source xml:lang="en">Pro</source>
+        <note>ID: Subscription.Tier.Pro</note>
+        <note>"Pro" is short for "Professional" in English. This is a subscription tier.</note>
+      </trans-unit>
+      <trans-unit id="Subscription.TierWithColon">
+        <source xml:lang="en">Tier:</source>
+        <note>ID: Subscription.TierWithColon</note>
+        <note>This is not one of the tiers, just a label</note>
+      </trans-unit>
+      <!-- Other -->
+      <trans-unit id="Subscription.OpenSettings">
+        <source xml:lang="en">Subscription Settings</source>
+        <note>ID: Subscription.OpenSettings</note>
+      </trans-unit>
+      <!-- Features -->
+      <!-- TODO connect with/normalize other places that refer to these things -->
+      <trans-unit id="Feature.Overlay">
+        <source xml:lang="en">Overlay</source>
+        <note>ID: Feature.Overlay</note>
+        <note>This is the name of a feature in BLoom</note>
+      </trans-unit>
+      <trans-unit id="Feature.Spreadsheet">
+        <source xml:lang="en">Spreadsheet Import/Export</source>
+        <note>ID: Feature.Spreadsheet</note>
+        <note>This is the name of a feature in BLoom</note>
+      </trans-unit>
+      <!-- TODO: add other features -->
+
       <trans-unit id="Spreadsheet.DataDivConflictWarning">
         <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
         <note>ID: Spreadsheet.DataDivConflictWarning</note>
@@ -228,12 +252,12 @@
         <source xml:lang="en">Finished</source>
         <note>Common.Finished</note>
       </trans-unit>
-      <trans-unit id="EditTab.PasteHyperlink.Currently" translate="no">
+      <trans-unit id="EditTab.PasteHyperlink.Currently">
         <source xml:lang="en">Currently %0</source>
         <note>ID: EditTab.PasteHyperlink.Currently</note>
         <note>%0 is a placeholder for the current url where the hyperlink points</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.MoveToCurrentCollection" translate="no">
+      <trans-unit id="CollectionTab.BookMenu.MoveToCurrentCollection">
         <source xml:lang="en">Move into {0}</source>
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
         <note>{0} will be replaced with the name of the collection that the user currently has open for editing.</note>

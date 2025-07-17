@@ -18,6 +18,7 @@ using Bloom.FontProcessing;
 using Bloom.History;
 using Bloom.Publish;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
@@ -604,13 +605,10 @@ namespace Bloom.Book
             var headXml = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
             var originalBody = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/body");
 
-            var subcriptionStatusClasses = this.CollectionSettings
-                .Subscription
-                .HaveActiveSubscription
-                ? "subscription-yes"
-                : "subscription-no";
+            var subscriptionTierClass =
+                $"subscription-tier-{this.CollectionSettings.Subscription.Tier}";
             var dom = new HtmlDom(
-                @"<html>" + headXml + $"<body class='{subcriptionStatusClasses}'></body></html>"
+                @"<html>" + headXml + $"<body class='{subscriptionTierClass}'></body></html>"
             );
             dom = Storage.MakeDomRelocatable(dom);
             // Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
@@ -819,7 +817,7 @@ namespace Bloom.Book
 
         // BL-2678: we want the user to be able to delete troublesome/no longer needed books
         // downloaded from BloomLibrary.org
-        public virtual bool CanDelete => IsSaveable || IsDownloaded;
+        public virtual bool CanDelete => IsDeletable || IsDownloaded;
 
         /// <summary>
         /// In the Bloom app, only one collection at a time is editable; that's the library they opened.
@@ -843,6 +841,12 @@ namespace Bloom.Book
         /// </summary>
         /// <remarks>Making this virtual allows tests to mock it.</remarks>
         public virtual bool IsSaveable => IsInEditableCollection && BookInfo.IsSaveable;
+
+        // This is subtly different. BookInfo.IsSaveable actually includes checking that the
+        // book is in the editable collection; but the BOOK version of IsInEditableCollection
+        // also checks that the book is not in an error state. Most commands are disabled for
+        // books in the error state, but we still want to allow deletion of such books
+        public bool IsDeletable => BookInfo.IsSaveable;
 
         /// <summary>
         /// First page in the book (or null if there are none)
@@ -1035,6 +1039,7 @@ namespace Bloom.Book
             _pagesCache = null;
 
             EnsureUpToDateMemory(progress);
+            UpdateSupportFiles();
 
             Storage.MigrateToMediaLevel1ShrinkLargeImages();
 
@@ -1206,6 +1211,7 @@ namespace Bloom.Book
                         if (goodDiv == null)
                         {
                             badDiv.SetAttribute("lang", tag);
+                            continue; // we don't want to delete a div that has been fixed.  BL-14597
                         }
                         else if (
                             string.IsNullOrWhiteSpace(goodDiv.InnerText)
@@ -1664,10 +1670,13 @@ namespace Bloom.Book
         ///
         /// The code here was historically used, roughly, to bring a book as far up to date as possible
         /// without changing files in the book folder. In the course of switching to the Appearance/Theme
-        /// system, we realized that isn't really feasible. So now we either bring a book up to date or
-        /// don't, and we only bring it up to date if we can save it. This method should only be called
-        /// by the main Update method. We may inline it at some point, but for now, that would make
-        /// seeing changes more difficult.
+        /// system, we realized that isn't really feasible. So now in the main collection we either
+        /// bring a book up to date or don't, and we only bring it up to date if we can save it.
+        /// There is currently one other case: when we load a template book in order to add pages from
+        /// it to the current book. We can't mess with its files, which might be in a locked location,
+        /// but we need an up-to-date page added to the new book (e.g., it might be an old template from
+        /// bloom library that doesn't use canvas-element or bloom-canvas). So calling this should fix
+        /// any problems that will affect using a book's pages to add to an existing book.
         ///
         /// If we need to reinstate the ability to bring a book up to date without saving it, JohnT's fork
         /// has two branches, AppearanceChanges3 and AppearanceChanges4. The changes made going from 3
@@ -1678,12 +1687,8 @@ namespace Bloom.Book
         /// SaveAsBloomSourceFile should draw from the cache if we allow it to save a book that isn't
         /// all the way up to date.
         /// </summary>
-        private void EnsureUpToDateMemory(IProgress progress)
+        public void EnsureUpToDateMemory(IProgress progress)
         {
-            Guard.Against(
-                !IsSaveable,
-                "EnsureUpToDateMemory should only now be called for Saveable books as part of the main book updating"
-            );
             string oldMetaData = "";
             if (RobustFile.Exists(BookInfo.MetaDataPath))
             {
@@ -1780,6 +1785,7 @@ namespace Bloom.Book
             Storage.MigrateToLevel5CanvasElement();
             Storage.MigrateToLevel6LegacyActivities();
             Storage.MigrateToLevel7BloomCanvas();
+            Storage.MigrateToLevel8RemoveEnterpriseOnly();
 
             Storage.DoBackMigrations();
 
@@ -1822,8 +1828,6 @@ namespace Bloom.Book
             // but I think it would only be in the very rare case of repeatedly needing to update
             // a pre-4.9 book when we can't Save().
             OurHtmlDom.FixDivOrdering();
-
-            UpdateSupportFiles();
         }
 
         private void AddLanguageAttributesToBody(HtmlDom bookDom)
@@ -2018,6 +2022,19 @@ namespace Bloom.Book
                 CollectionSettings.CharactersForDigitsForPageNumbers,
                 IsPrimaryLanguageRtl
             );
+
+            // if in playground mode, add a "playground" class to the page divs
+            if (this.IsPlayground)
+            {
+                foreach (
+                    var pageDiv in OurHtmlDom
+                        .SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
+                        .Cast<SafeXmlElement>()
+                )
+                {
+                    pageDiv.AddClass("playground");
+                }
+            }
 
             UpdateTextsNewlyChangedToRequiresParagraph(OurHtmlDom);
 
@@ -2461,8 +2478,7 @@ namespace Bloom.Book
                 BookInfo.UseDeviceXMatter,
                 _bookData.MetadataLanguage1Tag,
                 oldIds,
-                BookInfo.AppearanceSettings.CoverIsImage
-                    && CollectionSettings.Subscription.HaveActiveSubscription
+                CoverIsImage
             );
 
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
@@ -3586,6 +3602,7 @@ namespace Bloom.Book
                 CopyAndRenameVideoFiles(clonedDiv, templatePage.Book.FolderPath);
                 CopyWidgetFilesIfNeeded(clonedDiv, templatePage.Book.FolderPath);
                 // Copying of image files is handled below.
+                ApplyWaterMarkIfNeeded(clonedDiv);
             }
 
             OrderOrNumberOfPagesChanged();
@@ -3628,6 +3645,9 @@ namespace Bloom.Book
             foreach (SafeXmlElement scriptElt in newPageDiv.SafeSelectNodes(".//script[@src]"))
             {
                 var fileName = scriptElt.GetAttribute("src");
+
+                // TODO BL-14565: this is probably out of date; any such file should be part of Bloom Player shared code.
+
                 // Bloom Desktop accesses simpleComprehensionQuiz.js from the output/browser folder.
                 // Bloom Reader uses the copy of that file which comes with bloom-player.
                 // See https://issues.bloomlibrary.org/youtrack/issue/BL-8480.
@@ -3684,6 +3704,14 @@ namespace Bloom.Book
                 InvokeContentsChanged(null);
             });
             return newPage.Id;
+        }
+
+        private void ApplyWaterMarkIfNeeded(SafeXmlElement clonedDiv)
+        {
+            if (this.IsPlayground)
+            {
+                clonedDiv.AddClass("playground");
+            }
         }
 
         private void CopyWidgetFilesIfNeeded(SafeXmlElement newPageDiv, string sourceBookFolder)
@@ -4005,14 +4033,27 @@ namespace Bloom.Book
             }
         }
 
+        public bool CoverIsImage =>
+            BookInfo.AppearanceSettings.CoverIsImage
+            && FeatureStatus
+                .GetFeatureStatus(
+                    CollectionSettings.Subscription,
+                    FeatureName.FullPageCoverImage,
+                    this
+                )
+                .Enabled;
+
         public bool FullBleed =>
             (
                 // Wants to be
                 // BookInfo.AppearanceSettings.FullBleed
                 // but we haven't put that in the book settings yet.
                 BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-                || BookInfo.AppearanceSettings.CoverIsImage
-            ) && CollectionSettings.Subscription.HaveActiveSubscription;
+                || CoverIsImage
+            )
+            && FeatureStatus
+                .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.PrintShopReady, this)
+                .Enabled;
 
         /// <summary>
         /// Save the page content to the DOM.
@@ -4327,11 +4368,27 @@ namespace Bloom.Book
                 printingDom.RawDom,
                 p => p.GetAttribute("class").ToLowerInvariant().Contains("bloom-nonprinting")
             );
-            PublishHelper.RemoveEnterprisePagesIfNeeded(
-                _bookData,
+
+            var omittedPages = new Dictionary<string, int>();
+            var modifiedPageMessages = new HashSet<string>();
+            var pageElts = printingDom.GetPageElements().ToList();
+            PublishHelper.RemovePagesByFeatureSystem(
+                this,
                 printingDom,
-                printingDom.GetPageElements().ToList()
+                pageElts,
+                PublishingMediums.PDF,
+                omittedPages
             );
+            PublishHelper.RemoveClassesAndAttrsToDisableFeatures(
+                pageElts,
+                CollectionSettings.Subscription,
+                BookData.BookIsDerivative(),
+                modifiedPageMessages,
+                this
+            );
+            // var warnings = PublishHelper.MakePagesRemovedWarnings(omittedPages);
+            // warnings.AddRange(modifiedPageMessages);
+            // Display warnings somewhere?
 
             switch (bookletPortion)
             {
@@ -4353,7 +4410,7 @@ namespace Bloom.Book
                     throw new ArgumentOutOfRangeException("bookletPortion");
             }
             // Do this after we remove unwanted pages; otherwise, the page removal code must also remove the media boxes.
-            if (FullBleed)
+            if (FullBleed && UserPrefs.FullBleed) // only if print is set for full bleed as well (BL-14863)
             {
                 InsertFullBleedMarkup(printingDom.Body);
             }
@@ -4720,6 +4777,12 @@ namespace Bloom.Book
                 // But there is a whole slew of things EnsureUpToDateMemory() does after calling BringXmatterHtmlUpToDate()
                 // and I wouldn't have any confidence that some of the rest of it is not needed here as well.
                 EnsureUpToDateMemory(new NullProgress());
+                // and since we may be changing xmatter, we should update supporting files, which includes
+                // xmatter css, if we can (the current case where we can't is updating a template we want
+                // to import pages from, which I don't think will come here at all, so it would be safe
+                // currently to call this unconditionally).
+                if (IsSaveable)
+                    UpdateSupportFiles();
             }
             BookInfo.AppearanceSettings.PendingChangeRequiresXmatterUpdate = false;
 
@@ -5180,7 +5243,7 @@ namespace Bloom.Book
                     .ToArray()
             )
             {
-                if (HtmlDom.IsActivityPage(page))
+                if (HtmlDom.IsGameOrWidgetPage(page))
                     continue;
                 if (PageHasImages(page))
                     continue;
@@ -5338,7 +5401,9 @@ namespace Bloom.Book
         public bool HasMotionPages => OurHtmlDom.HasMotionPages();
 
         public bool HasQuizPages => OurHtmlDom.HasQuizPages();
-        public bool HasActivities => OurHtmlDom.HasActivityPages();
+        public bool HasGamesOrWidgets => OurHtmlDom.HasGamesOrWidgetsPages();
+        public bool HasNonWidgetGames => OurHtmlDom.HasNonWidgetGamePages();
+        public bool HasWidgets => OurHtmlDom.HasWidgetPages();
 
         public bool HasComicalOverlays => OurHtmlDom.HasComicalCanvasElements();
 
@@ -5385,6 +5450,7 @@ namespace Bloom.Book
             // Language-independent features
             UpdateQuizFeature();
             UpdateSimpleDomChoiceFeature();
+            UpdateDragGameFeature();
             UpdateMotionFeature();
             UpdateComicFeature();
             UpdateWidgetFeature();
@@ -5478,14 +5544,25 @@ namespace Bloom.Book
             // If we wanted to, it is also possible to compute it as a language-specific feature.
             // (That is, check if the languages in the book have non-empty text for part of the quiz section)
             BookInfo.MetaData.Feature_Quiz =
-                CollectionSettings.Subscription.HaveActiveSubscription && HasQuizPages;
+                FeatureStatus
+                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .Enabled && HasQuizPages;
         }
 
         private void UpdateSimpleDomChoiceFeature()
         {
             BookInfo.MetaData.Feature_SimpleDomChoice =
-                CollectionSettings.Subscription.HaveActiveSubscription
-                && OurHtmlDom.HasSimpleDomChoicePages();
+                FeatureStatus
+                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .Enabled && OurHtmlDom.HasSimpleDomChoicePages();
+        }
+
+        private void UpdateDragGameFeature()
+        {
+            BookInfo.MetaData.Feature_DragGame =
+                FeatureStatus
+                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .Enabled && OurHtmlDom.HasDragGamePages();
         }
 
         /// <summary>
@@ -5610,10 +5687,10 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Used by the publish tab to tell the user they can't publish a book with canvas elements w/o Enterprise.
+        /// Used by the publish tab to tell the user they can't publish a book with Overlay elements w/o Enterprise.
         /// </summary>
         /// <returns></returns>
-        public string GetNumberOfFirstPageWithCanvasElement()
+        public string GetNumberOfFirstPageWithOverlay()
         {
             var pageNodes = RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
             if (pageNodes.Length == 0) // Unexpected!
@@ -5621,7 +5698,7 @@ namespace Bloom.Book
             foreach (var pageNode in pageNodes)
             {
                 var resultNode = pageNode.SelectSingleNode(
-                    ".//div[contains(@class,'" + HtmlDom.kCanvasElementClass + "')]"
+                    ".//div[contains(@class,'bloom-textOverPicture')]"
                 );
                 if (resultNode == null)
                     continue;
@@ -5630,7 +5707,7 @@ namespace Bloom.Book
                 {
                     return pageNumberAttribute;
                 }
-                // If at some point we allow canvas element elements on xmatter,
+                // If at some point we allow overlay elements on xmatter,
                 // we will need to find and return the 'data-xmatter-page' attribute.
             }
             return ""; // Also unexpected!
@@ -5855,6 +5932,15 @@ namespace Bloom.Book
         public string GetDefaultTemplatePageId()
         {
             return Storage.Dom.GetMetaValue("defaultTemplatePageId", null);
+        }
+
+        public bool IsPlayground
+        {
+            get
+            {
+                return BookInfo.BookLineage?.Contains("aeb176bc-76fa-44e2-bb9d-6350698fce47")
+                    ?? false;
+            }
         }
     }
 }

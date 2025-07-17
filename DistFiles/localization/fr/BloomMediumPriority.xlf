@@ -5,7 +5,7 @@
       <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
-      <trans-unit id="AvailableWithEnterprise" translate="no">
+      <trans-unit id="AvailableWithEnterprise">
         <source xml:lang="en">Available with your Enterprise Subscription</source>
         <target xml:lang="fr" state="needs-translation">Available with your Enterprise Subscription</target>
         <note>ID: AvailableWithEnterprise</note>
@@ -48,10 +48,10 @@
         <target xml:lang="fr" state="needs-translation">Add items that will show when the learner gets the correct answer. For example, you might add a text that says “Correct!” with a GIF of a dancing chicken.</target>
         <note>ID: EditTab.Toolbox.DragActivity.CorrectInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Draggable">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ObjectsToDrag">
         <source xml:lang="en">Draggable</source>
         <target xml:lang="fr" state="needs-translation">Draggable</target>
-        <note>ID: EditTab.Toolbox.DragActivity.Draggable</note>
+        <note>ID: EditTab.Toolbox.DragActivity.ObjectsToDrag</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.DragImageHeading">
         <source xml:lang="en">Drag Images to Targets</source>
@@ -93,7 +93,7 @@
         <target xml:lang="fr" state="needs-translation">Place the targets in the places needed for the correct answer.</target>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.EditWordToSpell" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.EditWordToSpell">
         <source xml:lang="en">Edit word to spell</source>
         <target xml:lang="fr" state="needs-translation">Edit word to spell</target>
         <note>ID: EditTab.Toolbox.DragActivity.EditWordToSpell</note>
@@ -252,7 +252,7 @@
         <target xml:lang="fr" state="needs-translation">Word</target>
         <note>ID: EditTab.Toolbox.DragActivity.Word</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.WordToSpell" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.WordToSpell">
         <source xml:lang="en">Enter the word to spell</source>
         <target xml:lang="fr" state="needs-translation">Enter the word to spell</target>
         <note>ID: EditTab.Toolbox.DragActivity.WordToSpell</note>
@@ -278,6 +278,47 @@
         <source xml:lang="en">Book is not Decodable</source>
         <target xml:lang="fr" state="final">Le livre n'est pas Déchiffrable</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragLettersInstructions" approved="yes">
+        <source>Drag the letters where they go</source>
+        <target xml:lang="fr" state="final">Faites glisser les lettres là où il faut</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragLettersInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions" approved="yes">
+        <source>Drag the pictures where they go</source>
+        <target xml:lang="fr" state="final">Faites glisser les photos là où il faut</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions" approved="yes">
+        <source>Drag the pictures to their shadows</source>
+        <target xml:lang="fr" state="final">Faites glisser les images chacune vers son ombre</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions" approved="yes">
+        <source>Match sounds with their words</source>
+        <target xml:lang="fr" state="final">Faites correspondre chaque son avec le mot qui correspond</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions
+        </note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions" approved="yes">
+        <source>Drag the correct sound to matching word</source>
+        <target xml:lang="fr" state="final">Faites glisser le son correct vers le mot qui correspond</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions" approved="yes">
+        <source>Drag the word to the matching image</source>
+        <target xml:lang="fr" state="final">Faites glisser le mot vers l'image qui correspond</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions" approved="yes">
+        <source>Match each image to a word</source>
+        <target xml:lang="fr" state="final">Faites correspondre chaque image à un mot</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.CustomGameInstructions" approved="yes">
+        <source>Put instructions here</source>
+        <target xml:lang="fr" state="final">Affichez ici les consignes</target>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.CustomGameInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool">
         <source xml:lang="en">
@@ -339,17 +380,17 @@
         <target xml:lang="fr" state="final">Modifier le Fichier des Timings...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings" sil:dynamic="true">
         <source xml:lang="en">Adjust Timings...</source>
         <target xml:lang="fr" state="needs-translation">Adjust Timings...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title" sil:dynamic="true">
         <source xml:lang="en">Adjust Timings</source>
         <target xml:lang="fr" state="needs-translation">Adjust Timings</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip" sil:dynamic="true">
         <source xml:lang="en">This is disabled because there is not a whole text box recording</source>
         <target xml:lang="fr" state="needs-translation">This is disabled because there is not a whole text box recording</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip</note>
@@ -690,12 +731,12 @@
         <target xml:lang="fr" state="final">Couverture</target>
         <note>BookSettings.CoverGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage" sil:dynamic="true" translate="no">
+      <trans-unit id="BookSettings.CoverIsImage" sil:dynamic="true">
         <source xml:lang="en">Fill the front cover with a single image</source>
         <target xml:lang="fr" state="needs-translation">Fill the front cover with a single image</target>
         <note>BookSettings.CoverIsImage</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage.Description" sil:dynamic="true" translate="no">
+      <trans-unit id="BookSettings.CoverIsImage.Description" sil:dynamic="true">
         <source xml:lang="en">Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org) for information on sizing your image to fit.</source>
         <target xml:lang="fr" state="needs-translation">Using this option turns on the [Print Bleed](https://docs.bloomlibrary.org) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org) for information on sizing your image to fit.</target>
         <note>BookSettings.CoverIsImage.Description</note>

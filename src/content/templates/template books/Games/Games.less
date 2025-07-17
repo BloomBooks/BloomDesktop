@@ -21,8 +21,6 @@
 // data-activity is put on the bloom-page to indicate the type of activity. Bloom games give it one of the
 //    values in dragActivityTypes (in dragActivityTool.tsx). Some of them are used in selectors here.
 // #target-arrow identifies the arrow that shows the target of the selected draggable in Start mode.
-// bloom-show-en-when-blank identifies a translation group which should display it's English alternative
-//    (dimmed) when the L1 alternative is blank.
 // There are a few others, mostly containing 'slider' that relate to the incomplete drag-word-chooser-slider game.
 
 @import "gamesThemes.less";
@@ -180,6 +178,10 @@
 
 .drag-activity-play .drag-item-order-sentence {
     display: none;
+}
+// In PDF, we display the sentence without making a game of it. (BL-14978)
+.pdfPublishMode.drag-activity-play .drag-item-order-sentence {
+    display: block;
 }
 .drag-activity-play .uibloomSourceTextsBubble {
     display: none !important;

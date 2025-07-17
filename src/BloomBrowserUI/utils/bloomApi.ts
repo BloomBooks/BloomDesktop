@@ -227,15 +227,34 @@ export function useCanModifyCurrentBook(): boolean {
     return canModifyCurrentBook;
 }
 
-export function useApiObject<T>(urlSuffix: string, defaultValue: T): T {
+export function useApiObject<T>(
+    urlSuffix: string,
+    defaultValue: T,
+    // Set to true to skip making the API query and just return defaultValue.
+    // This is useful when certain conditions are met where we don't need the data.
+    skipQuery: boolean = false
+): T {
     const [value, setValue] = useState<T>(defaultValue);
     useEffect(() => {
-        get(urlSuffix, c => {
-            if (typeof c.data === "string") {
-                setValue(JSON.parse(c.data as string));
-            } else setValue(c.data);
-        });
-    }, [urlSuffix]);
+        if (skipQuery) {
+            setValue(defaultValue);
+        } else {
+            get(urlSuffix, c => {
+                if (typeof c.data === "string") {
+                    setValue(JSON.parse(c.data as string));
+                } else setValue(c.data);
+            });
+        }
+        // This is a compromise/kludge. Typically, the caller passes defaultValue as what appears to be
+        // an object constant, like { foo: "bar" }. Every render of the caller will create a new instance
+        // of { foo: "bar" }, which will cause this effect to run again, and the API call to be made again,
+        // and the value state to be set again, and a new value to be returned, which is likely to
+        // cause yet another render of the caller, making an infinite loop.
+        // There might be a pathological case where we actually need to return a different defaultValue
+        // object even though the string representation of it has not changed, but the problem above is
+        // very common and has caused a couple of bugs already, so I think this is worth the risk.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [urlSuffix, skipQuery, JSON.stringify(defaultValue)]);
     return value;
 }
 

@@ -19,7 +19,13 @@ import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
 import { reportError } from "../../lib/errorHandler";
 import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
-import { SetupElements, attachToCkEditor } from "./bloomEditing";
+import {
+    IImageInfo,
+    SetupElements,
+    attachToCkEditor,
+    changeImageInfo,
+    kMakeNewCanvasElement
+} from "./bloomEditing";
 import {
     EnableAllImageEditing,
     getImageFromCanvasElement,
@@ -31,9 +37,18 @@ import {
     UpdateImageTooltipVisibility,
     HandleImageError,
     kBloomCanvasSelector,
-    kBloomCanvasClass
+    kBloomCanvasClass,
+    doImageCommand
 } from "./bloomImages";
-import { adjustTarget } from "../toolbox/games/GameTool";
+import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
+import {
+    adjustTarget,
+    correctTabIndex,
+    getActiveGameTab,
+    playTabIndex,
+    startTabIndex,
+    wrongTabIndex
+} from "../toolbox/games/GameTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
@@ -48,7 +63,10 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
-import { CanvasElementType } from "../toolbox/overlay/CanvasElementItem";
+import {
+    CanvasElementType,
+    makeTargetAndMatchSize
+} from "../toolbox/overlay/CanvasElementItem";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
@@ -56,6 +74,8 @@ import { postData, postJson } from "../../utils/bloomApi";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
+import { getExactClientSize } from "../../utils/elementUtils";
+import { copyContentToTarget, getTarget } from "bloom-player";
 
 export interface ITextColorInfo {
     color: string;
@@ -68,6 +88,15 @@ const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 export const kBackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
 
 type ResizeDirection = "ne" | "nw" | "sw" | "se";
+
+export const kDraggableIdAttribute = "data-draggable-id";
+export function isDraggable(canvasElement): boolean {
+    return !!canvasElement?.getAttribute(kDraggableIdAttribute);
+}
+
+export function getAllDraggables(page: HTMLElement | Document) {
+    return Array.from(page.querySelectorAll(`[${kDraggableIdAttribute}]`));
+}
 
 // Canvas elements are the movable items that can be placed over images (or empty image containers).
 // Some of them are associated with ComicalJs bubbles. Earlier in Bloom's history, they were variously
@@ -280,14 +309,23 @@ export class CanvasElementManager {
         // So instead, we force the container to scroll back to the top.
         bloomCanvas.scrollTop = 0;
 
+        if (growAsMuchAsPossible === undefined) {
+            growAsMuchAsPossible = !canvasElement.classList.contains(
+                "bloom-noAutoHeight"
+            );
+        }
         // Check if required height exceeds available height
         if (newHeight + canvasElement.offsetTop > bloomCanvas.clientHeight) {
             if (growAsMuchAsPossible) {
                 // If we are allowed to grow as much as possible, we can set the height to the max available height.
                 newHeight = bloomCanvas.clientHeight - canvasElement.offsetTop;
+                overflowY =
+                    overflowY - (newHeight - canvasElement.clientHeight);
             } else {
                 return overflowY;
             }
+        } else {
+            overflowY = 0; // We won't overflow anymore, so return 0 from this method.
         }
 
         canvasElement.style.height = newHeight + "px";
@@ -299,7 +337,7 @@ export class CanvasElementManager {
         );
         this.adjustTarget(canvasElement);
         this.alignControlFrameWithActiveElement();
-        return 0; // success; we fixed it
+        return overflowY;
     }
 
     private getMaxVisibleSiblingHeight(
@@ -356,9 +394,7 @@ export class CanvasElementManager {
     // Note that when we experimented with just calling AdjustSizeOrMarkOverflow, we ran into issues with
     // nicescroll being turned on and off while the canvas element was being resized. This caused
     // flickering of the text extending beyond the canvas element.
-    // Note that we *would* actually like nicescroll to be updated when resizing the element, otherwise
-    // the scrollbar can end up out of position horizontally. But maybe that should happen on some
-    // kind of timeout, e.g. if we stop calling AdjustSizeOrMarkOverflow for a second.
+    // The code here now (June 2025) fixes niceScroll on a timeout.
     public adjustCanvasElementHeightToContentOrMarkOverflow(
         editable: HTMLElement
     ): void {
@@ -380,7 +416,19 @@ export class CanvasElementManager {
         if (!isInDragActivity(editable)) {
             editable.classList.toggle("overflow", overflowY > 0);
         }
+        if (this.fixNiceScrollTimeout) {
+            clearTimeout(this.fixNiceScrollTimeout);
+        }
+        // We want to clean up niceScroll so the scroll bars are not left behind, but we get
+        // flicker if we do it continuously. This is hopefully a long enough delay so it
+        // just happens after the user stops dragging.
+        this.fixNiceScrollTimeout = window.setTimeout(() => {
+            cleanupNiceScroll();
+            addScrollbarsToPage(editable.closest(".bloom-page") as HTMLElement);
+        }, 200);
     }
+
+    private fixNiceScrollTimeout = 0;
 
     // When the format dialog changes the amount of padding for canvas elements, adjust their sizes
     // and positions (keeping the text in the same place).
@@ -1428,7 +1476,7 @@ export class CanvasElementManager {
         const imgStyle = img.style;
         // left can't be greater than zero; that would leave empty space on the left.
         // also can't be so small as to make the right of the image (img.clientWidth + newLeft) less than
-        // the right of the canvas element (this.activeElement.clientLeft + this.activElement.clientWidth)
+        // the right of the canvas element (this.activeElement.clientLeft + this.activeElement.clientWidth)
         const newLeft = Math.max(
             Math.min(this.oldImageLeft + deltaX, 0),
             this.activeElement.clientLeft +
@@ -2612,7 +2660,7 @@ export class CanvasElementManager {
     // width as necessary, or possibly increasing one if the usual adjustment would make it too small.
     // After making the adjustment if necessary (which might be delayed if the image dimensions
     // are not available), align the control frame with the active element.
-    private adjustContainerAspectRatio(
+    public adjustContainerAspectRatio(
         canvasElement: HTMLElement,
         useSizeOfNewImage = false,
         // Sometimes we think we need to wait for onload, but the data arrives before we set up
@@ -2761,6 +2809,11 @@ export class CanvasElementManager {
         canvasElement.style.left = `${newLeft}px`;
         canvasElement.style.top = `${newTop}px`;
         this.alignControlFrameWithActiveElement();
+        if (this.doAfterNewImageAdjusted) {
+            this.doAfterNewImageAdjusted();
+            this.doAfterNewImageAdjusted = undefined;
+        }
+        copyContentToTarget(canvasElement);
     }
 
     // When the image is changed in a canvas element (e.g., choose or paste image),
@@ -2791,6 +2844,8 @@ export class CanvasElementManager {
             this.adjustContainerAspectRatio(canvasElement, true);
         }
     }
+
+    private doAfterNewImageAdjusted: (() => void) | undefined = undefined;
 
     private async getHandleTitlesAsync(
         controlFrame: HTMLElement,
@@ -3253,6 +3308,9 @@ export class CanvasElementManager {
         canvasElements.forEach(canvasElement => {
             // If the canvas element is not visible, its width will be 0. Don't try to adjust it.
             if (canvasElement.clientWidth === 0) return;
+            // If we're in image description mode, the algorithm won't work right,
+            // and it probably isn't necessary.
+            if (canvasElement.closest(".bloom-describedImage")) return;
 
             // Careful. For older books, left and top might be percentages.
             const canvasElementRect = canvasElement.getBoundingClientRect();
@@ -4447,9 +4505,7 @@ export class CanvasElementManager {
                     b => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0
                 )
             );
-            const draggables = canvasElements.filter(b =>
-                b.getAttribute("data-draggable-id")
-            );
+            const draggables = canvasElements.filter(b => isDraggable(b));
             if (
                 draggables.length === 0 ||
                 canvasElements.indexOf(draggables[0]) ===
@@ -4867,10 +4923,186 @@ export class CanvasElementManager {
         );
     }
 
+    public getActiveOrFirstBloomCanvasOnPage(): HTMLElement | null {
+        // If there is an active element, use its bloom canvas.
+        // Otherwise, return the first bloom canvas on the page.
+        if (this.activeElement) {
+            const bloomCanvas = CanvasElementManager.getBloomCanvas(
+                this.activeElement
+            );
+            if (bloomCanvas) {
+                return bloomCanvas;
+            }
+        }
+        const bloomCanvases = this.getAllBloomCanvasesOnPage();
+        return bloomCanvases.length > 0 ? bloomCanvases[0] : null;
+    }
+
+    // This is called when the user pastes an image from the clipboard.
+    // If there is an active canvas element that is an image, and it is empty (placeholder),
+    // set its image to the pasted image.
+    // Otherwise, if there is a bloom canvas on the page, it will pick the one that has the active element
+    // or the first one if none has an active element.
+    // (If there is no canvas, it returns false.)
+    // If the canvas is empty (including the background), set the background to the image.
+    // Else if overlay is allowed by the subscription tier, add the image as an overlay/game item.
+    // Make it up to 1/3 width and 1/3 height of the canvas, roughly centered on the canvas.
+    // Is it a draggable item? Yes, if we are in the "Start" mode of a game.
+    // In that case, we put it a bit higher and further left, so there is room for the target.
+    // Otherwise it's just a normal overlay item (restricted to the appropriate state, if we're
+    // in the Correct or Wrong state of a game).
+    public pasteImageFromClipboard(): boolean {
+        const bloomCanvas = this.getActiveOrFirstBloomCanvasOnPage();
+        if (!bloomCanvas) {
+            return false; // No canvas to paste into.
+        }
+        const activeGameTab = getActiveGameTab();
+        if (activeGameTab === playTabIndex) {
+            // Can't paste an image into the play tab.
+            return false;
+        }
+        // The rest of the job happens after the C# code calls changeImage(), passing this fake ID along
+        // with the rest of the information about the new image. The special ID causes a call back to
+        // finishPastingImageFromClipboard() with the real image information.
+        postJson("editView/pasteImage", {
+            imageId: kMakeNewCanvasElement,
+            imageSrc: "",
+            imageIsGif: false
+        });
+        return true;
+    }
+    public finishPasteImageFromClipboard(imageInfo: IImageInfo): void {
+        const bloomCanvas = this.getActiveOrFirstBloomCanvasOnPage()!;
+        const canvasElements = bloomCanvas.getElementsByClassName(
+            kCanvasElementClass
+        );
+        // If it's an empty canvas, make this its background image.
+        // A possible special case is the custom game page, where the only canvas element is the
+        // header. But that works out to our advantage, since we think a background is unlikely
+        // in games, and would prefer to interpret the pasted image as a game item.
+        if (
+            canvasElements.length === 1 &&
+            canvasElements[0].classList.contains(kBackgroundImageClass)
+        ) {
+            const bgimg = canvasElements[0].getElementsByTagName("img")[0];
+            if (bgimg.getAttribute("src")?.startsWith("placeHolder.png")) {
+                changeImageInfo(bgimg, imageInfo);
+                this.adjustBackgroundImageSize(
+                    bloomCanvas,
+                    canvasElements[0] as HTMLElement,
+                    true
+                );
+                return;
+            }
+        }
+        // If there is an image canvas element (other than the background one) already selected
+        // and it is a placeholder, just set its image.
+        const activeElement = this.activeElement as HTMLElement | undefined;
+        if (
+            activeElement &&
+            !activeElement.classList.contains(kBackgroundImageClass)
+        ) {
+            const img = activeElement
+                .getElementsByClassName(kImageContainerClass)[0]
+                ?.getElementsByTagName("img")[0];
+            if (img && img.getAttribute("src")?.startsWith("placeHolder.png")) {
+                changeImageInfo(img, imageInfo);
+                this.adjustContainerAspectRatio(
+                    activeElement as HTMLElement,
+                    true
+                );
+                adjustTarget(activeElement, getTarget(activeElement));
+                return;
+            }
+        }
+        // otherwise we will add a new canvas element
+        const width = Math.max(
+            this.snapProvider.getSnappedX(
+                bloomCanvas.offsetWidth / 3,
+                undefined
+            ),
+            this.minWidth
+        );
+        const height = Math.max(
+            this.snapProvider.getSnappedY(
+                bloomCanvas.offsetHeight / 3,
+                undefined
+            ),
+            this.minHeight
+        );
+        if (
+            width > bloomCanvas.offsetWidth ||
+            height > bloomCanvas.offsetHeight
+        ) {
+            // Can't paste image into such a tiny canvas
+            return;
+        }
+        const activeGameTab = getActiveGameTab();
+        let positionX = (bloomCanvas.offsetWidth - width) / 2;
+        let positionY = (bloomCanvas.offsetHeight - height) / 2;
+        if (activeGameTab === startTabIndex) {
+            // If we're in the start tab, we want to put it further towards the top left,
+            // so there is room for the target.
+            positionX = positionX / 2;
+            positionY = positionY / 2;
+        }
+        const { x: adjustedX, y: adjustedY } = this.snapProvider.getPosition(
+            undefined,
+            positionX,
+            positionY
+        );
+        const positionInBloomCanvas = new Point(
+            adjustedX,
+            adjustedY,
+            PointScaling.Scaled,
+            "pasteImageFromClipboard"
+        );
+        this.addPictureCanvasElement(
+            positionInBloomCanvas,
+            $(bloomCanvas),
+            undefined,
+            imageInfo,
+            { width, height },
+            newCanvasElement => {
+                switch (activeGameTab) {
+                    case startTabIndex:
+                        // make it a draggable, with a target.
+                        // We want to do this after its shape and position are stable, so we arrange for a callback
+                        // after the aspect ratio is adjusted.
+                        // (It would be nice to do this using async and await, or by passing this action as a param
+                        // all the way down to adjustContainerAspectRatio, but there are eight layers of methods
+                        // and at least one settimeout in between, and if each has to await the others, yet other
+                        // callers of those methods have to become async. It would be a mess.)
+                        // We do this as an action passed to addPictureCanvasElement so that doAfterNewImageAdjusted
+                        // is set before the call to adjustContainerAspectRatio, which would be hard to guarantee
+                        // if we did it after the call to addPictureCanvasElement.
+                        this.doAfterNewImageAdjusted = () => {
+                            makeTargetAndMatchSize(newCanvasElement);
+                        };
+                        break;
+                    case correctTabIndex:
+                        newCanvasElement.classList.add("drag-item-correct");
+                        break;
+                    case wrongTabIndex:
+                        newCanvasElement.classList.add("drag-item-wrong");
+                }
+            }
+        );
+    }
+
     private addPictureCanvasElement(
         location: Point,
         bloomCanvasJQuery: JQuery,
-        rightTopOffset?: string
+        rightTopOffset?: string,
+        imageInfo?: {
+            imageId: string;
+            src: string; // must already appropriately URL-encoded.
+            copyright: string;
+            creator: string;
+            license: string;
+        },
+        size?: { width: number; height: number },
+        doAfterElementCreated?: (newElement: HTMLElement) => void
     ): HTMLElement {
         const standardImageClasses =
             kImageContainerClass + " bloom-leadingElement";
@@ -4888,7 +5120,10 @@ export class CanvasElementManager {
             location,
             "none",
             true,
-            rightTopOffset
+            rightTopOffset,
+            imageInfo,
+            size,
+            doAfterElementCreated
         );
     }
 
@@ -4986,7 +5221,16 @@ export class CanvasElementManager {
         location: Point,
         comicalBubbleStyle?: string,
         setElementActive?: boolean,
-        rightTopOffset?: string
+        rightTopOffset?: string,
+        imageInfo?: {
+            imageId: string;
+            src: string; // must already appropriately URL-encoded.
+            copyright: string;
+            creator: string;
+            license: string;
+        },
+        size?: { width: number; height: number },
+        doAfterElementCreated?: (newElement: HTMLElement) => void
     ): HTMLElement {
         // add canvas element as last child of .bloom-canvas (BL-7883)
         const lastChildOfBloomCanvas = bloomCanvasJQuery.children().last();
@@ -5004,7 +5248,18 @@ export class CanvasElementManager {
             lastChildOfBloomCanvas
         );
         const canvasElement = canvasElementJQuery.get(0);
-        this.setDefaultHeightFromWidth(canvasElement);
+        if (imageInfo) {
+            const img = canvasElement.getElementsByTagName("img")[0];
+            if (img) {
+                changeImageInfo(img, imageInfo);
+            }
+        }
+        if (size) {
+            canvasElement.style.width = size.width + "px";
+            canvasElement.style.height = size.height + "px";
+        } else {
+            this.setDefaultHeightFromWidth(canvasElement);
+        }
         this.placeElementAtPosition(
             canvasElementJQuery,
             bloomCanvasJQuery.get(0),
@@ -5033,6 +5288,13 @@ export class CanvasElementManager {
         );
         bubble.setBubbleSpec(bubbleSpec);
         const bloomCanvas = bloomCanvasJQuery.get(0);
+        if (doAfterElementCreated) {
+            // It's not obvious when the best time to do this is. Obviously it has to be after
+            // the element is created. For the current purpose, the main thing is that it be
+            // before refreshBubbleEditing() is called, since (for picture elements) that is
+            // what gets the element selected and triggers a call to adjustContainerAspectRatio().
+            doAfterElementCreated(canvasElement);
+        }
         // background image in parent bloom-canvas may need to become canvas element
         // (before we refreshBubbleEditing, since we may change some canvas elements here.)
         this.handleResizeAdjustments();
@@ -5157,7 +5419,7 @@ export class CanvasElementManager {
             adjustTarget(document.firstElementChild as HTMLElement, undefined);
             return;
         }
-        const targetId = draggable.getAttribute("data-draggable-id");
+        const targetId = draggable.getAttribute(kDraggableIdAttribute);
         const target = targetId
             ? document.querySelector(`[data-target-of="${targetId}"]`)
             : undefined;
@@ -5742,11 +6004,11 @@ export class CanvasElementManager {
         const detachedTargets = Array.from(
             document.querySelectorAll("[data-target-of]")
         );
-        const canvasElements = Array.from(
-            document.querySelectorAll("[data-draggable-id]")
-        );
+        const canvasElements = getAllDraggables(document);
         canvasElements.forEach(canvasElement => {
-            const draggableId = canvasElement.getAttribute("data-draggable-id");
+            const draggableId = canvasElement.getAttribute(
+                kDraggableIdAttribute
+            );
             if (draggableId) {
                 const index = detachedTargets.findIndex(
                     (target: Element) =>
@@ -6367,120 +6629,188 @@ export class CanvasElementManager {
         if (timeoutHandler) {
             clearTimeout(timeoutHandler);
         }
-        const bloomCanvasWidth = bloomCanvas.clientWidth;
-        const bloomCanvasHeight = bloomCanvas.clientHeight;
+        const {
+            width: bloomCanvasWidth,
+            height: bloomCanvasHeight
+        } = getExactClientSize(bloomCanvas);
         let imgAspectRatio =
             bgCanvasElement.clientWidth / bgCanvasElement.clientHeight;
         const img = getImageFromCanvasElement(bgCanvasElement);
         let failedImage = false;
-        // We don't ever expect there not to be an img. If it happens, we'll just go
-        // ahead and adjust based on the current shape of the canvas element (as set above).
-        if (img) {
-            // The image may not have loaded yet or may have failed to load.  If either of these
-            // cases is true, then the naturalHeight and naturalWidth will be zero.  If the image
-            // failed to load, a special class is added to the image to indicate this fact (if all
-            // goes well).  However, we may know that this is called in response to a new image, in
-            // which case the class may not have been added yet.
-            // We conclude that the image has truly failed if 1) we don't have natural dimensions set
-            // to something other than zero, 2) we are not waiting for new dimensions, and 3) the
-            // image has the special class indicating that it failed to load.  (The class is supposed
-            // to be removed when we change the src attribute, which leads to a new load attempt.)
-            failedImage =
-                img.naturalHeight === 0 && // not loaded successfully (yet)
-                !useSizeOfNewImage && // not waiting for new dimensions
-                img.classList.contains("bloom-imageLoadError"); // error occurred while trying to load
-            if (failedImage) {
-                // If the image failed to load, just use the container aspect ratio to fill up
-                // the container with the error message (alt attribute string).
-                imgAspectRatio = bloomCanvasWidth / bloomCanvasHeight;
-            } else if (
-                img.naturalHeight === 0 ||
-                img.naturalWidth === 0 ||
-                useSizeOfNewImage
-            ) {
-                // if we don't have a height and width, or we know the image src changed
-                // and have not yet waited for new dimensions, go ahead and wait.
-                // We set up this timeout
-                const handle = (setTimeout(
-                    () =>
-                        this.adjustBackgroundImageSizeToFit(
-                            bloomCanvas,
-                            bgCanvasElement,
-                            // after the timeout we don't consider that we MUST wait if we have dimensions
-                            false,
-                            0 // when we get this call, we're responding to the timeout, so don't need to cancel.
-                        ),
-                    // I think this is long enough that we won't be seeing obsolete data (from a previous src).
-                    // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
-                    // If by any chance this happens when the image really isn't loaded enough to
-                    // have naturalHeight/Width, the zero checks above will force another iteration.
-                    100
-                    // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
-                ) as unknown) as number;
-                // preferably we update when we are loaded.
-                img.addEventListener(
-                    "load",
-                    () =>
-                        this.adjustBackgroundImageSizeToFit(
-                            bloomCanvas,
-                            bgCanvasElement,
-                            false, // when this call happens we have the new dimensions.
-                            handle // if this callback happens we can cancel the timeout.
-                        ),
-                    { once: true }
-                );
-                return; // try again once we have valid image data
-            } else if (img.style.width) {
-                // there is established cropping. Use the cropped size to determine the
-                // aspect ratio.
-                imgAspectRatio =
-                    CanvasElementManager.pxToNumber(
-                        bgCanvasElement.style.width
-                    ) /
-                    CanvasElementManager.pxToNumber(
-                        bgCanvasElement.style.height
-                    );
-            } else {
-                // not cropped, so we can use the natural dimensions
-                imgAspectRatio = img.naturalWidth / img.naturalHeight;
-            }
+        // We don't ever expect there not to be an img. If it happens, we'll just do nothing.
+        if (!img) {
+            return;
+        }
+        // The image may not have loaded yet or may have failed to load.  If either of these
+        // cases is true, then the naturalHeight and naturalWidth will be zero.  If the image
+        // failed to load, a special class is added to the image to indicate this fact (if all
+        // goes well).  However, we may know that this is called in response to a new image, in
+        // which case the class may not have been added yet.
+        // We conclude that the image has truly failed if 1) we don't have natural dimensions set
+        // to something other than zero, 2) we are not waiting for new dimensions, and 3) the
+        // image has the special class indicating that it failed to load.  (The class is supposed
+        // to be removed when we change the src attribute, which leads to a new load attempt.)
+        failedImage =
+            img.naturalHeight === 0 && // not loaded successfully (yet)
+            !useSizeOfNewImage && // not waiting for new dimensions
+            img.classList.contains("bloom-imageLoadError"); // error occurred while trying to load
+        if (failedImage) {
+            // If the image failed to load, just use the container aspect ratio to fill up
+            // the container with the error message (alt attribute string).
+            imgAspectRatio = bloomCanvasWidth / bloomCanvasHeight;
+        } else if (
+            img.naturalHeight === 0 ||
+            img.naturalWidth === 0 ||
+            useSizeOfNewImage
+        ) {
+            // if we don't have a height and width, or we know the image src changed
+            // and have not yet waited for new dimensions, go ahead and wait.
+            // We set up this timeout
+            const handle = (setTimeout(
+                () =>
+                    this.adjustBackgroundImageSizeToFit(
+                        bloomCanvas,
+                        bgCanvasElement,
+                        // after the timeout we don't consider that we MUST wait if we have dimensions
+                        false,
+                        0 // when we get this call, we're responding to the timeout, so don't need to cancel.
+                    ),
+                // I think this is long enough that we won't be seeing obsolete data (from a previous src).
+                // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
+                // If by any chance this happens when the image really isn't loaded enough to
+                // have naturalHeight/Width, the zero checks above will force another iteration.
+                100
+                // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
+            ) as unknown) as number;
+            // preferably we update when we are loaded.
+            img.addEventListener(
+                "load",
+                () =>
+                    this.adjustBackgroundImageSizeToFit(
+                        bloomCanvas,
+                        bgCanvasElement,
+                        false, // when this call happens we have the new dimensions.
+                        handle // if this callback happens we can cancel the timeout.
+                    ),
+                { once: true }
+            );
+            return; // try again once we have valid image data
+        } else if (img.style.width) {
+            // there is established cropping. Use the cropped size to determine the
+            // aspect ratio.
+            imgAspectRatio =
+                CanvasElementManager.pxToNumber(bgCanvasElement.style.width) /
+                CanvasElementManager.pxToNumber(bgCanvasElement.style.height);
+        } else {
+            // not cropped, so we can use the natural dimensions
+            imgAspectRatio = img.naturalWidth / img.naturalHeight;
         }
 
-        const oldWidth = bgCanvasElement.clientWidth;
+        const oldCeWidth = CanvasElementManager.pxToNumber(
+            bgCanvasElement.style.width,
+            bgCanvasElement.clientWidth
+        );
+        const oldCeHeight = CanvasElementManager.pxToNumber(
+            bgCanvasElement.style.height,
+            bgCanvasElement.clientHeight
+        );
         const containerAspectRatio = bloomCanvasWidth / bloomCanvasHeight;
         const fitCoverMode = img?.classList.contains(
             "bloom-imageObjectFit-cover"
         );
         let matchWidthOfContainer = imgAspectRatio > containerAspectRatio;
         if (fitCoverMode) {
-            matchWidthOfContainer = !matchWidthOfContainer;
-        }
-
-        if (matchWidthOfContainer) {
-            // size of image is width-limited
+            // make the canvas element fill the container
             bgCanvasElement.style.width = bloomCanvasWidth + "px";
-            bgCanvasElement.style.left = "0px";
-            const imgHeight = bloomCanvasWidth / imgAspectRatio;
-            bgCanvasElement.style.top =
-                (bloomCanvasHeight - imgHeight) / 2 + "px";
-            bgCanvasElement.style.height = imgHeight + "px";
-        } else {
-            const imgWidth = bloomCanvasHeight * imgAspectRatio;
-            bgCanvasElement.style.width = imgWidth + "px";
-            bgCanvasElement.style.top = "0px";
-            bgCanvasElement.style.left =
-                (bloomCanvasWidth - imgWidth) / 2 + "px";
             bgCanvasElement.style.height = bloomCanvasHeight + "px";
-        }
-        if (!useSizeOfNewImage && img?.style.width) {
-            // need to adjust image settings to preserve cropping
-            const scale = bgCanvasElement.clientWidth / oldWidth;
-            img.style.width =
-                CanvasElementManager.pxToNumber(img.style.width) * scale + "px";
-            img.style.left =
-                CanvasElementManager.pxToNumber(img.style.left) * scale + "px";
-            img.style.top =
-                CanvasElementManager.pxToNumber(img.style.top) * scale + "px";
+            bgCanvasElement.style.left = "0px";
+            bgCanvasElement.style.top = "0px";
+            //
+            matchWidthOfContainer = !matchWidthOfContainer;
+            const oldImgWidth =
+                CanvasElementManager.pxToNumber(img.style.width) ||
+                img.clientWidth;
+            // This is the height it would be if not cropped.
+            const oldImgHeight =
+                (oldImgWidth * img.naturalHeight) / img.naturalWidth;
+            const oldImgLeft =
+                CanvasElementManager.pxToNumber(img.style.left) || 0;
+            const oldImgTop =
+                CanvasElementManager.pxToNumber(img.style.top) || 0; // negative
+            // crop the image (or adjust its cropping) to fill the container
+            if (matchWidthOfContainer) {
+                // image is taller than a perfect fit, so it will fill the width and be cropped
+                // (more than before) in height.
+                const ceScale = bgCanvasElement.clientWidth / oldCeWidth;
+                const minScale = bgCanvasElement.clientWidth / oldImgWidth;
+                const scale = Math.max(ceScale, minScale);
+                img.style.width = oldImgWidth * scale + "px";
+                img.style.left = oldImgLeft * scale + "px"; //same fraction cropped in width
+                const previouslyHiddenAtTop = -oldImgTop * scale;
+                const previouslyHiddenAtBottom =
+                    (oldImgHeight + oldImgTop - oldCeHeight) * scale;
+                // this might be negative, if the container got shorter in aspect ratio.
+                // That is, possibly keeping the same top cropping would leave space at the bottom
+                const excessHeight =
+                    oldImgHeight * scale -
+                    bloomCanvasHeight -
+                    previouslyHiddenAtTop -
+                    previouslyHiddenAtBottom;
+                img.style.top =
+                    Math.min(-previouslyHiddenAtTop - excessHeight / 2, 0) +
+                    "px";
+            } else {
+                // image is wider than a perfect fit, so it will fill the height and be cropped
+                // (more than before) in width.
+                const ceScale = bgCanvasElement.clientHeight / oldCeHeight;
+                // we must scale it up enough to fill the height of the container.
+                const minScale = bgCanvasElement.clientHeight / oldImgHeight;
+                const scale = Math.max(ceScale, minScale);
+                img.style.width = oldImgWidth * scale + "px";
+                img.style.top = oldImgTop * scale + "px"; //same fraction cropped in height
+                const previouslyHiddenAtLeft = -oldImgLeft * scale;
+                const previouslyHiddenAtRight =
+                    (oldImgWidth + oldImgLeft - oldCeWidth) * scale;
+                const excessWidth =
+                    oldImgWidth * scale -
+                    bloomCanvasWidth -
+                    previouslyHiddenAtLeft -
+                    previouslyHiddenAtRight;
+                img.style.left =
+                    Math.min(-previouslyHiddenAtLeft - excessWidth / 2, 0) +
+                    "px";
+            }
+        } else {
+            if (matchWidthOfContainer) {
+                // size of image is width-limited: image is wider than a perfect fit,
+                // so it will fill the width of the container and have a smaller height.
+                bgCanvasElement.style.width = bloomCanvasWidth + "px";
+                bgCanvasElement.style.left = "0px";
+                const imgHeight = bloomCanvasWidth / imgAspectRatio;
+                bgCanvasElement.style.top =
+                    (bloomCanvasHeight - imgHeight) / 2 + "px";
+                bgCanvasElement.style.height = imgHeight + "px";
+            } else {
+                const imgWidth = bloomCanvasHeight * imgAspectRatio;
+                bgCanvasElement.style.width = imgWidth + "px";
+                bgCanvasElement.style.top = "0px";
+                bgCanvasElement.style.left =
+                    (bloomCanvasWidth - imgWidth) / 2 + "px";
+                bgCanvasElement.style.height = bloomCanvasHeight + "px";
+            }
+            if (!useSizeOfNewImage && img?.style.width) {
+                // need to adjust image settings to preserve cropping
+                const scale = bgCanvasElement.clientWidth / oldCeWidth;
+                img.style.width =
+                    CanvasElementManager.pxToNumber(img.style.width) * scale +
+                    "px";
+                img.style.left =
+                    CanvasElementManager.pxToNumber(img.style.left) * scale +
+                    "px";
+                img.style.top =
+                    CanvasElementManager.pxToNumber(img.style.top) * scale +
+                    "px";
+            }
         }
         // Ensure that the missing image message is displayed without being cropped.
         // See BL-14241.
@@ -6506,6 +6836,8 @@ export class CanvasElementManager {
             }
         }
         this.alignControlFrameWithActiveElement();
+        // Rerender the image's controls, since we may need to enable the Expand Image button since the size has changed
+        renderCanvasElementContextControls(bgCanvasElement, false);
     }
 
     // Store away the current size of the bloom-canvas. At any later time if we notice that
@@ -6542,6 +6874,7 @@ export class CanvasElementManager {
         const newWidth = bloomCanvas.clientWidth;
         const newHeight = bloomCanvas.clientHeight;
         if (oldWidth === newWidth && oldHeight === newHeight) return; // allow small discrepancy?
+        this.updateBloomCanvasSizeData(bloomCanvas); // remember the new size, whatever path we take adjusting things.
         // Leave out of this calculation the canvas and any image descriptions or controls.
         const children = (Array.from(
             bloomCanvas.children
@@ -6571,10 +6904,16 @@ export class CanvasElementManager {
             const childLeft = child.offsetLeft;
             if (child.classList.contains(kBackgroundImageClass)) {
                 const img = getImageFromCanvasElement(child);
-                if (!img || img.getAttribute("src") === "placeHolder.png") {
-                    // No image, or placeholder. Not visible (unless it's the only thing there).
-                    // Don't include this in the calculations.
-                    // But in case it gets selected, or is the only one, adjust it independently
+                if (
+                    !img ||
+                    img.getAttribute("src") === "placeHolder.png" ||
+                    children.length === 1
+                ) {
+                    // If there's no image or it's a placeholder, and there are other overlays, it won't be visible,
+                    // so we'll exclude it from the calculations, but still adjust it in case it becomes visible.
+                    // If it's the only child, we want to do the normal positioning of it.
+                    // In particular, this is important when switching "fill the front cover" on or off,
+                    // since  the code here does not properly allow for that mode.
                     this.adjustBackgroundImageSize(bloomCanvas, child, false);
                     if (children.length > 1) {
                         // we'll process the others ignoring the invisible BG image
@@ -6778,7 +7117,6 @@ export class CanvasElementManager {
                 }
             }
         });
-        this.updateBloomCanvasSizeData(bloomCanvas);
     }
 
     public static adjustCanvasElementAlternates(

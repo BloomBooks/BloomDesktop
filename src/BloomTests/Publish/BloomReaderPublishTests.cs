@@ -22,7 +22,7 @@ using SIL.PlatformUtilities;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
-using static Subscription;
+using Bloom.SubscriptionAndFeatures;
 using Directory = System.IO.Directory;
 using File = System.IO.File;
 
@@ -497,7 +497,7 @@ namespace BloomTests.Publish
                 assertionsOnResultingHtmlString: changedHtml =>
                 {
                     // The imgs should be replaced with something like this:
-                    //		"<div class='bloom-canvas bloom-leadingElement bloom-background-image-in-style' style='background-image:url('HL00%2714%201.svg.svg')'</div>
+                    //		"<div class='bloom-canvas bloom-leadingElement bloom-background-image-in-style-attr' style='background-image:url('HL00%2714%201.svg.svg')'</div>
                     //	Note that normally there would also be data-creator, data-license, etc. If we put those in the html, they will be stripped because
                     // the code will actually look at our fake image and, finding now metadata will remove these. This is not a problem for our
                     // testing here, because we're not trying to test the functioning of that function here. The bit we can test, that the image became a
@@ -514,7 +514,7 @@ namespace BloomTests.Publish
                     AssertThatXmlIn
                         .Dom(changedDom)
                         .HasSpecifiedNumberOfMatchesForXpath(
-                            "//div[@class='bloom-canvas bloom-leadingElement bloom-background-image-in-style' and @style=\"background-image:url('HL00%2714%201.svg')\"]",
+                            "//div[@class='bloom-canvas bloom-leadingElement bloom-background-image-in-style-attr' and @style=\"background-image:url('HL00%2714%201.svg')\"]",
                             2
                         );
                 }
@@ -764,7 +764,7 @@ namespace BloomTests.Publish
                         Is.EqualTo(-1)
                     );
                 },
-                tier: SubscriptionTier.None
+                tier: SubscriptionTier.Basic
             );
         }
 
@@ -966,39 +966,40 @@ namespace BloomTests.Publish
             );
         }
 
-        [Test]
-        public void CompressBookForDevice_NotBloomEnterprise_QuizPagesAreRemovedAndQuestionsFileNotGenerated()
-        {
-            TestHtmlAfterCompression(
-                kNewQuizPageTestsHtml,
-                actionsOnFolderBeforeCompressing: NewQuizTestActionsOnFolderBeforeCompressing,
-                assertionsOnResultingHtmlString: html =>
-                {
-                    // The quiz pages should be removed.
-                    var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-                    AssertThatXmlIn
-                        .Dom(htmlDom)
-                        .HasNoMatchForXpath(
-                            "//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]"
-                        );
-                    AssertThatXmlIn
-                        .Dom(htmlDom)
-                        .HasNoMatchForXpath(
-                            $"//script[@src='{PublishHelper.kSimpleComprehensionQuizJs}']"
-                        );
-                },
-                assertionsOnZipArchive: paramObj =>
-                {
-                    var zip = paramObj.ZipFile;
-                    Assert.AreEqual(-1, zip.FindEntry(BloomPubMaker.kQuestionFileName, false));
-                    Assert.AreEqual(
-                        -1,
-                        zip.FindEntry(PublishHelper.kSimpleComprehensionQuizJs, false)
-                    );
-                },
-                tier: SubscriptionTier.None
-            );
-        }
+        // Retiring this: We now stop you with the UI before you get this far
+        //[Test]
+        //public void CompressBookForDevice_NotBloomEnterprise_QuizPagesAreRemovedAndQuestionsFileNotGenerated()
+        //{
+        //    TestHtmlAfterCompression(
+        //        kNewQuizPageTestsHtml,
+        //        actionsOnFolderBeforeCompressing: NewQuizTestActionsOnFolderBeforeCompressing,
+        //        assertionsOnResultingHtmlString: html =>
+        //        {
+        //            // The quiz pages should be removed.
+        //            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+        //            AssertThatXmlIn
+        //                .Dom(htmlDom)
+        //                .HasNoMatchForXpath(
+        //                    "//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]"
+        //                );
+        //            AssertThatXmlIn
+        //                .Dom(htmlDom)
+        //                .HasNoMatchForXpath(
+        //                    $"//script[@src='{PublishHelper.kSimpleComprehensionQuizJs}']"
+        //                );
+        //        },
+        //        assertionsOnZipArchive: paramObj =>
+        //        {
+        //            var zip = paramObj.ZipFile;
+        //            Assert.AreEqual(-1, zip.FindEntry(BloomPubMaker.kQuestionFileName, false));
+        //            Assert.AreEqual(
+        //                -1,
+        //                zip.FindEntry(PublishHelper.kSimpleComprehensionQuizJs, false)
+        //            );
+        //        },
+        //        tier: SubscriptionTier.Basic
+        //    );
+        //}
 
         [Test]
         public void CompressBookForDevice_MakesThumbnailFromCoverPicture()
@@ -1019,7 +1020,7 @@ namespace BloomTests.Publish
 									</div>
 									<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
 										<div class='marginBox'>"
-                + "<div class=\"bloom-imageContainer bloom-background-image-in-style\" data-book=\"coverImage\" style=\"background-image:url('Listen%20to%20My%20Body_Cover.png')\"></div>"
+                + "<div class=\"bloom-imageContainer bloom-background-image-in-style-attr\" data-book=\"coverImage\" style=\"background-image:url('Listen%20to%20My%20Body_Cover.png')\"></div>"
                 + @"</div>
 									</div>
 								</body>
@@ -1199,7 +1200,7 @@ namespace BloomTests.Publish
                     var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
                     AssertThatXmlIn.Dom(htmlDom).HasAtLeastOneMatchForXpath("//video");
                 },
-                tier: SubscriptionTier.None
+                tier: SubscriptionTier.Basic
             );
         }
 
@@ -1856,13 +1857,13 @@ namespace BloomTests.Publish
             Action<string> assertionsOnResultingHtmlString = null,
             Action<ZipHtmlObj> assertionsOnZipArchive = null,
             Action<ZipFile> assertionsOnRepeat = null,
-            SubscriptionTier tier = SubscriptionTier.None,
+            SubscriptionTier tier = SubscriptionTier.Basic,
             HashSet<string> languagesToInclude = null,
             string creator = BloomPubMaker.kCreatorBloom
         )
         {
             var testBook = CreateBookWithPhysicalFile(originalBookHtml, bringBookUpToDate: true);
-            testBook.CollectionSettings.Subscription = Subscription.ForUnitTestWithOverrideTier(
+            testBook.CollectionSettings.Subscription = Subscription.CreateTempSubscriptionForTier(
                 tier
             );
 

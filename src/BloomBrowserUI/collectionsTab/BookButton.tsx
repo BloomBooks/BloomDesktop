@@ -155,7 +155,7 @@ export const BookButton: React.FunctionComponent<{
             label: "Export to Spreadsheet...",
             l10nId: "CollectionTab.BookMenu.ExportToSpreadsheet",
             command: "bookCommand/exportToSpreadsheet",
-            requiresEnterprise: true,
+            featureName: "Spreadsheet",
             hide: () => !props.collection.isEditableCollection
         },
         {
@@ -163,7 +163,7 @@ export const BookButton: React.FunctionComponent<{
             l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
             command: "bookCommand/importSpreadsheetContent",
             requiresSavePermission: true,
-            requiresEnterprise: true,
+            featureName: "Spreadsheet",
             hide: () => !props.collection.isEditableCollection
         },
         { label: "-", hide: () => !props.collection.isEditableCollection },
@@ -203,7 +203,9 @@ export const BookButton: React.FunctionComponent<{
     );
 
     const getBookMenuItemsSpecs: () => MenuItemSpec[] = () => {
-        return [
+        // If we just return this array, without declaring it to be an array of MenuItemSpec,
+        // TypeScript fails to complain if we mis-spell a property name.
+        const items: MenuItemSpec[] = [
             {
                 label: "Rename Book",
                 l10nId: "CollectionTab.BookMenu.RenameBook",
@@ -242,7 +244,7 @@ export const BookButton: React.FunctionComponent<{
                 l10nId: "CollectionTab.BookMenu.DeleteBook",
                 command: "collections/deleteBook",
                 icon: <DeleteIcon></DeleteIcon>,
-                requiresSavePermission: true,
+                requiresDeletePermission: true,
                 addEllipsis: true,
                 // Allowed for the downloaded books collection and the editable collection
                 hide: () =>
@@ -266,6 +268,7 @@ export const BookButton: React.FunctionComponent<{
                 hide: () => !props.collection.isEditableCollection
             }
         ];
+        return items;
     };
 
     useEffect(() => {
@@ -445,11 +448,13 @@ export const BookButton: React.FunctionComponent<{
     // method at all, the menu does not show. (Showing a menu with no items results
     // in a small white square that is confusing.)
     let items: MenuItemSpec[] = [];
+    const bookInfo = props.manager.getSelectedBookInfo()!;
     if (selected) {
         items = makeMenuItems(
             getBookMenuItemsSpecs(),
             props.collection.isEditableCollection,
-            props.manager.getSelectedBookInfo()!.saveable,
+            bookInfo.saveable,
+            bookInfo.deletable,
             handleClose,
             props.book.id,
             props.collection.id,

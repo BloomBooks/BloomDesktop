@@ -439,10 +439,11 @@ namespace BloomTests.Publish
         {
             var pageData = GetPageNData(6);
             // Verify the ARIA roles and labels for the End Page.
-            // currently one thing gets role attr, a doc-pageBreak.
+            // currently two thing gets role attr, a doc-pageBreak, and the local community branding.
+
             AssertThatXmlIn
                 .String(pageData)
-                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role]", _ns, 1);
+                .HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role]", _ns, 2);
             AssertThatXmlIn
                 .String(pageData)
                 .HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 1);
@@ -519,9 +520,11 @@ namespace BloomTests.Publish
                 .HasAtLeastOneMatchForXpath(
                     "package/manifest/item[@id='f4' and @properties='svg']"
                 );
+            // This test currently produces a local community book, so the last page also has an svg,
+            // the BloomLocal logo.
             AssertThatXmlIn
                 .String(_manifestContent)
-                .HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='svg']", 1);
+                .HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='svg']", 2);
 
             AssertThatXmlIn
                 .String(_manifestContent)

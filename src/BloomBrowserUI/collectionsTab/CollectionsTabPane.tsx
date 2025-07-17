@@ -300,11 +300,12 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             ]
         }
     ];
-
+    const bookInfo = manager.getSelectedBookInfo();
     const collectionMenuItems = makeMenuItems(
         collectionMenuItemsSpecs,
         true,
-        manager.getSelectedBookInfo()?.saveable ?? false,
+        bookInfo?.saveable ?? false,
+        bookInfo?.deletable ?? false,
         handleClose,
         // the collection menu commands don't actually use the ID of
         // a particular book
@@ -582,12 +583,12 @@ export interface MenuItemSpec {
     // Involves making changes to the book; therefore, can only be done in the one editable collection
     // and if we're in a Team Collection, the book must be checked out.
     requiresSavePermission?: boolean;
+    requiresDeletePermission?: boolean;
     submenu?: MenuItemSpec[];
     icon?: React.ReactNode;
     // if true, menu item is rendered as an ApiCheckbox with the command as its api.
     checkbox?: boolean;
-    // if true, menu item is rendered with a Bloom Enterprise icon on the right
-    requiresEnterprise?: boolean;
+    featureName?: string;
     addEllipsis?: boolean;
 }
 
@@ -604,6 +605,7 @@ export const makeMenuItems = (
     menuItemsSpecs: MenuItemSpec[],
     isEditableCollection: boolean,
     isBookSavable: boolean,
+    isBookDeletable: boolean,
     close: () => void,
     bookId: string,
     collectionId: string,
@@ -619,6 +621,7 @@ export const makeMenuItems = (
                     spec.submenu,
                     isEditableCollection,
                     isBookSavable,
+                    isBookDeletable,
                     close,
                     bookId,
                     collectionId,
@@ -641,13 +644,18 @@ export const makeMenuItems = (
                 return undefined;
             }
             // If we have determined that a command should be shown, this logic determines whether it should be
-            // disabled or not.
-            // We disable commands that require permission to change the book, if we don't have such permission.
-            const disabled =
-                isEditableCollection &&
-                spec.requiresSavePermission &&
-                !isBookSavable;
-
+            // disabled or not. Note that this only applies to the editable collection; commands that
+            // don't apply to other collections are hidden. For example, the Delete command in the
+            // downloads collection is always enabled, even though our code will currently not report
+            // books in it as either savable or deletable.
+            let disabled = false;
+            if (isEditableCollection) {
+                if (spec.requiresDeletePermission) {
+                    disabled = !isBookDeletable;
+                } else if (spec.requiresSavePermission) {
+                    disabled = !isBookSavable;
+                }
+            }
             if (spec.checkbox) {
                 return (
                     <LocalizableCheckboxMenuItem
@@ -687,7 +695,7 @@ export const makeMenuItems = (
                     onClick={clickAction}
                     icon={spec.icon}
                     addEllipsis={spec.addEllipsis}
-                    requiresAnySubscription={spec.requiresEnterprise}
+                    featureName={spec.featureName}
                     disabled={disabled}
                     tooltipIfDisabled={tooltipIfCannotSaveBook}
                 ></LocalizableMenuItem>

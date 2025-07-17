@@ -189,9 +189,16 @@ namespace Bloom.web.controllers
             if (requestData.convertWholeBook)
                 convertWholeBook = true;
             var allowDataLoss = requestData.allowDataLoss;
+            var pageDiv = page.GetDivNodeForThisPage();
             if (!string.IsNullOrEmpty(requestData.dataToolId))
             {
-                page.GetDivNodeForThisPage().SetAttribute("data-tool-id", requestData.dataToolId);
+                pageDiv.SetAttribute("data-tool-id", requestData.dataToolId);
+            }
+            // Remove the data-feature attribute if it exists, so that it doesn't get copied to the
+            // new page.  It's already served its purpose in the Add Page dialog.
+            if (pageDiv.HasAttribute("data-feature"))
+            {
+                pageDiv.RemoveAttribute("data-feature");
             }
 
             int addNum;

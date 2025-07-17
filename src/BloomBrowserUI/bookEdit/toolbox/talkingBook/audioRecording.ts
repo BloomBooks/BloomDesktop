@@ -69,6 +69,10 @@ import {
     kCanvasElementClass
 } from "../overlay/canvasElementUtils";
 import { RecordingMode } from "./recordingMode";
+import {
+    FeatureStatus,
+    getFeatureStatusAsync
+} from "../../../react_components/featureStatus";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -96,6 +100,8 @@ export function getAllAudioModes(): AudioMode[] {
         AudioMode.SoftSplitTextBox
     ];
 }
+
+export const kAnyRecordingApiUrl = "/bloom/api/audio/checkForAnyRecording?ids=";
 
 const kWebsocketContext = "audio-recording";
 const kSegmentClass = "bloom-highlightSegment";
@@ -186,6 +192,7 @@ export default class AudioRecording implements IAudioRecorder {
     private previousRecordMode: RecordingMode;
     private haveAudio: boolean;
     private inShowPlaybackOrderMode: boolean = false;
+    private wholeTextBoxAudioFeatureStatus: FeatureStatus | undefined;
 
     // Corresponds to the collection default recording mode which we would theoretically get via async call to C# API
     // This is rather annoying because then we have async calls being introduced all over the place.
@@ -308,6 +315,10 @@ export default class AudioRecording implements IAudioRecorder {
         toastr.options.timeOut = 10000;
         toastr.options.preventDuplicates = true;
 
+        this.wholeTextBoxAudioFeatureStatus = await getFeatureStatusAsync(
+            "WholeTextBoxAudio"
+        );
+
         return this.pullDefaultRecordingModeAsync();
     }
 
@@ -362,7 +373,7 @@ export default class AudioRecording implements IAudioRecorder {
         const currentTextBox = this.getCurrentTextBox();
 
         this.recordingMode = this.getRecordingModeOfTextBox(currentTextBox);
-        if (this.recordingMode == RecordingMode.Unknown) {
+        if (this.recordingMode === RecordingMode.Unknown) {
             this.recordingMode = RecordingMode.Sentence;
         }
 
@@ -383,7 +394,7 @@ export default class AudioRecording implements IAudioRecorder {
             const recordingMode = AudioRecording.getAudioRecordingModeFromString(
                 audioRecordingModeStr
             );
-            if (recordingMode != RecordingMode.Unknown) {
+            if (recordingMode !== RecordingMode.Unknown) {
                 return recordingMode;
             }
         }
@@ -1851,7 +1862,7 @@ export default class AudioRecording implements IAudioRecorder {
         }
         // First determine which IDs we need to delete.
         const elementIdsToDelete: string[] = [];
-        if (this.recordingMode == RecordingMode.Sentence) {
+        if (this.recordingMode === RecordingMode.Sentence) {
             elementIdsToDelete.push(this.currentAudioId);
         } else {
             // i.e., AudioRecordingMode = TextBox
@@ -1903,6 +1914,13 @@ export default class AudioRecording implements IAudioRecorder {
 
         await Promise.all(promisesToAwait);
 
+        if (
+            this.wholeTextBoxAudioFeatureStatus &&
+            !this.wholeTextBoxAudioFeatureStatus.enabled &&
+            this.recordingMode === RecordingMode.TextBox
+        ) {
+            await this.setRecordingModeAsync(RecordingMode.Sentence);
+        }
         await this.changeStateAndSetExpectedAsync("record");
         this.updateDisplay();
     }
@@ -2110,7 +2128,12 @@ export default class AudioRecording implements IAudioRecorder {
             element.parentElement!.removeChild(element);
         });
         this.setDisableEverythingMode(false);
-        this.setCurrentAudioElementToDefaultAsync();
+        if (!leaveChecked) {
+            // If we're staying on the same page, update the display to show the highlighted
+            // audio element.  If we're leaving the page, don't try to update the display.
+            // This leads to an unterminated recursion that freezes Bloom.  See BL-14898.
+            this.setCurrentAudioElementToDefaultAsync();
+        }
     }
 
     private getVisibleTranslationGroups(
@@ -2170,6 +2193,9 @@ export default class AudioRecording implements IAudioRecorder {
         recordingMode: RecordingMode,
         forceOverwrite: boolean = false
     ): Promise<void> {
+        if (this.previousRecordMode === undefined) {
+            this.previousRecordMode = this.recordingMode;
+        }
         this.recordingMode = recordingMode;
 
         // Check if there are any audio recordings present.
@@ -2178,8 +2204,8 @@ export default class AudioRecording implements IAudioRecorder {
         //   We detect this state by relying on the same logic that turns on the Listen button when an audio recording is present
         if (!forceOverwrite && this.doesRecordingExistForCurrentSelection()) {
             if (
-                this.recordingMode == RecordingMode.TextBox &&
-                this.getCurrentPlaybackMode() == RecordingMode.TextBox
+                this.recordingMode === RecordingMode.TextBox &&
+                this.getCurrentPlaybackMode() === RecordingMode.TextBox
             ) {
                 return;
             }
@@ -2192,7 +2218,7 @@ export default class AudioRecording implements IAudioRecorder {
 
         let result;
         // Update the UI after clicking the checkbox
-        if (this.previousRecordMode == RecordingMode.TextBox) {
+        if (this.previousRecordMode === RecordingMode.TextBox) {
             // This also implies converting the playback mode to Sentence, because we disallow Recording=Sentence,Playback=TextBox.
             // Enhance: Maybe don't bother if the current playback mode is already sentence?
             // Enhance: Maybe it means that you should be less aggressively trying to convert Markup into Playback=TextBox. Or that Clear should be more aggressively attempting ton convert into Playback=Sentence.
@@ -2490,6 +2516,7 @@ export default class AudioRecording implements IAudioRecorder {
     public async handleNewPageReady(
         deshroudPhraseDelimiters?: (page: HTMLElement | null) => void
     ): Promise<void> {
+        this.haveAudio = false; // assume the new page has no audio until we find out otherwise
         // Changing the page causes the previous page's audio to stop playing (be "emptied").
         ++this.currentAudioSessionNum;
 
@@ -2576,7 +2603,7 @@ export default class AudioRecording implements IAudioRecorder {
         if (!boxToSelect) {
             this.resetAudioIfPaused();
             this.removeAudioCurrent(this.getPageDocBody()!);
-            this.changeStateAndSetExpectedAsync("");
+            await this.changeStateAndSetExpectedAsync("");
             this.updateDisplay(false);
             return false;
         }
@@ -2587,7 +2614,7 @@ export default class AudioRecording implements IAudioRecorder {
                 newElement: boxToSelect,
                 shouldScrollToElement: true
             });
-            this.changeStateAndSetExpectedAsync("record");
+            await this.changeStateAndSetExpectedAsync("record");
         }
         return true;
     }
@@ -3021,6 +3048,12 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
+    // This is used to prevent unterminated recursive calls to setSoundAndHighlightAsync.
+    // The reproduction steps to achieve this are a bit unlikely, but it can happen in at
+    // least two related ways (BL-14898).  One can be prevented by not calling this method,
+    // but the other cannot be avoided so easily.
+    private canvasElementBeingHighlighted: HTMLElement | undefined;
+
     public async setCurrentAudioElementToDefaultAsync(): Promise<HTMLElement | null> {
         // Seems very strange that we would be doing this when the talking book tool is not active.
         // Unfortunately there's a weird sequence of events that happens when we add a page that calls
@@ -3040,7 +3073,12 @@ export default class AudioRecording implements IAudioRecorder {
         }
         const activeCanvasElement = getCanvasElementManager()?.getActiveElement();
         if (activeCanvasElement) {
-            await this.moveRecordingHighlightToElement(activeCanvasElement);
+            // Stop if this appears to be a recursive call. See BL-14898.
+            if (activeCanvasElement !== this.canvasElementBeingHighlighted) {
+                this.canvasElementBeingHighlighted = activeCanvasElement;
+                await this.moveRecordingHighlightToElement(activeCanvasElement);
+                this.canvasElementBeingHighlighted = undefined;
+            }
             // That may or may not make a highlight. In either case, given that there's an active canvas element,
             //  we don't want to highlight anything else.
             return null;
@@ -3621,80 +3659,28 @@ export default class AudioRecording implements IAudioRecorder {
     private async updateButtonStateAsync(expectedVerb: string): Promise<void> {
         this.setEnabledOrExpecting("record", expectedVerb);
 
-        const promisesToAwait: Promise<void>[] = [];
-        promisesToAwait.push(this.updateListenButtonStateAsync());
+        await this.updateListenButtonStateAsync();
 
-        // Now work on all the things that depend or sometimes depend on availability of audio within the text box.
-        const currentTextBoxIds: string[] = [];
-        const audioSentenceCollection = this.getAudioSegmentsInCurrentTextBox();
-        for (let i = 0; i < audioSentenceCollection.length; ++i) {
-            const audioSentenceElement = audioSentenceCollection[i];
-            if (audioSentenceElement) {
-                const id = audioSentenceElement.getAttribute("id");
-                if (id) {
-                    currentTextBoxIds.push(id);
-                }
-            }
-        }
+        let idsToCheck: string;
+        if (this.recordingMode === RecordingMode.Sentence) {
+            const currentElementIds = this.getSegmentIdsWithinCurrent();
+            idsToCheck = currentElementIds.toString();
+        } else {
+            console.assert(this.recordingMode === RecordingMode.TextBox);
 
-        const doWhenTextBoxAudioAvailabilityKnownCallback = async (
-            textBoxResponse: AxiosResponse<any>
-        ) => {
-            // Look up the subsequent async call that we (possibly) need to retrieve all the information we need to complete processing
-            let idsToCheck: string;
-            if (this.recordingMode == RecordingMode.Sentence) {
-                const currentElementIds = this.getSegmentIdsWithinCurrent();
-                idsToCheck = currentElementIds.toString();
+            const currentTextBox = this.getCurrentTextBox();
+            if (currentTextBox) {
+                idsToCheck = currentTextBox.id;
             } else {
-                console.assert(this.recordingMode == RecordingMode.TextBox);
-
-                const currentTextBox = this.getCurrentTextBox();
-                if (currentTextBox) {
-                    idsToCheck = currentTextBox.id;
-                } else {
-                    idsToCheck = "";
-                }
+                idsToCheck = "";
             }
-
-            try {
-                const elementResponse: AxiosResponse<any> = await axios.get(
-                    `/bloom/api/audio/checkForAnyRecording?ids=${idsToCheck}`
-                );
-
-                this.updateButtonStateHelper(
-                    expectedVerb,
-                    textBoxResponse,
-                    elementResponse
-                );
-            } catch (elementError) {
-                // Note: If there is no audio, it returns Request.Failed AKA it actually goes into the catch!!!
-                this.updateButtonStateHelper(
-                    expectedVerb,
-                    textBoxResponse,
-                    elementError.response
-                );
-            }
-        };
-
-        try {
-            const textBoxResponse: AxiosResponse<any> = await axios.get(
-                `/bloom/api/audio/checkForAnyRecording?ids=${currentTextBoxIds.toString()}`
-            );
-
-            // Now find if any audio exists for the current recording element.
-            promisesToAwait.push(
-                doWhenTextBoxAudioAvailabilityKnownCallback(textBoxResponse)
-            );
-        } catch (textBoxError) {
-            // Note: If there is no audio, it returns Request.Failed AKA it actually goes into the catch!!!
-            promisesToAwait.push(
-                doWhenTextBoxAudioAvailabilityKnownCallback(
-                    textBoxError.response
-                )
-            );
         }
 
-        await Promise.all(promisesToAwait);
+        const response: AxiosResponse<any> = await axios.get(
+            `${kAnyRecordingApiUrl}${idsToCheck}`
+        );
+
+        this.updateButtonStateHelper(expectedVerb, response);
     }
 
     public static async audioExistsForIdsAsync(
@@ -3702,7 +3688,7 @@ export default class AudioRecording implements IAudioRecorder {
     ): Promise<boolean> {
         try {
             const response: AxiosResponse<any> = await axios.get(
-                `/bloom/api/audio/checkForAnyRecording?ids=${ids}`
+                `${kAnyRecordingApiUrl}${ids}`
             );
             return this.DoesNarrationExist(response);
         } catch {
@@ -3710,27 +3696,15 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
-    // Given a response (from "/bloom/api/audio/checkForAnyRecording?ids=..."), determines whether the response indicates that narration audio exists for any of the specified IDs
+    // Given a response (from "${kAnyRecordingApiUrl}..."), determines whether the response indicates that narration audio exists for any of the specified IDs
     private static DoesNarrationExist(response: AxiosResponse<any>): boolean {
-        // Note regarding Non-OK status codes: If there is no audio, it returns Request.Failed AKA it actually has Non-OK Status code!
-        //       This doesn't mean you need to log an error though, since it is "normal" for failed requests to return.
-        //       Just mark them as not-exist instead.
-
-        return (
-            response && response.status === 200 && response.statusText === "OK"
-        );
+        return response && response.data === true;
     }
 
     private updateButtonStateHelper(
         expectedVerb: string, // e.g. "record", "play", "check", etc.
-        textBoxResponse: AxiosResponse<any>,
         elementResponse: AxiosResponse<any>
     ): void {
-        // This var is true if the Text Box containing the Currently Highlighted Element contains audio for any of the elements within the text box.
-        const doesTextBoxAudioExist: boolean = AudioRecording.DoesNarrationExist(
-            textBoxResponse
-        );
-
         // This var is true if the Currently Highlighted Element contains audio
         // (If RecordingMode=TextBox but PlaybackMode=Sentence, this means if any of the sentences of the currently highlighted element contain audio)
         const doesElementAudioExist: boolean = AudioRecording.DoesNarrationExist(
@@ -3792,18 +3766,10 @@ export default class AudioRecording implements IAudioRecorder {
             ids.push(element.id);
         });
 
-        try {
-            const response = await axios.get(
-                "/bloom/api/audio/checkForAnyRecording?ids=" + ids
-            );
-            if (response.statusText === "OK") {
-                this.setStatus("listen", Status.Enabled);
-            } else {
-                this.setStatus("listen", Status.Disabled);
-            }
-        } catch {
-            // This handles the case where AudioRecording.HandleCheckForAnyRecording() (in C#)
-            // sends back a request.Failed("no audio") and thereby avoids an uncaught js exception.
+        const response = await axios.get(`${kAnyRecordingApiUrl}${ids}`);
+        if (response.data === true) {
+            this.setStatus("listen", Status.Enabled);
+        } else {
             this.setStatus("listen", Status.Disabled);
         }
     }
@@ -4388,23 +4354,38 @@ export default class AudioRecording implements IAudioRecorder {
             // Won't exist for unit tests
             return;
         }
+        // It's a bit expensive to do the test for text present, but without it,
+        // Import Recording will be improperly enabled on an empty page.
+        const hasRecordableDivs =
+            this.getRecordableDivs(true, false).length > 0;
+        const currentPlaybackMode = this.getCurrentPlaybackMode(
+            maySetHighlight
+        );
+        let haveACurrentTextboxModeRecording =
+            this.haveAudio && currentPlaybackMode === RecordingMode.TextBox;
+        if (
+            this.wholeTextBoxAudioFeatureStatus &&
+            !this.wholeTextBoxAudioFeatureStatus.enabled &&
+            this.recordingMode === RecordingMode.TextBox
+        ) {
+            // If the feature is disabled, we can't record in TextBox mode, but can still play back.
+            // If we don't have any audio, we should switch to Sentence mode.
+            if (!haveACurrentTextboxModeRecording || !hasRecordableDivs) {
+                this.recordingMode = RecordingMode.Sentence;
+                haveACurrentTextboxModeRecording = false;
+            }
+        }
         ReactDOM.render(
             React.createElement(TalkingBookAdvancedSection, {
                 recordingMode: this.recordingMode,
-                haveACurrentTextboxModeRecording:
-                    this.haveAudio &&
-                    this.getCurrentPlaybackMode(maySetHighlight) ===
-                        RecordingMode.TextBox,
+                haveACurrentTextboxModeRecording: haveACurrentTextboxModeRecording,
                 setRecordingMode: async (recordingMode: RecordingMode) => {
                     this.setRecordingModeAsync(recordingMode);
                     this.updateDisplay();
                 },
                 //hasAudio: this.getStatus("clear") === Status.Enabled, // plausibly, we could instead require that we have *all* the audio
                 hasAudio: this.haveAudio,
-                hasRecordableDivs:
-                    // It's a bit expensive to do the test for text present, but without it,
-                    // Import Recording will be improperly enabled on an empty page.
-                    this.getRecordableDivs(true, false).length > 0,
+                hasRecordableDivs: hasRecordableDivs,
                 handleImportRecordingClick: () =>
                     this.handleImportRecordingClick(),
                 insertSegmentMarker: () => {

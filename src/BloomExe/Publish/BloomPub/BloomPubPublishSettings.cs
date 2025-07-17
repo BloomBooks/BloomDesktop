@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Bloom.Book;
 using Bloom.Publish.BloomLibrary;
+using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.Publish.BloomPub
 {
@@ -24,6 +25,8 @@ namespace Bloom.Publish.BloomPub
         // Specifies the languages for which narration audio should not be included, even if their text is included.
         // NOTE: It's more natural for consumers to think about what languages they want to EXCLUDE, rather than what languages they want to INCLUDE.
         public HashSet<string> AudioLanguagesToExclude;
+
+        public PublishingMediums PublishingMedium = PublishingMediums.BloomPub;
 
         public string[] AudioLanguagesToInclude
         {
