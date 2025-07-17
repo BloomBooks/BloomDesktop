@@ -288,6 +288,7 @@ namespace Bloom
         public abstract string RunJavascriptWithStringResult_Sync_Dangerous(string script);
 
         public abstract Task<string> GetStringFromJavascriptAsync(string script);
+        public abstract Task<string> GetObjectFromJavascriptAsync(string script);
         public abstract Task RunJavascriptAsync(string script);
         public abstract void RunJavascriptFireAndForget(string script);
 
