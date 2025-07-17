@@ -498,22 +498,6 @@ namespace Bloom.web.controllers
             }
         }
 
-        public static string GetSummaryHtml(string branding)
-        {
-            BrandingSettings.ParseSubscriptionDescriptor(
-                branding,
-                out var baseKey,
-                out var flavor,
-                out var subUnitName
-            );
-            var summaryFile = BloomFileLocator.GetOptionalBrandingFile(baseKey, "summary.htm");
-            if (summaryFile == null)
-                return "";
-
-            var html = RobustFile.ReadAllText(summaryFile, Encoding.UTF8);
-            return html.Replace("{flavor}", flavor).Replace("SUBUNIT", subUnitName);
-        }
-
         public void PrepareToShowDialog() { }
 
         public static void DialogClosed() { }
