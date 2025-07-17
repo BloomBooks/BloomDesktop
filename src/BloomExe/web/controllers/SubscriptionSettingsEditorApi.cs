@@ -44,7 +44,7 @@ namespace Bloom.web.controllers
                         {
                             Code = _subscription.Code ?? "",
                             Tier = _subscription.Tier.ToString(),
-                            Summary = GetSummaryHtml(_subscription.Descriptor),
+                            Summary = BrandingSettings.GetSummaryHtml(_subscription.Descriptor),
                             Expiration = _subscription.ExpirationDate.ToString(
                                 "yyyy-MM-dd",
                                 CultureInfo.InvariantCulture
@@ -96,22 +96,6 @@ namespace Bloom.web.controllers
                 },
                 false
             );
-        }
-
-        private static string GetSummaryHtml(string descriptor)
-        {
-            BrandingSettings.ParseSubscriptionDescriptor(
-                descriptor,
-                out var baseKey,
-                out var flavor,
-                out var subUnitName
-            );
-            var summaryFile = BloomFileLocator.GetOptionalBrandingFile(baseKey, "summary.htm");
-            if (summaryFile == null)
-                return "";
-
-            var html = RobustFile.ReadAllText(summaryFile, Encoding.UTF8);
-            return html.Replace("{flavor}", flavor).Replace("SUBUNIT", subUnitName);
         }
 
         public static Action<string> NotifyPendingSubscriptionChange;
