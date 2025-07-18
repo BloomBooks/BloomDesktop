@@ -55,6 +55,7 @@ namespace Bloom.Edit
             this._splitContainer2 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
             this._topBarPanel = new System.Windows.Forms.Panel();
             this._rightToolStrip = new System.Windows.Forms.ToolStrip();
+            this._editControlsReactControl = new Bloom.web.ReactControl();
             this._bookSettingsButton = new System.Windows.Forms.ToolStripButton();
             this._undoButton = new SIL.Windows.Forms.Widgets.BitmapButton();
             this._cutButton = new SIL.Windows.Forms.Widgets.BitmapButton();
@@ -117,6 +118,7 @@ namespace Bloom.Edit
             // _topBarPanel
             // 
             this._topBarPanel.Controls.Add(this._rightToolStrip);
+            this._topBarPanel.Controls.Add(this._editControlsReactControl);
             this._topBarPanel.Controls.Add(this._undoButton);
             this._topBarPanel.Controls.Add(this._cutButton);
             this._topBarPanel.Controls.Add(this._pasteButton);
@@ -140,10 +142,10 @@ namespace Bloom.Edit
             this._L10NSharpExtender.SetLocalizationComment(this._rightToolStrip, null);
             this._L10NSharpExtender.SetLocalizationPriority(this._rightToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
             this._L10NSharpExtender.SetLocalizingId(this._rightToolStrip, "EditingView._rightToolStrip");
-            this._rightToolStrip.Location = new System.Drawing.Point(608, 0);
+            this._rightToolStrip.Location = new System.Drawing.Point(638, 0);
             this._rightToolStrip.Name = "_rightToolStrip";
             this._rightToolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this._rightToolStrip.Size = new System.Drawing.Size(116, 66);
+            this._rightToolStrip.Size = new System.Drawing.Size(86, 66);
             this._rightToolStrip.TabIndex = 32;
             this._rightToolStrip.Text = "_rightToolStrip";
             // 
@@ -157,11 +159,23 @@ namespace Bloom.Edit
             this._L10NSharpExtender.SetLocalizationComment(this._bookSettingsButton, null);
             this._L10NSharpExtender.SetLocalizingId(this._bookSettingsButton, "Common.BookSettings");
             this._bookSettingsButton.Name = "_bookSettingsButton";
-            this._bookSettingsButton.Size = new System.Drawing.Size(82, 63);
+            this._bookSettingsButton.Size = new System.Drawing.Size(83, 63);
             this._bookSettingsButton.Text = "Book Settings";
             this._bookSettingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this._bookSettingsButton.Visible = true;
             this._bookSettingsButton.Click += new System.EventHandler(this._bookSettingsButton_Click);
+            // 
+            // _editControlsReactControl
+            // 
+            this._editControlsReactControl.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(46)))), ((int)(((byte)(46)))));
+            this._editControlsReactControl.JavascriptBundleName = "editTopBarControlsBundle";
+            this._L10NSharpExtender.SetLocalizableToolTip(this._editControlsReactControl, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._editControlsReactControl, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._rightToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizingId(this._editControlsReactControl, "EditingView._editControlsReactControl");
+            this._editControlsReactControl.Location = new System.Drawing.Point(368, 0);
+            this._editControlsReactControl.Name = "_editControlsReactControl";
+            this._editControlsReactControl.Size = new System.Drawing.Size(251, 66);
+            this._editControlsReactControl.TabIndex = 33;
             // 
             // _undoButton
             // 
@@ -454,6 +468,7 @@ namespace Bloom.Edit
 		private SIL.Windows.Forms.Widgets.BitmapButton _undoButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.ToolStrip _rightToolStrip;
-		private System.Windows.Forms.ToolStripButton _bookSettingsButton;
+        private Bloom.web.ReactControl _editControlsReactControl;
+        private System.Windows.Forms.ToolStripButton _bookSettingsButton;
 	}
 }
