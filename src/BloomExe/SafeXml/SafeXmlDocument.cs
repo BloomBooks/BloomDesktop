@@ -36,6 +36,8 @@ namespace Bloom.SafeXml
         {
             lock (Lock)
                 WrappedDocument.LoadXml(xml);
+            // changing language eng to eng
+            // System.Xml.XmlException: 'An error occurred while parsing EntityName. Line 1, position 29.'
         }
 
         public void Load(string filename)

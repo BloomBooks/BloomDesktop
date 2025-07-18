@@ -66,6 +66,7 @@ namespace Bloom.ErrorReporter
             // Throwing/catching the exception populates the stack trace
             try
             {
+                // Why are we doing this?
                 throw new ApplicationException("Fake exception for development/testing purposes");
             }
             catch (ApplicationException e)

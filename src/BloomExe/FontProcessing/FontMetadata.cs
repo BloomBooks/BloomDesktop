@@ -217,6 +217,7 @@ namespace Bloom.FontProcessing
             try
             {
                 gtf = new GlyphTypeface(new Uri("file:///" + fontPath));
+                // 'System.IO.FileFormatException' exception ABeeZee-Regular.woff2 does not conform to the expected file format specification
                 var english = System.Globalization.CultureInfo.GetCultureInfo("en-US");
                 if (string.IsNullOrEmpty(fontName))
                     gtf.FamilyNames.TryGetValue(english, out fontName);

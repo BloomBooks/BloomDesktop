@@ -1549,6 +1549,8 @@ namespace Bloom
                     new string[] { "Bloom" }
                 );
 
+                // Could not load file or assembly `L10NSharp.XmlSerializers`
+
                 //We had a case where someone translated stuff into another language, and sent in their tmx. But their tmx had soaked up a bunch of string
                 //from their various templates, which were not Bloom standard templates. So then someone else sitting down to localize bloom would be
                 //faced with a bunch of string that made no sense to them, because they don't have those templates.

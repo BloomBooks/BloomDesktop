@@ -43,6 +43,7 @@ namespace Bloom.Properties {
             get {
                 return ((global::Bloom.CollectionChoosing.MostRecentPathsList)(this["MruProjects"]));
             }
+            // Could not load file or assembly Bloom.XmlSerializers
             set {
                 this["MruProjects"] = value;
             }
@@ -249,8 +250,9 @@ namespace Bloom.Properties {
         public global::SIL.Windows.Forms.PortableSettingsProvider.FormSettings WindowSizeAndLocation {
             get {
                 return ((global::SIL.Windows.Forms.PortableSettingsProvider.FormSettings)(this["WindowSizeAndLocation"]));
-            }
-            set {
+				// XmlSerializers error
+			}
+			set {
                 this["WindowSizeAndLocation"] = value;
             }
         }

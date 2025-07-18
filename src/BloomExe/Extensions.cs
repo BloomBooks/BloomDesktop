@@ -247,6 +247,7 @@ namespace Bloom
                 };
             }
 
+            // System.Runtime.InteropServices.ExternalException : 'A generic error occurred in GDI+.'
             RetryUtility.Retry(
                 () => image.Save(fileName),
                 maxRetryAttempts,
