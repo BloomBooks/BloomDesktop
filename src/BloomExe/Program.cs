@@ -290,7 +290,7 @@ namespace Bloom
                 // Migrate from old monolithic experimental features setting.
                 ExperimentalFeatures.MigrateFromOldSettings();
 
-                if (InstallerSupport.HandleVelopackStartup(args)) // may exit program
+                if (!InstallerSupport.HandleVelopackStartup(args)) // may exit program itself
                     return 0; // or may conclude that we need to abort starting up.
 
                 // Needs to be AFTER HandleVelopackStartup, because that can happen when the program is launched by Update rather than

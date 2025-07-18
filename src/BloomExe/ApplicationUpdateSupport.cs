@@ -65,7 +65,7 @@ namespace Bloom
 #if !__MonoCS__
             if (!OkToInitiateUpdateManager)
                 return;
-            if (GetUpdateUrl(verbosity, out var updateUrl))
+            if (!GetUpdateUrl(verbosity, out var updateUrl))
                 return;
 
             _bloomUpdateManager = new UpdateManager(updateUrl);
@@ -83,9 +83,52 @@ namespace Bloom
                     noneNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
                     noneNotifier.Show(message, "", 5);
                 }
+
                 _bloomUpdateManager = null; // no updates, so no need to keep this object around, and allows user to try again
                 return;
             }
+
+            // There are updates available. If the user is not installing updates automatically,
+            // ask whether to download them.
+            if (!autoUpdate)
+            {
+                var msgAvail = LocalizationManager.GetString(
+                    "CollectionTab.UpdatesAvailable",
+                    "A new version of Bloom is available."
+                );
+                var actionInstall = LocalizationManager.GetString(
+                    "CollectionTab.UpdateNow",
+                    "Update Now"
+                );
+                var notifierAvail = new ToastNotifier();
+                notifierAvail.Image.Image = Resources.Bloom;
+                notifierAvail.ToastClicked += (sender, args) =>
+                {
+                    DownloadAndApplyUpdates(verbosity, restartBloom, newVersion);
+                };
+                notifierAvail.Show(msgAvail, actionInstall, 10);
+                return;
+            }
+            // If autoupdate is true, we just go ahead and download the updates.
+            DownloadAndApplyUpdates(verbosity, restartBloom, newVersion);
+        }
+
+        private static bool restartingAfterToastClicked = false;
+
+        private static async void DownloadAndApplyUpdates(
+            BloomUpdateMessageVerbosity verbosity,
+            Action restartBloom,
+            UpdateInfo newVersion
+        )
+        {
+            // If we got here, we have a new version to download, and we want to install it,
+            // either because autoupdates are on, or because the user already said to update now.
+            // However, the actual installation requires restarting Bloom, so we won't do it
+            // until the user either quits Bloom or clicks the toast that says to restart now.
+
+            // Show a notification that we're downloading the update.
+            // We could show a progress bar, but it would be hard to get it right.
+
             // Velopack may use a more sophisticated algorithm to decide which to download,
             // but this should be good enough to give the user an idea.
             var fullSize = newVersion.TargetFullRelease.Size;
@@ -104,7 +147,6 @@ namespace Bloom
 
             var updatingNotifier = new ToastNotifier();
             updatingNotifier.Image.Image = Resources.Bloom;
-            updatingNotifier.Show(updatingMsg, "", -1);
             updatingNotifier.Show(updatingMsg, "", 5);
 
             await _bloomUpdateManager.DownloadUpdatesAsync(newVersion);
@@ -130,23 +172,30 @@ namespace Bloom
             notifier.Image.Image = Resources.Bloom;
             notifier.ToastClicked += (sender, args) =>
             {
+                restartingAfterToastClicked = true;
                 _bloomUpdateManager.WaitExitThenApplyUpdates(null);
                 restartBloom();
             };
             notifier.Show(msg, action, -1); //stay up until clicked
-            if (autoUpdate)
+
+            // When we exit, apply the updates. (If autoupdate is false, this is still appropriate,
+            // because the user responded to the message about updates available by clicking "Update Now",
+            // so we're just completing something already approved).
+            Application.ApplicationExit += (sender, args) =>
             {
-                Application.ApplicationExit += (sender, args) =>
+                if (!restartingAfterToastClicked)
                 {
-                    // When we exit, apply the updates.
-                    // Don't show any UI or automatically restart.
+                    // If the user clicked the toast, we already made the call to WaitExitThenApplyUpdates,
+                    // with arguments that WILL show a progress bar and restart Bloom.
+                    // If that didn't happen, we call it now with different args, so that the updates are applied
+                    // (but Bloom will not restart automatically).
                     _bloomUpdateManager.WaitExitThenApplyUpdates(null, true, false);
-                };
-            }
+                }
+            };
 #endif
         }
 
-        // returns true if we should not proceed with the update check.
+        // returns true if we should proceed with the update check.
         private static bool GetUpdateUrl(
             BloomUpdateMessageVerbosity verbosity,
             out string updateUrl
@@ -157,7 +206,7 @@ namespace Bloom
             // locally-built installer, we are not running in output/debug or output/release, so there
             // is no automatic way to find output/installer/result.
             //updateUrl = "C:\\github\\BloomDesktop\\output\\installer\\result";
-            //return false;
+            //return true;
             updateUrl = null; // default for when we return true
             if (Debugger.IsAttached)
             {
@@ -171,8 +220,8 @@ namespace Bloom
             {
                 // Mostly, we're willing to use a cached value for this URL. But if verbosity is Verbose,
                 // which means the user has asked us to check for updates and we're going to report even
-                // if there is nothing to update, we need to know whether we are online NOW. If not,
-                // the failure report we get when Squirrel fails would be misleading.
+                // if there is nothing to update, we need to know whether we are online NOW. I'm not sure what
+                // Velopack will do if it can't access its URL, but it probably wouldn't be anything we'd like.
                 var result = InstallerSupport.LookupUrlOfVelopackUpdate(
                     verbosity == BloomUpdateMessageVerbosity.Verbose
                 );
@@ -181,7 +230,7 @@ namespace Bloom
                 {
                     // no need to tell them we can't connect, if they didn't explicitly ask us to look for an update
                     if (verbosity != BloomUpdateMessageVerbosity.Verbose)
-                        return true;
+                        return false;
 
                     // but if they did, try and give them a hint about what went wrong
                     if (result.IsConnectivityError)
@@ -206,12 +255,12 @@ namespace Bloom
                         ShowFailureNotification(result.Error.Message);
                     }
 
-                    return true;
+                    return false;
                 }
 
                 updateUrl = result.URL;
             }
-            return false;
+            return true;
         }
 
         private static void ShowFailureNotification(string failMsg)
