@@ -225,8 +225,8 @@ namespace Bloom.Publish.BloomPub.wifi
             PublishToBloomPubApi.SendBook(
                 book,
                 _bookServer,
-                null,
-                (publishedFileName, bloomDPath) =>
+                destFileName: null,
+                sendAction: (publishedFileName, bloomDPath) =>
                 {
                     var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
                     _wifiSender.UploadDataAsync(
@@ -242,16 +242,16 @@ namespace Bloom.Publish.BloomPub.wifi
                     );
                 },
                 _progress,
-                (publishedFileName, bookTitle) =>
+                startingMessageFunction: (publishedFileName, bookTitle) =>
                     _progress.GetMessageWithParams(
                         idSuffix: "Sending",
                         comment: "{0} is the name of the book, {1} is the name of the device",
                         message: "Sending \"{0}\" to device {1}",
                         parameters: new object[] { bookTitle, androidName }
                     ),
-                null,
+                confirmFunction: null,
                 backColor,
-                settings: settings
+                settings
             );
             // Occasionally preparing a book for sending will, despite our best efforts, result in a different sha.
             // For example, it might change missing or out-of-date mp3 files. In case the sha we just computed

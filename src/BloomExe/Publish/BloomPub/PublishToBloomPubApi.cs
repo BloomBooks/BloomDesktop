@@ -375,16 +375,16 @@ namespace Bloom.Publish.BloomPub
             if (destFileName == null)
             {
                 // wifi or usb...make the .bloompub in a temp folder.
-                using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
+                using (var bloomPubTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
                 {
                     BloomPubMaker.CreateBloomPub(
                         settings,
-                        bloomdTempFile.Path,
+                        bloomPubTempFile.Path,
                         book,
                         bookServer,
                         progress
                     );
-                    sendAction(publishedFileName, bloomdTempFile.Path);
+                    sendAction(publishedFileName, bloomPubTempFile.Path);
                     if (confirmFunction != null && !confirmFunction(publishedFileName))
                         throw new ApplicationException(
                             "Book does not exist after write operation."
