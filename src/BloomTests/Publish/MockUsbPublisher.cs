@@ -59,14 +59,14 @@ namespace BloomTests.Publish
             }
         }
 
-        public void SetLastBloomdFileSize(string filePath)
+        public void SetLastBloomPubFileSize(string filePath)
         {
-            _lastPublishedBloomdSize = GetSizeOfBloomdFile(filePath);
+            _lastPublishedBloomPubSize = GetSizeOfBloomPubFile(filePath);
         }
 
-        public string GetStoredBloomdFileSize()
+        public string GetStoredBloomPubFileSize()
         {
-            return _lastPublishedBloomdSize;
+            return _lastPublishedBloomPubSize;
         }
 
         public enum ExceptionToThrow

@@ -105,10 +105,10 @@ namespace BloomTests.Publish
 
             var book = CreateBookWithPhysicalFile(ThreePageHtml);
             var bloomdPath = MakeFakeBloomdFile(book);
-            testUsbPublisher.SetLastBloomdFileSize(bloomdPath);
+            testUsbPublisher.SetLastBloomPubFileSize(bloomdPath);
 
             // SUT
-            var size = testUsbPublisher.GetStoredBloomdFileSize();
+            var size = testUsbPublisher.GetStoredBloomPubFileSize();
 
             // 'size' is a culture-specific string; convert it to the invariant culture for test
             size = double.Parse(size).ToString(CultureInfo.InvariantCulture);

@@ -1,13 +1,9 @@
 // // Copyright (c) 2017 SIL International
 // // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
-using System.Collections.Generic;
 using System;
 using System.Drawing;
-using System.IO;
-using System.Windows.Forms;
 using Bloom.Book;
-using Bloom.Properties;
 using Bloom.web;
 using L10NSharp;
 using Bloom.Utils;
@@ -37,14 +33,14 @@ namespace Bloom.Publish.BloomPub.file
                 BloomPubMaker.BloomPubExtensionWithDot
             );
 
-            var bloomdFileDescription = LocalizationManager.GetString(
+            var bloomPubFileDescription = LocalizationManager.GetString(
                 "PublishTab.Android.bloomdFileFormatLabel",
                 "Bloom Book for Devices",
                 "This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App"
             );
-            var filter = $"{bloomdFileDescription}|*{BloomPubMaker.BloomPubExtensionWithDot}";
+            var filter = $"{bloomPubFileDescription}|*{BloomPubMaker.BloomPubExtensionWithDot}";
 
-            var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(
+            var destFileName = MiscUtils.GetOutputFilePathOutsideCollectionFolder(
                 initialPath,
                 filter
             );
@@ -62,18 +58,18 @@ namespace Bloom.Publish.BloomPub.file
                 book,
                 bookServer,
                 destFileName,
-                null,
+                sendAction: null,
                 progressWithL10N,
-                (publishedFileName, bookTitle) =>
+                startingMessageFunction: (publishedFileName, bookTitle) =>
                     progressWithL10N.GetMessageWithParams(
                         "Saving",
                         "{0} is a file path",
                         "Saving as {0}",
                         destFileName
                     ),
-                null,
+                confirmFunction: null,
                 backColor,
-                settings: settings
+                settings
             );
             PublishToBloomPubApi.ReportAnalytics("file", book);
         }
