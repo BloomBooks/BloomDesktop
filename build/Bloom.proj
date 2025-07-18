@@ -259,7 +259,7 @@
       at https://docs.velopack.io/packaging/bootstrapping#:~:text=By%20default%2C%20Velopack%20will%20accept,dotnet.
       It will help the user try to fix things if they are not.-->
     <Exec
-      Command="vpk pack --packId Bloom$(channel) --packVersion $(Version) --packDir ..\output\installer\content --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net47,webview2=" />
+      Command="vpk pack --packId Bloom$(channel) --packVersion $(Version) --packDir ..\output\installer\content --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net47,webview2" />
     <Copy SourceFiles="$(InstallerOutputFolder)\Bloom$(channel)-win-Setup.exe"
           DestinationFiles="$(InstallerOutputFolder)\$(InstallerFileName)"
     />
