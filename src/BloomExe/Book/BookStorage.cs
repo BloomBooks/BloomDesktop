@@ -9,7 +9,6 @@ using System.Net;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web.UI.WebControls;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
@@ -4043,7 +4042,9 @@ namespace Bloom.Book
         {
             if (GetMaintenanceLevel() >= 8)
                 return;
-            var enterpriseOnlyPages = Dom.SafeSelectNodes("//div[contains(@class, 'enterprise-only')]");
+            var enterpriseOnlyPages = Dom.SafeSelectNodes(
+                "//div[contains(@class, 'enterprise-only')]"
+            );
             foreach (SafeXmlElement page in enterpriseOnlyPages)
             {
                 page.RemoveClass("enterprise-only");
@@ -4061,25 +4062,43 @@ namespace Bloom.Book
         {
             if (featureList.Count <= 1)
                 return; // life is simple
-                        // We want to keep the most specific feature, so we look for the highest subscription tier.
-                        // If we get down to the Pro tier, then we know that Game is more specific than Overlay,
-                        // and Overlay is more specific than the other features.
-            var enterpriseFeatures = featureList.FindAll(x => FeatureRegistry.Features.FindAll(
-                y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Enterprise).Count > 0);
+            // We want to keep the most specific feature, so we look for the highest subscription tier.
+            // If we get down to the Pro tier, then we know that Game is more specific than Overlay,
+            // and Overlay is more specific than the other features.
+            var enterpriseFeatures = featureList.FindAll(
+                x =>
+                    FeatureRegistry.Features
+                        .FindAll(
+                            y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Enterprise
+                        )
+                        .Count > 0
+            );
             if (enterpriseFeatures.Count > 0)
             {
                 featureList.RemoveAll(x => x != enterpriseFeatures[0]);
                 return;
             }
-            var communityFeatures = featureList.FindAll(x => FeatureRegistry.Features.FindAll(
-                y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.LocalCommunity).Count > 0);
+            var communityFeatures = featureList.FindAll(
+                x =>
+                    FeatureRegistry.Features
+                        .FindAll(
+                            y =>
+                                y.Feature == x
+                                && y.SubscriptionTier == SubscriptionTier.LocalCommunity
+                        )
+                        .Count > 0
+            );
             if (communityFeatures.Count > 0)
             {
                 featureList.RemoveAll(x => x != communityFeatures[0]);
                 return;
             }
-            var proFeatures = featureList.FindAll(x => FeatureRegistry.Features.FindAll(
-                y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Pro).Count > 0);
+            var proFeatures = featureList.FindAll(
+                x =>
+                    FeatureRegistry.Features
+                        .FindAll(y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Pro)
+                        .Count > 0
+            );
             if (proFeatures.Count > 0)
             {
                 // Game overlaps with Overlay, but Game is more specific.

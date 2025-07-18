@@ -5,7 +5,9 @@ using System.IO;
 using SIL.Code;
 using SIL.IO;
 using SIL.Windows.Forms.ClearShare;
-using TidyManaged;
+using AngleSharp;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
 using Bloom.ImageProcessing;
 
 namespace Bloom
@@ -21,9 +23,15 @@ namespace Bloom
     /// </summary>
     public class RobustFileIO
     {
-        public static Document DocumentFromFile(string filePath)
+        public static IHtmlDocument DocumentFromFile(string filePath)
         {
-            return RetryUtility.Retry(() => Document.FromFile(filePath));
+            return RetryUtility.Retry(() => {
+                var config = Configuration.Default.WithDefaultLoader();
+                using var context = BrowsingContext.New(config);
+                var parser = context.GetService<IHtmlParser>();
+                var content = File.ReadAllText(filePath);
+                return parser.ParseDocument(content);
+            });
         }
 
         /// <summary>

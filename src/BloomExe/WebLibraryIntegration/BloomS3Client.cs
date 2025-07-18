@@ -7,7 +7,6 @@ using System.Net;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
@@ -162,10 +161,20 @@ namespace Bloom.WebLibraryIntegration
 
         internal List<S3Object> GetMatchingItems(string bucketName, string prefix)
         {
-            return GetAmazonS3WithAccessKey(bucketName)
-                .ListAllObjects(
-                    new ListObjectsV2Request() { BucketName = bucketName, Prefix = prefix }
-                );
+            // Use official AWS SDK ListObjectsV2Async for .NET 8 compatibility
+            var s3Client = GetAmazonS3WithAccessKey(bucketName);
+            var request = new ListObjectsV2Request { BucketName = bucketName, Prefix = prefix };
+            var result = new List<S3Object>();
+            ListObjectsV2Response response;
+            string continuationToken = null;
+            do
+            {
+                request.ContinuationToken = continuationToken;
+                response = s3Client.ListObjectsV2Async(request).GetAwaiter().GetResult();
+                result.AddRange(response.S3Objects);
+                continuationToken = response.NextContinuationToken;
+            } while (response.IsTruncated);
+            return result;
         }
 
         /// <summary>
@@ -194,11 +203,11 @@ namespace Bloom.WebLibraryIntegration
                 // the stored response MUST always go through validation with the origin server first before using it..."
                 request.Headers.CacheControl = "no-cache";
                 if (!BookUpload.IsDryRun)
-                    transferUtility.Upload(request);
+                    transferUtility.UploadAsync(request).GetAwaiter().GetResult();
                 return "https://s3.amazonaws.com/"
                     + _bucketName
                     + "/"
-                    + HttpUtility.UrlEncode(request.Key);
+                    + WebUtility.UrlEncode(request.Key);
             }
         }
 
@@ -270,7 +279,7 @@ namespace Bloom.WebLibraryIntegration
             );
             progress.WriteStatus(uploadMsgFmt, Path.GetFileName(localFilePath));
 
-            _amazonS3ForBookUpload.PutObject(request);
+            _amazonS3ForBookUpload.PutObjectAsync(request).GetAwaiter().GetResult();
         }
 
         // Usually, the S3 ETag is just the md5 hash of the file contents.
@@ -314,7 +323,12 @@ namespace Bloom.WebLibraryIntegration
             };
             // We actually don't need any credentials to download the files we are dealing with because they are public read,
             // but it simplifies the code a bit to just reuse the existing IAmazonS3 object.
-            using (var response = GetAmazonS3WithAccessKey(bucketName).GetObject(request))
+            using (
+                var response = GetAmazonS3WithAccessKey(bucketName)
+                    .GetObjectAsync(request)
+                    .GetAwaiter()
+                    .GetResult()
+            )
             using (var stream = response.ResponseStream)
             using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
@@ -566,7 +580,8 @@ namespace Bloom.WebLibraryIntegration
             // Yes, this encoding means the slashes are converted to %2f.
             // That's unfortunate, but that's how we've always done it.
             // And that's how old Blooms expect to receive it, so we're stuck with it.
-            return $"https://s3.amazonaws.com/{_bucketName}/{HttpUtility.UrlEncode(prefixForBookFiles)}";
+            // Use WebUtility for encoding in .NET 8
+            return $"https://s3.amazonaws.com/{_bucketName}/{WebUtility.UrlEncode(prefixForBookFiles)}";
         }
 
         private static Regex s_s3UrlRegex = new Regex(
@@ -600,7 +615,7 @@ namespace Bloom.WebLibraryIntegration
             var match = s_s3UrlRegex.Match(baseUrl.Replace("%2f", "/"));
             if (!match.Success)
                 throw new ArgumentException("Not a valid base URL", nameof(baseUrl));
-            return HttpUtility.UrlDecode(match.Groups[1].Value);
+            return WebUtility.UrlDecode(match.Groups[1].Value);
         }
 
         public void Dispose()

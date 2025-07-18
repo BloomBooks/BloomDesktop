@@ -1499,6 +1499,8 @@ namespace Bloom
             var installedStringFileFolder =
                 FileLocationUtilities.GetDirectoryDistributedWithApplication(true, "localization");
             var productVersion = Application.ProductVersion;
+            // TODO
+            // var productVersion = "1.0.0";
             if (Program.RunningUnitTests)
                 productVersion = "1.2.3"; // Prevent invalid product version from being used in unit tests.
             if (installedStringFileFolder == null)

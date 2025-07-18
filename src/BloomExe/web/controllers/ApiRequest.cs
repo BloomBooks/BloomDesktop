@@ -8,7 +8,6 @@ using System.Net;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using System.Web;
-using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Utils;
