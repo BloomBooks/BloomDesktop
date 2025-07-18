@@ -91,34 +91,27 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"PodcastUtilities.PortableDevices.dll"=>"lib/dotnet", "PodcastUtilities.PortableDevices.pdb"=>"lib/dotnet", "Interop.PortableDeviceApiLib.dll"=>"lib/dotnet", "Interop.PortableDeviceTypesLib.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/PodcastUtilities.git [refs/heads/master]
-# [2] build: Squirrel (Bloom_Squirrel)
-#     project: Bloom
-#     URL: https://build.palaso.org/buildConfiguration/Bloom_Squirrel?mode=builds
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"*.*"=>"lib/dotnet"}
-#     VCS: https://github.com/BloomBooks/Squirrel.Windows.git [refs/heads/master]
-# [3] build: Bloom Help 6.3 (Bloom_Help_BloomHelp63)
+# [2] build: Bloom Help 6.3 (Bloom_Help_BloomHelp63)
 #     project: Help
 #     URL: https://build.palaso.org/buildConfiguration/Bloom_Help_BloomHelp63?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
-# [4] build: PdfDroplet-Win-master-Continuous (bt54)
+# [3] build: PdfDroplet-Win-master-Continuous (bt54)
 #     project: PdfDroplet
 #     URL: https://build.palaso.org/buildConfiguration/bt54?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/pdfDroplet [master]
-# [5] build: TidyManaged-master-win32-continuous (bt349)
+# [4] build: TidyManaged-master-win32-continuous (bt349)
 #     project: TidyManaged
 #     URL: https://build.palaso.org/buildConfiguration/bt349?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
-# [6] build: Windows master continuous (XliffForHtml_WindowsMasterContinuous)
+# [5] build: Windows master continuous (XliffForHtml_WindowsMasterContinuous)
 #     project: XliffForHtml
 #     URL: https://build.palaso.org/buildConfiguration/XliffForHtml_WindowsMasterContinuous?mode=builds
 #     clean: false
@@ -149,44 +142,6 @@ copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableD
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/PodcastUtilities.PortableDevices.pdb ../lib/dotnet/PodcastUtilities.PortableDevices.pdb
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/Interop.PortableDeviceApiLib.dll ../lib/dotnet/Interop.PortableDeviceApiLib.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/Interop.PortableDeviceTypesLib.dll ../lib/dotnet/Interop.PortableDeviceTypesLib.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/7z.dll ../lib/dotnet/7z.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/7z.exe ../lib/dotnet/7z.exe
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/DeltaCompressionDotNet.MsDelta.dll ../lib/dotnet/DeltaCompressionDotNet.MsDelta.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/DeltaCompressionDotNet.PatchApi.dll ../lib/dotnet/DeltaCompressionDotNet.PatchApi.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/DeltaCompressionDotNet.dll ../lib/dotnet/DeltaCompressionDotNet.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Microsoft.Data.Edm.dll ../lib/dotnet/Microsoft.Data.Edm.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Microsoft.Data.Edm.xml ../lib/dotnet/Microsoft.Data.Edm.xml
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Microsoft.Data.OData.dll ../lib/dotnet/Microsoft.Data.OData.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Microsoft.Data.OData.xml ../lib/dotnet/Microsoft.Data.OData.xml
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Microsoft.Data.Services.Client.dll ../lib/dotnet/Microsoft.Data.Services.Client.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Microsoft.Data.Services.Client.xml ../lib/dotnet/Microsoft.Data.Services.Client.xml
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Microsoft.Web.XmlTransform.dll ../lib/dotnet/Microsoft.Web.XmlTransform.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Mono.Cecil.Mdb.dll ../lib/dotnet/Mono.Cecil.Mdb.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Mono.Cecil.Pdb.dll ../lib/dotnet/Mono.Cecil.Pdb.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Mono.Cecil.Rocks.dll ../lib/dotnet/Mono.Cecil.Rocks.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Mono.Cecil.dll ../lib/dotnet/Mono.Cecil.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/NuGet.Squirrel.dll ../lib/dotnet/NuGet.Squirrel.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/NuGet.Squirrel.pdb ../lib/dotnet/NuGet.Squirrel.pdb
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Octokit.dll ../lib/dotnet/Octokit.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Setup.exe ../lib/dotnet/Setup.exe
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/SharpCompress.dll ../lib/dotnet/SharpCompress.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Squirrel.dll ../lib/dotnet/Squirrel.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Squirrel.pdb ../lib/dotnet/Squirrel.pdb
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/StubExecutable.exe ../lib/dotnet/StubExecutable.exe
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/SyncReleases.exe ../lib/dotnet/SyncReleases.exe
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/SyncReleases.pdb ../lib/dotnet/SyncReleases.pdb
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/System.Spatial.dll ../lib/dotnet/System.Spatial.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/System.Spatial.xml ../lib/dotnet/System.Spatial.xml
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Update-Mono.exe ../lib/dotnet/Update-Mono.exe
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Update-Mono.pdb ../lib/dotnet/Update-Mono.pdb
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Update.exe ../lib/dotnet/Update.exe
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Update.pdb ../lib/dotnet/Update.pdb
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/WpfAnimatedGif.dll ../lib/dotnet/WpfAnimatedGif.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/WriteZipToSetup.exe ../lib/dotnet/WriteZipToSetup.exe
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/rcedit.exe ../lib/dotnet/rcedit.exe
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/signtool.exe ../lib/dotnet/signtool.exe
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/squirrel.windows.props ../lib/dotnet/squirrel.windows.props
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/update.com ../lib/dotnet/update.com
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp63/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
