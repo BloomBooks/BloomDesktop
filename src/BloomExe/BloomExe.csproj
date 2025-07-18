@@ -221,6 +221,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Velopack" Version="0.0.1350-g3ba32af" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="PresentationCore" />
@@ -233,9 +234,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<Reference Include="System.Web.Extensions" />
 		<Reference Include="System.Windows.Forms" />
 		<Reference Include="WindowsBase" />
-		<Reference Include="NuGet.Squirrel">
-			<HintPath>..\..\lib\dotnet\NuGet.Squirrel.dll</HintPath>
-		</Reference>
 		<Reference Include="PdfDroplet">
 			<HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
 		</Reference>
@@ -247,9 +245,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		</Reference>
 		<Reference Include="Splat">
 			<HintPath>..\..\lib\dotnet\Splat.dll</HintPath>
-		</Reference>
-		<Reference Include="Squirrel">
-			<HintPath>..\..\lib\dotnet\Squirrel.dll</HintPath>
 		</Reference>
 		<Reference Include="TidyManaged">
 			<HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>

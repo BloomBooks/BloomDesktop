@@ -608,6 +608,7 @@
       <trans-unit id="CollectionTab.Applying">
         <source xml:lang="en">Applying updates</source>
         <note>ID: CollectionTab.Applying</note>
+        <note>obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkLabel">
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
@@ -780,6 +781,7 @@
       <trans-unit id="CollectionTab.Progress">
         <source xml:lang="en">({0}% complete)</source>
         <note>ID: CollectionTab.Progress</note>
+        <note>obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="CollectionTab.RemoveThisGroup">
         <source xml:lang="en">To remove this group, you will need to delete the folder. Click here to view the folder on your drive.</source>
@@ -846,6 +848,7 @@
       <trans-unit id="CollectionTab.UpdateFailed">
         <source xml:lang="en">A new version appears to be available, but Bloom could not install it.</source>
         <note>ID: CollectionTab.UpdateFailed</note>
+        <note>obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateInstalled">
         <source xml:lang="en">Update for {0} is ready</source>
