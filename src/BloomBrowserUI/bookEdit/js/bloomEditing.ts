@@ -75,6 +75,7 @@ import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { showLinkGridSetupsDialog } from "../bookLinkSetup/LinkGridSetupDialog";
 import { Link } from "../bookLinkSetup/BookLinkTypes";
 import PlaceholderProvider from "./PlaceholderProvider";
+import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -481,6 +482,7 @@ export function SetupElements(
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
     initializeCanvasElementManager();
+    initChoiceWidgetsForEditing();
 
     $(container)
         .find(".bloom-editable")

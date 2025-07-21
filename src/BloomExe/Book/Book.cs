@@ -3645,16 +3645,7 @@ namespace Bloom.Book
             foreach (SafeXmlElement scriptElt in newPageDiv.SafeSelectNodes(".//script[@src]"))
             {
                 var fileName = scriptElt.GetAttribute("src");
-
-                // TODO BL-14565: this is probably out of date; any such file should be part of Bloom Player shared code.
-
-                // Bloom Desktop accesses simpleComprehensionQuiz.js from the output/browser folder.
-                // Bloom Reader uses the copy of that file which comes with bloom-player.
-                // See https://issues.bloomlibrary.org/youtrack/issue/BL-8480.
-                if (
-                    string.IsNullOrEmpty(fileName)
-                    || fileName == PublishHelper.kSimpleComprehensionQuizJs
-                )
+                if (string.IsNullOrEmpty(fileName))
                     continue;
                 var destinationPath = Path.Combine(FolderPath, fileName);
                 // In other similar operations above we don't overwrite an existing file (e.g., images, css).

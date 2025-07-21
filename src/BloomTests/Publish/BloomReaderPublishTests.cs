@@ -902,23 +902,11 @@ namespace BloomTests.Publish
 </body>
 </html>";
 
-        private void NewQuizTestActionsOnFolderBeforeCompressing(string bookFolderPath)
-        {
-            // This file gets placed in the real book's folder after adding a quiz in edit mode, so we mock that process.
-            // But the code which puts an epub into a real browser to determine visibility of elements will actually
-            // try to run this, so it needs to be something which won't throw a javascript error.
-            RobustFile.WriteAllText(
-                Path.Combine(bookFolderPath, PublishHelper.kSimpleComprehensionQuizJs),
-                "//not the real file's contents"
-            );
-        }
-
         [Test]
         public void CompressBookForDevice_BloomEnterprise_ConvertsNewQuizPagesToJson_AndKeepsThem()
         {
             TestHtmlAfterCompression(
                 kNewQuizPageTestsHtml,
-                actionsOnFolderBeforeCompressing: NewQuizTestActionsOnFolderBeforeCompressing,
                 assertionsOnResultingHtmlString: html =>
                 {
                     // The quiz pages should not be removed.
@@ -929,20 +917,10 @@ namespace BloomTests.Publish
                             "//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]",
                             1
                         );
-                    AssertThatXmlIn
-                        .Dom(htmlDom)
-                        .HasSpecifiedNumberOfMatchesForXpath(
-                            $"//script[@src='{PublishHelper.kSimpleComprehensionQuizJs}']",
-                            1
-                        );
                 },
                 assertionsOnZipArchive: paramObj =>
                 {
                     var zip = paramObj.ZipFile;
-                    Assert.AreNotEqual(
-                        -1,
-                        zip.FindEntry(PublishHelper.kSimpleComprehensionQuizJs, false)
-                    );
                     var json = GetEntryContents(zip, BloomPubMaker.kQuestionFileName);
                     var groups = QuestionGroup.FromJson(json);
                     Assert.That(groups, Has.Length.EqualTo(1));

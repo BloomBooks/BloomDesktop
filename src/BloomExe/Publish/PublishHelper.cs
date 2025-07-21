@@ -25,7 +25,6 @@ namespace Bloom.Publish
 {
     public class PublishHelper : IDisposable
     {
-        public const string kSimpleComprehensionQuizJs = "simpleComprehensionQuiz.js";
         public const string kVideoPlaceholderImageFile = "video-placeholder.svg";
         private static PublishHelper _latestInstance;
 
@@ -689,8 +688,8 @@ namespace Bloom.Publish
             }
         }
 
-        // Not really sure what we need here; embedding the simple comprehension quiz JS is
-        // probably obsolete in all situations, but there may be some old version of Bloom Player
+        // Not really sure what we need here; embedding the simple comprehension quiz JS has been
+        // obsolete in all situations, but there may be some old version of Bloom Player
         // that needs it. But for sure we don't need it if the game feature is disabled and thus
         // there are no games in the publication.
         // The old code did not distinguish derivatives, but we're moving more in the
@@ -705,7 +704,7 @@ namespace Bloom.Publish
                         .GetFeatureStatus(book.CollectionSettings.Subscription, FeatureName.Game)
                         .Enabled
                 )
-                    RobustFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));
+                    RobustFile.Delete(Path.Combine(book.FolderPath, "simpleComprehensionQuiz.js"));
             }
         }
 
