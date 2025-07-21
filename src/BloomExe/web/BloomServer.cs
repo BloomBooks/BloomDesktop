@@ -1118,20 +1118,14 @@ namespace Bloom.Api
                 path = info.LocalPathWithoutQuery.Substring(kBloomPrefix.Length);
             }
 
-            // TODO BL-14565: this is clearly out of date but also something of mystery so I'm not sure how to clean it up
-            // We no longer copy this file to the book folder.  For Bloom Desktop, we get it from browser/templates/...
-            // For Bloom Reader, bloom-player has its own copy.
-            if (
-                !RobustFileExistsWithCaseCheck(path)
-                && Path.GetFileName(path) == PublishHelper.kSimpleComprehensionQuizJs
-            )
+            if (!RobustFileExistsWithCaseCheck(path))
             {
-                // TODO: this is probably out of date; any such file should be part of Bloom Player shared code.
-                path = Path.Combine(
-                    BloomFileLocator.FactoryTemplateBookDirectory,
-                    "Activity",
-                    PublishHelper.kSimpleComprehensionQuizJs
-                );
+                // simpleComprehensionQuiz.js contains only the editing code for comprehension quizzes.
+                // It is stored in the output/browser folder, not in the book's folder.  The HTML implies
+                // that the file is in the book's folder, so we need to redirect here.  (BL-14565)
+                // I don't think there's a need to doublecheck the filename itself at this point.
+                var filename = Path.GetFileName(path); ;
+                path = BloomFileLocator.GetBrowserFile(true, filename);
             }
             if (!RobustFileExistsWithCaseCheck(path))
             {
