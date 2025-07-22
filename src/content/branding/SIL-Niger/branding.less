@@ -1,0 +1,31 @@
+@import "../branding-base.less";
+
+[data-book="outside-back-cover-branding-bottom-html"] {
+    flex-direction: row;
+    justify-content: space-evenly;
+    img.branding {
+        &:not(.bloom-badge) {
+            height: 4cm;
+        }
+    }
+}
+
+.marginBox [data-book="outside-back-cover-branding-bottom-html"] {
+    margin-top: auto !important;
+    margin-bottom: 0.5cm;
+
+    padding-top: 10px;
+
+    justify-content: center;
+
+    img {
+        margin-left: unset;
+        margin-right: unset;
+
+        &.logo {
+            // The logo has empty space at the top;
+            // this helps align the top of the image with the top of the text.
+            margin-top: -4mm;
+        }
+    }
+}
