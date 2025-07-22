@@ -34,6 +34,7 @@ import {
     useGetFeatureStatus,
     useGetFeatureAvailabilityMessage
 } from "./featureStatus";
+import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 
@@ -76,7 +77,7 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
             title={tierMessage}
             onClick={() => {
                 if (!featureStatus?.enabled) {
-                    showRequiresSubscriptionDialog();
+                    showRequiresSubscriptionDialog(props.featureName);
                 }
             }}
         />
@@ -380,12 +381,40 @@ export const RequiresSubscriptionNoticeDialog: React.VoidFunctionComponent = () 
     );
 };
 
-export let showRequiresSubscriptionDialog: () => void = () => {
+let showRequiresSubscriptionDialogInternal: () => void = () => {
     window.alert("showRequiresSubscriptionDialog is not set up yet.");
 };
 
+let featureNameToShowInRequiresSubscriptionDialog: string | undefined;
+
+// This function should be used to show the dialog in contexts where there is a RequiresSubscriptionDialog
+// component in the React tree. It will make it visible with the appropriate information
+// for the featureName provided here.
+export function showRequiresSubscriptionDialog(featureName: string) {
+    featureNameToShowInRequiresSubscriptionDialog = featureName;
+    showRequiresSubscriptionDialogInternal();
+}
+
+// This function shows it in the edit view, or any other window where the root isn't a React component
+// that already has a RequiresSubscriptionDialog component in it. It makes a div at the document root
+// and renders the RequiresSubscriptionDialog component into it.
+export function showRequiresSubscriptionDialogInEditView(featureName: string) {
+    ShowEditViewDialog(
+        <RequiresSubscriptionDialog featureName={featureName} />
+    );
+    showRequiresSubscriptionDialogInternal();
+}
+
+// To show this dialog properly, we definitely need a feature name. However, we embed the dialog
+// at the root of various displays, like the whole publish screen, where we don't know which
+// feature we may be displaying it for. So we allow one to be omitted, but if this is to be done,
+// it must be provided when the dialog is shown. This is managed through showRequiresSubscriptionDialog,
+// where the featureName is required, and the featureNameToShowInRequiresSubscriptionDialog, where
+// we put the feature name to be used when the dialog is shown without a props.featureName.
+// This only works because we don't expect more than one instance of this dialog to be shown at a time.
 export const RequiresSubscriptionDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
+    featureName?: string;
 }> = props => {
     // Designed to be invoked natively from TypeScript land.
     const {
@@ -393,7 +422,7 @@ export const RequiresSubscriptionDialog: React.FunctionComponent<{
         closeDialog,
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
-    showRequiresSubscriptionDialog = showDialog;
+    showRequiresSubscriptionDialogInternal = showDialog;
 
     const dialogTitle = useL10n(
         "Bloom Subscription Feature",
@@ -417,6 +446,10 @@ export const RequiresSubscriptionDialog: React.FunctionComponent<{
                     <RequiresSubscriptionNotice
                         darkTheme={false}
                         inSeparateDialog={true}
+                        featureName={
+                            props.featureName ??
+                            featureNameToShowInRequiresSubscriptionDialog
+                        }
                     />
                 </DialogMiddle>
                 <DialogBottomButtons
