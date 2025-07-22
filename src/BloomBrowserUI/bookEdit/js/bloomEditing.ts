@@ -1378,13 +1378,18 @@ document.addEventListener("keydown", e => {
     if (
         e.key === "v" &&
         e.ctrlKey &&
-        !(document.activeElement instanceof HTMLInputElement)
+        !(document.activeElement instanceof HTMLInputElement) && // BL-14989
+        theOneCanvasElementManager?.getActiveOrFirstBloomCanvasOnPage() // BL-15034
     ) {
-        // If the user pressed Ctrl+V we want to do exactly what the paste button does.
-        // We'll invoke it through C#.
-        // Except, if the active element is an <input>, our paste button code does not
-        // currently work. (See the branch pasteToInput for a very ugly way to make it do so.)
-        // So in that case we will just let the browser do its default paste behavior.
+        // If there's a possibility of pasting an image, we need to handle that the same
+        // as the paste button code in C#, with interactions between C# and Javascript.
+        // That process involving C# does not work for <input> elements or for pages that
+        // do not have a canvas element or a normal ckeditor setup.  If the page does not
+        // have a canvas element, we aren't going to paste an image anyway, so we can just
+        // let the browser do its default paste behavior.
+        //
+        // (See the branch pasteToInput for a very ugly way to make the C#/Javascript paste
+        // button code handle pasting into an input element.)
         postJson("editView/paste", {});
         e.preventDefault(); // Prevent the default paste behavior.
     }
