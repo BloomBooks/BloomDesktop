@@ -20,7 +20,7 @@ namespace Bloom.Publish.BloomPub.usb
         private readonly AndroidDeviceUsbConnection _androidDeviceUsbConnection;
         private DeviceNotFoundReportType _previousDeviceNotFoundReportType;
         private BackgroundWorker _connectionHandler;
-        protected string _lastPublishedBloomdSize;
+        protected string _lastPublishedBloomPubSize;
 
         public UsbPublisher(WebSocketProgress progress, BookServer bookServer)
         {
@@ -191,12 +191,12 @@ namespace Bloom.Publish.BloomPub.usb
             }
         }
 
-        protected static string GetSizeOfBloomdFile(string pathToBloomdFile)
+        protected static string GetSizeOfBloomPubFile(string pathToBloomPubFile)
         {
             var size = 0.0m;
-            if (!string.IsNullOrEmpty(pathToBloomdFile))
+            if (!string.IsNullOrEmpty(pathToBloomPubFile))
             {
-                var info = new FileInfo(pathToBloomdFile);
+                var info = new FileInfo(pathToBloomPubFile);
                 size = info.Length / 1048576m; // file length is in bytes and 1Mb = 1024 * 1024 bytes
             }
             return size.ToString("F1");
@@ -211,28 +211,25 @@ namespace Bloom.Publish.BloomPub.usb
             PublishToBloomPubApi.SendBook(
                 book,
                 _bookServer,
-                null,
-                (publishedFileName, path) =>
+                destFileName: null,
+                sendAction: (publishedFileName, path) =>
                 {
-                    _lastPublishedBloomdSize = GetSizeOfBloomdFile(path);
+                    _lastPublishedBloomPubSize = GetSizeOfBloomPubFile(path);
                     _androidDeviceUsbConnection.SendBook(path);
                 },
                 _progress,
-                (publishedFileName, bookTitle) =>
-                    _androidDeviceUsbConnection.BookExists(publishedFileName)
-                        ? _progress.GetTitleMessage(
-                            "ReplacingBook",
-                            "Replacing existing \"{0}\"...",
-                            bookTitle
-                        )
-                        : _progress.GetTitleMessage(
-                            "SendingBook",
-                            "Sending \"{0}\" to your Android device...",
-                            bookTitle
-                        ),
-                publishedFileName => _androidDeviceUsbConnection.BookExists(publishedFileName),
+                startingMessageFunction: (publishedFileName, bookTitle) =>
+                    _progress.GetTitleMessage(
+                        "SendingBook",
+                        "Sending \"{0}\" to your Android device...",
+                        bookTitle
+                    ),
+                // We used to confirm the book arrived on the device, but that no longer works
+                // reliably since the Bloom Reader code will move the file to its private storage
+                // as soon as it is received.
+                confirmFunction: null,
                 backColor,
-                settings: settings
+                settings
             );
             PublishToBloomPubApi.ReportAnalytics("usb", book);
         }
@@ -285,7 +282,7 @@ namespace Bloom.Publish.BloomPub.usb
                 "DeviceOutOfSpace",
                 string.Format(
                     "The device reported that it does not have enough space for this book. The book is {0} MB.",
-                    _lastPublishedBloomdSize ?? "of unknown"
+                    _lastPublishedBloomPubSize ?? "of unknown"
                 ),
                 ProgressKind.Error
             );
