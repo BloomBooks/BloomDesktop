@@ -11,14 +11,16 @@ namespace Bloom.Utils
     // * OnAnyEvent -> DebounceAnyEvent. Likewise for OnAllEvents, OnChanged, etc.
 
     /// <summary>
-    /// This class adds extensions to FileSystemWatcher to debounce FileSystemWatcher events.
+    /// This class adds extensions to FileSystemWatcherWrapper to debounce FileSystemWatcher events.
+    /// The idea is to enhance FileSystemWatcher, but the FileSystemWatcher must be wrapped in a FileSystemWatcherWrapper
+    /// so that this class can detect if it has been disposed and not send notifications after that.
     /// The debouncing basically means if multiple events of the specified {changeTypes} happen within the delay ,
     /// {handler} will only be invoked once, and it is for the last one.
     /// </summary>
     public static class FileSystemWatcherExtensions
     {
         public static IDisposable DebounceAnyEvent(
-            this FileSystemWatcher source,
+            this FileSystemWatcherWrapper source,
             WatcherChangeTypes changeTypes,
             FileSystemEventHandler handler,
             int delay
@@ -74,36 +76,42 @@ namespace Bloom.Utils
                     }
                 }
                 cts.Dispose();
-                handler(sender, e);
+                // Don't send notifications if the watcher has been disposed or is not enabled.
+                // It's somewhat debatable whether we might want a notification for something that
+                // happened before we turned off EnableRaisingEvents, but in practice,
+                // unit tests get messed up by notifications arising after we've attempted to
+                // shut everything down. I think it's safer this way even for normal operation.
+                if (!source.IsDisposed && source.EnableRaisingEvents)
+                    handler(sender, e);
             }
         }
 
         public static IDisposable DebounceAllEvents(
-            this FileSystemWatcher source,
+            this FileSystemWatcherWrapper source,
             FileSystemEventHandler handler,
             int delay
         ) => DebounceAnyEvent(source, WatcherChangeTypes.All, handler, delay);
 
         public static IDisposable DebounceCreated(
-            this FileSystemWatcher source,
+            this FileSystemWatcherWrapper source,
             FileSystemEventHandler handler,
             int delay
         ) => DebounceAnyEvent(source, WatcherChangeTypes.Created, handler, delay);
 
         public static IDisposable DebounceDeleted(
-            this FileSystemWatcher source,
+            this FileSystemWatcherWrapper source,
             FileSystemEventHandler handler,
             int delay
         ) => DebounceAnyEvent(source, WatcherChangeTypes.Deleted, handler, delay);
 
         public static IDisposable DebounceChanged(
-            this FileSystemWatcher source,
+            this FileSystemWatcherWrapper source,
             FileSystemEventHandler handler,
             int delay
         ) => DebounceAnyEvent(source, WatcherChangeTypes.Changed, handler, delay);
 
         public static IDisposable DebounceRenamed(
-            this FileSystemWatcher source,
+            this FileSystemWatcherWrapper source,
             FileSystemEventHandler handler,
             int delay
         ) => DebounceAnyEvent(source, WatcherChangeTypes.Renamed, handler, delay);

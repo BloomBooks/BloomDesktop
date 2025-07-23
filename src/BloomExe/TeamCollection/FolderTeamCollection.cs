@@ -23,8 +23,8 @@ namespace Bloom.TeamCollection
     public class FolderTeamCollection : TeamCollection
     {
         private string _repoFolderPath; // the (presumably somehow shared) folder storing the repo
-        private FileSystemWatcher _booksWatcher; // watches the _repoFolderPath/Books for changes
-        private FileSystemWatcher _otherWatcher; // watches the _repoFolderPath/Other for changes
+        private FileSystemWatcherWrapper _booksWatcher; // watches the _repoFolderPath/Books for changes
+        private FileSystemWatcherWrapper _otherWatcher; // watches the _repoFolderPath/Other for changes
 
         // These four variables work together to track the last book we modified and whether we
         // are still doing so (and to lock access to the other two). They are manipulated
@@ -739,7 +739,7 @@ namespace Bloom.TeamCollection
         protected internal override void StartMonitoring()
         {
             base.StartMonitoring();
-            _booksWatcher = new FileSystemWatcher();
+            _booksWatcher = new FileSystemWatcherWrapper();
 
             var booksPath = Path.Combine(_repoFolderPath, "Books");
             if (!Directory.Exists(booksPath))
@@ -761,7 +761,7 @@ namespace Bloom.TeamCollection
             // Begin watching.
             _booksWatcher.EnableRaisingEvents = true;
 
-            _otherWatcher = new FileSystemWatcher(Path.Combine(_repoFolderPath, "Other"));
+            _otherWatcher = new FileSystemWatcherWrapper(Path.Combine(_repoFolderPath, "Other"));
             _otherWatcher.NotifyFilter = NotifyFilters.LastWrite;
             _otherWatcher.DebounceChanged(OnCollectionFilesChanged, kDebouncePeriodInMs);
             _otherWatcher.EnableRaisingEvents = true;
