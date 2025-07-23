@@ -1262,6 +1262,8 @@ namespace Bloom.web.controllers
         public static string GetObfuscatedEmail(string userEmail = "")
         {
             var email = string.IsNullOrWhiteSpace(userEmail) ? _reportInfo?.UserEmail : userEmail;
+            if (string.IsNullOrEmpty(email))
+                return email;   // invalid, so no need to obfuscate
             string obfuscatedEmail;
             try
             {
