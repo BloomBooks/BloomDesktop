@@ -33,7 +33,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Bloom.WebLibraryIntegration
@@ -160,9 +159,9 @@ namespace Bloom.WebLibraryIntegration
         /// <summary>
         /// Only for use in tests
         /// </summary>
-        internal async Task<string> UploadBook_ForUnitTestAsync(string bookFolder)
+        internal string UploadBook_ForUnitTest(string bookFolder)
         {
-            return await UploadBookAsync(
+            return UploadBook(
                 bookFolder,
                 new NullProgress(),
                 null,
@@ -177,8 +176,9 @@ namespace Bloom.WebLibraryIntegration
             );
         }
 
-        internal async Task<(string, string)> UploadBook_ForUnitTestAsync(
+        internal string UploadBook_ForUnitTest(
             string bookFolder,
+            out string s3PrefixUploadedTo,
             IProgress progress = null,
             string existingBookObjectId = null,
             CollectionSettings collectionSettings = null
@@ -186,7 +186,7 @@ namespace Bloom.WebLibraryIntegration
         {
             if (progress == null)
                 progress = new NullProgress();
-            var result = await UploadBookAsync(
+            var result = UploadBook(
                 bookFolder,
                 progress,
                 existingBookObjectId,
@@ -200,10 +200,11 @@ namespace Bloom.WebLibraryIntegration
                 null
             );
 
-            return (result, _s3PrefixToUploadTo);
+            s3PrefixUploadedTo = _s3PrefixToUploadTo;
+            return result;
         }
 
-        private async Task<string> UploadBookAsync(
+        private string UploadBook(
             string bookFolder,
             IProgress progress,
             string existingBookObjectIdOrNull,
@@ -216,8 +217,7 @@ namespace Bloom.WebLibraryIntegration
             string metadataLang1Code,
             string metadataLang2Code,
             bool isForBulkUpload = false,
-            bool changeUploader = false,
-            Control controlToInvokeOn = null
+            bool changeUploader = false
         )
         {
             var htmlFile = BookStorage.FindBookHtmlInFolder(bookFolder);
@@ -297,7 +297,7 @@ namespace Bloom.WebLibraryIntegration
                     )
                     {
                         var stagingDirectory = stagingDirectoryTempFolder.FolderPath;
-                        await SetUpStagingAsync(
+                        SetUpStaging(
                             bookFolder,
                             stagingDirectory,
                             progress,
@@ -309,8 +309,7 @@ namespace Bloom.WebLibraryIntegration
                             metadataLang1Code,
                             metadataLang2Code,
                             collectionSettings?.SettingsFilePath,
-                            isForBulkUpload,
-                            controlToInvokeOn
+                            isForBulkUpload
                         );
 
                         string[] filesToUpload = null;
@@ -495,7 +494,7 @@ namespace Bloom.WebLibraryIntegration
         }
 
         // Copy the needed files to the staging directory and make any modifications needed before upload.
-        private async Task SetUpStagingAsync(
+        private void SetUpStaging(
             string pathToBloomBookDirectory,
             string stagingDirectory,
             IProgress progress,
@@ -507,8 +506,7 @@ namespace Bloom.WebLibraryIntegration
             string metadataLang1Code,
             string metadataLang2Code,
             string collectionSettingsPath = null,
-            bool isForBulkUpload = false,
-            Control controlToInvokeOn = null
+            bool isForBulkUpload = false
         )
         {
             var filter = new BookFileFilter(pathToBloomBookDirectory)
@@ -537,11 +535,7 @@ namespace Bloom.WebLibraryIntegration
                     metadataLang2Code
                 );
 
-            await PublishHelper.ReportInvalidFontsAsync(
-                stagingDirectory,
-                progress,
-                controlToInvokeOn
-            );
+            PublishHelper.ReportInvalidFonts(stagingDirectory, progress);
 
             // Really crop images, which allows us to simplify the representation of background images,
             // so the new structure with the background canvas elements doesn't get uploaded.
@@ -886,7 +880,7 @@ namespace Bloom.WebLibraryIntegration
         /// Common routine used in normal upload and bulk upload.
         /// </summary>
         /// <returns>On success, returns the book objectId; on failure, returns empty string</returns>
-        internal async Task<string> FullUpload(
+        internal string FullUpload(
             Book.Book book,
             IProgress progress,
             PublishModel publishModel,
@@ -1018,7 +1012,7 @@ namespace Bloom.WebLibraryIntegration
                 if (progress.CancelRequested)
                     return "";
 
-                var bookObjectId = await UploadBookAsync(
+                var bookObjectId = UploadBook(
                     bookFolder,
                     progress,
                     existingBookObjectIdOrNull,
@@ -1031,8 +1025,7 @@ namespace Bloom.WebLibraryIntegration
                     book.BookData.MetadataLanguage1Tag,
                     book.BookData.MetadataLanguage2Tag,
                     bookParams.IsForBulkUpload,
-                    changeUploader,
-                    publishModel.View
+                    changeUploader
                 );
 
                 Debug.Assert(

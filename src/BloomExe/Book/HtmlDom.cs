@@ -49,22 +49,9 @@ namespace Bloom.Book
             _dom.LoadXml("<html><head></head><body></body></html>");
         }
 
-        // Cloning used to be automatic, but I don't know why. Seems like quite often
-        // we created the SafeXmlDocument precisely to be the content of an HtmlDom,
-        // and cloning it just wastes time. For now I'm relaxing it very slightly,
-        // allowing one to be created without cloning only when our own CreateFromHtmlFile
-        // method produced the SafeXmlDocument.
-        private HtmlDom(SafeXmlDocument domToWrap, bool clone)
-        {
-            _dom = clone ? domToWrap.Clone() : domToWrap;
-        }
-
         public HtmlDom(SafeXmlDocument domToWrap)
-            : this(domToWrap, true) { }
-
-        public static HtmlDom CreateFromHtmlFile(string path)
         {
-            return new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path), false);
+            _dom = domToWrap.Clone();
         }
 
         /// <summary>

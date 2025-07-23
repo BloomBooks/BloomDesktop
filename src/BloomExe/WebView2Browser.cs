@@ -37,64 +37,20 @@ namespace Bloom
         private CopyCommand _copyCommand;
         private UndoCommand _undoCommand;
         private CutCommand _cutCommand;
-        private bool _inDisposeMethod;
-
-        // All our existing code assumes we can just construct a browser. And it seems to work.
-        // But in some newer code involving awaits and multiple browsers in unit tests, we
-        // really need to properly await InitWebView. The dummy argument is just so we can force this
-        // constructor to be called in those cases, while still allowing the default constructor
-        // to work the old way.
-        private WebView2Browser(string dummy) { }
-
-        /// <summary>
-        /// This gives us a way to create a WebView2Browser with the async init properly awaited.
-        /// It would be good to use this everywhere, but I think a lot of stuff would have to become async.
-        /// </summary>
-        /// <returns></returns>
-        public static async Task<WebView2Browser> CreateAsync()
-        {
-            // the argument forces it to use the special private constructor that does nothing.
-            var browser = new WebView2Browser("dummy");
-            // The rest of this should match the other constructor, except we can await InitWebView
-            // (or anything else we need to).
-            browser.InitializeComponent();
-            await browser.InitWebView();
-            return browser;
-        }
 
         public WebView2Browser()
         {
             InitializeComponent();
 
-            // This should be awaited, but we can't use await in a constructor. If possible, use CreateAsync.
-            // Otherwise, this method will return a new browser, and eventually it will get initialized, but
-            // EnsureCoreWebView2Async may not have completed, so the CoreWebView2 property may not be set yet,
-            // and the CoreWebView2InitializationCompleted event may not have been raised yet, so all kinds of
-            // stuff is not set up.
-            // We work around this by not setting _readyToNavigate to true until the event IS raised,
-            // and having various things call EnsureBrowserReadyToNavigate which waits until that is true.
-            // This is ugly, but so is using async code all over the place. (Not only does every caller of an
-            // async method have to change its signature and be awaited, but also we can't use ref or out
-            // parameters, and we can't hold a lock while awaiting, because the continuation may take place
-            // in a different thread. This is a problem for most of our API handlers.
-            // Moreover, async code is reentrant: user events like handling a mouse click could
-            // happen between awaiting something and continuing the method, and even a lock won't prevent it;
-            // the reentrancy happens on the main thread.
-            // Moreover anyc code depends on pumping events in the main message loop, and if it needs to invoke
-            // something on that thread, it's really easy to deadlock.
-            // A lot of this is because of the way that WinForms works, and when we finally get away from WinForms,
-            // we may be able to get to an environment where we don't need to try so hard to avoid async.)
+            // I don't think anything we're doing here will take long enough for us to need to await it.
             InitWebView();
-        }
 
-        private void SetupEventHandling()
-        {
             _webview.CoreWebView2InitializationCompleted += (
                 object sender,
                 CoreWebView2InitializationCompletedEventArgs args
             ) =>
             {
-                if (Disposing || _inDisposeMethod)
+                if (Disposing)
                     return; // disposed before initialization completed.  See BL-13593.
                 if (args.IsSuccess == false)
                 {
@@ -246,7 +202,7 @@ namespace Bloom
 
         static int dataFolderCounter = 0;
 
-        private async Task InitWebView()
+        private async void InitWebView()
         {
             // based on https://stackoverflow.com/questions/63404822/how-to-disable-cors-in-wpf-webview2
             // this should disable CORS, but it doesn't seem to work, at least for fixing communication from
@@ -354,10 +310,6 @@ namespace Bloom
                         + dataFolderCounter++
                 );
             } while (Directory.Exists(dataFolder));
-            // This sets up a handler for the CoreWebView2InitializationCompleted event, which will run before
-            // EnsureCoreWebView2Async returns if we're awaiting properly, so we need to set up that handler
-            // before calling EnsureCoreWebView2Async.
-            SetupEventHandling();
             var env = await CoreWebView2Environment.CreateAsync(
                 browserExecutableFolder: AlternativeWebView2Path,
                 userDataFolder: dataFolder,
@@ -365,7 +317,7 @@ namespace Bloom
             );
             await _webview.EnsureCoreWebView2Async(env);
 
-            // It is kinda hard to get a click event from webview2. This needs to be explicitly sent from the browser code,
+            // I is kinda hard to get a click event from webview2. This needs to be explicitly sent from the browser code,
             // e.g. (window as any).chrome.webview.postMessage("browser-clicked");
             _webview.WebMessageReceived += (o, e) =>
             {
@@ -647,15 +599,6 @@ namespace Bloom
             return result3;
         }
 
-        /// <summary>
-        /// Executes a JavaScript script asynchronously and retrieves the result as a JSON-encoded string.
-        /// </summary>
-        public override async Task<string> GetObjectFromJavascriptAsync(string script)
-        {
-            // Whatever the javascript produces gets JSON encoded automatically by ExecuteScriptAsync.
-            return await _webview.ExecuteScriptAsync(script);
-        }
-
         public override void SaveHTML(string path)
         {
             throw new NotImplementedException();
@@ -826,12 +769,6 @@ namespace Bloom
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            // Have seen bizarre cases involving Dispose in the tail end of an async method where
-            // something goes wrong as the async method is resumed which somehow has the result that
-            // while we are disposing the _webview, the CoreWebView2InitializationCompleted event handler
-            // fires with success false, but Disposing returns false!! Hopefully this variable will be
-            // more reliable.
-            _inDisposeMethod = true;
             if (disposing)
             {
                 int procId = 0;
@@ -897,16 +834,13 @@ namespace Bloom
         /// All of the browsers will have been disposed by the the application shutting down before the following
         /// method is called.
         /// </remarks>
-        private static readonly Dictionary<int, string> WebView2ProcessToUserFolder =
-            new Dictionary<int, string>();
-
+        private static readonly Dictionary<int, string> WebView2ProcessToUserFolder = new Dictionary<int, string>();
         /// <summary>
         /// Unit tests in particular can create WebView2 processes that reuse the same process IDs.  This set of
         /// files are those that we had already recorded in the dictionary with the same process ID but which have
         /// different names.  We want to delete these as well, since they are no longer needed.
         /// </summary>
         private static HashSet<string> ObsoleteWebView2UserFolders = new HashSet<string>();
-
         public static void CleanupWebView2UserFolders()
         {
             try
@@ -930,7 +864,9 @@ namespace Bloom
                                 {
                                     RobustIO.DeleteDirectory(userFolder, true);
                                 }
-                                catch (Exception) { }
+                                catch (Exception)
+                                {
+                                }
                             }
                             WebView2ProcessToUserFolder.Remove(key);
                         }
@@ -954,7 +890,9 @@ namespace Bloom
                         {
                             RobustIO.DeleteDirectory(userFolder, true);
                         }
-                        catch (Exception) { }
+                        catch (Exception)
+                        {
+                        }
                     }
                 }
             }

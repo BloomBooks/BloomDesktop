@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Publish;
@@ -51,7 +50,7 @@ namespace Bloom.WebLibraryIntegration
         /// (over-writing the existing book) without informing the user.
         /// </summary>
         /// <remarks>This method is triggered by starting Bloom with "upload" on the cmd line.</remarks>
-        public async Task BulkUpload(ApplicationContainer container, UploadParameters options)
+        public void BulkUpload(ApplicationContainer container, UploadParameters options)
         {
             BookUpload.Destination = options.Dest;
 
@@ -126,11 +125,11 @@ namespace Bloom.WebLibraryIntegration
                         "Magenta",
                         $"Looking in '{bookParams.Folder}'..."
                     );
-                    context = await UploadCollectionOrKeepLookingDeeper(
+                    UploadCollectionOrKeepLookingDeeper(
                         progress,
                         container,
                         bookParams,
-                        context
+                        ref context
                     );
 
                     if (_collectionFoldersUploaded.Count > 0)
@@ -184,15 +183,15 @@ namespace Bloom.WebLibraryIntegration
         /// Handles the recursion through directories: if a folder looks like a Bloom book upload it; otherwise, try its children.
         /// Invisible folders like .hg are ignored.
         /// </summary>
-        private async Task<ProjectContext> UploadCollectionOrKeepLookingDeeper(
+        private void UploadCollectionOrKeepLookingDeeper(
             IProgress progress,
             ApplicationContainer container,
             BookUploadParameters uploadParams,
-            ProjectContext context
+            ref ProjectContext context
         )
         {
             if (IsPrivateFolder(uploadParams.Folder))
-                return context;
+                return;
 
             var collectionPath = Directory
                 .GetFiles(uploadParams.Folder, "*.bloomCollection")
@@ -208,7 +207,7 @@ namespace Bloom.WebLibraryIntegration
                     progress.WriteError(
                         $"Skipping {uploadParams.Folder} because there is no default bookshelf."
                     );
-                    return context;
+                    return;
                 }
                 var featureStatus = FeatureStatus.GetFeatureStatus(
                     settings.Subscription,
@@ -219,15 +218,10 @@ namespace Bloom.WebLibraryIntegration
                     progress.WriteError(
                         $"Skipping {uploadParams.Folder} because bulk upload requires a Bloom subscription tier of at least \"{featureStatus.SubscriptionTier}\". "
                     );
-                    return context;
+                    return;
                 }
-                context = await BulkUploadBooksOfOneCollection(
-                    progress,
-                    container,
-                    uploadParams,
-                    context
-                );
-                return context;
+                BulkUploadBooksOfOneCollection(progress, container, uploadParams, ref context);
+                return;
             }
             else // go looking deeper for collection folders
             {
@@ -238,25 +232,22 @@ namespace Bloom.WebLibraryIntegration
                         var childParams = uploadParams;
                         childParams.Folder = sub;
                         progress.WriteMessageWithColor("Magenta", $"\nLooking in '{sub}'...");
-                        context = await UploadCollectionOrKeepLookingDeeper(
+                        UploadCollectionOrKeepLookingDeeper(
                             progress,
                             container,
                             childParams,
-                            context
+                            ref context
                         );
                     }
                 }
             }
-
-            return context;
         }
 
-        private async Task<ProjectContext> BulkUploadBooksOfOneCollection(
+        private void BulkUploadBooksOfOneCollection(
             IProgress progress,
             ApplicationContainer container,
             BookUploadParameters uploadParams,
-            // If passed a context for the right collection, we return it; otherwise, we may create and return a new one.
-            ProjectContext context
+            ref ProjectContext context
         )
         {
             foreach (var sub in Directory.GetDirectories(uploadParams.Folder))
@@ -269,12 +260,7 @@ namespace Bloom.WebLibraryIntegration
                     {
                         var bookParams = uploadParams;
                         bookParams.Folder = sub;
-                        context = await UploadBookInternal(
-                            progress,
-                            container,
-                            bookParams,
-                            context
-                        );
+                        UploadBookInternal(progress, container, bookParams, ref context);
                     }
                     catch (Exception e)
                     {
@@ -303,8 +289,6 @@ namespace Bloom.WebLibraryIntegration
                     }
                 }
             }
-
-            return context;
         }
 
         private void ReportSuspiciousFilesInFolderLackingHtml(IProgress progress, string folder)
@@ -338,13 +322,11 @@ namespace Bloom.WebLibraryIntegration
             }
         }
 
-        private async Task<ProjectContext> UploadBookInternal(
+        private void UploadBookInternal(
             IProgress progress,
             ApplicationContainer container,
             BookUploadParameters uploadParams,
-            // If passed a context for the right collection, we return it; otherwise, we may create and return a new one.
-            // We want a ref param, but async methods can't do that.
-            ProjectContext context
+            ref ProjectContext context
         )
         {
             progress.WriteMessageWithColor("Cyan", "Starting to upload " + uploadParams.Folder);
@@ -358,7 +340,7 @@ namespace Bloom.WebLibraryIntegration
                 progress.WriteError(
                     "Skipping book because no collection file was found in its parent directory."
                 );
-                return context;
+                return;
             }
             _collectionFoldersUploaded.Add(collectionPath);
 
@@ -401,7 +383,7 @@ namespace Bloom.WebLibraryIntegration
                     progress.WriteError(
                         $"Did not upload '{Path.GetFileName(uploadParams.Folder)}' because there is already at least one book with the same ID ('{book.BookInfo.Id}') in BloomLibrary. You can get more information by uploading it individually."
                     );
-                    return context;
+                    return;
                 }
                 progress.WriteMessageWithColor(
                     "orange",
@@ -445,7 +427,7 @@ namespace Bloom.WebLibraryIntegration
                         $"Skipping '{Path.GetFileName(uploadParams.Folder)}' because it has not changed since being uploaded."
                     );
                     ++_booksSkipped;
-                    return context; // skip this one; we already uploaded it earlier.
+                    return; // skip this one; we already uploaded it earlier.
                 }
             }
             // save local copy of hashes file: it will be uploaded with the other book files
@@ -526,7 +508,7 @@ namespace Bloom.WebLibraryIntegration
                     );
 
                     // On success, returns the book objectId; on failure, returns empty string
-                    uploadResult = await _singleBookUploader.FullUpload(
+                    uploadResult = _singleBookUploader.FullUpload(
                         book,
                         progress,
                         publishModel,
@@ -560,8 +542,6 @@ namespace Bloom.WebLibraryIntegration
                 progress.WriteError("{0} was not uploaded.  {1}", uploadParams.Folder, reason);
                 ++_booksWithErrors;
             }
-
-            return context;
         }
 
         /// <summary>
