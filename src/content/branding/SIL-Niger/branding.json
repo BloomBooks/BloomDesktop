@@ -1,0 +1,16 @@
+{
+    "presets": [
+        {
+            "data-book": "title-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='logo.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding logo' src='logo.svg'/><div><p>© Tous droits réservés</p><p></p><p>SIL Niger</p><p>BP 10151</p><p>Niamey, Niger</p></div>",
+            "condition": "always"
+        }
+    ]
+}
