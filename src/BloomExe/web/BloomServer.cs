@@ -899,7 +899,13 @@ namespace Bloom.Api
             return ProcessAnyFileContent(info, localPath);
         }
 
-        // This is becoming refactor-soup, hence the not so useful name.
+        /// <summary>
+        /// Try to find the full path to the requested file based on the input arguments.
+        /// If the file is not found, return null.
+        /// </summary>
+        /// <remarks>
+        /// This is becoming refactor-soup, hence the not so useful name.
+        /// </remarks>
         private string ProcessPath(string localPath, string modPath)
         {
             if (localPath.Contains("favicon.ico")) // browsers ask for this
@@ -929,6 +935,7 @@ namespace Bloom.Api
                 // can return contents of any file that exists if the URL gives its full path...even ones that
                 // are generated temp files most certainly NOT distributed with the application.
                 return FileLocationUtilities.GetFileDistributedWithApplication(
+                    true,
                     BloomFileLocator.BrowserRoot,
                     modPath
                 );
@@ -948,6 +955,13 @@ namespace Bloom.Api
             try
             {
                 path = ProcessPath(localPath, modPath);
+                if (String.IsNullOrEmpty(path))
+                {
+                    // LocateFile includes userInstalledSearchPaths (e.g. a shortcut to a collection in a non-standard location)
+                    path = BloomFileLocator.sTheMostRecentBloomFileLocator?.LocateFile(localPath);
+                    if (String.IsNullOrEmpty(path))
+                        path = localPath;
+                }
             }
             catch (ApplicationException e)
             {
@@ -1886,6 +1900,8 @@ namespace Bloom.Api
                 // This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
                 // of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
                 EpubMaker.kEPUBExportFolder.ToLowerInvariant(),
+                // old quiz pages ask for this script, but it's now bundled with rest of edit code
+                "simplecomprehensionquiz.js",
                 // bloom-player always asks for questions.json for every book.
                 // Being only for quiz pages, not every book has it, so we don't want spurious error reports.
                 BloomPubMaker.kQuestionFileName.ToLowerInvariant()
