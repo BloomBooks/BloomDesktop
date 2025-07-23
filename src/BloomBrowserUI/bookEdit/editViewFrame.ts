@@ -32,6 +32,7 @@ export interface IEditViewFrameExports {
         ) => Promise<string | undefined>,
         closing: (canceled: boolean) => void
     );
+    showRequiresSubscriptionDialog(featureName: string): void;
 }
 
 export function SayHello() {
@@ -58,6 +59,8 @@ import * as ReactDOM from "react-dom";
 import { FunctionComponentElement } from "react";
 
 import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
+import { getPageIframeBody } from "../utils/shared";
+import { showRequiresSubscriptionDialogInEditView } from "../react_components/requiresSubscription";
 export { showAdjustTimingsDialog as showAdjustTimingsDialogFromEditViewFrame };
 
 //Called by c# using editTabBundle.handleUndo()
@@ -197,15 +200,27 @@ export function getModalDialogContainer(): HTMLElement | null {
 }
 
 export function ShowEditViewDialog(dialog: FunctionComponentElement<any>) {
-    let root = document.getElementById("modal-dialog-react-root");
+    const doc = getPageIframeBody()?.ownerDocument ?? document;
+    // I don't fully understand this. Something seems to go wrong if we just call this function
+    // directly from the toolbox, but when we call it through getEditablePageBundleExports,
+    // somehow the document we get is the parent window's document. Yet that works!
+    // I put this code in to give a hint of what will probably go wrong if we try to use
+    // this function directly from the toolbox.
+    if (doc !== document && doc.defaultView?.top?.document !== document) {
+        alert(
+            "ShowEditViewDialog called from wrong iframe. Can't render React function in a different document."
+        );
+        return;
+    }
+    let root = doc.getElementById("modal-dialog-react-root");
     // remove any left over dialog stuff
     if (root) {
-        document.body.removeChild(root);
+        doc.body.removeChild(root);
     }
     // add a place to root the React system.
-    root = document.createElement("div");
+    root = doc.createElement("div");
     root.id = "modal-dialog-react-root";
-    document.body.appendChild(root);
+    doc.body.appendChild(root);
     // Note that modal dialogs actually create a sibling to this, they don't actually end up being children in the DOM.
     // Also note that if we call this twice, everything is fine: MUI doesn't seem to actually care if we remove the
     // root we called render on; it has already made a child of Body that it is using for the root of its dialog.
@@ -234,4 +249,8 @@ export function showEditViewBookSettingsDialog(
     initiallySelectedGroupIndex?: number
 ) {
     showBookSettingsDialog(initiallySelectedGroupIndex);
+}
+
+export function showRequiresSubscriptionDialog(featureName: string): void {
+    showRequiresSubscriptionDialogInEditView(featureName);
 }
