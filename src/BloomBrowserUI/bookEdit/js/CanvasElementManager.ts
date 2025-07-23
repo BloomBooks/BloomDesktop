@@ -5566,6 +5566,9 @@ export class CanvasElementManager {
         // Preserve the Auto Height setting.  See BL-13931.
         if (sourceElement.classList.contains("bloom-noAutoHeight"))
             patriarchDuplicateElement.classList.add("bloom-noAutoHeight");
+        // Preserve the bloom-gif class, which is used to indicate that this is a GIF. (BL-15037)
+        if (sourceElement.classList.contains("bloom-gif"))
+            patriarchDuplicateElement.classList.add("bloom-gif");
 
         // copy any data-sound
         const sourceDataSound = sourceElement.getAttribute("data-sound");
@@ -5754,6 +5757,9 @@ export class CanvasElementManager {
         // Preserve the Auto Height setting.  See BL-13931.
         if (sourceElement.classList.contains("bloom-noAutoHeight"))
             newChildElement.classList.add("bloom-noAutoHeight");
+        // Preserve the bloom-gif class, which is used to indicate that this is a GIF. (BL-15037)
+        if (sourceElement.classList.contains("bloom-gif"))
+            newChildElement.classList.add("bloom-gif");
 
         this.matchSizeOfSource(sourceElement, newChildElement);
         // We just replaced the bloom-editables from the 'addChildInternal' with a clone of the source

@@ -28,8 +28,6 @@ namespace Bloom.Collection
                 out var flavor,
                 out var subUnitName
             );
-            if (BrandingSettings.SubscriptionsThatUseDefaultBranding.Contains(baseKey))
-                baseKey = "Default";
 
             var brandingDirectory = BloomFileLocator.GetBrowserDirectory("branding");
             return Directory

@@ -7,7 +7,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using Bloom.ToPalaso;
 using PodcastUtilities.PortableDevices;
 using SIL.IO;
 
@@ -77,36 +76,19 @@ namespace Bloom.Publish.BloomPub.usb
             _stopLookingForDevice = true;
         }
 
-        public bool BookExists(string fileName)
+        public void SendBook(string bloomPubPath)
         {
-            if (_device == null || _bloomFolderPath == null)
-                throw new InvalidOperationException("Must connect before calling BookExists");
-
-            try
-            {
-                return _device.GetObjectFromPath(Path.Combine(_bloomFolderPath, fileName)) != null;
-            }
-            catch
-            {
-                // At least with our current uses of this method, it is safe to return false
-                // if we can't make a successful check. This prevents nasty messages for the user. (BL-5548)
-                return false;
-            }
-        }
-
-        public void SendBook(string bloomdPath)
-        {
-            if (bloomdPath == null)
-                throw new ArgumentNullException(nameof(bloomdPath));
+            if (bloomPubPath == null)
+                throw new ArgumentNullException(nameof(bloomPubPath));
 
             if (_device == null || _bloomFolderPath == null)
                 throw new InvalidOperationException("Must connect before calling SendBook");
 
-            using (var sourceStream = RobustFile.OpenRead(bloomdPath))
+            using (var sourceStream = RobustFile.OpenRead(bloomPubPath))
             using (
                 var targetStream = _device.OpenWrite(
-                    Path.Combine(_bloomFolderPath, Path.GetFileName(bloomdPath)),
-                    new FileInfo(bloomdPath).Length,
+                    Path.Combine(_bloomFolderPath, Path.GetFileName(bloomPubPath)),
+                    new FileInfo(bloomPubPath).Length,
                     true
                 )
             )
