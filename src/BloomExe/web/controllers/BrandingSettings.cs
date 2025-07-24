@@ -110,8 +110,17 @@ namespace Bloom.Api
         /// We sometimes want temporary subscriptions that use the default branding files, but which provide
         /// access to Enterprise level features.  The base branding names for these subscriptions are listed
         /// here.  (This is useful for workshops and other training venues.)  See BL-14872.
+        ///
+        /// There are also enterprise users who want the features but do not care to have custom branding.
+        /// We also list those here for now.
         /// </summary>
-        public static string[] SubscriptionsThatUseDefaultBranding = new[] { "BloomProgram", "Pretend-Project" };
+        public static string[] SubscriptionsThatUseDefaultBranding = new[]
+        {
+            "BloomProgram",
+            "Pretend-Project",
+            // Real enterprise descriptors which just use the default branding.
+            "Gereja-Protestan-Maluku"
+        };
 
         /// <summary>
         /// extract the various parts of a Subscription Descriptor
