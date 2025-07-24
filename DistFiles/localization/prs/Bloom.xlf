@@ -2036,7 +2036,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence" approved="yes">
         <source xml:lang="en">This book is an adaptation of the original, {0}.</source>
-        <target xml:lang="prs" state="final">گرفته شده از اصلی، ‎{0}‏.</target>
+        <target xml:lang="prs" state="final">گرفته شده از اصلی، {‎0}‏.</target>
         <note>ID: EditTab.FrontMatter.OriginalCopyrightSentence</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalHadNoCopyrightSentence" approved="yes">
