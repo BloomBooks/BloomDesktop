@@ -1374,6 +1374,7 @@ document.addEventListener("keydown", e => {
         e.key === "v" &&
         e.ctrlKey &&
         !(document.activeElement instanceof HTMLInputElement) && // BL-14989
+        !(document.activeElement instanceof HTMLTextAreaElement) && // BL-14989
         theOneCanvasElementManager?.getActiveOrFirstBloomCanvasOnPage() // BL-15034
     ) {
         // If there's a possibility of pasting an image, we need to handle that the same
