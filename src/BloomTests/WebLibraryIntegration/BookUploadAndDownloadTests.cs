@@ -1,20 +1,24 @@
-﻿using System;
+﻿using Bloom;
+using Bloom.Api;
+using Bloom.Book;
+using Bloom.Collection;
+using Bloom.ImageProcessing;
+using Bloom.SubscriptionAndFeatures;
+using Bloom.WebLibraryIntegration;
+using BloomTemp;
+using BloomTests.Book;
+using NUnit.Framework;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Progress;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
-using Bloom;
-using Bloom.Book;
-using Bloom.Collection;
-using Bloom.WebLibraryIntegration;
-using BloomTemp;
-using BloomTests.Book;
-using Bloom.SubscriptionAndFeatures;
-using NUnit.Framework;
-using SIL.Extensions;
-using SIL.IO;
 
 // It would be nice to have some tests for the new FirebaseLogin code, too, but so far
 // we have not been able to get that code to run except after starting Bloom fully.
@@ -58,9 +62,42 @@ namespace BloomTests.WebLibraryIntegration
         private HtmlThumbNailer _htmlThumbNailer;
         private string _thisTestId;
 
+        public BloomServer s_bloomServer { get; set; }
+
         [SetUp]
         public void Setup()
         {
+            // It should be fine (and even a slight optimization) to set up the settings, locator,
+            // and bloom-server once for the whole fixture, but when I do so, various sequences of
+            // tests fail, though each individual test passes. The problem is somewhere in the
+            // initialization of the WebView2Browser, where it calls EnsureCoreWebView2Async.
+            // When certain tests (e.g., DownloadUrl_GetsDocument_AndSettings) are run after another
+            // test (e.g., BookWithPeriodInTitle_DoesNotGetTruncatesPdName), even though the previous tests
+            // doesn't create a browser, EnsureCoreWebView2Async locks up. It never completes, and
+            // never raises CoreWebView2InitializationCompleted, and never throws; it seems some
+            // deadlock is happening, but I can't find any sign of that in the thread window.
+            // It seems that nothing is happening at all.
+            // I have no idea why this should be, nor why creating the above objects once
+            // per test suite causes it, but creating them for each test seems to avoid the problem.
+
+            // We need a server running to support opening the book in a browser to
+            // get accurate font info.
+            var settings = new CollectionSettings();
+            var locator = new BloomFileLocator(
+                settings,
+                new XMatterPackFinder(new[] { BloomFileLocator.GetFactoryXMatterDirectory() }),
+                ProjectContext.GetFactoryFileLocations(),
+                ProjectContext.GetFoundFileLocations(),
+                ProjectContext.GetAfterXMatterFileLocations()
+            );
+            s_bloomServer = new BloomServer(
+                new RuntimeImageProcessor(new BookRenamedEvent()),
+                new BookSelection(),
+                locator
+            );
+            s_bloomServer.EnsureListening();
+            // end of stuff I think should work as a text fixture setup.
+
             _thisTestId = Guid.NewGuid().ToString().Replace('-', '_');
 
             _workFolder = new TemporaryFolder("unittest-" + _thisTestId);
@@ -94,6 +131,7 @@ namespace BloomTests.WebLibraryIntegration
         {
             _htmlThumbNailer.Dispose();
             _workFolder.Dispose();
+            s_bloomServer.Dispose();
         }
 
         private string MakeBook(
@@ -153,7 +191,10 @@ namespace BloomTests.WebLibraryIntegration
         /// which (to a very small extent) costs us real money. This will be slow. Also, under S3 eventual consistency rules,
         /// there is no guarantee that the data we just created will actually be retrievable immediately.
         /// </summary>
-        public (string bookObjectId, string newBookFolder) UploadAndDownLoadNewBook(
+        public async Task<(
+            string bookObjectId,
+            string newBookFolder
+        )> UploadAndDownLoadNewBookAsync(
             string bookName,
             string id,
             string uploader,
@@ -181,9 +222,8 @@ namespace BloomTests.WebLibraryIntegration
             //HashSet<string> notifications = new HashSet<string>();
 
             var progress = new SIL.Progress.StringBuilderProgress();
-            var bookObjectId = _uploader.UploadBook_ForUnitTest(
+            var (bookObjectId, s3PrefixUploadedTo) = await _uploader.UploadBook_ForUnitTestAsync(
                 originalBookFolder,
-                out var s3PrefixUploadedTo,
                 progress
             );
             Assert.That(string.IsNullOrEmpty(s3PrefixUploadedTo), Is.False);
@@ -250,11 +290,26 @@ namespace BloomTests.WebLibraryIntegration
         }
 
         [Test]
-        public void UploadBooks_SimilarIds_DoNotOverwrite()
+        public async Task UploadBooks_SimilarIds_DoNotOverwrite()
         {
-            var firstPair = UploadAndDownLoadNewBook("first", "book1", "Jack", "Jack's data");
-            var secondPair = UploadAndDownLoadNewBook("second", "book1", "Jill", "Jill's data");
-            var thirdPair = UploadAndDownLoadNewBook("third", "book2", "Jack", "Jack's other data");
+            var firstPair = await UploadAndDownLoadNewBookAsync(
+                "first",
+                "book1",
+                "Jack",
+                "Jack's data"
+            );
+            var secondPair = await UploadAndDownLoadNewBookAsync(
+                "second",
+                "book1",
+                "Jill",
+                "Jill's data"
+            );
+            var thirdPair = await UploadAndDownLoadNewBookAsync(
+                "third",
+                "book2",
+                "Jack",
+                "Jack's other data"
+            );
             try
             {
                 // Data uploaded with the same id but a different uploader should form a distinct book; the Jill data
@@ -282,7 +337,7 @@ namespace BloomTests.WebLibraryIntegration
         }
 
         [Test]
-        public void UploadBook_SameId_Replaces()
+        public async Task UploadBook_SameId_Replaces()
         {
             var bookFolder = MakeBook("unittest", "myId", "me", "something");
             var jsonPath = bookFolder.CombineForPath(BookInfo.MetaDataFileName);
@@ -292,7 +347,7 @@ namespace BloomTests.WebLibraryIntegration
             File.WriteAllText(jsonPath, newJson);
             _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
 
-            var bookObjectId = _uploader.UploadBook_ForUnitTest(bookFolder);
+            var bookObjectId = await _uploader.UploadBook_ForUnitTestAsync(bookFolder);
             try
             {
                 Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
@@ -313,9 +368,8 @@ namespace BloomTests.WebLibraryIntegration
                 newJson = jsonStart + ",\"bookLineage\":\"other\"}";
                 File.WriteAllText(jsonPath, newJson);
 
-                _uploader.UploadBook_ForUnitTest(
+                var (_, s3PrefixUploadedTo) = await _uploader.UploadBook_ForUnitTestAsync(
                     bookFolder,
-                    out var s3PrefixUploadedTo,
                     existingBookObjectId: bookObjectId
                 );
 
@@ -400,7 +454,7 @@ namespace BloomTests.WebLibraryIntegration
         }
 
         [Test]
-        public void UploadBook_SetsInterestingParseFieldsCorrectly()
+        public async Task UploadBook_SetsInterestingParseFieldsCorrectly()
         {
             _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
 
@@ -410,7 +464,7 @@ namespace BloomTests.WebLibraryIntegration
                 "me",
                 "something"
             );
-            var initialBookObjectId = _uploader.UploadBook_ForUnitTest(bookFolder);
+            var initialBookObjectId = await _uploader.UploadBook_ForUnitTestAsync(bookFolder);
             try
             {
                 var bookInstanceId = "myId" + _thisTestId;
@@ -466,9 +520,8 @@ namespace BloomTests.WebLibraryIntegration
                 );
 
                 // re-upload the book
-                _uploader.UploadBook_ForUnitTest(
+                await _uploader.UploadBook_ForUnitTestAsync(
                     bookFolder,
-                    out string _,
                     existingBookObjectId: bookObjectId
                 );
                 bookRecord = _bloomLibraryBookApiClient.TestOnly_GetSingleBookRecord(
@@ -513,7 +566,7 @@ namespace BloomTests.WebLibraryIntegration
         }
 
         [Test]
-        public void UploadBook_FillsInMetaData()
+        public async Task UploadBook_FillsInMetaData()
         {
             var bookFolder = MakeBook("My incomplete book", "", "", "data");
             File.WriteAllText(
@@ -523,9 +576,9 @@ namespace BloomTests.WebLibraryIntegration
 
             _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
 
-            var bookObjectId = _uploader.UploadBook_ForUnitTest(
+            var (bookObjectId, s3PrefixUploadedTo) = await _uploader.UploadBook_ForUnitTestAsync(
                 bookFolder,
-                out var s3PrefixUploadedTo
+                new NullProgress()
             );
             try
             {
@@ -568,7 +621,7 @@ namespace BloomTests.WebLibraryIntegration
         }
 
         [Test]
-        public void DownloadUrl_GetsDocument_AndSettings()
+        public async Task DownloadUrl_GetsDocument_AndSettings()
         {
             var id = Guid.NewGuid().ToString();
             var bookFolder = MakeBook("My Url Book", id, "someone", "My content");
@@ -588,9 +641,8 @@ namespace BloomTests.WebLibraryIntegration
                     Subscription = new Subscription("Test-Expired-005691-4935") // expired 2/3/2025
                 }
             );
-            var bookObjectId = _uploader.UploadBook_ForUnitTest(
+            var (bookObjectId, s3PrefixUploadedTo) = await _uploader.UploadBook_ForUnitTestAsync(
                 bookFolder,
-                out var s3PrefixUploadedTo,
                 collectionSettings: settings
             );
             try
@@ -646,7 +698,7 @@ namespace BloomTests.WebLibraryIntegration
         }
 
         [Test]
-        public void DownloadUrl_NoCollectionSettings_GetsDocument_AndSettings()
+        public async Task DownloadUrl_NoCollectionSettings_GetsDocument_AndSettings()
         {
             var id = Guid.NewGuid().ToString();
             var bookFolder = MakeBook(
@@ -659,9 +711,9 @@ namespace BloomTests.WebLibraryIntegration
             int fileCount = Directory.GetFiles(bookFolder).Length;
             _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
 
-            var bookObjectId = _uploader.UploadBook_ForUnitTest(
+            var (bookObjectId, s3PrefixUploadedTo) = await _uploader.UploadBook_ForUnitTestAsync(
                 bookFolder,
-                out var s3PrefixUploadedTo
+                new NullProgress()
             );
             try
             {
