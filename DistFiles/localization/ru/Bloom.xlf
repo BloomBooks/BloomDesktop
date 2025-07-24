@@ -5682,15 +5682,15 @@
       <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true">
         <source xml:lang="en">Average per **Page**</source>
         <target xml:lang="ru" state="translated">
-
+          
 Среднее по <g id="mawpp-1" ctype="x-html-strong">Странице</g></target>
         <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">Average per **Page**</source>
         <target xml:lang="ru" state="translated">
-
-Среднее по <g id="maspp-1" ctype="x-html-strong">странице</g>
+          
+Среднее по <g id="maspp-1" ctype="x-html-strong">странице</g>        
         </target>
         <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
       </trans-unit>
@@ -5702,8 +5702,8 @@
       <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">Per **Page**</source>
         <target xml:lang="ru" state="translated">
-
-За<g id="mspp-1" ctype="x-html-strong">страницу</g>
+          
+За<g id="mspp-1" ctype="x-html-strong">страницу</g>        
         </target>
         <note>ID: ReaderSetup.MaxSentencesPerPage</note>
       </trans-unit>
