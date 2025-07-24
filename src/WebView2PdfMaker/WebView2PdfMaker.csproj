@@ -50,6 +50,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="SIL.Core" Version="16.1.0-sil-media-for---0012" />
 		<PackageReference Include="SIL.Media" Version="16.1.0-sil-media-for---0010" />
 		<!-- In June 2025, when we upgraded libpalaso to 16.0.1-beta0002, 
 			 tests started failing saying they couldn't find 
@@ -61,7 +62,6 @@
 			 This works around the problem by making 6.0.0 a direct dependency.
 		 -->
 		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
-		<PackageReference Include="SIL.Core" Version="16.1.0-*" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="System.Windows.Forms" />

@@ -8,7 +8,7 @@ using System.Xml;
 using Bloom.SafeXml;
 using Bloom.Utils;
 using SIL.IO;
-using TidyManaged;
+using HtmlAgilityPack;
 
 namespace Bloom
 {
@@ -104,103 +104,158 @@ namespace Bloom
             if (!String.IsNullOrEmpty(content) && content.IndexOf('\uFEFF', 1) > 0)
                 content = content.Replace("\uFEFF", "");
 
-            //using (var temp = new TempFile())
+            // using (var temp = new TempFile())
+            RobustFile.WriteAllText("../../../../beforeNonXml.txt", content, Encoding.UTF8);
             var temp = new TempFile();
             {
-                RobustFile.WriteAllText(temp.Path, content, Encoding.UTF8);
-                using (var tidy = RobustFileIO.DocumentFromFile(temp.Path))
+                var doc = new HtmlDocument();
+                doc.OptionAutoCloseOnEnd = false;
+                doc.OptionCheckSyntax = false;
+                doc.OptionWriteEmptyNodes = true;
+                // doc.OptionOutputOriginalCase = true;
+                // doc.OptionDefaultUseOriginalName = true;
+                // doc.OptionMaxNestedChildNodes = 1000; // prevent tidy from throwing an exception on large files
+
+                doc.OptionFixNestedTags = false;
+                doc.OptionExtractErrorSourceText = false;
+                doc.OptionUseIdAttribute = false;
+
+                // Most importantly, disable entity encoding
+                doc.GlobalAttributeValueQuote = AttributeValueQuote.DoubleQuote;
+                doc.OptionOutputOptimizeAttributeValues = false;
+                doc.LoadHtml(content);
+
+                // TODO skip this write then read step
+                doc.OptionOutputAsXml = false;
+                doc.Save(temp.Path);
+                //using (var writer = new XmlTextWriter(temp.Path, new UTF8Encoding(false)))
+                //{
+                //    doc.Save(writer);
+                //}
+
+
+                var doc2 = new HtmlDocument();
+                doc2.Load("../../../../divs.txt");
+                using (
+                    var writer = new XmlTextWriter(
+                        "../../../../xml_divs.txt",
+                        new UTF8Encoding(false)
+                    )
+                )
                 {
-                    tidy.ShowWarnings = false;
-                    tidy.Quiet = true;
-                    tidy.WrapAt = 0; // prevents textarea wrapping.
-                    tidy.AddTidyMetaElement = false;
-                    tidy.OutputXml = true;
-                    tidy.CharacterEncoding = EncodingType.Utf8;
-                    tidy.InputCharacterEncoding = EncodingType.Utf8;
-                    tidy.OutputCharacterEncoding = EncodingType.Utf8;
-                    tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
-                    //maybe try this? tidy.Markup = true;
+                    doc2.Save(writer);
+                }
 
-                    tidy.AddXmlDeclaration = includeXmlDeclaration;
+                string newContents;
+                using (var reader = new StreamReader(temp.Path, Encoding.UTF8))
+                {
+                    newContents = reader.ReadToEnd();
+                }
+                RobustFile.WriteAllText("../../../../afterNonXml.txt", newContents, Encoding.UTF8);
 
-                    //NB: this does not prevent tidy from deleting <span data-libray='somethingImportant'></span>
-                    tidy.MergeSpans = AutoBool.No;
-                    tidy.DropEmptyParagraphs = false;
-                    tidy.MergeDivs = AutoBool.No;
+                //     RobustFile.WriteAllText(temp.Path, content, Encoding.UTF8);
+                //     using (var tidy = RobustFileIO.DocumentFromFile(temp.Path))
+                //     {
+                //         tidy.ShowWarnings = false;
+                //         tidy.Quiet = true;
+                //         tidy.WrapAt = 0; // prevents textarea wrapping.
+                //         tidy.AddTidyMetaElement = false;
+                //         tidy.OutputXml = true;
+                //         tidy.CharacterEncoding = EncodingType.Utf8;
+                //         tidy.InputCharacterEncoding = EncodingType.Utf8;
+                //         tidy.OutputCharacterEncoding = EncodingType.Utf8;
+                //         tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
+                //         //maybe try this? tidy.Markup = true;
 
-                    var errors = tidy.CleanAndRepair();
-                    if (!string.IsNullOrEmpty(errors))
-                    {
-                        throw new ApplicationException(errors);
-                    }
-                    var newContents = tidy.Save();
+                //         tidy.AddXmlDeclaration = includeXmlDeclaration;
+
+                //         //NB: this does not prevent tidy from deleting <span data-libray='somethingImportant'></span>
+                //         tidy.MergeSpans = AutoBool.No;
+                //         tidy.DropEmptyParagraphs = false;
+                //         tidy.MergeDivs = AutoBool.No;
+
+                //         var errors = tidy.CleanAndRepair();
+                //         if (!string.IsNullOrEmpty(errors))
+                //         {
+                //             throw new ApplicationException(errors);
+                //         }
+                //         var newContents = tidy.Save();
+                try
+                {
+                    newContents = newContents.Replace("<!DOCTYPE html>", "");
+                    // trim leading whitespace
+                    newContents = newContents.TrimStart();
+                    newContents = RestoreSvgs(newContents, removedSvgs);
+                    newContents = RemoveFillerInEmptyElements(newContents);
+
+                    newContents = newContents.Replace("&nbsp;", "&#160;");
+                    //REVIEW: 1) are there others? &amp; and such are fine.  2) shoul we to convert back to &nbsp; on save?
+
+                    // The regex here is mainly for the \s* as a convenient way to remove whatever whitespace TIDY
+                    // has inserted. It's a fringe benefit that we can use the[biu]|... to deal with all these elements in one replace.
+                    newContents = Regex.Replace(
+                        newContents,
+                        @"REMOVEWHITESPACE\s*<([biu]|em|strong|sup|sub|span[^>]*|a[^>]*)>",
+                        "<$1>"
+                    );
+
+                    //In BL2250, we still had REMOVEWHITESPACE sticking around sometimes. The way we reproduced it was
+                    //with <u> </u>. That is, we started with
+                    //"REMOVEWHITESPACE <u> </u>", then libtidy (properly) removed the <u></u>, leaving us with only
+                    //"REMOVEWHITESPACE".
+                    newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE", "");
+
+                    // remove blank lines at the end of style blocks
+                    newContents = Regex.Replace(newContents, @"\s+<\/style>", "</style>");
+
+                    // remove <br> elements immediately preceding </p> close tag (BL-2557)
+                    // These are apparently inserted by ckeditor as far as we can tell.  They don't show up on
+                    // fields that have never had a ckeditor activated, and always show up on fields that have
+                    // received focus and activated an inline ckeditor.  The ideal ckeditor use case appears
+                    // to be for data entry as part of a web page that get stored separately, with the data
+                    // obtained something like the following in javascript:
+                    //        ckedit.on('blur', function(evt) {
+                    //            var editor = evt['editor'];
+                    //            var data = editor.getData();
+                    //            <at this point, the data looks okay, with any <br> element before the </p> tag.>
+                    //            <store the data somewhere: the following lines have no effect, and may be silly.>
+                    //            var div = mapCkeditDiv[editor.id];
+                    //            div.innerHTML = data;
+                    //        });
+                    // Examining the initial value of div.innerHTML shows the unwanted <br> element, but it is
+                    // not in the data returned by editor.getData().  Since assigning to div.innerHTML doesn't
+                    // affect what gets written to the file, this hack was implemented instead.
+                    newContents = Regex.Replace(
+                        newContents,
+                        @"(<br></br>|<br ?/>)[\r\n]*</p>",
+                        "</p>"
+                    );
+
+                    newContents = newContents.Replace(restoreCdataHere, savedCdata);
+
+                    // Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
+                    dom.PreserveWhitespace = true;
                     try
                     {
-                        newContents = RestoreSvgs(newContents, removedSvgs);
-                        newContents = RemoveFillerInEmptyElements(newContents);
-
-                        newContents = newContents.Replace("&nbsp;", "&#160;");
-                        //REVIEW: 1) are there others? &amp; and such are fine.  2) shoul we to convert back to &nbsp; on save?
-
-                        // The regex here is mainly for the \s* as a convenient way to remove whatever whitespace TIDY
-                        // has inserted. It's a fringe benefit that we can use the[biu]|... to deal with all these elements in one replace.
-                        newContents = Regex.Replace(
-                            newContents,
-                            @"REMOVEWHITESPACE\s*<([biu]|em|strong|sup|sub|span[^>]*|a[^>]*)>",
-                            "<$1>"
-                        );
-
-                        //In BL2250, we still had REMOVEWHITESPACE sticking around sometimes. The way we reproduced it was
-                        //with <u> </u>. That is, we started with
-                        //"REMOVEWHITESPACE <u> </u>", then libtidy (properly) removed the <u></u>, leaving us with only
-                        //"REMOVEWHITESPACE".
-                        newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE", "");
-
-                        // remove blank lines at the end of style blocks
-                        newContents = Regex.Replace(newContents, @"\s+<\/style>", "</style>");
-
-                        // remove <br> elements immediately preceding </p> close tag (BL-2557)
-                        // These are apparently inserted by ckeditor as far as we can tell.  They don't show up on
-                        // fields that have never had a ckeditor activated, and always show up on fields that have
-                        // received focus and activated an inline ckeditor.  The ideal ckeditor use case appears
-                        // to be for data entry as part of a web page that get stored separately, with the data
-                        // obtained something like the following in javascript:
-                        //        ckedit.on('blur', function(evt) {
-                        //            var editor = evt['editor'];
-                        //            var data = editor.getData();
-                        //            <at this point, the data looks okay, with any <br> element before the </p> tag.>
-                        //            <store the data somewhere: the following lines have no effect, and may be silly.>
-                        //            var div = mapCkeditDiv[editor.id];
-                        //            div.innerHTML = data;
-                        //        });
-                        // Examining the initial value of div.innerHTML shows the unwanted <br> element, but it is
-                        // not in the data returned by editor.getData().  Since assigning to div.innerHTML doesn't
-                        // affect what gets written to the file, this hack was implemented instead.
-                        newContents = Regex.Replace(
-                            newContents,
-                            @"(<br></br>|<br ?/>)[\r\n]*</p>",
-                            "</p>"
-                        );
-
-                        newContents = newContents.Replace(restoreCdataHere, savedCdata);
-
-                        // Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
-                        dom.PreserveWhitespace = true;
                         dom.LoadXml(newContents);
                     }
-                    catch (Exception e)
+                    catch (Exception e1)
                     {
-                        var exceptionWithHtmlContents = new Exception(
-                            string.Format(
-                                "{0}{2}{2}{1}",
-                                e.Message,
-                                newContents,
-                                Environment.NewLine
-                            ),
-                            innerException: e
-                        );
-                        throw exceptionWithHtmlContents;
+                        if (e1.Message.StartsWith("There are multiple root elements"))
+                        {
+                            dom.LoadXml(
+                                $"<html><head><title></title></head><body>{newContents}</body></html>"
+                            );
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    var exceptionWithHtmlContents = new Exception(
+                        string.Format("{0}{2}{2}{1}", e.Message, newContents, Environment.NewLine),
+                        innerException: e
+                    );
+                    throw exceptionWithHtmlContents;
                 }
             }
             try
@@ -284,28 +339,29 @@ namespace Bloom
         /// <param name="content"></param>
         public static void ThrowIfHtmlHasErrors(string content)
         {
-            // Tidy chokes on embedded svgs so just take them out. Here we don't use the removed svgs.
-            var dummy = new List<string>();
-            content = RemoveSvgs(content, dummy);
+            throw new NotImplementedException("");
+            //     // Tidy chokes on embedded svgs so just take them out. Here we don't use the removed svgs.
+            //     var dummy = new List<string>();
+            //     content = RemoveSvgs(content, dummy);
 
-            using (var tidy = Document.FromString(content))
-            {
-                tidy.ShowWarnings = false;
-                tidy.Quiet = true;
-                tidy.AddTidyMetaElement = false;
-                tidy.OutputXml = true;
-                tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
+            //     using (var tidy = Document.FromString(content))
+            //     {
+            //         tidy.ShowWarnings = false;
+            //         tidy.Quiet = true;
+            //         tidy.AddTidyMetaElement = false;
+            //         tidy.OutputXml = true;
+            //         tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
 
-                using (var log = new MemoryStream())
-                {
-                    tidy.CleanAndRepair(log);
-                    string errors = ASCIIEncoding.ASCII.GetString(log.ToArray());
-                    if (!string.IsNullOrEmpty(errors))
-                    {
-                        throw new ApplicationException(errors);
-                    }
-                }
-            }
+            //         using (var log = new MemoryStream())
+            //         {
+            //             tidy.CleanAndRepair(log);
+            //             string errors = ASCIIEncoding.ASCII.GetString(log.ToArray());
+            //             if (!string.IsNullOrEmpty(errors))
+            //             {
+            //                 throw new ApplicationException(errors);
+            //             }
+            //         }
+            //     }
         }
 
         /// <summary>
@@ -466,41 +522,48 @@ namespace Bloom
             var removedSvgs = new List<string>();
             xml = RemoveSvgs(xml, removedSvgs);
 
+            var doc = new HtmlDocument();
+            doc.OptionAutoCloseOnEnd = false;
+            doc.OptionCheckSyntax = false;
+            doc.OptionWriteEmptyNodes = true;
+            doc.LoadHtml(xml);
+            string html = doc.DocumentNode.OuterHtml;
+
             // Now re-write as html, indented nicely
-            string html;
-            using (var tidy = Document.FromString(xml))
-            {
-                tidy.ShowWarnings = false;
-                tidy.Quiet = true;
+            // string html;
+            // using (var tidy = Document.FromString(xml))
+            // {
+            //     tidy.ShowWarnings = false;
+            //     tidy.Quiet = true;
 
-                // Removing comments is unfortunate, I can imagine cases where it would be helpful to be able to
-                // have comments. But currently our ckeditor instances are never "destroy()"ed, and are dumping
-                // e.g. 50 k of comment text into a single field, when you paste from MS Word. So we're
-                // going to dump all comments for now.
-                tidy.RemoveComments = true;
+            //     // Removing comments is unfortunate, I can imagine cases where it would be helpful to be able to
+            //     // have comments. But currently our ckeditor instances are never "destroy()"ed, and are dumping
+            //     // e.g. 50 k of comment text into a single field, when you paste from MS Word. So we're
+            //     // going to dump all comments for now.
+            //     tidy.RemoveComments = true;
 
-                tidy.AddTidyMetaElement = false;
-                tidy.OutputXml = false;
-                tidy.OutputHtml = true;
-                tidy.DocType = DocTypeMode.Html5;
-                tidy.MergeDivs = AutoBool.No;
-                tidy.MergeSpans = AutoBool.No;
-                tidy.PreserveEntities = true;
-                tidy.JoinStyles = false;
-                tidy.IndentBlockElements = AutoBool.Auto; //instructions say avoid 'yes'
-                tidy.WrapAt = 9999;
-                tidy.IndentSpaces = 4;
-                tidy.CharacterEncoding = EncodingType.Utf8;
-                tidy.CleanAndRepair();
-                using (var stream = new MemoryStream())
-                {
-                    tidy.Save(stream);
-                    stream.Flush();
-                    stream.Seek(0L, SeekOrigin.Begin);
-                    using (var sr = new StreamReader(stream, Encoding.UTF8))
-                        html = sr.ReadToEnd();
-                }
-            }
+            //     tidy.AddTidyMetaElement = false;
+            //     tidy.OutputXml = false;
+            //     tidy.OutputHtml = true;
+            //     tidy.DocType = DocTypeMode.Html5;
+            //     tidy.MergeDivs = AutoBool.No;
+            //     tidy.MergeSpans = AutoBool.No;
+            //     tidy.PreserveEntities = true;
+            //     tidy.JoinStyles = false;
+            //     tidy.IndentBlockElements = AutoBool.Auto; //instructions say avoid 'yes'
+            //     tidy.WrapAt = 9999;
+            //     tidy.IndentSpaces = 4;
+            //     tidy.CharacterEncoding = EncodingType.Utf8;
+            //     tidy.CleanAndRepair();
+            //     using (var stream = new MemoryStream())
+            //     {
+            //         tidy.Save(stream);
+            //         stream.Flush();
+            //         stream.Seek(0L, SeekOrigin.Begin);
+            //         using (var sr = new StreamReader(stream, Encoding.UTF8))
+            //             html = sr.ReadToEnd();
+            //     }
+            // }
 
             // Now revert the stuff we did to make it "safe from libtidy"
 
@@ -526,10 +589,11 @@ namespace Bloom
         static string FixVoidElementEndTags(string html)
         {
             // list of tags taken from https://developer.mozilla.org/en-US/docs/Glossary/Void_element
-            string[] voidEndTags = new string[] {
+            string[] voidEndTags = new string[]
+            {
                 "></area>",
                 "></base>",
-                "></br>",   // handled separately above, but here for completeness
+                "></br>", // handled separately above, but here for completeness
                 "></col>",
                 "></embed>",
                 "></hr>",

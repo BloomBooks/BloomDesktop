@@ -16,6 +16,8 @@
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<LangVersion>11.0</LangVersion>
+		<WarningsNotAsErrors>NU1605</WarningsNotAsErrors>
+		<NoWarn>$(NoWarn);NU1605</NoWarn>
 		<PostBuildEvent>
 copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
@@ -190,6 +192,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<PackageReference Include="EPPlus" Version="6.2.4" />
 		<PackageReference Include="Fleck" Version="1.1.0" />
 		<PackageReference Include="Glob" Version="1.1.8" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
 		<PackageReference Include="L10NSharp" Version="8.0.0" />
 		<PackageReference Include="LargeAddressAware" Version="1.0.5" />
 		<PackageReference Include="Markdig.Signed" Version="0.37.0" />

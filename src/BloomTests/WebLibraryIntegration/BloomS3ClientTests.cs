@@ -129,7 +129,7 @@ namespace BloomTests.WebLibraryIntegration
             return GetMatchingItems(UnitTestBucketName, prefix).Count;
         }
 
-        public void DeleteFromUnitTestBucket(string prefix)
+        public async System.Threading.Tasks.Task DeleteFromUnitTestBucketAsync(string prefix)
         {
             var amazonS3 = GetAmazonS3WithAccessKey(UnitTestBucketName);
 
@@ -142,10 +142,7 @@ namespace BloomTests.WebLibraryIntegration
             ListObjectsV2Response matchingFilesResponse;
             do
             {
-                // Note: ListObjects can only return 1,000 objects at a time,
-                //       and DeleteObjects can only delete 1,000 objects at a time.
-                //       So a loop is needed if the book contains 1,001+ objects.
-                matchingFilesResponse = amazonS3.ListObjectsV2(listMatchingObjectsRequest);
+                matchingFilesResponse = await amazonS3.ListObjectsV2Async(listMatchingObjectsRequest);
                 if (matchingFilesResponse.S3Objects.Count == 0)
                     return;
 
@@ -157,13 +154,12 @@ namespace BloomTests.WebLibraryIntegration
                         .ToList()
                 };
 
-                var response = amazonS3.DeleteObjects(deleteObjectsRequest);
+                var response = await amazonS3.DeleteObjectsAsync(deleteObjectsRequest);
                 System.Diagnostics.Debug.Assert(response.DeleteErrors.Count == 0);
 
-                // Prep the next request (if needed)
                 listMatchingObjectsRequest.ContinuationToken =
                     matchingFilesResponse.NextContinuationToken;
-            } while (matchingFilesResponse.IsTruncated); // Returns true if haven't reached the end yet
+            } while (matchingFilesResponse.IsTruncated);
         }
     }
 }
