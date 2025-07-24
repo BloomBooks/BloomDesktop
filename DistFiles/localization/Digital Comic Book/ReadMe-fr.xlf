@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="fr">
+    <body>
+      <trans-unit id="comic.template.digital.title" approved="yes">
+        <source xml:lang="en">Digital Comic Book</source>
+        <target xml:lang="fr" state="final">Bande Dessinée Numérique</target>
+        <note>ID: comic.template.digital.title</note>
+      </trans-unit>
+      <trans-unit id="comic.template.subscription" approved="yes">
+        <source xml:lang="en">Note: The Overlay Tool requires that you have a valid <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</g>. However, you can localize a shellbook that contains overlay elements into your own language without a Bloom subscription.</source>
+        <target xml:lang="fr" state="final">Remarque : Pour exploiter l'outil de superposition il faut un abonnement <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">valide à Bloom</g>. Cependant, on peut localiser un livre 'coquille' qui contient des éléments superposés dans votre propre langue sans abonnement à Bloom.</target>
+        <note>ID: comic.template.subscription</note>
+      </trans-unit>
+      <trans-unit id="comic.template.digital.use" approved="yes">
+        <source xml:lang="en">Use this template as a starting point for comics designed for use on screens.</source>
+        <target xml:lang="fr" state="final">Utilisez ce modèle comme point de départ pour des BD conçues pour être utilisées sur un écran.</target>
+        <note>ID: comic.template.digital.use</note>
+      </trans-unit>
+      <trans-unit id="comic.template.tips.lettering.header" approved="yes">
+        <source xml:lang="en">Tips on "lettering"</source>
+        <target xml:lang="fr" state="final">Conseils sur le « lettrage »</target>
+        <note>ID: comic.template.tips.lettering.header</note>
+      </trans-unit>
+      <trans-unit id="comic.template.tips.lettering" approved="yes">
+        <source xml:lang="en"><g id="genid-2" ctype="x-html-em">"Lettering"</g> is the term used for adding bubbles and text to comics. Take some time to learn what professional <g id="genid-3" ctype="x-html-em">letterers</g> say about making good-looking comics. Bloom takes care of some of these things for you, but there are many things that require training your eye. See <g id="genid-4" ctype="x-html-a" html:href="https://blambot.com/pages/lettering-tips">https://blambot.com/pages/lettering-tips</g>. Note, you do <g id="genid-5" ctype="x-html-em">not</g> need to only use upper case letters. It does look cool because we are used to seeing comics done this way, but you should do whatever is best for your audience. If you do choose upper case <g id="genid-6" ctype="x-html-em">and</g> have a script that is widely supported, consider using a special comic book font. See <g id="genid-7" ctype="x-html-a" html:href="https://blambot.com/collections/all-fonts/dialogue">here</g> and <g id="genid-8" ctype="x-html-a" html:href="https://jasonthibault.com/comic-book-fonts/">here</g>.</source>
+        <target xml:lang="fr" state="final"><g id="genid-2" ctype="x-html-em">"Lettering"</g> est le terme utilisé pour ajouter des bulles et du texte à des BD. Prenez un moment pour apprendre ce que disent les professionels des lettres <g id="genid-3" ctype="x-html-em"> </g> à propos de la bonne création de BD. Bloom vous aide en s'occupant de certains de ces aspects, mais il en reste plusieurs qui demandent une formation de l'œil. Voir <g id="genid-4" ctype="x-html-a" html:href="https://blambot.com/pages/lettering-tips">https://blambot.com/pages/lettering-tips</g>. A noter: on n'est pas <g id="genid-5" ctype="x-html-em"></g> oblige d'utiliser uniquement des lettres majuscules. Cela peut avoir l'air cool parce qu'on est habitués à voir des BD faites de cette façon, mais il faut faire ce qui mieux arrange votre public. Si on choisit de faire en majuscules <g id="genid-6" ctype="x-html-em">et</g> avec un script assez repandu et soutenu, pensez à utiliser une police de BD spéciale. Voir <g id="genid-7" ctype="x-html-a" html:href="https://blambot.com/collections/all-fonts/dialogue">ici</g> et <g id="genid-8" ctype="x-html-a" html:href="https://jasonthibault.com/comic-book-fonts/">ici</g>.</target>
+        <note>ID: comic.template.tips.lettering</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
