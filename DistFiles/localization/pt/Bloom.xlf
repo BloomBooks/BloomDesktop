@@ -1119,9 +1119,9 @@
         <target xml:lang="pt-PT" state="final">Assinatura necessária</target>
         <note>ID: Common.SubscriptionRequired</note>
       </trans-unit>
-      <trans-unit id="Common.HigherSubscriptionTierRequired">
+      <trans-unit id="Common.HigherSubscriptionTierRequired" approved="yes">
         <source xml:lang="en">Feature Requires Higher Subscription Tier</source>
-        <target xml:lang="pt-PT" state="needs-translation">Feature Requires Higher Subscription Tier</target>
+        <target xml:lang="pt-PT" state="final">Este recurso requer Nível de Subscrição Superior</target>
         <note>ID: Common.HigherSubscriptionTierRequired</note>
       </trans-unit>
       <trans-unit id="Common.Error" approved="yes">
@@ -1494,9 +1494,9 @@
         <target xml:lang="pt-PT" state="final">Configurações multilingues</target>
         <note>ID: EditTab.ContentLanguagesDropdown</note>
       </trans-unit>
-      <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip" approved="yes">
-        <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
-        <target xml:lang="pt-PT" state="final">Escolha a língua para fazer este um livro bilíngue ou trilíngue</target>
+      <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip">
+        <source xml:lang="en">This is disabled because it won't change anything on this page.</source>
+        <target xml:lang="pt-PT" state="translated">Escolha a língua para fazer este um livro bilíngue ou trilíngue</target>
         <note>ID: EditTab.ContentLanguagesDropdown.DisabledTooltip</note>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip" approved="yes">
@@ -2094,9 +2094,9 @@
         <target xml:lang="pt-PT" state="final">Falta esta imagem, {0}, ou estava carregando muito lento.</target>
         <note>ID: EditTab.Image.AltMsg</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.BackgroundImage" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.BackgroundImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Background Image</source>
-        <target xml:lang="pt-PT" state="needs-translation">Background Image</target>
+        <target xml:lang="pt-PT" state="final">Imagem de Fundo</target>
         <note>ID: EditTab.Image.BackgroundImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
@@ -2154,9 +2154,9 @@
         <target xml:lang="pt-PT" state="final">Créditos da imagem, Direitos Autorais, &amp; Licença</target>
         <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This sound will play when the item is touched.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This sound will play when the item is touched.</target>
+        <target xml:lang="pt-PT" state="final">Este som tocará quando o item for tocado.</target>
         <note>ID: EditTab.Image.PlayWhenTouched</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true" approved="yes">
@@ -4044,9 +4044,9 @@
         <target xml:lang="pt-PT" state="final">Actividade</target>
         <note>ID: PublishTab.Activity</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Game">
+      <trans-unit id="PublishTab.Game" approved="yes">
         <source xml:lang="en">Game</source>
-        <target xml:lang="pt-PT" state="needs-translation">Game</target>
+        <target xml:lang="pt-PT" state="final">Jogo</target>
         <note>ID: PublishTab.Game</note>
       </trans-unit>
       <trans-unit id="PublishTab.Comic" approved="yes">
@@ -4441,9 +4441,9 @@
         <target xml:lang="pt-PT" state="final">Produzir um ficheiro .bloomshelf</target>
         <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
       </trans-unit>
-      <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true">
+      <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Removing one or more pages which require a higher subscription tier</source>
-        <target xml:lang="pt-PT" state="needs-translation">Removing one or more pages which require a higher subscription tier</target>
+        <target xml:lang="pt-PT" state="final">Remover uma ou mais páginas que requerem um nível de assinatura superior</target>
         <note>ID: Publish.RemovingDisallowedPages</note>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm" approved="yes">
@@ -4616,9 +4616,9 @@
         <target xml:lang="pt-PT" state="final">Fazer um ePUB (livro eletrónico) deste livro, permitindo que seja ser lido em vários dispositivos de leitura eletrónica.</target>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.FeatureRequiresHigherTier">
+      <trans-unit id="PublishTab.FeatureRequiresHigherTier" approved="yes">
         <source xml:lang="en">The feature "{0}" was removed from this book because it requires a higher subscription tier</source>
-        <target xml:lang="pt-PT" state="needs-translation">The feature "{0}" was removed from this book because it requires a higher subscription tier</target>
+        <target xml:lang="pt-PT" state="final">A funcionalidade "{0}" foi removida deste livro porque ele requer um nível de assinatura mais alto</target>
         <note>ID: PublishTab.FeatureRequiresHigherTier</note>
       </trans-unit>
       <trans-unit id="PublishTab.NoBookletsMessage" approved="yes">
@@ -4876,19 +4876,19 @@
         <target xml:lang="pt-PT" state="final">Publicar</target>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage">
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage" approved="yes">
         <source xml:lang="en">Page {0} is the first page that uses this feature.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Page {0} is the first page that uses this feature.</target>
+        <target xml:lang="pt-PT" state="final">Página {0} é a primeira página que usa elementos de sobreposição.</target>
         <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.Options">
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.Options" approved="yes">
         <source xml:lang="en">In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.</source>
-        <target xml:lang="pt-PT" state="needs-translation">In order to publish your book, you need to either get a Bloom subscription with the necessary tier, or remove the use of this feature from your book.</target>
+        <target xml:lang="pt-PT" state="final">Para publicar o seu livro, precisa ou obter uma assinatura Bloom com o nível necessário, ou remova o uso deste recurso do seu livro.</target>
         <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.Options</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation">
+      <trans-unit id="PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation" approved="yes">
         <source xml:lang="en">The book titled "{0}" uses the "{1}" feature.</source>
-        <target xml:lang="pt-PT" state="needs-translation">The book titled "{0}" uses the "{1}" feature.</target>
+        <target xml:lang="pt-PT" state="final">O livro intitulado "{0}" usa o recurso "{1}".</target>
         <note>ID: PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute" approved="yes">
@@ -4906,9 +4906,9 @@
         <target xml:lang="pt-PT" state="final">Atividades serão ignoradas</target>
         <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
       </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.GamesSkipped">
+      <trans-unit id="PublishTab.RecordVideo.GamesSkipped" approved="yes">
         <source xml:lang="en">Games will be skipped</source>
-        <target xml:lang="pt-PT" state="needs-translation">Games will be skipped</target>
+        <target xml:lang="pt-PT" state="final">Jogos serão ignorados</target>
         <note>ID: PublishTab.RecordVideo.GamesSkipped</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AudioFile" approved="yes">
@@ -6138,19 +6138,19 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Por favor, entre em contato connosco [subscriptions@bloomlibrary.org](%0) para renovar.</target>
         <note>ID: SubscriptionStatus.RenewalMessage</note>
       </trans-unit>
-      <trans-unit id="Subscription.RequiredTierForFeatureSentence">
+      <trans-unit id="Subscription.RequiredTierForFeatureSentence" approved="yes">
         <source xml:lang="en">This feature requires a Bloom subscription tier of at least "{0}".</source>
-        <target xml:lang="pt-PT" state="needs-translation">This feature requires a Bloom subscription tier of at least "{0}".</target>
+        <target xml:lang="pt-PT" state="final">Este recurso requer um nível de inscrição Bloom de pelo menos{0}".</target>
         <note>ID: Subscription.RequiredTierForFeatureSentence</note>
       </trans-unit>
-      <trans-unit id="Subscription.FeatureIsIncludedSentence">
+      <trans-unit id="Subscription.FeatureIsIncludedSentence" approved="yes">
         <source xml:lang="en">This feature is included in your {0} subscription.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This feature is included in your {0} subscription.</target>
+        <target xml:lang="pt-PT" state="final">Esse recurso está incluído na sua assinatura {0}.</target>
         <note>ID: Subscription.FeatureIsIncludedSentence</note>
       </trans-unit>
-      <trans-unit id="Subscription.Pro.EmailMismatch">
+      <trans-unit id="Subscription.Pro.EmailMismatch" approved="yes">
         <source xml:lang="en">Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}.</target>
+        <target xml:lang="pt-PT" state="final">Sua assinatura Pro para {0} não coincide com esta conta do BloomLibrary.org: {1}.</target>
         <note>ID: Subscription.Pro.EmailMismatch</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ExpiringSoonMessage" approved="yes">
@@ -6168,41 +6168,41 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Usando assinatura: {0}. Expira {1}</target>
         <note>ID: SubscriptionStatus.DefaultMessage</note>
       </trans-unit>
-      <trans-unit id="SubscriptionStatus.ProTeamCollectionNotSupported">
+      <trans-unit id="SubscriptionStatus.ProTeamCollectionNotSupported" approved="yes">
         <source xml:lang="en">Pro subscriptions are not supported for Team Collections. Please use a Local Community or Enterprise subscription.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Pro subscriptions are not supported for Team Collections. Please use a Local Community or Enterprise subscription.</target>
+        <target xml:lang="pt-PT" state="final">Assinaturas Pro não são suportadas para Coleções de Equipe. Por favor, use uma assinatura Local Comunidade ou Empresarial.</target>
         <note>ID: SubscriptionStatus.ProTeamCollectionNotSupported</note>
       </trans-unit>
-      <trans-unit id="SubscriptionStatus.UsingProSubscription">
-        <source xml:lang="en">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</source>
-        <target xml:lang="pt-PT" state="needs-translation">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</target>
+      <trans-unit id="SubscriptionStatus.UsingProSubscription" approved="yes">
+        <source xml:lang="en">Using **Pro** subscription for {0}. Expires {1}</source>
+        <target xml:lang="pt-PT" state="final">Usando a assinatura **Pro** para {0}. Expira {1}</target>
         <note>ID: SubscriptionStatus.UsingProSubscription</note>
       </trans-unit>
-      <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">
+      <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription" approved="yes">
         <source xml:lang="en">Using **Local Community** subscription for **{0}**. Expires {1}</source>
-        <target xml:lang="pt-PT" state="needs-translation">Using **Local Community** subscription for **{0}**. Expires {1}</target>
+        <target xml:lang="pt-PT" state="final">Usando a assinatura da **Comunidade Local** por **{0}**. Expira {1}</target>
         <note>ID: SubscriptionStatus.UsingLocalCommunitySubscription</note>
       </trans-unit>
-      <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription">
+      <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription" approved="yes">
         <source xml:lang="en">Using **Enterprise** subscription for **{0}**. Expires **{1}**</source>
-        <target xml:lang="pt-PT" state="needs-translation">Using **Enterprise** subscription for **{0}**. Expires **{1}**</target>
+        <target xml:lang="pt-PT" state="final">Usando a assinatura de **Enterprise** para **{0}**. Expira **{1}**</target>
         <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.DuplicateIds">
+      <trans-unit id="TeamCollection.DuplicateIds" approved="yes">
         <source xml:lang="en">
           Bloom found two or more books that are already shared in your Team Collection and have the same ID ({0}).
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-          Bloom found two or more books that are already shared in your Team Collection and have the same ID ({0}).
+        <target xml:lang="pt-PT" state="final">
+          Bloom encontrou dois ou mais livros que já estão compartilhados na Coleção da Equipa e que têm o mesmo ID ({0}).
         </target>
         <note>ID: TeamCollection.DuplicateIds</note>
       </trans-unit>
-      <trans-unit id="TeamCollection.GetHelp">
+      <trans-unit id="TeamCollection.GetHelp" approved="yes">
         <source xml:lang="en">
           For help with Team Collection problems, click {here}.
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-          For help with Team Collection problems, click {here}.
+        <target xml:lang="pt-PT" state="final">
+          Para ajuda com problemas de Coleção de Equipe, clique em {here}.
         </target>
         <note>ID: TeamCollection.GetHelp</note>
       </trans-unit>
@@ -6508,9 +6508,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Uma página com um idioma acima da imagem e outra abaixo dela.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A simple quiz game that checks if readers understand key parts of the story they just read.</source>
-        <target xml:lang="pt-PT" state="needs-translation">A simple quiz game that checks if readers understand key parts of the story they just read.</target>
+        <target xml:lang="pt-PT" state="final">Um jogo de teste simples que verifica se os leitores entendem as principais partes da história que acabaram de ler.</target>
         <note>ID: TemplateBooks.PageDescription.Comprehension Quiz</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true" approved="yes">
@@ -6518,14 +6518,14 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Uma página em branco que permite que você adiciona itens.</target>
         <note>ID: TemplateBooks.PageDescription.Custom</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Custom Game" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Custom Game" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Start with a blank page and create your own game from scratch using the Game Tool.
           Best for advanced users.
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-          Start with a blank page and create your own game from scratch using the Game Tool.
-          Best for advanced users.
+        <target xml:lang="pt-PT" state="final">
+          Comece com uma página em branco e crie seu próprio jogo do zero usando a Ferramenta de Jogo.
+          Melhor para usuários avançados.
         </target>
         <note>ID: TemplateBooks.PageDescription.Custom Game</note>
       </trans-unit>
@@ -6549,14 +6549,14 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Uma página interativa com uma pergunta e algumas respostas. Funciona na web e no Bloom Reader. Quando usado com Bloom Reader, o painel do projeto pode mostrar valores agregados de compreensão.</target>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</target>
+        <target xml:lang="pt-PT" state="final">Os leitores veem uma palavra e três imagens. Eles escolhem a imagem que corresponde à palavra. A ordem da imagem muda a cada vez que o jogo é jogado.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Image from Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Readers see one image and three words. They pick the word that matches the picture. The word order changes each time the game is played.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Readers see one image and three words. They pick the word that matches the picture. The word order changes each time the game is played.</target>
+        <target xml:lang="pt-PT" state="final">Os leitores veem uma palavra e três imagens. Eles escolhem a imagem que corresponde à palavra. A ordem da imagem muda a cada vez que o jogo é jogado.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true" approved="yes">
@@ -6569,16 +6569,16 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Uma página interativa com uma imagem e alguns botões com texto.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Shadows" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Shadows" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           ℹ️ This game requires images with transparent backgrounds.
           Readers drag images to match their shadow shapes.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-          ℹ️ This game requires images with transparent backgrounds.
-          Readers drag images to match their shadow shapes.
-          This game can be customized in many ways using the Game Tool.
+        <target xml:lang="pt-PT" state="final">
+          ℹ️ Este jogo requer imagens com fundos transparentes.
+          Os leitores arrastam imagens para combinar as suas formas de sombra.
+          Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogo.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Shadows</note>
       </trans-unit>

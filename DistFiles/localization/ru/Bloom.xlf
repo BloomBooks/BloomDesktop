@@ -1495,8 +1495,8 @@
         <note>ID: EditTab.ContentLanguagesDropdown</note>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip">
-        <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
-        <target xml:lang="ru" state="needs-translation">Choose language to make this a bilingual or trilingual book</target>
+        <source xml:lang="en">This is disabled because it won't change anything on this page.</source>
+        <target xml:lang="ru" state="needs-translation">This is disabled because it won't change anything on this page.</target>
         <note>ID: EditTab.ContentLanguagesDropdown.DisabledTooltip</note>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip" approved="yes">
@@ -5682,15 +5682,15 @@
       <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true">
         <source xml:lang="en">Average per **Page**</source>
         <target xml:lang="ru" state="translated">
-
+          
 Среднее по <g id="mawpp-1" ctype="x-html-strong">Странице</g></target>
         <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">Average per **Page**</source>
         <target xml:lang="ru" state="translated">
-
-Среднее по <g id="maspp-1" ctype="x-html-strong">странице</g>
+          
+Среднее по <g id="maspp-1" ctype="x-html-strong">странице</g>        
         </target>
         <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
       </trans-unit>
@@ -5702,8 +5702,8 @@
       <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">Per **Page**</source>
         <target xml:lang="ru" state="translated">
-
-За<g id="mspp-1" ctype="x-html-strong">страницу</g>
+          
+За<g id="mspp-1" ctype="x-html-strong">страницу</g>        
         </target>
         <note>ID: ReaderSetup.MaxSentencesPerPage</note>
       </trans-unit>
@@ -6185,8 +6185,8 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: SubscriptionStatus.ProTeamCollectionNotSupported</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingProSubscription">
-        <source xml:lang="en">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</source>
-        <target xml:lang="ru" state="needs-translation">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</target>
+        <source xml:lang="en">Using **Pro** subscription for {0}. Expires {1}</source>
+        <target xml:lang="ru" state="needs-translation">Using **Pro** subscription for {0}. Expires {1}</target>
         <note>ID: SubscriptionStatus.UsingProSubscription</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">
