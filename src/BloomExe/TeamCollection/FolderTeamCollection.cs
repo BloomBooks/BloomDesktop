@@ -126,6 +126,25 @@ namespace Bloom.TeamCollection
                     // Dropbox sometimes throws up user warnings when Bloom deletes a Dropbox file;
                     // it doesn't seem to do so with Replace(). So this is the best option
                     // I can find.
+                    // We've had some issues with .tmp files being accumulated, presumably
+                    // because something went wrong with a Save. So if there are old ones hanging
+                    // around, delete them.
+                    var tmpFiles = Directory
+                        .EnumerateFiles(bookDirectoryPath, "*.tmp")
+                        .Where(t => new FileInfo(t).LastWriteTime < DateTime.Now.AddDays(-1))
+                        .ToList();
+                    var deletedFiles = 0;
+                    foreach (var tmpFile in tmpFiles)
+                    {
+                        try
+                        {
+                            RobustFile.Delete(tmpFile);
+                            // to save time we'll do a limited amount of cleanup each Save.
+                            if (deletedFiles++ > 5)
+                                break;
+                        }
+                        catch (Exception) { }
+                    }
                     pathToWrite = AvailablePath(bookFolderName, bookDirectoryPath, ".tmp");
                 }
             }
