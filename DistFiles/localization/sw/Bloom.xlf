@@ -6175,8 +6175,8 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: SubscriptionStatus.ProTeamCollectionNotSupported</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingProSubscription">
-        <source xml:lang="en">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</source>
-        <target xml:lang="sw" state="needs-translation">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</target>
+        <source xml:lang="en">Using **Pro** subscription for {0}. Expires {1}</source>
+        <target xml:lang="sw" state="needs-translation">Using **Pro** subscription for {0}. Expires {1}</target>
         <note>ID: SubscriptionStatus.UsingProSubscription</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">
