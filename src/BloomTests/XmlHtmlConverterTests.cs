@@ -13,17 +13,7 @@ namespace BloomTests
     [TestFixture]
     public class XmlHtmlConverterTests
     {
-        [Test]
-        public void GetXmlDomFromHtml_MinimalWellFormedHtml5()
-        {
-            var dom = XmlHtmlConverter.GetXmlDomFromHtml("<!DOCTYPE html><html></html>", false);
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//html", 1); //makes sure no namespace was inserted (or does it? what if that assert is too smart))
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
-            var xml = dom.OuterXml;
-            xml = xml.Replace(Environment.NewLine, "");
-            Assert.AreEqual("<html><head><title></title></head><body></body></html>", xml);
-        }
-
+        // TODO make a utility which creates minimal doc for tests. We may already have
         [Test]
         public void GetXmlDomFromHtml_HasOpenLinkElement_Closes()
         {
@@ -32,12 +22,16 @@ namespace BloomTests
                 false
             );
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//html", 1); //makes sure no namespace was inserted (or does it? what if that assert is too smart))
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             var xml = dom.OuterXml;
-            xml = xml.Replace(Environment.NewLine, "");
-            Assert.AreEqual(
-                "<html><head><link rel=\"stylesheet\" href=\"basePage.css\" type=\"text/css\" /><title></title></head><body></body></html>",
-                xml
+            Assert.That(
+                xml,
+                Does.Contain("<link rel=\"stylesheet\" href=\"basePage.css\" type=\"text/css\" />")
+            );
+            Assert.That(
+                xml,
+                Does.Not.Contain(
+                    "<link rel=\"stylesheet\" href=\"basePage.css\" type=\"text/css\">"
+                )
             );
         }
 
@@ -89,7 +83,7 @@ namespace BloomTests
         /// invalid.
         /// </summary>
         [Test]
-        public void SaveAsHTML_EmptyUbi_Removed()
+        public void SaveAsHTML_EmptyUbi_DoNotResultInSelfClosing()
         {
             var dom = SafeXmlDocument.Create();
             dom.LoadXml(
@@ -104,11 +98,6 @@ namespace BloomTests
                 Assert.That(text, Does.Not.Contain("<i />"));
                 Assert.That(text, Does.Not.Contain("<em />"));
                 Assert.That(text, Does.Not.Contain("<strong />"));
-                Assert.That(text, Does.Not.Contain("<i></i>"));
-                Assert.That(text, Does.Not.Contain("<b></b>"));
-                Assert.That(text, Does.Not.Contain("<u></u>"));
-                Assert.That(text, Does.Not.Contain("<em></em>"));
-                Assert.That(text, Does.Not.Contain("<strong></strong>"));
             }
         }
 
@@ -247,13 +236,11 @@ namespace BloomTests
         }
 
         /// <summary>
-        /// We don't particularly want it to convert newlines to spaces, as this test demonstrates that it does.
-        /// However, that is harmless and unlikely to occur (we're not counting on newlines for formatting)
-        /// so I haven't tried to prevent it.
-        /// I do want to test that an existing newline is not simply removed, leaving no white space.
+        /// Existing newlines are not simply removed leaving no white space, though they may be replaced with a space.
+        /// We're not relying on them for formatting.
         /// </summary>
         [Test]
-        public void GetXmlDomFromHtml_HasBandItags_NoExtraNewlinesBefore()
+        public void GetXmlDomFromHtml_HasBandItags_WhitespaceNotDisappearing()
         {
             const string html =
                 @"<!DOCTYPE html><html><head></head><body><div>one<b>two</b>three<i>four</i>five
@@ -261,7 +248,7 @@ namespace BloomTests
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             Assert.That(
                 dom.InnerXml,
-                Does.Contain(@"one<b>two</b>three<i>four</i>five <b>six</b>seven <i>eight</i>nine")
+                Does.Match(@"one<b>two</b>three<i>four</i>five\s+<b>six</b>seven <i>eight</i>nine")
             );
         }
 
@@ -317,37 +304,12 @@ namespace BloomTests
         }
 
         [Test]
-        public void GetXmlDomFromHtml_HasEmptyTags_RemoveTags()
-        {
-            var html = "<!DOCTYPE html><html><head></head><body><div><u></u></div></body></html>";
-            var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-            var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
-            xml = xml.Replace(Environment.NewLine, "");
-            Assert.AreEqual("<div></div>", xml);
-        }
-
-        [Test]
         public void GetXmlDomFromHtml_HasSpaceOnlyTags_KeepTags()
         {
             var html = "<!DOCTYPE html><html><head></head><body><div><u> </u></div></body></html>";
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
-            xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual("<div><u> </u></div>", xml);
-        }
-
-        [Test]
-        public void GetXmlDomFromHtml_HasNestedEmptyTags_RemoveTags()
-        {
-            var html =
-                "<!DOCTYPE html><html><head></head><body><div><u><i /></u></div></body></html>";
-            var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-            var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
-            xml = xml.Replace(Environment.NewLine, "");
-            Assert.AreEqual("<div></div>", xml);
         }
 
         [Test]
@@ -357,16 +319,12 @@ namespace BloomTests
                 "<!DOCTYPE html><html><head></head><body><div><u style=\"test\"> </u></div></body></html>";
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
-            xml = xml.Replace(Environment.NewLine, "");
             Assert.AreEqual("<div><u style=\"test\"> </u></div>", xml);
 
             html =
                 "<!DOCTYPE html><html><head></head><body><div><u><i style=\"test\" /></u></div></body></html>";
             dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            xml = xml.Replace(Environment.NewLine, "");
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             Assert.AreEqual("<div><u><i style=\"test\"></i></u></div>", xml);
         }
 

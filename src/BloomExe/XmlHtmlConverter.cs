@@ -50,7 +50,7 @@ namespace Bloom
         }
 
         /// <summary></summary>
-        /// <param name="content"></param>
+        /// <param name="content">Must be a complete valid HTML document</param>
         /// <param name="includeXmlDeclaration"></param>
         /// <exception>Throws if there are parsing errors</exception>
         /// <returns></returns>
@@ -66,12 +66,12 @@ namespace Bloom
             //That is fixed now, but this is needed to give to clean up existing books.
             content = content.Replace(@"REMOVEWHITESPACE", "");
 
-            // tidy likes to insert newlines before <b>, <u>, <i>, and these other elements and convert any existing whitespace
-            // there to a space.  (<span...> was found by pursuing BL-7558, <a...> from BL-12248)
-            content = new Regex(@"<([ubi]|em|strong|sup|sub|span[^>]*|a[^>]*)>").Replace(
-                content,
-                "REMOVEWHITESPACE<$1>"
-            );
+            // // tidy likes to insert newlines before <b>, <u>, <i>, and these other elements and convert any existing whitespace
+            // // there to a space.  (<span...> was found by pursuing BL-7558, <a...> from BL-12248)
+            // content = new Regex(@"<([ubi]|em|strong|sup|sub|span[^>]*|a[^>]*)>").Replace(
+            //     content,
+            //     "REMOVEWHITESPACE<$1>"
+            // );
 
             // fix for <br></br> tag doubling
             content = content.Replace("<br></br>", "<br />");
@@ -105,7 +105,7 @@ namespace Bloom
                 content = content.Replace("\uFEFF", "");
 
             // using (var temp = new TempFile())
-            RobustFile.WriteAllText("../../../../beforeNonXml.txt", content, Encoding.UTF8);
+            RobustFile.WriteAllText("../../../../beforeXml.txt", content, Encoding.UTF8);
             var temp = new TempFile();
             {
                 var doc = new HtmlDocument();
@@ -120,13 +120,16 @@ namespace Bloom
                 doc.OptionExtractErrorSourceText = false;
                 doc.OptionUseIdAttribute = false;
 
-                // Most importantly, disable entity encoding
-                doc.GlobalAttributeValueQuote = AttributeValueQuote.DoubleQuote;
+                //doc.GlobalAttributeValueQuote = AttributeValueQuote.SingleQuote;
                 doc.OptionOutputOptimizeAttributeValues = false;
+                HtmlNode.ElementsFlags.Remove("style");
+
                 doc.LoadHtml(content);
 
                 // TODO skip this write then read step
-                doc.OptionOutputAsXml = false;
+                doc.OptionOutputAsXml = true;
+                doc.OptionXmlForceOriginalComment = true;
+
                 doc.Save(temp.Path);
                 //using (var writer = new XmlTextWriter(temp.Path, new UTF8Encoding(false)))
                 //{
@@ -134,24 +137,24 @@ namespace Bloom
                 //}
 
 
-                var doc2 = new HtmlDocument();
-                doc2.Load("../../../../divs.txt");
-                using (
-                    var writer = new XmlTextWriter(
-                        "../../../../xml_divs.txt",
-                        new UTF8Encoding(false)
-                    )
-                )
-                {
-                    doc2.Save(writer);
-                }
+                // var doc2 = new HtmlDocument();
+                // doc2.Load("../../../../divs.txt");
+                // using (
+                //     var writer = new XmlTextWriter(
+                //         "../../../../xml_divs.txt",
+                //         new UTF8Encoding(false)
+                //     )
+                // )
+                // {
+                //     doc2.Save(writer);
+                // }
 
                 string newContents;
                 using (var reader = new StreamReader(temp.Path, Encoding.UTF8))
                 {
                     newContents = reader.ReadToEnd();
                 }
-                RobustFile.WriteAllText("../../../../afterNonXml.txt", newContents, Encoding.UTF8);
+                RobustFile.WriteAllText("../../../../afterXml.txt", newContents, Encoding.UTF8);
 
                 //     RobustFile.WriteAllText(temp.Path, content, Encoding.UTF8);
                 //     using (var tidy = RobustFileIO.DocumentFromFile(temp.Path))
@@ -182,8 +185,27 @@ namespace Bloom
                 //         var newContents = tidy.Save();
                 try
                 {
-                    newContents = newContents.Replace("<!DOCTYPE html>", "");
+                    // Agility pack adds these which we don't want
+                    if (newContents.StartsWith("<?xml version=\"1.0\" encoding=\"utf-8\"?><span>"))
+                    {
+                        newContents = newContents.Substring(
+                            "<?xml version=\"1.0\" encoding=\"utf-8\"?><span>".Length
+                        );
+                        if (newContents.EndsWith("</span>"))
+                        {
+                            newContents = newContents.Substring(
+                                0,
+                                newContents.Length - "</span>".Length
+                            );
+                        }
+                    }
+                    if (newContents.StartsWith("<!DOCTYPE html>"))
+                    {
+                        newContents = newContents.Substring("<!DOCTYPE html>".Length);
+                    }
+
                     // trim leading whitespace
+                    // TODO do we still need this
                     newContents = newContents.TrimStart();
                     newContents = RestoreSvgs(newContents, removedSvgs);
                     newContents = RemoveFillerInEmptyElements(newContents);
@@ -235,19 +257,20 @@ namespace Bloom
 
                     // Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
                     dom.PreserveWhitespace = true;
-                    try
-                    {
-                        dom.LoadXml(newContents);
-                    }
-                    catch (Exception e1)
-                    {
-                        if (e1.Message.StartsWith("There are multiple root elements"))
-                        {
-                            dom.LoadXml(
-                                $"<html><head><title></title></head><body>{newContents}</body></html>"
-                            );
-                        }
-                    }
+                    //try
+                    //{
+                    dom.LoadXml(newContents);
+                    //}
+                    //catch (Exception e1)
+                    //{
+                    //    if (e1.Message.StartsWith("There are multiple root elements"))
+                    //    {
+                    //        // TODO this is like ConvertElementToHtml5?
+                    //        dom.LoadXml(
+                    //            $"<html><head><title></title></head><body>{newContents}</body></html>"
+                    //        );
+                    //    }
+                    //}
                 }
                 catch (Exception e)
                 {
@@ -331,37 +354,6 @@ namespace Bloom
         public static string RemoveEmptySelfClosingTags(string html)
         {
             return _emptySelfClosingElementsToRemoveRegex.Replace(html, "");
-        }
-
-        /// <summary>
-        /// Beware... htmltidy doesn't consider such things as a second <body> element to warrant any more than a "warning", so this won't throw!
-        /// </summary>
-        /// <param name="content"></param>
-        public static void ThrowIfHtmlHasErrors(string content)
-        {
-            throw new NotImplementedException("");
-            //     // Tidy chokes on embedded svgs so just take them out. Here we don't use the removed svgs.
-            //     var dummy = new List<string>();
-            //     content = RemoveSvgs(content, dummy);
-
-            //     using (var tidy = Document.FromString(content))
-            //     {
-            //         tidy.ShowWarnings = false;
-            //         tidy.Quiet = true;
-            //         tidy.AddTidyMetaElement = false;
-            //         tidy.OutputXml = true;
-            //         tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
-
-            //         using (var log = new MemoryStream())
-            //         {
-            //             tidy.CleanAndRepair(log);
-            //             string errors = ASCIIEncoding.ASCII.GetString(log.ToArray());
-            //             if (!string.IsNullOrEmpty(errors))
-            //             {
-            //                 throw new ApplicationException(errors);
-            //             }
-            //         }
-            //     }
         }
 
         /// <summary>
@@ -481,6 +473,7 @@ namespace Bloom
             }
 
             xmlStringBuilder.Append("</body></html>");
+            // TODO add head and title
 
             var docHtml = ConvertXhtmlToHtml5(xmlStringBuilder.ToString());
             int bodyIndex = docHtml.IndexOf("<body>", StringComparison.InvariantCulture);
@@ -525,9 +518,11 @@ namespace Bloom
             var doc = new HtmlDocument();
             doc.OptionAutoCloseOnEnd = false;
             doc.OptionCheckSyntax = false;
-            doc.OptionWriteEmptyNodes = true;
+            doc.OptionWriteEmptyNodes = false;
+
             doc.LoadHtml(xml);
             string html = doc.DocumentNode.OuterHtml;
+            doc.Save("../../../../testXhtmlToHtml5.txt");
 
             // Now re-write as html, indented nicely
             // string html;

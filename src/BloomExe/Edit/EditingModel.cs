@@ -353,7 +353,6 @@ namespace Bloom.Edit
             }
 
             SaveCustomizedCssRules(dom, userCssContent);
-            XmlHtmlConverter.ThrowIfHtmlHasErrors(dom.OuterXml);
             return dom;
         }
 
