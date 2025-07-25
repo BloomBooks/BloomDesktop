@@ -14,6 +14,7 @@ import {
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
+import { showRequiresSubscriptionDialogInAnyView } from "../../react_components/requiresSubscription";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
@@ -1368,6 +1369,10 @@ async function getFeatureStatusTitleText(featureName: string): Promise<string> {
     });
 }
 
+function showSubscriptionDialog(featureName: string): void {
+    showRequiresSubscriptionDialogInAnyView(featureName);
+}
+
 /**
  * Adds feature status message titles to subscription badges found in the specified jQuery element
  * @param element The jQuery element containing subscription badges
@@ -1388,6 +1393,9 @@ async function addFeatureStatusMessageTitlesToSubscriptionBadges(
             const titleText = await getFeatureStatusTitleText(featureName);
             subscriptionBadge.setAttribute("title", titleText);
         })();
+        subscriptionBadge.addEventListener("click", () =>
+            showSubscriptionDialog(featureName)
+        );
 
         promises.push(promise);
     });
