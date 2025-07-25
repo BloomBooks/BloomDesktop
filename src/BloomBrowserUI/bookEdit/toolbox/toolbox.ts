@@ -14,6 +14,7 @@ import {
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
+import { showRequiresSubscriptionDialogInAnyView } from "../../react_components/requiresSubscription";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
@@ -1343,8 +1344,10 @@ function resizeToolbox() {
  * @param featureName The name of the feature to get status for
  * @returns A Promise that resolves to the localized title text
  */
-async function getFeatureStatusTitleText(featureName: string): Promise<string> {
-    return new Promise<string>(resolve => {
+async function getFeatureEnabledAndMessage(
+    featureName: string
+): Promise<{ enabled: boolean; message: string }> {
+    return new Promise<{ enabled: boolean; message: string }>(resolve => {
         get(`features/status?featureName=${featureName}`, c => {
             const featureStatus = c.data;
             const localizedTier = featureStatus?.localizedTier;
@@ -1363,9 +1366,13 @@ async function getFeatureStatusTitleText(featureName: string): Promise<string> {
                     localizedTier
                 );
             }
-            resolve(titleText);
+            resolve({ enabled: featureStatus.enabled, message: titleText });
         });
     });
+}
+
+function showSubscriptionDialog(featureName: string): void {
+    showRequiresSubscriptionDialogInAnyView(featureName);
 }
 
 /**
@@ -1377,7 +1384,7 @@ async function addFeatureStatusMessageTitlesToSubscriptionBadges(
 ): Promise<void> {
     const subscriptionBadges = element.find(".subscription-badge");
     const promises: Promise<void>[] = [];
-    subscriptionBadges.each(function(_i, subscriptionBadge) {
+    subscriptionBadges.each(function(_i, subscriptionBadge: HTMLElement) {
         if (subscriptionBadge.hasAttribute("title")) return;
         const featureName = subscriptionBadge.parentElement?.getAttribute(
             "data-feature"
@@ -1385,8 +1392,16 @@ async function addFeatureStatusMessageTitlesToSubscriptionBadges(
         if (!featureName) return;
 
         const promise = (async () => {
-            const titleText = await getFeatureStatusTitleText(featureName);
-            subscriptionBadge.setAttribute("title", titleText);
+            const { enabled, message } = await getFeatureEnabledAndMessage(
+                featureName
+            );
+            subscriptionBadge.setAttribute("title", message);
+            if (!enabled) {
+                subscriptionBadge.addEventListener("click", () =>
+                    showSubscriptionDialog(featureName)
+                );
+                subscriptionBadge.style.cursor = "pointer";
+            }
         })();
 
         promises.push(promise);
