@@ -41,6 +41,7 @@ import {
     showMakeReaderTemplateBloomPackDialog
 } from "../react_components/makeReaderTemplateBloomPackDialog";
 import { AboutDialogLauncher } from "../react_components/aboutDialog";
+import { RegistrationDialogLauncher } from "../react_components/registrationDialog";
 
 const kResizerSize = 10;
 
@@ -571,6 +572,18 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             <TeamCollectionDialogLauncher />
             <SpreadsheetExportDialogLauncher />
             <ForumInvitationDialogLauncher />
+            {/* These parameters are set for the use of Check Out Book (TeamCollectionBookStatusPanel - checkoutHandler).
+                When opening from Get Help... menu or AvatarDialog, an openingEvent is triggered from
+                WorkspaceView.cs - ShowRegistrationDialog() and overwrites these parameters. */}
+            <RegistrationDialogLauncher
+                mayChangeEmail={true}
+                registrationIsOptional={false}
+                emailRequiredForTeamCollection={true}
+                onSave={isValidEmail => {
+                    if (isValidEmail)
+                        post("teamCollection/attemptLockOfCurrentBook");
+                }}
+            />
             <AboutDialogLauncher />
             <CollectionSettingsDialog />
             <EmbeddedProgressDialog id="collectionTab" />

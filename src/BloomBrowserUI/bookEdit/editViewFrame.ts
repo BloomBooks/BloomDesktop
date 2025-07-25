@@ -33,6 +33,11 @@ export interface IEditViewFrameExports {
         closing: (canceled: boolean) => void
     );
     showRequiresSubscriptionDialog(featureName: string): void;
+    showRegistrationDialogInEditTab(
+        mayChangeEmail?: boolean,
+        registrationIsOptional?: boolean,
+        emailRequiredForTeamCollection?: boolean
+    ): void;
 }
 
 export function SayHello() {
@@ -51,6 +56,8 @@ export { showPageChooserDialog };
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
 export { showBookSettingsDialog };
+import { showRegistrationDialogForEditTab } from "../react_components/registrationDialog";
+export { showRegistrationDialogForEditTab as showRegistrationDialog };
 import { showAboutDialog } from "../react_components/aboutDialog";
 export { showAboutDialog };
 import { reportError } from "../lib/errorHandler";
@@ -259,4 +266,16 @@ export function showAboutDialogInEditTab() {
 
 export function showRequiresSubscriptionDialog(featureName: string): void {
     showRequiresSubscriptionDialogInEditView(featureName);
+}
+
+export function showRegistrationDialogInEditTab(
+    mayChangeEmail?: boolean,
+    registrationIsOptional?: boolean,
+    emailRequiredForTeamCollection?: boolean
+) {
+    showRegistrationDialogForEditTab(
+        mayChangeEmail,
+        registrationIsOptional,
+        emailRequiredForTeamCollection
+    );
 }

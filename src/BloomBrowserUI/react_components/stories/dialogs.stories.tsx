@@ -19,6 +19,7 @@ import {
 
 import { Meta, StoryObj } from "@storybook/react";
 import { MakeReaderTemplateBloomPackDialog } from "../makeReaderTemplateBloomPackDialog";
+import { RegistrationDialogLauncher } from "../registrationDialog";
 
 const meta: Meta = {
     title: "Misc/Dialogs"
@@ -132,5 +133,64 @@ export const MakeReaderTemplateBloomPackDialogStory: Story = {
         <MakeReaderTemplateBloomPackDialog
             dialogEnvironment={normalDialogEnvironmentForStorybook}
         ></MakeReaderTemplateBloomPackDialog>
+    )
+};
+
+export const RegDialogNormalStory: Story = {
+    name: "RegDialogNormal",
+    render: () => (
+        <StorybookDialogWrapper id="RegistrationDialog" params={{}}>
+            <RegistrationDialogLauncher
+                mayChangeEmail={true}
+                registrationIsOptional={true}
+                emailRequiredForTeamCollection={false}
+            />
+        </StorybookDialogWrapper>
+    )
+};
+
+export const RegDialogForcedStory: Story = {
+    name: "RegDialogForced",
+    render: () => (
+        <StorybookDialogWrapper id="RegistrationDialog" params={{}}>
+            <RegistrationDialogLauncher
+                mayChangeEmail={true}
+                registrationIsOptional={false}
+                emailRequiredForTeamCollection={true}
+            />
+        </StorybookDialogWrapper>
+    )
+};
+
+export const RegDialogKeepEmailStory: Story = {
+    name: "RegDialogKeepEmail",
+    render: () => (
+        <StorybookDialogWrapper id="RegistrationDialog" params={{}}>
+            <RegistrationDialogLauncher
+                mayChangeEmail={false}
+                registrationIsOptional={false}
+                emailRequiredForTeamCollection={false}
+            />
+        </StorybookDialogWrapper>
+    )
+};
+
+export const RegDialogOnSaveValidEmailStory: Story = {
+    name: "RegDialogOnSave",
+    render: () => (
+        <StorybookDialogWrapper id="RegistrationDialog" params={{}}>
+            <RegistrationDialogLauncher
+                mayChangeEmail={true}
+                registrationIsOptional={false}
+                emailRequiredForTeamCollection={true}
+                onSave={isValidEmail => {
+                    console.log(
+                        isValidEmail
+                            ? "Email Does Exist"
+                            : "Email Does Not Exist"
+                    );
+                }}
+            />
+        </StorybookDialogWrapper>
     )
 };

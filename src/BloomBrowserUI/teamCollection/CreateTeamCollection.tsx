@@ -2,9 +2,9 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { post, postString, useApiStringState } from "../utils/bloomApi";
+import { get, post, postString, useApiStringState } from "../utils/bloomApi";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import BloomButton from "../react_components/bloomButton";
 import { Div, P } from "../react_components/l10nComponents";
@@ -29,6 +29,10 @@ import {
     useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { ErrorBox } from "../react_components/boxes";
+import {
+    RegistrationDialogLauncher,
+    showRegistrationDialog
+} from "../react_components/registrationDialog";
 
 // Contents of a dialog launched from TeamCollectionSettingsPanel Create Team Collection button.
 
@@ -80,6 +84,22 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
     const checkChanged = (newVal: boolean) => {
         setBoxesChecked(oldCount => (newVal ? oldCount + 1 : oldCount - 1));
     };
+
+    const [emailExists, setEmailExists] = useState(false);
+    useEffect(() => {
+        get("registration/userInfo", userInfo => {
+            if (userInfo?.data) {
+                setEmailExists(userInfo.data.Email ? true : false);
+            }
+        });
+    }, []);
+
+    function tryToCreate() {
+        if (emailExists)
+            postString("teamCollection/createTeamCollection", repoFolderPath);
+        else showRegistrationDialog(); // the onSave callback below will try To Create again
+    }
+
     return (
         <BloomDialog {...propsForBloomDialog}>
             <DialogTitle title={`${dialogTitle}`} />
@@ -174,10 +194,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                     }
                     temporarilyDisableI18nWarning={true}
                     onClick={() => {
-                        postString(
-                            "teamCollection/createTeamCollection",
-                            repoFolderPath
-                        );
+                        tryToCreate();
                     }}
                 >
                     Create &amp; Restart
@@ -186,6 +203,18 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                     onClick_DEPRECATED={() => post("common/closeReactDialog")}
                 />
             </DialogBottomButtons>
+            <RegistrationDialogLauncher
+                mayChangeEmail={true}
+                registrationIsOptional={false}
+                emailRequiredForTeamCollection={true}
+                onSave={isValidEmail => {
+                    if (isValidEmail)
+                        postString(
+                            "teamCollection/createTeamCollection",
+                            repoFolderPath
+                        );
+                }}
+            />
         </BloomDialog>
     );
 };

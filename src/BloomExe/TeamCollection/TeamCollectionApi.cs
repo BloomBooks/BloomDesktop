@@ -265,10 +265,7 @@ namespace Bloom.TeamCollection
 
         private void HandleShowRegistrationDialog(ApiRequest request)
         {
-            using (var dlg = new RegistrationDialog(false, _tcManager.UserMayChangeEmail))
-            {
-                dlg.ShowDialog();
-            }
+            WorkspaceView.ShowRegistrationDialog(_tcManager.UserMayChangeEmail, false, true);
             request.PostSucceeded();
         }
 
@@ -1139,12 +1136,6 @@ namespace Bloom.TeamCollection
             string repoFolderParentPath = null;
             try
             {
-                if (!TeamCollection.PromptForSufficientRegistrationIfNeeded())
-                {
-                    request.PostSucceeded();
-                    return;
-                }
-
                 repoFolderParentPath = request.RequiredPostString();
 
                 _tcManager.ConnectToTeamCollection(repoFolderParentPath, _settings.CollectionId);
