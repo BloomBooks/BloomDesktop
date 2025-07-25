@@ -57,6 +57,7 @@ namespace Bloom
         public static SafeXmlDocument GetXmlDomFromHtml(
             string content,
             bool includeXmlDeclaration = false
+            // TODO
         )
         {
             var dom = SafeXmlDocument.Create();
@@ -93,8 +94,9 @@ namespace Bloom
                     + content.Substring(endOfCdata, content.Length - endOfCdata);
             }
 
-            var removedSvgs = new List<string>();
-            content = RemoveSvgs(content, removedSvgs);
+            // TODO can we handle svgs now?
+            // var removedSvgs = new List<string>();
+            // content = RemoveSvgs(content, removedSvgs);
 
             // Hand editing HTML files can sometimes, with some editors, introduce a BOM after the first character in the HTML file.
             // These can cause problems in creating PDFs (see https://issues.bloomlibrary.org/youtrack/issue/BL-11127).
@@ -120,7 +122,6 @@ namespace Bloom
                 doc.OptionExtractErrorSourceText = false;
                 doc.OptionUseIdAttribute = false;
 
-                //doc.GlobalAttributeValueQuote = AttributeValueQuote.SingleQuote;
                 doc.OptionOutputOptimizeAttributeValues = false;
                 HtmlNode.ElementsFlags.Remove("style");
 
@@ -131,23 +132,6 @@ namespace Bloom
                 doc.OptionXmlForceOriginalComment = true;
 
                 doc.Save(temp.Path);
-                //using (var writer = new XmlTextWriter(temp.Path, new UTF8Encoding(false)))
-                //{
-                //    doc.Save(writer);
-                //}
-
-
-                // var doc2 = new HtmlDocument();
-                // doc2.Load("../../../../divs.txt");
-                // using (
-                //     var writer = new XmlTextWriter(
-                //         "../../../../xml_divs.txt",
-                //         new UTF8Encoding(false)
-                //     )
-                // )
-                // {
-                //     doc2.Save(writer);
-                // }
 
                 string newContents;
                 using (var reader = new StreamReader(temp.Path, Encoding.UTF8))
@@ -156,33 +140,6 @@ namespace Bloom
                 }
                 RobustFile.WriteAllText("../../../../afterXml.txt", newContents, Encoding.UTF8);
 
-                //     RobustFile.WriteAllText(temp.Path, content, Encoding.UTF8);
-                //     using (var tidy = RobustFileIO.DocumentFromFile(temp.Path))
-                //     {
-                //         tidy.ShowWarnings = false;
-                //         tidy.Quiet = true;
-                //         tidy.WrapAt = 0; // prevents textarea wrapping.
-                //         tidy.AddTidyMetaElement = false;
-                //         tidy.OutputXml = true;
-                //         tidy.CharacterEncoding = EncodingType.Utf8;
-                //         tidy.InputCharacterEncoding = EncodingType.Utf8;
-                //         tidy.OutputCharacterEncoding = EncodingType.Utf8;
-                //         tidy.DocType = DocTypeMode.Omit; //when it supports html5, then we will let it out it
-                //         //maybe try this? tidy.Markup = true;
-
-                //         tidy.AddXmlDeclaration = includeXmlDeclaration;
-
-                //         //NB: this does not prevent tidy from deleting <span data-libray='somethingImportant'></span>
-                //         tidy.MergeSpans = AutoBool.No;
-                //         tidy.DropEmptyParagraphs = false;
-                //         tidy.MergeDivs = AutoBool.No;
-
-                //         var errors = tidy.CleanAndRepair();
-                //         if (!string.IsNullOrEmpty(errors))
-                //         {
-                //             throw new ApplicationException(errors);
-                //         }
-                //         var newContents = tidy.Save();
                 try
                 {
                     // Agility pack adds these which we don't want
@@ -207,7 +164,7 @@ namespace Bloom
                     // trim leading whitespace
                     // TODO do we still need this
                     newContents = newContents.TrimStart();
-                    newContents = RestoreSvgs(newContents, removedSvgs);
+                    // newContents = RestoreSvgs(newContents, removedSvgs);
                     newContents = RemoveFillerInEmptyElements(newContents);
 
                     newContents = newContents.Replace("&nbsp;", "&#160;");
