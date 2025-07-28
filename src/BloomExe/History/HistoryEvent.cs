@@ -66,5 +66,18 @@ namespace Bloom.History
         [Indexed]
         [Column("book_id")]
         public string BookId { get; set; }
+
+        public override string ToString()
+        {
+            return $"Event: "
+                + $"Id: {Id}, "
+                + $"UserId: {UserId}, "
+                + $"UserName: {UserName}, "
+                + $"Type: {Type}, "
+                + $"Message: {Message}, "
+                + $"When: {When:u}, "
+                + $"BloomVersion: {BloomVersion}, "
+                + $"BookId: {BookId}";
+        }
     }
 }

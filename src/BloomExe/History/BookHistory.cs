@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -47,11 +48,21 @@ namespace Bloom.History
                 BloomVersion = ch.BloomVersion
             };
         }
+
+        public override string ToString()
+        {
+            return base.ToString() + $", Title: {Title}, ThumbnailPath: {ThumbnailPath}";
+        }
     }
 
     public static class BookHistory
     {
         public static List<BookHistoryEvent> GetHistory(BookInfo book)
+        {
+            return GetHistory(book.FolderPath);
+        }
+
+        public static List<BookHistoryEvent> GetHistory(string folderPath)
         {
             if (SIL.PlatformUtilities.Platform.IsLinux)
             {
@@ -60,13 +71,27 @@ namespace Bloom.History
             }
             else
             {
-                using (var db = GetConnection(book.FolderPath))
+                using (var db = GetConnection(folderPath))
                 {
                     var events = db.Table<BookHistoryEvent>().ToList();
                     db.Close();
                     FixEventTypesForEnumerationChange(events);
                     return events;
                 }
+            }
+        }
+
+        public static string HistoryAsString(string folderPath)
+        {
+            if (SIL.PlatformUtilities.Platform.IsLinux)
+            {
+                // SQLiteConnection never works on Linux.
+                return "";
+            }
+            else
+            {
+                var events = GetHistory(folderPath);
+                return string.Join("\n", events.Select(x => x.ToString()));
             }
         }
 
