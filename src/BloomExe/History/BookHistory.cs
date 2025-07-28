@@ -53,6 +53,11 @@ namespace Bloom.History
     {
         public static List<BookHistoryEvent> GetHistory(BookInfo book)
         {
+            return GetHistory(book.FolderPath);
+        }
+
+        public static List<BookHistoryEvent> GetHistory(string folderPath)
+        {
             if (SIL.PlatformUtilities.Platform.IsLinux)
             {
                 // SQLiteConnection never works on Linux.
@@ -60,7 +65,7 @@ namespace Bloom.History
             }
             else
             {
-                using (var db = GetConnection(book.FolderPath))
+                using (var db = GetConnection(folderPath))
                 {
                     var events = db.Table<BookHistoryEvent>().ToList();
                     db.Close();
