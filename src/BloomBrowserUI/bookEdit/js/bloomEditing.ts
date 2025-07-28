@@ -25,6 +25,7 @@ import {
     theOneCanvasElementManager
 } from "./CanvasElementManager";
 import {
+    getCanvasElementManager,
     kCanvasElementClass,
     kCanvasElementSelector
 } from "../toolbox/overlay/canvasElementUtils";
@@ -1369,25 +1370,47 @@ async function cutSelectionImpl() {
 export const pasteClipboard = (imageAvailable: boolean) => {
     pasteImpl(imageAvailable);
 };
-document.addEventListener("keydown", e => {
+
+function pasteHandler(e: Event) {
+    const activeElement = document.activeElement;
+    // If there's a possibility of pasting an image, we need to handle that the same
+    // as the paste button code in C#, with interactions between C# and Javascript.
+    // That process involving C# does not work for <input> elements or or text areas or for pages that
+    // do not have a canvas element or a normal ckeditor setup.
+    //
+    // (See the branch pasteToInput for a very ugly way to make the C#/Javascript paste
+    // button code handle pasting into an input element.)
     if (
-        e.key === "v" &&
-        e.ctrlKey &&
-        !(document.activeElement instanceof HTMLInputElement) && // BL-14989
-        !(document.activeElement instanceof HTMLTextAreaElement) && // BL-14989
-        theOneCanvasElementManager?.getActiveOrFirstBloomCanvasOnPage() // BL-15034
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement
     ) {
-        // If there's a possibility of pasting an image, we need to handle that the same
-        // as the paste button code in C#, with interactions between C# and Javascript.
-        // That process involving C# does not work for <input> elements or for pages that
-        // do not have a canvas element or a normal ckeditor setup.  If the page does not
-        // have a canvas element, we aren't going to paste an image anyway, so we can just
-        // let the browser do its default paste behavior.
-        //
-        // (See the branch pasteToInput for a very ugly way to make the C#/Javascript paste
-        // button code handle pasting into an input element.)
+        return;
+    }
+
+    //  If the page does not have a canvas element, we aren't going to paste an image anyway, so we can just
+    // let the browser do its default paste behavior.
+    if (getCanvasElementManager()?.getActiveOrFirstBloomCanvasOnPage()) {
+        e.preventDefault(); // Prevent default paste
+        // Invoke our custom paste handler
         postJson("editView/paste", {});
-        e.preventDefault(); // Prevent the default paste behavior.
+    }
+}
+
+// Set up a global document-level paste handler. This works even if there is no
+// focused element that allows the ctrl-V handler to be called.
+document.addEventListener("paste", pasteHandler);
+// We also need a handler on ctrl-V. The pasteHandler does not get invoked by
+// the code above when ctrl-V is pressed in a contenteditable elemeent,
+// probably because some CkEditor code intercepts it and prevents default,
+// but we still want our own handling of pasting images, and the default
+// handler does not do that.
+// I tried putting capture:true on the paste event handler, but we then
+// end up pasting text into contenteditable elements twice, presumably
+// once because of our handler here and once because the other handler
+// is not looking for exactly this event and still gets called.
+document.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (e.ctrlKey && e.key === "v") {
+        pasteHandler(e);
     }
 });
 
