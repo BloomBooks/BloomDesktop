@@ -605,9 +605,7 @@ export const BookButton: React.FunctionComponent<{
                         &::selection {
                             background: rgb(0, 120, 215);
                         }
-                        &::-moz-selection {
-                            background: rgb(0, 120, 215);
-                        }
+                        overflow-y: auto;
                     `}
                     contentEditable={true}
                     tabIndex={0}
