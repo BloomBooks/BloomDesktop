@@ -57,42 +57,16 @@ namespace Bloom
         public static SafeXmlDocument GetXmlDomFromHtml(
             string content,
             bool includeXmlDeclaration = false
-            // TODO
         )
         {
             var dom = SafeXmlDocument.Create();
-            content = AddFillerToKeepTidyFromRemovingEmptyElementsAndWhiteSpace(content);
 
             //in BL-2250, we found that in previous versions, this method would return, for example, "<u> </u>" REMOVEWHITESPACE.
             //That is fixed now, but this is needed to give to clean up existing books.
             content = content.Replace(@"REMOVEWHITESPACE", "");
 
-            // // tidy likes to insert newlines before <b>, <u>, <i>, and these other elements and convert any existing whitespace
-            // // there to a space.  (<span...> was found by pursuing BL-7558, <a...> from BL-12248)
-            // content = new Regex(@"<([ubi]|em|strong|sup|sub|span[^>]*|a[^>]*)>").Replace(
-            //     content,
-            //     "REMOVEWHITESPACE<$1>"
-            // );
-
             // fix for <br></br> tag doubling
             content = content.Replace("<br></br>", "<br />");
-
-            // fix for > and similar in <style> element protected by CDATA.
-            // At present we only need to account for this occurring once.
-            // See Browser.SaveCustomizedCssRules.
-            var startOfCdata = content.IndexOf(CdataPrefix, StringComparison.InvariantCulture);
-            const string restoreCdataHere = "/****RestoreCDATAHere*****/";
-            var endOfCdata = content.IndexOf(CdataSuffix, StringComparison.InvariantCulture);
-            var savedCdata = "";
-            if (startOfCdata >= 0 && endOfCdata >= startOfCdata)
-            {
-                endOfCdata += CdataSuffix.Length;
-                savedCdata = content.Substring(startOfCdata, endOfCdata - startOfCdata);
-                content =
-                    content.Substring(0, startOfCdata)
-                    + restoreCdataHere
-                    + content.Substring(endOfCdata, content.Length - endOfCdata);
-            }
 
             // TODO can we handle svgs now?
             // var removedSvgs = new List<string>();
@@ -106,83 +80,71 @@ namespace Bloom
             if (!String.IsNullOrEmpty(content) && content.IndexOf('\uFEFF', 1) > 0)
                 content = content.Replace("\uFEFF", "");
 
-            // using (var temp = new TempFile())
+            // Remove this now, as it'll be harder once Agility Pack wraps everything in the XMl declaration.
+            if (content.StartsWith("<!DOCTYPE html>"))
+            {
+                content = content.Substring("<!DOCTYPE html>".Length);
+            }
+
+            content = content.Trim();
+
             RobustFile.WriteAllText("../../../../beforeXml.txt", content, Encoding.UTF8);
             var temp = new TempFile();
             {
                 var doc = new HtmlDocument();
-                doc.OptionAutoCloseOnEnd = false;
-                doc.OptionCheckSyntax = false;
+
+                // We have (currently one) element protected by CDATA and need this to preserve it
+                doc.OptionTreatCDataBlockAsComment = true;
+                // Without this, <!DOCTYPE html> is weirdly turning into <!--CTYPE ht-->, not sure why. We will remove it anyway though
+                doc.OptionXmlForceOriginalComment = true;
+
+                /// <summary>
+                /// Defines if LI, TR, TH, TD tags must be partially fixed when nesting errors are detected. Default is false.
+                /// </summary>
+                // TODO Do we want this? I think not, less invasive is better.
+                // doc.OptionFixNestedTags = true;
+
+                doc.OptionOutputAsXml = true;
+
+                /// <summary>
+                /// If used together with <see cref="OptionOutputAsXml"/> and enabled, Xml namespaces in element names are preserved. Default is false.
+                /// </summary>
+                // / TODO do we want this?
+                // doc.OptionPreserveXmlNamespaces = true;
+
+                doc.OptionOutputOriginalCase = true;
+                doc.OptionDefaultUseOriginalName = true;
+
+                // writes empty nodes as closed
                 doc.OptionWriteEmptyNodes = true;
-                // doc.OptionOutputOriginalCase = true;
-                // doc.OptionDefaultUseOriginalName = true;
-                // doc.OptionMaxNestedChildNodes = 1000; // prevent tidy from throwing an exception on large files
 
-                doc.OptionFixNestedTags = false;
-                doc.OptionExtractErrorSourceText = false;
-                doc.OptionUseIdAttribute = false;
-
-                doc.OptionOutputOptimizeAttributeValues = false;
+                // Agility pack sets a flag to wrap the contents of style tag with <![CDATA[ ... ]]>. We don't want this.
+                // https://github.com/zzzprojects/html-agility-pack/blob/8490ad1321e378582aec156668888511d3010b33/src/HtmlAgilityPack.Shared/HtmlNode.cs#L99
+                // We may need to do this for other element types also
                 HtmlNode.ElementsFlags.Remove("style");
 
                 doc.LoadHtml(content);
-
-                // TODO skip this write then read step
-                doc.OptionOutputAsXml = true;
-                doc.OptionXmlForceOriginalComment = true;
-
                 doc.Save(temp.Path);
-
-                string newContents;
-                using (var reader = new StreamReader(temp.Path, Encoding.UTF8))
-                {
-                    newContents = reader.ReadToEnd();
-                }
-                RobustFile.WriteAllText("../../../../afterXml.txt", newContents, Encoding.UTF8);
+                string newContents = doc.DocumentNode.OuterHtml;
+                RobustFile.WriteAllText(
+                    "../../../../afterXml.txt",
+                    doc.DocumentNode.OuterHtml,
+                    Encoding.UTF8
+                );
 
                 try
                 {
-                    // Agility pack adds these which we don't want
-                    if (newContents.StartsWith("<?xml version=\"1.0\" encoding=\"utf-8\"?><span>"))
+                    var xmlDeclaration = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
+                    if (!includeXmlDeclaration && newContents.StartsWith(xmlDeclaration))
                     {
-                        newContents = newContents.Substring(
-                            "<?xml version=\"1.0\" encoding=\"utf-8\"?><span>".Length
-                        );
-                        if (newContents.EndsWith("</span>"))
-                        {
-                            newContents = newContents.Substring(
-                                0,
-                                newContents.Length - "</span>".Length
-                            );
-                        }
+                        newContents = newContents.Substring(xmlDeclaration.Length);
                     }
-                    if (newContents.StartsWith("<!DOCTYPE html>"))
-                    {
-                        newContents = newContents.Substring("<!DOCTYPE html>".Length);
-                    }
+                    // TODO multiple element handling, check for added spans?
 
-                    // trim leading whitespace
-                    // TODO do we still need this
-                    newContents = newContents.TrimStart();
                     // newContents = RestoreSvgs(newContents, removedSvgs);
-                    newContents = RemoveFillerInEmptyElements(newContents);
 
-                    newContents = newContents.Replace("&nbsp;", "&#160;");
-                    //REVIEW: 1) are there others? &amp; and such are fine.  2) shoul we to convert back to &nbsp; on save?
-
-                    // The regex here is mainly for the \s* as a convenient way to remove whatever whitespace TIDY
-                    // has inserted. It's a fringe benefit that we can use the[biu]|... to deal with all these elements in one replace.
-                    newContents = Regex.Replace(
-                        newContents,
-                        @"REMOVEWHITESPACE\s*<([biu]|em|strong|sup|sub|span[^>]*|a[^>]*)>",
-                        "<$1>"
-                    );
-
-                    //In BL2250, we still had REMOVEWHITESPACE sticking around sometimes. The way we reproduced it was
-                    //with <u> </u>. That is, we started with
-                    //"REMOVEWHITESPACE <u> </u>", then libtidy (properly) removed the <u></u>, leaving us with only
-                    //"REMOVEWHITESPACE".
-                    newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE", "");
+                    // Agility Pack encodes the & in &nbsp;
+                    newContents = newContents.Replace("&amp;nbsp;", "&#160;");
 
                     // remove blank lines at the end of style blocks
                     newContents = Regex.Replace(newContents, @"\s+<\/style>", "</style>");
@@ -209,14 +171,19 @@ namespace Bloom
                         @"(<br></br>|<br ?/>)[\r\n]*</p>",
                         "</p>"
                     );
-
-                    newContents = newContents.Replace(restoreCdataHere, savedCdata);
+                    RobustFile.WriteAllText(
+                        "../../../../postProcessing.txt",
+                        doc.DocumentNode.OuterHtml,
+                        Encoding.UTF8
+                    );
 
                     // Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
                     dom.PreserveWhitespace = true;
                     //try
                     //{
+
                     dom.LoadXml(newContents);
+                    // TODO what if we use outerHTml?
                     //}
                     //catch (Exception e1)
                     //{
@@ -264,6 +231,7 @@ namespace Bloom
         /// Tidy is over-zealous. This is a work-around. After running Tidy, then call RemoveFillerInEmptyElements() on the same text
         /// </summary>
         /// <returns></returns>
+        // TODO can we get rid of htis?
         private static string AddFillerToKeepTidyFromRemovingEmptyElementsAndWhiteSpace(
             string content
         )
@@ -479,6 +447,7 @@ namespace Bloom
 
             doc.LoadHtml(xml);
             string html = doc.DocumentNode.OuterHtml;
+            // TODO do we get or need the doctype delcaration?
             doc.Save("../../../../testXhtmlToHtml5.txt");
 
             // Now re-write as html, indented nicely

@@ -169,7 +169,7 @@ namespace BloomTests
             var pattern =
                 "<p></p><p></p><p>a</p><p></p><p>b</p><p/><cite></cite><cite /><cite data-book='originalTitle'></cite><cite data-book='originalTitle'/>";
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml("<!DOCTYPE html><html><body>" + pattern + "</body></html>");
+            dom.LoadXml("<html><body>" + pattern + "</body></html>");
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -190,7 +190,7 @@ namespace BloomTests
         {
             var pattern = "<svg whatever='whatever'><path something='rubbish' /></svg>";
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml("<!DOCTYPE html><html><body>" + pattern + "</body></html>");
+            dom.LoadXml("<html><body>" + pattern + "</body></html>");
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -376,6 +376,27 @@ namespace BloomTests
         }
 
         [Test]
+        public void GetXmlDomFromHtml_RemovesBlankLinesAtEndOfStyleBlocks()
+        {
+            var styleContent =
+                @".BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
+.normal-style { text-align: initial ! important; }
+
+
+
+
+";
+            var html =
+                @"<!DOCTYPE html><html><head><style>"
+                + styleContent
+                + "</style></head><body></body></html>";
+            var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+            var xml = dom.DocumentElement.GetElementsByTagName("style")[0].InnerXml;
+            // Trim because it may mess with leading or trailing white space in ways we don't care about.
+            Assert.That(xml, Is.EqualTo(styleContent.Trim()));
+        }
+
+        [Test]
         public void GetXmlDomFromHtml_RemovesBOMs()
         {
             var bookHtml =
@@ -395,5 +416,105 @@ namespace BloomTests
             var idxBOM = outerXml.IndexOf('\uFEFF');
             Assert.That(idxBOM, Is.EqualTo(-1), "All BOMs are removed.");
         }
+
+        [Test]
+        public void GetXmlDomFromHtml_HasXmlDeclaration_RespectsIncludeXmlDeclaration()
+        {
+            var html = "<html><body><div data-book='test'/></body></html>";
+            var htmlDomWithXmlDecl = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
+            var htmlDomWithoutXmlDecl = XmlHtmlConverter.GetXmlDomFromHtml(html);
+            Assert.That(
+                htmlDomWithXmlDecl.OuterXml,
+                Does.StartWith("<?xml version=\"1.0\" encoding=\"utf-8\"?>"),
+                "The XML declaration is included."
+            );
+            Assert.That(
+                htmlDomWithoutXmlDecl.OuterXml,
+                Does.Not.StartWith("<?xml version=\"1.0\" encoding=\"utf-8\"?>"),
+                "The XML declaration is not included."
+            );
+        }
+
+        [Test]
+        public void GetXmlDomFromHtml_Deduplicates_attributes()
+        {
+            var bookHtml =
+                "<html><head>"
+                + "</head><body>"
+                + "<div data-foo=\"bar\" data-baz=\"qux\" data-foo=\"bar\"></div>"
+                + "</body></html>";
+            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(bookHtml, true);
+            var xml = htmlDom.DocumentElement.InnerXml;
+            Assert.That(
+                xml,
+                Does.Not.Contain("data-foo=\"bar\" data-baz=\"qux\" data-foo=\"bar\""),
+                "The duplicate data-foo attribute is not present."
+            );
+            Assert.That(
+                xml,
+                Does.Contain("data-foo=\"bar\" data-baz=\"qux\""),
+                "The remaining attributes are present."
+            );
+        }
+
+        [Test]
+        public void GetXmlDomFromHtml_nbsp_handled()
+        {
+            var bookHtml =
+                "<html><head>"
+                + "</head><body>"
+                + "<div>Some text with a&nbsp;non-breaking space.</div>"
+                + "</body></html>";
+            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(bookHtml, true);
+            var xml = htmlDom.DocumentElement.InnerXml;
+            Assert.That(
+                xml,
+                Does.Contain("Some text with a&#160;non-breaking space."),
+                "The non-breaking space is converted to the XML entity."
+            );
+        }
+
+        [Test]
+        public void GetXmlDomFromHtml_doesNotDoubleEncodeEntities()
+        {
+            var bookHtml =
+                "<html><head>"
+                + "</head><body>"
+                + "<div>Ben &amp; Jerry</div>"
+                + "<div>Buggy says &quot;hi&quot;</div>"
+                + "</body></html>";
+            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(bookHtml, true);
+            var xml = htmlDom.DocumentElement.InnerXml;
+            Assert.That(xml, Does.Contain("Ben &amp; Jerry"));
+            Assert.That(xml, Does.Contain("Buggy says &quot;hi&quot;"));
+            //TODO try round tripping this
+            Assert.That(
+                xml,
+                Does.Not.Contain("&amp;amp;"),
+                "The &amp; entity is not double-encoded."
+            );
+            Assert.That(
+                xml,
+                Does.Not.Contain("&amp;quot;"),
+                "The &quot; entity is not double-encoded."
+            );
+        }
+
+        [Test]
+        public void GetXmlDomFromHtml_ParsesStructure()
+        {
+            // TODO rename things throughout the tests. And refactor
+            var html =
+                @"<!DOCTYPE html>
+<html>
+<head>In the head</style></head>
+<body>in the body</body>
+</html>";
+            var doc = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
+            Assert.That(doc.Head.InnerXml.Trim(), Is.EqualTo("In the head"));
+            Assert.That(doc.Body.InnerXml, Is.EqualTo("in the body"));
+        }
     }
 }
+
+// Svgs, spans/multiple elements
