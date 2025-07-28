@@ -1943,7 +1943,13 @@ namespace Bloom.TeamCollection
                 msg
             );
             if (alsoMakeYouTrackIssue)
-                MakeYouTrackIssue(progress, msg);
+            {
+                MakeYouTrackIssue(
+                    progress,
+                    msg,
+                    ProblemReportApi.GetBookHistoryAsString(folderPath)
+                );
+            }
         }
 
         /// <summary>
@@ -1974,7 +1980,7 @@ namespace Bloom.TeamCollection
                 msg
             );
             if (alsoMakeYouTrackIssue)
-                MakeYouTrackIssue(progress, msg);
+                MakeYouTrackIssue(progress, msg, Path.Combine(collectionPath, bookName));
         }
 
         /// <summary>
@@ -1982,7 +1988,7 @@ namespace Bloom.TeamCollection
         /// in which case don't bother, since the main point of creating the issue is so we
         /// can get in touch and offer help).
         /// </summary>
-        private void MakeYouTrackIssue(IWebSocketProgress progress, string msg)
+        private void MakeYouTrackIssue(IWebSocketProgress progress, string msg, string history)
         {
             if (
                 !Program.RunningUnitTests
@@ -2006,9 +2012,11 @@ namespace Bloom.TeamCollection
                             e => ProblemReportApi.GetObfuscatedEmail(e)
                         )
                     );
+                    var extraInfo =
+                        $"This is a {GetBackendType()} Repo at {RepoDescription}\nBook History:\n{history}";
                     // Note: there is deliberately no period after {msg} since msg usually ends with one already.
                     var fullMsg =
-                        $"{standardUserInfo} \n(Admins: {admins}):\n\nThere was a book synchronization problem that required putting a version in Lost and Found:\n{msg}\n\nSee {lostAndFoundUrl}.";
+                        $"{standardUserInfo} \n(Admins: {admins}):\n\nThere was a book synchronization problem that required putting a version in Lost and Found:\n{msg}\n\nSee {lostAndFoundUrl}.\n\n{extraInfo}";
                     var issueId = issue.SubmitToYouTrack("Book synchronization failed", fullMsg);
                     var issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId;
                     ReportProgressAndLog(
