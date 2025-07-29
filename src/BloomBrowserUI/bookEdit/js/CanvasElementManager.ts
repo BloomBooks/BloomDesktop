@@ -6860,8 +6860,12 @@ export class CanvasElementManager {
             }
         }
         this.alignControlFrameWithActiveElement();
-        // Rerender the image's controls, since we may need to enable the Expand Image button since the size has changed
-        renderCanvasElementContextControls(bgCanvasElement, false);
+        if (bgCanvasElement === this.activeElement) {
+            // Rerender the image's controls, since we may need to enable the Expand Image button since the size has changed.
+            // (When the page is first loaded, we adjust the background image though it is NOT the active element;
+            // in that case, we must not try to render the controls as if they belonged to it.)
+            renderCanvasElementContextControls(bgCanvasElement, false);
+        }
     }
 
     // Store away the current size of the bloom-canvas. At any later time if we notice that
