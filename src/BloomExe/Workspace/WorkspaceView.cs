@@ -10,13 +10,11 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
-using Bloom.Registration;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
@@ -29,7 +27,6 @@ using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 using SIL.Unicode;
-using SIL.Windows.Forms.Miscellaneous;
 using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
 using SIL.WritingSystems;
@@ -1393,9 +1390,18 @@ namespace Bloom.Workspace
 
         private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
         {
-            using (var dlg = new RegistrationDialog(true, _tcManager.UserMayChangeEmail))
+            ShowRegistrationDialog(true);
+        }
+
+        public void ShowRegistrationDialog(bool registrationIsOptional)
+        {
+            if (_tabStrip.SelectedTab == _editTab)
+                _editingView.ShowRegistrationDialog(registrationIsOptional);
+            else
             {
-                dlg.ShowDialog();
+                dynamic messageBundle = new DynamicJson();
+                messageBundle.registrationIsOptional = registrationIsOptional;
+                _webSocketServer.LaunchDialog("RegistrationDialog", messageBundle);
             }
         }
 

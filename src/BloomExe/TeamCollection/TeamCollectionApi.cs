@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -12,7 +5,6 @@ using Bloom.CollectionTab;
 using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.Publish;
-using Bloom.Registration;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;
@@ -22,6 +14,13 @@ using Newtonsoft.Json;
 using Sentry;
 using SIL.IO;
 using SIL.Reporting;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Windows.Forms;
 
 namespace Bloom.TeamCollection
 {
@@ -140,8 +139,11 @@ namespace Bloom.TeamCollection
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                "teamCollection/showRegistrationDialog",
-                HandleShowRegistrationDialog,
+                "teamCollection/mayChangeRegistrationEmail",
+                request =>
+                {
+                    request.ReplyWithBoolean(_tcManager.UserMayChangeEmail);
+                },
                 true,
                 false
             );
@@ -261,15 +263,6 @@ namespace Bloom.TeamCollection
                 ),
                 additionalFilesToInclude: new[] { file }
             );
-        }
-
-        private void HandleShowRegistrationDialog(ApiRequest request)
-        {
-            using (var dlg = new RegistrationDialog(false, _tcManager.UserMayChangeEmail))
-            {
-                dlg.ShowDialog();
-            }
-            request.PostSucceeded();
         }
 
         private void HandleShowCreateTeamCollectionDialog(ApiRequest request)
@@ -1134,16 +1127,13 @@ namespace Bloom.TeamCollection
             return "";
         }
 
+        // We must ensure that the user has registered a valid email address before making the call to the API endpoint which calls this.
         public void HandleCreateTeamCollection(ApiRequest request)
         {
             string repoFolderParentPath = null;
             try
             {
-                if (!TeamCollection.PromptForSufficientRegistrationIfNeeded())
-                {
-                    request.PostSucceeded();
-                    return;
-                }
+                Debug.Assert(!string.IsNullOrWhiteSpace(CurrentUser));
 
                 repoFolderParentPath = request.RequiredPostString();
 

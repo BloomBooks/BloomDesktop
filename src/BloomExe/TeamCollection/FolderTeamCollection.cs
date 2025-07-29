@@ -1,16 +1,17 @@
+using Bloom.Collection;
+using Bloom.CollectionCreating;
+using Bloom.MiscUI;
+using Bloom.Registration;
+using Bloom.Utils;
+using Bloom.web;
+using L10NSharp;
+using SIL.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Bloom.Collection;
-using Bloom.CollectionCreating;
-using Bloom.MiscUI;
-using Bloom.Utils;
-using Bloom.web;
-using L10NSharp;
-using SIL.IO;
 
 namespace Bloom.TeamCollection
 {
@@ -1175,7 +1176,7 @@ namespace Bloom.TeamCollection
             TeamCollectionManager tcManager
         )
         {
-            if (!PromptForSufficientRegistrationIfNeeded())
+            if (!RegistrationManager.PromptForRegistrationIfNeeded())
                 return null;
 
             _joinCollectionPath = path;
@@ -1238,10 +1239,13 @@ namespace Bloom.TeamCollection
             {
                 dlg.Width = 560;
                 dlg.Height = 400;
-                // This dialog is neater without a task bar. We don't need to be able to
+                // This dialog is neater without a title bar. We don't need to be able to
                 // drag it around. There's nothing left to give it one if we don't set a title
                 // and remove the control box.
                 dlg.ControlBox = false;
+                // It is good to have this dialog with a task bar since no other window is giving a task bar,
+                // so if someone brings another window to the foreground, it will be easier to get this back
+                dlg.ShowInTaskbar = true;
                 dlg.ShowDialog();
             }
 

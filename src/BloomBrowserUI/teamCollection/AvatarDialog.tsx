@@ -7,7 +7,6 @@ import { Div } from "../react_components/l10nComponents";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { TextWithEmbeddedLink } from "../react_components/link";
 import BloomButton from "../react_components/bloomButton";
-import { post } from "../utils/bloomApi";
 import {
     BloomDialog,
     DialogMiddle,
@@ -15,6 +14,8 @@ import {
     DialogBottomLeftButtons,
     DialogTitle
 } from "../react_components/BloomDialog/BloomDialog";
+import { get } from "../utils/bloomApi";
+import { showRegistrationDialog } from "../react_components/registrationDialog";
 
 // Dialog shown (when props.open is true) in response to the "About my Avatar..." menu item
 // in the TeamCollectionBookStatusPanel.
@@ -88,7 +89,9 @@ export const AvatarDialog: React.FunctionComponent<{
                         temporarilyDisableI18nWarning={true}
                         onClick={() => {
                             props.close();
-                            post("teamCollection/showRegistrationDialog");
+                            showRegistrationDialog({
+                                registrationIsOptional: false
+                            });
                         }}
                         hasText={true}
                     >

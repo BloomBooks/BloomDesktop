@@ -735,7 +735,7 @@ namespace Bloom
             _supressRegistrationDialog = true;
             return new DesktopAnalytics.Analytics(
                 "rw21mh2piu",
-                RegistrationDialog.GetAnalyticsUserInfo(),
+                RegistrationManager.GetAnalyticsUserInfo(),
                 propertiesThatGoWithEveryEvent,
                 allowTracking: false, // change to true if you want to test sending
                 retainPii: true,
@@ -980,7 +980,7 @@ namespace Bloom
                 {
                     CheckRegistration();
                 },
-                shouldHideSplashScreen: RegistrationDialog.ShouldWeShowRegistrationDialog(),
+                shouldHideSplashScreen: RegistrationManager.ShouldWeShowRegistrationDialog(),
                 lowPriority: true
             );
 
@@ -1112,23 +1112,8 @@ namespace Bloom
 
         private static void CheckRegistration()
         {
-            if (RegistrationDialog.ShouldWeShowRegistrationDialog() && !_supressRegistrationDialog)
-            {
-                using (
-                    var dlg = new RegistrationDialog(
-                        false,
-                        _projectContext.TeamCollectionManager.UserMayChangeEmail
-                    )
-                )
-                {
-                    if (_projectContext != null && _projectContext.ProjectWindow != null)
-                        dlg.ShowDialog(_projectContext.ProjectWindow);
-                    else
-                    {
-                        dlg.ShowDialog();
-                    }
-                }
-            }
+            if (RegistrationManager.ShouldWeShowRegistrationDialog() && !_supressRegistrationDialog)
+                RegistrationManager.ShowRegistrationDialog(false, _projectContext.ProjectWindow);
         }
 
 #if PerProjectMutex

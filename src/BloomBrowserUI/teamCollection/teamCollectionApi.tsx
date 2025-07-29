@@ -92,6 +92,6 @@ export function useIsTeamCollection() {
         getBoolean("teamCollection/isTeamCollectionEnabled", teamCollection =>
             setIsTeamCollection(teamCollection)
         );
-    });
+    }, []);
     return isTeamCollection;
 }
