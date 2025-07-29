@@ -1,13 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.FontProcessing;
@@ -22,6 +12,18 @@ using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Windows.Shell;
+using System.Xml;
+using static SQLite.SQLite3;
 
 namespace Bloom.Publish
 {
@@ -1181,6 +1183,36 @@ namespace Bloom.Publish
             string imageDestFolder
         )
         {
+            var croppedImage = MakeCroppedImage(img, imageSourceFolder, imageDestFolder);
+            if (croppedImage != null)
+            {
+                var src = img.GetAttribute("src");
+                var destPath = Path.Combine(imageDestFolder, src);
+                RobustFile.Move(croppedImage, destPath, true);
+                // If it failed, it should have already logged the reason. I think all we can do
+                // is leave the image alone.
+            }
+            img.RemoveAttribute("style");
+        }
+
+        /// <summary>
+        /// If the specified img is cropped, and we can find and successfully crop the
+        /// appropriate image file, make a new file containing the cropped image in imageDestFolder
+        /// and return the path to it.
+        /// If anything prevents doing this successfully, including that the image is not cropped, return null.
+        /// </summary>
+        /// <param name="img">An img element, which might need cropping if we find it in the right context.</param>
+        /// <param name="imageSourceFolder">The folder where image files live; can be combined with the src
+        /// of the image to find it. Typically the book folder.</param>
+        /// <param name="imageDestFolder">The folder where we want the cropped image placed. May be the same
+        /// as imageSourceFolder.</param>
+        /// Enhance: possibly this wants to live somewhere like ImageUtils? But so far it only has one other use.
+        public static string MakeCroppedImage(
+            SafeXmlElement img,
+            string imageSourceFolder,
+            string imageDestFolder
+        )
+        {
             var imgContainer = img.ParentNode as SafeXmlElement;
             var canvasElement = imgContainer?.ParentNode as SafeXmlElement;
             // Cropping is implemented using the interaction between a canvas element
@@ -1194,14 +1226,14 @@ namespace Bloom.Publish
                 || !canvasElement.HasClass(HtmlDom.kCanvasElementClass)
                 || !imgContainer.HasClass("bloom-imageContainer")
             )
-                return;
+                return null;
             var src = img.GetAttribute("src");
             var srcPath = UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
             if (!RobustFile.Exists(srcPath))
-                return;
+                return null;
             var imgStyle = img.GetAttribute("style");
             if (string.IsNullOrEmpty(imgStyle))
-                return;
+                return null;
             var imgWidth = GetNumberFromPx("width", imgStyle);
             var imgLeft = GetNumberFromPx("left", imgStyle);
             var imgTop = GetNumberFromPx("top", imgStyle);
@@ -1209,13 +1241,13 @@ namespace Bloom.Publish
             var canvasElementWidth = GetNumberFromPx("width", canvasElementStyle);
             var canvasElementHeight = GetNumberFromPx("height", canvasElementStyle);
             if (imgWidth == 0 || canvasElementWidth == 0)
-                return;
+                return null;
             if (!ImageUtils.TryGetImageSize(srcPath, out Size size))
             {
                 Logger.WriteEvent(
                     "Unable to calculate image size for cropping during publication: " + srcPath
                 );
-                return; // can't crop the image if we can't get its size.
+                return null; // can't crop the image if we can't get its size.
             }
             var scale = imgWidth / size.Width;
             var selWidth = canvasElementWidth / scale;
@@ -1235,13 +1267,8 @@ namespace Bloom.Publish
             );
             var result = ImageUtils.CropImage(srcPath, tempPath, cropRectangle);
             if (result.ExitCode == 0)
-            {
-                var destPath = Path.Combine(imageDestFolder, src);
-                RobustFile.Move(tempPath, destPath, true);
-                // If it failed, it should have already logged the reason. I think all we can do
-                // is leave the image alone.
-            }
-            img.RemoveAttribute("style");
+                return tempPath;
+            return null;
         }
 
         internal static double GetNumberFromPx(string label, string input)

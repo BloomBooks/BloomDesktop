@@ -5137,13 +5137,19 @@ namespace Bloom.Book
         /// <returns></returns>
         public string GetCoverImagePath()
         {
+            return GetCoverImagePathAndElt(out SafeXmlElement _);
+        }
+
+        public string GetCoverImagePathAndElt(out SafeXmlElement coverImgElt)
+        {
+            coverImgElt = null;
             if (Storage == null)
                 return null; // can happen in tests
             // This first branch covers the currently obsolete approach to images using background-image.
             // In that approach the data-book attribute is on the imageContainer.
             // Note that we want the coverImage from a page, instead of the dataDiv because the former
             // "doesn't have the data in the form that GetImageElementUrl can handle."
-            var coverImgElt = Storage.Dom
+            coverImgElt = Storage.Dom
                 .SafeSelectNodes("//div[not(@id='bloomDataDiv')]/div[@data-book='coverImage']")
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
