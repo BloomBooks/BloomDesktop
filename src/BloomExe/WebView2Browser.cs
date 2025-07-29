@@ -918,6 +918,8 @@ namespace Bloom
                     {
                         try
                         {
+                            // The most efficient way to detect that a process with a given id is not
+                            // running is to try to access it and get an exception thrown.
                             var process = Process.GetProcessById((int)key);
                         }
                         catch (ArgumentException)

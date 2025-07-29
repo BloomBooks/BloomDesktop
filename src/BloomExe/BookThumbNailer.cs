@@ -11,6 +11,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
+using Bloom.Publish;
 using Bloom.SafeXml;
 using SIL.IO;
 using SIL.Windows.Forms.ImageToolbox;
@@ -233,25 +234,37 @@ namespace Bloom
             // If something else is wrong...well, at worst we use a generic thumbnail.
             if (!Directory.Exists(book.FolderPath))
                 return false;
-            var imageSrc = book.GetCoverImagePath();
+            var imageSrc = book.GetCoverImagePathAndElt(out SafeXmlElement coverImgElt);
             if (!IsCoverImageSrcValid(imageSrc, options))
             {
                 Debug.WriteLine(book.StoragePageFolder + " does not have a cover image.");
                 return false;
             }
-            var size = Math.Max(options.Width, options.Height);
-            var destFilePath = Path.Combine(book.StoragePageFolder, options.FileName);
-            // Writing a transparent image to a file, then reading it in again appears to be the only
-            // way to get the thumbnail image to draw with the book's cover color background reliably.
-            var transparentImageFile = Path.Combine(
-                Path.GetTempPath(),
-                "Bloom",
-                "Transparent",
-                Path.GetFileName(imageSrc)
+            // Crop the image if we need to. Put the cropped image in the system temp folder.
+            // Optimize: there's probably some way we could combine cropping with the other
+            // work we do here and avoid writing two files. But it would be a pain.
+            var croppedImagePath = PublishHelper.MakeCroppedImage(
+                coverImgElt,
+                book.StoragePageFolder,
+                Path.GetTempPath()
             );
-            Directory.CreateDirectory(Path.GetDirectoryName(transparentImageFile));
+            string transparentImageFile = null;
             try
             {
+                if (croppedImagePath != null)
+                    imageSrc = croppedImagePath;
+                var size = Math.Max(options.Width, options.Height);
+                var destFilePath = Path.Combine(book.StoragePageFolder, options.FileName);
+                // Writing a transparent image to a file, then reading it in again appears to be the only
+                // way to get the thumbnail image to draw with the book's cover color background reliably.
+                transparentImageFile = Path.Combine(
+                    Path.GetTempPath(),
+                    "Bloom",
+                    "Transparent",
+                    Path.GetFileName(imageSrc)
+                );
+                Directory.CreateDirectory(Path.GetDirectoryName(transparentImageFile));
+
                 if (
                     RuntimeImageProcessor.MakePngBackgroundTransparentIfDesirable(
                         imageSrc,
@@ -300,6 +313,8 @@ namespace Bloom
             {
                 if (RobustFile.Exists(transparentImageFile))
                     RobustFile.Delete(transparentImageFile);
+                if (croppedImagePath != null)
+                    RobustFile.Delete(croppedImagePath);
             }
             return true;
         }

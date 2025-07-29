@@ -5422,9 +5422,9 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: SubscriptionStatus.ProTeamCollectionNotSupported</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingProSubscription">
-        <source xml:lang="en">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</source>
+        <source xml:lang="en">Using **Pro** subscription for {0}. Expires {1}</source>
         <note>ID: SubscriptionStatus.UsingProSubscription</note>
-        <note>**{0}**{.bloom-Red} is the subscription descriptor (all of these characters must be left untranslated), {1} is the formatted expiration date</note>
+        <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
         <note>Leave the ** around the word(s) used to translate **Pro**</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">

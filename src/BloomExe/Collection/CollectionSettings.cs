@@ -62,6 +62,11 @@ namespace Bloom.Collection
 
         public string DefaultBookshelf = "";
 
+        /// <summary>
+        /// The bookshelf the user wants, but the subscription has expired.
+        /// </summary>
+        public string ExpiredBookshelf = "";
+
         public static readonly Dictionary<string, string> CssNumberStylesToCultureOrDigits =
             new Dictionary<string, string>()
             {
@@ -562,6 +567,12 @@ namespace Bloom.Collection
                     (
                         defaultBookshelfTag != null
                         && Subscription.Tier == SubscriptionTier.Enterprise
+                    )
+                        ? defaultBookshelfTag.Substring("bookshelf:".Length)
+                        : "";
+                ExpiredBookshelf =
+                    (
+                        defaultBookshelfTag != null && Subscription.IsExpired()
                     )
                         ? defaultBookshelfTag.Substring("bookshelf:".Length)
                         : "";

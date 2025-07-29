@@ -260,10 +260,6 @@ export function showEditViewBookSettingsDialog(
     showBookSettingsDialog(initiallySelectedGroupIndex);
 }
 
-export function showAboutDialogInEditTab() {
-    showAboutDialog();
-}
-
 export function showRequiresSubscriptionDialog(featureName: string): void {
     showRequiresSubscriptionDialogInEditView(featureName);
 }
@@ -272,4 +268,19 @@ export function showRegistrationDialogInEditTab(
     registrationIsOptional?: boolean
 ) {
     showRegistrationDialogForEditTab(registrationIsOptional);
+}
+
+// Adjusts the zoom scaling element created in C# SetupPageZoom; keep in sync with that code.
+// Called directly from C# code, in EditingView.SetZoom().
+// Argument is a raw number (e.g., 0.5 for 50% zoom, 1.0 for 100% zoom).
+export function setZoom(zoom: number): void {
+    const container = getPageIframeBody()?.ownerDocument.getElementById(
+        "page-scaling-container"
+    );
+    if (container) {
+        container.style.transform = `scale(${zoom.toString()}`;
+        container.style.width = `calc(100% - 5px) / ${zoom.toString()}`;
+    } else {
+        console.warn("setZoom called before page loaded");
+    }
 }

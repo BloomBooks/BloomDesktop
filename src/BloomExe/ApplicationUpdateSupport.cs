@@ -17,7 +17,7 @@ using Velopack;
 namespace Bloom
 {
     /// <summary>
-    /// This class contains code to work with the Squirrel package to handle automatic updating of
+    /// This class contains code to work with the Velopack package to handle automatic updating of
     /// Bloom to new versions. The key methods are called from WorkspaceView when Bloom is first idle or
     /// when the user requests an update.
     /// </summary>
@@ -25,6 +25,9 @@ namespace Bloom
     {
 #if !__MonoCS__
         internal static UpdateManager _bloomUpdateManager;
+        private static UpdateInfo _newVersion;
+        private static bool _haveNewVersionDownloaded;
+        private static bool _downloadInProgress;
 #endif
 
         internal enum BloomUpdateMessageVerbosity
@@ -38,13 +41,14 @@ namespace Bloom
 #if __MonoCS__
             get { return false; }
 #else
-            get { return _bloomUpdateManager != null; }
+            get { return _downloadInProgress; }
 #endif
         }
 
         /// <summary>
-        /// See if any updates are available and if so download them. Once they are ready a notification
-        /// pops up and the user can restart Bloom to run the new version.
+        /// See if any updates are available and if approved, download them. Once they are ready a notification
+        /// pops up and the user can restart Bloom to run the new version. (Or if you don't, they will get installed
+        /// when Bloom quits.)
         /// The restartBloom argument is an action that is executed if the user clicks the toast that suggests
         /// a restart. This is the responsibility of the caller (typically the workspace view). Typically it
         /// just shuts down Bloom; the update and restart are managed automatically by Velopack.
@@ -63,34 +67,44 @@ namespace Bloom
             }
 
 #if !__MonoCS__
-            if (!OkToInitiateUpdateManager)
-                return;
-            if (!GetUpdateUrl(verbosity, out var updateUrl))
-                return;
-
-            _bloomUpdateManager = new UpdateManager(updateUrl);
-            var newVersion = await _bloomUpdateManager.CheckForUpdatesAsync();
-            if (newVersion == null)
+            // If we already have a new version, we can skip this bit.
+            // Conceivably, there could be an even newer version since we checked. But if
+            // we support checking again, we have to deal with the possibility that we already
+            // downloaded updates for the version we found out about before. A very complicated
+            // bit of code gets even more so. I decided that if we've detected a new version,
+            // we won't actually look again during this run.
+            if (_newVersion == null)
             {
-                if (verbosity == BloomUpdateMessageVerbosity.Verbose)
-                {
-                    // Only show this if the user manually initiated the check.
-                    var message = LocalizationManager.GetString(
-                        "CollectionTab.UpToDate",
-                        "Your Bloom is up to date."
-                    );
-                    var noneNotifier = new ToastNotifier();
-                    noneNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
-                    noneNotifier.Show(message, "", 5);
-                }
+                if (!OkToInitiateUpdateManager)
+                    return;
+                if (!GetUpdateUrl(verbosity, out var updateUrl))
+                    return;
 
-                _bloomUpdateManager = null; // no updates, so no need to keep this object around, and allows user to try again
-                return;
+                _bloomUpdateManager = new UpdateManager(updateUrl);
+                _newVersion = await _bloomUpdateManager.CheckForUpdatesAsync();
+                if (_newVersion == null)
+                {
+                    if (verbosity == BloomUpdateMessageVerbosity.Verbose)
+                    {
+                        // Only show this if the user manually initiated the check.
+                        var message = LocalizationManager.GetString(
+                            "CollectionTab.UpToDate",
+                            "Your Bloom is up to date."
+                        );
+                        var noneNotifier = new ToastNotifier();
+                        noneNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
+                        noneNotifier.Show(message, "", 5);
+                    }
+
+                    _bloomUpdateManager = null; // no updates, so no need to keep this object around, and allows user to try again
+                    return;
+                }
             }
 
             // There are updates available. If the user is not installing updates automatically,
-            // ask whether to download them.
-            if (!autoUpdate)
+            // ask whether to download them (unless we already have them...if so, go straight to
+            // the download complete toast, though that one should never have gone away).
+            if (!autoUpdate && !_haveNewVersionDownloaded)
             {
                 var msgAvail = LocalizationManager.GetString(
                     "CollectionTab.UpdatesAvailable",
@@ -104,60 +118,72 @@ namespace Bloom
                 notifierAvail.Image.Image = Resources.Bloom;
                 notifierAvail.ToastClicked += (sender, args) =>
                 {
-                    DownloadAndApplyUpdates(verbosity, restartBloom, newVersion);
+                    DownloadAndApplyUpdates(verbosity, restartBloom);
                 };
                 notifierAvail.Show(msgAvail, actionInstall, 10);
                 return;
             }
             // If autoupdate is true, we just go ahead and download the updates.
-            DownloadAndApplyUpdates(verbosity, restartBloom, newVersion);
+            DownloadAndApplyUpdates(verbosity, restartBloom);
         }
 
         private static bool restartingAfterToastClicked = false;
 
         private static async void DownloadAndApplyUpdates(
             BloomUpdateMessageVerbosity verbosity,
-            Action restartBloom,
-            UpdateInfo newVersion
+            Action restartBloom
         )
         {
             // If we got here, we have a new version to download, and we want to install it,
             // either because autoupdates are on, or because the user already said to update now.
             // However, the actual installation requires restarting Bloom, so we won't do it
             // until the user either quits Bloom or clicks the toast that says to restart now.
+            if (!_haveNewVersionDownloaded)
+            {
+                // We are ready to do the download. Disable the command to check for updates
+                // until we are done.
+                _downloadInProgress = true;
+                // Show a notification that we're downloading the update.
+                // We could show a progress bar, but it would be hard to get it right.
 
-            // Show a notification that we're downloading the update.
-            // We could show a progress bar, but it would be hard to get it right.
+                // Velopack may use a more sophisticated algorithm to decide which to download,
+                // but this should be good enough to give the user an idea.
+                var fullSize = _newVersion.TargetFullRelease.Size;
+                var deltasSize = _newVersion.DeltasToTarget.Sum(d => d.Size);
+                var downloadSize = deltasSize;
+                if (_newVersion.DeltasToTarget.Length > 0 && fullSize < deltasSize)
+                    downloadSize = fullSize;
+                var updatingMsg = String.Format(
+                    LocalizationManager.GetString(
+                        "CollectionTab.Updating",
+                        "Downloading update to {0} ({1}K)"
+                    ),
+                    _newVersion.TargetFullRelease.Version.ToString(),
+                    downloadSize / 1024
+                );
 
-            // Velopack may use a more sophisticated algorithm to decide which to download,
-            // but this should be good enough to give the user an idea.
-            var fullSize = newVersion.TargetFullRelease.Size;
-            var deltasSize = newVersion.DeltasToTarget.Sum(d => d.Size);
-            var downloadSize = deltasSize;
-            if (newVersion.DeltasToTarget.Length > 0 && fullSize < deltasSize)
-                downloadSize = fullSize;
-            var updatingMsg = String.Format(
-                LocalizationManager.GetString(
-                    "CollectionTab.Updating",
-                    "Downloading update to {0} ({1}K)"
-                ),
-                newVersion.TargetFullRelease.Version.ToString(),
-                downloadSize / 1024
-            );
+                var updatingNotifier = new ToastNotifier();
+                updatingNotifier.Image.Image = Resources.Bloom;
+                // Since it's not conveying any new information, I don't think it needs to
+                // hang around. The user can "check for updates" again if they want to,
+                // and get the same message.
+                updatingNotifier.Show(updatingMsg, "", 5);
 
-            var updatingNotifier = new ToastNotifier();
-            updatingNotifier.Image.Image = Resources.Bloom;
-            updatingNotifier.Show(updatingMsg, "", 5);
+                await _bloomUpdateManager.DownloadUpdatesAsync(_newVersion);
+                _haveNewVersionDownloaded = true;
+                _downloadInProgress = false;
+            }
 
-            await _bloomUpdateManager.DownloadUpdatesAsync(newVersion);
-
+            // In theory we don't need this if we already showed it, since it doesn't go away.
+            // But maybe there's some tricky thing the user can do to hide it, or maybe they
+            // missed it and the new animation will catch their attention. It's harmless to show it again.
             var msg = String.Format(
                 LocalizationManager.GetString(
                     "CollectionTab.UpdateInstalled",
                     "Update for {0} is ready",
                     "Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom."
                 ),
-                newVersion.TargetFullRelease.Version
+                _newVersion.TargetFullRelease.Version
             );
             var action = String.Format(
                 LocalizationManager.GetString(

@@ -770,6 +770,7 @@ namespace BloomTests.TeamCollection
                     // To avoid messing up other tests, clean up before asserting.
                     tc.RepoCollectionFilesChanged -= monitorFunction;
                     tc.StopMonitoring();
+                    tc.Dispose();
 
                     Assert.That(eventWasRaised, Is.True, "event was not raised");
                 }

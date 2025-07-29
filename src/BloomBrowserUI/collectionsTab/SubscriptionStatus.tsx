@@ -174,7 +174,10 @@ export const SubscriptionStatus: React.FunctionComponent<{
                     margin-bottom: 10px;
                 `}
                 l10nKey={subscriptionMessageKey}
-                l10nParams={[descriptorToShow, localizedExpiryDate]}
+                l10nParams={[
+                    `**${descriptorToShow}**{.bloom-Red}`,
+                    localizedExpiryDate
+                ]}
             >
                 {defaultStatusMessage}
             </Markdown>

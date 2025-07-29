@@ -24,8 +24,8 @@ namespace Bloom.TeamCollection
     public class FolderTeamCollection : TeamCollection
     {
         private string _repoFolderPath; // the (presumably somehow shared) folder storing the repo
-        private FileSystemWatcher _booksWatcher; // watches the _repoFolderPath/Books for changes
-        private FileSystemWatcher _otherWatcher; // watches the _repoFolderPath/Other for changes
+        private FileSystemWatcherWrapper _booksWatcher; // watches the _repoFolderPath/Books for changes
+        private FileSystemWatcherWrapper _otherWatcher; // watches the _repoFolderPath/Other for changes
 
         // These four variables work together to track the last book we modified and whether we
         // are still doing so (and to lock access to the other two). They are manipulated
@@ -127,6 +127,25 @@ namespace Bloom.TeamCollection
                     // Dropbox sometimes throws up user warnings when Bloom deletes a Dropbox file;
                     // it doesn't seem to do so with Replace(). So this is the best option
                     // I can find.
+                    // We've had some issues with .tmp files being accumulated, presumably
+                    // because something went wrong with a Save. So if there are old ones hanging
+                    // around, delete them.
+                    var tmpFiles = Directory
+                        .EnumerateFiles(bookDirectoryPath, "*.tmp")
+                        .Where(t => new FileInfo(t).LastWriteTime < DateTime.Now.AddDays(-1))
+                        .ToList();
+                    var deletedFiles = 0;
+                    foreach (var tmpFile in tmpFiles)
+                    {
+                        try
+                        {
+                            RobustFile.Delete(tmpFile);
+                            // to save time we'll do a limited amount of cleanup each Save.
+                            if (deletedFiles++ > 5)
+                                break;
+                        }
+                        catch (Exception) { }
+                    }
                     pathToWrite = AvailablePath(bookFolderName, bookDirectoryPath, ".tmp");
                 }
             }
@@ -740,7 +759,7 @@ namespace Bloom.TeamCollection
         protected internal override void StartMonitoring()
         {
             base.StartMonitoring();
-            _booksWatcher = new FileSystemWatcher();
+            _booksWatcher = new FileSystemWatcherWrapper();
 
             var booksPath = Path.Combine(_repoFolderPath, "Books");
             if (!Directory.Exists(booksPath))
@@ -762,7 +781,7 @@ namespace Bloom.TeamCollection
             // Begin watching.
             _booksWatcher.EnableRaisingEvents = true;
 
-            _otherWatcher = new FileSystemWatcher(Path.Combine(_repoFolderPath, "Other"));
+            _otherWatcher = new FileSystemWatcherWrapper(Path.Combine(_repoFolderPath, "Other"));
             _otherWatcher.NotifyFilter = NotifyFilters.LastWrite;
             _otherWatcher.DebounceChanged(OnCollectionFilesChanged, kDebouncePeriodInMs);
             _otherWatcher.EnableRaisingEvents = true;
