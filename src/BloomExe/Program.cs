@@ -751,7 +751,7 @@ namespace Bloom
 
             return new DesktopAnalytics.Analytics(
                 "c8ndqrrl7f0twbf2s6cv",
-                RegistrationDialog.GetAnalyticsUserInfo(),
+                RegistrationManager.GetAnalyticsUserInfo(),
                 propertiesThatGoWithEveryEvent,
                 allowTracking,
                 retainPii: true,
