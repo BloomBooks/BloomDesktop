@@ -279,7 +279,11 @@ export function setZoom(zoom: number): void {
     );
     if (container) {
         container.style.transform = `scale(${zoom.toString()}`;
-        container.style.width = `calc(100% - 5px) / ${zoom.toString()}`;
+        // This produces something like calc((100% - 5px) / 0.8)
+        const newWidth = `calc((100% - 5px) / ${zoom.toString()})`;
+        // But if you read it back it will be something like calc(125% - 6.25px)
+        // (which is actually equivalent).
+        container.style.width = newWidth;
     } else {
         console.warn("setZoom called before page loaded");
     }
