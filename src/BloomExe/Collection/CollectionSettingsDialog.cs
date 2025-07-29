@@ -59,6 +59,12 @@ namespace Bloom.Collection
         // Ugly I know, but we need to be able to access these by an index number sometimes.
         internal WritingSystem[] PendingLanguages = new WritingSystem[3];
 
+        /// <summary>
+        /// Client that is launching dialog sets this to try to preserve the bookshelf setting when a
+        /// user updates an expired subscription, but doesn't touch the bookshelf.  (BL-15056)
+        /// </summary>
+        public string ExpiredBookshelf;
+
         public CollectionSettingsDialog(
             CollectionSettings collectionSettings,
             QueueRenameOfCollection queueRenameOfCollection,
@@ -485,6 +491,11 @@ namespace Bloom.Collection
             Logger.WriteEvent("Closing Collection Settings Dialog");
 
             _collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
+            if (String.IsNullOrEmpty(PendingDefaultBookshelf) &&
+                !string.IsNullOrEmpty(ExpiredBookshelf) &&
+                ExpiredBookshelf.StartsWith(_pendingSubscription.Descriptor.ToLowerInvariant())) {
+                _collectionSettings.DefaultBookshelf = ExpiredBookshelf;
+            }
             _collectionSettings.Save();
             Close();
 

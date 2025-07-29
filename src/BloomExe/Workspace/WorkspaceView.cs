@@ -1040,6 +1040,9 @@ namespace Bloom.Workspace
                     using (var dlg = _settingsDialogFactory())
                     {
                         dlg.FixingEnterpriseSubscriptionCode = forFixingEnterpriseSubscription;
+                        // Somehow, the _collectionSettings object we have here is NOT used to
+                        // initialize the dialog.  There's a magic autofac factory involved somewhere.
+                        dlg.ExpiredBookshelf = _collectionSettings.ExpiredBookshelf;
                         _currentlyOpenSettingsDialog = dlg;
                         dlg.SetDesiredTab(tab);
                         var temp = dlg.ShowDialog(this);
