@@ -360,7 +360,7 @@ namespace Bloom.Book
                 var defLangs = g.GetAttribute("data-default-languages");
 
                 // missing attribute or empty is treated as "auto", and this menu definitely affects those.
-                if (string.IsNullOrEmpty(defLangs) || defLangs.StartsWith("auto"))
+                if (string.IsNullOrEmpty(defLangs) || defLangs.ToLowerInvariant().StartsWith("auto"))
                     return true;
 
                 var visVariable = g.GetAttribute("data-visibility-variable");
