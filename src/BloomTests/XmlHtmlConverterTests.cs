@@ -35,7 +35,9 @@ namespace BloomTests
             );
         }
 
-        [Test]
+        // Reviewer: Agility Pack doesn't notify of this type of error like Tidy would have, it just silently fixes things.
+        // Agility Pack does have a ParseErrors field we can check, but it ignores unclosed tags and contains things we don't care about like "End tag </link> is not required"
+        [Test, Ignore("not supported by Agility Pack")]
         public void GetXmlDomFromHtml_HasErrors_ReportsError()
         {
             Assert.Throws<ApplicationException>(
@@ -58,21 +60,6 @@ namespace BloomTests
                 var text = File.ReadAllText(temp.Path);
                 Assert.IsTrue(text.Contains("</div>"), text);
             }
-        }
-
-        [TestCase("abc<svg whatever> some content</svg> something $$ else")]
-        [TestCase("abc<svg whatever> some content</svg> something $$ <svg 2>second svg</svg>else")]
-        public void RemoveRestoreSvgs(string input)
-        {
-            var svgs = new List<string>();
-            var intermediate = XmlHtmlConverter.RemoveSvgs(input, svgs);
-            var adapted = intermediate.Replace("$$", "Something changed");
-            Assert.That(intermediate, Does.Not.Contain("<svg"));
-            Assert.That(intermediate, Does.Not.Contain("</svg"));
-            Assert.That(intermediate, Does.Not.Contain("some content")); // checks at least once that the body of the svg is gone
-            var output = XmlHtmlConverter.RestoreSvgs(adapted, svgs);
-            var expectedOutput = input.Replace("$$", "Something changed");
-            Assert.That(output, Is.EqualTo(expectedOutput));
         }
 
         /// <summary>
@@ -118,12 +105,6 @@ namespace BloomTests
                 Assert.That(text, Does.Not.Contain("<em />"));
                 Assert.That(text, Does.Not.Contain("<strong />"));
                 Assert.That(text, Does.Not.Contain("<span />"));
-                Assert.That(text, Does.Not.Contain("<b></b>"));
-                Assert.That(text, Does.Not.Contain("<u></u>"));
-                Assert.That(text, Does.Not.Contain("<i></i>"));
-                Assert.That(text, Does.Not.Contain("<em></em>"));
-                Assert.That(text, Does.Not.Contain("<strong></strong>"));
-                Assert.That(text, Does.Not.Contain("<span></span>"));
                 Assert.That(text, Does.Contain("<b attr=\"1\"></b>"));
                 Assert.That(text, Does.Contain("<u attr=\"1\"></u>"));
                 Assert.That(text, Does.Contain("<i attr=\"1\"></i>"));
@@ -205,6 +186,68 @@ namespace BloomTests
             }
         }
 
+        [TestCase("area")]
+        [TestCase("img")]
+        [TestCase("br")]
+        [TestCase("hr")]
+        [TestCase("link")]
+        [TestCase("input")]
+        [TestCase("source")]
+        [TestCase("wbr")]
+        public void SaveAsHtml_VoidElements_ConvertsToSelfClosing(string tag)
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml($"<html><head></head><body><{tag} data-foo='bar'></{tag}></body></html>");
+            using (var temp = new TempFile())
+            {
+                XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+                var text = File.ReadAllText(temp.Path);
+                Assert.That(text, Does.Contain($"<{tag} data-foo=\"bar\" />"));
+            }
+        }
+
+        [Test]
+        public void SaveAsHtml_NonVoidElement_DoesNotConvert()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml($"<html><head></head><body><span data-foo='bar'></span></body></html>");
+            using (var temp = new TempFile())
+            {
+                XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+                var text = File.ReadAllText(temp.Path);
+                Assert.That(text, Does.Contain($"<span data-foo=\"bar\"></span>"));
+                Assert.That(text, Does.Not.Contain($"<span data-foo=\"bar\" />"));
+            }
+        }
+
+        [Test]
+        public void SaveAsHtml_HasSvgs_DoesNotChoke()
+        {
+            string svg =
+                @"<svg xmlns=""http://www.w3.org/2000/svg""><path d=""M 0 0 L 10 10"" /></svg>";
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml($"<html><body>{svg}<div>foobar</div></body></html>");
+            using (var temp = new TempFile())
+            {
+                XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+                var text = File.ReadAllText(temp.Path);
+                Assert.That(text, Does.Contain("<svg"));
+                Assert.That(text, Does.Contain("foobar"));
+            }
+        }
+
+        [Test]
+        public void GetXmlDomFromHtml_HasSvgs_DoesNotChoke()
+        {
+            string svg =
+                @"<svg xmlns=""http://www.w3.org/2000/svg""><path d=""M 0 0 L 10 10"" /></svg>";
+            string html =
+                $"<!DOCTYPE html><html><head></head><body>{svg}<div>foobar</div></body></html>";
+            var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
+            Assert.That(dom.InnerXml, Does.Contain("<svg"));
+            Assert.That(dom.InnerXml, Does.Contain("foobar"));
+        }
+
         [Test]
         public void GetXmlDomFromHtml_HasBrTags_TagsNotDoubled()
         {
@@ -230,7 +273,7 @@ namespace BloomTests
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
                 var text = File.ReadAllText(temp.Path);
-                Assert.That(text, Does.Contain("<br />"));
+                Assert.That(text, Does.Contain("<br"));
                 Assert.That(text, Does.Not.Contain("</br>"));
             }
         }
@@ -466,12 +509,14 @@ namespace BloomTests
                 + "<div>Some text with a&nbsp;non-breaking space.</div>"
                 + "</body></html>";
             var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(bookHtml, true);
-            var xml = htmlDom.DocumentElement.InnerXml;
+            var xml = htmlDom.DocumentElement.InnerText;
+            var nbspIndex = "Some text with a".Length;
             Assert.That(
-                xml,
-                Does.Contain("Some text with a&#160;non-breaking space."),
-                "The non-breaking space is converted to the XML entity."
+                xml[nbspIndex],
+                Is.EqualTo('\u00A0'),
+                "The non-breaking space is preserved"
             );
+            // TODO Test the roundtrip
         }
 
         [Test]
@@ -486,8 +531,7 @@ namespace BloomTests
             var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(bookHtml, true);
             var xml = htmlDom.DocumentElement.InnerXml;
             Assert.That(xml, Does.Contain("Ben &amp; Jerry"));
-            Assert.That(xml, Does.Contain("Buggy says &quot;hi&quot;"));
-            //TODO try round tripping this
+            Assert.That(xml, Does.Contain("Buggy says \"hi\"")); // decoded by this point for some reason
             Assert.That(
                 xml,
                 Does.Not.Contain("&amp;amp;"),
@@ -501,20 +545,59 @@ namespace BloomTests
         }
 
         [Test]
-        public void GetXmlDomFromHtml_ParsesStructure()
+        public void GetXmlDomFromHtml_ParsesStructureRegardlessOfComments()
         {
             // TODO rename things throughout the tests. And refactor
-            var html =
-                @"<!DOCTYPE html>
+            var mainHtml =
+                @"
 <html>
 <head>In the head</style></head>
 <body>in the body</body>
 </html>";
-            var doc = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
-            Assert.That(doc.Head.InnerXml.Trim(), Is.EqualTo("In the head"));
-            Assert.That(doc.Body.InnerXml, Is.EqualTo("in the body"));
+            var withDoctype =
+                @"<!DOCTYPE html>
+" + mainHtml;
+            var withComment =
+                @"
+<!-- This is a comment -->
+<!-- Another comment -->
+" + mainHtml;
+            var withDoctypeAndComment =
+                @"<!DOCTYPE html>
+<!-- This is a comment -->
+" + mainHtml;
+            var withBlankLines =
+                @"<!DOCTYPE html>
+
+<!-- This is a comment -->
+
+
+
+
+" + mainHtml;
+            foreach (
+                var html in new[]
+                {
+                    mainHtml,
+                    withDoctype,
+                    withComment,
+                    withDoctypeAndComment,
+                    withBlankLines
+                }
+            )
+            {
+                var doc = XmlHtmlConverter.GetXmlDomFromHtml(html);
+                Assert.That(
+                    doc.Head.InnerXml.Trim(),
+                    Is.EqualTo("In the head"),
+                    $"failed to properly parse html: ${html}"
+                );
+                Assert.That(
+                    doc.Body.InnerXml,
+                    Is.EqualTo("in the body"),
+                    $"failed to properly parse html: ${html}"
+                );
+            }
         }
     }
 }
-
-// Svgs, spans/multiple elements

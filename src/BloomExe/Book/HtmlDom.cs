@@ -2269,7 +2269,7 @@ namespace Bloom.Book
             HashSet<string> result,
             bool includeFallbackFonts
         )
-        {
+        { // TODO check if htmlContent is whole
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(htmlContent);
             var styles = dom.SafeSelectNodes("/html/head/style");
             foreach (SafeXmlElement style in styles)

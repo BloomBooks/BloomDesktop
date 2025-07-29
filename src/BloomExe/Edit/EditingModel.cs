@@ -329,8 +329,8 @@ namespace Bloom.Edit
             var content = bodyHtml;
             SafeXmlDocument dom;
 
-            //todo: deal with exception that can come out of this
-            dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
+            var htmlDoc = XmlHtmlConverter.CreateHtmlDocument("", bodyHtml);
+            dom = XmlHtmlConverter.GetXmlDomFromHtml(htmlDoc, false);
             var bodyDom = dom.SelectSingleNode("//body");
 
             var browserDomPage = bodyDom.SelectSingleNode(
