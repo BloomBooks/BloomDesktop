@@ -285,7 +285,11 @@ namespace Bloom.FontProcessing
                 return;
             }
 #endif
+            DetermineSuitability();
+        }
 
+        private void DetermineSuitability()
+        {
             // Now for the hard part: setting DeterminedSuitability
             // Check out the license information.
             if (!String.IsNullOrEmpty(license))
@@ -488,6 +492,7 @@ namespace Bloom.FontProcessing
                 manufacturerURL = info.metadata.manufacturerURL;
                 trademark = info.metadata.trademark;
                 version = info.metadata.version;
+                DetermineSuitability();
                 return true;
             }
             return false;
