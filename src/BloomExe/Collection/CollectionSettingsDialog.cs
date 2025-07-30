@@ -59,12 +59,6 @@ namespace Bloom.Collection
         // Ugly I know, but we need to be able to access these by an index number sometimes.
         internal WritingSystem[] PendingLanguages = new WritingSystem[3];
 
-        /// <summary>
-        /// Client that is launching dialog sets this to try to preserve the bookshelf setting when a
-        /// user updates an expired subscription, but doesn't touch the bookshelf.  (BL-15056)
-        /// </summary>
-        public string ExpiredBookshelf;
-
         public CollectionSettingsDialog(
             CollectionSettings collectionSettings,
             QueueRenameOfCollection queueRenameOfCollection,
@@ -491,12 +485,53 @@ namespace Bloom.Collection
             Logger.WriteEvent("Closing Collection Settings Dialog");
 
             _collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
+            // If the user has not changed the subscription code (signaled by a null pending Subscription
+            // object) and has not changed the bookshelf (signaled by an empty pending string), we want
+            // to keep the bookshelf that was set when a subscription expired.  We also want to keep the
+            // bookshelf if the user changes the subscription code to one that is for the same subscription,
+            // but has been renewed. (BL-15056)
             if (String.IsNullOrEmpty(PendingDefaultBookshelf) &&
-                !string.IsNullOrEmpty(ExpiredBookshelf) &&
-                ExpiredBookshelf.StartsWith(_pendingSubscription.Descriptor.ToLowerInvariant())) {
-                _collectionSettings.DefaultBookshelf = ExpiredBookshelf;
+                !string.IsNullOrEmpty(_collectionSettings.ExpiredBookshelf))
+            {
+                if (_pendingSubscription == null)
+                {
+                    // The subscription has not changed, it's still the same one that expired.
+                    // We need to keep remembering the former bookshelf.
+                    _collectionSettings.DefaultBookshelf = _collectionSettings.ExpiredBookshelf;
+                }
+                else if (_collectionSettings.ExpiredBookshelf.StartsWith(_pendingSubscription.Descriptor.ToLowerInvariant()))
+                {
+                    // The subscription has changed, but the new one is for the same subscription, presumably renewed.
+                    // We restore the bookshelf that was set when the subscription expired.
+                    _collectionSettings.DefaultBookshelf = _collectionSettings.ExpiredBookshelf;
+                    if (!_pendingSubscription.IsExpired())
+                    {
+                        // If the new subscription is not expired, we can clear the expired bookshelf.
+                        _collectionSettings.ExpiredBookshelf = string.Empty;
+                    }
+                }
+                else
+                {
+                    // The subscription has changed, and the new one is for a different subscription.
+                    // The user has essentially told us to forget the expired bookshelf.
+                    _collectionSettings.ExpiredBookshelf = string.Empty;
+                }
             }
             _collectionSettings.Save();
+            // _collectionSettings.ExpiredBookshelf is not written to the .bloomCollection file, but is
+            // set from _collectionSettings.DefaultBookshelf when the file is read if the subscription
+            // has expired.  (In which case, _collectionSettings.DefaultBookshelf is cleared.)  This is
+            // so that if the user has not changed the bookshelf or the subscription, we can restore the
+            // bookshelf when the user gets the subscription renewed.  But we don't want to start showing
+            // the user the expired bookshelf while the subscription is still expired since they can't
+            // make use of it until they renew the subscription.  So if we've written the expired value to
+            // the file, we want to clear it from memory to restore the status quo coming into the
+            // dialog. (BL-15056)
+            if (!string.IsNullOrEmpty(_collectionSettings.ExpiredBookshelf) &&
+                _collectionSettings.DefaultBookshelf != PendingDefaultBookshelf)
+            {
+                _collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
+            }
             Close();
 
             DialogResult = AnyReasonToRestart() ? DialogResult.Yes : DialogResult.OK;

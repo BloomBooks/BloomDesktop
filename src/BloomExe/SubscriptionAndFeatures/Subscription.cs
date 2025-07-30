@@ -325,6 +325,16 @@ namespace Bloom.SubscriptionAndFeatures
                 parts.RemoveAt(parts.Count - 1);
                 parts.RemoveAt(parts.Count - 1);
             }
+            else if (Int32.TryParse(parts.Last(), out var lastPart) &&
+                Int32.TryParse(parts[parts.Count -2], out var otherPart))
+            {
+                // Either the date or the checksum (or both) are invalid.
+                datePortion = 0;
+                checksum = 0;
+                // If the last part is a number, we assume it is part of the descriptor.
+                parts.RemoveAt(parts.Count - 1);
+                parts.RemoveAt(parts.Count - 1);
+            }
             descriptor = string.Join("-", parts.ToArray());
         }
 
