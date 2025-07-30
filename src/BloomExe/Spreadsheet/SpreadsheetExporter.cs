@@ -137,6 +137,22 @@ namespace Bloom.Spreadsheet
                 if (XMatterHelper.IsXMatterPage(page))
                     continue;
                 var pageNumber = page.GetAttribute("data-page-number") ?? "";
+                // We ignore widget and drag-and-drop game pages, which don't export/import cleanly. (BL-15055)
+                // Simple comprehension quizzes and simple dom choice games appear to export/import okay.
+                var dataActivity = page.GetAttribute("data-activity") ?? "";
+                if (page.GetAttribute("data-feature") == "widget" ||
+                    // "drag-word-chooser-slider" "drag-image-to-target" "drag-sort-sentence" "drag-letter-to-target"
+                    dataActivity.StartsWith("drag-"))
+                {
+                    _progress.MessageWithParams(
+                        "Spreadsheet.CannotExportGame",
+                        "",
+                        "Page {0} is not being exported because it is a game.",
+                        ProgressKind.Warning,
+                        pageNumber
+                    );
+                    continue;
+                }
                 //Each page alternates colors
                 var colorForPage =
                     iContentPage++ % 2 == 0
