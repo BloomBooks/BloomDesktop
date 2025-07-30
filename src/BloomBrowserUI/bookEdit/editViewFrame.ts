@@ -260,6 +260,10 @@ export function showEditViewBookSettingsDialog(
     showBookSettingsDialog(initiallySelectedGroupIndex);
 }
 
+export function showAboutDialogInEditTab() {
+    showAboutDialog();
+}
+
 export function showRequiresSubscriptionDialog(featureName: string): void {
     showRequiresSubscriptionDialogInEditView(featureName);
 }
