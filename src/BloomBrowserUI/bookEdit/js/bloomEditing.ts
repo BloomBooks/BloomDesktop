@@ -70,6 +70,7 @@ import { showLinkGridSetupsDialog } from "../bookLinkSetup/LinkGridSetupDialog";
 import { Link } from "../bookLinkSetup/BookLinkTypes";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
+import { handleUndo } from "../editViewFrame";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -1309,6 +1310,26 @@ export const pageUnloading = () => {
         theOneCanvasElementManager.cleanUp();
     }
 };
+
+export function topBarControlsHandler(button: {
+    command: string;
+    enabled?: { copy: boolean; cut: boolean; paste: boolean; undo: boolean };
+}) {
+    switch (button.command) {
+        case "copy":
+            copySelection();
+            break;
+        case "cut":
+            cutSelection();
+            break;
+        case "paste":
+            pasteHandler(new Event(""));
+            break;
+        case "undo":
+            handleUndo();
+            break;
+    }
+}
 
 // These clipboard functions are implemented in Javascript because WebView2 doesn't seem to have
 // a C# api for doing them. I've made the exported functions synchronous because I'm not sure

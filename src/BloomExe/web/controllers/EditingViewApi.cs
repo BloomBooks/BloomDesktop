@@ -80,6 +80,16 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
             apiHandler.RegisterEndpointHandler("editView/paste", HandlePaste, true);
             apiHandler.RegisterEndpointHandler(
+                "editView/topBarControls",
+                HandleTopBarControls,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBarDropdowns",
+                HandleTopBarDropdowns,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
                 "editView/sourceTextTab",
                 HandleSourceTextTab,
                 false,
@@ -207,6 +217,39 @@ namespace Bloom.web.controllers
         {
             View.OnPaste(this, EventArgs.Empty);
             request.PostSucceeded();
+        }
+
+        private void HandleTopBarControls(ApiRequest request)
+        {
+            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            View.Browser.Focus();
+            View.Browser.RunJavascriptAsync(
+                $"editTabBundle?.getEditablePageBundleExports()?.topBarControlsHandler({data})"
+            );
+            request.PostSucceeded();
+        }
+
+        private void HandleTopBarDropdowns(ApiRequest request)
+        {
+            if (request.HttpMethod == HttpMethods.Get)
+            {
+                request.ReplyWithJson(View.UpdateDropdownButtons());
+            }
+            else if (request.HttpMethod == HttpMethods.Post)
+            {
+                dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+                View.Browser.Focus();
+                switch (data.command)
+                {
+                    case "contentLanguages":
+                        View.ContentLanguagesDropdownClicked();
+                        break;
+                    case "layoutChoices":
+                        View.LayoutChoicesDropdownClicked();
+                        break;
+                }
+                request.PostSucceeded();
+            }
         }
 
         private void HandleCopyImage(ApiRequest request)
