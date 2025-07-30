@@ -1,24 +1,32 @@
-import { css } from "@emotion/react";
+import { css, ThemeProvider } from "@emotion/react";
 import BloomButton from "../../react_components/bloomButton";
 import { get, getBloomApiPrefix, postJson } from "../../utils/bloomApi";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { useEffect, useState } from "react";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
+import {
+    kBloomPurple,
+    kDisabledTextOnPurple,
+    kTextOnPurple,
+    kUiFontStack,
+    lightTheme
+} from "../../bloomMaterialUITheme";
+import { ArrowDropDown } from "@mui/icons-material";
 
-interface l10nSet {
+interface Il10nSet {
     key: string;
     english: string;
     comment: string;
     localizedTip: string;
 }
-interface buttonTips {
+interface IButtonTips {
     copy: string;
     cut: string;
     paste: string;
     undo: string;
 }
-interface dropdownData {
+interface IDropdownData {
     contentLanguagesEnabled: boolean;
     contentLanguagesNumber: number;
     contentLanguagesTooltip: string;
@@ -53,14 +61,14 @@ export const EditTopBarControls: React.FunctionComponent = () => {
                 paste: boolean;
                 undo: boolean;
             };
-            localizedTip: buttonTips;
+            localizedTip: IButtonTips;
         };
     }>("editTopBarControls", "updateEditButtons", results => {
         setButtonsEnabled(results.message.enabled);
         resetButtonsl10n(results.message.localizedTip);
     });
 
-    function resetButtonsl10n(localizedTip: buttonTips) {
+    function resetButtonsl10n(localizedTip: IButtonTips) {
         setButtonsl10nSet({
             copy: blankl10nSet,
             cut: blankl10nSet,
@@ -109,7 +117,7 @@ export const EditTopBarControls: React.FunctionComponent = () => {
     ] = useState("");
     const [layoutChoicesTooltip, setLayoutChoicesTooltip] = useState("");
 
-    function setDropdowns(data: dropdownData): void {
+    function setDropdowns(data: IDropdownData): void {
         setContentLanguagesEnabled(data.contentLanguagesEnabled);
         // l10n has to be reset so that if language is changed, it will reevaluate the translation
         setContentLanguagesl10nSet(blankl10nSet);
@@ -148,107 +156,106 @@ export const EditTopBarControls: React.FunctionComponent = () => {
 
     // for the first load after opening a collection - websocket will make updates after that
     useEffect(() => {
-        get("editView/topBarDropdowns", results => {
+        get("editView/updateTopBarDropdownDisplay", results => {
             setDropdowns(results.data);
         });
     }, []);
     useSubscribeToWebSocketForObject<{
-        message: dropdownData;
+        message: IDropdownData;
     }>("editTopBarControls", "updateDropdowns", results => {
         setDropdowns(results.message);
     });
 
     return (
-        <div
-            id="topBarControlsRoot"
-            css={css`
-                background-color: rgb(150, 102, 143);
-                display: flex;
-                overflow-y: hidden;
-                padding-top: 4px;
-                padding-bottom: 2px;
-                padding-inline: 3px;
-            `}
-        >
-            <PasteButton
-                enabled={buttonsEnabled.paste ?? true}
-                l10nSet={buttonsl10nSet.paste}
-            />
+        <ThemeProvider theme={lightTheme}>
             <div
+                id="topBarControlsRoot"
                 css={css`
+                    background-color: ${kBloomPurple};
                     display: flex;
-                    flex-direction: column;
-                    justify-content: space-evenly;
-                    width: 72px;
+                    overflow-y: hidden;
+                    padding-top: 4px;
+                    padding-bottom: 2px;
+                    padding-inline: 3px;
                 `}
             >
-                <CutButton
-                    enabled={buttonsEnabled.cut ?? true}
-                    l10nSet={buttonsl10nSet.cut}
-                />
-                <CopyButton
-                    enabled={buttonsEnabled.copy ?? true}
-                    l10nSet={buttonsl10nSet.copy}
+                <PasteButton
+                    enabled={buttonsEnabled.paste ?? true}
+                    l10nSet={buttonsl10nSet.paste}
                 />
                 <div
                     css={css`
-                        height: 6px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-evenly;
+                        width: 72px;
                     `}
-                />
-            </div>
-            <UndoButton
-                enabled={buttonsEnabled.undo ?? true}
-                l10nSet={buttonsl10nSet.undo}
-            />
-            <div
-                css={css`
-                    width: 18px;
-                `}
-            />
-            <div
-                css={css`
-                    display: flex;
-                    flex-direction: column;
-                    font-family: Segoe UI;
-                    font-size: 11px;
-                `}
-            >
-                <ContentLanguagesDropdown
-                    enabled={contentLanguagesEnabled}
-                    l10nSet={contentLanguagesl10nSet}
+                >
+                    <CutButton
+                        enabled={buttonsEnabled.cut ?? true}
+                        l10nSet={buttonsl10nSet.cut}
+                    />
+                    <CopyButton
+                        enabled={buttonsEnabled.copy ?? true}
+                        l10nSet={buttonsl10nSet.copy}
+                    />
+                    <div
+                        css={css`
+                            height: 6px;
+                        `}
+                    />
+                </div>
+                <UndoButton
+                    enabled={buttonsEnabled.undo ?? true}
+                    l10nSet={buttonsl10nSet.undo}
                 />
                 <div
                     css={css`
-                        height: 3px;
+                        width: 18px;
                     `}
-                ></div>
-                <LayoutChoicesDropdown
-                    localizedText={layoutChoicesLocalizedText}
-                    localizedTooltip={layoutChoicesTooltip}
                 />
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        font-size: 11px;
+                    `}
+                >
+                    <ContentLanguagesDropdown
+                        enabled={contentLanguagesEnabled}
+                        l10nSet={contentLanguagesl10nSet}
+                    />
+                    <div
+                        css={css`
+                            height: 3px;
+                        `}
+                    ></div>
+                    <LayoutChoicesDropdown
+                        localizedText={layoutChoicesLocalizedText}
+                        localizedTooltip={layoutChoicesTooltip}
+                    />
+                </div>
             </div>
-        </div>
+        </ThemeProvider>
     );
 };
+
+const imagesPrefix = getBloomApiPrefix(false);
+
+const smallButtonCSSAttributes = `height: 18px;
+    display: flex;
+    justify-content: flex-start;
+    span {
+        padding-left: 5px;
+    }`;
 
 // We have to pass l10n in here instead of having it here directly, otherwise it won't update when the language is changed
 export const CopyButton: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet: l10nSet;
+    l10nSet: Il10nSet;
 }> = props => {
-    const [imagesPrefix, setImagesPrefix] = useState("");
-    useEffect(() => {
-        setImagesPrefix(getBloomApiPrefix(false));
-    });
     const enabledIcon = imagesPrefix + "images/copy16x16.png";
     const disabledIcon = imagesPrefix + "images/copyDisabled16x16.png";
-
-    const cssAttributes = `height: 18px;
-                    display: flex;
-                    justify-content: flex-start;
-                    span {
-                        padding-left: 5px;
-                    }`;
 
     return (
         <EditingControlButton
@@ -258,28 +265,18 @@ export const CopyButton: React.FunctionComponent<{
             enabledIcon={enabledIcon}
             disabledIcon={disabledIcon}
             iconBeforeText={true}
-            cssAttributes={cssAttributes}
+            cssAttributes={smallButtonCSSAttributes}
         />
     );
 };
 
 export const CutButton: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet: l10nSet;
+    l10nSet: Il10nSet;
 }> = props => {
-    const [imagesPrefix, setImagesPrefix] = useState("");
-    useEffect(() => {
-        setImagesPrefix(getBloomApiPrefix(false));
-    });
     const enabledIcon = imagesPrefix + "images/cut16x16.png";
     const disabledIcon = imagesPrefix + "images/cutDisabled16x16.png";
 
-    const cssAttributes = `height: 18px;
-                display: flex;
-                justify-content: flex-start;
-                span {
-                    padding-left: 5px;
-                }`;
     return (
         <EditingControlButton
             enabled={props.enabled}
@@ -288,32 +285,25 @@ export const CutButton: React.FunctionComponent<{
             enabledIcon={enabledIcon}
             disabledIcon={disabledIcon}
             iconBeforeText={false}
-            cssAttributes={cssAttributes}
+            cssAttributes={smallButtonCSSAttributes}
         />
     );
 };
 
+const largeButtonCSSAttributes = `width: 54px;
+    height: 60px;
+    display: grid;
+    justify-items: center;
+    align-content: space-between;`;
+
 export const PasteButton: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet: l10nSet;
+    l10nSet: Il10nSet;
 }> = props => {
-    const [imagesPrefix, setImagesPrefix] = useState("");
-    useEffect(() => {
-        setImagesPrefix(getBloomApiPrefix(false));
-    });
     const enabledIcon = imagesPrefix + "images/paste32x32.png";
     const disabledIcon = imagesPrefix + "images/pasteDisabled32x32.png";
 
-    const cssAttributes = `width: 54px;
-                height: 60px;
-                display: grid;
-                justify-items: center;
-                align-content: space-between;
-                ${
-                    !props.enabled
-                        ? "transform: translate3d(2px, 5px, 0px);"
-                        : ""
-                }
+    const cssAttributes = `${largeButtonCSSAttributes}
                 padding-top: 6px;`;
     return (
         <EditingControlButton
@@ -330,20 +320,11 @@ export const PasteButton: React.FunctionComponent<{
 
 export const UndoButton: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet: l10nSet;
+    l10nSet: Il10nSet;
 }> = props => {
-    const [imagesPrefix, setImagesPrefix] = useState("");
-    useEffect(() => {
-        setImagesPrefix(getBloomApiPrefix(false));
-    });
     const enabledIcon = imagesPrefix + "images/undo32x32.png";
     const disabledIcon = imagesPrefix + "images/undoDisabled32x32.png";
 
-    const cssAttributes = `width: 54px;
-                height: 60px;
-                display: grid;
-                justify-items: center;
-                align-content: space-between;`;
     return (
         <EditingControlButton
             enabled={props.enabled}
@@ -352,14 +333,14 @@ export const UndoButton: React.FunctionComponent<{
             enabledIcon={enabledIcon}
             disabledIcon={disabledIcon}
             iconBeforeText={true}
-            cssAttributes={cssAttributes}
+            cssAttributes={largeButtonCSSAttributes}
         />
     );
 };
 
 export const EditingControlButton: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet: l10nSet;
+    l10nSet: Il10nSet;
     onClickAction:
         | "copy"
         | "cut"
@@ -395,19 +376,20 @@ export const EditingControlButton: React.FunctionComponent<{
                 transparent={true}
                 hasText={true}
                 css={css`
-                    background-color: rgb(150, 102, 143);
-                    color: rgb(49, 32, 46);
+                    background-color: ${kBloomPurple};
+                    color: ${!props.enabled
+                        ? kDisabledTextOnPurple
+                        : kTextOnPurple};
                     border: hidden;
-                    font-family: Segoe UI;
+                    font-family: ${kUiFontStack};
                     font-size: 11px;
 
-                    :active {
-                        transform: translate3d(1px, 1px, 0px);
-                    }
+                    ${props.enabled
+                        ? `:active {
+                            transform: translate3d(1px, 1px, 0px);
+                        }`
+                        : ``}
 
-                    span {
-                        ${!props.enabled ? "color: rgb(114, 74, 106)" : ""}
-                    }
                     ${props.cssAttributes}
                 `}
             >
@@ -419,7 +401,7 @@ export const EditingControlButton: React.FunctionComponent<{
 
 export const ContentLanguagesDropdown: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet: l10nSet;
+    l10nSet: Il10nSet;
 }> = props => {
     return (
         <EditingControlDropdown
@@ -447,7 +429,7 @@ export const LayoutChoicesDropdown: React.FunctionComponent<{
 
 export const EditingControlDropdown: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet?: l10nSet;
+    l10nSet?: Il10nSet;
     l10nEnglish?: string;
     localizedTooltip?: string;
     onClickAction: "contentLanguages" | "layoutChoices";
@@ -466,31 +448,24 @@ export const EditingControlDropdown: React.FunctionComponent<{
                 l10nKey={props.l10nSet?.key || ""}
                 l10nComment={props.l10nSet?.comment || ""}
                 onClick={() => {
-                    postJson("editView/topBarDropdowns", {
+                    postJson("editView/topBarDropdownClicked", {
                         command: props.onClickAction
                     });
                 }}
-                transparent={true}
                 hasText={true}
+                variant="text"
+                endIcon={<ArrowDropDown />}
                 css={css`
-                background-color: rgb(150, 102, 143);
-                color: rgb(49, 32, 46);
-                border: hidden;
-                font-family: Segoe UI;
-                font-size: 11px;
-                padding-inline: 5px;
-                padding-top: 1px;
-                padding-bottom: 2px;
-                width: fit-content;
-                
-                :hover {
-                    background-color: rgb(179, 215, 243);
-                }"
-                
-                span {
-                    color: rgb(114, 74, 106);
-                }
-            `}
+                    background-color: ${kBloomPurple};
+                    color: ${kTextOnPurple};
+                    border: hidden;
+                    font-size: 11px;
+                    padding-inline: 5px;
+                    padding-top: 1px;
+                    padding-bottom: 2px;
+                    text-transform: none;
+                    width: fit-content;
+                `}
             >
                 {props.l10nSet?.english || props.l10nEnglish}
             </BloomButton>

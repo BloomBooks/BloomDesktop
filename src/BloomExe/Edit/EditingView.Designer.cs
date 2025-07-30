@@ -157,7 +157,7 @@ namespace Bloom.Edit
             this._L10NSharpExtender.SetLocalizingId(this._editControlsReactControl, "EditingView._editControlsReactControl");
             this._editControlsReactControl.Location = new System.Drawing.Point(0, 0);
             this._editControlsReactControl.Name = "_editControlsReactControl";
-            this._editControlsReactControl.Size = new System.Drawing.Size(363, 66);
+            this._editControlsReactControl.Size = new System.Drawing.Size(420, 66);
             this._editControlsReactControl.TabIndex = 33;
             // 
             // _splitTemplateAndSource

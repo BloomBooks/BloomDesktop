@@ -56,7 +56,6 @@ namespace Bloom.Edit
         private readonly SignLanguageApi _signLanguageApi;
         private readonly CopyrightAndLicenseApi _copyrightAndLicenseApi;
         private Action _pendingMessageHandler;
-        private bool _updatingDisplay;
         private Color _enabledToolbarColor = Palette.DarkTextAgainstBackgroundColor;
         private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
         private bool _visible;
@@ -1543,7 +1542,7 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Send info to javascript on how the Dropdown Menu Buttons should appear both periodically and when
+        /// Send info to javascript on how the Dropdown Menu Buttons should appear both on page change and when
         /// requested through the Api.
         /// </summary>
         /// <returns>dropdown button info</returns>
@@ -1580,106 +1579,74 @@ namespace Bloom.Edit
 
         public void ContentLanguagesDropdownClicked()
         {
-            try
+            _contentLanguagesDropdown.Items.Clear();
+            if (_contentLanguagesDropdown.Visible)
             {
-                _updatingDisplay = true;
-
-                _contentLanguagesDropdown.Items.Clear();
-                if (_contentLanguagesDropdown.Visible)
-                {
-                    _contentLanguagesDropdown.Hide();
-                    return;
-                }
-
-                var nSelected = _model.ContentLanguages.Count(l => l.Selected);
-                foreach (var item in _model.ContentLanguages)
-                {
-                    var language = item;
-                    var text = language.ToString();
-                    var menuItem = AddDropdownItemSafely(item.Name);
-                    menuItem.Tag = language;
-                    menuItem.Enabled = !language.Selected || nSelected > 1;
-                    menuItem.Checked = language.Selected;
-                    menuItem.CheckOnClick = true;
-                    menuItem.ImageScaling = ToolStripItemImageScaling.None;
-                    // Any language which is not selected may be turned on.
-                    // A language which is turned on may only be turned off if more than one is selected.
-                    menuItem.CheckedChanged += new EventHandler(
-                        OnContentLanguageDropdownItem_CheckedChanged
-                    );
-                    _contentLanguagesDropdown.Items.Add(menuItem);
-                }
-                // Let the menu appear slightly below where the mouse is since it might be
-                // hard to find exactly where the bottom left of the Dropdown button is
-                _contentLanguagesDropdown.Show(MousePosition.X, MousePosition.Y + 8);
+                _contentLanguagesDropdown.Hide();
+                return;
             }
-            catch (Exception error)
+
+            var nSelected = _model.ContentLanguages.Count(l => l.Selected);
+            foreach (var item in _model.ContentLanguages)
             {
-                SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-                    error,
-                    "There was a problem updating the edit display."
+                var language = item;
+                var text = language.ToString();
+                var menuItem = AddDropdownItemSafely(item.Name);
+                menuItem.Tag = language;
+                menuItem.Enabled = !language.Selected || nSelected > 1;
+                menuItem.Checked = language.Selected;
+                menuItem.CheckOnClick = true;
+                menuItem.ImageScaling = ToolStripItemImageScaling.None;
+                // Any language which is not selected may be turned on.
+                // A language which is turned on may only be turned off if more than one is selected.
+                menuItem.CheckedChanged += new EventHandler(
+                    OnContentLanguageDropdownItem_CheckedChanged
                 );
+                _contentLanguagesDropdown.Items.Add(menuItem);
             }
-            finally
-            {
-                _updatingDisplay = false;
-            }
+            // Let the menu appear slightly below where the mouse is since it might be
+            // hard to find exactly where the bottom left of the Dropdown button is
+            _contentLanguagesDropdown.Show(MousePosition.X, MousePosition.Y + 8);
         }
 
         public void LayoutChoicesDropdownClicked()
         {
-            try
+            _layoutChoicesDropdown.Items.Clear();
+            if (_layoutChoicesDropdown.Visible)
             {
-                _updatingDisplay = true;
-
-                _layoutChoicesDropdown.Items.Clear();
-                if (_layoutChoicesDropdown.Visible)
-                {
-                    _layoutChoicesDropdown.Hide();
-                    return;
-                }
-
-                var layout = _model.GetCurrentLayout();
-                var sizeAndOrientationChoices = _model.GetSizeAndOrientationChoices();
-
-                foreach (var item in sizeAndOrientationChoices)
-                {
-                    var choice = item;
-                    var text = choice.DisplayName;
-                    var menuItem = AddDropdownItemSafely(text);
-                    menuItem.Tag = choice;
-                    menuItem.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
-
-                    _layoutChoicesDropdown.Items.Add(menuItem);
-                }
-
-                if (sizeAndOrientationChoices.Count() < 2)
-                {
-                    var text = LocalizationManager.GetString(
-                        "EditTab.NoOtherLayouts",
-                        "There are no other options for this template.",
-                        "Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice"
-                    );
-                    var menuItem = AddDropdownItemSafely(text);
-                    menuItem.Tag = null;
-                    menuItem.Enabled = false;
-                    _layoutChoicesDropdown.Items.Add(menuItem);
-                }
-                // Let the menu appear slightly below where the mouse is since it might be
-                // hard to find exactly where the bottom left of the Dropdown button is
-                _layoutChoicesDropdown.Show(MousePosition.X, MousePosition.Y + 8);
+                _layoutChoicesDropdown.Hide();
+                return;
             }
-            catch (Exception error)
+
+            var layout = _model.GetCurrentLayout();
+            var sizeAndOrientationChoices = _model.GetSizeAndOrientationChoices();
+
+            foreach (var item in sizeAndOrientationChoices)
             {
-                SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-                    error,
-                    "There was a problem updating the edit display."
+                var choice = item;
+                var text = choice.DisplayName;
+                var menuItem = AddDropdownItemSafely(text);
+                menuItem.Tag = choice;
+                menuItem.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
+
+                _layoutChoicesDropdown.Items.Add(menuItem);
+            }
+
+            if (sizeAndOrientationChoices.Count() < 2)
+            {
+                var text = LocalizationManager.GetString(
+                    "EditTab.NoOtherLayouts",
+                    "There are no other options for this template.",
+                    "Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice"
                 );
+                var menuItem = AddDropdownItemSafely(text);
+                menuItem.Tag = null;
+                menuItem.Enabled = false;
+                _layoutChoicesDropdown.Items.Add(menuItem);
             }
-            finally
-            {
-                _updatingDisplay = false;
-            }
+            // Let the menu appear slightly below where the mouse is since it might be
+            // hard to find exactly where the bottom left of the Dropdown button is
+            _layoutChoicesDropdown.Show(MousePosition.X, MousePosition.Y + 8);
         }
 
         void OnPaperSizeAndOrientationMenuClick(object sender, EventArgs e)
@@ -1690,8 +1657,6 @@ namespace Bloom.Edit
 
         void OnContentLanguageDropdownItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (_updatingDisplay)
-                return;
             var item = (ToolStripMenuItem)sender;
             ((EditingModel.ContentLanguage)item.Tag).Selected = item.Checked;
 
@@ -1830,6 +1795,7 @@ namespace Bloom.Edit
             UpdateButtonEnabled(button, command);
         }
 
+        // This can probably be cleaned up and have the command class removed
         private void UpdateButtonEnabled(Button button, Command command)
         {
             var enabled = command != null && command.Enabled;

@@ -85,8 +85,13 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "editView/topBarDropdowns",
-                HandleTopBarDropdowns,
+                "editView/updateTopBarDropdownDisplay",
+                HandleUpdateTopBarDropdownDisplay,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBarDropdownClicked",
+                HandleTopBarDropdownClicked,
                 true
             );
             apiHandler.RegisterEndpointHandler(
@@ -222,34 +227,33 @@ namespace Bloom.web.controllers
         private void HandleTopBarControls(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            // If we don't force the focus to the main editing browser, our browser with the buttons will steal it and cut/copy, etc. won't work.
             View.Browser.Focus();
             View.Browser.RunJavascriptAsync(
-                $"editTabBundle?.getEditablePageBundleExports()?.topBarControlsHandler({data})"
+                $"editTabBundle?.getEditablePageBundleExports()?.topBarButtonClick({data})"
             );
             request.PostSucceeded();
         }
 
-        private void HandleTopBarDropdowns(ApiRequest request)
+        private void HandleUpdateTopBarDropdownDisplay(ApiRequest request)
         {
-            if (request.HttpMethod == HttpMethods.Get)
+            request.ReplyWithJson(View.UpdateDropdownButtons());
+        }
+
+        private void HandleTopBarDropdownClicked(ApiRequest request)
+        {
+            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            View.Browser.Focus();
+            switch (data.command)
             {
-                request.ReplyWithJson(View.UpdateDropdownButtons());
+                case "contentLanguages":
+                    View.ContentLanguagesDropdownClicked();
+                    break;
+                case "layoutChoices":
+                    View.LayoutChoicesDropdownClicked();
+                    break;
             }
-            else if (request.HttpMethod == HttpMethods.Post)
-            {
-                dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-                View.Browser.Focus();
-                switch (data.command)
-                {
-                    case "contentLanguages":
-                        View.ContentLanguagesDropdownClicked();
-                        break;
-                    case "layoutChoices":
-                        View.LayoutChoicesDropdownClicked();
-                        break;
-                }
-                request.PostSucceeded();
-            }
+            request.PostSucceeded();
         }
 
         private void HandleCopyImage(ApiRequest request)

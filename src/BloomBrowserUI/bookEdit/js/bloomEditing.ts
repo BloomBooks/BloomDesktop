@@ -1311,10 +1311,7 @@ export const pageUnloading = () => {
     }
 };
 
-export function topBarControlsHandler(button: {
-    command: string;
-    enabled?: { copy: boolean; cut: boolean; paste: boolean; undo: boolean };
-}) {
+export function topBarButtonClick(button: { command: string }) {
     switch (button.command) {
         case "copy":
             copySelection();
