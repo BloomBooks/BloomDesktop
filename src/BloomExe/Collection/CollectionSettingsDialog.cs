@@ -490,13 +490,20 @@ namespace Bloom.Collection
 
             Logger.WriteEvent("Closing Collection Settings Dialog");
 
-            _collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
+            //_collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
             if (String.IsNullOrEmpty(PendingDefaultBookshelf) &&
                 !string.IsNullOrEmpty(ExpiredBookshelf) &&
-                ExpiredBookshelf.StartsWith(_pendingSubscription.Descriptor.ToLowerInvariant())) {
+                (_pendingSubscription == null ||
+                ExpiredBookshelf.StartsWith(_pendingSubscription.Descriptor.ToLowerInvariant()))) {
                 _collectionSettings.DefaultBookshelf = ExpiredBookshelf;
+            } else {
+                _collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
             }
             _collectionSettings.Save();
+            // This instance of CollectionSettings is reused for the next dialog, so don't show
+            // the old, expired bookshelf value next time.
+            if (_collectionSettings.DefaultBookshelf != PendingDefaultBookshelf)
+               _collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
             Close();
 
             DialogResult = AnyReasonToRestart() ? DialogResult.Yes : DialogResult.OK;
