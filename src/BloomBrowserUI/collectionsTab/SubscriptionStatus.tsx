@@ -165,6 +165,12 @@ export const SubscriptionStatus: React.FunctionComponent<{
     else if (props.minimalUI) return null;
     // in the collection tab, we show a subtle message
     else {
+        if (subscriptionTier === "Pro") {
+            // We want Pro subscriptions to show in red. We can't put the {.bloom-Red} in the l10n string
+            // because it somehow messes up finding the translations in other languages.
+            // So for the Pro message, we add all the descriptor formatting here.
+            descriptorToShow = `**${descriptorToShow}**{.bloom-Red}`;
+        }
         return (
             <Markdown
                 css={css`
@@ -174,10 +180,7 @@ export const SubscriptionStatus: React.FunctionComponent<{
                     margin-bottom: 10px;
                 `}
                 l10nKey={subscriptionMessageKey}
-                l10nParams={[
-                    `**${descriptorToShow}**{.bloom-Red}`,
-                    localizedExpiryDate
-                ]}
+                l10nParams={[descriptorToShow, localizedExpiryDate]}
             >
                 {defaultStatusMessage}
             </Markdown>
