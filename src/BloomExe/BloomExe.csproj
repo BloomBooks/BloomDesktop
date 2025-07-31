@@ -244,9 +244,11 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 			<HintPath>..\..\lib\dotnet\NuGet.Squirrel.dll</HintPath>
 		</Reference>
 		<Reference Include="PdfDroplet">
+			<SpecificVersion>False</SpecificVersion>
 			<HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
 		</Reference>
 		<Reference Include="PdfSharp">
+			<SpecificVersion>False</SpecificVersion>
 			<HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
 		</Reference>
 		<Reference Include="PodcastUtilities.PortableDevices">
@@ -257,9 +259,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		</Reference>
 		<Reference Include="Squirrel">
 			<HintPath>..\..\lib\dotnet\Squirrel.dll</HintPath>
-		</Reference>
-		<Reference Include="TidyManaged">
-			<HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 	<ItemGroup>
