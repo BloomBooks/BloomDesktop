@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="yua">
+    <body>
+      <trans-unit id="Installer.InstallationInProgress">
+        <source xml:lang="en">Installing...</source>
+        <target xml:lang="yua" state="needs-translation">Installing...</target>
+        <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
+      </trans-unit>
+      <trans-unit id="Errors.CorruptImageFile">
+        <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
+        <target xml:lang="yua" state="needs-translation">The image file {0} is corrupt and needs to be replaced. ({1})</target>
+        <note>ID: Errors.CorruptImageFile</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true">
+        <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
+        <target xml:lang="yua" state="needs-translation">Bloom could not reach the server to get the list of bookshelves.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
+        <source xml:lang="en">Conversion file used:</source>
+        <target xml:lang="yua" state="needs-translation">Conversion file used:</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
+        <source xml:lang="en">eSpeak failed.</source>
+        <target xml:lang="yua" state="needs-translation">eSpeak failed.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed">
+        <source xml:lang="en">eSpeak language:</source>
+        <target xml:lang="yua" state="needs-translation">eSpeak language:</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion">
+        <source xml:lang="en">Result of orthography conversion:</source>
+        <target xml:lang="yua" state="needs-translation">Result of orthography conversion:</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
+      </trans-unit>
+      <trans-unit id="Errors.CannotConnectToBloomServer.2">
+        <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Web browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
+        <target xml:lang="yua" state="needs-translation">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Web browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</target>
+        <note>ID: Errors.CannotConnectToBloomServer.2</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateCloneControl.InZipFileMessage">
+        <source xml:lang="en">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</source>
+        <target xml:lang="yua" state="needs-translation">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</target>
+        <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateCloneControl.InvalidFileTypeMessage">
+        <source xml:lang="en">Please select a .bloomCollection file.</source>
+        <target xml:lang="yua" state="needs-translation">Please select a .bloomCollection file.</target>
+        <note>ID: OpenCreateCloneControl.InvalidFileTypeMessage</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BulkBookshelfColor" sil:dynamic="true">
+        <source xml:lang="en">Bookshelf Color</source>
+        <target xml:lang="yua" state="needs-translation">Bookshelf Color</target>
+        <note>ID: PublishTab.Android.BulkBookshelfColor</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
+        <source xml:lang="en">Currently, Bloom does not support including audio from embedded videos in video output.</source>
+        <target xml:lang="yua" state="needs-translation">Currently, Bloom does not support including audio from embedded videos in video output.</target>
+        <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.CheckEmailFailed">
+        <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
+        <target xml:lang="yua" state="needs-translation">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</target>
+        <note>ID: PublishTab.Upload.CheckEmailFailed</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.BookshelfError">
+        <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</source>
+        <target xml:lang="yua" state="needs-translation">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</target>
+        <note>ID: PublishTab.Upload.BookshelfError</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.DownloadForEdit" sil:dynamic="true">
+        <source xml:lang="en">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</source>
+        <target xml:lang="yua" state="needs-translation">This collection is in "Download for Edit" mode. The book has the same subscription setting as when it was last uploaded.</target>
+        <note>ID: Settings.Subscription.DownloadForEdit</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.IntroText">
+        <source xml:lang="en">To help cover a portion of the costs associated with providing Bloom, we offer [advanced features](%0) and customizations as a subscription service.</source>
+        <target xml:lang="yua" state="needs-translation">To help cover a portion of the costs associated with providing Bloom, we offer [advanced features](%0) and customizations as a subscription service.</target>
+        <note>ID: Settings.Subscription.IntroText</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.RequestSubscription">
+        <source xml:lang="en">Please contact [%0](%1) to purchase your subscription code.</source>
+        <target xml:lang="yua" state="needs-translation">Please contact [%0](%1) to purchase your subscription code.</target>
+        <note>ID: Settings.Subscription.RequestSubscription</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.Community.Invitation">
+        <source xml:lang="en">If your project is fully funded and managed by your local language community, you may qualify for a free [Bloom Community Subscription](https://bloomlibrary.org/subscriptions).</source>
+        <target xml:lang="yua" state="needs-translation">If your project is fully funded and managed by your local language community, you may qualify for a free [Bloom Community Subscription](https://bloomlibrary.org/subscriptions).</target>
+        <note>ID: Settings.Subscription.Community.Invitation</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.SubscriptionCodeLabel">
+        <source xml:lang="en">Subscription Code:</source>
+        <target xml:lang="yua" state="needs-translation">Subscription Code:</target>
+        <note>ID: Settings.Subscription.SubscriptionCodeLabel</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.CheckUpdates">
+        <source xml:lang="en">Check for updates</source>
+        <target xml:lang="yua" state="needs-translation">Check for updates</target>
+        <note>ID: Settings.Subscription.CheckUpdates</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.Expiration">
+        <source xml:lang="en">Expires:</source>
+        <target xml:lang="yua" state="needs-translation">Expires:</target>
+        <note>ID: Settings.Subscription.Expiration</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.Expired">
+        <source xml:lang="en">That code has expired.</source>
+        <target xml:lang="yua" state="needs-translation">That code has expired.</target>
+        <note>ID: Settings.Subscription.Expired</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.Incomplete">
+        <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
+        <target xml:lang="yua" state="needs-translation"> The code should look like SOMENAME-123456-7890</target>
+        <note>ID: Settings.Subscription.Incomplete</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.NotValid">
+        <source xml:lang="en">That code appears to be incorrect.</source>
+        <target xml:lang="yua" state="needs-translation">That code appears to be incorrect.</target>
+        <note>ID: Settings.Subscription.NotValid</note>
+      </trans-unit>
+      <trans-unit id="Settings.Subscription.UnknownCode">
+        <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
+        <target xml:lang="yua" state="needs-translation">This version of Bloom does not have the artwork that goes with that subscription.</target>
+        <note>ID: Settings.Subscription.UnknownCode</note>
+      </trans-unit>
+      <!-- Tiers. These don't occur in code in their entirety, but are assembled by appending a particular
+      tier to "Subscription.Tier."-->
+      <trans-unit id="Subscription.Tier.Basic">
+        <source xml:lang="en">Basic</source>
+        <target xml:lang="yua" state="needs-translation">Basic</target>
+        <note>ID: Subscription.Tier.Basic</note>
+      </trans-unit>
+      <trans-unit id="Subscription.Tier.Enterprise">
+        <source xml:lang="en">Enterprise</source>
+        <target xml:lang="yua" state="needs-translation">Enterprise</target>
+        <note>ID: Subscription.Tier.Enterprise</note>
+      </trans-unit>
+      <trans-unit id="Subscription.Tier.LocalCommunity">
+        <source xml:lang="en">Local Community</source>
+        <target xml:lang="yua" state="needs-translation">Local Community</target>
+        <note>ID: Subscription.Tier.LocalCommunity</note>
+      </trans-unit>
+      <trans-unit id="Subscription.Tier.Pro">
+        <source xml:lang="en">Pro</source>
+        <target xml:lang="yua" state="needs-translation">Pro</target>
+        <note>ID: Subscription.Tier.Pro</note>
+      </trans-unit>
+      <trans-unit id="Subscription.TierWithColon">
+        <source xml:lang="en">Tier:</source>
+        <target xml:lang="yua" state="needs-translation">Tier:</target>
+        <note>ID: Subscription.TierWithColon</note>
+      </trans-unit>
+      <!-- Other -->
+      <trans-unit id="Subscription.OpenSettings">
+        <source xml:lang="en">Subscription Settings</source>
+        <target xml:lang="yua" state="needs-translation">Subscription Settings</target>
+        <note>ID: Subscription.OpenSettings</note>
+      </trans-unit>
+      <!-- Features -->
+      <!-- TODO connect with/normalize other places that refer to these things -->
+      <trans-unit id="Feature.Overlay">
+        <source xml:lang="en">Overlay</source>
+        <target xml:lang="yua" state="needs-translation">Overlay</target>
+        <note>ID: Feature.Overlay</note>
+      </trans-unit>
+      <trans-unit id="Feature.Spreadsheet">
+        <source xml:lang="en">Spreadsheet Import/Export</source>
+        <target xml:lang="yua" state="needs-translation">Spreadsheet Import/Export</target>
+        <note>ID: Feature.Spreadsheet</note>
+      </trans-unit>
+      <!-- TODO: add other features -->
+      <trans-unit id="Spreadsheet.DataDivConflictWarning">
+        <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
+        <target xml:lang="yua" state="needs-translation">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</target>
+        <note>ID: Spreadsheet.DataDivConflictWarning</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.DataDivImageMultiple">
+        <source xml:lang="en">Export warning: Found multiple elements for image element {0}. Only the first will be exported.</source>
+        <target xml:lang="yua" state="needs-translation">Export warning: Found multiple elements for image element {0}. Only the first will be exported.</target>
+        <note>ID: Spreadsheet.DataDivImageMultiple</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.ExportFailed">
+        <source xml:lang="en">Export failed: {0}</source>
+        <target xml:lang="yua" state="needs-translation">Export failed: {0}</target>
+        <note>ID: Spreadsheet.ExportFailed</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.SpreadsheetLocked">
+        <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
+        <target xml:lang="yua" state="needs-translation">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</target>
+        <note>ID: Spreadsheet.SpreadsheetLocked</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MissingImage">
+        <source xml:lang="en">Export warning: did not find the image {0}. It will be missing from the export folder.</source>
+        <target xml:lang="yua" state="needs-translation">Export warning: did not find the image {0}. It will be missing from the export folder.</target>
+        <note>ID: Spreadsheet.MissingImage</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.MultipleImageChildren">
+        <source xml:lang="en">Export warning: Found multiple images in data-book element {0}. Only the first will be exported.</source>
+        <target xml:lang="yua" state="needs-translation">Export warning: Found multiple images in data-book element {0}. Only the first will be exported.</target>
+        <note>ID: Spreadsheet.MultipleImageChildren</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.Overwrite">
+        <source xml:lang="en">You are about to replace the existing folder named {0}</source>
+        <target xml:lang="yua" state="needs-translation">You are about to replace the existing folder named {0}</target>
+        <note>ID: Spreadsheet.Overwrite</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.OverwriteBook">
+        <source xml:lang="en">The folder named {0} already exists and looks like it might be a Bloom book folder!</source>
+        <target xml:lang="yua" state="needs-translation">The folder named {0} already exists and looks like it might be a Bloom book folder!</target>
+        <note>ID: Spreadsheet.OverwriteBook</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.TroubleCopying">
+        <source xml:lang="en">Bloom had trouble copying the file {0} to the video folder: {1}</source>
+        <target xml:lang="yua" state="needs-translation">Bloom had trouble copying the file {0} to the video folder: {1}</target>
+        <note>ID: Spreadsheet.TroubleCopying</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.TroubleCopyingFolder">
+        <source xml:lang="en">Bloom had trouble copying the folder {0} to the activities folder: {1}</source>
+        <target xml:lang="yua" state="needs-translation">Bloom had trouble copying the folder {0} to the activities folder: {1}</target>
+        <note>ID: Spreadsheet.TroubleCopyingFolder</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.WriteFailed">
+        <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>
+        <target xml:lang="yua" state="needs-translation">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</target>
+        <note>ID: Spreadsheet.WriteFailed</note>
+      </trans-unit>
+      <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
+        <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
+        <target xml:lang="yua" state="needs-translation">Put the correct answer in this button. Bloom will randomize the order later.</target>
+      </trans-unit>
+      <trans-unit id="Download.PleaseSendLogFile">
+        <source xml:lang="en">Please also send us the latest log file found at {0}.</source>
+        <target xml:lang="yua" state="needs-translation">Please also send us the latest log file found at {0}.</target>
+        <note>ID: Download.PleaseSendLogFile</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem">
+        <source xml:lang="en">Bloom was not able to access a microphone.</source>
+        <target xml:lang="yua" state="needs-translation">Bloom was not able to access a microphone.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveProblem">
+        <source xml:lang="en">OneDrive Problem</source>
+        <target xml:lang="yua" state="needs-translation">OneDrive Problem</target>
+        <note>ID: ReportProblemDialog.OneDriveProblem</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.OneDriveErrorMessage">
+        <source xml:lang="en">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</source>
+        <target xml:lang="yua" state="needs-translation">There is a problem with your Microsoft OneDrive which is preventing Bloom from accessing files.</target>
+        <note>ID: ReportProblemDialog.OneDriveErrorMessage</note>
+      </trans-unit>
+      <trans-unit id="ProblemReport.PageStructureProblem">
+        <source xml:lang="en">Bloom made a mistake on this page. Please report this to us, then check that nothing was lost.</source>
+        <target xml:lang="yua" state="needs-translation">Bloom made a mistake on this page. Please report this to us, then check that nothing was lost.</target>
+        <note>ID: ProblemReport.PageStructureProblem</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AdministratorEmails">
+        <source xml:lang="en">Administrator Emails:</source>
+        <target xml:lang="yua" state="needs-translation">Administrator Emails:</target>
+        <note>ID: TeamCollection.AdministratorEmails</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.InvalidAdminEmails">
+        <source xml:lang="en">Please enter one or more valid administrator email addresses, separated by commas or spaces.</source>
+        <target xml:lang="yua" state="needs-translation">Please enter one or more valid administrator email addresses, separated by commas or spaces.</target>
+        <note>ID: TeamCollection.InvalidAdminEmails</note>
+      </trans-unit>
+      <trans-unit id="Common.Preparing">
+        <source xml:lang="en">Preparing...</source>
+        <target xml:lang="yua" state="needs-translation">Preparing...</target>
+        <note>Common.Preparing</note>
+      </trans-unit>
+      <trans-unit id="Common.Finishing">
+        <source xml:lang="en">Finishing...</source>
+        <target xml:lang="yua" state="needs-translation">Finishing...</target>
+        <note>Common.Finishing</note>
+      </trans-unit>
+      <trans-unit id="Common.Finished">
+        <source xml:lang="en">Finished</source>
+        <target xml:lang="yua" state="needs-translation">Finished</target>
+        <note>Common.Finished</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteHyperlink.Currently">
+        <source xml:lang="en">Currently %0</source>
+        <target xml:lang="yua" state="needs-translation">Currently %0</target>
+        <note>ID: EditTab.PasteHyperlink.Currently</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.MoveToCurrentCollection">
+        <source xml:lang="en">Move into {0}</source>
+        <target xml:lang="yua" state="needs-translation">Move into {0}</target>
+        <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
