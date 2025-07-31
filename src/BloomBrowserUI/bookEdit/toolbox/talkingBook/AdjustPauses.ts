@@ -117,4 +117,6 @@ export function adjustPausesToQuietestNearby(
     return segments;
 }
 
-//for a framework created to test and optimize this kind of algorithm, feel free to use and modify anything you find at https://github.com/NJStriebel/Spoken-Sentence-Divider
+// For a framework created to test and optimize this kind of algorithm,
+// see https://github.com/BloomBooks/Spoken-Sentence-Divider,
+// forked from https://github.com/NJStriebel/Spoken-Sentence-Divider.
