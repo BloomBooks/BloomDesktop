@@ -131,18 +131,39 @@ namespace Bloom.Spreadsheet
             AddDataDivData(dataDiv, bookFolderPath);
 
             var iContentPage = 0;
+            var dragAndDropGamePageCount = 0;
             foreach (var page in pages)
             {
                 // We ignore all xmatter pages, which were handled above by exporting data div data.
                 if (XMatterHelper.IsXMatterPage(page))
                     continue;
                 var pageNumber = page.GetAttribute("data-page-number") ?? "";
+                // drag-and-drop game pages don't yet export/import cleanly. (BL-15055)
+                // Simple comprehension quizzes and simple dom choice games appear to export/import okay.
+                // Widgets have a workaround in the importer to at least not lose pages.
+                var dataActivity = page.GetAttribute("data-activity") ?? "";
+                if (// "drag-word-chooser-slider" "drag-image-to-target" "drag-sort-sentence" "drag-letter-to-target"
+                    dataActivity.StartsWith("drag-"))
+                {
+                    ++dragAndDropGamePageCount;
+                    continue;
+                }
                 //Each page alternates colors
                 var colorForPage =
                     iContentPage++ % 2 == 0
                         ? InternalSpreadsheet.AlternatingRowsColor1
                         : InternalSpreadsheet.AlternatingRowsColor2;
                 AddContentRows(page, pageNumber, bookFolderPath, colorForPage);
+            }
+            if (dragAndDropGamePageCount > 0)
+            {
+                throw new Exception(
+                    string.Format(LocalizationManager.GetString(
+                        "Spreadsheet.CannotExportDragAndDropGamePages",
+                        "Bloom cannot export because {0} pages contain drag-and-drop games.",
+                        "The {0} will be replaced by the number of pages with drag-and-drop games."
+                    ), dragAndDropGamePageCount)
+                );
             }
             _spreadsheet.SortHiddenContentRowsToTheBottom();
             return _spreadsheet;
