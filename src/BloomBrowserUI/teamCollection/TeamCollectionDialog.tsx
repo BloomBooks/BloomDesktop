@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import BloomButton from "../react_components/bloomButton";
-import { getBoolean, post, useApiData } from "../utils/bloomApi";
+import { getBoolean, post, useApiBoolean, useApiData } from "../utils/bloomApi";
 import "./TeamCollectionDialog.less";
 import { useL10n } from "../react_components/l10nHooks";
 import { ProgressBox } from "../react_components/Progress/progressBox";
@@ -72,6 +72,10 @@ const TeamCollectionDialog: React.FunctionComponent<{
     // value from the API, we set defaultTabIndex to either 0 or 1 and the Tabs element is
     // rendered for the first time with the correct defaultIndex.
     const [defaultTabIndex, setDefaultTabIndex] = useState(-1);
+    const [disconnected] = useApiBoolean(
+        "teamCollection/isDisconnected",
+        false
+    );
 
     useEffect(() => {
         getBoolean("teamCollection/logImportant", logImportant => {
@@ -154,7 +158,9 @@ const TeamCollectionDialog: React.FunctionComponent<{
                                             id="checkInAll"
                                             l10nKey="TeamCollection.checkInAll"
                                             temporarilyDisableI18nWarning={true}
-                                            enabled={true}
+                                            // Arguably we could also disable when there is nothing to check in, but it might
+                                            // not be obvious why, and it's a pain to figure out whether that is the case.
+                                            enabled={!disconnected}
                                             hasText={true}
                                             variant="text"
                                             onClick={() => {

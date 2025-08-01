@@ -164,6 +164,15 @@ namespace Bloom.TeamCollection
                 null,
                 false
             );
+            apiHandler.RegisterBooleanEndpointHandler(
+                "teamCollection/isDisconnected",
+                // This is also true when the collection is not a TC in any way at all,
+                // but there's no way a boolean can distinguish that from a disconnected one,
+                // and we only use this in contexts where there is some kind of TC.
+                (request) => _tcManager.CurrentCollection == null,
+                null,
+                false
+            );
         }
 
         private bool HandleLogImportant(ApiRequest arg)
