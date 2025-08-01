@@ -66,6 +66,7 @@ namespace Bloom
             bool justEnoughForHtmlDialog = false
         )
         {
+            Logger.WriteMinorEvent("starting to construct the project context");
             SettingsPath = projectSettingsPath;
 
             _collectionLock = new CollectionLock(SettingsPath);
@@ -373,6 +374,7 @@ namespace Bloom
                 var allCommands = from c in commandTypes select _scope.Resolve(c) as ICommand;
                 _commandAvailabilityPublisher = new CommandAvailabilityPublisher(allCommands);
                 */
+                Logger.WriteMinorEvent("completed initializing project context");
             }
             catch (FileNotFoundException error)
             {

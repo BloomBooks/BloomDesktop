@@ -11,6 +11,7 @@ using Bloom.Properties;
 using L10NSharp;
 using SIL.PlatformUtilities;
 #if !__MonoCS__
+using SIL.Reporting;
 using Velopack;
 #endif
 
@@ -200,6 +201,7 @@ namespace Bloom
             {
                 restartingAfterToastClicked = true;
                 _bloomUpdateManager.WaitExitThenApplyUpdates(null);
+                Logger.WriteMinorEvent("shutting Bloom down in order to apply updates");
                 restartBloom();
             };
             notifier.Show(msg, action, -1); //stay up until clicked

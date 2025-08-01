@@ -468,6 +468,7 @@ namespace Bloom.ErrorReporter
                             try
                             {
                                 dlg.ShowDialog();
+                                Logger.WriteMinorEvent("closing error report dialog");
 
                                 // Take action if the user clicked a button other than Close
                                 if (
