@@ -541,7 +541,16 @@ public class AppearanceSettings
             Regex.Match(css, @"compatibleWithAppearanceVersion:\s*(\d+(\.\d+)?)")?.Groups[1]?.Value
             ?? "0";
 
-        if (double.TryParse(v, out var appearanceVersion) && appearanceVersion >= 6.0)
+        if (
+            double.TryParse(
+                v,
+                System.Globalization.NumberStyles.Any,
+                // We expect the number to have a dot, not whatever decimal separator the user's culture uses.
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var appearanceVersion
+            )
+            && appearanceVersion >= 6.0
+        )
             return false; // this is a 6.0+ theme, so it's fine
 
         // See if the css contains rules that nowadays should be using css variables, and would likely interfere with 5.6 and up
