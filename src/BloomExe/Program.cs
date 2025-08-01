@@ -1052,6 +1052,7 @@ namespace Bloom
             }
 
             Sldr.Cleanup();
+            Logger.WriteMinorEvent("shutting down logger, about to dispose project context");
             Logger.ShutDown();
 
             if (_projectContext != null)
