@@ -326,10 +326,9 @@ namespace Bloom.Edit
             if (string.IsNullOrEmpty(bodyHtml))
                 throw new ApplicationException("Got an empty body while trying to save page");
 
-            var content = bodyHtml;
             SafeXmlDocument dom;
 
-            var htmlDoc = XmlHtmlConverter.CreateHtmlDocument("", bodyHtml);
+            var htmlDoc = XmlHtmlConverter.CreateDocumentWithBodyContent(bodyHtml);
             dom = XmlHtmlConverter.GetXmlDomFromHtml(htmlDoc, false);
             var bodyDom = dom.SelectSingleNode("//body");
 
