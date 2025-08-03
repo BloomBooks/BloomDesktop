@@ -13,14 +13,26 @@ namespace BloomTests
     [TestFixture]
     public class XmlHtmlConverterTests
     {
+        [Test]
+        public void CreateDocumentWithBodyContent_CreatesDocStructure()
+        {
+            var content = "<div>foo</div>";
+            string doc = XmlHtmlConverter.CreateDocumentWithBodyContent(content);
+            var docWithNoWhitespace = Regex.Replace(doc, @"\s+", "");
+            Assert.That(
+                docWithNoWhitespace,
+                Is.EqualTo($"<html><head><title></title></head><body>{content}</body></html>")
+            );
+        }
+
         // TODO make a utility which creates minimal doc for tests. We may already have
         [Test]
         public void GetXmlDomFromHtml_HasOpenLinkElement_Closes()
         {
-            var dom = XmlHtmlConverter.GetXmlDomFromHtml(
-                "<!DOCTYPE html><html><head>    <link rel='stylesheet' href='basePage.css' type='text/css'> </head></html>",
-                false
+            var doc = XmlHtmlConverter.CreateDocumentWithBodyContent(
+                "<link rel='stylesheet' href='basePage.css' type='text/css'>"
             );
+            var dom = XmlHtmlConverter.GetXmlDomFromHtml(doc, false);
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//html", 1); //makes sure no namespace was inserted (or does it? what if that assert is too smart))
             var xml = dom.OuterXml;
             Assert.That(
