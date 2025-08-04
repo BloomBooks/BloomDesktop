@@ -2026,7 +2026,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 
             //Now check the plain .net user.config we also use (sigh). This is the one in a folder with a name like Bloom.exe_Url_avygitvf1lws5lpjrmoh5j0ggsx4tkj0
 
-            //roughly from http://stackoverflow.com/questions/9572243/what-causes-user-config-to-empty-and-how-do-i-restore-without-restarting
+            //roughly from http://stackoverflow.com/questions/9572241/what-causes-user-config-to-empty-and-how-do-i-restore-without-restarting
             try
             {
                 ConfigurationManager.OpenExeConfiguration(
@@ -2059,7 +2059,67 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 
         public static bool RunningUnitTests
         {
-            get { return Assembly.GetEntryAssembly() == null; }
+            get
+            {
+                // In .NET 8, Assembly.GetEntryAssembly() doesn't reliably return null for unit tests.
+                // Instead, we use a more robust approach that checks for test frameworks.
+                //try
+                //{
+                // Check if any test framework assemblies are loaded
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                foreach (var assembly in assemblies)
+                {
+                    var name = assembly.FullName;
+                    if (
+                        name != null
+                        && (
+                            // TODO
+                            //name.StartsWith(
+                            //    "nunit.framework",
+                            //    StringComparison.OrdinalIgnoreCase
+                            //)
+                            //||
+                            name.StartsWith("testhost", StringComparison.OrdinalIgnoreCase)
+                        //|| name.StartsWith(
+                        //    "Microsoft.TestPlatform",
+                        //    StringComparison.OrdinalIgnoreCase
+                        //)
+                        //|| name.StartsWith(
+                        //    "Microsoft.VisualStudio.TestPlatform",
+                        //    StringComparison.OrdinalIgnoreCase
+                        //)
+                        //|| name.StartsWith("xunit", StringComparison.OrdinalIgnoreCase)
+                        //|| name.StartsWith(
+                        //    "dotnet-test",
+                        //    StringComparison.OrdinalIgnoreCase
+                        //)
+                        )
+                    )
+                    {
+                        return true;
+                    }
+                }
+                return false;
+
+                //// Additional check: see if we're running under a test runner process
+                //var processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
+                //if (
+                //    processName.IndexOf("test", StringComparison.OrdinalIgnoreCase) >= 0
+                //    || processName.IndexOf("nunit", StringComparison.OrdinalIgnoreCase) >= 0
+                //)
+                //{
+                //    return true;
+                //}
+
+                //// Fallback to the original check for backwards compatibility
+                //return Assembly.GetEntryAssembly() == null;
+                //}
+                //catch
+                //{
+                //    // If anything goes wrong, fall back to the original method
+                //    return Assembly.GetEntryAssembly() == null;
+                //}
+            }
         }
 
         // Set to true when Bloom is running one of the command line verbs, e.g. hydrate or createArtifacts

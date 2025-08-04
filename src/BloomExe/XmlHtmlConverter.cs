@@ -19,6 +19,8 @@ namespace Bloom
             var sb = new StringBuilder();
             sb.AppendLine("<html>");
             sb.AppendLine("<head>");
+            sb.AppendLine("<title>");
+            sb.AppendLine("</title>");
             sb.AppendLine("</head>");
             sb.AppendLine("<body>");
             sb.AppendLine(bodyContent);
@@ -63,9 +65,17 @@ namespace Bloom
                 content = content.Replace("\uFEFF", "");
 
             // Remove this now, as it'll be harder once Agility Pack wraps everything in the XMl declaration.
-            if (content.StartsWith("<!DOCTYPE html>"))
+            var htmlDtd = "<!DOCTYPE html>";
+
+            if (content.StartsWith(htmlDtd))
             {
-                content = content.Substring("<!DOCTYPE html>".Length);
+                content = content.Substring(htmlDtd.Length);
+            }
+
+            // This happens if we put <!DOCTYPE html> into xml for some reason. We shouldn't.
+            if (content.StartsWith("<!DOCTYPE html[]>"))
+            {
+                content = content.Substring("<!DOCTYPE html[]>".Length);
             }
 
             // remove any of the starting <!-- ... --> comments. Otherwise agility pack treats them as sibling nodes
@@ -89,7 +99,7 @@ namespace Bloom
             // Otherwise agility pack treats leading blank lines as sibling nodes also
             content = content.Trim();
 
-// TODO delete
+            // TODO delete
             RobustFile.WriteAllText("../../../../beforeXml.txt", content, Encoding.UTF8);
 
             var doc = new HtmlDocument();
@@ -120,7 +130,7 @@ namespace Bloom
                 );
             }
 
-// TODO delete
+            // TODO delete
             RobustFile.WriteAllText(
                 "../../../../afterXml.txt",
                 doc.DocumentNode.OuterHtml,
@@ -288,19 +298,21 @@ namespace Bloom
         {
             var settings = new XmlWriterSettings
             {
-            Indent = true,
-            CheckCharacters = true,
-            OmitXmlDeclaration = true,
-            ConformanceLevel = ConformanceLevel.Fragment
+                Indent = true,
+                CheckCharacters = true,
+                OmitXmlDeclaration = true,
+                ConformanceLevel = ConformanceLevel.Fragment
             };
             var xmlStringBuilder = new StringBuilder();
             using (var writer = XmlWriter.Create(xmlStringBuilder, settings))
             {
-            elt.WriteTo(writer);
-            writer.Close();
+                elt.WriteTo(writer);
+                writer.Close();
             }
 
-            var docHtml = ConvertXhtmlToHtml5(CreateDocumentWithBodyContent(xmlStringBuilder.ToString()));
+            var docHtml = ConvertXhtmlToHtml5(
+                CreateDocumentWithBodyContent(xmlStringBuilder.ToString())
+            );
             int bodyIndex = docHtml.IndexOf("<body>", StringComparison.InvariantCulture);
             int endBodyIndex = docHtml.LastIndexOf("</body>", StringComparison.InvariantCulture);
             int start = bodyIndex + "<body>".Length;

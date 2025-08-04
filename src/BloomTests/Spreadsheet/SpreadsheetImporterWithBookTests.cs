@@ -107,8 +107,6 @@ namespace BloomTests.Spreadsheet
 
         public static string templateDom =
             @"
-<!DOCTYPE html>
-
 <html>
 <head>
 </head>
@@ -216,6 +214,7 @@ namespace BloomTests.Spreadsheet
             // to match the new title.
             var bookPath = Path.Combine(_testFolder.FolderPath, newTitle, newTitle + ".htm");
             if (!File.Exists(bookPath))
+                //TODO hitting here
                 return null;
             var dom = SafeXmlDocument.Create();
             try

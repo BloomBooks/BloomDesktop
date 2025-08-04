@@ -65,7 +65,7 @@ namespace BloomTests
         public void SaveAsHTML_HasXHTMLSelfClosingDiv_ChangesToHTMLStandard()
         {
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml("<html><body><div data-book='test'/></body></html>");
+            dom.LoadXml(XmlHtmlConverter.CreateDocumentWithBodyContent("<div data-book='test'/>"));
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -86,7 +86,7 @@ namespace BloomTests
         {
             var dom = SafeXmlDocument.Create();
             dom.LoadXml(
-                "<html><body><div data-book='test'/>Text with <u></u> and <b></b> and <i></i> works</body></html>"
+                XmlHtmlConverter.CreateDocumentWithBodyContent("<div data-book='test'/>Text with <u></u> and <b></b> and <i></i> works")
             );
             using (var temp = new TempFile())
             {
@@ -105,7 +105,7 @@ namespace BloomTests
         {
             var dom = SafeXmlDocument.Create();
             dom.LoadXml(
-                "<html><body><div data-book='test'/>Text with <u /><u attr=\"1\" /> and <b/><b attr=\"1\" /><span /><span attr=\"1\" /> and <i /><i attr=\"1\" />  <em /><em attr=\"1\" />  <strong /><strong attr=\"1\" /> works</body></html>"
+                XmlHtmlConverter.CreateDocumentWithBodyContent("<div data-book='test'/>Text with <u /><u attr=\"1\" /> and <b/><b attr=\"1\" /><span /><span attr=\"1\" /> and <i /><i attr=\"1\" />  <em /><em attr=\"1\" />  <strong /><strong attr=\"1\" /> works")
             );
             using (var temp = new TempFile())
             {
@@ -131,7 +131,7 @@ namespace BloomTests
         {
             var dom = SafeXmlDocument.Create();
             var original = "<p><em>one</em><strong>two</strong></p>";
-            dom.LoadXml("<html><body><div data-book='test'/>" + original + "</body></html>");
+            dom.LoadXml(XmlHtmlConverter.CreateDocumentWithBodyContent("<div data-book='test'/>" + original));
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -146,7 +146,7 @@ namespace BloomTests
         {
             var dom = SafeXmlDocument.Create();
             dom.LoadXml(
-                "<html><body><p>first line <span class='bloom-linebreak'></span>second line</p></body></html>"
+                XmlHtmlConverter.CreateDocumentWithBodyContent("<p>first line <span class='bloom-linebreak'></span>second line</p>")
             );
             using (var temp = new TempFile())
             {
@@ -162,7 +162,7 @@ namespace BloomTests
             var pattern =
                 "<p></p><p></p><p>a</p><p></p><p>b</p><p/><cite></cite><cite /><cite data-book='originalTitle'></cite><cite data-book='originalTitle'/>";
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml("<html><body>" + pattern + "</body></html>");
+            dom.LoadXml(XmlHtmlConverter.CreateDocumentWithBodyContent(pattern));
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -183,7 +183,7 @@ namespace BloomTests
         {
             var pattern = "<svg whatever='whatever'><path something='rubbish' /></svg>";
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml("<html><body>" + pattern + "</body></html>");
+            dom.LoadXml(XmlHtmlConverter.CreateDocumentWithBodyContent(pattern));
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -209,7 +209,7 @@ namespace BloomTests
         public void SaveAsHtml_VoidElements_ConvertsToSelfClosing(string tag)
         {
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml($"<html><head></head><body><{tag} data-foo='bar'></{tag}></body></html>");
+            dom.LoadXml(XmlHtmlConverter.CreateDocumentWithBodyContent($"<{tag} data-foo='bar'></{tag}>"));
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -222,7 +222,7 @@ namespace BloomTests
         public void SaveAsHtml_NonVoidElement_DoesNotConvert()
         {
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml($"<html><head></head><body><span data-foo='bar'></span></body></html>");
+            dom.LoadXml(XmlHtmlConverter.CreateDocumentWithBodyContent($"<span data-foo='bar'></span>"));
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -238,7 +238,7 @@ namespace BloomTests
             string svg =
                 @"<svg xmlns=""http://www.w3.org/2000/svg""><path d=""M 0 0 L 10 10"" /></svg>";
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml($"<html><body>{svg}<div>foobar</div></body></html>");
+            dom.LoadXml(XmlHtmlConverter.CreateDocumentWithBodyContent($"{svg}<div>foobar</div>"));
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -253,8 +253,7 @@ namespace BloomTests
         {
             string svg =
                 @"<svg xmlns=""http://www.w3.org/2000/svg""><path d=""M 0 0 L 10 10"" /></svg>";
-            string html =
-                $"<!DOCTYPE html><html><head></head><body>{svg}<div>foobar</div></body></html>";
+            string html = XmlHtmlConverter.CreateDocumentWithBodyContent($"{svg}<div>foobar</div>");
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             Assert.That(dom.InnerXml, Does.Contain("<svg"));
             Assert.That(dom.InnerXml, Does.Contain("foobar"));
@@ -263,8 +262,7 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_HasBrTags_TagsNotDoubled()
         {
-            const string html =
-                "<!DOCTYPE html><html><head></head><body><div><br></br></div></body></html>";
+            var html = XmlHtmlConverter.CreateDocumentWithBodyContent("<div><br></br></div>");
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             var found = 0;
             if (dom.DocumentElement != null)
@@ -280,7 +278,7 @@ namespace BloomTests
         public void SaveDOMAsHtml5_SavesBrCorrectly()
         {
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml("<html><body><br /></body></html>");
+            dom.LoadXml(XmlHtmlConverter.CreateDocumentWithBodyContent("<br />"));
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -297,9 +295,8 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_HasBandItags_WhitespaceNotDisappearing()
         {
-            const string html =
-                @"<!DOCTYPE html><html><head></head><body><div>one<b>two</b>three<i>four</i>five
-<b>six</b>seven <i>eight</i>nine</div></body></html>";
+            var html = XmlHtmlConverter.CreateDocumentWithBodyContent(@"<div>one<b>two</b>three<i>four</i>five
+<b>six</b>seven <i>eight</i>nine</div>");
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             Assert.That(
                 dom.InnerXml,
@@ -310,8 +307,7 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_HasDirectFormatting_PreserveSpacesBetween()
         {
-            const string html =
-                @"<!DOCTYPE html><html><head></head><body><div><p>one <b>two</b> <i>three</i> <strong>four</strong> <em>five</em> <u>six</u> seven</p></div></body></html>";
+            var html = XmlHtmlConverter.CreateDocumentWithBodyContent(@"<div><p>one <b>two</b> <i>three</i> <strong>four</strong> <em>five</em> <u>six</u> seven</p></div>");
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             Assert.That(
                 dom.InnerXml,
@@ -324,8 +320,7 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_HasSpans_PreserveSpacesBetween()
         {
-            const string html =
-                "<!DOCTYPE html><html><head></head><body><div><p>one <span class=\"x\">two</span> <span class=\"y\">three</span> <span class =\"z\">four</span> five</p></div></body></html>";
+            var html = XmlHtmlConverter.CreateDocumentWithBodyContent("<div><p>one <span class=\"x\">two</span> <span class=\"y\">three</span> <span class =\"z\">four</span> five</p></div>");
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             Assert.That(
                 dom.InnerXml,
@@ -338,8 +333,7 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_PreservesSpaceAtElementBoundaries()
         {
-            const string html =
-                "<!DOCTYPE html><html><head></head><body><div><p>This is a<strong> bold </strong>sentence with a<span style=\"color:red\"> red </span>word</p></div></body></html>";
+            var html = XmlHtmlConverter.CreateDocumentWithBodyContent("<div><p>This is a<strong> bold </strong>sentence with a<span style=\"color:red\"> red </span>word</p></div>");
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             Assert.That(
                 dom.InnerXml,
@@ -353,7 +347,7 @@ namespace BloomTests
         public void GetXmlDomFromHtml_HasEmptyParagraphs_RetainsEmptyParagraphs()
         {
             var pattern = "<p></p><p></p><p>a</p><p></p><p>b</p>";
-            var html = "<!DOCTYPE html><html><body>" + pattern + "</body></html>";
+            var html = XmlHtmlConverter.CreateDocumentWithBodyContent(pattern);
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//p", 5);
         }
@@ -361,7 +355,7 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_HasSpaceOnlyTags_KeepTags()
         {
-            var html = "<!DOCTYPE html><html><head></head><body><div><u> </u></div></body></html>";
+            var html = XmlHtmlConverter.CreateDocumentWithBodyContent("<div><u> </u></div>");
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
             Assert.AreEqual("<div><u> </u></div>", xml);
@@ -370,14 +364,12 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_HasEmptyTagsWithAttributes_NoRemoveTags()
         {
-            var html =
-                "<!DOCTYPE html><html><head></head><body><div><u style=\"test\"> </u></div></body></html>";
+            var html = XmlHtmlConverter.CreateDocumentWithBodyContent("<div><u style=\"test\"> </u></div>");
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
             Assert.AreEqual("<div><u style=\"test\"> </u></div>", xml);
 
-            html =
-                "<!DOCTYPE html><html><head></head><body><div><u><i style=\"test\" /></u></div></body></html>";
+            html = XmlHtmlConverter.CreateDocumentWithBodyContent("<div><u><i style=\"test\" /></u></div>");
             dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
             Assert.AreEqual("<div><u><i style=\"test\"></i></u></div>", xml);
@@ -457,8 +449,8 @@ namespace BloomTests
             var bookHtml =
                 "\uFEFF"
                 + @"<html><head>
-						<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
-						<link rel='stylesheet' href='Traditional-XMatter.css' type='text/css'></link>
+                        <link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
+                        <link rel='stylesheet' href='Traditional-XMatter.css' type='text/css'></link>
 					</head><body>"
                 + "\uFEFF"
                 + @"
@@ -475,7 +467,7 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_HasXmlDeclaration_RespectsIncludeXmlDeclaration()
         {
-            var html = "<html><body><div data-book='test'/></body></html>";
+            var html = XmlHtmlConverter.CreateDocumentWithBodyContent("<div data-book='test'/>");
             var htmlDomWithXmlDecl = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
             var htmlDomWithoutXmlDecl = XmlHtmlConverter.GetXmlDomFromHtml(html);
             Assert.That(
@@ -493,12 +485,8 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_Deduplicates_attributes()
         {
-            var bookHtml =
-                "<html><head>"
-                + "</head><body>"
-                + "<div data-foo=\"bar\" data-baz=\"qux\" data-foo=\"bar\"></div>"
-                + "</body></html>";
-            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(bookHtml, true);
+            var html = XmlHtmlConverter.CreateDocumentWithBodyContent("<div data-foo=\"bar\" data-baz=\"qux\" data-foo=\"bar\"></div>");
+            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
             var xml = htmlDom.DocumentElement.InnerXml;
             Assert.That(
                 xml,
@@ -515,12 +503,8 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_nbsp_handled()
         {
-            var bookHtml =
-                "<html><head>"
-                + "</head><body>"
-                + "<div>Some text with a&nbsp;non-breaking space.</div>"
-                + "</body></html>";
-            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(bookHtml, true);
+            var html = XmlHtmlConverter.CreateDocumentWithBodyContent("<div>Some text with a&nbsp;non-breaking space.</div>");
+            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
             var xml = htmlDom.DocumentElement.InnerText;
             var nbspIndex = "Some text with a".Length;
             Assert.That(
@@ -534,13 +518,8 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_doesNotDoubleEncodeEntities()
         {
-            var bookHtml =
-                "<html><head>"
-                + "</head><body>"
-                + "<div>Ben &amp; Jerry</div>"
-                + "<div>Buggy says &quot;hi&quot;</div>"
-                + "</body></html>";
-            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(bookHtml, true);
+            var html = XmlHtmlConverter.CreateDocumentWithBodyContent("<div>Ben &amp; Jerry</div><div>Buggy says &quot;hi&quot;</div>");
+            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
             var xml = htmlDom.DocumentElement.InnerXml;
             Assert.That(xml, Does.Contain("Ben &amp; Jerry"));
             Assert.That(xml, Does.Contain("Buggy says \"hi\"")); // decoded by this point for some reason
