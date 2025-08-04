@@ -254,3 +254,22 @@ export function showEditViewBookSettingsDialog(
 export function showRequiresSubscriptionDialog(featureName: string): void {
     showRequiresSubscriptionDialogInEditView(featureName);
 }
+
+// Adjusts the zoom scaling element created in C# SetupPageZoom; keep in sync with that code.
+// Called directly from C# code, in EditingView.SetZoom().
+// Argument is a raw number (e.g., 0.5 for 50% zoom, 1.0 for 100% zoom).
+export function setZoom(zoom: number): void {
+    const container = getPageIframeBody()?.ownerDocument.getElementById(
+        "page-scaling-container"
+    );
+    if (container) {
+        container.style.transform = `scale(${zoom.toString()}`;
+        // This produces something like calc((100% - 5px) / 0.8)
+        const newWidth = `calc((100% - 5px) / ${zoom.toString()})`;
+        // But if you read it back it will be something like calc(125% - 6.25px)
+        // (which is actually equivalent).
+        container.style.width = newWidth;
+    } else {
+        console.warn("setZoom called before page loaded");
+    }
+}

@@ -107,12 +107,17 @@ namespace Bloom.History
 
         public static List<BookHistoryEvent> GetBookEvents(BookInfo bookInfo)
         {
-            var events = BookHistory.GetHistory(bookInfo);
+            return GetBookEvents(bookInfo.FolderPath, bookInfo.Title);
+        }
+
+        public static List<BookHistoryEvent> GetBookEvents(string bookPath, string title)
+        {
+            var events = BookHistory.GetHistory(bookPath);
             // add in the title, which isn't in the database (this could done in a way that involves less duplication)
             events.ForEach(e =>
             {
-                e.Title = bookInfo.Title;
-                e.ThumbnailPath = Path.Combine(bookInfo.FolderPath, "thumbnail.png").ToLocalhost();
+                e.Title = title;
+                e.ThumbnailPath = Path.Combine(bookPath, "thumbnail.png").ToLocalhost();
             });
             return events;
         }
