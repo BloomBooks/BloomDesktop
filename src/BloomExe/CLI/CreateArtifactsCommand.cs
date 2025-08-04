@@ -378,21 +378,23 @@ namespace Bloom.CLI
 
             BookServer bookServer = s_projectContext.BookServer;
             BookThumbNailer thumbNailer = s_projectContext.ThumbNailer;
-            var maker = new EpubMaker(thumbNailer, bookServer);
-            maker.ControlForInvoke = control;
+            using (var maker = new EpubMaker(thumbNailer, bookServer))
+            {
+                maker.ControlForInvoke = control;
 
-            maker.Book = s_book;
-            // This is the previous default, but probably we should make it configurable, and possibly change the default.
-            // Note that it will end up Fixed if the presence of canvas elements requires it.
-            maker.Unpaginated = true;
-            // and if it has explicitly been set to fixed, make it that way.
-            if (s_book.BookInfo?.PublishSettings?.Epub?.Mode == "fixed")
-                maker.Unpaginated = false;
-            maker.OneAudioPerPage = true; // default used in EpubApi
-            // Enhance: maybe we want book to have image descriptions on page? use reader font sizes?
+                maker.Book = s_book;
+                // This is the previous default, but probably we should make it configurable, and possibly change the default.
+                // Note that it will end up Fixed if the presence of canvas elements requires it.
+                maker.Unpaginated = true;
+                // and if it has explicitly been set to fixed, make it that way.
+                if (s_book.BookInfo?.PublishSettings?.Epub?.Mode == "fixed")
+                    maker.Unpaginated = false;
+                maker.OneAudioPerPage = true; // default used in EpubApi
+                                              // Enhance: maybe we want book to have image descriptions on page? use reader font sizes?
 
-            // Make the epub
-            maker.SaveEpub(parameters.EpubOutputPath, new NullWebSocketProgress());
+                // Make the epub
+                maker.SaveEpub(parameters.EpubOutputPath, new NullWebSocketProgress());
+            }
         }
 
         public static void CreateThumbnailArtifact(CreateArtifactsParameters parameters)
