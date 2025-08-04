@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -17,6 +18,7 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using SIL.Reporting;
 using Bloom.CollectionTab;
+using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.web.controllers
@@ -302,11 +304,22 @@ namespace Bloom.web.controllers
                 "publish/thumbnail",
                 request =>
                 {
-                    var coverImage = request.CurrentBook.GetCoverImagePath();
+                    var coverImage = request.CurrentBook.GetCoverImagePathAndElt(
+                        out SafeXmlElement coverImgElt
+                    );
                     if (coverImage == null)
                         request.Failed("no cover image");
                     else
                     {
+                        // I don't see a really good place to put this temporary cropped image, if we need it. It is needed
+                        // after this api call returns, so we can't just use "using". Since it's an image file not actually
+                        // referenced in the book and placed in the book's folder, it will get cleaned up eventually.
+                        coverImage =
+                            PublishHelper.MakeCroppedImage(
+                                coverImgElt,
+                                request.CurrentBook.StoragePageFolder,
+                                Path.GetTempPath()
+                            ) ?? coverImage;
                         // We don't care as much about making it resized as making its background transparent.
                         using (var thumbnail = TempFile.CreateAndGetPathButDontMakeTheFile())
                         {
