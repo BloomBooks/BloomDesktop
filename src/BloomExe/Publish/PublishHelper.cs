@@ -1246,7 +1246,14 @@ namespace Bloom.Publish
                 return 0;
             var number = part.Trim().Substring(label.Length + 1);
             number = number.Substring(0, number.Length - 2); // remove "px"
-            if (double.TryParse(number, out double result))
+            if (
+                double.TryParse(
+                    number,
+                    System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out double result
+                )
+            )
                 return result;
             return 0;
         }
@@ -1263,7 +1270,11 @@ namespace Bloom.Publish
                 {
                     if (_browser != null) // Don't use BrowserForPageChecks here...if we don't have one we don't want to make it now!
                     {
-                        if (ControlForInvoke != null &&  ControlForInvoke.IsHandleCreated && !ControlForInvoke.IsDisposed)
+                        if (
+                            ControlForInvoke != null
+                            && ControlForInvoke.IsHandleCreated
+                            && !ControlForInvoke.IsDisposed
+                        )
                         {
                             // Seems safest of all to invoke using the thing we use for all other invokes.
                             // Also, seems our WebView2Browser may not actually get a handle, yet its
