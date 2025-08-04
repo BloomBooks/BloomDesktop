@@ -243,6 +243,7 @@ namespace Bloom
                 {
                     Application.DoEvents();
                 }
+                WebView2Browser.CleanupWebView2UserFolders();
                 return mainTask.Result; // we're done; this is safe once there is nothing being awaited.
             }
 

@@ -27,6 +27,7 @@ using Bloom.ToPalaso;
 using SIL.CommandLineProcessing;
 using SIL.Windows.Forms.ClearShare;
 using Bloom.ErrorReporter;
+using FFMpegCore.Builders.MetaData;
 using L10NSharp;
 
 namespace Bloom.ImageProcessing
@@ -1434,6 +1435,10 @@ namespace Bloom.ImageProcessing
             {
                 LogGraphicsMagickFailure(result);
             }
+
+            var metadata = RobustFileIO.MetadataFromFile(sourcePath);
+            if (metadata != null && metadata.ExceptionCaughtWhileLoading == null)
+                metadata.Write(destPath);
 
             return result;
         }
