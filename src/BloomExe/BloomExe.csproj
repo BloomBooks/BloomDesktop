@@ -245,11 +245,13 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		</Reference>
 		<Reference Include="PdfDroplet">
 			<SpecificVersion>False</SpecificVersion>
-			<HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
+			<!--<HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath> -->
+			<HintPath>..\..\..\..\pdfdroplet\output\Debug\PdfDroplet.dll</HintPath>
 		</Reference>
 		<Reference Include="PdfSharp">
 			<SpecificVersion>False</SpecificVersion>
-			<HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
+			<!--<HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath> -->
+			<HintPath>..\..\..\..\pdfdroplet\output\Debug\PdfSharp.dll</HintPath>
 		</Reference>
 		<Reference Include="PodcastUtilities.PortableDevices">
 			<HintPath>..\..\lib\dotnet\PodcastUtilities.PortableDevices.dll</HintPath>
