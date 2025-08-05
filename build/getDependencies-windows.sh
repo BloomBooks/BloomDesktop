@@ -109,7 +109,7 @@ cd -
 #     URL: https://build.palaso.org/buildConfiguration/bt54?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
+#     paths: {"PdfDroplet.dll"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/pdfDroplet [master]
 # [5] build: TidyManaged-master-win32-continuous (bt349)
 #     project: TidyManaged
