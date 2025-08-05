@@ -103,7 +103,7 @@ namespace Bloom.FontProcessing
         /// calls this a second time (or calls AvailableFontMetadata) before it finishes, then a partial
         /// list of fonts is returned.
         /// </remarks>
-        public static IEnumerable<FontMetadata> GetAllFontMetadata()
+        public static IEnumerable<FontMetadata> GetAllFontMetadata(IEnumerable<string> fontNames = null)
         {
             // This return shouldn't be used but might be triggered by a test.
             if (_finder != null)
@@ -111,7 +111,9 @@ namespace Bloom.FontProcessing
 
             var starting = DateTime.Now;
             _finder = FontFileFinder.GetInstance(isReuseAllowed: true);
-            foreach (var name in SortedListOfFontNames())
+            if (fontNames == null)
+                fontNames = SortedListOfFontNames();
+            foreach (var name in fontNames)
             {
                 try
                 {
