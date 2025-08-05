@@ -77,13 +77,7 @@ namespace Bloom.CollectionChoosing
                 collectionsToShow.AddRange(
                     Directory
                         .GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
-                        .Select(
-                            d =>
-                                Path.Combine(
-                                    d,
-                                    Path.ChangeExtension(Path.GetFileName(d), "bloomCollection")
-                                )
-                        )
+                        .Select(d => CollectionSettings.GetSettingsFilePath(d))
                         .Where(c => RobustFile.Exists(c) && !collectionsToShow.Contains(c))
                         .OrderBy(c => Directory.GetLastWriteTime(Path.GetDirectoryName(c)))
                         .Reverse()

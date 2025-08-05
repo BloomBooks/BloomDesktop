@@ -1032,18 +1032,14 @@ namespace Bloom.TeamCollection
         public static string CollectionPath(string parentFolder)
         {
             var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(parentFolder));
-            // Avoiding use of ChangeExtension as it's just possible the collectionName could have period.
-            var collectionPath = Path.Combine(parentFolder, collectionName + ".bloomCollection");
+            var collectionPath = Path.Combine(parentFolder, CollectionSettings.GetFileName(collectionName));
             if (RobustFile.Exists(collectionPath))
                 return collectionPath;
             // occasionally, mainly when making a temp folder during joining, the bloomCollection file may not
             // have the expected name
-            var result = Directory
-                .EnumerateFiles(parentFolder, "*.bloomCollection")
-                .FirstOrDefault();
-            if (result == null)
-                return collectionPath; // sometimes we use this method to get the expected path where there is no .bloomCollection
-            return result;
+            if (CollectionSettings.TryGetSettingsFilePath(parentFolder, out var realPath))
+                return realPath;
+            return collectionPath; // sometimes we use this method to get the expected path where there is no .bloomCollection
         }
 
         public static List<string> RootLevelCollectionFilesIn(string folder)

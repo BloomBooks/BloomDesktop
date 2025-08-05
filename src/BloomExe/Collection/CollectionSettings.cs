@@ -114,6 +114,54 @@ namespace Bloom.Collection
                 { "Tibetan", "༠༡༢༣༤༥༦༧༨༩" }, // from bo-CN
             };
 
+        public const string kFileExtension = ".bloomCollection";
+        public const string kWildSearchPattern = "*.bloomCollection";   // used in directory searches
+
+        /// <summary>
+        /// Generate the file name for the collection settings file given the collection folder name.
+        /// </summary>
+        /// <remarks>
+        /// The collection name must be filesystem-safe.  It is usually the name of the folder,
+        /// which would be filesystem-safe.  It can be the full path to the folder.
+        /// </remarks>
+        public static string GetFileName(string collectionFolderName)
+        {
+            // Avoiding use of Path.ChangeExtension as it's just possible the collectionName could have a period.
+            return $"{Path.GetFileName(collectionFolderName)}{kFileExtension}";
+        }
+
+        /// <summary>
+        /// Generate the path to the collection settings file given the collection folder.
+        /// </summary>
+        public static string GetSettingsFilePath(string collectionFolder)
+        {
+            return Path.Combine(collectionFolder, CollectionSettings.GetFileName(collectionFolder));
+        }
+
+        public static string GetFileDialogFilterString()
+        {
+            return LocalizationManager.GetString(
+                "OpenCreateNewCollectionsDialog.Bloom Collections",
+                "Bloom Collections",
+                "This shows in the file-open dialog that you use to open a different bloom collection"
+            ) + @"|*.bloomLibrary;*.bloomCollection";
+        }
+
+        /// <summary>
+        /// Get the path to the collection settings file, if it exists.
+        /// </summary>
+        /// <returns>
+        /// true if the file exists, false otherwise.
+        /// </returns>
+        public static bool TryGetSettingsFilePath(
+            string collectionFolder,
+            out string settingsFilePath
+        )
+        {
+            settingsFilePath = Directory.EnumerateFiles(collectionFolder, CollectionSettings.kWildSearchPattern).FirstOrDefault();
+            return settingsFilePath != null && RobustFile.Exists(settingsFilePath);
+        }
+
         public CollectionSettings()
         {
             Subscription = new Subscription(null);
@@ -398,21 +446,15 @@ namespace Bloom.Collection
         {
             try
             {
-                var settingsFilePath = Path.Combine(
-                    collectionFolder,
-                    Path.ChangeExtension(Path.GetFileName(collectionFolder), "bloomCollection")
-                );
+                var settingsFilePath = GetSettingsFilePath(collectionFolder);
                 if (!RobustFile.Exists(settingsFilePath))
                 {
                     // When we're joining a TC, we extract settings in to a temp folder whose name does not
                     // match the settings file.
-                    var collections = Directory
-                        .EnumerateFiles(collectionFolder, "*.bloomCollection")
-                        .ToList();
-                    if (collections.Count >= 1)
+                    if (TryGetSettingsFilePath(collectionFolder, out var realSettingsFile))
                     {
                         // Hopefully this repairs things.
-                        settingsFilePath = collections[0];
+                        settingsFilePath = realSettingsFile;
                     }
                     else
                     {
@@ -906,7 +948,7 @@ namespace Bloom.Collection
         {
             return parentFolderPath.CombineForPath(
                 newCollectionName,
-                newCollectionName + ".bloomCollection"
+                CollectionSettings.GetFileName(newCollectionName)
             );
         }
 
@@ -946,10 +988,7 @@ namespace Bloom.Collection
             try
             {
                 //we now make a default name based on the name of the directory
-                string destinationPath = Path.Combine(
-                    toDirectory,
-                    Path.GetFileName(toDirectory) + ".bloomCollection"
-                );
+                string destinationPath = CollectionSettings.GetSettingsFilePath(toDirectory);
                 if (!RobustFile.Exists(destinationPath))
                     RobustFile.Move(collectionSettingsPath, destinationPath);
 
@@ -972,11 +1011,11 @@ namespace Bloom.Collection
 
         public static string FindSettingsFileInFolder(string folderPath)
         {
-            try
+            if (TryGetSettingsFilePath(folderPath, out string settingsFilePath))
             {
-                return Directory.GetFiles(folderPath, "*.bloomCollection").First();
+                return settingsFilePath;
             }
-            catch (Exception)
+            else
             {
                 throw new ApplicationException(
                     string.Format(

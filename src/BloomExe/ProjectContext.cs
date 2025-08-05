@@ -470,13 +470,10 @@ namespace Bloom
             if (!RobustFile.Exists(projectSettingsPath))
             {
                 // TCManager constructor may have deleted it in the process of syncing TC settings
-                var collections = Directory
-                    .EnumerateFiles(Path.GetDirectoryName(projectSettingsPath), "*.bloomCollection")
-                    .ToList();
-                if (collections.Count >= 1)
+                if (CollectionSettings.TryGetSettingsFilePath(projectSettingsPath, out var settingsFilePath))
                 {
                     // Hopefully this repairs things.
-                    projectSettingsPath = collections[0];
+                    projectSettingsPath = settingsFilePath;
                 }
             }
 
