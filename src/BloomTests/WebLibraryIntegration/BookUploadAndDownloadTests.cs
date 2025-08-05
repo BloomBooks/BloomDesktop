@@ -679,9 +679,7 @@ namespace BloomTests.WebLibraryIntegration
                 var collectionPath = Path.GetDirectoryName(newBookFolder2);
                 var collectionName = Path.GetFileName(collectionPath);
                 Assert.That(collectionName, Is.EqualTo("From Bloom Library - one"));
-                var settings2 = new CollectionSettings(
-                    Path.Combine(collectionPath, collectionName + ".bloomCollection")
-                );
+                var settings2 = new CollectionSettings(CollectionSettings.GetSettingsFilePath(collectionPath));
                 Assert.That(settings2.Language1Tag, Is.EqualTo("dmx"));
                 Assert.That(settings2.Language2Tag, Is.EqualTo("en"));
                 Assert.That(settings2.Language3Tag, Is.EqualTo("fr"));
@@ -743,9 +741,7 @@ namespace BloomTests.WebLibraryIntegration
                     collectionName,
                     Does.StartWith("From Bloom Library - This ངའ་ཁས་འབབ needs")
                 );
-                var settings2 = new CollectionSettings(
-                    Path.Combine(collectionPath, collectionName + ".bloomCollection")
-                );
+                var settings2 = new CollectionSettings(CollectionSettings.GetSettingsFilePath(collectionPath));
                 Assert.That(settings2.Language1Tag, Is.EqualTo("xk"));
                 Assert.That(settings2.Language2Tag, Is.EqualTo("fr"));
                 Assert.That(settings2.Language3Tag, Is.EqualTo("de"));
@@ -831,7 +827,7 @@ namespace BloomTests.WebLibraryIntegration
         [Test]
         public void SanitizeCollectionSettingsForUpload_ShouldRedactSubscriptionCode()
         {
-            using (var tempFile = TempFile.WithExtension(".bloomCollection"))
+            using (var tempFile = TempFile.WithExtension(CollectionSettings.kFileExtension))
             {
                 File.WriteAllText(
                     tempFile.Path,
@@ -861,7 +857,7 @@ namespace BloomTests.WebLibraryIntegration
         [Test]
         public void SanitizeCollectionSettingsForUpload_ShouldRemoveAiLanguages()
         {
-            using (var tempFile = TempFile.WithExtension(".bloomCollection"))
+            using (var tempFile = TempFile.WithExtension(CollectionSettings.kFileExtension))
             {
                 File.WriteAllText(
                     tempFile.Path,

@@ -1101,7 +1101,7 @@ namespace Bloom.TeamCollection
                     //	"This folder appears to already be in use as a Team Collection");
                 }
 
-                if (Directory.EnumerateFiles(sharedFolder, "*.bloomCollection").Any())
+                if (CollectionSettings.TryGetSettingsFilePath(sharedFolder, out var _))
                 {
                     return defaultMessage;
                     //return LocalizationManager.GetString("TeamCollection.LocalCollection",

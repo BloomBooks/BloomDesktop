@@ -1509,7 +1509,7 @@ namespace Bloom.web.controllers
         private static IEnumerable<string> GetCollectionFilePaths(string collectionFolder)
         {
             var result = Directory.GetFiles(collectionFolder, "*CollectionStyles.css").ToList();
-            result.AddRange(Directory.GetFiles(collectionFolder, "*.bloomCollection"));
+            result.AddRange(Directory.GetFiles(collectionFolder, CollectionSettings.kWildSearchPattern));
             return result;
         }
 
@@ -1552,9 +1552,7 @@ namespace Bloom.web.controllers
             var collectionFolder = Path.Combine(tempFolder, fileNameWIthoutExtension);
             ZipUtils.ExpandZip(path, collectionFolder);
             // get the path to the file ending in ".bloomCollection" in tempFolder
-            var collectionPath = Directory
-                .GetFiles(collectionFolder, "*.bloomCollection")
-                .FirstOrDefault();
+            CollectionSettings.TryGetSettingsFilePath(collectionFolder, out var collectionPath);
 
             // rename the collection to match the issueId, this makes it easier for the dev to know what's what.
             var problemReportSettingsPath = Path.Combine(collectionFolder, kProblemBookJsonName);
@@ -1567,7 +1565,7 @@ namespace Bloom.web.controllers
                 {
                     var newCollectionPath = Path.Combine(
                         collectionFolder,
-                        issueId.Value<string>() + ".bloomCollection"
+                        CollectionSettings.GetFileName(issueId.Value<string>())
                     );
                     RobustFile.Move(collectionPath, newCollectionPath);
                     return newCollectionPath;

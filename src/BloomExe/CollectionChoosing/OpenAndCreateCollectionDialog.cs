@@ -17,11 +17,7 @@ namespace Bloom.CollectionChoosing
 
             _openAndCreateControl.Init(
                 mruList,
-                LocalizationManager.GetString(
-                    "OpenCreateNewCollectionsDialog.Bloom Collections",
-                    "Bloom Collections",
-                    "This shows in the file-open dialog that you use to open a different bloom collection"
-                ) + @"|*.bloomLibrary;*.bloomCollection",
+                Bloom.Collection.CollectionSettings.GetFileDialogFilterString(),
                 () =>
                     NewCollectionWizard.CreateNewCollection(
                         () => _openAndCreateControl.UpdateUiLanguageMenuSelection()

@@ -87,10 +87,7 @@ namespace Bloom.WebLibraryIntegration
                     {
                         // If we find duplicate IDs, we need to evaluate whether the books involved can have their IDs changed safely.
                         var parent = Path.GetDirectoryName(path);
-                        var collectionPath = Directory
-                            .GetFiles(parent, "*.bloomCollection")
-                            .FirstOrDefault();
-                        if (collectionPath == null || !RobustFile.Exists(collectionPath))
+                        if (!CollectionSettings.TryGetSettingsFilePath(parent, out var collectionPath))
                         {
                             return true; // weird situation, but it's not in a TC so we can update the ID if we want.
                         }
@@ -194,10 +191,7 @@ namespace Bloom.WebLibraryIntegration
             if (IsPrivateFolder(uploadParams.Folder))
                 return context;
 
-            var collectionPath = Directory
-                .GetFiles(uploadParams.Folder, "*.bloomCollection")
-                .FirstOrDefault();
-            if (collectionPath != null)
+            if (CollectionSettings.TryGetSettingsFilePath(uploadParams.Folder, out var collectionPath))
             {
                 var settings = new CollectionSettings(collectionPath);
                 if (string.IsNullOrEmpty(settings.DefaultBookshelf))
@@ -352,8 +346,7 @@ namespace Bloom.WebLibraryIntegration
             // Unfortunately this requires making a book object, which requires making a ProjectContext, which must be created with the
             // proper parent book collection if possible.
             var parent = Path.GetDirectoryName(uploadParams.Folder);
-            var collectionPath = Directory.GetFiles(parent, "*.bloomCollection").FirstOrDefault();
-            if (collectionPath == null || !RobustFile.Exists(collectionPath))
+            if (!CollectionSettings.TryGetSettingsFilePath(parent, out var collectionPath))
             {
                 progress.WriteError(
                     "Skipping book because no collection file was found in its parent directory."

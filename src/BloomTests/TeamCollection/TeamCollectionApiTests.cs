@@ -32,13 +32,7 @@ namespace BloomTests.TeamCollection
         public void OneTimeSetUp()
         {
             _localCollection = new TemporaryFolder("TeamCollectionApiTests");
-            var collectionPath = Path.Combine(
-                _localCollection.FolderPath,
-                Path.ChangeExtension(
-                    Path.GetFileName(_localCollection.FolderPath),
-                    ".bloomCollection"
-                )
-            );
+            var collectionPath = CollectionSettings.GetSettingsFilePath(_localCollection.FolderPath);
             _tcManager = new TeamCollectionManager(
                 collectionPath,
                 new BloomWebSocketServer(),

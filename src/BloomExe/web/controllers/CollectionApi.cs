@@ -449,12 +449,7 @@ namespace Bloom.web.controllers
                     "Choose Collection",
                     "This is the title of the file-open dialog that you use to choose a Bloom collection"
                 );
-                dlg.Filter =
-                    LocalizationManager.GetString(
-                        "OpenCreateNewCollectionsDialog.Bloom Collections",
-                        "Bloom Collections",
-                        "This shows in the file-open dialog that you use to open a different bloom collection"
-                    ) + @"|*.bloomLibrary;*.bloomCollection";
+                dlg.Filter = CollectionSettings.GetFileDialogFilterString();
                 dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
                 if (
                     dlg.ShowDialog() == DialogResult.Cancel
