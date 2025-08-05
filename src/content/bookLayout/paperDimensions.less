@@ -55,34 +55,3 @@
 @Cm13Square-Side: 130mm;
 
 @bleed: 3mm; // Duplicated in editMode.less to remove circular dependency between BloomBrowserUI and content
-@RA5Portrait-Width: @A5Portrait-Width + @bleed + @bleed;
-@RA5Portrait-Height: @A5Portrait-Height + @bleed + @bleed;
-@RA5-Scale: unit(@RA5Portrait-Width / @A5Portrait-Width);
-@A5Portrait-HeightFB: @A5Portrait-Height * @RA5-Scale;
-@A5Portrait-Height-Excess: @A5Portrait-HeightFB - @RA5Portrait-Height;
-
-@RA4Portrait-Width: @A4Portrait-Width + @bleed + @bleed;
-@RA4Portrait-Height: @A4Portrait-Height + @bleed + @bleed;
-@RA4-Scale: unit(@RA4Portrait-Width / @A4Portrait-Width);
-@A4Portrait-HeightFB: @A4Portrait-Height * @RA4-Scale;
-@A4Portrait-Height-Excess: @A4Portrait-HeightFB - @RA4Portrait-Height;
-
-@RA3Portrait-Width: @A3Portrait-Width + @bleed + @bleed;
-@RA3Portrait-Height: @A3Portrait-Height + @bleed + @bleed;
-@RA3-Scale: unit(@RA3Portrait-Width / @A3Portrait-Width);
-@A3Portrait-HeightFB: @A3Portrait-Height * @RA3-Scale;
-@A3Portrait-Height-Excess: @A3Portrait-HeightFB - @RA3Portrait-Height;
-
-@RUSComicPortrait-Width: @USComicPortrait-Width + @bleed + @bleed;
-@RUSComicPortrait-Height: @USComicPortrait-Height + @bleed + @bleed;
-@RUSComic-Scale: unit(@RUSComicPortrait-Width / @USComicPortrait-Width);
-@USComicPortrait-HeightFB: @USComicPortrait-Height * @RUSComic-Scale;
-@USComicPortrait-Height-Excess: @USComicPortrait-HeightFB -
-    @RUSComicPortrait-Height;
-
-@RSize6x9Portrait-Width: @Size6x9Portrait-Width + @bleed + @bleed;
-@RSize6x9Portrait-Height: @Size6x9Portrait-Height + @bleed + @bleed;
-@RSize6x9-Scale: unit(@RSize6x9Portrait-Width / @Size6x9Portrait-Width);
-@Size6x9Portrait-HeightFB: @Size6x9Portrait-Height * @RSize6x9-Scale;
-@Size6x9Portrait-Height-Excess: @Size6x9Portrait-HeightFB -
-    @RSize6x9Portrait-Height;
