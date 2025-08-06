@@ -1423,8 +1423,7 @@ namespace BloomTests.Book
                 bookIdMeta = @"<meta name='bloomBookId' content='thisNewGuy' />";
 
             var content = String.Format(
-                @"<?xml version='1.0' encoding='utf-8' ?>
-				<!DOCTYPE html>
+                @"<!DOCTYPE html>
 				<html>
 				<head>
 					<meta content='text/html; charset=utf-8' http-equiv='content-type' />

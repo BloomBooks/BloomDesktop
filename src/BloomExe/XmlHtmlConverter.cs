@@ -113,10 +113,13 @@ namespace Bloom
             // writes empty nodes as closed
             doc.OptionWriteEmptyNodes = true;
 
-            // Agility pack sets a flag to wrap the contents of style tag with <![CDATA[ ... ]]>. We don't want this.
+            // Agility pack sets a flag to wrap the contents of style (and other) tags with <![CDATA[ ... ]]>. We already do this ourselves when necessary, so remove the flag to prevent double-wrapping.
             // https://github.com/zzzprojects/html-agility-pack/blob/8490ad1321e378582aec156668888511d3010b33/src/HtmlAgilityPack.Shared/HtmlNode.cs#L99
-            // We may need to do this for other element types also
-            HtmlNode.ElementsFlags.Remove("style");
+            // We may need to do this for other element types also? script, noxhtml, and title
+            foreach (var cDataFlag in new[] { "style", "script", "noxhtml", "title" })
+            {
+                HtmlNode.ElementsFlags.Remove(cDataFlag);
+            }
 
             doc.LoadHtml(content);
 

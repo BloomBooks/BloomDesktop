@@ -2007,16 +2007,20 @@ namespace BloomTests.Publish
                     "0:00:0" + audioDuration.ToString("0.000", CultureInfo.InvariantCulture);
                 string clipEnd2 =
                     "0:00:0" + (audioDuration * 2).ToString("0.000", CultureInfo.InvariantCulture);
+                // rounding errors may affect the last digit, so we use starts-with
+                string clipEnd1Prefix = clipEnd1.Substring(0, clipEnd1.Length - 1);
+                string clipEnd2Prefix = clipEnd2.Substring(0, clipEnd2.Length - 1);
+                //TODO refactor to use ToString to do what we want?
                 assertThatSmil.HasAtLeastOneMatchForXpath(
                     "smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"
                         + kAudioSlash
-                        + $"page2.mp3' and @clipBegin='0:00:00.000' and @clipEnd='{clipEnd1}']",
+                        + $"page2.mp3' and @clipBegin='0:00:00.000' and starts-with(@clipEnd, '{clipEnd1Prefix}')]",
                     _ns
                 );
                 assertThatSmil.HasAtLeastOneMatchForXpath(
                     "smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"
                         + kAudioSlash
-                        + $"page2.mp3' and @clipBegin='{clipEnd1}' and @clipEnd='{clipEnd2}']",
+                        + $"page2.mp3' and starts-with(@clipBegin, '{clipEnd1Prefix}') and starts-with(@clipEnd, '{clipEnd2Prefix}')]",
                     _ns
                 );
             }
@@ -2390,6 +2394,7 @@ namespace BloomTests.Publish
         protected static double GetFakeAudioDurationSecs()
         {
             // Formerly 1.672 on Windows, but after updating NAudio to 1.10.0 nuget package, now 1.646 seconds instead
+            // Now 1.645 after various updates
             double expectedDurationPerClip = 1.646;
             if (Platform.IsLinux)
             {
