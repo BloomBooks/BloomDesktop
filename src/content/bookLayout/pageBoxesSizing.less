@@ -78,6 +78,10 @@
     // (practically?) impossible to adjust page sizes as exactly.
     page-break-after: always;
     overflow: hidden; // when the page is scaled, stuff in the longer dimension will actually exceed the bleed area. We want to clip that.
+    // This is not perfect. The box ends up being the size it would want to be if the content were not scaled.
+    // The page-size specific rules below do better. A real solution for all page sizes is in 6.3.
+    // But this looks better than what 6.2 produecs without it for unsupported page sizes.
+    width: fit-content;
 
     &.A5Portrait {
         width: @RA5Portrait-Width;
