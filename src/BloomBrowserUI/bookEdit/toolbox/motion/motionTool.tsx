@@ -176,7 +176,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 "px;'>" +
                 htmlForDragHandle +
                 "  <div style='height:100%;width:100%;position:absolute;top:0;left:0;" +
-                `border: dashed ${color} 2px;box-sizing:border-box;z-index:2000;pointer-events:none';></div>` + //set the border div's z index to 2000 so it's in front of any overlays, but behind the other rectangle's draggable components
+                `border: dashed ${color} 2px;box-sizing:border-box;z-index:2999;pointer-events:none';></div>` + //set the border div's z index to 2999 so it's in front of any overlays, but behind the other rectangle's draggable components (which are set at 3000)
                 htmlForResizeHandles +
                 "</div>";
             // Do NOT use an opacity setting here. Besides the fact that there's no reason to dim the rectangle while
@@ -663,7 +663,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private animateStyleName: string = "bloom-animationPreview";
-    readonly hiddenStyleName: string = "bloom-hidden-for-animation";
+    readonly hiddenStyleName: string = "bloom-hidden-for-animation"; //if this were ever changed, be sure to also change it in bloomUI.less
 
     //hide everything on the page, make a copy of the canvas, and move it using the TransformBasedAnimator class from bloom-player
     //Enhance: refactor this method and bloom-player's Animation.setupAnimation() to share more of the code that sets up the HTML structure around the canvas
@@ -713,7 +713,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             true
         ) as HTMLElement;
 
-        //if the page has overlays, copy them to the animation canvas
+        //if the page has overlays, they're drawn in a <canvas/> element created by the ComicalJS library
+        //when a <canvas/> is copied, its contents are not copied with it,
+        //so we need to specifically copy the drawings from the original canvas to the clone
         const comicalCanvas = bloomCanvasToAnimate.querySelector(
             ".comical-generated"
         ) as HTMLCanvasElement;
@@ -756,8 +758,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         let canvasDimensions = animationCanvas
             .getAttribute("data-imgsizebasedon")
             ?.split(",")
-            .map(parseFloat);
-        canvasDimensions = canvasDimensions ? canvasDimensions : [16, 9]; //this should never be necessary, but eslint calls it an error if I don't have it.
+            .map(parseFloat) ?? [16,9];
         const animationAspectRatio = canvasDimensions[0] / canvasDimensions[1];
         if (animationAspectRatio > this.animationPreviewAspectRatio) {
             animationWrapper.style.width = "100%";
@@ -785,6 +786,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             animationWrapper.clientWidth,
             animationWrapper.clientHeight
         ];
+
+        //Overlays have their width, height, and bubble positions set by absolute pixel values
+        //Because of that, we need to make sure the animationCanvas has the default pixel height and width that the overlays expect
+        //Then we can safely rescale the animationCanvas to the size we want, and the overlays will rescale with it.
         animationCanvas.style.width = `${canvasDimensions[0]}px`;
         animationCanvas.style.height = `${canvasDimensions[1]}px`;
         animationCanvas.style.scale = `${wrapperDimensions[0] /
@@ -808,7 +813,6 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const children = Array.from(bloomPage.children) as HTMLElement[];
         for (const child of children) {
             if (!child.classList.contains(this.animateStyleName)) {
-                child.style.visibility = "hidden";
                 child.classList.add(this.hiddenStyleName);
             }
         }
@@ -818,7 +822,6 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         ) as HTMLElement;
         if (layoutToggle) {
             layoutToggle.classList.add(this.hiddenStyleName);
-            layoutToggle.style.visibility = "hidden";
         }
 
         //start the animation
@@ -873,7 +876,6 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         //show all the page elements we hid when creating the animation preview
         for (const child of Array.from(bloomPage.children) as HTMLElement[]) {
             if (child.classList.contains(this.hiddenStyleName)) {
-                child.style.visibility = "visible";
                 child.classList.remove(this.hiddenStyleName);
             }
         }
@@ -886,7 +888,6 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             layoutToggle.classList.contains(this.hiddenStyleName)
         ) {
             layoutToggle.classList.remove(this.hiddenStyleName);
-            layoutToggle.style.visibility = "visible";
         }
 
         // stop narration if any.
