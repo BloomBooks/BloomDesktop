@@ -27,6 +27,20 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
     z-index: 1;
 }
 
+/* nicescroll looks for position:absolute to find where to place its elements.
+ * For "Just Text" pages, the .split-pane > .split-pane-component element layers
+ * are omitted, so we need to add a rule to set position:absolute on the
+ * .split-pane-component-inner element.
+ * This prevents the strange behavior reported in BL-15093.
+ */
+.marginBox > .split-pane-component-inner {
+    position: absolute;
+    top: auto;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
 .split-pane.fixed-top > .split-pane-component:first-child,
 .split-pane.fixed-bottom > .split-pane-component:first-child,
 .split-pane.horizontal-percent > .split-pane-component:first-child {
