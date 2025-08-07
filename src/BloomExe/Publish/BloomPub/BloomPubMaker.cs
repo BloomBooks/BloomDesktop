@@ -279,7 +279,7 @@ namespace Bloom.Publish.BloomPub
             foreach (
                 var div in xmlDom
                     .SafeSelectNodes(
-                        "//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-background-image-in-style-attr')][@data-book='coverImage']"
+                        "//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-background-image-in-style-attr')]"
                     )
                     .Cast<SafeXmlElement>()
             )

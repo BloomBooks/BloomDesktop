@@ -2183,7 +2183,6 @@ namespace Bloom.Publish.Epub
                 else
                 {
                     var isCoverImage =
-                        img.GetAttribute("data-book") == "coverImage" &&
                         img.SafeSelectNodes("ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]")
                             .Cast<SafeXmlElement>()
                             .Count() != 0;
