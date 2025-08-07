@@ -468,7 +468,7 @@ namespace Bloom.WebLibraryIntegration
                     MoveOrCopyDirectory(bookFolderPathTemp, bookFolder);
                     var collectionFilePath = Path.Combine(
                         collectionPath,
-                        collectionName + ".bloomCollection"
+                        CollectionSettings.GetFileName(collectionName)
                     );
                     RobustFile.Move(
                         Path.Combine(

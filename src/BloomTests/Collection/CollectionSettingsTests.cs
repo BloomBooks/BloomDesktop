@@ -445,7 +445,7 @@ namespace BloomTests.Collection
             var collectionName = "loadBulkPublishSettingsTest";
             var collectionSettingsPath = Path.Combine(
                 _folder.Path,
-                $"{collectionName}.bloomCollection"
+                CollectionSettings.GetFileName(collectionName)
             );
             if (RobustFile.Exists(collectionSettingsPath))
             {
@@ -488,7 +488,7 @@ namespace BloomTests.Collection
             var collectionSettingsPath = Path.Combine(
                 _folder.Path,
                 collectionName,
-                $"{collectionName}.bloomCollection"
+                CollectionSettings.GetFileName(collectionName)
             );
             if (RobustFile.Exists(collectionSettingsPath))
                 RobustFile.Delete(collectionSettingsPath);
@@ -559,7 +559,7 @@ namespace BloomTests.Collection
             var collectionSettingsPath = Path.Combine(
                 _folder.Path,
                 collectionName,
-                $"{collectionName}.bloomCollection"
+                CollectionSettings.GetFileName(collectionName)
             );
             if (RobustFile.Exists(collectionSettingsPath))
                 RobustFile.Delete(collectionSettingsPath);

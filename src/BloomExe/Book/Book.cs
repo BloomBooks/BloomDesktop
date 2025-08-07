@@ -5072,7 +5072,7 @@ namespace Bloom.Book
                         var name = Path.GetFileName(path);
                         if (
                             name == "customCollectionStyles.css"
-                            || name.EndsWith(".bloomCollection", StringComparison.Ordinal)
+                            || name.EndsWith(CollectionSettings.kFileExtension, StringComparison.Ordinal)
                         )
                         {
                             //AppendDebugInfo(debugBldr, path);

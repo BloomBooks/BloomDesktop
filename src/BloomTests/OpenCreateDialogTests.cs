@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Bloom.Collection;
 using Bloom.CollectionChoosing;
 using Bloom.CollectionCreating;
 using NUnit.Framework;
@@ -18,7 +19,7 @@ namespace BloomTests.ToPalaso
                 )
             )
             {
-                foreach (var path in Directory.GetFiles(dir, "*.bloomCollection"))
+                foreach (var path in Directory.GetFiles(dir, CollectionSettings.kWildSearchPattern))
                 {
                     mru.AddNewPath(path);
                     break;

@@ -59,11 +59,7 @@ namespace Bloom.CLI
         {
             string bookFolder = Path.GetDirectoryName(bookPath);
             string collectionFolder = Directory.GetParent(bookFolder).FullName;
-            string collectionName = Path.GetDirectoryName(collectionFolder);
-            string collectionSettingsFile = Path.Combine(
-                collectionFolder,
-                Path.ChangeExtension(collectionName, ".bloomCollection")
-            );
+            var collectionSettingsFile = CollectionSettings.GetSettingsFilePath(collectionFolder);
             return new CollectionSettings(collectionSettingsFile);
         }
     }

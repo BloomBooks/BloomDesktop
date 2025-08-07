@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.Collection;
 using Microsoft.Win32;
 using Mono.Unix;
 using NAudio.Wave;
@@ -537,7 +538,7 @@ namespace Bloom.Utils
             var downloadFolder = Path.Combine(userProfileFolder, "Downloads"); // why isn't this in the enumeration?
             if (folder == personalFolder || folder == userProfileFolder || folder == downloadFolder)
                 return false; // There should be no need to go further.
-            if (Directory.EnumerateFiles(folder, "*.bloomCollection").Any())
+            if (CollectionSettings.TryGetSettingsFilePath(folder, out var _))
             {
                 collectionFolder = folder;
                 return true;

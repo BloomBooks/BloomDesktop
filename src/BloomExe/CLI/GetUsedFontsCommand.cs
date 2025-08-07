@@ -58,7 +58,7 @@ namespace Bloom.CLI
                 // Some of this might be useful if we end up needing to instantiate the book to figure out what
                 // is REALLY needed (as opposed to just mentioned in a style sheet).
                 //var collectionFolder = Path.GetDirectoryName(options.BookPath);
-                //var projectSettingsPath = Directory.GetFiles(collectionFolder, "*.bloomCollection").FirstOrDefault();
+                //CollectionSettings.TryGetSettingsFilePath(collectionFolder, out var projectSettingsPath);
                 //var collectionSettings = new CollectionSettings(projectSettingsPath);
 
                 //XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[] {BloomFileLocator.GetInstalledXMatterDirectory()});
