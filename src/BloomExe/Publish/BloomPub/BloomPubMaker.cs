@@ -279,29 +279,14 @@ namespace Bloom.Publish.BloomPub
             foreach (
                 var div in xmlDom
                     .SafeSelectNodes(
-                        "//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-imageContainer')]"
+                        "//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-background-image-in-style-attr')][@data-book='coverImage']"
                     )
                     .Cast<SafeXmlElement>()
             )
             {
                 var style = div.GetAttribute("style");
-                // current books should never have either of these classes on an image Container.
-                // They are applied on publication when converting an img to the otherwise-obsoleted background-image(url...)
-                // way of showing images. We might, however, see one of them if someone is trying to re-create a book from
-                // the contents of a bloompub, so we'll do our best to handle it.
-                // (I'm deliberately not using kBloomBackgroundImage here because we're looking for a historic usage, not
-                // something that should change if we redefine the constant.)
-                if (
-                    !String.IsNullOrEmpty(style)
-                    && (
-                        style.Contains("bloom-backgroundImage")
-                        || style.Contains("bloom-background-image-in-style-attr")
-                    )
-                )
+                if (!String.IsNullOrEmpty(style) && style.Contains("background-image:url"))
                 {
-                    System.Diagnostics.Debug.Fail(
-                        "Cover image should not have a background image style"
-                    );
                     // extract filename from the background-image style
                     transparentImageFiles.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
                 }

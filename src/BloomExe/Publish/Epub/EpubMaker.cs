@@ -2183,9 +2183,8 @@ namespace Bloom.Publish.Epub
                 else
                 {
                     var isCoverImage =
-                        img.SafeSelectNodes(
-                                "parent::div[contains(@class, 'bloom-imageContainer')]/ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]"
-                            )
+                        img.GetAttribute("data-book") == "coverImage" &&
+                        img.SafeSelectNodes("ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]")
                             .Cast<SafeXmlElement>()
                             .Count() != 0;
                     var dstPath = CopyFileToEpub(
