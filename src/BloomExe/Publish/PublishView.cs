@@ -12,7 +12,7 @@ using Bloom.Api;
 
 namespace Bloom.Publish
 {
-    public partial class PublishView : UserControl, IBloomTabArea
+    public class PublishView : UserControl, IBloomTabArea
     {
         public readonly PublishModel _model;
         private BookUpload _bookTransferrer;

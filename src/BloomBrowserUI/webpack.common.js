@@ -87,7 +87,8 @@ module.exports = merge(core, {
         languageChooserBundle: "./collection/LanguageChooserDialog.tsx",
         newCollectionLanguageChooserBundle:
             "./collection/NewCollectionLanguageChooser.tsx",
-        registrationDialogBundle: "./react_components/registrationDialog.tsx"
+        registrationDialogBundle: "./react_components/registrationDialog.tsx",
+        editTopBarControlsBundle: "./bookEdit/topbar/editTopBarControls.tsx"
 
         // This slowed down webpack a ton, because the way it works is that it 1st finds it all,
         // then it excludes node_modules
