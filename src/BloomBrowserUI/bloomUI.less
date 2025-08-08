@@ -197,3 +197,11 @@ textarea,
         margin-left: 0;
     }
 }
+
+body.bloom-hidden-for-animation > *:not(div.bloom-animationPreview) {
+    visibility: hidden;
+}
+
+body.bloom-hidden-for-animation {
+    overflow: hidden; //hide the scrollbar during an animation preview.
+}
