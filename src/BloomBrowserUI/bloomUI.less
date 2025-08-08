@@ -197,3 +197,12 @@ textarea,
         margin-left: 0;
     }
 }
+
+body.bloom-hidden-for-animation {
+    visibility: hidden !important; //this needs to be !important because some elements of the page have in-line styles setting visibility:visible
+    overflow: hidden; //don't show scrollbar during animation preview
+}
+
+div.bloom-animationPreview {
+    visibility: visible;
+}
