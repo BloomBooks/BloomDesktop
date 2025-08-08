@@ -80,7 +80,8 @@ namespace Bloom.Edit
             EditingViewApi editingViewApi,
             PageListApi pageListApi,
             BookRenamedEvent bookRenamedEvent,
-            CopyrightAndLicenseApi copyrightAndLicenseApi
+            CopyrightAndLicenseApi copyrightAndLicenseApi,
+            LocalizationChangedEvent localizationChangedEvent
         )
         {
             _model = model;
@@ -94,6 +95,8 @@ namespace Bloom.Edit
             _webSocketServer = model.EditModelSocketServer;
             _pageListApi = pageListApi;
             InitializeComponent();
+
+            _editControlsReactControl.SetLocalizationChangedEvent(localizationChangedEvent);
 
             // This used to be part of InitializeComponent, but we want to make which browser to use
             // configurable. It can possibly move back to the Designer code once we settle on WebView2.
@@ -1557,21 +1560,7 @@ namespace Bloom.Edit
             {
                 contentLanguagesEnabled,
                 contentLanguagesNumber = _model.NumberOfDisplayedLanguages,
-                contentLanguagesTooltip = contentLanguagesEnabled
-                    ? LocalizationManager.GetString(
-                        "EditTab.ContentLanguagesDropdown.ToolTip",
-                        "Choose language to make this a bilingual or trilingual book"
-                    )
-                    : LocalizationManager.GetString(
-                        "EditTab.ContentLanguagesDropdown.DisabledTooltip",
-                        "This is disabled because it won't change anything on this page.",
-                        "Shown in edit tab language chooser when it is disabled"
-                    ),
                 layoutChoicesText = _model.GetCurrentLayout().DisplayName,
-                layoutChoicesTooltip = LocalizationManager.GetString(
-                    "EditTab.PageSizeAndOrientation.Tooltip",
-                    "Choose a page size and orientation"
-                )
             };
             _webSocketServer.SendBundle("editTopBarControls", "updateDropdowns", eventBundle);
             return eventBundle.message;
@@ -1725,74 +1714,14 @@ namespace Bloom.Edit
 
             // update javascript with the new information
             dynamic eventBundle = new DynamicJson();
-            eventBundle.message = new
+            eventBundle.enabled = new
             {
-                enabled = new
-                {
-                    copy = _copyButton.Enabled,
-                    cut = _cutButton.Enabled,
-                    paste = _pasteButton.Enabled,
-                    undo = _undoButton.Enabled
-                },
-                // javascript's l10n had some trouble with tooltips, so give it the localized version directly
-                localizedTip = new
-                {
-                    copy = _copyButton.Enabled
-                        ? LocalizationManager.GetString(
-                            "EditTab.CopyButton.ToolTip",
-                            "Copy (Ctrl+C)"
-                        )
-                        : LocalizationManager.GetString(
-                            "EditTab.CopyButton.ToolTipWhenDisabled",
-                            "You need to select some text before you can copy it"
-                        ),
-                    cut = _cutButton.Enabled
-                        ? LocalizationManager.GetString("EditTab.CutButton.ToolTip", "Cut (Ctrl+X)")
-                        : "",
-                    paste = _pasteButton.Enabled
-                        ? LocalizationManager.GetString(
-                            "EditTab.PasteButton.ToolTip",
-                            "Paste (Ctrl+V)"
-                        )
-                        : LocalizationManager.GetString(
-                            "EditTab.PasteButton.ToolTipWhenDisabled",
-                            "There is nothing on the Clipboard that you can paste here."
-                        ),
-                    undo = _undoButton.Enabled
-                        ? LocalizationManager.GetString(
-                            "EditTab.UndoButton.ToolTip",
-                            "Undo (Ctrl+Z)"
-                        )
-                        : LocalizationManager.GetString(
-                            "EditTab.UndoButton.ToolTipWhenDisabled",
-                            "There is nothing to undo"
-                        )
-                }
+                copy = _copyButton.Enabled,
+                cut = _cutButton.Enabled,
+                paste = _pasteButton.Enabled,
+                undo = _undoButton.Enabled
             };
             _webSocketServer.SendBundle("editTopBarControls", "updateEditButtons", eventBundle);
-        }
-
-        public void UpdateButtonLocalizations()
-        {
-            // This seems to be the only way to ensure that BetterToolTip updates itself
-            // with new localization strings.
-            CycleEditButtons();
-        }
-
-        private void CycleEditButtons()
-        {
-            _browser1.UpdateEditButtonsAsync();
-            CycleOneButton(_cutButton, _cutCommand);
-            CycleOneButton(_copyButton, _copyCommand);
-            CycleOneButton(_pasteButton, _pasteCommand);
-            CycleOneButton(_undoButton, _undoCommand);
-        }
-
-        private void CycleOneButton(Button button, Command command)
-        {
-            var isEnabled = command.Enabled;
-            button.Enabled = !isEnabled;
-            UpdateButtonEnabled(button, command);
         }
 
         // This can probably be cleaned up and have the command class removed

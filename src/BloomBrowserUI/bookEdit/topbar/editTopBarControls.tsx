@@ -13,25 +13,12 @@ import {
     lightTheme
 } from "../../bloomMaterialUITheme";
 import { ArrowDropDown } from "@mui/icons-material";
+import { useL10n2 } from "../../react_components/l10nHooks";
 
-interface IL10nSet {
-    key: string;
-    english: string;
-    comment: string;
-    localizedTip: string;
-}
-interface IButtonTips {
-    copy: string;
-    cut: string;
-    paste: string;
-    undo: string;
-}
 interface IDropdownData {
     contentLanguagesEnabled: boolean;
     contentLanguagesNumber: number;
-    contentLanguagesTooltip: string;
     layoutChoicesText: string;
-    layoutChoicesTooltip: string;
 }
 
 export const EditTopBarControls: React.FunctionComponent = () => {
@@ -41,117 +28,32 @@ export const EditTopBarControls: React.FunctionComponent = () => {
         paste: true,
         undo: true
     });
-    const blankl10nSet = {
-        key: "",
-        english: "",
-        comment: "",
-        localizedTip: ""
-    };
-    const [buttonsl10nSet, setButtonsl10nSet] = useState({
-        copy: blankl10nSet,
-        cut: blankl10nSet,
-        paste: blankl10nSet,
-        undo: blankl10nSet
-    });
     useSubscribeToWebSocketForObject<{
-        message: {
-            enabled: {
-                copy: boolean;
-                cut: boolean;
-                paste: boolean;
-                undo: boolean;
-            };
-            localizedTip: IButtonTips;
+        enabled: {
+            copy: boolean;
+            cut: boolean;
+            paste: boolean;
+            undo: boolean;
         };
     }>("editTopBarControls", "updateEditButtons", results => {
-        setButtonsEnabled(results.message.enabled);
-        resetButtonsl10n(results.message.localizedTip);
+        setButtonsEnabled(results.enabled);
     });
-
-    function resetButtonsl10n(localizedTip: IButtonTips) {
-        setButtonsl10nSet({
-            copy: blankl10nSet,
-            cut: blankl10nSet,
-            paste: blankl10nSet,
-            undo: blankl10nSet
-        });
-        setButtonsl10nSet({
-            copy: {
-                key: "EditTab.CopyButton",
-                english: "Copy",
-                comment: "Button to copy what is selected",
-                localizedTip: localizedTip.copy
-            },
-            cut: {
-                key: "EditTab.CutButton",
-                english: "Cut",
-                comment: "",
-                localizedTip: localizedTip.cut
-            },
-            paste: {
-                key: "EditTab.PasteButton",
-                english: "Paste",
-                comment: "Button to paste what is on the Clipboard.",
-                localizedTip: localizedTip.paste
-            },
-            undo: {
-                key: "EditTab.UndoButton",
-                english: "Undo",
-                comment: "Button to undo last action",
-                localizedTip: localizedTip.undo
-            }
-        });
-    }
 
     // Start Dropdowns
     const [contentLanguagesEnabled, setContentLanguagesEnabled] = useState(
         false
     );
-    const [contentLanguagesl10nSet, setContentLanguagesl10nSet] = useState(
-        blankl10nSet
-    );
+    const [contentLanguagesNumber, setContentLanguagesNumber] = useState(1);
 
     const [
         layoutChoicesLocalizedText,
         setLayoutChoicesLocalizedText
     ] = useState("");
-    const [layoutChoicesTooltip, setLayoutChoicesTooltip] = useState("");
 
     function setDropdowns(data: IDropdownData): void {
         setContentLanguagesEnabled(data.contentLanguagesEnabled);
-        // l10n has to be reset so that if language is changed, it will reevaluate the translation
-        setContentLanguagesl10nSet(blankl10nSet);
-        switch (data.contentLanguagesNumber) {
-            case 1:
-                setContentLanguagesl10nSet({
-                    key: "EditTab.Monolingual",
-                    english: "One Language",
-                    comment:
-                        "Shown in edit tab multilingualism chooser, for monolingual mode, one language per page",
-                    localizedTip: data.contentLanguagesTooltip
-                });
-                break;
-            case 2:
-                setContentLanguagesl10nSet({
-                    key: "EditTab.Bilingual",
-                    english: "Two Languages",
-                    comment:
-                        "Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page",
-                    localizedTip: data.contentLanguagesTooltip
-                });
-                break;
-            case 3:
-                setContentLanguagesl10nSet({
-                    key: "EditTab.Trilingual",
-                    english: "Three Languages",
-                    comment:
-                        "Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page",
-                    localizedTip: data.contentLanguagesTooltip
-                });
-                break;
-        }
+        setContentLanguagesNumber(data.contentLanguagesNumber);
         setLayoutChoicesLocalizedText(data.layoutChoicesText);
-        setLayoutChoicesTooltip(data.layoutChoicesTooltip);
     }
 
     // for the first load after opening a collection - websocket will make updates after that
@@ -179,10 +81,7 @@ export const EditTopBarControls: React.FunctionComponent = () => {
                     padding-inline: 3px;
                 `}
             >
-                <PasteButton
-                    enabled={buttonsEnabled.paste ?? true}
-                    l10nSet={buttonsl10nSet.paste}
-                />
+                <PasteButton enabled={buttonsEnabled.paste ?? true} />
                 <div
                     css={css`
                         display: flex;
@@ -191,24 +90,15 @@ export const EditTopBarControls: React.FunctionComponent = () => {
                         width: 72px;
                     `}
                 >
-                    <CutButton
-                        enabled={buttonsEnabled.cut ?? true}
-                        l10nSet={buttonsl10nSet.cut}
-                    />
-                    <CopyButton
-                        enabled={buttonsEnabled.copy ?? true}
-                        l10nSet={buttonsl10nSet.copy}
-                    />
+                    <CutButton enabled={buttonsEnabled.cut ?? true} />
+                    <CopyButton enabled={buttonsEnabled.copy ?? true} />
                     <div
                         css={css`
                             height: 6px;
                         `}
                     />
                 </div>
-                <UndoButton
-                    enabled={buttonsEnabled.undo ?? true}
-                    l10nSet={buttonsl10nSet.undo}
-                />
+                <UndoButton enabled={buttonsEnabled.undo ?? true} />
                 <div
                     css={css`
                         width: 18px;
@@ -223,7 +113,7 @@ export const EditTopBarControls: React.FunctionComponent = () => {
                 >
                     <ContentLanguagesDropdown
                         enabled={contentLanguagesEnabled}
-                        l10nSet={contentLanguagesl10nSet}
+                        number={contentLanguagesNumber}
                     />
                     <div
                         css={css`
@@ -232,7 +122,6 @@ export const EditTopBarControls: React.FunctionComponent = () => {
                     ></div>
                     <LayoutChoicesDropdown
                         localizedText={layoutChoicesLocalizedText}
-                        localizedTooltip={layoutChoicesTooltip}
                     />
                 </div>
             </div>
@@ -252,15 +141,22 @@ const smallButtonCSSAttributes = `height: 18px;
 // We have to pass l10n in here instead of having it here directly, otherwise it won't update when the language is changed
 export const CopyButton: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet: IL10nSet;
 }> = props => {
     const enabledIcon = imagesPrefix + "images/copy16x16.png";
     const disabledIcon = imagesPrefix + "images/copyDisabled16x16.png";
-
+    const localizedTooltip = useL10n2({
+        key: "EditTab.CopyButton.ToolTip"
+    });
+    const localizedDisabledTooltip = useL10n2({
+        key: "EditTab.CopyButton.ToolTipWhenDisabled"
+    });
     return (
         <EditingControlButton
             enabled={props.enabled}
-            l10nSet={props.l10nSet}
+            l10nKey="EditTab.CopyButton"
+            localizedTooltip={
+                props.enabled ? localizedTooltip : localizedDisabledTooltip
+            }
             onClickAction="copy"
             enabledIcon={enabledIcon}
             disabledIcon={disabledIcon}
@@ -272,15 +168,17 @@ export const CopyButton: React.FunctionComponent<{
 
 export const CutButton: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet: IL10nSet;
 }> = props => {
     const enabledIcon = imagesPrefix + "images/cut16x16.png";
     const disabledIcon = imagesPrefix + "images/cutDisabled16x16.png";
-
+    const localizedTooltip = useL10n2({
+        key: "EditTab.CutButton.ToolTip"
+    });
     return (
         <EditingControlButton
             enabled={props.enabled}
-            l10nSet={props.l10nSet}
+            l10nKey="EditTab.CutButton"
+            localizedTooltip={props.enabled ? localizedTooltip : undefined}
             onClickAction="cut"
             enabledIcon={enabledIcon}
             disabledIcon={disabledIcon}
@@ -298,17 +196,25 @@ const largeButtonCSSAttributes = `width: 54px;
 
 export const PasteButton: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet: IL10nSet;
 }> = props => {
     const enabledIcon = imagesPrefix + "images/paste32x32.png";
     const disabledIcon = imagesPrefix + "images/pasteDisabled32x32.png";
 
+    const localizedTooltip = useL10n2({
+        key: "EditTab.PasteButton.ToolTip"
+    });
+    const localizedDisabledTooltip = useL10n2({
+        key: "EditTab.PasteButton.ToolTipWhenDisabled"
+    });
     const cssAttributes = `${largeButtonCSSAttributes}
                 padding-top: 6px;`;
     return (
         <EditingControlButton
             enabled={props.enabled}
-            l10nSet={props.l10nSet}
+            l10nKey="EditTab.PasteButton"
+            localizedTooltip={
+                props.enabled ? localizedTooltip : localizedDisabledTooltip
+            }
             onClickAction="paste"
             enabledIcon={enabledIcon}
             disabledIcon={disabledIcon}
@@ -320,15 +226,23 @@ export const PasteButton: React.FunctionComponent<{
 
 export const UndoButton: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet: IL10nSet;
 }> = props => {
     const enabledIcon = imagesPrefix + "images/undo32x32.png";
     const disabledIcon = imagesPrefix + "images/undoDisabled32x32.png";
 
+    const localizedTooltip = useL10n2({
+        key: "EditTab.UndoButton.ToolTip"
+    });
+    const localizedDisabledTooltip = useL10n2({
+        key: "EditTab.UndoButton.ToolTipWhenDisabled"
+    });
     return (
         <EditingControlButton
             enabled={props.enabled}
-            l10nSet={props.l10nSet}
+            l10nKey="EditTab.UndoButton"
+            localizedTooltip={
+                props.enabled ? localizedTooltip : localizedDisabledTooltip
+            }
             onClickAction="undo"
             enabledIcon={enabledIcon}
             disabledIcon={disabledIcon}
@@ -340,7 +254,8 @@ export const UndoButton: React.FunctionComponent<{
 
 export const EditingControlButton: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet: IL10nSet;
+    l10nKey: string;
+    localizedTooltip?: string;
     onClickAction:
         | "copy"
         | "cut"
@@ -355,7 +270,7 @@ export const EditingControlButton: React.FunctionComponent<{
 }> = props => {
     return (
         <BloomTooltip
-            tip={props.l10nSet.localizedTip}
+            tip={props.localizedTooltip}
             placement="right"
             slotProps={{
                 tooltip: { sx: { maxWidth: "167px", "font-size": "11px" } }
@@ -363,8 +278,7 @@ export const EditingControlButton: React.FunctionComponent<{
         >
             <BloomButton
                 enabled={props.enabled}
-                l10nKey={props.l10nSet.key}
-                l10nComment={props.l10nSet.comment}
+                l10nKey={props.l10nKey}
                 onClick={() => {
                     postJson("editView/topBarControls", {
                         command: props.onClickAction
@@ -392,36 +306,57 @@ export const EditingControlButton: React.FunctionComponent<{
 
                     ${props.cssAttributes}
                 `}
-            >
-                {props.l10nSet.english}
-            </BloomButton>
+            ></BloomButton>
         </BloomTooltip>
     );
 };
 
 export const ContentLanguagesDropdown: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet: IL10nSet;
+    number: number;
 }> = props => {
+    let l10nKey;
+    switch (props.number) {
+        case 1:
+            l10nKey = "EditTab.Monolingual";
+            break;
+        case 2:
+            l10nKey = "EditTab.Bilingual";
+            break;
+        case 3:
+            l10nKey = "EditTab.Trilingual";
+            break;
+    }
+
+    const localizedTooltip = useL10n2({
+        key: "EditTab.ContentLanguagesDropdown.ToolTip"
+    });
+    const localizedDisabledTooltip = useL10n2({
+        key: "EditTab.ContentLanguagesDropdown.DisabledTooltip"
+    });
     return (
         <EditingControlDropdown
             enabled={props.enabled}
-            l10nSet={props.l10nSet}
+            l10nKey={l10nKey}
+            localizedTooltip={
+                props.enabled ? localizedTooltip : localizedDisabledTooltip
+            }
             onClickAction="contentLanguages"
         />
     );
 };
 
-// typescript l10n was having trouble localizing layouts, so C# is doing this
 export const LayoutChoicesDropdown: React.FunctionComponent<{
     localizedText: string;
-    localizedTooltip: string;
 }> = props => {
+    const localizedTooltip = useL10n2({
+        key: "EditTab.PageSizeAndOrientation.Tooltip"
+    });
     return (
         <EditingControlDropdown
             enabled={true}
-            l10nEnglish={props.localizedText}
-            localizedTooltip={props.localizedTooltip}
+            localizedText={props.localizedText}
+            localizedTooltip={localizedTooltip}
             onClickAction="layoutChoices"
         />
     );
@@ -429,14 +364,15 @@ export const LayoutChoicesDropdown: React.FunctionComponent<{
 
 export const EditingControlDropdown: React.FunctionComponent<{
     enabled: boolean;
-    l10nSet?: IL10nSet;
-    l10nEnglish?: string;
+    // Provide either l10nKey or localizedText
+    l10nKey?: string;
+    localizedText?: string;
     localizedTooltip?: string;
     onClickAction: "contentLanguages" | "layoutChoices";
 }> = props => {
     return (
         <BloomTooltip
-            tip={props.l10nSet?.localizedTip || props.localizedTooltip}
+            tip={props.localizedTooltip}
             showDisabled={!props.enabled}
             tipWhenDisabled={props.localizedTooltip}
             slotProps={{
@@ -445,8 +381,7 @@ export const EditingControlDropdown: React.FunctionComponent<{
         >
             <BloomButton
                 enabled={props.enabled}
-                l10nKey={props.l10nSet?.key || ""}
-                l10nComment={props.l10nSet?.comment || ""}
+                l10nKey={props.l10nKey || ""}
                 onClick={() => {
                     postJson("editView/topBarDropdownClicked", {
                         command: props.onClickAction
@@ -467,7 +402,7 @@ export const EditingControlDropdown: React.FunctionComponent<{
                     width: fit-content;
                 `}
             >
-                {props.l10nSet?.english || props.l10nEnglish}
+                {props.localizedText}
             </BloomButton>
         </BloomTooltip>
     );
