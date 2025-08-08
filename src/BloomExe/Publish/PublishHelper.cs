@@ -854,7 +854,14 @@ namespace Bloom.Publish
                 return 0;
             var number = part.Trim().Substring(label.Length + 1);
             number = number.Substring(0, number.Length - 2); // remove "px"
-            if (double.TryParse(number, out double result))
+            if (
+                double.TryParse(
+                    number,
+                    System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out double result
+                )
+            )
                 return result;
             return 0;
         }
