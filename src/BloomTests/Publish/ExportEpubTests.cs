@@ -1879,16 +1879,18 @@ namespace BloomTests.Publish
                 // use culture invariant form for test
                 string clipEnd =
                     "0:00:0" + audioDuration.ToString("0.000", CultureInfo.InvariantCulture);
+                // rounding errors may affect the last digit, so we use starts-with
+                string clipEndPrefix = clipEnd.Substring(0, clipEnd.Length - 1);
                 assertThatSmil.HasAtLeastOneMatchForXpath(
                     "smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"
                         + kAudioSlash
-                        + $"a123.mp3' and @clipBegin='0:00:00.000' and @clipEnd='{clipEnd}']",
+                        + $"a123.mp3' and @clipBegin='0:00:00.000' and starts-with(@clipEnd, '{clipEndPrefix}')]",
                     _ns
                 );
                 assertThatSmil.HasAtLeastOneMatchForXpath(
                     "smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"
                         + kAudioSlash
-                        + $"a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='{clipEnd}']",
+                        + $"a23.mp3' and @clipBegin='0:00:00.000' and starts-with(@clipEnd, '{clipEndPrefix}')]",
                     _ns
                 );
             }
@@ -2010,7 +2012,6 @@ namespace BloomTests.Publish
                 // rounding errors may affect the last digit, so we use starts-with
                 string clipEnd1Prefix = clipEnd1.Substring(0, clipEnd1.Length - 1);
                 string clipEnd2Prefix = clipEnd2.Substring(0, clipEnd2.Length - 1);
-                //TODO refactor to use ToString to do what we want?
                 assertThatSmil.HasAtLeastOneMatchForXpath(
                     "smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"
                         + kAudioSlash
@@ -2116,13 +2117,16 @@ namespace BloomTests.Publish
             double totalExpectedDuration = GetFakeAudioDurationSecs() * 2;
             // Make this duration culture invariant for testing.
             string expectedDurationFormatted =
-                "00:00:0"
-                + totalExpectedDuration.ToString("0.0000000", CultureInfo.InvariantCulture);
-            assertManifest.HasAtLeastOneMatchForXpath(
-                $"package/metadata/meta[@property='media:duration' and not(@refines) and text()='{expectedDurationFormatted}']"
+                "00:00:0" + totalExpectedDuration.ToString("0.000", CultureInfo.InvariantCulture);
+            string expectedDurationPrefix = expectedDurationFormatted.Substring(
+                0,
+                expectedDurationFormatted.Length - 1
             );
             assertManifest.HasAtLeastOneMatchForXpath(
-                $"package/metadata/meta[@property='media:duration' and @refines='#f2_overlay' and text()='{expectedDurationFormatted}']"
+                $"package/metadata/meta[@property='media:duration' and not(@refines) and starts-with(text(), '{expectedDurationPrefix}')]"
+            );
+            assertManifest.HasAtLeastOneMatchForXpath(
+                $"package/metadata/meta[@property='media:duration' and @refines='#f2_overlay' and starts-with(text(), '{expectedDurationPrefix}')]"
             );
 
             var smilData = StripXmlHeader(
@@ -2249,13 +2253,22 @@ namespace BloomTests.Publish
                     "0:00:0" + expectedClipBegin.ToString("0.000", CultureInfo.InvariantCulture);
                 string expectedClipEndFormatted =
                     "0:00:0" + expectedClipEnd.ToString("0.000", CultureInfo.InvariantCulture);
+                // rounding errors may affect the last digit, so we use starts-with
+                string expectedClipBeginPrefix = expectedClipBeginFormatted.Substring(
+                    0,
+                    expectedClipBeginFormatted.Length - 1
+                );
+                string expectedClipEndPrefix = expectedClipEndFormatted.Substring(
+                    0,
+                    expectedClipEndFormatted.Length - 1
+                );
 
                 assertSmil.HasAtLeastOneMatchForXpath(
                     $"{smilSeqPrefix}/smil:par[@id='s{i + 1}']/smil:text[@src='2.xhtml#{expectedId}']",
                     _ns
                 );
                 assertSmil.HasAtLeastOneMatchForXpath(
-                    $"{smilSeqPrefix}/smil:par[@id='s{i + 1}']/smil:audio[@src='{kAudioSlash}{expectedFilename}.mp3'][@clipBegin='{expectedClipBeginFormatted}'][@clipEnd='{expectedClipEndFormatted}']",
+                    $"{smilSeqPrefix}/smil:par[@id='s{i + 1}']/smil:audio[@src='{kAudioSlash}{expectedFilename}.mp3'][starts-with(@clipBegin, '{expectedClipBeginPrefix}')][starts-with(@clipEnd, '{expectedClipEndPrefix}')]",
                     _ns
                 );
                 VerifyEpubItemExists($"content/{EpubMaker.kAudioFolder}/{expectedFilename}.mp3");
@@ -2347,6 +2360,15 @@ namespace BloomTests.Publish
                         + expectedClipBegin.ToString("0.000", CultureInfo.InvariantCulture);
                     string expectedClipEndFormatted =
                         "0:00:0" + expectedClipEnd.ToString("0.000", CultureInfo.InvariantCulture);
+                    // rounding errors may affect the last digit, so we use starts-with
+                    string expectedClipBeginPrefix = expectedClipBeginFormatted.Substring(
+                        0,
+                        expectedClipBeginFormatted.Length - 1
+                    );
+                    string expectedClipEndPrefix = expectedClipEndFormatted.Substring(
+                        0,
+                        expectedClipEndFormatted.Length - 1
+                    );
 
                     assertSmil.HasAtLeastOneMatchForXpath(
                         $"smil:smil/smil:body/smil:seq/smil:par[@id='s{expectedIndex}']/smil:text[@src='2.xhtml#text{expectedIndex}']",

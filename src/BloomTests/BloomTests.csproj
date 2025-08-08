@@ -74,6 +74,11 @@
 		<LargeAddressAware>true</LargeAddressAware>
 		<PlatformTarget>x86</PlatformTarget>
 	</PropertyGroup>
+	<PropertyGroup>
+		<!-- We should delete this when we get rid of WebThumbNailList.Designer.cs. I believe we are only using binary formatter serialization in working with the ImageStream there. -->
+		<!-- The WebThumbNailList gets initialized by autofac during CreateArtifactsCommandTests -->
+		<EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+	</PropertyGroup>
 	<Target Name="AfterBuildMigrated">
 		<Message Text="AfterBuild target completed." Importance="high" />
 	</Target>

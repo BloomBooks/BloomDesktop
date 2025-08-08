@@ -6,6 +6,7 @@ using System.Xml;
 using Bloom.Collection;
 using Bloom.SafeXml;
 using L10NSharp;
+using OfficeOpenXml.Export.ToDataTable;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;

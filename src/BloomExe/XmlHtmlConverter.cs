@@ -6,6 +6,7 @@ using Bloom.SafeXml;
 using Bloom.Utils;
 using SIL.IO;
 using HtmlAgilityPack;
+using System.Diagnostics;
 
 namespace Bloom
 {
@@ -64,33 +65,22 @@ namespace Bloom
             if (!String.IsNullOrEmpty(content) && content.IndexOf('\uFEFF', 1) > 0)
                 content = content.Replace("\uFEFF", "");
 
-            // Remove this now, as it'll be harder once Agility Pack wraps everything in the XMl declaration.
-            var htmlDtd = "<!DOCTYPE html>";
-
-            if (content.StartsWith(htmlDtd))
-            {
-                content = content.Substring(htmlDtd.Length);
-            }
-
-            // This happens if we put <!DOCTYPE html> into xml for some reason. We shouldn't.
-            if (content.StartsWith("<!DOCTYPE html[]>"))
-            {
-                content = content.Substring("<!DOCTYPE html[]>".Length);
-            }
-
-            // remove any of the starting <!-- ... --> comments. Otherwise agility pack treats them as sibling nodes
-            // and wraps both them and the real <html> in a parent span :(
+            // Remove comments (<!-- foobar -->), doctype declaration (<!DOCTYPE html>), and whitespace at the top of the file.
+            // Otherwise html agility pack will treat these as sibling nodes of the html.
+            // We end up with the <!DOCTYPE html[]> if we put <!DOCTYPE html> into xml for some reason. We shouldn't. Debug.assert but don't fail if we do.
+            var dtdAndCommentRegex = @"^(?:<!--.*?-->|<!DOCTYPE\s+html>|<!DOCTYPE html\[\]>|\s+)";
             while (
                 Regex.IsMatch(
                     content,
-                    @"^\s*<!--.*?-->\s*",
+                    dtdAndCommentRegex,
                     RegexOptions.Singleline | RegexOptions.IgnoreCase
                 )
             )
             {
+                Debug.Assert(!Regex.IsMatch(content, "<!DOCTYPE html\\[\\]>")); // See comment above
                 content = Regex.Replace(
                     content,
-                    @"^\s*<!--.*?-->\s*",
+                    dtdAndCommentRegex,
                     "",
                     RegexOptions.Singleline | RegexOptions.IgnoreCase
                 );
@@ -115,8 +105,7 @@ namespace Bloom
 
             // Agility pack sets a flag to wrap the contents of style (and other) tags with <![CDATA[ ... ]]>. We already do this ourselves when necessary, so remove the flag to prevent double-wrapping.
             // https://github.com/zzzprojects/html-agility-pack/blob/8490ad1321e378582aec156668888511d3010b33/src/HtmlAgilityPack.Shared/HtmlNode.cs#L99
-            // We may need to do this for other element types also? script, noxhtml, and title
-            foreach (var cDataFlag in new[] { "style", "script", "noxhtml", "title" })
+            foreach (var cDataFlag in new[] { "script", "style", "noxhtml", "textarea", "title" })
             {
                 HtmlNode.ElementsFlags.Remove(cDataFlag);
             }
@@ -126,7 +115,7 @@ namespace Bloom
             string newContents = doc.DocumentNode.OuterHtml;
             var firstChild =
                 doc.DocumentNode.ChildNodes.Count > 0 ? doc.DocumentNode.ChildNodes[0] : null;
-            if (firstChild.Name != "html")
+            if (firstChild?.Name != "html")
             {
                 throw new ApplicationException(
                     "Error converting HTML document to XML dom. The HTML document must have a top-level <html> element."

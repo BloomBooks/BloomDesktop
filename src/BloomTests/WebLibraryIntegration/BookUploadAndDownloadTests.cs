@@ -106,7 +106,10 @@ namespace BloomTests.WebLibraryIntegration
         )
         {
             var f = new TemporaryFolder(_workFolder, bookName);
-            File.WriteAllText(Path.Combine(f.FolderPath, htmName), data);
+            File.WriteAllText(
+                Path.Combine(f.FolderPath, htmName),
+                XmlHtmlConverter.CreateDocumentWithBodyContent(data)
+            );
             File.WriteAllText(Path.Combine(f.FolderPath, "one.css"), @"test");
             File.WriteAllText(Path.Combine(f.FolderPath, "unmodified.css"), @"test");
 
@@ -153,7 +156,7 @@ namespace BloomTests.WebLibraryIntegration
         /// which (to a very small extent) costs us real money. This will be slow. Also, under S3 eventual consistency rules,
         /// there is no guarantee that the data we just created will actually be retrievable immediately.
         /// </summary>
-        public (string bookObjectId, string newBookFolder) UploadAndDownLoadNewBook(
+        private (string bookObjectId, string newBookFolder) UploadAndDownLoadNewBook(
             string bookName,
             string id,
             string uploader,
@@ -298,7 +301,10 @@ namespace BloomTests.WebLibraryIntegration
                 Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
                 File.Delete(bookFolder.CombineForPath("one.css"));
                 File.Delete(bookFolder.CombineForPath("activities", "file-to-replace.txt"));
-                File.WriteAllText(Path.Combine(bookFolder, "one.htm"), "something new");
+                File.WriteAllText(
+                    Path.Combine(bookFolder, "one.htm"),
+                    XmlHtmlConverter.CreateDocumentWithBodyContent("something new")
+                );
                 File.WriteAllText(Path.Combine(bookFolder, "two.css"), @"test");
                 File.WriteAllText(
                     Path.Combine(bookFolder, "activities", "replacement-file.txt"),
