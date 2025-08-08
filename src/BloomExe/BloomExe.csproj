@@ -280,23 +280,14 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<None Include="Resources\simplePages.png" />
 		<None Include="Resources\deletePage16x16.png" />
 		<None Include="Resources\deletePage24x24.png" />
-		<None Include="Resources\Cut16x16.png" />
-		<None Include="Resources\Copy16x16.png" />
 		<None Include="Resources\Paste16x16.png" />
 		<None Include="Resources\Undo16x16.png" />
 		<None Include="Resources\paste24x24.png" />
-		<None Include="Resources\paste32x32.png" />
-		<None Include="Resources\undo32x32.png" />
 		<None Include="Resources\newCollection32x32.png" />
 		<None Include="Resources\BloomPack64x64.png" />
-		<None Include="Resources\copyDisable16x16.png" />
-		<None Include="Resources\pasteDisabled32x32.png" />
-		<None Include="Resources\copyDisable16x161.png" />
-		<None Include="Resources\undoDisabled32x32.png" />
 		<None Include="Resources\DeletePageDisabled24x24.png" />
 		<None Include="Resources\DeletePageDisabled32x32.png" />
 		<None Include="Resources\DeletePage32x32.png" />
-		<None Include="Resources\cutDisable16x16.png" />
 	</ItemGroup>
 	<ItemGroup>
 		<COMReference Include="IWshRuntimeLibrary">
