@@ -245,7 +245,6 @@ namespace Bloom.Edit
                 if (_view != null)
                 {
                     _view.NextReloadChangesUiLanguage();
-                    _view.UpdateButtonLocalizations();
                 }
 
                 //this is visible was added for https://jira.sil.org/browse/BL-267, where the edit tab has never been

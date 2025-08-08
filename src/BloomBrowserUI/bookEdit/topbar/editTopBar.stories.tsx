@@ -23,12 +23,6 @@ export const Copy: Story = {
     name: "CopyButton",
     render: () => {
         const [enabled, setEnabled] = useState(false);
-        const l10nSet = {
-            key: "EditTab.CopyButton",
-            english: "Copy",
-            comment: "Button to copy what is selected",
-            localizedTip: "Copy (Ctrl+C)"
-        };
 
         return (
             <div
@@ -43,7 +37,7 @@ export const Copy: Story = {
                     checked={enabled}
                     onCheckChanged={() => setEnabled(!enabled)}
                 />
-                <CopyButton enabled={enabled} l10nSet={l10nSet} />
+                <CopyButton enabled={enabled} />
             </div>
         );
     }
@@ -53,12 +47,6 @@ export const Cut: Story = {
     name: "CutButton",
     render: () => {
         const [enabled, setEnabled] = useState(false);
-        const l10nSet = {
-            key: "EditTab.CutButton",
-            english: "Cut",
-            comment: "",
-            localizedTip: "Cut (Ctrl+X)"
-        };
 
         return (
             <div
@@ -73,7 +61,7 @@ export const Cut: Story = {
                     checked={enabled}
                     onCheckChanged={() => setEnabled(!enabled)}
                 />
-                <CutButton enabled={enabled} l10nSet={l10nSet} />
+                <CutButton enabled={enabled} />
             </div>
         );
     }
@@ -83,12 +71,6 @@ export const Paste: Story = {
     name: "PasteButton",
     render: () => {
         const [enabled, setEnabled] = useState(false);
-        const l10nSet = {
-            key: "EditTab.PasteButton",
-            english: "Paste",
-            comment: "Button to paste what is on the Clipboard.",
-            localizedTip: "Paste (Ctrl+V)"
-        };
 
         return (
             <div
@@ -103,7 +85,7 @@ export const Paste: Story = {
                     checked={enabled}
                     onCheckChanged={() => setEnabled(!enabled)}
                 />
-                <PasteButton enabled={enabled} l10nSet={l10nSet} />
+                <PasteButton enabled={enabled} />
             </div>
         );
     }
@@ -113,12 +95,6 @@ export const Undo: Story = {
     name: "UndoButton",
     render: () => {
         const [enabled, setEnabled] = useState(false);
-        const l10nSet = {
-            key: "EditTab.UndoButton",
-            english: "Undo",
-            comment: "Button to undo last action",
-            localizedTip: "Undo (Ctrl+Z)"
-        };
 
         return (
             <div
@@ -133,7 +109,7 @@ export const Undo: Story = {
                     checked={enabled}
                     onCheckChanged={() => setEnabled(!enabled)}
                 />
-                <UndoButton enabled={enabled} l10nSet={l10nSet} />
+                <UndoButton enabled={enabled} />
             </div>
         );
     }
@@ -157,17 +133,7 @@ export const ChooseLanguage: Story = {
                     checked={enabled}
                     onCheckChanged={() => setEnabled(!enabled)}
                 />
-                <ContentLanguagesDropdown
-                    enabled={enabled}
-                    l10nSet={{
-                        key: "EditTab.Monolingual",
-                        english: "One Language",
-                        comment:
-                            "Shown in edit tab multilingualism chooser, for monolingual mode, one language per page",
-                        localizedTip:
-                            "Choose language to make this a bilingual or trilingual book"
-                    }}
-                />
+                <ContentLanguagesDropdown enabled={enabled} number={1} />
             </div>
         );
     }
@@ -179,10 +145,7 @@ export const ChooseLayout: Story = {
         return (
             <div>
                 <div>Always Enabled</div>
-                <LayoutChoicesDropdown
-                    localizedText="A5 Portrait"
-                    localizedTooltip="Choose a page size and orientation"
-                />
+                <LayoutChoicesDropdown localizedText="A5 Portrait" />
             </div>
         );
     }
