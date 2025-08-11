@@ -20,12 +20,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Bloom.web.controllers;
 using SIL.Windows.Forms.ImageToolbox;
-
-#if DEBUG
-using System.Media;
-#endif
 
 namespace Bloom
 {
@@ -673,21 +668,18 @@ namespace Bloom
             _pasteCommand = pasteCommand;
             _undoCommand = undoCommand;
 
-            // These implementations are all specific to our Edit tab. This is currently the only place
-            // we show the buttons that use these commands, but we will have to generalize somehow if
+            // Once these buttons are in the same browser as the page and we don't have to go through C#,
+            // we can get rid of the commands completely. Until then, if we don't set an Implementer,
+            // Enabled will always be false.
+            _cutCommand.Implementer = () => { };
+            _copyCommand.Implementer = () => { };
+            _undoCommand.Implementer = () => { };
+
+            // This implementation is specific to our Edit tab. This is currently the only place
+            // we show the paste button that uses this command, but we will have to generalize somehow if
             // that changes. I'm not sure whether the checks for existence of editTabBundle etc are needed.
             // I deliberately use RunJavaScriptAsync here without awaiting it, because nothing requires the
-            // result (we only care about the side effects on the clipboard and document)
-            _cutCommand.Implementer = () =>
-            {
-                RunJavascriptAsync("editTabBundle?.getEditablePageBundleExports()?.cutSelection()");
-            };
-            _copyCommand.Implementer = () =>
-            {
-                RunJavascriptAsync(
-                    "editTabBundle?.getEditablePageBundleExports()?.copySelection()"
-                );
-            };
+            // result (we only care about the side effects on the document)
             _pasteCommand.Implementer = () =>
             {
                 PalasoImage clipboardImage = null;
@@ -704,12 +696,6 @@ namespace Bloom
                 RunJavascriptAsync(
                     $"editTabBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
                 );
-            };
-            _undoCommand.Implementer = () =>
-            {
-                // Note: this is only used for the Undo button in the toolbar;
-                // ctrl-z is handled in JavaScript directly.
-                RunJavascriptAsync("editTabBundle.handleUndo()"); // works fine async in testing
             };
         }
 

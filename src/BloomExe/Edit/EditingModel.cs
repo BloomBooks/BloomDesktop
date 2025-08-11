@@ -37,8 +37,6 @@ namespace Bloom.Edit
     {
         private readonly BookSelection _bookSelection;
         private readonly PageSelection _pageSelection;
-        private readonly DuplicatePageCommand _duplicatePageCommand;
-        private readonly DeletePageCommand _deletePageCommand;
         private readonly CollectionSettings _collectionSettings;
         private readonly ITemplateFinder _sourceCollectionsList;
         private bool _havePageToSave;
@@ -111,8 +109,6 @@ namespace Bloom.Edit
             RelocatePageEvent relocatePageEvent,
             BookRefreshEvent bookRefreshEvent,
             PageRefreshEvent pageRefreshEvent,
-            DuplicatePageCommand duplicatePageCommand,
-            DeletePageCommand deletePageCommand,
             SelectedTabChangedEvent selectedTabChangedEvent,
             SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
             CollectionClosing collectionClosingEvent,
@@ -125,8 +121,6 @@ namespace Bloom.Edit
         {
             _bookSelection = bookSelection;
             _pageSelection = pageSelection;
-            _duplicatePageCommand = duplicatePageCommand;
-            _deletePageCommand = deletePageCommand;
             _collectionSettings = collectionSettings;
             _server = server;
             _webSocketServer = webSocketServer;
@@ -202,8 +196,6 @@ namespace Bloom.Edit
 
             selectedTabChangedEvent.Subscribe(OnTabChanged);
             selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
-            duplicatePageCommand.Implementer = OnDuplicatePage;
-            deletePageCommand.Implementer = OnDeletePage;
             pageListChangedEvent.Subscribe(needFullUpdate => _view.UpdatePageList(needFullUpdate));
             relocatePageEvent.Subscribe(OnRelocatePage);
             collectionClosingEvent.Subscribe(args =>
@@ -988,9 +980,6 @@ namespace Bloom.Edit
                     CurrentBook.ConvertPreOrigamiPages(page.GetDivNodeForThisPage());
                     if (Visible)
                         _view.StartNavigationToEditPage(page);
-
-                    _duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
-                    _deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 
                     CheckForBL8852();
 

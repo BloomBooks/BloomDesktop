@@ -80,8 +80,8 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
             apiHandler.RegisterEndpointHandler("editView/paste", HandlePaste, true);
             apiHandler.RegisterEndpointHandler(
-                "editView/topBarControls",
-                HandleTopBarControls,
+                "editView/topBarButtonClick",
+                HandleTopBarButtonClick,
                 true
             );
             apiHandler.RegisterEndpointHandler(
@@ -224,7 +224,7 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
-        private void HandleTopBarControls(ApiRequest request)
+        private void HandleTopBarButtonClick(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
             // If we don't force the focus to the main editing browser, our browser with the buttons will steal it and cut/copy, etc. won't work.
@@ -237,7 +237,8 @@ namespace Bloom.web.controllers
 
         private void HandleUpdateTopBarDropdownDisplay(ApiRequest request)
         {
-            request.ReplyWithJson(View.UpdateDropdownButtons());
+            View.UpdateDropdownButtons();
+            request.PostSucceeded();
         }
 
         private void HandleTopBarDropdownClicked(ApiRequest request)
