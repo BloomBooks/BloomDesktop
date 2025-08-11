@@ -153,7 +153,7 @@ namespace Bloom.Edit
             this._editControlsReactControl.JavascriptBundleName = "editTopBarControlsBundle";
             this._L10NSharpExtender.SetLocalizableToolTip(this._editControlsReactControl, null);
             this._L10NSharpExtender.SetLocalizationComment(this._editControlsReactControl, null);
-            this._L10NSharpExtender.SetLocalizationPriority(this._rightToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
+            this._L10NSharpExtender.SetLocalizationPriority(this._editControlsReactControl, L10NSharp.LocalizationPriority.NotLocalizable);
             this._L10NSharpExtender.SetLocalizingId(this._editControlsReactControl, "EditingView._editControlsReactControl");
             this._editControlsReactControl.Location = new System.Drawing.Point(0, 0);
             this._editControlsReactControl.Name = "_editControlsReactControl";

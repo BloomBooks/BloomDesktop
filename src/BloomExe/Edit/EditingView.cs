@@ -15,7 +15,6 @@ using Bloom.Api;
 using Bloom.web.controllers;
 using Bloom.Workspace;
 using L10NSharp;
-using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
@@ -28,12 +27,9 @@ using System.Globalization;
 using Bloom.web;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Xml;
 using Bloom.Utils;
 using Bloom.MiscUI;
 using Bloom.ErrorReporter;
-using Bloom.SafeXml;
-using Bloom.ToPalaso;
 
 namespace Bloom.Edit
 {
@@ -41,18 +37,12 @@ namespace Bloom.Edit
     {
         private readonly EditingModel _model;
         private PageListView _pageListView;
-        private BitmapButton _cutButton = new();
-        private BitmapButton _copyButton = new();
-        private BitmapButton _pasteButton = new();
-        private BitmapButton _undoButton = new();
         private ContextMenuStrip _contentLanguagesDropdown = new();
         private ContextMenuStrip _layoutChoicesDropdown = new();
         private readonly CutCommand _cutCommand;
         private readonly CopyCommand _copyCommand;
         private readonly PasteCommand _pasteCommand;
         private readonly UndoCommand _undoCommand;
-        private readonly DuplicatePageCommand _duplicatePageCommand;
-        private readonly DeletePageCommand _deletePageCommand;
         private readonly SignLanguageApi _signLanguageApi;
         private readonly CopyrightAndLicenseApi _copyrightAndLicenseApi;
         private Action _pendingMessageHandler;
@@ -72,8 +62,6 @@ namespace Bloom.Edit
             CopyCommand copyCommand,
             PasteCommand pasteCommand,
             UndoCommand undoCommand,
-            DuplicatePageCommand duplicatePageCommand,
-            DeletePageCommand deletePageCommand,
             ControlKeyEvent controlKeyEvent,
             SignLanguageApi signLanguageApi,
             CommonApi commonApi,
@@ -90,8 +78,6 @@ namespace Bloom.Edit
             _copyCommand = copyCommand;
             _pasteCommand = pasteCommand;
             _undoCommand = undoCommand;
-            _duplicatePageCommand = duplicatePageCommand;
-            _deletePageCommand = deletePageCommand;
             _webSocketServer = model.EditModelSocketServer;
             _pageListApi = pageListApi;
             InitializeComponent();
@@ -1707,50 +1693,17 @@ namespace Bloom.Edit
             if (!_browser1.Visible)
                 return;
             _browser1.UpdateEditButtonsAsync();
-            UpdateButtonEnabled(_cutButton, _cutCommand);
-            UpdateButtonEnabled(_copyButton, _copyCommand);
-            UpdateButtonEnabled(_pasteButton, _pasteCommand);
-            UpdateButtonEnabled(_undoButton, _undoCommand);
 
             // update javascript with the new information
             dynamic eventBundle = new DynamicJson();
             eventBundle.enabled = new
             {
-                copy = _copyButton.Enabled,
-                cut = _cutButton.Enabled,
-                paste = _pasteButton.Enabled,
-                undo = _undoButton.Enabled
+                copy = _copyCommand?.Enabled ?? false,
+                cut = _cutCommand?.Enabled ?? false,
+                paste = _pasteCommand?.Enabled ?? false,
+                undo = _undoCommand?.Enabled ?? false,
             };
             _webSocketServer.SendBundle("editTopBarControls", "updateEditButtons", eventBundle);
-        }
-
-        // This can probably be cleaned up and have the command class removed
-        private void UpdateButtonEnabled(Button button, Command command)
-        {
-            var enabled = command != null && command.Enabled;
-            // DuplicatePage and DeletePage are a bit tricky to get right.
-            // See https://silbloom.myjetbrains.com/youtrack/issue/BL-2183.
-            if (enabled && command.Implementer != null)
-            {
-                var target = command.Implementer.Target as EditingModel;
-                if (target != null)
-                {
-                    if (command is DuplicatePageCommand)
-                        enabled = target.CanDuplicatePage;
-                    else if (command is DeletePageCommand)
-                        enabled = target.CanDeletePage;
-                }
-            }
-            //doesn't work because the forecolor is ignored when disabled...
-            var foreColor = enabled ? _enabledToolbarColor : _disabledToolbarColor; //.DimGray;
-            // BL-2338: signficant button flashing is apparently caused by setting these and
-            // invalidating when nothing actually changed. So only do it if something DID change.
-            if (enabled != button.Enabled || button.ForeColor != foreColor)
-            {
-                button.Enabled = enabled;
-                button.ForeColor = foreColor;
-                button.Invalidate();
-            }
         }
 
         protected override void OnParentChanged(EventArgs e)

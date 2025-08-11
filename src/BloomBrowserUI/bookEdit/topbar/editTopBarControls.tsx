@@ -1,6 +1,6 @@
 import { css, ThemeProvider } from "@emotion/react";
 import BloomButton from "../../react_components/bloomButton";
-import { get, getBloomApiPrefix, postJson } from "../../utils/bloomApi";
+import { getBloomApiPrefix, post, postJson } from "../../utils/bloomApi";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { useEffect, useState } from "react";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
@@ -55,11 +55,8 @@ export const EditTopBarControls: React.FunctionComponent = () => {
         setLayoutChoicesLocalizedText(data.layoutChoicesText);
     }
 
-    // for the first load after opening a collection - websocket will make updates after that
     useEffect(() => {
-        get("editView/updateTopBarDropdownDisplay", results => {
-            setDropdowns(results.data);
-        });
+        post("editView/updateTopBarDropdownDisplay");
     }, []);
     useSubscribeToWebSocketForObject<{
         message: IDropdownData;
@@ -262,7 +259,7 @@ export const EditingControlButton: React.FunctionComponent<{
                 enabled={props.enabled}
                 l10nKey={props.l10nKey}
                 onClick={() => {
-                    postJson("editView/topBarControls", {
+                    postJson("editView/topBarButtonClick", {
                         command: props.onClickAction
                     });
                 }}

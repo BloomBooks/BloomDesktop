@@ -102,8 +102,6 @@ namespace Bloom
         {
             var commandTypes = new[]
             {
-                typeof(DuplicatePageCommand),
-                typeof(DeletePageCommand),
                 typeof(CutCommand),
                 typeof(CopyCommand),
                 typeof(PasteCommand),

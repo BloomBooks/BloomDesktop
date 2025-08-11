@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Bloom.Book;
 
 namespace Bloom
@@ -60,7 +60,7 @@ namespace Bloom
         /// The standard bounce interval is set to the default double-click timing for Windows.  This
         /// seems to be as good a waiting period as any -- long enough to handle double-clicking as
         /// desired (ignore the second click), but short enough not to slow down the user too much if
-        /// muliple operations are really desired.
+        /// multiple operations are really desired.
         /// </summary>
         private readonly static TimeSpan _bounceWait = TimeSpan.FromMilliseconds(500);
         private static DateTime _previousClickTime = DateTime.MinValue;
@@ -116,18 +116,6 @@ namespace Bloom
     {
         public UndoCommand()
             : base("undo") { }
-    }
-
-    public class DuplicatePageCommand : Command
-    {
-        public DuplicatePageCommand()
-            : base("duplicateCurrentPage") { }
-    }
-
-    public class DeletePageCommand : Command
-    {
-        public DeletePageCommand()
-            : base("deleteCurrentPage") { }
     }
 
     public class TemplateInsertionCommand
