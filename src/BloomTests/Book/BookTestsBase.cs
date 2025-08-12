@@ -246,7 +246,7 @@ namespace BloomTests.Book
         }
 
         protected Bloom.Book.Book CreateBookWithPhysicalFile(
-            string bookHtml,
+            string bodyContents,
             CollectionSettings collectionSettings
         )
         {
@@ -259,7 +259,7 @@ namespace BloomTests.Book
                 ProjectContext.GetAfterXMatterFileLocations()
             );
 
-            File.WriteAllText(Path.Combine(_tempFolder.Path, "book.htm"), bookHtml);
+            File.WriteAllText(Path.Combine(_tempFolder.Path, "book.htm"), MakeBookHtml(bodyContents, ""));
 
             var storage = new BookStorage(
                 this._tempFolder.Path,
@@ -285,11 +285,11 @@ namespace BloomTests.Book
         }
 
         protected virtual Bloom.Book.Book CreateBookWithPhysicalFile(
-            string bookHtml,
+            string bodyContents,
             bool bringBookUpToDate = false
         )
         {
-            var book = CreateBookWithPhysicalFile(bookHtml, CreateDefaultCollectionsSettings());
+            var book = CreateBookWithPhysicalFile(bodyContents, CreateDefaultCollectionsSettings());
             if (bringBookUpToDate)
                 book.BringBookUpToDate(new NullProgress());
             return book;
@@ -354,13 +354,12 @@ namespace BloomTests.Book
         private SafeXmlDocument GetThreePageDom()
         {
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml(ThreePageHtml);
+            dom.LoadXml(MakeBookHtml(ThreePageHtml, ""));
             return dom;
         }
 
         protected const string ThreePageHtml =
-            @"<html><head></head><body>
-				<div class='bloom-page numberedPage' id='guid1'>
+            @"<div class='bloom-page numberedPage' id='guid1'>
 					<p>
 						<textarea lang='en' id='1'  data-book='bookTitle'>tree</textarea>
 						<textarea lang='xyz' id='2'  data-book='bookTitle'>dog</textarea>
@@ -384,8 +383,7 @@ namespace BloomTests.Book
 					   <textarea lang='xyz' id='bb'  data-collection='testLibraryVariable'>bb</textarea>
 
 					</p>
-				</div>
-				</body></html>";
+				</div>";
 
         protected void SetDom(string bodyContents, string headContents = "")
         {

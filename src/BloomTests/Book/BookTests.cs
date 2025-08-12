@@ -5186,17 +5186,14 @@ namespace BloomTests.Book
         [Test]
         public void UpdateMetadataFeatures_WidgetActivityMissing_ActivityAndWidgetFeaturesFalse()
         {
-            var html =
-                @"<html>
-					<body>
-<div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
+            var bodyContent =
+@"<div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
 	<div class='marginBox'>
 
 	</div>
-</div>
-</body></html>";
+</div>";
 
-            var book = CreateBookWithPhysicalFile(html);
+            var book = CreateBookWithPhysicalFile(bodyContent);
             book.BookInfo.MetaData.Feature_Widget = true; // spurious, see if it gets cleaned up
 
             book.UpdateMetadataFeatures(false, false, null);
@@ -5213,19 +5210,17 @@ namespace BloomTests.Book
         [Test]
         public void UpdateMetadataFeatures_WidgetActivityAdded_ActivityAndWidgetFeaturesTrue()
         {
-            var html =
-                @"<html>
-					<body>
+            var bodyContent =
+                @"
 <div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
 	<div class='marginBox'>
 		<div class='bloom-widgetContainer'>
 			<iframe src='something'></iframe>
 		</div>
 	</div>
-</div>
-</body></html>";
+</div>";
 
-            var book = CreateBookWithPhysicalFile(html);
+            var book = CreateBookWithPhysicalFile(bodyContent);
 
             book.UpdateMetadataFeatures(false, false, null);
 

@@ -378,7 +378,7 @@ namespace BloomTests
             var html = XmlHtmlConverter.CreateDocumentWithBodyContent("<div><u> </u></div>");
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            Assert.AreEqual("<div><u> </u></div>", xml);
+            Assert.AreEqual("<div><u> </u></div>", xml.Trim());
         }
 
         [Test]
@@ -389,14 +389,14 @@ namespace BloomTests
             );
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            Assert.AreEqual("<div><u style=\"test\"> </u></div>", xml);
+            Assert.AreEqual("<div><u style=\"test\"> </u></div>", xml.Trim());
 
             html = XmlHtmlConverter.CreateDocumentWithBodyContent(
                 "<div><u><i style=\"test\" /></u></div>"
             );
             dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            Assert.AreEqual("<div><u><i style=\"test\"></i></u></div>", xml);
+            Assert.AreEqual("<div><u><i style=\"test\"></i></u></div>", xml.Trim());
         }
 
         [Test]

@@ -64,6 +64,7 @@ namespace BloomTests.Publish
             _bookServer = CreateBookServer();
         }
 
+        // TODO
         private const string kMinimumValidBookHtml =
             @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css'></link></head><body>
 					<div class='bloom-page' id='guid1'></div>
@@ -72,8 +73,11 @@ namespace BloomTests.Publish
         [Test]
         public void CompressBookForDevice_FileNameIsCorrect()
         {
+            // TODO
             var testBook = CreateBookWithPhysicalFile(
-                kMinimumValidBookHtml,
+                @"<body>
+					<div class='bloom-page' id='guid1'></div>
+			</body>",
                 bringBookUpToDate: true
             );
 
@@ -239,35 +243,31 @@ namespace BloomTests.Publish
         public void CompressBookForDevice_RemovesImgElementsWithMissingSrc_AndContentEditable()
         {
             const string imgsToRemove = "<img src='nonsence.svg'/><img src=\"rubbish\"/>";
-            var htmlTemplate =
-                @"<html>
-									<body>
-										<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
-											<div class='pageLabel' lang='en'>
-												Outside Back Cover
-											</div>
-											<div class='pageDescription' lang='en'></div>
+            var bodyTemplate =
+                @"<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+                    <div class='pageLabel' lang='en'>
+                        Outside Back Cover
+                    </div>
+                    <div class='pageDescription' lang='en'></div>
 
-											<div class='marginBox'>
-											<div class='bloom-translationGroup' data-default-languages='N1'>
-												<div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational1 bloom-visibility-code-on' lang='fr' contenteditable='false' data-book='outsideBackCover'>
-													<label class='bubble'>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</label>
-												</div>
+                    <div class='marginBox'>
+                    <div class='bloom-translationGroup' data-default-languages='N1'>
+                        <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational1 bloom-visibility-code-on' lang='fr' contenteditable='false' data-book='outsideBackCover'>
+                            <label class='bubble'>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</label>
+                        </div>
 
-												<div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational2' lang='de'contenteditable='true' data-book='outsideBackCover'></div>
+                        <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational2' lang='de'contenteditable='true' data-book='outsideBackCover'></div>
 
-												<div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-content1' lang='ksf' contenteditable='true' data-book='outsideBackCover'></div>
-											</div>
-											{0}
-											</div>
-										</div>
-									</body>
-									</html>";
-            var htmlOriginal = string.Format(htmlTemplate, imgsToRemove);
-            var testBook = CreateBookWithPhysicalFile(htmlOriginal, bringBookUpToDate: true);
+                        <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-content1' lang='ksf' contenteditable='true' data-book='outsideBackCover'></div>
+                    </div>
+                    {0}
+                    </div>
+                </div>";
+            var bodyOriginal = string.Format(bodyTemplate, imgsToRemove);
+            var testBook = CreateBookWithPhysicalFile(bodyOriginal, bringBookUpToDate: true);
 
             TestHtmlAfterCompression(
-                htmlOriginal,
+                bodyOriginal,
                 actionsOnFolderBeforeCompressing: bookFolderPath => // Simulate the typical situation where we have the regular but not the wide svg
                     File.WriteAllText(
                         Path.Combine(bookFolderPath, "somelogo.svg"),
@@ -349,10 +349,8 @@ namespace BloomTests.Publish
         public void CompressBookForDevice_SetsExpectedFeaturesAndAttributes()
         {
             const string imgsToRemove = "<img src='nonsence.svg'/><img src=\"rubbish\"/>";
-            var htmlTemplate =
+            var bodyTemplate =
                 @"
-<html>
-<body>
 	<div class='bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual' data-page='' id='3dba74c5-adc9-4c0d-9934-e8484fb6e2e2' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398382' data-page-number='4' lang=''>
 		<div class='marginBox'>
             <div style='min-height: 42px;' class='split-pane horizontal-percent'>
@@ -404,14 +402,12 @@ namespace BloomTests.Publish
                 </div>
             </div>
         </div>
-	</div>
-</body>
-</html>";
-            var htmlOriginal = string.Format(htmlTemplate, imgsToRemove);
-            var testBook = CreateBookWithPhysicalFile(htmlOriginal, bringBookUpToDate: true);
+	</div>";
+            var bodyOriginal = string.Format(bodyTemplate, imgsToRemove);
+            var testBook = CreateBookWithPhysicalFile(bodyOriginal, bringBookUpToDate: true);
 
             TestHtmlAfterCompression(
-                htmlOriginal,
+                bodyOriginal,
                 actionsOnFolderBeforeCompressing: bookFolderPath =>
                 {
                     // The page above expects these two audio files to exist. Their content doesn't matter.
@@ -1609,6 +1605,7 @@ namespace BloomTests.Publish
 					</head><body>
 					<div class='bloom-page' id='guid1'></div>
 			</body></html>";
+            // TODO
             var testBook = CreateBookWithPhysicalFile(bookHtml, bringBookUpToDate: false);
             var fontFileFinder = new StubFontFinder();
             FontsApi.AvailableFontMetadataDictionary.Clear();
