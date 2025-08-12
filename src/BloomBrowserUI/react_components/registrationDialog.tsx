@@ -103,16 +103,18 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
     }, [props.propsForBloomDialog.open]);
 
     useEffect(() => {
-        let emailIsProvided = info.email.trim() !== "";
+        if (!info) setFormIsFilled(false);
+
+        const emailIsProvided = !!info.email?.trim();
         setFormIsFilled(
-            !!info.firstName.trim() &&
-                !!info.surname.trim() &&
+            !!info.firstName?.trim() &&
+                !!info.surname?.trim() &&
                 (!emailRequiredForTeamCollection || emailIsProvided) &&
                 (isValidEmail(info.email) || !emailIsProvided) &&
-                !!info.organization.trim() &&
-                !!info.usingFor.trim()
+                !!info.organization?.trim() &&
+                !!info.usingFor?.trim()
         );
-    }, [info]);
+    }, [info, emailRequiredForTeamCollection]);
 
     // lets the registration text expand if the buttons are wider than DialogMiddle's initial width
     // seems to be dependent on the translations loading faster than this rewrites the width, though it does finish expanding when we start typing in a field
