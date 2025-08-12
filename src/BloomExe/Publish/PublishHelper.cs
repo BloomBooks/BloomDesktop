@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
@@ -1246,7 +1247,14 @@ namespace Bloom.Publish
                 return 0;
             var number = part.Trim().Substring(label.Length + 1);
             number = number.Substring(0, number.Length - 2); // remove "px"
-            if (double.TryParse(number, out double result))
+            if (
+                double.TryParse(
+                    number,
+                    System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out double result
+                )
+            )
                 return result;
             return 0;
         }
@@ -1263,7 +1271,11 @@ namespace Bloom.Publish
                 {
                     if (_browser != null) // Don't use BrowserForPageChecks here...if we don't have one we don't want to make it now!
                     {
-                        if (ControlForInvoke != null &&  ControlForInvoke.IsHandleCreated && !ControlForInvoke.IsDisposed)
+                        if (
+                            ControlForInvoke != null
+                            && ControlForInvoke.IsHandleCreated
+                            && !ControlForInvoke.IsDisposed
+                        )
                         {
                             // Seems safest of all to invoke using the thing we use for all other invokes.
                             // Also, seems our WebView2Browser may not actually get a handle, yet its
@@ -1393,9 +1405,14 @@ namespace Bloom.Publish
             filesToEmbed = new List<string>();
             badFonts = new HashSet<string>();
 
+            var invalidFonts = new HashSet<string>();
+            var illegalFonts = new HashSet<string>();
+            var missingFonts = new HashSet<string>();
+
             fontFileFinder.NoteFontsWeCantInstall = true;
             if (_fontMetadataMap == null)
             {
+                EnsureMetadataForHarvesterMode(fontsWanted);
                 _fontMetadataMap = new Dictionary<string, FontMetadata>();
                 foreach (var meta in FontsApi.AvailableFontMetadata)
                     _fontMetadataMap.Add(meta.name, meta);
@@ -1505,6 +1522,7 @@ namespace Bloom.Publish
                         "Check the Fonts section of the Book Settings dialog to locate this font.",
                         ProgressKind.Error
                     );
+                    invalidFonts.Add(font.fontFamily);
                 }
                 else if (fontFileFinder.FontsWeCantInstall.Contains(font.fontFamily) || badLicense)
                 {
@@ -1520,6 +1538,7 @@ namespace Bloom.Publish
                         "Check the Fonts section of the Book Settings dialog to locate this font.",
                         ProgressKind.Error
                     );
+                    illegalFonts.Add(font.fontFamily);
                 }
                 else if (!dontComplain)
                 {
@@ -1535,6 +1554,7 @@ namespace Bloom.Publish
                         "Check the Fonts section of the Book Settings dialog to locate this font.",
                         ProgressKind.Error
                     );
+                    missingFonts.Add(font.fontFamily);
                 }
                 if (!dontComplain)
                     progress.MessageWithParams(
@@ -1546,6 +1566,55 @@ namespace Bloom.Publish
                         font
                     );
                 badFonts.Add(font.fontFamily); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
+            }
+            ReportProblemFontsForHarvesterMode(invalidFonts, illegalFonts, missingFonts);
+        }
+
+        public static string ProblemFontsPath;
+        private static void ReportProblemFontsForHarvesterMode(HashSet<string> invalidFonts, HashSet<string> illegalFonts, HashSet<string> missingFonts)
+        {
+            // If we are running in harvester mode, we want to report the fonts that are not suitable for publication.
+            // This is so that the harvester can report them to the user, and won't upload the artifacts.
+            if (Program.RunningHarvesterMode &&
+                (invalidFonts.Count > 0 || illegalFonts.Count > 0 || missingFonts.Count > 0))
+            {
+                var bldr = new StringBuilder();
+                foreach (var fontName in invalidFonts)
+                {
+                    bldr.AppendLine($"invalid font - {fontName}");
+                }
+                foreach (var fontName in illegalFonts)
+                {
+                    bldr.AppendLine($"illegal font - {fontName}");
+                }
+                foreach (var fontName in missingFonts)
+                {
+                    bldr.AppendLine($"missing font - {fontName}");
+                }
+                if (!string.IsNullOrEmpty(ProblemFontsPath))
+                    RobustFile.WriteAllText(ProblemFontsPath, bldr.ToString());
+            }
+        }
+
+        /// <summary>
+        /// If running in harvester mode, load the metadata for the default font and just the fonts
+        /// that are actually wanted for publication.
+        /// </summary>
+        private static void EnsureMetadataForHarvesterMode(HashSet<FontInfo> fontsWanted)
+        {
+            if (Program.RunningHarvesterMode && !FontsApi.AvailableFontMetadata.Any())
+            {
+                var fontNames = new List<string>
+                    {
+                        DefaultFont, // Ensure that Andika's metadata is always available.
+                        "ABeeZee"    // Another font distributed with Bloom
+                    };
+                foreach (var font in fontsWanted)
+                {
+                    if (!fontNames.Contains(font.fontFamily))
+                        fontNames.Add(font.fontFamily);
+                }
+                FontsApi.GetAllFontMetadata(fontNames);
             }
         }
 

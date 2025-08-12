@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -17,6 +18,7 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using SIL.Reporting;
 using Bloom.CollectionTab;
+using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.web.controllers
@@ -302,30 +304,48 @@ namespace Bloom.web.controllers
                 "publish/thumbnail",
                 request =>
                 {
-                    var coverImage = request.CurrentBook.GetCoverImagePath();
+                    var coverImage = request.CurrentBook.GetCoverImagePathAndElt(
+                        out SafeXmlElement coverImgElt
+                    );
                     if (coverImage == null)
                         request.Failed("no cover image");
                     else
                     {
-                        // We don't care as much about making it resized as making its background transparent.
-                        using (var thumbnail = TempFile.CreateAndGetPathButDontMakeTheFile())
+                        var croppedImagePath = "";
+                        try
                         {
-                            if (_thumbnailBackgroundColor == Color.Transparent)
-                            {
-                                ImageUtils.TryCssColorFromString(
-                                    request.CurrentBook?.GetCoverColor(),
-                                    out _thumbnailBackgroundColor
-                                );
-                            }
-                            RuntimeImageProcessor.GenerateEBookThumbnail(
-                                coverImage,
-                                thumbnail.Path,
-                                256,
-                                256,
-                                _thumbnailBackgroundColor,
-                                padImageToRequestedSize: false
+                            croppedImagePath = PublishHelper.MakeCroppedImage(
+                                coverImgElt,
+                                request.CurrentBook.StoragePageFolder,
+                                Path.GetTempPath()
                             );
-                            request.ReplyWithImage(thumbnail.Path);
+                            coverImage = croppedImagePath ?? coverImage;
+                            // We don't care as much about making it resized as making its background transparent.
+                            using (var thumbnail = TempFile.CreateAndGetPathButDontMakeTheFile())
+                            {
+                                if (_thumbnailBackgroundColor == Color.Transparent)
+                                {
+                                    ImageUtils.TryCssColorFromString(
+                                        request.CurrentBook?.GetCoverColor(),
+                                        out _thumbnailBackgroundColor
+                                    );
+                                }
+
+                                RuntimeImageProcessor.GenerateEBookThumbnail(
+                                    coverImage,
+                                    thumbnail.Path,
+                                    256,
+                                    256,
+                                    _thumbnailBackgroundColor,
+                                    padImageToRequestedSize: false
+                                );
+                                request.ReplyWithImage(thumbnail.Path);
+                            }
+                        }
+                        finally
+                        {
+                            if (croppedImagePath != null)
+                                RobustFile.Delete(croppedImagePath);
                         }
                     }
                 },
