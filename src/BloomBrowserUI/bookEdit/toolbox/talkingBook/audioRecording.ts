@@ -3294,7 +3294,11 @@ export default class AudioRecording implements IAudioRecorder {
                         // function it returns. However, this is fixing a pathological legacy situation.
                         // If it occurs at all, it should get fixed when the page is first loaded,
                         // and not happen during typing.)
-                        $(child).replaceWith($(child).html()); // clean up.
+                        // Note: we want to use contents() here rather than html(), partly because it saves
+                        // the work of parsing the HTML, but also, using the old html() could preserve
+                        // (pathological) nested elements with the audio-sentence class that would otherwise
+                        // be removed by other iterations of this loop.
+                        $(child).replaceWith($(child).contents()); // clean up.
                         needAnotherTry = true; // start the whole method over.
                         return false; // break the 'each' loop
                     }
@@ -3377,11 +3381,11 @@ export default class AudioRecording implements IAudioRecorder {
                 id: $(this).attr("id"),
                 md5: $(this).attr("recordingmd5")
             });
-            $(this).replaceWith($(this).html()); // strip out the audio-sentence wrapper so we can re-partition.
+            $(this).replaceWith($(this).contents()); // strip out the audio-sentence wrapper so we can re-partition.
         });
 
-        const htmlFragments: TextFragment[] = this.stringToSentences(
-            copy.html()
+        const htmlFragments = AudioRecording.elementToSentencesWithCleanup(
+            copy
         );
         let textFragments: TextFragment[] | null = this.stringToSentences(
             elt.text()
@@ -3437,9 +3441,15 @@ export default class AudioRecording implements IAudioRecorder {
                     reuse.splice(0, 1);
                 }
                 if (reuseThis) {
-                    // SOMETHING remains we can reuse
+                    // SOMETHING remains we can reuse. It's md5 does not match any current sentence,
+                    // but it DOES match the ID we are reusing, which means it matches the text that
+                    // was last recorded with that ID, so it's valid (if we ever care) to tells us
+                    // that the recording does not match the current text. (But don't clutter things
+                    // by converting a missing recordingmd5 to an explicit "undefined".)
                     newId = reuseThis.id;
-                    newMd5 = ' recordingmd5="' + reuseThis.md5 + '"';
+                    if (reuseThis.md5 && reuseThis.md5 !== "undefined") {
+                        newMd5 = ' recordingmd5="' + reuseThis.md5 + '"';
+                    }
                 }
                 if (!newId) {
                     let text: string;
@@ -4080,6 +4090,45 @@ export default class AudioRecording implements IAudioRecorder {
         //
         // The caching feature, if returned, should ideally only be live when you are running AutoSegment.
         return theOneLibSynphony.stringToSentences(text);
+    }
+
+    // Return the html of the element broken up into sentences. Each sentence is a complete
+    // HTML unit; markup which extends across sentence boundaries in the original is
+    // ended at the end of one sentence and restarted at the start of the next.
+    // The element being split undergoes some cleanup: various empty elements are removed,
+    // and any span elements that have no attributes are unwrapped.
+    // Review: possibly we should do this in more places where we pass element.html() to stringToSentences
+    // if we really care about the result being valid HTML fragments. I think all the callers of
+    // stringToSentences (above) are OK, but there are a few places where we call theOneLibSynphony.stringToSentences
+    // connected with the leveled reader tool.
+    public static elementToSentencesWithCleanup(
+        element: JQuery
+    ): TextFragment[] {
+        // review: possibly this cleanup should be part of stringToSentences(),
+        // remove any span, em, strong, b, i, u, sup elements that are empty
+        // stringToSentences doesn't handle them reliably, and they just add clutter
+        element
+            .find(
+                "span:empty, em:empty, strong:empty, b:empty, i:empty, u:empty, sup:empty"
+            )
+            .remove();
+        // unwrap any span elements that have no attributes and so change nothing
+        // I don't think this prevents a bug, but it reduces clutter.
+        const copyElt = element.get(0);
+        for (const span of Array.from(copyElt.getElementsByTagName("span"))) {
+            if (span.attributes.length === 0) {
+                // This span has no attributes, so it doesn't change anything.
+                // We can just unwrap it.
+                const parent = span.parentNode;
+                if (parent) {
+                    while (span.firstChild) {
+                        parent.insertBefore(span.firstChild, span);
+                    }
+                    parent.removeChild(span);
+                }
+            }
+        }
+        return theOneLibSynphony.stringToSentences(element.html());
     }
 
     public getAutoSegmentLanguageCode(): string {
