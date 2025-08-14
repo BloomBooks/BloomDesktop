@@ -48,6 +48,9 @@ namespace Bloom.web
         }
 
         public bool UseEditContextMenu;
+        public bool HideVerticalOverflow;
+        public event EventHandler OnBrowserClick;
+
         private Browser _browser;
 
         private void ReactControl_Load(object sender, System.EventArgs e)
@@ -96,6 +99,11 @@ namespace Bloom.web
                 };
 
             _browser.EnsureHandleCreated();
+
+            _browser.OnBrowserClick += (s, args) =>
+            {
+                OnBrowserClick?.Invoke(this, args);
+            };
 
             // If the control gets added before it has navigated somewhere,
             // it shows as solid black, despite setting the BackColor to white.
@@ -161,6 +169,8 @@ namespace Bloom.web
             // to prevent a flash of white while the React is rendering.
             var backColor = MiscUtils.ColorToHtmlCode(BackColor);
 
+            var overflowY = HideVerticalOverflow ? " overflow-y: hidden;" : "";
+
             // The 'body' height: auto rule keeps a winforms tab that only contains a ReactControl
             // from unnecessary scrolling.
             RobustFile.WriteAllText(
@@ -179,7 +189,7 @@ namespace Bloom.web
 						}};
 					</script>
 				</head>
-				<body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColor};'>
+				<body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColor};{overflowY}'>
 					<div id='reactRoot' style='height:100%'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
 				</body>
 				</html>"
