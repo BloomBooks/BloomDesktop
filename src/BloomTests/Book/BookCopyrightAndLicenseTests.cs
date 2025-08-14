@@ -245,10 +245,7 @@ namespace BloomTests.Book
             AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@data-book='licenseUrl']");
         }
 
-        [
-            Test,
-            Ignore("Enable once we have French CC License Localization") /*meanwhile, I have tested on my machine*/
-        ]
+        [Test]
         public void SetLicenseMetadata_CCLicenseWithFrenchNationalLanguage_DataDivHasFrenchDescription()
         {
             _collectionSettings.Language1Tag = "fr";
@@ -265,7 +262,7 @@ namespace BloomTests.Book
                     )
                 },
                 startingDataDivContent: "",
-                xpath: "//*[@data-book='licenseDescription' and @lang='fr' and contains(text(),'Vous')]",
+                xpath: "//*[@data-book='licenseDescription' and @lang='fr' and contains(., 'création')]",
                 expectedCount: 1
             );
         }
