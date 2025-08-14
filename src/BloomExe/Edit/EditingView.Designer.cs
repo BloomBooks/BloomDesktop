@@ -54,7 +54,6 @@ namespace Bloom.Edit
             this._editControlsReactControl = new Bloom.web.ReactControl();
             this._bookSettingsButton = new System.Windows.Forms.ToolStripButton();
             this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer(this.components);
-            this._betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this._splitContainer2)).BeginInit();
             this._splitContainer2.Panel1.SuspendLayout();
@@ -185,12 +184,6 @@ namespace Bloom.Edit
             this._splitTemplateAndSource.TabIndex = 0;
             this._splitTemplateAndSource.TabStop = false;
             // 
-            // _betterToolTip1
-            // 
-            this._L10NSharpExtender.SetLocalizableToolTip(this._betterToolTip1, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._betterToolTip1, null);
-            this._L10NSharpExtender.SetLocalizingId(this._betterToolTip1, "BTT_id");
-            // 
             // EditingView
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -225,7 +218,6 @@ namespace Bloom.Edit
 		private System.Windows.Forms.Timer _handleMessageTimer;
 		private System.Windows.Forms.Panel _topBarPanel;
 		private SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper settingsLauncherHelper1;
-		private ToPalaso.BetterToolTip _betterToolTip1;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.ToolStrip _rightToolStrip;
         private Bloom.web.ReactControl _editControlsReactControl;
