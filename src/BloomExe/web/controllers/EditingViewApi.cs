@@ -80,6 +80,21 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
             apiHandler.RegisterEndpointHandler("editView/paste", HandlePaste, true);
             apiHandler.RegisterEndpointHandler(
+                "editView/topBarButtonClick",
+                HandleTopBarButtonClick,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/updateTopBarDropdownDisplay",
+                HandleUpdateTopBarDropdownDisplay,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBarDropdownClicked",
+                HandleTopBarDropdownClicked,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
                 "editView/sourceTextTab",
                 HandleSourceTextTab,
                 false,
@@ -206,6 +221,39 @@ namespace Bloom.web.controllers
         private void HandlePaste(ApiRequest request)
         {
             View.OnPaste(this, EventArgs.Empty);
+            request.PostSucceeded();
+        }
+
+        private void HandleTopBarButtonClick(ApiRequest request)
+        {
+            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            // If we don't force the focus to the main editing browser, our browser with the buttons will steal it and cut/copy, etc. won't work.
+            View.Browser.Focus();
+            View.Browser.RunJavascriptAsync(
+                $"editTabBundle?.getEditablePageBundleExports()?.topBarButtonClick({data})"
+            );
+            request.PostSucceeded();
+        }
+
+        private void HandleUpdateTopBarDropdownDisplay(ApiRequest request)
+        {
+            View.UpdateDropdownButtons();
+            request.PostSucceeded();
+        }
+
+        private void HandleTopBarDropdownClicked(ApiRequest request)
+        {
+            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            View.Browser.Focus();
+            switch (data.command)
+            {
+                case "contentLanguages":
+                    View.ContentLanguagesDropdownClicked();
+                    break;
+                case "layoutChoices":
+                    View.LayoutChoicesDropdownClicked();
+                    break;
+            }
             request.PostSucceeded();
         }
 

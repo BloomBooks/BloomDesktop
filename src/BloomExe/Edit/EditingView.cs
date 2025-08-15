@@ -15,7 +15,6 @@ using Bloom.Api;
 using Bloom.web.controllers;
 using Bloom.Workspace;
 using L10NSharp;
-using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
@@ -28,12 +27,9 @@ using System.Globalization;
 using Bloom.web;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Xml;
 using Bloom.Utils;
 using Bloom.MiscUI;
 using Bloom.ErrorReporter;
-using Bloom.SafeXml;
-using Bloom.ToPalaso;
 
 namespace Bloom.Edit
 {
@@ -41,16 +37,15 @@ namespace Bloom.Edit
     {
         private readonly EditingModel _model;
         private PageListView _pageListView;
+        private ContextMenuStrip _contentLanguagesDropdown = new();
+        private ContextMenuStrip _layoutChoicesDropdown = new();
         private readonly CutCommand _cutCommand;
         private readonly CopyCommand _copyCommand;
         private readonly PasteCommand _pasteCommand;
         private readonly UndoCommand _undoCommand;
-        private readonly DuplicatePageCommand _duplicatePageCommand;
-        private readonly DeletePageCommand _deletePageCommand;
         private readonly SignLanguageApi _signLanguageApi;
         private readonly CopyrightAndLicenseApi _copyrightAndLicenseApi;
         private Action _pendingMessageHandler;
-        private bool _updatingDisplay;
         private Color _enabledToolbarColor = Palette.DarkTextAgainstBackgroundColor;
         private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
         private bool _visible;
@@ -67,15 +62,14 @@ namespace Bloom.Edit
             CopyCommand copyCommand,
             PasteCommand pasteCommand,
             UndoCommand undoCommand,
-            DuplicatePageCommand duplicatePageCommand,
-            DeletePageCommand deletePageCommand,
             ControlKeyEvent controlKeyEvent,
             SignLanguageApi signLanguageApi,
             CommonApi commonApi,
             EditingViewApi editingViewApi,
             PageListApi pageListApi,
             BookRenamedEvent bookRenamedEvent,
-            CopyrightAndLicenseApi copyrightAndLicenseApi
+            CopyrightAndLicenseApi copyrightAndLicenseApi,
+            LocalizationChangedEvent localizationChangedEvent
         )
         {
             _model = model;
@@ -84,11 +78,11 @@ namespace Bloom.Edit
             _copyCommand = copyCommand;
             _pasteCommand = pasteCommand;
             _undoCommand = undoCommand;
-            _duplicatePageCommand = duplicatePageCommand;
-            _deletePageCommand = deletePageCommand;
             _webSocketServer = model.EditModelSocketServer;
             _pageListApi = pageListApi;
             InitializeComponent();
+
+            _editControlsReactControl.SetLocalizationChangedEvent(localizationChangedEvent);
 
             // This used to be part of InitializeComponent, but we want to make which browser to use
             // configurable. It can possibly move back to the Designer code once we settle on WebView2.
@@ -131,20 +125,10 @@ namespace Bloom.Edit
                 _browser1.ControlKeyEvent = controlKeyEvent;
             }
 
-            if (SIL.PlatformUtilities.Platform.IsMono)
-            {
-                RepositionButtonsForMono();
-                BackgroundColorsForLinux();
-            }
-
             controlKeyEvent.Subscribe(HandleControlKeyEvent);
 
             // Adding this renderer prevents a white line from showing up under the components.
             // BL-5071 We don't want a hover border on the items either.
-            _menusToolStrip.Renderer = new NoBorderToolStripRenderer()
-            {
-                DisabledColor = Color.FromArgb(114, 74, 106)
-            };
             _rightToolStrip.Renderer = new NoBorderToolStripRenderer();
 
             //we're giving it to the parent control through the TopBarControls property
@@ -285,42 +269,12 @@ namespace Bloom.Edit
             }
         }
 
-        private void RepositionButtonsForMono()
-        {
-            // Shift toolstrip controls right to prevent overlapping disable buttons, which causes the
-            // overlapped region to not paint.
-            var shift = _pasteButton.Left + _pasteButton.Width - _cutButton.Left;
-            _cutButton.Left += shift;
-            _copyButton.Left += shift;
-            _undoButton.Left += shift;
-            _menusToolStrip.Left += shift;
-            _topBarPanel.Width = _menusToolStrip.Left + _menusToolStrip.Width + 1;
-        }
-
-        private void BackgroundColorsForLinux()
-        {
-            var bmp = new Bitmap(_menusToolStrip.Width, _menusToolStrip.Height);
-            using (var g = Graphics.FromImage(bmp))
-            {
-                using (var b = new SolidBrush(_menusToolStrip.BackColor))
-                {
-                    g.FillRectangle(b, 0, 0, bmp.Width, bmp.Height);
-                }
-            }
-            _menusToolStrip.BackgroundImage = bmp;
-        }
-
         public Control TopBarControl
         {
             get { return _topBarPanel; }
         }
 
-        // The full width of the TopBarControl is a bit much, because the actual values in the _menusToolStrip are usually narrower
-        // than the control name shown in design mode. The "5" just gives a little margin.
-        public int WidthToReserveForTopBarControl =>
-            _menusToolStrip.Left
-            + 5
-            + Math.Max(_contentLanguagesDropdown.Bounds.Right, _layoutChoices.Bounds.Right);
+        public int WidthToReserveForTopBarControl => _editControlsReactControl.Width;
 
         /// <summary>
         /// Prevents a white line from appearing below the tool strip
@@ -548,7 +502,10 @@ namespace Bloom.Edit
             );
 #endif
             _changingUiLanguage = false; // we've done a top-level navigate if this required it.
-            UpdateDisplay();
+            if (_model.CurrentPage != null)
+            {
+                UpdateDropdownButtons();
+            }
 #if MEMORYCHECK
             // Check memory for the benefit of developers.
             Bloom.Utils.MemoryManagement.CheckMemory(
@@ -1553,161 +1510,128 @@ namespace Bloom.Edit
             _pageListView.UpdateAllThumbnails();
         }
 
-        private void _copyButton_Click(object sender, EventArgs e)
-        {
-            ExecuteCommandSafely(_copyCommand);
-        }
-
         public void OnPaste(object sender, EventArgs e)
         {
             ExecuteCommandSafely(_pasteCommand);
         }
 
         /// <summary>
-        /// Add a menu item to a dropdown button and return it.  Avoid creating a ToolStripSeparator instead of a
+        /// Make a menu item for a dropdown button and return it.  Avoid creating a ToolStripSeparator instead of a
         /// ToolStripMenuItem even for a hyphen.
         /// </summary>
         /// <returns>the dropdown menu item</returns>
         /// <remarks>See https://silbloom.myjetbrains.com/youtrack/issue/BL-3796.</remarks>
-        private ToolStripMenuItem AddDropdownItemSafely(ToolStripDropDownButton button, string text)
+        private ToolStripMenuItem AddDropdownItemSafely(string text)
         {
             // A single hyphen triggers a ToolStripSeparator instead of a ToolStripMenuItem, so change it minimally.
             // (Surely localizers wouldn't do this to us, but it has happened to a user.)
             if (text == "-")
                 text = "- ";
-            return (ToolStripMenuItem)button.DropDownItems.Add(text);
+            return new ToolStripMenuItem(text);
         }
 
-        private string _contentLanguagesDropdownOriginalTooltip;
-
-        public void UpdateDisplay()
+        /// <summary>
+        /// Send info to javascript on how the Dropdown Menu Buttons should appear both on page change and when
+        /// requested through the Api.
+        /// </summary>
+        /// <returns>dropdown button info</returns>
+        public dynamic UpdateDropdownButtons()
         {
-            try
+            dynamic eventBundle = new DynamicJson();
+            bool contentLanguagesEnabled = TranslationGroupManager.IsPageAffectedByLanguageMenu(
+                _model.CurrentPage.GetDivNodeForThisPage(),
+                _model.CurrentBook.BookInfo.AppearanceSettings.UsingLegacy
+            );
+            eventBundle.message = new
             {
-                _updatingDisplay = true;
+                contentLanguagesEnabled,
+                contentLanguagesNumber = _model.NumberOfDisplayedLanguages,
+                layoutChoicesText = _model.GetCurrentLayout().DisplayName,
+            };
+            _webSocketServer.SendBundle("editTopBarControls", "updateDropdowns", eventBundle);
+            return eventBundle.message;
+        }
 
-                _contentLanguagesDropdown.DropDownItems.Clear();
-                // L10NSharp doesn't do this automatically
-                _contentLanguagesDropdown.ToolTipText = LocalizationManager.GetString(
-                    "EditTab.ContentLanguagesDropdown.ToolTip",
-                    //_contentLanguagesDropdown.ToolTipText); doesn't work because the scanner needs literals
-                    "Choose language to make this a bilingual or trilingual book"
-                );
-
-                var nSelected = _model.ContentLanguages.Count(l => l.Selected);
-
-                foreach (var l in _model.ContentLanguages)
-                {
-                    var item = AddDropdownItemSafely(_contentLanguagesDropdown, l.ToString());
-                    item.Tag = l;
-                    // Any language which is not selected may be turned on.
-                    // A language which is turned on may only be turned off if more than one is selected.
-                    item.Enabled = !l.Selected || nSelected > 1;
-                    item.Checked = l.Selected;
-                    item.CheckOnClick = true;
-                    item.ImageScaling = ToolStripItemImageScaling.None;
-                    item.CheckedChanged += new EventHandler(
-                        OnContentLanguageDropdownItem_CheckedChanged
-                    );
-                }
-                _contentLanguagesDropdown.Enabled =
-                    TranslationGroupManager.IsPageAffectedByLanguageMenu(
-                        _model.CurrentPage.GetDivNodeForThisPage(),
-                        _model.CurrentBook.BookInfo.AppearanceSettings.UsingLegacy
-                    );
-                if (_contentLanguagesDropdownOriginalTooltip == null)
-                    _contentLanguagesDropdownOriginalTooltip =
-                        _contentLanguagesDropdown.ToolTipText;
-                _contentLanguagesDropdown.ToolTipText = _contentLanguagesDropdown.Enabled
-                    ? _contentLanguagesDropdownOriginalTooltip
-                    : LocalizationManager.GetString(
-                        "EditTab.ContentLanguagesDropdown.DisabledTooltip",
-                        "This is disabled because it won't change anything on this page.",
-                        "Shown in edit tab language chooser when it is disabled"
-                    );
-
-                _layoutChoices.DropDownItems.Clear();
-                var layout = _model.GetCurrentLayout();
-                var sizeAndOrientationChoices = _model.GetSizeAndOrientationChoices();
-                foreach (var choice in sizeAndOrientationChoices)
-                {
-                    var text = choice.DisplayName;
-                    var item = AddDropdownItemSafely(_layoutChoices, text);
-                    item.Tag = choice;
-                    item.Text = text;
-                    item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
-                }
-
-                if (sizeAndOrientationChoices.Count() < 2)
-                {
-                    var text = LocalizationManager.GetString(
-                        "EditTab.NoOtherLayouts",
-                        "There are no other options for this template.",
-                        "Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice"
-                    );
-                    var item = AddDropdownItemSafely(_layoutChoices, text);
-                    item.Tag = null;
-                    item.Enabled = false;
-                }
-
-                _layoutChoices.Text = layout.DisplayName;
-
-                switch (_model.NumberOfDisplayedLanguages)
-                {
-                    case 1:
-                        _contentLanguagesDropdown.Text = LocalizationManager.GetString(
-                            "EditTab.Monolingual",
-                            "One Language",
-                            "Shown in edit tab multilingualism chooser, for monolingual mode, one language per page"
-                        );
-                        break;
-                    case 2:
-                        _contentLanguagesDropdown.Text = LocalizationManager.GetString(
-                            "EditTab.Bilingual",
-                            "Two Languages",
-                            "Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page"
-                        );
-                        break;
-                    case 3:
-                        _contentLanguagesDropdown.Text = LocalizationManager.GetString(
-                            "EditTab.Trilingual",
-                            "Three Languages",
-                            "Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page"
-                        );
-                        break;
-                }
-
-                //I'm surprised that L10NSharp (in aug 2014) doesn't automatically make tooltips localizable, but this is how I got it to work
-                _layoutChoices.ToolTipText = LocalizationManager.GetString(
-                    "EditTab.PageSizeAndOrientation.Tooltip",
-                    //_layoutChoices.ToolTipText); doesn't work because the scanner needs literals
-                    "Choose a page size and orientation"
-                );
-            }
-            catch (Exception error)
+        public void ContentLanguagesDropdownClicked()
+        {
+            _contentLanguagesDropdown.Items.Clear();
+            if (_contentLanguagesDropdown.Visible)
             {
-                SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-                    error,
-                    "There was a problem updating the edit display."
-                );
+                _contentLanguagesDropdown.Hide();
+                return;
             }
-            finally
+
+            var nSelected = _model.ContentLanguages.Count(l => l.Selected);
+            foreach (var item in _model.ContentLanguages)
             {
-                _updatingDisplay = false;
+                var language = item;
+                var text = language.ToString();
+                var menuItem = AddDropdownItemSafely(item.Name);
+                menuItem.Tag = language;
+                menuItem.Enabled = !language.Selected || nSelected > 1;
+                menuItem.Checked = language.Selected;
+                menuItem.CheckOnClick = true;
+                menuItem.ImageScaling = ToolStripItemImageScaling.None;
+                // Any language which is not selected may be turned on.
+                // A language which is turned on may only be turned off if more than one is selected.
+                menuItem.CheckedChanged += new EventHandler(
+                    OnContentLanguageDropdownItem_CheckedChanged
+                );
+                _contentLanguagesDropdown.Items.Add(menuItem);
             }
+            // Let the menu appear slightly below where the mouse is since it might be
+            // hard to find exactly where the bottom left of the Dropdown button is
+            _contentLanguagesDropdown.Show(MousePosition.X, MousePosition.Y + 8);
+        }
+
+        public void LayoutChoicesDropdownClicked()
+        {
+            _layoutChoicesDropdown.Items.Clear();
+            if (_layoutChoicesDropdown.Visible)
+            {
+                _layoutChoicesDropdown.Hide();
+                return;
+            }
+
+            var layout = _model.GetCurrentLayout();
+            var sizeAndOrientationChoices = _model.GetSizeAndOrientationChoices();
+
+            foreach (var item in sizeAndOrientationChoices)
+            {
+                var choice = item;
+                var text = choice.DisplayName;
+                var menuItem = AddDropdownItemSafely(text);
+                menuItem.Tag = choice;
+                menuItem.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
+
+                _layoutChoicesDropdown.Items.Add(menuItem);
+            }
+
+            if (sizeAndOrientationChoices.Count() < 2)
+            {
+                var text = LocalizationManager.GetString(
+                    "EditTab.NoOtherLayouts",
+                    "There are no other options for this template.",
+                    "Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice"
+                );
+                var menuItem = AddDropdownItemSafely(text);
+                menuItem.Tag = null;
+                menuItem.Enabled = false;
+                _layoutChoicesDropdown.Items.Add(menuItem);
+            }
+            // Let the menu appear slightly below where the mouse is since it might be
+            // hard to find exactly where the bottom left of the Dropdown button is
+            _layoutChoicesDropdown.Show(MousePosition.X, MousePosition.Y + 8);
         }
 
         void OnPaperSizeAndOrientationMenuClick(object sender, EventArgs e)
         {
             var item = (ToolStripMenuItem)sender;
             _model.SetLayout((Layout)item.Tag);
-            UpdateDisplay();
         }
 
         void OnContentLanguageDropdownItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (_updatingDisplay)
-                return;
             var item = (ToolStripMenuItem)sender;
             ((EditingModel.ContentLanguage)item.Tag).Selected = item.Checked;
 
@@ -1728,9 +1652,7 @@ namespace Bloom.Edit
                 // than one in a single call to this method.
                 _sendingContentLanguagesSelectionChanged = false;
 
-                var items = _contentLanguagesDropdown.DropDownItems
-                    .Cast<ToolStripMenuItem>()
-                    .ToList();
+                var items = _contentLanguagesDropdown.Items.Cast<ToolStripMenuItem>().ToList();
                 if (contentLanguages[0].Selected != L1)
                 {
                     contentLanguages[0].Selected = L1;
@@ -1771,61 +1693,17 @@ namespace Bloom.Edit
             if (!_browser1.Visible)
                 return;
             _browser1.UpdateEditButtonsAsync();
-            UpdateButtonEnabled(_cutButton, _cutCommand);
-            UpdateButtonEnabled(_copyButton, _copyCommand);
-            UpdateButtonEnabled(_pasteButton, _pasteCommand);
-            UpdateButtonEnabled(_undoButton, _undoCommand);
-        }
 
-        public void UpdateButtonLocalizations()
-        {
-            // This seems to be the only way to ensure that BetterToolTip updates itself
-            // with new localization strings.
-            CycleEditButtons();
-        }
-
-        private void CycleEditButtons()
-        {
-            _browser1.UpdateEditButtonsAsync();
-            CycleOneButton(_cutButton, _cutCommand);
-            CycleOneButton(_copyButton, _copyCommand);
-            CycleOneButton(_pasteButton, _pasteCommand);
-            CycleOneButton(_undoButton, _undoCommand);
-        }
-
-        private void CycleOneButton(Button button, Command command)
-        {
-            var isEnabled = command.Enabled;
-            button.Enabled = !isEnabled;
-            UpdateButtonEnabled(button, command);
-        }
-
-        private void UpdateButtonEnabled(Button button, Command command)
-        {
-            var enabled = command != null && command.Enabled;
-            // DuplicatePage and DeletePage are a bit tricky to get right.
-            // See https://silbloom.myjetbrains.com/youtrack/issue/BL-2183.
-            if (enabled && command.Implementer != null)
+            // update javascript with the new information
+            dynamic eventBundle = new DynamicJson();
+            eventBundle.enabled = new
             {
-                var target = command.Implementer.Target as EditingModel;
-                if (target != null)
-                {
-                    if (command is DuplicatePageCommand)
-                        enabled = target.CanDuplicatePage;
-                    else if (command is DeletePageCommand)
-                        enabled = target.CanDeletePage;
-                }
-            }
-            //doesn't work because the forecolor is ignored when disabled...
-            var foreColor = enabled ? _enabledToolbarColor : _disabledToolbarColor; //.DimGray;
-            // BL-2338: signficant button flashing is apparently caused by setting these and
-            // invalidating when nothing actually changed. So only do it if something DID change.
-            if (enabled != button.Enabled || button.ForeColor != foreColor)
-            {
-                button.Enabled = enabled;
-                button.ForeColor = foreColor;
-                button.Invalidate();
-            }
+                copy = _copyCommand?.Enabled ?? false,
+                cut = _cutCommand?.Enabled ?? false,
+                paste = _pasteCommand?.Enabled ?? false,
+                undo = _undoCommand?.Enabled ?? false,
+            };
+            _webSocketServer.SendBundle("editTopBarControls", "updateEditButtons", eventBundle);
         }
 
         protected override void OnParentChanged(EventArgs e)
@@ -1837,16 +1715,6 @@ namespace Bloom.Edit
         private void _editButtonsUpdateTimer_Tick(object sender, EventArgs e)
         {
             UpdateEditButtons();
-        }
-
-        private void _cutButton_Click(object sender, EventArgs e)
-        {
-            ExecuteCommandSafely(_cutCommand);
-        }
-
-        private void _undoButton_Click(object sender, EventArgs e)
-        {
-            ExecuteCommandSafely(_undoCommand);
         }
 
         private void ExecuteCommandSafely(Command cmdObject)
