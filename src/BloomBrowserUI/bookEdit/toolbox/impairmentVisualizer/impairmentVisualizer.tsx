@@ -295,6 +295,11 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
             />
         );
     }
+    public imageUpdated(): void {
+        if (this.controlsElement) {
+            this.controlsElement.updateSimulations();
+        }
+    }
 
     public id(): string {
         return "impairmentVisualizer";

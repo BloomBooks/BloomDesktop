@@ -394,10 +394,17 @@ export interface IImageInfo {
 
 export const kMakeNewCanvasElement = "makeNewCanvasElement";
 
+export function notifyToolOfChangedImage() {
+    const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
+    toolbox?.getCurrentTool()?.imageUpdated();
+}
+
 // called by c# so be careful about changing the signature, including names of parameters
 export function changeImage(imageInfo: IImageInfo) {
     if (imageInfo.imageId === kMakeNewCanvasElement) {
         theOneCanvasElementManager.finishPasteImageFromClipboard(imageInfo);
+        // like to do this here, but the overlay isn't always really created yet.
+        //notifyToolOfChangedImage();
         return;
     }
     const imgOrImageContainer = document.getElementById(imageInfo.imageId);
@@ -416,6 +423,7 @@ export function changeImage(imageInfo: IImageInfo) {
     theOneCanvasElementManager.updateCanvasElementForChangedImage(
         imgOrImageContainer
     );
+    notifyToolOfChangedImage();
 }
 
 export function changeImageInfo(
@@ -1391,16 +1399,27 @@ export const pasteClipboard = (imageAvailable: boolean) => {
 
 function pasteHandler(e: Event) {
     const activeElement = document.activeElement;
-    // If there's a possibility of pasting an image, we need to handle that the same
+    // If there's a possibility of pasting an image, we want to handle that the same
     // as the paste button code in C#, with interactions between C# and Javascript.
+    // Unfortunately it's difficult to know whether we have an image in the clipboard.
+    // We'd like to ask C# but are fairly sure we can't wait for a post response before
+    // deciding whether to preventDefault() or not. (We ideally want the default behavior unless
+    // we're going to paste an image.)
     // That process involving C# does not work for <input> elements or or text areas or for pages that
-    // do not have a canvas element or a normal ckeditor setup.
+    // do not have a canvas element or a normal ckeditor setup. There are various other cases
+    // it doesn't handle well (e.g., formatted text in the clipboard, BL-15123).
+    // If we really want to be able to paste an image onto the canvas when focus is on a bloom-editable,
+    // our current idea is to have C# notify Javascript through a websocket when there is a change
+    // in the clipboard whether it does or does not contain an image.
+    // For 6.2, we're making this simpler change and just taking the default behavior when
+    // the focus is on a bloom-editable element.
     //
     // (See the branch pasteToInput for a very ugly way to make the C#/Javascript paste
     // button code handle pasting into an input element.)
     if (
         activeElement instanceof HTMLInputElement ||
-        activeElement instanceof HTMLTextAreaElement
+        activeElement instanceof HTMLTextAreaElement ||
+        activeElement?.closest(".bloom-editable")
     ) {
         return;
     }

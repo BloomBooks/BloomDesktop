@@ -70,6 +70,8 @@ export interface ITool {
     // It may be unimplemented for older tools where beginAddTool() already knows
     // where to find an HTML file for the tool content.
     makeRootElement(): HTMLDivElement;
+    // notifies the tool that an image has been changed on the page.
+    imageUpdated(): void;
 }
 
 export interface IReactTool {
