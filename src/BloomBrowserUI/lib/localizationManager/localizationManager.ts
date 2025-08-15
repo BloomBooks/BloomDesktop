@@ -127,7 +127,7 @@ export class LocalizationManager {
             !this.inlineDictionaryLoaded &&
             typeof GetInlineDictionary === "function"
         ) {
-            if (Object.keys(this.dictionary).length == 0) {
+            if (Object.keys(this.dictionary).length === 0) {
                 this.inlineDictionaryLoaded = true;
                 $.extend(
                     theOneLocalizationManager.dictionary,

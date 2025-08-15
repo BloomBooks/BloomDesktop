@@ -23,7 +23,7 @@ export default class BloomSourceBubbles {
         //if(typeof (obj) == 'HTMLTextAreaElement') {
         //    return $.trim($(obj).text()).length == 0;
         //}
-        return $.trim($(obj).text()).length == 0;
+        return $.trim($(obj).text()).length === 0;
     }
 
     // This is the method that should be called from bloomEditing to create tabbed source bubbles
@@ -317,7 +317,7 @@ export default class BloomSourceBubbles {
         const itemArray = items.toArray();
         items.each(function(idx, obj): boolean {
             const langTag = $(this).attr("lang");
-            if (langTag == langCode && position < idx) {
+            if (langTag === langCode && position < idx) {
                 moveFrom = idx;
                 objToMove = obj;
                 return false; // break out of .each()
@@ -355,7 +355,7 @@ export default class BloomSourceBubbles {
             if (
                 !selectLangTag &&
                 tabs.length > 1 &&
-                tabs.first().attr("id") == "hint"
+                tabs.first().attr("id") === "hint"
             ) {
                 selectLangTag = tabs
                     .first()
@@ -386,7 +386,7 @@ export default class BloomSourceBubbles {
     public static CreateDropdownIfNecessary(divForBubble: JQuery): JQuery {
         let firstSelectOption = 3;
         const tabs = divForBubble.find("nav li"); // may be li elements in the content
-        if (tabs.length && tabs.first().attr("id") == "hint") {
+        if (tabs.length && tabs.first().attr("id") === "hint") {
             firstSelectOption++; // allow hint in addition to languages.
         }
         if (tabs.length < firstSelectOption) return divForBubble; // no change
@@ -652,7 +652,7 @@ export default class BloomSourceBubbles {
                             const cls = ev.target.getAttribute("class");
                             const href = ev.target.getAttribute("href");
                             if (
-                                (cls == "sourceTextTab" &&
+                                (cls === "sourceTextTab" &&
                                     href &&
                                     href.startsWith("#")) ||
                                 ev.target.closest(".source-copy-button")

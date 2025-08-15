@@ -48,7 +48,7 @@ export function showSetupDialog(showWhat) {
         null,
         () => {
             let title;
-            if (showWhat == "stages")
+            if (showWhat === "stages")
                 title = theOneLocalizationManager.getText(
                     "ReaderSetup.SetUpDecodableReaderTool",
                     "Set up Decodable Reader Tool"
