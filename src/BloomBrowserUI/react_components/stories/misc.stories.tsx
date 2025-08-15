@@ -1,6 +1,3 @@
-// old comment says Don't add /** @jsxFrag React.Fragment */ or these stories won't show up in StoryBook! (at least in Aug 2022)
-// But as of Mar 2025, using React 17 and Storybook 8.6.2, it seems to work fine, and without it, won't compile.
-/** @jsxFrag Fragment */
 import { css } from "@emotion/react";
 import * as React from "react";
 import { Typography, MenuItem } from "@mui/material";

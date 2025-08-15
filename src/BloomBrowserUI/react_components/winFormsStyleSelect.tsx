@@ -1,10 +1,14 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { ThemeProvider, Theme } from "@mui/material/styles";
 import { makeStyles } from "@mui/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
-import { FormControl, MenuProps, Select } from "@mui/material";
+import {
+    FormControl,
+    MenuProps,
+    Select,
+    SelectChangeEvent
+} from "@mui/material";
 
 declare module "@mui/styles/defaultTheme" {
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-empty-interface

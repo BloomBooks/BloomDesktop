@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import { Radio, Typography } from "@mui/material";
 import * as React from "react";
 import { useState } from "react";

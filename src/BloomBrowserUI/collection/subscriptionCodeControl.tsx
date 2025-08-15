@@ -1,11 +1,6 @@
-/**
- * @jsx jsx
- * @jsxFrag React.Fragment
- **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { Label } from "../react_components/l10nComponents";
-import { Link } from "../react_components/link";
 import { get, post, postJson, useApiStringState } from "../utils/bloomApi";
 import { FontAwesomeIcon } from "../bloomIcons";
 import Button from "@mui/material/Button";

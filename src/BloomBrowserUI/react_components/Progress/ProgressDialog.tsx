@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import { Button, CircularProgress } from "@mui/material";
 import * as React from "react";

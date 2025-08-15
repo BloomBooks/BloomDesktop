@@ -1,10 +1,14 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { MenuItem, Popover, PopoverOrigin } from "@mui/material";
+import {
+    MenuItem,
+    Popover,
+    PopoverOrigin,
+    SelectChangeEvent
+} from "@mui/material";
 import FontDisplayBar from "../../react_components/fontDisplayBar";
 import FontInformationPane from "../../react_components/fontInformationPane";
 import WinFormsStyleSelect from "../../react_components/winFormsStyleSelect";

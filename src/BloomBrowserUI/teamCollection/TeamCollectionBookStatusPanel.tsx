@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
@@ -11,7 +10,10 @@ import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+import {
+    IBloomWebSocketEvent,
+    useSubscribeToWebSocketForEvent
+} from "../utils/WebSocketManager";
 import { BookProblem } from "../react_components/bookProblem";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";

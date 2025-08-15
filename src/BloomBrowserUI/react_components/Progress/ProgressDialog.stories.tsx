@@ -1,5 +1,3 @@
-/** @jsx jsx **/
-import { jsx } from "@emotion/react";
 import * as React from "react";
 import { ProgressDialog } from "./ProgressDialog";
 import WebSocketManager, {

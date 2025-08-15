@@ -1,14 +1,11 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
-import * as React from "react";
 import {
     ILocalizationProps,
     LocalizableElement,
     Label,
     ILocalizationState
 } from "./l10nComponents";
-import { FormControlLabel, Switch } from "@mui/material";
 
 interface ICheckboxProps extends ILocalizationProps {
     id?: string;
