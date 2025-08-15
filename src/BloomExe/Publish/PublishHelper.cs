@@ -1170,28 +1170,105 @@ namespace Bloom.Publish
         )
         {
             var images = bookDom.SafeSelectNodes("//img").Cast<SafeXmlElement>().ToArray();
+            // src values that occur in uncropped images. Note, it is NOT the case that an img whose src
+            // is in this set never cropped; it just means that at least one occurrence of it is not
+            // cropped, which makes the image name unavailable to use for a cropped image.
+            var uncroppedSrcNames = new HashSet<string>();
+            // key is a combination of src, style, and canvas element style height and width that determines
+            // the name of an image file that should be used for this combination, which is the value.
+            var cropped = new Dictionary<string, string>();
             foreach (var img in images)
             {
-                ReallyCropImage(img, imageSourceFolder, imageDestFolder);
+                var src = img.GetAttribute("src");
+                var style = img.GetAttribute("style");
+                if (!SignifiesCropping(style))
+                {
+                    uncroppedSrcNames.Add(src);
+                }
+            }
+
+            foreach (var img in images)
+            {
+                var src = img.GetAttribute("src");
+                var style = img.GetAttribute("style");
+                var imgContainer = img.ParentNode as SafeXmlElement;
+                var canvasElement = imgContainer?.ParentNode as SafeXmlElement;
+                var canvasElementStyle = canvasElement?.GetAttribute("style");
+                if (!SignifiesCropping(style) || canvasElementStyle == null)
+                    continue;
+                var canvasElementWidth = GetNumberFromPx("width", canvasElementStyle);
+                var canvasElementHeight = GetNumberFromPx("height", canvasElementStyle);
+
+                var key = $"{src}|{style}|{canvasElementWidth}|{canvasElementHeight}";
+                if (cropped.TryGetValue(key, out string fileName))
+                {
+                    // This is a duplicate. We can use the same cropped image file.
+                    img.SetAttribute("src", fileName);
+                    continue;
+                }
+
+                var croppedFileName = ReallyCropImage(
+                    img,
+                    imageSourceFolder,
+                    imageDestFolder,
+                    uncroppedSrcNames.Contains(src)
+                );
+                cropped[key] = croppedFileName;
             }
         }
 
-        private static void ReallyCropImage(
+        private static bool SignifiesCropping(string imgStyle)
+        {
+            if (string.IsNullOrEmpty(imgStyle))
+                return false;
+            var width = GetNumberFromPx("width", imgStyle);
+            return width > 0;
+        }
+
+        private static string ReallyCropImage(
             SafeXmlElement img,
             string imageSourceFolder,
-            string imageDestFolder
+            string imageDestFolder,
+            bool useNewName
         )
         {
             var croppedImagePath = MakeCroppedImage(img, imageSourceFolder, imageDestFolder);
+            var src = img.GetAttribute("src");
+            // a good default if we can't produce a cropped image for any reason.
+            // (The tests in MakeCroppedImage are a bit more robus than the ones we do before
+            // deciding to call this method.) Capture this before we unencode, since it wants
+            // to be a value we can put in a src attribute (if it doesn't get changed)
+            // to lead to the file we may put at an unchanged file name.
+            var result = src;
+            // We don't need the path here, but this function may correct 'src' (e.g.,
+            // removing some url encoding to find the actual file). And if we're not
+            // using a new name, we want to exactly overwrite the original image file.
+            UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
             if (croppedImagePath != null)
             {
-                var src = img.GetAttribute("src");
-                var destPath = Path.Combine(imageDestFolder, src);
-                RobustFile.Move(croppedImagePath, destPath, true);
-                // If it failed, it should have already logged the reason. I think all we can do
-                // is leave the image alone.
+                if (useNewName)
+                {
+                    // It's tempting to try to come up with a name based on the original image name,
+                    // but it's quite tricky (with arbitrary characters possibly in the name)
+                    // to be sure that the value we put in the src will actually lead the browser to
+                    // the right file. I decided to just stick with the guid that MakeCroppedImage
+                    // produces, which contains no characters that need to be encoded.
+
+                    // All images with this name and crop should use this
+                    result = Path.GetFileName(croppedImagePath);
+                    // Including the current image
+                    img.SetAttribute("src", result);
+                }
+                else
+                {
+                    var destPath = Path.Combine(imageDestFolder, src);
+                    RobustFile.Move(croppedImagePath, destPath, true);
+                    // If it failed, it should have already logged the reason. I think all we can do
+                    // is leave the image alone.
+                }
             }
-            img.RemoveAttribute("style");
+            img.RemoveAttribute("style"); // so nothing can possibly think it needs more cropping
+            return result;
         }
 
         /// <summary>
@@ -1602,12 +1679,19 @@ namespace Bloom.Publish
         }
 
         public static string ProblemFontsPath;
-        private static void ReportProblemFontsForHarvesterMode(HashSet<string> invalidFonts, HashSet<string> illegalFonts, HashSet<string> missingFonts)
+
+        private static void ReportProblemFontsForHarvesterMode(
+            HashSet<string> invalidFonts,
+            HashSet<string> illegalFonts,
+            HashSet<string> missingFonts
+        )
         {
             // If we are running in harvester mode, we want to report the fonts that are not suitable for publication.
             // This is so that the harvester can report them to the user, and won't upload the artifacts.
-            if (Program.RunningHarvesterMode &&
-                (invalidFonts.Count > 0 || illegalFonts.Count > 0 || missingFonts.Count > 0))
+            if (
+                Program.RunningHarvesterMode
+                && (invalidFonts.Count > 0 || illegalFonts.Count > 0 || missingFonts.Count > 0)
+            )
             {
                 var bldr = new StringBuilder();
                 foreach (var fontName in invalidFonts)
@@ -1636,10 +1720,10 @@ namespace Bloom.Publish
             if (Program.RunningHarvesterMode && !FontsApi.AvailableFontMetadata.Any())
             {
                 var fontNames = new List<string>
-                    {
-                        DefaultFont, // Ensure that Andika's metadata is always available.
-                        "ABeeZee"    // Another font distributed with Bloom
-                    };
+                {
+                    DefaultFont, // Ensure that Andika's metadata is always available.
+                    "ABeeZee" // Another font distributed with Bloom
+                };
                 foreach (var font in fontsWanted)
                 {
                     if (!fontNames.Contains(font.fontFamily))
