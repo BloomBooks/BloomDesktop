@@ -603,37 +603,74 @@ div#bloomDataDiv {
 .bloom-fullBleed .bloom-page {
     transform-origin: top left;
     transition: 0.5s ease-in-out;
+    --hide-bleed-adjustment: 0; // Gets set when publishingWithoutFullBleed.
 }
 .bloom-fullBleed .bloom-page.A5Portrait {
-    transform: translate(0, -1.25675676mm) scale(1.04054054);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(0, -1.25675676mm) scale(1.04054054);
 }
 .bloom-fullBleed .bloom-page.A5Landscape {
-    transform: translate(-1.25675676mm, 0) scale(1.04054054);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(-1.25675676mm, 0) scale(1.04054054);
 }
 .bloom-fullBleed .bloom-page.A4Portrait {
     transform: translate(0, -1.24285714mm) scale(1.02857143);
 }
 .bloom-fullBleed .bloom-page.A4Landscape {
-    transform: translate(-1.24285714mm, 0) scale(1.02857143);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(-1.24285714mm, 0) scale(1.02857143);
 }
 .bloom-fullBleed .bloom-page.A3Portrait {
-    transform: translate(0, -1.24242424mm) scale(1.02020202);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(0, -1.24242424mm) scale(1.02020202);
 }
 .bloom-fullBleed .bloom-page.A3Landscape {
-    transform: translate(-1.24242424mm, 0) scale(1.02020202);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(-1.24242424mm, 0) scale(1.02020202);
 }
 .bloom-fullBleed .bloom-page.USComicPortrait {
-    transform: translate(0, -0.06462636in) scale(1.03565592);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(0, -0.06462636in) scale(1.03565592);
 }
 .bloom-fullBleed .bloom-page.Size6x9Portrait {
-    transform: translate(0, -0.05905512in) scale(1.03937008);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(0, -0.05905512in) scale(1.03937008);
 }
 .bloom-fullBleed .bloom-page.Size6x9Landscape {
-    transform: translate(-0.05905512in, 0) scale(1.03937008);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(-0.05905512in, 0) scale(1.03937008);
 }
 .bloom-mediaBox {
     page-break-after: always;
     overflow: hidden;
+    // This doesn't actually produce a perfect size; it's a kludge to get things
+    // to look roughly right until we actually implement the page sizes that
+    // don't override this.
+    width: fit-content;
 }
 .bloom-mediaBox.A5Portrait {
     width: 154mm;
@@ -681,6 +718,9 @@ div#bloomDataDiv {
 }
 body.publishingWithoutFullBleed .bloom-mediaBox {
     overflow: hidden;
+    .bloom-page {
+        --hide-bleed-adjustment: -3mm;
+    }
 }
 body.publishingWithoutFullBleed .bloom-mediaBox.A5Portrait {
     width: 148mm;
