@@ -1139,7 +1139,10 @@ namespace Bloom.Publish
         )
         {
             var images = bookDom.SafeSelectNodes("//img").Cast<SafeXmlElement>().ToArray();
-            var uncropped = new HashSet<string>();
+            // src values that occur in uncropped images. Note, it is NOT the case that an img whose src
+            // is in this set never cropped; it just means that at least one occurrence of it is not
+            // cropped, which makes the image name unavailable to use for a cropped image.
+            var uncroppedSrcNames = new HashSet<string>();
             // key is a combination of src, style, and canvas element style height and width that determines
             // the name of an image file that should be used for this combination, which is the value.
             var cropped = new Dictionary<string, string>();
@@ -1149,7 +1152,7 @@ namespace Bloom.Publish
                 var style = img.GetAttribute("style");
                 if (!SignifiesCropping(style))
                 {
-                    uncropped.Add(src);
+                    uncroppedSrcNames.Add(src);
                 }
             }
 
@@ -1177,7 +1180,7 @@ namespace Bloom.Publish
                     img,
                     imageSourceFolder,
                     imageDestFolder,
-                    uncropped.Contains(src)
+                    uncroppedSrcNames.Contains(src)
                 );
                 cropped[key] = croppedFileName;
             }
@@ -1202,7 +1205,9 @@ namespace Bloom.Publish
             var src = img.GetAttribute("src");
             // a good default if we can't produce a cropped image for any reason.
             // (The tests in MakeCroppedImage are a bit more robus than the ones we do before
-            // deciding to call this method.)
+            // deciding to call this method.) Capture this before we unencode, since it wants
+            // to be a value we can put in a src attribute (if it doesn't get changed)
+            // to lead to the file we may put at an unchanged file name.
             var result = src;
             // We don't need the path here, but this function may correct 'src' (e.g.,
             // removing some url encoding to find the actual file). And if we're not
@@ -1212,6 +1217,12 @@ namespace Bloom.Publish
             {
                 if (useNewName)
                 {
+                    // It's tempting to try to come up with a name based on the original image name,
+                    // but it's quite tricky (with arbitrary characters possibly in the name)
+                    // to be sure that the value we put in the src will actually lead the browser to
+                    // the right file. I decided to just stick with the guid that MakeCroppedImage
+                    // produces, which contains no characters that need to be encoded.
+
                     // All images with this name and crop should use this
                     result = Path.GetFileName(croppedImagePath);
                     // Including the current image
