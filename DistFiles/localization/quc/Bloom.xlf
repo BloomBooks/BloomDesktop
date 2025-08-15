@@ -1496,8 +1496,8 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <note>ID: EditTab.ContentLanguagesDropdown</note>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip">
-        <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
-        <target xml:lang="quc" state="needs-translation">Choose language to make this a bilingual or trilingual book</target>
+        <source xml:lang="en">This is disabled because it won't change anything on this page.</source>
+        <target xml:lang="quc" state="needs-translation">This is disabled because it won't change anything on this page.</target>
         <note>ID: EditTab.ContentLanguagesDropdown.DisabledTooltip</note>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip" approved="yes">
