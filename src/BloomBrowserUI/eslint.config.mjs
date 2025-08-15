@@ -98,7 +98,10 @@ export default [
                 { terms: ["nocommit"], location: "anywhere" }
             ],
             // Downgraded from error to warnings
-            "@typescript-eslint/no-empty-function": "warn",
+            "@typescript-eslint/no-empty-function": [
+                "warn",
+                { allow: ["arrowFunctions"] }
+            ],
             "@typescript-eslint/no-empty-interface": "warn",
             "@typescript-eslint/no-explicit-any": "warn",
             "@typescript-eslint/no-unused-vars": [
