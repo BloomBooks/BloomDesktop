@@ -2,15 +2,12 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { getBloomApiPrefix } from "../utils/bloomApi";
 import Typography from "@mui/material/Typography";
 import {
     getPageLabel,
     getTemplatePageImageSource,
     IBookGroup,
-    ITemplateBook,
-    ITemplateBookInfo
+    ITemplateBook
 } from "./PageChooserDialog";
 import PageThumbnail from "./PageThumbnail";
 import TemplateBookErrorReplacement from "./TemplateBookErrorReplacement";

@@ -177,7 +177,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     const [agreementsAccepted, setAgreementsAccepted] = useState<boolean>(
         false
     );
-    const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
+    const [isPlaygroundBook, _setIsPlaygroundBook] = useApiBoolean(
         "publish/isPlaygroundBook",
         true
     );

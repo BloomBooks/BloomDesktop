@@ -1075,8 +1075,8 @@ let reportedTextSelected = isTextSelected();
 export function bootstrap() {
     bloomQtipUtils.setQtipZindex();
 
-    $.fn.reverse = function() {
-        return this.pushStack(this.get().reverse(), arguments);
+    $.fn.reverse = function(...args) {
+        return this.pushStack(this.get().reverse(), ...args);
     };
 
     document.addEventListener("selectionchange", () => {

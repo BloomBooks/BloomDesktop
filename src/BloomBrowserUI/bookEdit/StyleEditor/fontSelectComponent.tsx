@@ -105,7 +105,7 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
         });
     };
 
-    const handleFontChange = event => {
+    const handleFontChange = (event: SelectChangeEvent) => {
         const fontName: string = event.target.value;
         setFontChoice(getFontDataFromName(event.target.value));
         if (props.onChangeFont) {

@@ -3884,7 +3884,7 @@ export default class AudioRecording implements IAudioRecorder {
             this.removeExpectedStatusFromAll();
             if (which === "play") {
                 // We need a different label.
-                var label = document.getElementById("audio-play-label")!;
+                const label = document.getElementById("audio-play-label")!;
                 if (!this.originalPlayLabel) {
                     this.originalPlayLabel = label.innerText;
                 }
@@ -3904,7 +3904,7 @@ export default class AudioRecording implements IAudioRecorder {
                 // confident of capturing the original (localized) label. If we start clearing
                 // the variable, I'm concerned that there may be some small chance that at some
                 // point we will capture "Pause" and then we will be stuck there.
-                var label = document.getElementById("audio-play-label")!;
+                const label = document.getElementById("audio-play-label")!;
                 label.innerText = this.originalPlayLabel;
                 label.classList.remove("hide-counter-still-count");
             }

@@ -9,7 +9,9 @@ import { ITool } from "../../toolbox";
 import { get } from "../../../../utils/bloomApi";
 
 export class LeveledReaderToolboxTool implements ITool {
-    imageUpdated(): void {}
+    imageUpdated(): void {
+        // No action needed for this tool
+    }
     public makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }

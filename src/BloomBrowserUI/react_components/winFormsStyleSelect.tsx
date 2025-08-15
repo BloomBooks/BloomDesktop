@@ -28,7 +28,7 @@ interface FormsSelectProps {
     // Originally used to distinguish multiple Selects on one container, but as we move to having
     // more and more of Bloom in React, it's probably better that each Select have its own key.
     idKey?: string;
-    onChangeHandler: (event: any) => void;
+    onChangeHandler: (event: SelectChangeEvent) => void;
     currentValue: string;
     // Use this if you need to modify the style of popup menus by increasing z-index
     // (e.g., to make the popup be in front of the bloom font dialog)

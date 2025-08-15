@@ -23,7 +23,7 @@ export interface IBookTeamCollectionStatus {
     isDisconnected: boolean;
     isNewLocalBook: boolean;
     error: string; // This one is not current sent from the C# side.
-    checkinMessage: string;
+    checkInMessage: string;
     isUserAdmin: boolean;
 }
 
@@ -43,7 +43,7 @@ export const initialBookStatus: IBookTeamCollectionStatus = {
     isDisconnected: false,
     isNewLocalBook: false,
     error: "",
-    checkinMessage: "",
+    checkInMessage: "",
     isUserAdmin: false
 };
 

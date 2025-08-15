@@ -26,9 +26,12 @@ $(document).ready(() => {
 
     // In preview mode we set videos to be preload="none" to prevent a memory leak. This observer is set up
     // so that videos that are scrolled into view will be loaded, so the user can see
-    // the first frame, not just a placholder. See book.PreventVideoAutoLoad()
+    // the first frame, not just a placeholder. See book.PreventVideoAutoLoad()
     const videos = [].slice.call(document.querySelectorAll("video"));
-    var videoObserver = new IntersectionObserver(function(entries, observer) {
+    const videoObserver = new IntersectionObserver(function(
+        entries,
+        _observer
+    ) {
         entries.forEach(function(video) {
             if (video.isIntersecting) {
                 // doesn't work
