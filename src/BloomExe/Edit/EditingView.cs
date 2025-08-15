@@ -52,6 +52,7 @@ namespace Bloom.Edit
         private BloomWebSocketServer _webSocketServer;
         private ZoomControl _zoomControl;
         private PageListApi _pageListApi;
+        private DateTime? _lastTopBarMenuClosedTime;
 
         public delegate EditingView Factory(); //autofac uses this
 
@@ -1554,12 +1555,14 @@ namespace Bloom.Edit
 
         public void ContentLanguagesDropdownClicked()
         {
-            _contentLanguagesDropdown.Items.Clear();
-            if (_contentLanguagesDropdown.Visible)
+            // Suppress reopening if just closed
+            if (IsRecentTopBarMenuClose())
             {
-                _contentLanguagesDropdown.Hide();
+                _lastTopBarMenuClosedTime = null;
                 return;
             }
+
+            _contentLanguagesDropdown.Items.Clear();
 
             var nSelected = _model.ContentLanguages.Count(l => l.Selected);
             foreach (var item in _model.ContentLanguages)
@@ -1579,6 +1582,10 @@ namespace Bloom.Edit
                 );
                 _contentLanguagesDropdown.Items.Add(menuItem);
             }
+
+            Browser.OnBrowserClick += Browser_Click;
+            _editControlsReactControl.OnBrowserClick += Browser_Click;
+
             // Let the menu appear slightly below where the mouse is since it might be
             // hard to find exactly where the bottom left of the Dropdown button is
             _contentLanguagesDropdown.Show(MousePosition.X, MousePosition.Y + 8);
@@ -1586,12 +1593,14 @@ namespace Bloom.Edit
 
         public void LayoutChoicesDropdownClicked()
         {
-            _layoutChoicesDropdown.Items.Clear();
-            if (_layoutChoicesDropdown.Visible)
+            // Suppress reopening if just closed
+            if (IsRecentTopBarMenuClose())
             {
-                _layoutChoicesDropdown.Hide();
+                _lastTopBarMenuClosedTime = null;
                 return;
             }
+
+            _layoutChoicesDropdown.Items.Clear();
 
             var layout = _model.GetCurrentLayout();
             var sizeAndOrientationChoices = _model.GetSizeAndOrientationChoices();
@@ -1619,9 +1628,23 @@ namespace Bloom.Edit
                 menuItem.Enabled = false;
                 _layoutChoicesDropdown.Items.Add(menuItem);
             }
+
+            Browser.OnBrowserClick += Browser_Click;
+            _editControlsReactControl.OnBrowserClick += Browser_Click;
+
             // Let the menu appear slightly below where the mouse is since it might be
             // hard to find exactly where the bottom left of the Dropdown button is
             _layoutChoicesDropdown.Show(MousePosition.X, MousePosition.Y + 8);
+        }
+
+        private bool IsRecentTopBarMenuClose()
+        {
+            if (_lastTopBarMenuClosedTime.HasValue)
+            {
+                var timeSinceLastClose = DateTime.UtcNow - _lastTopBarMenuClosedTime.Value;
+                return timeSinceLastClose.TotalMilliseconds < 300;
+            }
+            return false;
         }
 
         void OnPaperSizeAndOrientationMenuClick(object sender, EventArgs e)
@@ -2001,6 +2024,19 @@ namespace Bloom.Edit
                     );
                     Debug.WriteLine("Failed to download image: " + ex.Message);
                 }
+            }
+        }
+
+        private void Browser_Click(object sender, EventArgs e)
+        {
+            Browser.OnBrowserClick -= Browser_Click;
+            _editControlsReactControl.OnBrowserClick -= Browser_Click;
+
+            if (_contentLanguagesDropdown.Visible || _layoutChoicesDropdown.Visible)
+            {
+                _contentLanguagesDropdown?.Hide();
+                _layoutChoicesDropdown?.Hide();
+                _lastTopBarMenuClosedTime = DateTime.UtcNow;
             }
         }
     }
