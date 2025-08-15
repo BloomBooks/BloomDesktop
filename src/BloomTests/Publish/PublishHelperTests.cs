@@ -1321,6 +1321,10 @@ namespace BloomTests.Publish
                 _pathToTestImages,
                 "man.jpg"
             );
+            // We are deliberately changing the name slightly to test for a particular problem
+            // that was occurring when cropping renamed the output to an 'original' name
+            // containing a space. The space needs to be in the name of the image that does
+            // NOT occur uncropped.
             RobustFile.Copy(path, Path.Combine(_folder.Path, "man 3.jpg"));
             _manJpgBytes = RobustFile.ReadAllBytes(path);
 
