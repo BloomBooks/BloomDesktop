@@ -299,6 +299,9 @@ export function addBloomSynphonyExtensions() {
                 new RegExp(windowsLineBreakReplacement, "g"),
                 "\r\n"
             );
+            // Something seems to be wrong around here for very complex markup involving empty elements and unclosed tags,
+            // that can result in fragments with excess closing tags. One example is page 26 of the book in BL-15111.
+            // The audio code is now removing empty elements, so it's not a problem; but it may bite us again.
 
             var unclosedTags = [];
             // split the paragraph into sentences and
