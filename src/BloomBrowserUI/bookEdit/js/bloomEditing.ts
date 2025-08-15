@@ -392,10 +392,17 @@ export interface IImageInfo {
 
 export const kMakeNewCanvasElement = "makeNewCanvasElement";
 
+export function notifyToolOfChangedImage() {
+    const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
+    toolbox?.getCurrentTool()?.imageUpdated();
+}
+
 // called by c# so be careful about changing the signature, including names of parameters
 export function changeImage(imageInfo: IImageInfo) {
     if (imageInfo.imageId === kMakeNewCanvasElement) {
         theOneCanvasElementManager.finishPasteImageFromClipboard(imageInfo);
+        // like to do this here, but the overlay isn't always really created yet.
+        //notifyToolOfChangedImage();
         return;
     }
     const imgOrImageContainer = document.getElementById(imageInfo.imageId);
@@ -414,6 +421,7 @@ export function changeImage(imageInfo: IImageInfo) {
     theOneCanvasElementManager.updateCanvasElementForChangedImage(
         imgOrImageContainer
     );
+    notifyToolOfChangedImage();
 }
 
 export function changeImageInfo(
