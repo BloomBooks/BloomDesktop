@@ -1495,9 +1495,9 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES" state="final">Configuración multilingüe</target>
         <note>ID: EditTab.ContentLanguagesDropdown</note>
       </trans-unit>
-      <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip" approved="yes">
-        <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
-        <target xml:lang="es-ES" state="final">Elija el idioma para hacer de éste un libro bilingüe o trilingüe</target>
+      <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip">
+        <source xml:lang="en">This is disabled because it won't change anything on this page.</source>
+        <target xml:lang="es-ES" state="translated">Elija el idioma para hacer de éste un libro bilingüe o trilingüe</target>
         <note>ID: EditTab.ContentLanguagesDropdown.DisabledTooltip</note>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip" approved="yes">
