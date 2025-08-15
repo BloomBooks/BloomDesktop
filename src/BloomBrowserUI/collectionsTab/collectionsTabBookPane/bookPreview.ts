@@ -5,7 +5,7 @@ import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { CollectionsTabBookPane } from "./CollectionsTabBookPane";
 
 $.fn.CenterVerticallyInParent = function() {
-    return this.each(function(i) {
+    return this.each(function() {
         //TODO: this height() thing is a mystery. Whereas Firebug will say the box is, say, 53px, this will say 675, so that no centering is possible
         const ah = $(this).height();
         const ph = $(this)
@@ -26,9 +26,12 @@ $(document).ready(() => {
 
     // In preview mode we set videos to be preload="none" to prevent a memory leak. This observer is set up
     // so that videos that are scrolled into view will be loaded, so the user can see
-    // the first frame, not just a placholder. See book.PreventVideoAutoLoad()
+    // the first frame, not just a placeholder. See book.PreventVideoAutoLoad()
     const videos = [].slice.call(document.querySelectorAll("video"));
-    var videoObserver = new IntersectionObserver(function(entries, observer) {
+    const videoObserver = new IntersectionObserver(function(
+        entries,
+        _observer
+    ) {
         entries.forEach(function(video) {
             if (video.isIntersecting) {
                 // doesn't work

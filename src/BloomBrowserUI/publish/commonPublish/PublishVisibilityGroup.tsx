@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { css, jsx } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { SettingsGroup } from "./PublishScreenBaseComponents";
 import { useL10n } from "../../react_components/l10nHooks";

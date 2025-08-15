@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css, jsx } from "@emotion/react";
 import { useL10n } from "./l10nHooks";
 import * as React from "react";
 import {

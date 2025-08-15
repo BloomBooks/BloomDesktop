@@ -55,7 +55,7 @@ export function getMd5(message): string {
         }
         bytes += i - start;
         start = i - 64;
-        if (index == length) {
+        if (index === length) {
             blocks[i >> 2] |= EXTRA[i & 3];
             ++index;
         }

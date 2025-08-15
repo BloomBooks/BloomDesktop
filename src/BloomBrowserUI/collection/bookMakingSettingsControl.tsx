@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material";
 import * as React from "react";
 import { kUiFontStack, lightTheme } from "../bloomMaterialUITheme";

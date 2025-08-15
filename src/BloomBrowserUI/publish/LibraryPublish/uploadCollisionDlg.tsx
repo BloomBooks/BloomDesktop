@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import { Radio, Typography } from "@mui/material";
 import * as React from "react";
 import { useState } from "react";
@@ -623,7 +622,6 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                         // reported the problem to the user, so just eat the error.
                         post(
                             `libraryPublish/${command}`,
-                            // eslint-disable-next-line @typescript-eslint/no-empty-function
                             () => {},
                             () => {
                                 // error indicates we could not change ID.

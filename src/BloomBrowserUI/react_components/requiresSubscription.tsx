@@ -1,8 +1,8 @@
 import { css } from "@emotion/react";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
-import { get, post } from "../utils/bloomApi";
+import { useEffect } from "react";
+import { post } from "../utils/bloomApi";
 import Button from "@mui/material/Button";
 import { kBloomBlue50Transparent, lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";

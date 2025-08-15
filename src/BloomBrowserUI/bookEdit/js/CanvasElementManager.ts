@@ -545,7 +545,7 @@ export class CanvasElementManager {
     private focusFirstVisibleFocusable(activeElement: HTMLElement): boolean {
         const focusElements = this.getAllVisibleFocusableDivs(activeElement);
         if (focusElements.length > 0) {
-            var focusElement = focusElements[0] as HTMLElement;
+            const focusElement = focusElements[0] as HTMLElement;
             focusElement.focus();
             return true;
         }
@@ -3950,7 +3950,6 @@ export class CanvasElementManager {
 
         this.bubbleToDrag = undefined;
         this.mouseDownContainer.classList.remove("grabbing");
-        this.turnOffResizing(this.mouseDownContainer);
         const editable = (event.target as HTMLElement)?.closest(
             ".bloom-editable"
         );
@@ -3995,8 +3994,6 @@ export class CanvasElementManager {
             event.stopPropagation();
         }
     };
-
-    public turnOffResizing(container: Element) {}
 
     // If we get a click (without movement) on a text canvas element, we treat subsequent mouse events on
     // that canvas element as text editing events, rather than drag events, as long as it keeps focus.

@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import {
@@ -26,7 +25,7 @@ import { DialogHelpButton } from "../react_components/BloomDialog/commonDialogCo
 
 // The contents of the Team Collection panel of the Settings dialog.
 
-export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
+export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
     const [repoFolderPath] = useApiStringState(
         "teamCollection/repoFolderPath",
         ""

@@ -42,14 +42,14 @@ export default class Recordable {
             return false;
         }
         if (
-            modeAttribute == RecordingMode.TextBox &&
+            modeAttribute === RecordingMode.TextBox &&
             !this.textBox.classList.contains(kAudioSentence) && // Missing the normal state of text boxes (with audio-sentence on the text box itself)
             this.textBox.getElementsByClassName(kAudioSentence).length === 0 // Also missing the legacy Hard Split (v4.5) setup
         ) {
             return false;
         }
         if (
-            modeAttribute == RecordingMode.Sentence &&
+            modeAttribute === RecordingMode.Sentence &&
             this.textBox.classList.contains(kAudioSentence)
         ) {
             // This looks so strange. Why does the text box itself have audioSentence? Only the children should have it.
@@ -57,7 +57,7 @@ export default class Recordable {
             return false;
         }
         if (
-            modeAttribute == RecordingMode.Sentence &&
+            modeAttribute === RecordingMode.Sentence &&
             this.textBox.getElementsByClassName(kAudioSentence).length === 0
         ) {
             // Note: It might also be empty, but... oh well, we'll re-initialize it anyway.

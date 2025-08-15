@@ -117,7 +117,7 @@ export function useGetLabelForCollection(
     urlKey: string,
     defaultResult: string
 ): string {
-    const { loading, result, error } = useContentful(
+    const { result } = useContentful(
         urlKey
             ? {
                   content_type: "collection",

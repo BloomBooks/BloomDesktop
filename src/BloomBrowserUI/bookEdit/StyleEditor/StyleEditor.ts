@@ -2246,7 +2246,6 @@ export default class StyleEditor {
             initialColor: initialColor,
             palette: BloomPalette.Text,
             onChange: onChange,
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
             onInputFocus: () => {}
         };
         showSimpleColorPickerDialog(colorPickerDialogProps);

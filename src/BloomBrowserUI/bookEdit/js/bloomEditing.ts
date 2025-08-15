@@ -1075,8 +1075,8 @@ let reportedTextSelected = isTextSelected();
 export function bootstrap() {
     bloomQtipUtils.setQtipZindex();
 
-    $.fn.reverse = function() {
-        return this.pushStack(this.get().reverse(), arguments);
+    $.fn.reverse = function(...args) {
+        return this.pushStack(this.get().reverse(), ...args);
     };
 
     document.addEventListener("selectionchange", () => {
@@ -1733,7 +1733,6 @@ function SetupBookLinkGrids(container: HTMLElement) {
                         child.hasAttribute("data-bloom-book-id") // drop buttons that might have been edited by hand and don't have this
                 )
                 .map((button: Element) => {
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     const id = button.getAttribute("data-bloom-book-id")!; // we already filtered out any that don't have this
                     const titleElement = button.getElementsByTagName("p")[0]; // TODO should this be something computed from the Book by asking the server?
                     return {

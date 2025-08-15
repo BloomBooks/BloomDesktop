@@ -51,5 +51,8 @@
         "Winform",
         "Winforms",
         "xmatter"
-    ]
+    ],
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
 }

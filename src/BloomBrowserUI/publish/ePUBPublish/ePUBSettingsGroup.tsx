@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import {
@@ -115,7 +114,6 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                 }}
                                 style={{ width: 145 }}
                                 renderValue={f => {
-                                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                                     const item = epubModes.find(
                                         item => item.mode === f
                                     )!;

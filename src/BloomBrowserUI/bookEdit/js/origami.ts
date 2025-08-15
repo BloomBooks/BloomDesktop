@@ -209,8 +209,8 @@ function adjustModifiedChild(resizedElt: HTMLElement | undefined) {
     }
 }
 
-var origamiUndoStack: any[] = [];
-var origamiUndoIndex = 0; // of item that should be redone next, if any
+const origamiUndoStack: any[] = [];
+let origamiUndoIndex = 0; // of item that should be redone next, if any
 
 // Add a point to which the user can return using 'undo'. Call this before making any change that
 // would make sense to Undo in origami mode.

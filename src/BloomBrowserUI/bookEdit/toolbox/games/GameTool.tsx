@@ -514,8 +514,8 @@ const dragTarget = (e: MouseEvent) => {
     // relative to the mouse.
     let x = e.clientX / scale - targetClickOffsetLeft;
     let y = e.clientY / scale - targetClickOffsetTop;
-    let deltaMin = Number.MAX_VALUE;
-    let deltaRowMin = Number.MAX_VALUE;
+    const deltaMin = Number.MAX_VALUE;
+    const deltaRowMin = Number.MAX_VALUE;
     const width = targetBeingDragged.offsetWidth;
     snappedToExisting = false;
     // This code tries to snap a dragged target so as to form a row with other targets at a uniform spacing,

@@ -101,9 +101,11 @@ export class RadioGroup extends React.Component<IRadioGroupProps> {
     // onSelected and defaultChecked properties to function in the group.
     private recursiveFixRadio(children: React.ReactNode): React.ReactNode {
         return React.Children.map(children, child => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const childProps: any = {};
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const childElt = child as React.ReactElement<any>;
-            if (childElt == null) {
+            if (childElt === null) {
                 return child;
             }
             if (childElt.type === Radio) {

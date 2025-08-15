@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import { ProgressBar } from "./ProgressBar";
 
 const barFrame = (progressBar: JSX.Element) => (

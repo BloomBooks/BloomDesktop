@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css, ThemeProvider } from "@emotion/react";
+import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
 import BloomButton from "../../../react_components/bloomButton";
 import { ImportIcon, InsertSegmentMarkerIcon } from "./TalkingBookToolboxIcons";

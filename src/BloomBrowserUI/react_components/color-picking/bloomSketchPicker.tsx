@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { ColorResult, CustomPicker } from "react-color";
 import { Saturation, Hue, Alpha } from "react-color/lib/components/common";

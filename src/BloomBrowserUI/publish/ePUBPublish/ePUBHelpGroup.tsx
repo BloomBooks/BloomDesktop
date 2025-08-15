@@ -1,4 +1,3 @@
-import * as React from "react";
 import Link from "@mui/material/Link";
 import { HelpGroup } from "../commonPublish/PublishScreenBaseComponents";
 import HelpLink from "../../react_components/helpLink";

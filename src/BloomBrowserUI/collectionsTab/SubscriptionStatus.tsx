@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import "SubscriptionStatus.less";
 import { useApiString } from "../utils/bloomApi";
 import * as React from "react";

@@ -15,6 +15,7 @@ export function WireUpForWinforms(
     component: React.VoidFunctionComponent | React.FunctionComponent
 ) {
     // The c# ReactControl creates an html page that will call this function.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).wireUpRootComponentFromWinforms = (
         root: HTMLElement,
         props?: object

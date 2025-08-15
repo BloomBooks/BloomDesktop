@@ -219,7 +219,7 @@ export default class BloomHintBubbles {
         if (this.wantHelpBubbleOnGroup(groupElement)) {
             const whatToSay = theOneLocalizationManager.insertLangIntoHint(
                 whatToSaySource,
-                groupElement
+                groupElement.get(0)
             );
             this.makeHintBubbleCore(
                 groupElement,
@@ -230,7 +230,7 @@ export default class BloomHintBubbles {
             children.each((i, target) => {
                 const whatToSay = theOneLocalizationManager.insertLangIntoHint(
                     whatToSaySource,
-                    $(target)
+                    $(target).get(0)
                 );
                 this.makeHintBubbleCore(
                     $(target),
@@ -384,7 +384,7 @@ export default class BloomHintBubbles {
             // still need to substitute {lang} if any
             whatToSay = theOneLocalizationManager.insertLangIntoHint(
                 whatToSay,
-                elementToAttachBubbleTo
+                elementToAttachBubbleTo.get(0)
             );
         } else {
             // Most legacy label elements don't have data-i18n and are inserted into our
@@ -394,7 +394,7 @@ export default class BloomHintBubbles {
                 elementWithBubbleAttributes.attr("data-i18n") || whatToSay;
             whatToSay = theOneLocalizationManager.getLocalizedHint(
                 l10nId,
-                elementToAttachBubbleTo
+                elementToAttachBubbleTo.get(0)
             );
         }
         return whatToSay;
@@ -465,7 +465,7 @@ export default class BloomHintBubbles {
         if (linkText && linkTarget) {
             linkText = theOneLocalizationManager.getLocalizedHint(
                 linkText,
-                target
+                target.get(0)
             );
             if (linkTarget.indexOf("(") > 0)
                 linkTarget = "javascript:" + linkTarget + ";";

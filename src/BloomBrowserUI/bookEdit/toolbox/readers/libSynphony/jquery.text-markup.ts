@@ -314,9 +314,8 @@ import { ReaderToolsModel } from "../readerToolsModel";
                 return frag.isSentence;
             });
 
-            const subMax = Math.max.apply(
-                Math,
-                fragments.map(frag => {
+            const subMax = Math.max(
+                ...fragments.map(frag => {
                     return frag.wordCount();
                 })
             );

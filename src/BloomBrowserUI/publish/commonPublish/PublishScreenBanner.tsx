@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
 import Typography from "@mui/material/Typography";

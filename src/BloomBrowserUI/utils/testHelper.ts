@@ -55,7 +55,7 @@ export function ensureIdsDontExist(ids: string[]) {
 
 export const customJasmineMatchers = {
     // This upgrades toBe with an arrow that points to the first character that differs.
-    toBeString: matchersUtil => {
+    toBeString: _ => {
         return {
             compare: (actual, expected) => {
                 const pass = actual === expected;

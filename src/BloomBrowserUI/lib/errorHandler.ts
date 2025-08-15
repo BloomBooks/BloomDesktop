@@ -33,7 +33,7 @@ export function reportError(message: string, stack: string | undefined) {
                 "Content-Type": "application/json; charset=utf-8" // JSON normally uses UTF-8. Need to explicitly set it because UTF-8 is not the default.
             }
         }
-    ).catch(e => {
+    ).catch(() => {
         console.log("*****Got error trying report error");
     });
 }
@@ -67,7 +67,7 @@ export function reportPreliminaryError(
                 "Content-Type": "application/json; charset=utf-8" // JSON normally uses UTF-8. Need to explicitly set it because UTF-8 is not the default.
             }
         }
-    ).catch(e => {
+    ).catch(() => {
         console.log("*****Got error trying report preliminaryError");
     });
 }

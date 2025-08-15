@@ -696,7 +696,6 @@ const CanvasElementContextControls: React.FunctionComponent<{
             l10nId: null,
             english,
             subLabelL10nId: "EditTab.Image.PlayWhenTouched",
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
             onClick: () => {},
             icon: <VolumeUpIcon css={getMenuIconCss(1, "left:2px;")} />,
             featureName: "overlay",
@@ -770,7 +769,6 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 subLabelL10nId: "EditTab.Toolbox.DragActivity.ChooseSound.Help",
                 subLabel:
                     "You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to “elevenlabs.io”.",
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
                 onClick: () => {}
             }
         ];

@@ -72,7 +72,6 @@ interface ILocalizableCheckboxMenuItemProps
 export const divider: ILocalizableMenuItemProps = {
     l10nId: "-",
     english: "",
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     onClick: () => {}
 };
 

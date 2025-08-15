@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useCallback, useState } from "react";
@@ -191,7 +190,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             setTimingsFilePath(await getTimingsFileName());
         }
         getTimingsFileData();
-        let ff = (
+        const ff = (
             bloomEditable.ownerDocument.defaultView || window
         ).getComputedStyle(bloomEditable).fontFamily;
 
