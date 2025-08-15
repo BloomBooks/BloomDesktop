@@ -191,7 +191,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             setTimingsFilePath(await getTimingsFileName());
         }
         getTimingsFileData();
-        let ff = (
+        const ff = (
             bloomEditable.ownerDocument.defaultView || window
         ).getComputedStyle(bloomEditable).fontFamily;
 

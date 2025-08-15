@@ -741,7 +741,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         //Prepare the animation wrapper
         animationBackground.appendChild(animationWrapper);
         //position the animation view inside the black rectangle
-        let canvasDimensions = animationCanvas
+        const canvasDimensions = animationCanvas
             .getAttribute("data-imgsizebasedon")
             ?.split(",")
             .map(parseFloat) ?? [16, 9];

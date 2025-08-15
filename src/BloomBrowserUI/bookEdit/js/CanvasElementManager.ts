@@ -545,7 +545,7 @@ export class CanvasElementManager {
     private focusFirstVisibleFocusable(activeElement: HTMLElement): boolean {
         const focusElements = this.getAllVisibleFocusableDivs(activeElement);
         if (focusElements.length > 0) {
-            var focusElement = focusElements[0] as HTMLElement;
+            const focusElement = focusElements[0] as HTMLElement;
             focusElement.focus();
             return true;
         }

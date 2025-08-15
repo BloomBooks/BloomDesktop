@@ -56,7 +56,7 @@ export default class PlaceholderProvider {
                     const para = l1Editable.getElementsByTagName("p")[0];
                     if (para) {
                         para.innerText = placeholderData.text;
-                        var ckEditor = (l1Editable as any).bloomCkEditor;
+                        const ckEditor = (l1Editable as any).bloomCkEditor;
                         if (ckEditor && !ckEditor.instanceReady) {
                             // This typicall happens during page load.
                             // We have a race condition beween getting the placeholder text and initializing the ckeditor

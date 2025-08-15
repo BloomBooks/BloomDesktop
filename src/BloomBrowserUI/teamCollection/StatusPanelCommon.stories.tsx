@@ -59,7 +59,7 @@ const avatar = (lockedByMe: boolean) => (
 // JT: previously was just left uninitialized, but more recent typescript complains.
 // I think the test that uses it may be delibereately testing what the method does with
 // an undefined input.
-let emptyAvatarForProblemState: JSX.Element = (undefined as any) as JSX.Element;
+const emptyAvatarForProblemState: JSX.Element = (undefined as any) as JSX.Element;
 
 export default {
     title: "Team Collection components/StatusPanelCommon"

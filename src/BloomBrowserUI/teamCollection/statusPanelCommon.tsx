@@ -16,8 +16,7 @@ import { StatusPanelState } from "./TeamCollectionBookStatusPanel";
 import { IconHeadingBodyMenuPanel } from "../react_components/iconHeadingBodyMenuPanel";
 
 declare module "@mui/styles/defaultTheme" {
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-empty-interface
     interface DefaultTheme extends Theme {}
 }
 

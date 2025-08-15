@@ -7,8 +7,7 @@ import { lightTheme } from "../bloomMaterialUITheme";
 import { FormControl, MenuProps, Select } from "@mui/material";
 
 declare module "@mui/styles/defaultTheme" {
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-empty-interface
     interface DefaultTheme extends Theme {}
 }
 

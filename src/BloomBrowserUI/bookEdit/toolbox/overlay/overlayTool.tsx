@@ -162,7 +162,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
     // Enhance: if we don't want to have a static, or don't want
     // this function to know about OverlayTool, we could just pass
     // a setter for this as a property.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     OverlayTool.theOneOverlayTool!.callOnNewPageReady = () => {
         bubbleSpecInitialization();
         setIsXmatter(ToolboxToolReactAdaptor.isXmatter());

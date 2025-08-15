@@ -176,7 +176,7 @@ function getSettingsDialogLocalizedStrings() {
  */
 export function initializeReaderSetupDialog() {
     if (
-        typeof getTheOneReaderToolsModel().synphony.source == "undefined" ||
+        typeof getTheOneReaderToolsModel().synphony.source === "undefined" ||
         getTheOneReaderToolsModel().synphony.source === null
     ) {
         throw new Error("ReaderToolsModel was not loaded with settings");

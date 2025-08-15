@@ -115,7 +115,6 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                 }}
                                 style={{ width: 145 }}
                                 renderValue={f => {
-                                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                                     const item = epubModes.find(
                                         item => item.mode === f
                                     )!;

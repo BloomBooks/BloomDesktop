@@ -734,7 +734,7 @@ describe("talking book tests", () => {
 
             // System under test
             // Simulate user deleting the vertical bar character
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             getFrameElementById("page", "1.1")!.innerText = "Phrase 1";
             const tbTool = new TalkingBookTool();
             const doUpdate = await tbTool.updateMarkupAsync();
