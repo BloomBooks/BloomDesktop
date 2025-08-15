@@ -246,7 +246,7 @@ namespace BloomTests.Book
         }
 
         protected Bloom.Book.Book CreateBookWithPhysicalFile(
-            string bodyContents,
+            string bookHtmlDoc,
             CollectionSettings collectionSettings
         )
         {
@@ -259,7 +259,7 @@ namespace BloomTests.Book
                 ProjectContext.GetAfterXMatterFileLocations()
             );
 
-            File.WriteAllText(Path.Combine(_tempFolder.Path, "book.htm"), MakeBookHtml(bodyContents, ""));
+            File.WriteAllText(Path.Combine(_tempFolder.Path, "book.htm"), bookHtmlDoc);
 
             var storage = new BookStorage(
                 this._tempFolder.Path,
@@ -285,11 +285,13 @@ namespace BloomTests.Book
         }
 
         protected virtual Bloom.Book.Book CreateBookWithPhysicalFile(
-            string bodyContents,
+            string bodyContent,
+            string headContent = "",
             bool bringBookUpToDate = false
         )
         {
-            var book = CreateBookWithPhysicalFile(bodyContents, CreateDefaultCollectionsSettings());
+            var fullHtml = MakeBookHtml(bodyContent, headContent);
+            var book = CreateBookWithPhysicalFile(fullHtml, CreateDefaultCollectionsSettings());
             if (bringBookUpToDate)
                 book.BringBookUpToDate(new NullProgress());
             return book;
@@ -385,22 +387,23 @@ namespace BloomTests.Book
 					</p>
 				</div>";
 
-        protected void SetDom(string bodyContents, string headContents = "")
+        protected void SetDom(string bodyContent, string headContent = "")
         {
-            _bookDom = MakeDom(bodyContents, headContents);
+            _bookDom = MakeDom(bodyContent, headContent);
         }
 
-        public static HtmlDom MakeDom(string bodyContents, string headContents = "")
+        public static HtmlDom MakeDom(string bodyContent, string headContent = "")
         {
-            return new HtmlDom(MakeBookHtml(bodyContents, headContents));
+            return new HtmlDom(MakeBookHtml(bodyContent, headContent));
         }
 
-        protected static string MakeBookHtml(string bodyContents, string headContents)
+        // TODO replace?
+        protected static string MakeBookHtml(string bodyContent, string headContent)
         {
             return @"<html ><head>"
-                + headContents
+                + headContent
                 + "</head><body>"
-                + bodyContents
+                + bodyContent
                 + "</body></html>";
         }
 

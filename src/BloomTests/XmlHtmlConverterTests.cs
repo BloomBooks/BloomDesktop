@@ -533,14 +533,13 @@ namespace BloomTests
                 "<div>Some text with a&nbsp;non-breaking space.</div>"
             );
             var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
-            var xml = htmlDom.DocumentElement.InnerText;
-            var nbspIndex = "Some text with a".Length;
+            var xml = htmlDom.DocumentElement.InnerXml;
+            var nbspIndex = xml.IndexOf("Some text with a") + "Some text with a".Length;
             Assert.That(
                 xml[nbspIndex],
                 Is.EqualTo('\u00A0'),
                 "The non-breaking space is preserved"
             );
-            // TODO Test the roundtrip
         }
 
         [Test]

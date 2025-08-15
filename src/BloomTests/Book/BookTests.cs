@@ -383,7 +383,7 @@ namespace BloomTests.Book
 						 <div lang='en'>This is some English</div>
 						</div>
 					</div>";
-            var book = CreateBookWithPhysicalFile(body, true);
+            var book = CreateBookWithPhysicalFile(body, bringBookUpToDate: true);
 
             var appearanceSettings = book.BookInfo.AppearanceSettings;
             Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("default"));
@@ -405,7 +405,7 @@ namespace BloomTests.Book
 						 <div lang='en'>This is some English</div>
 						</div>
 					</div>";
-            var book = CreateBookWithPhysicalFile(body, false);
+            var book = CreateBookWithPhysicalFile(body, bringBookUpToDate: false);
             var cssPath = Path.Combine(book.FolderPath, "customBookStyles.css");
             File.WriteAllText(cssPath, AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme);
             book.EnsureUpToDate();
@@ -430,7 +430,7 @@ namespace BloomTests.Book
 						 <div lang='en'>This is some English</div>
 						</div>
 					</div>";
-            var book = CreateBookWithPhysicalFile(body, false);
+            var book = CreateBookWithPhysicalFile(body, bringBookUpToDate: false);
             var cssPath = Path.Combine(book.FolderPath, "customBookStyles.css");
             File.WriteAllText(cssPath, @".marginBox {left: 40px;}");
             book.EnsureUpToDate();

@@ -787,7 +787,7 @@ namespace BloomTests.Book
         {
             var storage = GetInitialStorageWithCustomHtml(
                 XmlHtmlConverter.CreateDocumentWithBodyContent(
-                    "<div class='bloom-page'><div class='marginBox'></div></body></html>"
+                    "<div class='bloom-page'><div class='marginBox'></div></div>"
                 )
             );
             var dropmeTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "dropme.png"));
@@ -2655,7 +2655,7 @@ These are similar but already have game-theme classes
           </div>
         </div>
         <div class=""imageThenChoices"">
-          <div class=""bloom-imageContainer"" title=""Name: aor_Cat3.png>
+          <div class=""bloom-imageContainer"" title=""Name: aor_Cat3.png"">
             <img src=""aor_Cat3.png"" alt="""" data-copyright=""Copyright SIL International 2009"" data-creator="""" data-license=""cc-by-sa""></img>
           </div>
           <div class=""choices player-shuffle-buttons"">

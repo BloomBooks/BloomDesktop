@@ -1607,7 +1607,7 @@ namespace BloomTests.Book
             assertThatHtmlInBook.HasNoMatchForXpath("//div[@data-book='copyright']");
             // Book typically has some empty versionAcknowledgements inserted as xmatter.
             assertThatHtmlInBook.HasNoMatchForXpath(
-                "//div[@data-book='versionAcknowledgments' and text()]"
+                "//div[@data-book='versionAcknowledgments' and normalize-space(string(.)) != '']"
             );
             metadata = BookMetaData.FromFolder(Path.GetDirectoryName(path));
             Assert.That(metadata.Copyright, Is.Null);
