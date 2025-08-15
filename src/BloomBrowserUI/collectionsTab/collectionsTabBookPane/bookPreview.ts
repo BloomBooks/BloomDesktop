@@ -5,7 +5,7 @@ import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { CollectionsTabBookPane } from "./CollectionsTabBookPane";
 
 $.fn.CenterVerticallyInParent = function() {
-    return this.each(function(i) {
+    return this.each(function() {
         //TODO: this height() thing is a mystery. Whereas Firebug will say the box is, say, 53px, this will say 675, so that no centering is possible
         const ah = $(this).height();
         const ph = $(this)

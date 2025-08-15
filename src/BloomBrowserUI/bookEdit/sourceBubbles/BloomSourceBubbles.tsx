@@ -665,7 +665,7 @@ export default class BloomSourceBubbles {
                         // reliably for some undetermined reason. It's still useful so that clicking on a tooltip focuses its element.
                         // Otherwise the bubble may stay hidden behind something else even when clicked.
                         // However, if the user drags and makes a range selection, we don't want to hide it.
-                        api.elements.tooltip.click(ev => {
+                        api.elements.tooltip.click(() => {
                             const sel = window.getSelection();
                             if (sel && !sel.isCollapsed) {
                                 // user made a range selection, probably to copy. Don't mess with it.

@@ -29,7 +29,7 @@ export default class HtmlHelpLink extends LocalizableElement<
             <Link
                 target="_blank"
                 onClick={() =>
-                    getString(this.target, dummy => {
+                    getString(this.target, () => {
                         // Do nothing
                     })
                 }

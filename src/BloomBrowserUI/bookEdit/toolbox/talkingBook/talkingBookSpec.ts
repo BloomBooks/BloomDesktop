@@ -107,7 +107,7 @@ describe("talking book tests", () => {
         function setAudioFilesDontExist() {
             // Mark that the recording doesn't exist.
             // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
-            spyOn(axios, "get").and.callFake((url: string) => {
+            spyOn(axios, "get").and.callFake(() => {
                 return Promise.resolve({ data: false });
             });
         }
