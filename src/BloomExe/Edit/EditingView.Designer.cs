@@ -149,6 +149,7 @@ namespace Bloom.Edit
             // _editControlsReactControl
             // 
             this._editControlsReactControl.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
+            this._editControlsReactControl.HideVerticalOverflow = true;
             this._editControlsReactControl.JavascriptBundleName = "editTopBarControlsBundle";
             this._L10NSharpExtender.SetLocalizableToolTip(this._editControlsReactControl, null);
             this._L10NSharpExtender.SetLocalizationComment(this._editControlsReactControl, null);
