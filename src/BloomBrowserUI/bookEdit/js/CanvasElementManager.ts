@@ -1501,6 +1501,9 @@ export class CanvasElementManager {
             this.startMoveCropControlX + newLeft - this.oldImageLeft + "px";
         this.currentDragControl!.style.top =
             this.startMoveCropControlY + newTop - this.oldImageTop + "px";
+        // should we use adjustStuffRelatedToImage here? we don't actually need to move
+        // the control box or resize the target, though we may want to change the target content.
+        this.adjustStuffRelatedToImage(this.activeElement, img);
     };
 
     private startResizeDrag(
@@ -1805,9 +1808,12 @@ export class CanvasElementManager {
             imgOrVideo.style.left = this.oldImageLeft * scale + "px";
             imgOrVideo.style.top = this.oldImageTop * scale + "px";
         }
-        // Finally, adjust various things that are affected by the new size.
-        this.alignControlFrameWithActiveElement();
-        this.adjustTarget(this.activeElement);
+        this.adjustStuffRelatedToImage(
+            this.activeElement,
+            imgOrVideo?.tagName === "IMG"
+                ? (imgOrVideo as HTMLImageElement)
+                : undefined
+        );
 
         this.guideProvider.duringDrag(this.activeElement);
     };
@@ -2544,11 +2550,19 @@ export class CanvasElementManager {
         //         }
         //         break;
         // }
-        // adjust other things that are affected by the new size.
-        this.alignControlFrameWithActiveElement();
-        this.adjustTarget(this.activeElement);
+        // adjust other things that are affected by the new size and cropping.
+        this.adjustStuffRelatedToImage(this.activeElement, img);
         this.updateCurrentlyCropped();
     };
+
+    private adjustStuffRelatedToImage(
+        activeElement: HTMLElement,
+        img: HTMLImageElement | undefined
+    ) {
+        this.alignControlFrameWithActiveElement();
+        this.adjustTarget(this.activeElement);
+        notifyToolOfChangedImage(img);
+    }
 
     private adjustDeltaForSnap(
         shouldSnap: boolean,
@@ -4998,7 +5012,7 @@ export class CanvasElementManager {
                     canvasElements[0] as HTMLElement,
                     true
                 );
-                notifyToolOfChangedImage();
+                notifyToolOfChangedImage(bgimg);
                 return;
             }
         }
@@ -5019,7 +5033,7 @@ export class CanvasElementManager {
                     true
                 );
                 adjustTarget(activeElement, getTarget(activeElement));
-                notifyToolOfChangedImage();
+                notifyToolOfChangedImage(img);
                 return;
             }
         }
