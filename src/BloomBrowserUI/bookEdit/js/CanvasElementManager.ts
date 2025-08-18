@@ -24,7 +24,8 @@ import {
     SetupElements,
     attachToCkEditor,
     changeImageInfo,
-    kMakeNewCanvasElement
+    kMakeNewCanvasElement,
+    notifyToolOfChangedImage
 } from "./bloomEditing";
 import {
     EnableAllImageEditing,
@@ -962,6 +963,9 @@ export class CanvasElementManager {
             // Since we may have just added an element, check if the container has at least one
             // canvas element and add the 'bloom-has-canvas-element' class.
             updateCanvasElementClass(bloomCanvas);
+            // There may not really be a changed image, but this is not very costly and covers various cases
+            // where we do need it, such as duplicating a picture overlay.
+            notifyToolOfChangedImage();
         } else {
             // deleted a canvas element. Don't try to focus anything.
             this.removeControlFrame(); // but don't leave this behind.
@@ -4994,6 +4998,7 @@ export class CanvasElementManager {
                     canvasElements[0] as HTMLElement,
                     true
                 );
+                notifyToolOfChangedImage();
                 return;
             }
         }
@@ -5014,6 +5019,7 @@ export class CanvasElementManager {
                     true
                 );
                 adjustTarget(activeElement, getTarget(activeElement));
+                notifyToolOfChangedImage();
                 return;
             }
         }
@@ -5101,6 +5107,7 @@ export class CanvasElementManager {
                         }
                     }
                 );
+                notifyToolOfChangedImage();
             } else {
                 // If the feature is not enabled, we need to show the subscription dialog.
                 showRequiresSubscriptionDialogInEditView("overlay");

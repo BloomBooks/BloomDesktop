@@ -7,6 +7,9 @@ import { isPageBloomGame } from "./games/GameInfo";
 // in Bloom's Edit Page Toolbox.
 export default abstract class ToolboxToolReactAdaptor
     implements ITool, IReactTool {
+    imageUpdated(): void {
+        // does nothing by default
+    }
     public hasRestoredSettings: boolean;
     public abstract makeRootElement(): HTMLDivElement;
     public abstract id(): string;
