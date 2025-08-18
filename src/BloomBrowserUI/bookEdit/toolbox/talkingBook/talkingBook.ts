@@ -7,6 +7,7 @@ import { getAudioRecorder } from "./audioRecording";
 import * as AudioRecorder from "./audioRecording";
 
 export default class TalkingBookTool implements ITool {
+    imageUpdated(): void {}
     public makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
