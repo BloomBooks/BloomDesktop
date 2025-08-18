@@ -17,7 +17,7 @@ type Story = StoryObj;
 
 export const RequiresSubscriptionNoticeDialogStory: Story = {
     name: "RequiresSubscriptionNoticeDialog",
-    render: () => <RequiresSubscriptionNoticeDialog />
+    render: () => <RequiresSubscriptionNoticeDialog featureName="overlay" />
 };
 
 export const RequiresSubscriptionDialogStory: Story = {

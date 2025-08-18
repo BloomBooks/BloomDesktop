@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
+using Bloom.Publish;
 using Bloom.Publish.BloomPub;
 using Bloom.Publish.Epub;
 using Bloom.web;
@@ -28,7 +29,8 @@ namespace Bloom.CLI
         UnhandledException = 1,
         BookHtmlNotFound = 2,
         EpubException = 4,
-        LegacyBookCannotHarvest = 8
+        LegacyBookCannotHarvest = 8,
+        FontProblems = 16, // This is used to indicate that there were font problems that prevent the upload of the book.
     }
 
     class CreateArtifactsCommand
@@ -66,6 +68,11 @@ namespace Bloom.CLI
             {
                 errors.Add(CreateArtifactsExitCode.LegacyBookCannotHarvest.ToString());
                 exitCode &= ~(int)CreateArtifactsExitCode.LegacyBookCannotHarvest;
+            }
+            if ((exitCode & (int)CreateArtifactsExitCode.FontProblems) != 0)
+            {
+                errors.Add(CreateArtifactsExitCode.FontProblems.ToString());
+                exitCode &= ~(int)CreateArtifactsExitCode.FontProblems;
             }
 
             // Check if:
@@ -143,6 +150,14 @@ namespace Bloom.CLI
             string zippedBloomSourceOutputPath = parameters.BloomSourceOutputPath;
             string jsonTextsOutputPath = parameters.JsonTextsOutputPath;
 
+            PublishHelper.ProblemFontsPath = parameters.ProblemFontsPath;
+            if (!string.IsNullOrEmpty(PublishHelper.ProblemFontsPath) &&
+                RobustFile.Exists(PublishHelper.ProblemFontsPath))
+            {
+                // If the file already exists, delete it so we can write a fresh one if needed.
+                RobustFile.Delete(PublishHelper.ProblemFontsPath);
+            }
+
             bool isBloomDOrBloomDigitalRequested =
                 !String.IsNullOrEmpty(zippedBloomPubOutputPath)
                 || !String.IsNullOrEmpty(unzippedBloomDigitalOutputPath);
@@ -214,6 +229,13 @@ namespace Bloom.CLI
                     !RobustFile.Exists(parameters.EpubOutputPath) || parameters.SkipEpubAnalytics,
                     parameters.SkipPdfAnalytics
                 );
+            }
+            // If the problem fonts file exists, it means that there were problems with the fonts
+            // that the harvester will need to report.
+            if (!string.IsNullOrEmpty(PublishHelper.ProblemFontsPath) &&
+                RobustFile.Exists(PublishHelper.ProblemFontsPath))
+            {
+                exitCode |= CreateArtifactsExitCode.FontProblems;
             }
             return exitCode;
         }
@@ -378,21 +400,23 @@ namespace Bloom.CLI
 
             BookServer bookServer = s_projectContext.BookServer;
             BookThumbNailer thumbNailer = s_projectContext.ThumbNailer;
-            var maker = new EpubMaker(thumbNailer, bookServer);
-            maker.ControlForInvoke = control;
+            using (var maker = new EpubMaker(thumbNailer, bookServer))
+            {
+                maker.ControlForInvoke = control;
 
-            maker.Book = s_book;
-            // This is the previous default, but probably we should make it configurable, and possibly change the default.
-            // Note that it will end up Fixed if the presence of canvas elements requires it.
-            maker.Unpaginated = true;
-            // and if it has explicitly been set to fixed, make it that way.
-            if (s_book.BookInfo?.PublishSettings?.Epub?.Mode == "fixed")
-                maker.Unpaginated = false;
-            maker.OneAudioPerPage = true; // default used in EpubApi
-            // Enhance: maybe we want book to have image descriptions on page? use reader font sizes?
+                maker.Book = s_book;
+                // This is the previous default, but probably we should make it configurable, and possibly change the default.
+                // Note that it will end up Fixed if the presence of canvas elements requires it.
+                maker.Unpaginated = true;
+                // and if it has explicitly been set to fixed, make it that way.
+                if (s_book.BookInfo?.PublishSettings?.Epub?.Mode == "fixed")
+                    maker.Unpaginated = false;
+                maker.OneAudioPerPage = true; // default used in EpubApi
+                                              // Enhance: maybe we want book to have image descriptions on page? use reader font sizes?
 
-            // Make the epub
-            maker.SaveEpub(parameters.EpubOutputPath, new NullWebSocketProgress());
+                // Make the epub
+                maker.SaveEpub(parameters.EpubOutputPath, new NullWebSocketProgress());
+            }
         }
 
         public static void CreateThumbnailArtifact(CreateArtifactsParameters parameters)
@@ -512,6 +536,13 @@ namespace Bloom.CLI
             Required = false
         )]
         public string ThumbnailOutputInfoPath { get; set; }
+
+        [Option(
+            "problemFontsPath",
+            HelpText = "Output destination path for a text file which contains information about problematic fonts that prevent artifact upload",
+            Required = false
+            )]
+        public string ProblemFontsPath { get; set; }
 
         private string _creator;
 

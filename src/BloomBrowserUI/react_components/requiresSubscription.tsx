@@ -34,6 +34,9 @@ import {
     useGetFeatureStatus,
     useGetFeatureAvailabilityMessage
 } from "./featureStatus";
+import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
+import { getPageIframeBody } from "../utils/shared";
+import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 
@@ -76,7 +79,7 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
             title={tierMessage}
             onClick={() => {
                 if (!featureStatus?.enabled) {
-                    showRequiresSubscriptionDialog();
+                    showRequiresSubscriptionDialogInAnyView(props.featureName);
                 }
             }}
         />
@@ -331,7 +334,11 @@ export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
     );
 };
 
-export const RequiresSubscriptionNoticeDialog: React.VoidFunctionComponent = () => {
+// I can't find ANY uses of this component, so if there are any, they have probably
+// not been updated to supply the reaquired featureName prop.
+export const RequiresSubscriptionNoticeDialog: React.FunctionComponent<{
+    featureName: string;
+}> = props => {
     // Designed to be invoked from WinForms land.
     const {
         showDialog,
@@ -365,7 +372,10 @@ export const RequiresSubscriptionNoticeDialog: React.VoidFunctionComponent = () 
                         background-color: ${kFormBackground};
                     `}
                 >
-                    <RequiresSubscriptionNotice darkTheme={false} />
+                    <RequiresSubscriptionNotice
+                        darkTheme={false}
+                        featureName={props.featureName}
+                    />
                 </DialogContent>
                 <DialogActions>
                     <BloomButton
@@ -380,12 +390,62 @@ export const RequiresSubscriptionNoticeDialog: React.VoidFunctionComponent = () 
     );
 };
 
-export let showRequiresSubscriptionDialog: () => void = () => {
+// This gets replaced by a showDialog function when the RequiresSubscriptionDialog component is mounted.
+let showRequiresSubscriptionDialogInternal: () => void = () => {
     window.alert("showRequiresSubscriptionDialog is not set up yet.");
 };
+const defaultShowfunction = showRequiresSubscriptionDialogInternal;
 
+let featureNameToShowInRequiresSubscriptionDialog: string | undefined;
+
+// This function should be used to show the dialog in contexts where there is a RequiresSubscriptionDialog
+// component in the React tree. It will make it visible with the appropriate information
+// for the featureName provided here.
+export function showRequiresSubscriptionDialog(featureName: string) {
+    featureNameToShowInRequiresSubscriptionDialog = featureName;
+    showRequiresSubscriptionDialogInternal();
+}
+
+// This function shows it in the edit view, or any other window where the root isn't a React component
+// that already has a RequiresSubscriptionDialog component in it and we can show the dialog in our
+// own document. It makes a div at the document root and renders the RequiresSubscriptionDialog
+// component into it.
+export function showRequiresSubscriptionDialogInEditView(featureName: string) {
+    ShowEditViewDialog(
+        <RequiresSubscriptionDialog featureName={featureName} />
+    );
+    // We have to give it a chance to render, since a useEffect in the render
+    // is what sets the showRequiresSubscriptionDialogInternal function.
+    setTimeout(() => showRequiresSubscriptionDialogInternal(), 0);
+}
+
+export function showRequiresSubscriptionDialogInAnyView(featureName: string) {
+    if (getPageIframeBody()?.ownerDocument ?? document !== document) {
+        // We're in edit mode, but executing from the toolbox. We want the dialog to
+        // show in the edit view, where there is room for it, so we have to
+        // use a function in that iframe's code to show it. (It's not enough
+        // to just make the root element in that iframe; it seems to quietly
+        // not work if we try to render a react component using code in a different
+        // iframe than the element it is rendered into.)
+        getEditTabBundleExports().showRequiresSubscriptionDialog(featureName);
+    } else if (showRequiresSubscriptionDialogInternal === defaultShowfunction) {
+        // no mounted component to show it, so we'll make one.
+        showRequiresSubscriptionDialogInEditView(featureName);
+    } else {
+        showRequiresSubscriptionDialog(featureName);
+    }
+}
+
+// To show this dialog properly, we definitely need a feature name. However, we embed the dialog
+// at the root of various displays, like the whole publish screen, where we don't know which
+// feature we may be displaying it for. So we allow one to be omitted, but if this is to be done,
+// it must be provided when the dialog is shown. This is managed through showRequiresSubscriptionDialog,
+// where the featureName is required, and the featureNameToShowInRequiresSubscriptionDialog, where
+// we put the feature name to be used when the dialog is shown without a props.featureName.
+// This only works because we don't expect more than one instance of this dialog to be shown at a time.
 export const RequiresSubscriptionDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
+    featureName?: string;
 }> = props => {
     // Designed to be invoked natively from TypeScript land.
     const {
@@ -393,7 +453,12 @@ export const RequiresSubscriptionDialog: React.FunctionComponent<{
         closeDialog,
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
-    showRequiresSubscriptionDialog = showDialog;
+    useEffect(() => {
+        showRequiresSubscriptionDialogInternal = showDialog;
+        return () => {
+            showRequiresSubscriptionDialogInternal = defaultShowfunction;
+        };
+    }, [showDialog]);
 
     const dialogTitle = useL10n(
         "Bloom Subscription Feature",
@@ -417,6 +482,10 @@ export const RequiresSubscriptionDialog: React.FunctionComponent<{
                     <RequiresSubscriptionNotice
                         darkTheme={false}
                         inSeparateDialog={true}
+                        featureName={
+                            props.featureName ??
+                            featureNameToShowInRequiresSubscriptionDialog
+                        }
                     />
                 </DialogMiddle>
                 <DialogBottomButtons

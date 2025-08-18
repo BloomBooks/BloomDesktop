@@ -1263,6 +1263,7 @@ namespace Bloom.Edit
                 // hint bubbles (especially; BL-12253) will be too constrained.
                 // Subtracting 5px from 100% ensures that we don't have a horizontal scrollbar and leaves a small margin
                 // between the main page and the toolbox.
+                // If this changes, adjust similar code in the TS SetZoom method, currently in editViewFrame.ts.
                 outerDiv.SetAttribute(
                     "style",
                     String.Format(

@@ -70,12 +70,14 @@ import {
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
-import { postData, postJson } from "../../utils/bloomApi";
+import { get, postData, postJson } from "../../utils/bloomApi";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import { getExactClientSize } from "../../utils/elementUtils";
 import { copyContentToTarget, getTarget } from "bloom-player";
+import { showRequiresSubscriptionDialogInEditView } from "../../react_components/requiresSubscription";
+import { FeatureStatus } from "../../react_components/featureStatus";
 
 export interface ITextColorInfo {
     color: string;
@@ -5015,79 +5017,95 @@ export class CanvasElementManager {
                 return;
             }
         }
-        // otherwise we will add a new canvas element
-        const width = Math.max(
-            this.snapProvider.getSnappedX(
-                bloomCanvas.offsetWidth / 3,
-                undefined
-            ),
-            this.minWidth
-        );
-        const height = Math.max(
-            this.snapProvider.getSnappedY(
-                bloomCanvas.offsetHeight / 3,
-                undefined
-            ),
-            this.minHeight
-        );
-        if (
-            width > bloomCanvas.offsetWidth ||
-            height > bloomCanvas.offsetHeight
-        ) {
-            // Can't paste image into such a tiny canvas
-            return;
-        }
-        const activeGameTab = getActiveGameTab();
-        let positionX = (bloomCanvas.offsetWidth - width) / 2;
-        let positionY = (bloomCanvas.offsetHeight - height) / 2;
-        if (activeGameTab === startTabIndex) {
-            // If we're in the start tab, we want to put it further towards the top left,
-            // so there is room for the target.
-            positionX = positionX / 2;
-            positionY = positionY / 2;
-        }
-        const { x: adjustedX, y: adjustedY } = this.snapProvider.getPosition(
-            undefined,
-            positionX,
-            positionY
-        );
-        const positionInBloomCanvas = new Point(
-            adjustedX,
-            adjustedY,
-            PointScaling.Scaled,
-            "pasteImageFromClipboard"
-        );
-        this.addPictureCanvasElement(
-            positionInBloomCanvas,
-            $(bloomCanvas),
-            undefined,
-            imageInfo,
-            { width, height },
-            newCanvasElement => {
-                switch (activeGameTab) {
-                    case startTabIndex:
-                        // make it a draggable, with a target.
-                        // We want to do this after its shape and position are stable, so we arrange for a callback
-                        // after the aspect ratio is adjusted.
-                        // (It would be nice to do this using async and await, or by passing this action as a param
-                        // all the way down to adjustContainerAspectRatio, but there are eight layers of methods
-                        // and at least one settimeout in between, and if each has to await the others, yet other
-                        // callers of those methods have to become async. It would be a mess.)
-                        // We do this as an action passed to addPictureCanvasElement so that doAfterNewImageAdjusted
-                        // is set before the call to adjustContainerAspectRatio, which would be hard to guarantee
-                        // if we did it after the call to addPictureCanvasElement.
-                        this.doAfterNewImageAdjusted = () => {
-                            makeTargetAndMatchSize(newCanvasElement);
-                        };
-                        break;
-                    case correctTabIndex:
-                        newCanvasElement.classList.add("drag-item-correct");
-                        break;
-                    case wrongTabIndex:
-                        newCanvasElement.classList.add("drag-item-wrong");
+        // otherwise we will add a new canvas element...but only if subscription allows it.
+        get("features/status?featureName=overlay&forPublishing=false", c => {
+            const features = c.data as FeatureStatus;
+            if (features.enabled) {
+                // If the feature is enabled, we can proceed with adding the canvas element.
+                const width = Math.max(
+                    this.snapProvider.getSnappedX(
+                        bloomCanvas.offsetWidth / 3,
+                        undefined
+                    ),
+                    this.minWidth
+                );
+                const height = Math.max(
+                    this.snapProvider.getSnappedY(
+                        bloomCanvas.offsetHeight / 3,
+                        undefined
+                    ),
+                    this.minHeight
+                );
+                if (
+                    width > bloomCanvas.offsetWidth ||
+                    height > bloomCanvas.offsetHeight
+                ) {
+                    // Can't paste image into such a tiny canvas
+                    return;
                 }
+                const activeGameTab = getActiveGameTab();
+                let positionX = (bloomCanvas.offsetWidth - width) / 2;
+                let positionY = (bloomCanvas.offsetHeight - height) / 2;
+                if (activeGameTab === startTabIndex) {
+                    // If we're in the start tab, we want to put it further towards the top left,
+                    // so there is room for the target.
+                    positionX = positionX / 2;
+                    positionY = positionY / 2;
+                }
+                const {
+                    x: adjustedX,
+                    y: adjustedY
+                } = this.snapProvider.getPosition(
+                    undefined,
+                    positionX,
+                    positionY
+                );
+                const positionInBloomCanvas = new Point(
+                    adjustedX,
+                    adjustedY,
+                    PointScaling.Scaled,
+                    "pasteImageFromClipboard"
+                );
+                this.addPictureCanvasElement(
+                    positionInBloomCanvas,
+                    $(bloomCanvas),
+                    undefined,
+                    imageInfo,
+                    { width, height },
+                    newCanvasElement => {
+                        switch (activeGameTab) {
+                            case startTabIndex:
+                                // make it a draggable, with a target.
+                                // We want to do this after its shape and position are stable, so we arrange for a callback
+                                // after the aspect ratio is adjusted.
+                                // (It would be nice to do this using async and await, or by passing this action as a param
+                                // all the way down to adjustContainerAspectRatio, but there are eight layers of methods
+                                // and at least one settimeout in between, and if each has to await the others, yet other
+                                // callers of those methods have to become async. It would be a mess.)
+                                // We do this as an action passed to addPictureCanvasElement so that doAfterNewImageAdjusted
+                                // is set before the call to adjustContainerAspectRatio, which would be hard to guarantee
+                                // if we did it after the call to addPictureCanvasElement.
+                                this.doAfterNewImageAdjusted = () => {
+                                    makeTargetAndMatchSize(newCanvasElement);
+                                };
+                                break;
+                            case correctTabIndex:
+                                newCanvasElement.classList.add(
+                                    "drag-item-correct"
+                                );
+                                break;
+                            case wrongTabIndex:
+                                newCanvasElement.classList.add(
+                                    "drag-item-wrong"
+                                );
+                        }
+                    }
+                );
+            } else {
+                // If the feature is not enabled, we need to show the subscription dialog.
+                showRequiresSubscriptionDialogInEditView("overlay");
             }
-        );
+        });
     }
 
     private addPictureCanvasElement(
@@ -6842,8 +6860,12 @@ export class CanvasElementManager {
             }
         }
         this.alignControlFrameWithActiveElement();
-        // Rerender the image's controls, since we may need to enable the Expand Image button since the size has changed
-        renderCanvasElementContextControls(bgCanvasElement, false);
+        if (bgCanvasElement === this.activeElement) {
+            // Rerender the image's controls, since we may need to enable the Expand Image button since the size has changed.
+            // (When the page is first loaded, we adjust the background image though it is NOT the active element;
+            // in that case, we must not try to render the controls as if they belonged to it.)
+            renderCanvasElementContextControls(bgCanvasElement, false);
+        }
     }
 
     // Store away the current size of the bloom-canvas. At any later time if we notice that
