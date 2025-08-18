@@ -1425,9 +1425,13 @@ namespace Bloom
                 _applicationContainer.BloomServer.EnsureListening();
                 using (var dlg = _applicationContainer.OpenAndCreateCollectionDialog())
                 {
-                    dlg.StartPosition = FormStartPosition.Manual; // try not to have it under the splash screen
-                    dlg.SetDesktopLocation(50, 50);
-                    if (dlg.ShowDialog() != DialogResult.OK)
+                    if (formToClose == null) // otherwise default position on same screen is fine
+                    {
+                        dlg.StartPosition = FormStartPosition.Manual; // try not to have it under the splash screen
+                        dlg.SetDesktopLocation(50, 50);
+                    }
+
+                    if (dlg.ShowDialog(formToClose) != DialogResult.OK)
                     {
                         // If there is a form to close, it means the collection chooser is not the only thing open,
                         // and we don't want to exit the application. Otherwise, we are in initial startup and
