@@ -394,9 +394,9 @@ export interface IImageInfo {
 
 export const kMakeNewCanvasElement = "makeNewCanvasElement";
 
-export function notifyToolOfChangedImage() {
+export function notifyToolOfChangedImage(img?: HTMLImageElement) {
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
-    toolbox?.getCurrentTool()?.imageUpdated();
+    toolbox?.getCurrentTool()?.imageUpdated(img);
 }
 
 // called by c# so be careful about changing the signature, including names of parameters

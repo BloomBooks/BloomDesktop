@@ -71,7 +71,8 @@ export interface ITool {
     // where to find an HTML file for the tool content.
     makeRootElement(): HTMLDivElement;
     // notifies the tool that an image has been changed on the page.
-    imageUpdated(): void;
+    // If the change only affects one image, it may be passed; otherwise, all should be fixed.
+    imageUpdated(img: HTMLImageElement | undefined): void;
 }
 
 export interface IReactTool {
