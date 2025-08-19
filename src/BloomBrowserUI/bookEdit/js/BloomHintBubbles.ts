@@ -230,7 +230,7 @@ export default class BloomHintBubbles {
             children.each((i, target) => {
                 const whatToSay = theOneLocalizationManager.insertLangIntoHint(
                     whatToSaySource,
-                    $(target).get(0)
+                    target as HTMLElement
                 );
                 this.makeHintBubbleCore(
                     $(target),

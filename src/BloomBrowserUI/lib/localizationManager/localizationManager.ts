@@ -373,13 +373,14 @@ export class LocalizationManager {
 
     /**
      * Gets localized hint text and substitutes {lang} placeholders with the appropriate language name.
+     * NOTE: this can only look up strings from the pre-loaded localization dictionary, populated from C#.
      * @param {string} stringId - The localization string ID
      * @param {HTMLElement} targetElement - Element used for language substitution
      * @param {...any[]} args - Additional arguments for string formatting
      * @returns {string} The localized and formatted hint text
      */
     public getLocalizedHint(
-        stringId: string, // English text or l10nID
+        stringId: string, // l10nId (which might be the English)
         targetElement: HTMLElement,
         ...args: any[]
     ): string {
