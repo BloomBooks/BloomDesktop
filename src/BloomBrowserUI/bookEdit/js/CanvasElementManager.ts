@@ -1501,8 +1501,11 @@ export class CanvasElementManager {
             this.startMoveCropControlX + newLeft - this.oldImageLeft + "px";
         this.currentDragControl!.style.top =
             this.startMoveCropControlY + newTop - this.oldImageTop + "px";
-        // should we use adjustStuffRelatedToImage here? we don't actually need to move
-        // the control box or resize the target, though we may want to change the target content.
+        // I want to call adjustStuffRelatedToImage here so that anything new that needs to happen
+        // when an image is changed automatically applies to this too. There's some performance cost,
+        // because we don't actually need some of what it does; in particular, we don't need to move
+        // the control box or resize the target, though we may want to change the target content. But
+        // I think it's worth it for the sake of maintainability.
         this.adjustStuffRelatedToImage(this.activeElement, img);
     };
 

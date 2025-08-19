@@ -129,6 +129,14 @@ export class ImpairmentVisualizerControls extends React.Component<
         this.updateSimulations(undefined);
     }
 
+    // Make the state of the impairment simulations consistent with the current state of things.
+    // Usually called with the argument undefined, in which case, it updates the simulations
+    // for all images on the current page. When the caller knows that only one image is affected
+    // (e.g., cropping is changing on that one image), passing the specific image that needs
+    // updating makes things faster, since the other simulations need not be re-created.
+    // The time taken to generate the simulations is significant, especially the color-blindness
+    // ones, which are done a pixel at a time, so if they are being updated  frequently (like
+    // during a drag), this optimization really helps make things less jerky.
     public updateSimulations(img: HTMLImageElement | undefined) {
         const page = ToolboxToolReactAdaptor.getPage();
         if (!page || !page.ownerDocument) return;
