@@ -11,6 +11,7 @@ import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import { kHasCanvasElementClass } from "../overlay/canvasElementUtils";
 import { kImageContainerClass } from "../../js/bloomImages";
+import { CanvasElementManager } from "../../js/CanvasElementManager";
 
 interface IState {
     kindOfColorBlindness: string;
@@ -101,12 +102,12 @@ export class ImpairmentVisualizerControls extends React.Component<
 
     private updateCataracts(simulate: boolean) {
         this.simulatingCataracts = simulate;
-        this.updateSimulations();
+        this.updateSimulations(undefined);
     }
 
     private updateColorBlindnessCheck(simulate: boolean) {
         this.simulatingColorBlindness = simulate;
-        this.updateSimulations();
+        this.updateSimulations(undefined);
     }
 
     private updateColorBlindnessRadio(mode: string) {
@@ -124,10 +125,18 @@ export class ImpairmentVisualizerControls extends React.Component<
     }
 
     public componentDidUpdate(prevProps, prevState: IState) {
-        this.updateSimulations();
+        this.updateSimulations(undefined);
     }
 
-    public updateSimulations() {
+    // Make the state of the impairment simulations consistent with the current state of things.
+    // Usually called with the argument undefined, in which case, it updates the simulations
+    // for all images on the current page. When the caller knows that only one image is affected
+    // (e.g., cropping is changing on that one image), passing the specific image that needs
+    // updating makes things faster, since the other simulations need not be re-created.
+    // The time taken to generate the simulations is significant, especially the color-blindness
+    // ones, which are done a pixel at a time, so if they are being updated  frequently (like
+    // during a drag), this optimization really helps make things less jerky.
+    public updateSimulations(img: HTMLImageElement | undefined) {
         const page = ToolboxToolReactAdaptor.getPage();
         if (!page || !page.ownerDocument) return;
         const body = page.ownerDocument.body;
@@ -136,7 +145,9 @@ export class ImpairmentVisualizerControls extends React.Component<
         } else {
             body.classList.remove("simulateCataracts");
         }
-        ImpairmentVisualizerControls.removeColorBlindnessMarkup(page);
+        ImpairmentVisualizerControls.removeColorBlindnessMarkup(
+            img ? img.parentElement! : page
+        );
         if (this.simulatingColorBlindness) {
             body.classList.add("simulateColorBlindness");
             // For now limit it to these images because the positioning depends
@@ -145,18 +156,28 @@ export class ImpairmentVisualizerControls extends React.Component<
             const containers = page.getElementsByClassName(
                 kImageContainerClass
             );
-            for (let i = 0; i < containers.length; i++) {
-                const immediateChildren = containers[i].children;
-                for (
-                    let childIndex = 0;
-                    childIndex < immediateChildren.length;
-                    childIndex++
-                ) {
-                    const child = immediateChildren[childIndex] as HTMLElement;
-                    if (!child || child.nodeName !== "IMG") continue;
-                    // Don't make a overlay for a draghandle or other UI element.
-                    if (child.classList.contains("bloom-ui")) continue;
-                    this.makeColorBlindnessOverlay(child as HTMLImageElement);
+            // img instanceof HTMLImageElement does not work here, possibly because img belongs to
+            // a different iframe, which has its own HTMLImageElement prototype
+            if (img) {
+                this.makeColorBlindnessOverlay(img);
+            } else {
+                for (let i = 0; i < containers.length; i++) {
+                    const immediateChildren = containers[i].children;
+                    for (
+                        let childIndex = 0;
+                        childIndex < immediateChildren.length;
+                        childIndex++
+                    ) {
+                        const child = immediateChildren[
+                            childIndex
+                        ] as HTMLElement;
+                        if (!child || child.nodeName !== "IMG") continue;
+                        // Don't make a overlay for a draghandle or other UI element.
+                        if (child.classList.contains("bloom-ui")) continue;
+                        this.makeColorBlindnessOverlay(
+                            child as HTMLImageElement
+                        );
+                    }
                 }
             }
         } else {
@@ -207,9 +228,17 @@ export class ImpairmentVisualizerControls extends React.Component<
             window.setTimeout(() => this.makeColorBlindnessOverlay(img), 100);
             return;
         }
+        if (img.getAttribute("src") === "placeHolder.png") {
+            // I don't think any purpose is served by visualizing what color blindness does to
+            // a greyscale image that won't show in the real book, and it makes for more
+            // updates to correctly handle when it shows and hides.
+            return;
+        }
         const page = ToolboxToolReactAdaptor.getPage();
         if (!page || !page.ownerDocument) return;
         const canvas = page.ownerDocument.createElement("canvas");
+        const imageContainer = img.parentElement;
+        const canvasElement = imageContainer.parentElement;
         // Make the canvas be the size the image is actually drawn.
         // Typically that means fewer pixels to calculate than doing the whole
         // image. To avoid distortion, we do have to make it the right shape.
@@ -222,6 +251,10 @@ export class ImpairmentVisualizerControls extends React.Component<
             // available space may be too tall: make shorter
             canvasHeight = (canvasWidth * img.naturalHeight) / img.naturalWidth;
         }
+        if (canvasElement) {
+            canvasWidth = canvasElement.clientWidth;
+            canvasHeight = canvasElement.clientHeight;
+        }
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
         // Make the canvas fill the image-container, like the img.
@@ -231,14 +264,11 @@ export class ImpairmentVisualizerControls extends React.Component<
         canvas.style.top = "0";
         canvas.style.height = "100%";
         canvas.style.width = "100%";
-        // But then, make it shrink enough to keep its aspect ratio
-        canvas.style.objectFit = "contain";
         // If this canvas is for a picture overlay, its z-index needs to be boosted slightly.
         // The reason is that the canvas for the "main" picture will appear later in the DOM order and
         // in the same stacking context. Therefore, all things being equal, this one would be covered
         // by that later one.
-        const parentContainer = img.parentElement;
-        if (!parentContainer.classList.contains(kHasCanvasElementClass)) {
+        if (!imageContainer.classList.contains(kHasCanvasElementClass)) {
             canvas.style.zIndex = "1";
         }
         // And position it within the container the same as the img.
@@ -250,7 +280,25 @@ export class ImpairmentVisualizerControls extends React.Component<
         canvas.classList.add("ui-cbOverlay"); // used to remove them
         const context = canvas.getContext("2d");
         if (!context) return; // paranoid
-        context.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const imgLeft = CanvasElementManager.pxToNumber(img.style.left ?? "0");
+        const imgTop = CanvasElementManager.pxToNumber(img.style.top ?? "0");
+        // This was determined pretty much by trial and error. The documentation of this function is very confusing.
+        // Somehow, the first four arguments tell it what part of the image to draw, using natural dimensions. Thus,
+        // the first four arguments tell it to draw the whole image (though this is larger than the canvas, if cropped).
+        // The last four tell it where on the canvas to draw it and how to scale it, and these values seem to work,
+        // though I cannot explain why.
+        // I'm not sure what will happen if for some reason we can't get a natural size for the image.
+        context.drawImage(
+            img,
+            0,
+            0,
+            img.naturalWidth,
+            img.naturalHeight,
+            imgLeft,
+            imgTop,
+            img.clientWidth,
+            img.clientHeight
+        );
         // imgData is a byte array with 4 bytes for each pixel in RGBA order
         const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
         const data = imgData.data;
@@ -294,9 +342,9 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
             />
         );
     }
-    public imageUpdated(): void {
+    public imageUpdated(img: HTMLImageElement | undefined): void {
         if (this.controlsElement) {
-            this.controlsElement.updateSimulations();
+            this.controlsElement.updateSimulations(img);
         }
     }
 
@@ -306,12 +354,12 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
 
     public showTool() {
         if (!this.controlsElement) return;
-        this.controlsElement.updateSimulations();
+        this.controlsElement.updateSimulations(undefined);
     }
 
     public newPageReady() {
         if (!this.controlsElement) return;
-        this.controlsElement.updateSimulations();
+        this.controlsElement.updateSimulations(undefined);
     }
 
     public detachFromPage() {

@@ -1,0 +1,10 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='SIL_Mali_2025_Extended_logo.png'/>",
+            "condition": "always"
+        }
+    ]
+}

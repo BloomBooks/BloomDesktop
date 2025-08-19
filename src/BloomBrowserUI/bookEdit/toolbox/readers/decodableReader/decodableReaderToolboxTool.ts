@@ -17,7 +17,7 @@ import { get } from "../../../../utils/bloomApi";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
 
 export class DecodableReaderToolboxTool implements ITool {
-    imageUpdated(): void {
+    imageUpdated(img: HTMLImageElement | undefined): void {
         // No action needed for this tool
     }
     public makeRootElement(): HTMLDivElement {
