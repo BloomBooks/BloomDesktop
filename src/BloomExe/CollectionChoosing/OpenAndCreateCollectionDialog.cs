@@ -22,9 +22,10 @@ namespace Bloom.CollectionChoosing
                     "Bloom Collections",
                     "This shows in the file-open dialog that you use to open a different bloom collection"
                 ) + @"|*.bloomLibrary;*.bloomCollection",
-                () =>
+                (IWin32Window owner) =>
                     NewCollectionWizard.CreateNewCollection(
-                        () => _openAndCreateControl.UpdateUiLanguageMenuSelection()
+                        () => _openAndCreateControl.UpdateUiLanguageMenuSelection(),
+                        owner
                     )
             );
 
