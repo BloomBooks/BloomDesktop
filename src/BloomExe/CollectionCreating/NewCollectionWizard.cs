@@ -23,14 +23,14 @@ namespace Bloom.CollectionCreating
 
         private NewCollectionSettings _collectionInfo;
 
-        public static string CreateNewCollection(Action uiLanguageChangedAction)
+        public static string CreateNewCollection(Action uiLanguageChangedAction, IWin32Window owner)
         {
             bool showNewCollectionWizard = Settings.Default.MruProjects.Latest == null;
             using (var dlg = new NewCollectionWizard(showNewCollectionWizard))
             {
                 dlg.UiLanguageChanged = uiLanguageChangedAction;
                 dlg.ShowInTaskbar = showNewCollectionWizard; //if we're at this stage, there isn't a bloom icon there already.
-                if (DialogResult.OK != dlg.ShowDialog())
+                if (DialogResult.OK != dlg.ShowDialog(owner))
                 {
                     return null;
                 }
