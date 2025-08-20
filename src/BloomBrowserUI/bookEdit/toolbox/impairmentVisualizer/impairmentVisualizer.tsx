@@ -265,13 +265,6 @@ export class ImpairmentVisualizerControls extends React.Component<
         canvas.style.top = "0";
         canvas.style.height = "100%";
         canvas.style.width = "100%";
-        // If this canvas is for a picture overlay, its z-index needs to be boosted slightly.
-        // The reason is that the canvas for the "main" picture will appear later in the DOM order and
-        // in the same stacking context. Therefore, all things being equal, this one would be covered
-        // by that later one.
-        if (!imageContainer.classList.contains(kHasCanvasElementClass)) {
-            canvas.style.zIndex = "1";
-        }
         // And position it within the container the same as the img.
         if (img && img.ownerDocument && img.ownerDocument.defaultView) {
             img.style.objectPosition = img.ownerDocument.defaultView // the window that the img is in (not ours!)
