@@ -314,7 +314,7 @@ namespace Bloom.web.controllers
                         var croppedImagePath = "";
                         try
                         {
-                            croppedImagePath = PublishHelper.MakeCroppedImage(
+                            croppedImagePath = ImageUtils.MakeCroppedImage(
                                 coverImgElt,
                                 request.CurrentBook.StoragePageFolder,
                                 Path.GetTempPath()

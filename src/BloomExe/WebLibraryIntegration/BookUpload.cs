@@ -35,6 +35,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Bloom.ImageProcessing;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -553,7 +554,7 @@ namespace Bloom.WebLibraryIntegration
             var htmlFile = BookStorage.FindBookHtmlInFolder(stagingDirectory);
             var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
 
-            PublishHelper.ReallyCropImages(xmlDomFromHtmlFile, stagingDirectory, stagingDirectory);
+            ImageUtils.ReallyCropImages(xmlDomFromHtmlFile, stagingDirectory, stagingDirectory);
             PublishHelper.SimplifyBackgroundImages(xmlDomFromHtmlFile); // after really cropping
 
             XmlHtmlConverter.SaveDOMAsHtml5(xmlDomFromHtmlFile, htmlFile);
