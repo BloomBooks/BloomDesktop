@@ -580,31 +580,13 @@ export default class AudioRecording implements IAudioRecorder {
             elem => <HTMLElement>elem
         );
         const recordableDivs = editableDivs.filter(elt => {
-            if (elt.parentElement?.classList.contains("bloom-noAudio")) {
-                return false;
-            }
-            // Copies in game targets are not recordable
-            if (elt.closest("[data-target-of]")) {
-                return false;
-            }
-            if (
-                !elt.parentElement?.classList.contains(
-                    kBloomTranslationGroupClass
-                )
-            ) {
-                // We were getting copies from qtips
-                return false;
-            }
-            if (!$this.isVisible(elt, includeCheckForTempHidden)) {
-                return false;
-            }
-            if (!includeCheckForText) {
-                return true;
-            }
-            return this.stringToSentences(elt.innerHTML).some(frag => {
-                return $this.isRecordable(frag);
-            });
+            return this.isRecordableDiv(
+                elt,
+                includeCheckForText,
+                includeCheckForTempHidden
+            );
         });
+
         if (!includeCheckForPlaybackOrder || !this.isPlaybackOrderSpecified()) {
             return recordableDivs;
         }
@@ -637,36 +619,45 @@ export default class AudioRecording implements IAudioRecorder {
         return parseInt(tabindexString);
     }
 
-    // Corresponds to getRecordableDivs() but only applies the check to the current element
+    // Used by getRecordableDivs() and anyone else who wants to know if a given div is recordable.
     public isRecordableDiv(
         element: Element | null,
+        includeCheckForText: boolean = true,
         includeCheckForTempHidden: boolean = true
     ): boolean {
-        if (!element) {
-            return false;
-        }
-
         if (
-            element.nodeName == "DIV" &&
-            element.classList.contains(kBloomEditableTextBoxClass)
+            element?.nodeName !== "DIV" ||
+            !element.classList.contains(kBloomEditableTextBoxClass)
         ) {
-            if (
-                element.parentElement &&
-                element.parentElement.classList.contains("bloom-noAudio")
-            ) {
-                return false;
-            }
-
-            if (!this.isVisible(element, includeCheckForTempHidden)) {
-                return false;
-            }
-
-            return this.stringToSentences(element!.innerHTML).some(frag => {
-                return this.isRecordable(frag);
-            });
-        } else {
             return false;
         }
+
+        if (element.parentElement?.classList.contains("bloom-noAudio")) {
+            return false;
+        }
+        // Copies in game targets are not recordable
+        if (element.closest("[data-target-of]")) {
+            return false;
+        }
+        if (
+            !element.parentElement?.classList.contains(
+                kBloomTranslationGroupClass
+            )
+        ) {
+            // We were getting copies from qtips
+            return false;
+        }
+
+        if (!this.isVisible(element, includeCheckForTempHidden)) {
+            return false;
+        }
+
+        if (!includeCheckForText) {
+            return true;
+        }
+        return this.stringToSentences(element!.innerHTML).some(frag => {
+            return this.isRecordable(frag);
+        });
     }
 
     private isVisible(
@@ -2479,7 +2470,10 @@ export default class AudioRecording implements IAudioRecorder {
     private getTextBoxOfElement(element: Element | null): Element | null {
         let currToExamine: Element | null = element;
 
-        while (currToExamine && !this.isRecordableDiv(currToExamine, false)) {
+        while (
+            currToExamine &&
+            !this.isRecordableDiv(currToExamine, true, false)
+        ) {
             // Recursively go up the tree to find the enclosing div, if necessary
             currToExamine = currToExamine.parentElement; // Will return null if no parent
         }
