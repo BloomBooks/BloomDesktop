@@ -5481,6 +5481,7 @@ export class CanvasElementManager {
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
                 this.updateCanvasElementForChangedImage(img);
+                notifyToolOfChangedImage(img);
             }
             return;
         }

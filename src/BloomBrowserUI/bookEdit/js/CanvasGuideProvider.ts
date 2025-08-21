@@ -1,6 +1,8 @@
 // This class that helps visually align elements during drag operations by showing red lines
 // and highlighting elements with equal dimensions during resize operations.
 
+import { kBackgroundImageClass } from "./CanvasElementManager";
+
 // ALIGNMENT RULES:
 // 1. When a dragged element aligns horizontally (top/middle/bottom) or vertically (left/center/right)
 //    with another element within a threshold, show a red alignment line.
@@ -110,13 +112,25 @@ export class CanvasGuideProvider {
     ): void {
         this.currentAction = action;
         // Filter out any null/undefined elements
-        this.targetElements = (elementsToAlignAgainst || []).filter(el => el);
+        this.targetElements = (elementsToAlignAgainst || []).filter(el =>
+            this.shouldAlignAgainst(el)
+        );
         this.createGuides();
         if (action === "resize") {
             this.createEqualDimensionIndicators(); // Create indicators for resize
         }
         // Ensure guides are hidden initially
         this.hideAllGuides();
+    }
+
+    private shouldAlignAgainst(el: HTMLElement): boolean {
+        if (!el) return false;
+        // Review: or just return false for any background image?
+        if (!el.classList.contains(kBackgroundImageClass)) return true;
+        const img = el.querySelector("img");
+        if (!img) return true; // paranoia
+        const style = window.getComputedStyle(img);
+        return style.display !== "none" && style.visibility !== "hidden";
     }
 
     /**
