@@ -18,9 +18,10 @@ namespace Bloom.CollectionChoosing
             _openAndCreateControl.Init(
                 mruList,
                 Bloom.Collection.CollectionSettings.GetFileDialogFilterString(),
-                () =>
+                (IWin32Window owner) =>
                     NewCollectionWizard.CreateNewCollection(
-                        () => _openAndCreateControl.UpdateUiLanguageMenuSelection()
+                        () => _openAndCreateControl.UpdateUiLanguageMenuSelection(),
+                        owner
                     )
             );
 
