@@ -1109,7 +1109,7 @@ function checkAndDeleteAllowedWordsFile(fileName: string): void {
         const row: HTMLTableRowElement = <HTMLTableRowElement>stages[i];
 
         // if this file name is still in use, return now
-        if ((<HTMLTableCellElement>row.cells[3]).innerHTML == fileName) {
+        if ((<HTMLTableCellElement>row.cells[3]).innerHTML === fileName) {
             return;
         }
     }

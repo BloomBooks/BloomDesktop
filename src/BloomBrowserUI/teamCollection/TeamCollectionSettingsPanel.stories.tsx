@@ -1,4 +1,3 @@
-import * as React from "react";
 import { TeamCollectionSettingsPanel } from "./TeamCollectionSettingsPanel";
 
 export default {

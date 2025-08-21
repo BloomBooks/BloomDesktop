@@ -852,7 +852,7 @@ export default class BloomField {
                 let doNotDeleteOrMove = false;
                 // if we've typed a backspace, delete, or arrow key, don't do it and call this method again next time.
                 // see https://silbloom.myjetbrains.com/youtrack/issue/BL-2274.
-                if (typeof event.charCode == "number" && event.charCode == 0) {
+                if (typeof event.charCode === "number" && event.charCode == 0) {
                     doNotDeleteOrMove =
                         event.keyCode == 8 /*backspace*/ ||
                         event.keyCode == 46 /*delete*/ ||

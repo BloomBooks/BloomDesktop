@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
@@ -11,7 +10,10 @@ import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+import {
+    IBloomWebSocketEvent,
+    useSubscribeToWebSocketForEvent
+} from "../utils/WebSocketManager";
 import { BookProblem } from "../react_components/bookProblem";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
@@ -22,6 +24,10 @@ import { IBookTeamCollectionStatus } from "./teamCollectionApi";
 import { ForceUnlockDialog } from "./ForceUnlockDialog";
 import { kBloomRed } from "../utils/colorUtils";
 import { showRegistrationDialog } from "../react_components/registrationDialog";
+
+interface CheckInProgressEvent extends IBloomWebSocketEvent {
+    fraction: number;
+}
 
 // The panel that shows the book preview and settings in the collection tab in a Team Collection.
 
@@ -42,18 +48,18 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     const [tcPanelState, setTcPanelState] = useState<StatusPanelState>(
         "initializing"
     );
-    // Indicates how far along the checkin bar should be (0-100).
+    // Indicates how far along the check-in bar should be (0-100).
     // Non-zero value, when in lockedByMe state, also indicates that we should
     // show the bar and make other alterations in the panel layout.
     // Only applicable in the lockedByMe state.
-    const [checkinProgress, setCheckinProgress] = useState(0);
+    const [checkInProgress, setCheckInProgress] = useState(0);
 
     const [busy, setBusy] = useState(false);
-    const [checkinFailed, setCheckinFailed] = useState(false);
+    const [checkInFailed, setCheckInFailed] = useState(false);
     const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
     const [forgetDialogOpen, setForgetDialogOpen] = useState(false);
     const [forceUnlockDialogOpen, setForceUnlockDialogOpen] = useState(false);
-    const [message, setMessage] = useState(props.checkinMessage);
+    const [message, setMessage] = useState(props.checkInMessage);
     const messageInput = useRef<HTMLInputElement>(null);
 
     const lockedByMe =
@@ -101,7 +107,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     ]);
 
     React.useEffect(() => {
-        setMessage(props.checkinMessage);
+        setMessage(props.checkInMessage);
         // This typically happens when a button in the collection tab is clicked.
         // The button gets focus, and we think that's right...a user might want to
         // manipulate it or switch buttons by keyboard. But, probably because for now
@@ -111,23 +117,23 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         messageInput?.current?.blur();
         // I'm not clear why we need tcPanelState here, but without it, the old
         // message came back after a forget-changes and fresh checkout.
-    }, [props.checkinMessage, tcPanelState]);
+    }, [props.checkInMessage, tcPanelState]);
 
     React.useEffect(() => {
-        // When we start a checkin, progress becomes non-zero, which makes the "checking in "
-        // message and bar show up. We want to keep it showing until checkin is complete,
+        // When we start a check-in, progress becomes non-zero, which makes the "checking in "
+        // message and bar show up. We want to keep it showing until check-in is complete,
         // at which point we switch to some other main state, typically unlocked. Then, it
         // needs to go back to zero so that we won't be in the "checking in" mode the next
         // time the lockedByMe state happens.
-        if (tcPanelState != "lockedByMe" && checkinProgress != 0) {
-            setCheckinProgress(0);
+        if (tcPanelState !== "lockedByMe" && checkInProgress !== 0) {
+            setCheckInProgress(0);
         }
     }, [tcPanelState]);
 
     useSubscribeToWebSocketForEvent(
         "checkinProgress",
         "progress",
-        e => setCheckinProgress((e as any).fraction),
+        (e: CheckInProgressEvent) => setCheckInProgress(e.fraction),
         false
     );
 
@@ -138,8 +144,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                 email={props.who ?? ""}
                 name={lockedByDisplay}
                 borderColor={
-                    tcPanelState === "lockedByMe" &&
-                    (lightTheme.palette.warning.main as any) // `as any` here patches over a minor typescript typing problem
+                    tcPanelState === "lockedByMe"
+                        ? lightTheme.palette.warning.main
+                        : undefined
                 }
             />
         );
@@ -289,7 +296,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         true
     );
 
-    const subTitleCheckinFailed = useL10n(
+    const subTitleCheckInFailed = useL10n(
         "Checkin failed. You may need to check your network connection and reload the collection.",
         "TeamCollection.CheckinFailed",
         "",
@@ -315,7 +322,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         }
     ];
 
-    if (tcPanelState == "lockedByMe") {
+    if (tcPanelState === "lockedByMe") {
         menuItems.push("-");
         menuItems.push({
             text: "Forget Changes & Check in Book...",
@@ -325,7 +332,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         });
     }
 
-    if (tcPanelState == "locked" || tcPanelState == "lockedByMeElsewhere") {
+    if (tcPanelState === "locked" || tcPanelState === "lockedByMeElsewhere") {
         menuItems.push("-");
         menuItems.push({
             text: "Force Unlock (Administrator Only)...",
@@ -351,7 +358,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         ></SimpleMenu>
     );
 
-    // We want the checkin button in an orange color that isn't one of the two(!)
+    // We want the check-in button in an orange color that isn't one of the two(!)
     // colors that a material UI theme can have. So we make another theme just to
     // show the button. Next version of Material should be able to do more theme colors.
     const dangerTheme = useMemo(
@@ -449,21 +456,21 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                 );
             }
             case "lockedByMe": {
-                const checkinHandler = () => {
+                const checkInHandler = () => {
                     setBusy(true);
-                    setCheckinProgress(0.0001); // just enough to show the bar at once
+                    setCheckInProgress(0.0001); // just enough to show the bar at once
                     post(
                         "teamCollection/checkInCurrentBook",
                         () => {
                             // not much to do. Most change of state is handled by websocket notifications.
-                            setCheckinFailed(false); // in case of previous failure, but it will change to "checked in" anyway.
+                            setCheckInFailed(false); // in case of previous failure, but it will change to "checked in" anyway.
                             setBusy(false);
                         },
                         // failure handler
                         () => {
                             setBusy(false);
-                            setCheckinFailed(true);
-                            setCheckinProgress(0); // Should be redundant, but makes sure.
+                            setCheckInFailed(true);
+                            setCheckInProgress(0); // Should be redundant, but makes sure.
                         }
                     );
                 };
@@ -478,14 +485,14 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             }
                         `}
                         title={
-                            checkinProgress === 0
+                            checkInProgress === 0
                                 ? mainTitleLockedByMe
                                 : checkingIn
                         }
                         subTitle={
-                            checkinFailed
-                                ? subTitleCheckinFailed
-                                : checkinProgress === 0
+                            checkInFailed
+                                ? subTitleCheckInFailed
+                                : checkInProgress === 0
                                 ? subTitleLockedByMe
                                 : ""
                         }
@@ -499,8 +506,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                         "TeamCollection.CheckIn",
                                         "checkin-button",
                                         "/bloom/teamCollection/Check In.svg",
-                                        checkinHandler,
-                                        checkinProgress > 0,
+                                        checkInHandler,
+                                        checkInProgress > 0,
                                         "primary"
                                     )}
                                 </ThemeProvider>
@@ -509,7 +516,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         useWarningColorForButton={true}
                         menu={menu}
                     >
-                        {checkinProgress === 0 ? (
+                        {checkInProgress === 0 ? (
                             <div
                                 css={css`
                                     width: 320px;
@@ -558,7 +565,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                     css={css`
                                         height: 10px;
                                         background-color: ${kBloomYellow};
-                                        width: ${checkinProgress * 100}%;
+                                        width: ${checkInProgress * 100}%;
                                     `}
                                 ></div>
                             </div>

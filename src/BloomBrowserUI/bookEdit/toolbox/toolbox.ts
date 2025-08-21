@@ -29,7 +29,7 @@ let savedSettings: string;
 
 let keypressTimer: any = null;
 
-let showExperimentalTools = false; // set by Toolbox.initialize()
+const showExperimentalTools = false; // set by Toolbox.initialize()
 
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
@@ -1251,7 +1251,7 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
     // the actual replacement is done in the html so as to keep the markup.
     // We also make the replacements in the text as we go so that, for example,
     // if we change one nbsp to a regular space, that space prevents converting an adjacent nbsp.
-    // eslint-disable-next-line no-constant-condition
+
     while (true) {
         i = editableDivHtml.indexOf("&nbsp;", i + 1); // i+1 works whether or not we replaced the previous nbsp
         if (i === -1) break;

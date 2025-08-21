@@ -1,6 +1,3 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
-import * as React from "react";
 import { TopBar } from "./TopBar";
 
 export default {

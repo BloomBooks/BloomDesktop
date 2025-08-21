@@ -8,7 +8,6 @@
 // This collectionSettings reference defines the function GetSettings(): ICollectionSettings
 // The actual function is injected by C#.
 /// <reference path="../js/collectionSettings.d.ts"/>
-import * as React from "react";
 import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
@@ -24,7 +23,7 @@ export default class BloomSourceBubbles {
         //if(typeof (obj) == 'HTMLTextAreaElement') {
         //    return $.trim($(obj).text()).length == 0;
         //}
-        return $.trim($(obj).text()).length == 0;
+        return $.trim($(obj).text()).length === 0;
     }
 
     // This is the method that should be called from bloomEditing to create tabbed source bubbles
@@ -318,7 +317,7 @@ export default class BloomSourceBubbles {
         const itemArray = items.toArray();
         items.each(function(idx, obj): boolean {
             const langTag = $(this).attr("lang");
-            if (langTag == langCode && position < idx) {
+            if (langTag === langCode && position < idx) {
                 moveFrom = idx;
                 objToMove = obj;
                 return false; // break out of .each()
@@ -356,7 +355,7 @@ export default class BloomSourceBubbles {
             if (
                 !selectLangTag &&
                 tabs.length > 1 &&
-                tabs.first().attr("id") == "hint"
+                tabs.first().attr("id") === "hint"
             ) {
                 selectLangTag = tabs
                     .first()
@@ -387,7 +386,7 @@ export default class BloomSourceBubbles {
     public static CreateDropdownIfNecessary(divForBubble: JQuery): JQuery {
         let firstSelectOption = 3;
         const tabs = divForBubble.find("nav li"); // may be li elements in the content
-        if (tabs.length && tabs.first().attr("id") == "hint") {
+        if (tabs.length && tabs.first().attr("id") === "hint") {
             firstSelectOption++; // allow hint in addition to languages.
         }
         if (tabs.length < firstSelectOption) return divForBubble; // no change
@@ -653,7 +652,7 @@ export default class BloomSourceBubbles {
                             const cls = ev.target.getAttribute("class");
                             const href = ev.target.getAttribute("href");
                             if (
-                                (cls == "sourceTextTab" &&
+                                (cls === "sourceTextTab" &&
                                     href &&
                                     href.startsWith("#")) ||
                                 ev.target.closest(".source-copy-button")
@@ -666,7 +665,7 @@ export default class BloomSourceBubbles {
                         // reliably for some undetermined reason. It's still useful so that clicking on a tooltip focuses its element.
                         // Otherwise the bubble may stay hidden behind something else even when clicked.
                         // However, if the user drags and makes a range selection, we don't want to hide it.
-                        api.elements.tooltip.click(ev => {
+                        api.elements.tooltip.click(() => {
                             const sel = window.getSelection();
                             if (sel && !sel.isCollapsed) {
                                 // user made a range selection, probably to copy. Don't mess with it.

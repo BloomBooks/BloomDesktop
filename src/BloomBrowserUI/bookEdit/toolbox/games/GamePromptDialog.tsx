@@ -124,7 +124,7 @@ let draggableX = 0;
 let draggableY = 0;
 let targetX = 0;
 let targetY = 0;
-let originalDraggables: HTMLElement[] = [];
+const originalDraggables: HTMLElement[] = [];
 let originalClassLists: string[] = [];
 let originalStyles: string[] = [];
 let originalContents: string[] = [];
@@ -199,7 +199,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         );
     }
 
-    let startTryingToFocus = Date.now();
+    const startTryingToFocus = Date.now();
     // The prompt looks strange and the user can't type until we actually get focus onto the
     // editable. For some reason, simply calling focus doesn't always work.
     const tryToFocus = () => {

@@ -51,7 +51,7 @@ export function adjustPausesToQuietestNearby(
         // We want it instead to start half way through the non-silent final 2/3.
         return time * adjust + startOfSoundTime;
     };
-    let segments = initialSegments.map(s => ({
+    const segments = initialSegments.map(s => ({
         start: adjustTime(s.start),
         end: adjustTime(s.end),
         text: s.text

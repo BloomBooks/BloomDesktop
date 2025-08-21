@@ -98,7 +98,10 @@ export default [
                 { terms: ["nocommit"], location: "anywhere" }
             ],
             // Downgraded from error to warnings
-            "@typescript-eslint/no-empty-function": "warn",
+            "@typescript-eslint/no-empty-function": [
+                "warn",
+                { allow: ["arrowFunctions"] }
+            ],
             "@typescript-eslint/no-empty-interface": "warn",
             "@typescript-eslint/no-explicit-any": "warn",
             "@typescript-eslint/no-unused-vars": [
@@ -117,10 +120,11 @@ export default [
             "react/no-unescaped-entities": "off", // Complains about some special chars that sort of work, but due to the burden that enocded chars present to localizers, we'd prefer not to encode them if not necessary.
             "react/prop-types": "off", // Seems to require validation on the props parameter itself, but Typescript can already figure out the types through annotations in different places, seems unnecessary
             "no-irregular-whitespace": "off"
-            // If you want to temporarily reduce warnings, these three account for 90% or so as of Feb 2025
-            //"@typescript-eslint/no-explicit-any": "off",
-            //"@typescript-eslint/no-unused-vars": "off",
-            //eqeqeq: "off"
+            // If you want to temporarily reduce warnings, these four account for 100% as of Aug 2025
+            // "@typescript-eslint/no-explicit-any": "off",
+            // "@typescript-eslint/no-unused-vars": "off",
+            // eqeqeq: "off",
+            // "react-hooks/exhaustive-deps": "off"
         }
     },
     // Add a specific override for Storybook files

@@ -28,7 +28,6 @@ import { mockReplies } from "../../../utils/bloomApi";
 //   * Let Jasmine handle the rest
 
 describe("audio recording tests", () => {
-    const extendedTimeoutInMs = 15000; // 15,000 = 15 seconds
     beforeAll(async () => {
         jasmine.addMatchers(customJasmineMatchers); // must be in a beforeAll/beforeEach or it
 
@@ -1816,7 +1815,7 @@ describe("audio recording tests", () => {
             audioToCopyFilePath: string,
             bookPath: string
         ) {
-            spyOn(axios, "get").and.callFake((url: string, config) => {
+            spyOn(axios, "get").and.callFake((url: string) => {
                 if (url.endsWith("fileIO/chooseFile")) {
                     return Promise.resolve({ data: audioToCopyFilePath });
                 } else if (url.includes(kAnyRecordingApiUrl)) {
@@ -1826,7 +1825,7 @@ describe("audio recording tests", () => {
                 }
             });
 
-            spyOn(axios, "post").and.callFake((url: string, config) => {
+            spyOn(axios, "post").and.callFake((url: string) => {
                 if (url.endsWith("fileIO/getSpecialLocation")) {
                     return Promise.resolve({ data: `${bookPath}/audio` });
                 } else if (url.endsWith("fileIO/copyFile")) {
@@ -1870,17 +1869,16 @@ describe("audio recording tests", () => {
             // Verification
             const encodedBaseName =
                 "A%60B~C!D%40E%23F%24G%25H%5EI%26J(K)L-M_N%3DO%2BP%5BQ%7BR%5DS%7DT%3BU'V%2CW.X";
-            const encodedAudioToCopyFilePath = encodeFilenameForHttpRequest(
+            // const encodedAudioToCopyFilePath =
+            encodeFilenameForHttpRequest(
                 audioToCopyFilePath,
                 baseName,
                 encodedBaseName
             );
             const destPath = `${bookPath}/audio/div1.mp3`;
-            const encodedDestPath = encodeFilenameForHttpRequest(
-                destPath,
-                baseName,
-                encodedBaseName
-            );
+            // const encodedDestPath =
+            encodeFilenameForHttpRequest(destPath, baseName, encodedBaseName);
+
             // this got more complicated... doesn't seem worth having a test track
             // the exact details of the request
             // expect(axios.post).toHaveBeenCalledWith(
@@ -2142,6 +2140,7 @@ function StripEmptyClasses(html) {
     return html.replace(/ class=""/g, "");
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function StripAllIds(html) {
     // Note: add the "g" (global) flag to the end of the search setting if you want to replace all instead.
     return html.replace(/ id="[^"]*"/g, "").replace(/ id=""/g, "");

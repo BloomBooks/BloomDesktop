@@ -17,7 +17,7 @@ const PlaybackOrderButton: React.FC<{
     onClick: () => void;
 }> = props => {
     const icon = React.cloneElement(props.icon, {
-        fontSize: "small" as any,
+        fontSize: "small",
         fontWeight: 800,
         shapeRendering: "crispEdges",
         fill: "white"

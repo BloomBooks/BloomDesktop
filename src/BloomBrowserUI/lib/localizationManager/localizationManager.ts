@@ -127,7 +127,7 @@ export class LocalizationManager {
             !this.inlineDictionaryLoaded &&
             typeof GetInlineDictionary === "function"
         ) {
-            if (Object.keys(this.dictionary).length == 0) {
+            if (Object.keys(this.dictionary).length === 0) {
                 this.inlineDictionaryLoaded = true;
                 $.extend(
                     theOneLocalizationManager.dictionary,
@@ -372,32 +372,36 @@ export class LocalizationManager {
     }
 
     /**
-     * Hints sometimes have a {lang} tag in the text that needs to be substituted.
-     * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
-     * @param {String} whatToSay
-     * @param {element} targetElement
-     * @returns {String}
+     * Gets localized hint text and substitutes {lang} placeholders with the appropriate language name.
+     * NOTE: this can only look up strings from the pre-loaded localization dictionary, populated from C#.
+     * @param {string} stringId - The localization string ID
+     * @param {HTMLElement} targetElement - Element used for language substitution
+     * @param {...any[]} args - Additional arguments for string formatting
+     * @returns {string} The localized and formatted hint text
      */
-    public getLocalizedHint(whatToSay, targetElement: any): string {
-        const args = Array.prototype.slice.call(arguments);
-        args[1] = null; //we're passing null into the gettext englishText arg
-        // this awkward, fragile method call sends along the 2 fixed arguments
-        // to the method, plus any extra arguments we might have been called with,
-        // as parameters for a  c#-style template string
-        const translated = this.getText.apply(this, args);
+    public getLocalizedHint(
+        stringId: string, // l10nId (which might be the English)
+        targetElement: HTMLElement,
+        ...args: any[]
+    ): string {
+        // Get the translated text using the string ID
+        const translated = this.getText(stringId, undefined, ...args);
 
-        // stick in the language
+        // Substitute any {lang} placeholders with the actual language name
         return this.insertLangIntoHint(translated, targetElement);
     }
 
     // Hints sometimes have a {lang} tag in the text that needs to be substituted.
-    public insertLangIntoHint(whatToSay, targetElement: any) {
+    public insertLangIntoHint(
+        whatToSay: string,
+        targetElement: HTMLElement
+    ): string {
         let translated = whatToSay;
-        if (translated.indexOf("{lang}") != -1) {
+        if (translated.indexOf("{lang}") !== -1) {
             //This is the preferred approach, but it's not working yet.
             //var languageName = localizationManager.dictionary[$(targetElement).attr('lang')];
             const languageName = GetInlineDictionary()[
-                $(targetElement).attr("lang")
+                targetElement.getAttribute("lang") || ""
             ];
             if (!languageName) {
                 //This can happen, for example, if the user enters {lang} in a hint bubble on a group

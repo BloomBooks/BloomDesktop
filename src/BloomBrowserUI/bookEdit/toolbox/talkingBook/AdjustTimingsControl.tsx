@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import "./adjustTimingsControl.less"; // can't use @emotion on shadow dom
 

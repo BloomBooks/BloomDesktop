@@ -99,8 +99,6 @@ export class CanvasGuideProvider {
     private dynamicEqualDimElements: HTMLElement[] = []; // Track dynamically created indicator clones
     private currentAction: "resize" | "move" = "move"; // Type of operation
 
-    constructor() {}
-
     /**
      * Prepares the manager for a new drag operation.
      * @param action The type of operation ("move" or "resize").

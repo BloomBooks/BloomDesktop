@@ -1,4 +1,3 @@
-import * as React from "react";
 import TriangleMenuIcon from "./TriangleMenu";
 import { SvgIconProps } from "@mui/material/SvgIcon";
 

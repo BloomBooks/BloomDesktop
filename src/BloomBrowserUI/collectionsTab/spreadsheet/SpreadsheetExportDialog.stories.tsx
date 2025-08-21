@@ -1,4 +1,3 @@
-import * as React from "react";
 import { SpreadsheetExportDialogLauncher } from "./SpreadsheetExportDialog";
 import { StorybookDialogWrapper } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 

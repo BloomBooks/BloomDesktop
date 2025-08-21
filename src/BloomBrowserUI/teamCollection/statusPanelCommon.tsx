@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import Typography from "@mui/material/Typography";
 import * as React from "react";
@@ -12,12 +11,10 @@ import {
     adaptV4Theme
 } from "@mui/material/styles";
 import "./statusPanelCommon.less"; // Now we have .less and emotion going here. Someday we should unify.
-import { StatusPanelState } from "./TeamCollectionBookStatusPanel";
 import { IconHeadingBodyMenuPanel } from "../react_components/iconHeadingBodyMenuPanel";
 
 declare module "@mui/styles/defaultTheme" {
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-empty-interface
     interface DefaultTheme extends Theme {}
 }
 

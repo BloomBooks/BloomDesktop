@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { TextField, Step, StepLabel, StepContent } from "@mui/material";
@@ -178,7 +177,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     const [agreementsAccepted, setAgreementsAccepted] = useState<boolean>(
         false
     );
-    const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
+    const [isPlaygroundBook, _setIsPlaygroundBook] = useApiBoolean(
         "publish/isPlaygroundBook",
         true
     );

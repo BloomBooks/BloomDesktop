@@ -107,7 +107,7 @@ describe("talking book tests", () => {
         function setAudioFilesDontExist() {
             // Mark that the recording doesn't exist.
             // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
-            spyOn(axios, "get").and.callFake((url: string) => {
+            spyOn(axios, "get").and.callFake(() => {
                 return Promise.resolve({ data: false });
             });
         }
@@ -734,7 +734,7 @@ describe("talking book tests", () => {
 
             // System under test
             // Simulate user deleting the vertical bar character
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             getFrameElementById("page", "1.1")!.innerText = "Phrase 1";
             const tbTool = new TalkingBookTool();
             const doUpdate = await tbTool.updateMarkupAsync();
