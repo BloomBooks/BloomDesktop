@@ -1327,12 +1327,12 @@ export function topBarButtonClick(button: { command: string }) {
         case "cut":
             cutSelection();
             break;
-        case "paste":
-            pasteHandler(new Event(""));
-            break;
         case "undo":
             handleUndo();
             break;
+        // We don't handle paste this way. We need code on the C# side to decide if we have
+        // an image on the clipboard. So we shortcut a roundtrip to client and server by just
+        // calling the C# code in EditingViewApi.HandleTopBarButtonClick() instead of calling this function.
     }
 }
 

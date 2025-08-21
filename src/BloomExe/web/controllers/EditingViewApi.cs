@@ -229,6 +229,16 @@ namespace Bloom.web.controllers
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
             // If we don't force the focus to the main editing browser, our browser with the buttons will steal it and cut/copy, etc. won't work.
             View.Browser.Focus();
+
+            // Paste is tricky. We need C# to tell us if there is an image on the clipboard or not.
+            // We don't want to go to the browser from here or we'll just end up coming back to C# and
+            // back to the browser. So shortcut it and call the C# stuff directly.
+            if (data.command == "paste")
+            {
+                HandlePaste(request);
+                return;
+            }
+
             View.Browser.RunJavascriptAsync(
                 $"editTabBundle?.getEditablePageBundleExports()?.topBarButtonClick({data})"
             );
