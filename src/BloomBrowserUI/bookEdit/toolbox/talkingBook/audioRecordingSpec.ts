@@ -54,16 +54,16 @@ describe("audio recording tests", () => {
     // Returns the HTML for a single text box for a variety of recording modes
     function getTextBoxHtmlSimple1(scenario: AudioMode) {
         if (scenario === AudioMode.PureSentence) {
-            return `<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div>`;
+            return `<div class="bloom-translationGroup"><div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div></div>`;
         } else if (scenario === AudioMode.PreTextBox) {
-            return `<div class="bloom-editable ui-audioCurrent" id="div1" data-audioRecordingMode="TextBox"><p><span id="1.1" class="audio-sentence">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div>`;
+            return `<div class="bloom-translationGroup"><div class="bloom-editable ui-audioCurrent" id="div1" data-audioRecordingMode="TextBox"><p><span id="1.1" class="audio-sentence">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div></div>`;
         } else if (scenario === AudioMode.PureTextBox) {
-            return `<div class="bloom-editable audio-sentence ui-audioCurrent" id="div1" data-audioRecordingMode="TextBox"><p>Sentence 1.1. Sentence 1.2</p></div>`;
+            return `<div class="bloom-translationGroup"><div class="bloom-editable audio-sentence ui-audioCurrent" id="div1" data-audioRecordingMode="TextBox"><p>Sentence 1.1. Sentence 1.2</p></div></div>`;
         } else if (scenario === AudioMode.HardSplitTextBox) {
             // FYI: Yes, it is confirmed that in hardSplit, ui-audioCurrent goes on the div, not the span.
-            return `<div class="bloom-editable ui-audioCurrent bloom-postAudioSplit" id="div1" data-audioRecordingMode="TextBox"><p><span id="1.1" class="audio-sentence">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div>`;
+            return `<div class="bloom-translationGroup"><div class="bloom-editable ui-audioCurrent bloom-postAudioSplit" id="div1" data-audioRecordingMode="TextBox"><p><span id="1.1" class="audio-sentence">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div></div>`;
         } else if (scenario === AudioMode.SoftSplitTextBox) {
-            return `<div class="bloom-editable audio-sentence ui-audioCurrent bloom-postAudioSplit" id="div1" data-audioRecordingMode="TextBox" data-audiorecordingendtimes="1.0 2.0"><p><span id="1.1" class="bloom-highlightSegment">Sentence 1.1.</span> <span id="1.2" class="bloom-highlightSegment">Sentence 1.2</span></p></div>`;
+            return `<div class="bloom-translationGroup"><div class="bloom-editable audio-sentence ui-audioCurrent bloom-postAudioSplit" id="div1" data-audioRecordingMode="TextBox" data-audiorecordingendtimes="1.0 2.0"><p><span id="1.1" class="bloom-highlightSegment">Sentence 1.1.</span> <span id="1.2" class="bloom-highlightSegment">Sentence 1.2</span></p></div></div>`;
         } else {
             throw new Error("Unknown scenario: " + AudioMode[scenario]);
         }
@@ -1507,7 +1507,7 @@ describe("audio recording tests", () => {
     describe("- initializeAudioRecordingMode()", () => {
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Text Box)", () => {
             SetupIFrameFromHtml(
-                "<div class='bloom-editable' lang='en' data-audiorecordingmode='Sentence'>Sentence 1. Sentence 2.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audiorecordingmode='TextBox'>Paragraph 2.</div>"
+                "<div class='bloom-translationGroup'><div class='bloom-editable' lang='en' data-audiorecordingmode='Sentence'>Sentence 1. Sentence 2.</div></div><div class='bloom-translationGroup'><div class='bloom-editable ui-audioCurrent' lang='es' data-audiorecordingmode='TextBox'>Paragraph 2.</div></div>"
             );
 
             const recording = new AudioRecording();
@@ -1526,7 +1526,7 @@ describe("audio recording tests", () => {
 
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Sentence)", () => {
             SetupIFrameFromHtml(
-                "<div class='bloom-editable' lang='en' data-audiorecordingmode='TextBox'>Paragraph 1.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audiorecordingmode='Sentence'>Paragraph 2.</div>"
+                "<div class='bloom-translationGroup'><div class='bloom-editable' lang='en' data-audiorecordingmode='TextBox'>Paragraph 1.</div></div><div class='bloom-translationGroup'><div class='bloom-editable ui-audioCurrent' lang='es' data-audiorecordingmode='Sentence'>Paragraph 2.</div></div>"
             );
 
             const recording = new AudioRecording();
@@ -1545,7 +1545,7 @@ describe("audio recording tests", () => {
 
         it("initializeAudioRecordingMode gets mode from other divs on page as fallback (synchronous) (TextBox)", () => {
             SetupIFrameFromHtml(
-                "<div class='audio-sentence bloom-editable' lang='en' data-audiorecordingmode='TextBox'>Paragraph 1</div><div class='bloom-editable' lang='es'><span id='id2' class='audio-sentence ui-audioCurrent'>Paragraph 2.</span></div>"
+                "<div class='bloom-translationGroup'><div class='audio-sentence bloom-editable' lang='en' data-audiorecordingmode='TextBox'>Paragraph 1</div></div><div class='bloom-translationGroup'><div class='bloom-editable' lang='es'><span id='id2' class='audio-sentence ui-audioCurrent'>Paragraph 2.</span></div></div>"
             );
 
             const recording = new AudioRecording();
@@ -1566,7 +1566,7 @@ describe("audio recording tests", () => {
             // The 2nd div doesn't really look well-formed because we're trying to get the test to exercise some fallback cases
             // The first div doesn't look well-formed either but I want the test to exercise that it is getting it from the data-audiorecordingmode attribute not from any of the div's innerHTML markup.
             SetupIFrameFromHtml(
-                "<div class='bloom-editable' lang='en' data-audiorecordingmode='Sentence'>Paragraph 1</div><div class='bloom-editable audio-sentence ui-audioCurrent' lang='es'>Paragraph 2.</div>"
+                "<div class='bloom-translationGroup'><div class='bloom-editable' lang='en' data-audiorecordingmode='Sentence'>Paragraph 1</div></div><div class='bloom-translationGroup'><div class='bloom-editable audio-sentence ui-audioCurrent' lang='es'>Paragraph 2.</div></div>"
             );
 
             const recording = new AudioRecording();
@@ -1585,7 +1585,7 @@ describe("audio recording tests", () => {
 
         it("initializeAudioRecordingMode identifies 4.3 audio-sentences (synchronous)", () => {
             SetupIFrameFromHtml(
-                "<div class='bloom-editable' lang='en'><span id='id1' class='audio-sentence'>Sentence 1.</span> <span id='id2' class='audio-sentence'>Sentence 2.</span></div><div class='bloom-editable ui-audioCurrent' lang='es'>Paragraph 2.</div>"
+                "<div class='bloom-translationGroup'><div class='bloom-editable' lang='en'><span id='id1' class='audio-sentence'>Sentence 1.</span> <span id='id2' class='audio-sentence'>Sentence 2.</span></div></div><div class='bloom-translationGroup'><div class='bloom-editable ui-audioCurrent' lang='es'>Paragraph 2.</div></div>"
             );
 
             const recording = new AudioRecording();
@@ -1670,8 +1670,12 @@ describe("audio recording tests", () => {
         setupDefaultApiResponses();
         const recording = new AudioRecording();
 
+        const translationGroup = document.createElement("div");
+        translationGroup.classList.add("bloom-translationGroup");
+        document.body.appendChild(translationGroup);
+
         let elem = document.createElement("div");
-        document.body.appendChild(elem);
+        translationGroup.appendChild(elem);
         elem.classList.add("bloom-editable");
         expect(recording.isRecordableDiv(elem)).toBe(false, "Case 1A: no text");
 
@@ -1695,8 +1699,12 @@ describe("audio recording tests", () => {
             "Case 3: not recordable (no bloom-editable class)"
         );
 
+        const translationGroup2 = document.createElement("div");
+        translationGroup2.classList.add("bloom-translationGroup");
+        document.body.appendChild(translationGroup2);
+
         elem = document.createElement("div");
-        document.body.appendChild(elem);
+        translationGroup2.appendChild(elem);
         elem.style.display = "none";
         elem.classList.add("bloom-editable");
         elem.appendChild(document.createTextNode("Hello world"));
