@@ -243,7 +243,7 @@ namespace Bloom
             // Crop the image if we need to. Put the cropped image in the system temp folder.
             // Optimize: there's probably some way we could combine cropping with the other
             // work we do here and avoid writing two files. But it would be a pain.
-            var croppedImagePath = PublishHelper.MakeCroppedImage(
+            var croppedImagePath = ImageUtils.MakeCroppedImage(
                 coverImgElt,
                 book.StoragePageFolder,
                 Path.GetTempPath()

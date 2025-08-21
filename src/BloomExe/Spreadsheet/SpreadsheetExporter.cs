@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Publish;
+using Bloom.ImageProcessing;
 
 namespace Bloom.Spreadsheet
 {
@@ -119,7 +120,7 @@ namespace Bloom.Spreadsheet
         {
             if (_outputImageFolder != null)
             {
-                PublishHelper.ReallyCropImages(dom.RawDom, bookFolderPath, _outputImageFolder);
+                ImageUtils.ReallyCropImages(dom.RawDom, bookFolderPath, _outputImageFolder);
             }
 
             _progress = progress ?? new NullWebSocketProgress();
