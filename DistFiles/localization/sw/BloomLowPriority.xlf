@@ -228,6 +228,11 @@
         <target xml:lang="sw" state="translated">Bloom ilikuwa na matatizo ya kuandika faili kwa eneo hilo ({0}). Hakikisha una ruhusa ya kuandika hapo.</target>
         <note>ID: Spreadsheet.WriteFailed</note>
       </trans-unit>
+      <trans-unit id="Spreadsheet.CannotExportDragAndDropGamePages">
+        <source xml:lang="en">Bloom cannot export because {0} pages contain drag-and-drop games.</source>
+        <target xml:lang="sw" state="needs-translation">Bloom cannot export because {0} pages contain drag-and-drop games.</target>
+        <note>ID: Spreadsheet.CannotExportDragAndDropGamePages</note>
+      </trans-unit>
       <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
         <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
         <target xml:lang="sw" state="translated">Weka jibu sahihi kwenye kitufe hiki. Bloom itageuza mpangilio baadaye.</target>

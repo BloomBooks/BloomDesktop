@@ -1494,9 +1494,9 @@
         <target xml:lang="fr" state="final">Réglages multilingues</target>
         <note>ID: EditTab.ContentLanguagesDropdown</note>
       </trans-unit>
-      <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip" approved="yes">
-        <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
-        <target xml:lang="fr" state="final">Sélectionner une langue pour rendre ce livre bilingue ou trilingue</target>
+      <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip">
+        <source xml:lang="en">This is disabled because it won't change anything on this page.</source>
+        <target xml:lang="fr" state="translated">Sélectionner une langue pour rendre ce livre bilingue ou trilingue</target>
         <note>ID: EditTab.ContentLanguagesDropdown.DisabledTooltip</note>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip" approved="yes">
@@ -6176,8 +6176,8 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: SubscriptionStatus.ProTeamCollectionNotSupported</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingProSubscription">
-        <source xml:lang="en">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</source>
-        <target xml:lang="fr" state="needs-translation">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</target>
+        <source xml:lang="en">Using **Pro** subscription for {0}. Expires {1}</source>
+        <target xml:lang="fr" state="needs-translation">Using **Pro** subscription for {0}. Expires {1}</target>
         <note>ID: SubscriptionStatus.UsingProSubscription</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">
