@@ -103,10 +103,10 @@ div.bloom-page.outsideBackCover.coverColor {
 // A5 page that is cut off when we scale the width to RA4 which makes the height
 // a bit more than RA5. And similarly for other sizes.
 .frontCover.A5Portrait .bloom-translationGroup.bookTitle {
-    padding-top: @bleed + (@A5Portrait-Height-Excess / 2);
+    padding-top: calc(@bleed + (var(--full-bleed-excess-height) / 2));
 }
 .frontCover.USComicPortrait .bloom-translationGroup.bookTitle {
-    padding-top: @bleed + (@USComicPortrait-Height-Excess / 2);
+    padding-top: calc(@bleed + (var(--full-bleed-excess-height) / 2));
 }
 
 .outsideBackCover {
