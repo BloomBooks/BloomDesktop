@@ -257,8 +257,20 @@ namespace Bloom.Collection
                 return language.Name;
             if (tag == SignLanguageTag)
                 return SignLanguage.Name;
-            // Note: the inLanguage parameter is often ignored by IetfLanguageTag.GetLocalizedLanguageName().
-            return IetfLanguageTag.GetLocalizedLanguageName(tag, inLanguage);
+
+            try
+            {
+                // Note: the inLanguage parameter is often ignored by IetfLanguageTag.GetLocalizedLanguageName().
+                return IetfLanguageTag.GetLocalizedLanguageName(tag, inLanguage);
+            }
+            catch (Exception)
+            {
+                // It is important that we don't let this throw.
+                // We look up language names while building the page dom,
+                // so an exception can result in the Edit tab being unusable.
+                // See BL-15159.
+                return tag;
+            }
         }
         #endregion
 
