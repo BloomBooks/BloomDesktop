@@ -64,5 +64,25 @@ namespace BloomTests.Book
                 "should not have added anything for xyz, since not in db"
             );
         }
+
+        [Test]
+        public void AddLanguagesUsedInPage_InvalidLanguageSubTag_DoesNotThrow()
+        {
+            SetDom(
+                @"<div class='bloom-page' id='guid5'>
+					<div lang='en' id='4'>some text</div>
+				</div>"
+            );
+            var settings = new CollectionSettings() { Language2Tag = "twi-Latn" };
+
+            // Validate setup
+            Assert.That(settings.Language2Tag == "twi-Latn");
+
+            RuntimeInformationInjector.AddLanguagesUsedInPage(
+                _bookDom.RawDom,
+                new Dictionary<string, string>(),
+                settings
+            );
+        }
     }
 }

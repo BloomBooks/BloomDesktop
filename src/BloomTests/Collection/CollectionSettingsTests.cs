@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
-using System.Xml.Linq;
+using System.Threading;
 using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
@@ -603,6 +605,37 @@ namespace BloomTests.Collection
         public void ValidateAdministrators_ValidEmails_ReturnsTrue(string input)
         {
             Assert.That(CollectionSettings.ValidateAdministrators(input), Is.True);
+        }
+
+        [TestCase("en", "en", ExpectedResult = "English")]
+        [TestCase("fr", "en", ExpectedResult = "French")]
+        [TestCase("fr", "fr", ExpectedResult = "français")]
+        [TestCase("zh-CN", "zh-CN", ExpectedResult = "中文(中国)")]
+        // twi is not a valid language subtag; fall back to tag
+        // (actually, we don't care much what we get as long as it's reasonable,
+        // but it used to throw an exception; see BL-15159.)
+        [TestCase("en", "twi", ExpectedResult = "en")]
+        public string GetLanguageName_TagIsNotInCollectionSettings_GetsCorrectLanguageName(
+            string tag,
+            string inLanguage
+        )
+        {
+            var originalCulture = Thread.CurrentThread.CurrentCulture;
+            try
+            {
+                Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+
+                var settings = new CollectionSettings { Language2Tag = "de" };
+
+                // Validate Setup
+                Assert.That(settings.AllLanguages.Select(l => l.Tag), Does.Not.Contain(tag));
+
+                return settings.GetLanguageName(tag, inLanguage);
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = originalCulture;
+            }
         }
     }
 }
