@@ -110,7 +110,7 @@ CKEDITOR.editorConfig = function(config) {
     // Shown by experiment: when listing something like span{font-variant}, all other
     //    attributes and style rules will be removed.
     config.pasteFilter =
-        "p br em i strong sup u; b{font-weight}; a[!href]; span{font-variant};";
+        "p br em i strong sup u; b{font-weight}; a[!href]; span{font-variant,color};";
 
     //BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
     //http://stackoverflow.com/a/23983357/723299
