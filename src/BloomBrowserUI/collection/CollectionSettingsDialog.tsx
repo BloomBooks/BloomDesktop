@@ -34,9 +34,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             });
     }, [propsForBloomDialog.open]);
 
-    const [settingsToReturnLater, setSettingsToReturnLater] = React.useState(
-        ""
-    );
+    const [settingsToReturnLater, setSettingsToReturnLater] =
+        React.useState("");
     React.useEffect(() => {
         if (settingsString === "{}") {
             return; // leave settings as undefined

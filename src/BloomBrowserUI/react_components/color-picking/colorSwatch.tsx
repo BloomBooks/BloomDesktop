@@ -27,9 +27,8 @@ export const ColorSwatch: React.FunctionComponent<IClickableColorSwatch> = (
 
     const handleSwatchClick = (e: React.MouseEvent<HTMLDivElement>): void => {
         // This cast handles the change in types, but we don't use the event in any case.
-        const castEvent = (e as unknown) as React.MouseEvent<
-            IClickableColorSwatch
-        >;
+        const castEvent =
+            e as unknown as React.MouseEvent<IClickableColorSwatch>;
         if (props.onClick) props.onClick(castEvent);
     };
 

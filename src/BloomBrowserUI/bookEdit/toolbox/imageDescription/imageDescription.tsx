@@ -169,10 +169,10 @@ export class ImageDescriptionToolControls extends React.Component<
     }
 
     public static setup(root): ImageDescriptionToolControls {
-        return (ReactDOM.render(
+        return ReactDOM.render(
             <ImageDescriptionToolControls />,
             root
-        ) as unknown) as ImageDescriptionToolControls;
+        ) as unknown as ImageDescriptionToolControls;
     }
 
     public selectImageDescription(bloomCanvas: Element | null): void {
@@ -182,9 +182,8 @@ export class ImageDescriptionToolControls extends React.Component<
             return;
         }
         this.activeEditable = bloomCanvas;
-        const noDescriptionNeeded = this.activeEditable.getAttribute(
-            "aria-hidden"
-        );
+        const noDescriptionNeeded =
+            this.activeEditable.getAttribute("aria-hidden");
         this.setState({
             enabled: true,
             descriptionNotNeeded: noDescriptionNeeded === "true",

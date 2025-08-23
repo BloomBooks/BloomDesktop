@@ -81,20 +81,19 @@ interface IOverrideInformation {
 export const BookSettingsDialog: React.FunctionComponent<{
     initiallySelectedGroupIndex?: number;
 }> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog({
-        initiallyOpen: true,
-        dialogFrameProvidedExternally: false
-    });
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog({
+            initiallyOpen: true,
+            dialogFrameProvidedExternally: false
+        });
 
-    const appearanceUIOptions: IAppearanceUIOptions = useApiObject<
-        IAppearanceUIOptions
-    >("book/settings/appearanceUIOptions", {
-        themeNames: []
-    });
+    const appearanceUIOptions: IAppearanceUIOptions =
+        useApiObject<IAppearanceUIOptions>(
+            "book/settings/appearanceUIOptions",
+            {
+                themeNames: []
+            }
+        );
     // If we pass a new default value to useApiObject on every render, it will query the host
     // every time and then set the result, which triggers a new render, making an infinite loop.
     const defaultOverrides = React.useMemo(() => {
@@ -106,9 +105,11 @@ export const BookSettingsDialog: React.FunctionComponent<{
         };
     }, []);
 
-    const overrideInformation: IOverrideInformation | undefined = useApiObject<
-        IOverrideInformation
-    >("book/settings/overrides", defaultOverrides);
+    const overrideInformation: IOverrideInformation | undefined =
+        useApiObject<IOverrideInformation>(
+            "book/settings/overrides",
+            defaultOverrides
+        );
 
     const xmatterLockedBy = useL10n(
         "Locked by {0} Front/Back matter",
@@ -226,9 +227,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
     );
 
     // This is a helper function to make it easier to pass the override information
-    function getAdditionalProps<T>(
-        subPath: string
-    ): {
+    function getAdditionalProps<T>(subPath: string): {
         path: string;
         overrideValue: T;
         overrideDescription?: string;
@@ -265,9 +264,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
         undefined
     );
 
-    const [settingsToReturnLater, setSettingsToReturnLater] = React.useState(
-        ""
-    );
+    const [settingsToReturnLater, setSettingsToReturnLater] =
+        React.useState("");
 
     const [appearanceDisabled, setAppearanceDisabled] = React.useState(false);
 
@@ -280,9 +278,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
     // One possible approach is to have the server return the new firstPossiblyLegacyCss
     // as the result of the deleteCustomBookStyles call.
     const [theme, setTheme] = React.useState("");
-    const [firstPossiblyLegacyCss, setFirstPossiblyLegacyCss] = React.useState(
-        ""
-    );
+    const [firstPossiblyLegacyCss, setFirstPossiblyLegacyCss] =
+        React.useState("");
     const [migratedTheme, setMigratedTheme] = React.useState("");
 
     React.useEffect(() => {
@@ -323,9 +320,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
         setMigratedTheme("");
     };
 
-    const tierAllowsFullPageCoverImage = useGetFeatureStatus(
-        "fullPageCoverImage"
-    )?.enabled;
+    const tierAllowsFullPageCoverImage =
+        useGetFeatureStatus("fullPageCoverImage")?.enabled;
 
     function saveSettingsAndCloseDialog() {
         if (settingsToReturnLater) {
@@ -517,13 +513,14 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 // I'm not seeing a clean way to reuse the logic. Some sort of higher-order component might work,
                                 // but I don't think the logic is complex enough to be worth it, when only used in two places.
                             }
-                            {firstPossiblyLegacyCss && theme === "legacy-5-6" && (
-                                <WarningBox>
-                                    <MessageUsingLegacyThemeWithIncompatibleCss
-                                        fileName={firstPossiblyLegacyCss}
-                                    />
-                                </WarningBox>
-                            )}
+                            {firstPossiblyLegacyCss &&
+                                theme === "legacy-5-6" && (
+                                    <WarningBox>
+                                        <MessageUsingLegacyThemeWithIncompatibleCss
+                                            fileName={firstPossiblyLegacyCss}
+                                        />
+                                    </WarningBox>
+                                )}
                             {firstPossiblyLegacyCss ===
                                 "customBookStyles.css" &&
                                 theme !== "legacy-5-6" && (
@@ -733,10 +730,12 @@ type Resolution = {
     maxHeight: number;
 };
 
-const BloomResolutionSlider: React.FunctionComponent<React.PropsWithChildren<{
-    path: string;
-    label: string;
-}>> = props => {
+const BloomResolutionSlider: React.FunctionComponent<
+    React.PropsWithChildren<{
+        path: string;
+        label: string;
+    }>
+> = props => {
     return (
         <div>
             <ConfigrCustomObjectInput<Resolution>
@@ -931,9 +930,9 @@ const ColorPickerForConfigr: React.FunctionComponent<{
 };
 
 // TODO: move this to config-r
-const ConfigrCustomRow: React.FunctionComponent<React.PropsWithChildren<
-    object
->> = props => {
+const ConfigrCustomRow: React.FunctionComponent<
+    React.PropsWithChildren<object>
+> = props => {
     return (
         <ListItem
             css={css`

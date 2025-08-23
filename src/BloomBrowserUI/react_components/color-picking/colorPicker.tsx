@@ -22,7 +22,9 @@ interface IColorPickerProps {
     //defaultColor?: IColorInfo;  will eventually need this
 }
 
-export const ColorPicker: React.FunctionComponent<IColorPickerProps> = props => {
+export const ColorPicker: React.FunctionComponent<
+    IColorPickerProps
+> = props => {
     const [colorChoice, setColorChoice] = useState(props.currentColor);
 
     const defaultStyleLabel = useL10n(

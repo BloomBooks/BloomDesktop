@@ -44,14 +44,14 @@ export function cleanupImages() {
 export function SetupImagesInContainer(container) {
     $(container)
         .find(".bloom-imageContainer > img") // the ">" here prevents finding img's of ui affordances deep in comics
-        .each(function() {
+        .each(function () {
             SetupImage(this);
         });
     // I think this is redundant, but it might be important for a bloom-canvas
     // where the background img has not yet been converted to a background canvas element.
     $(container)
         .find(".bloom-canvas > img") // the ">" here prevents finding img's of ui affordances deep in comics
-        .each(function() {
+        .each(function () {
             SetupImage(this);
         });
 
@@ -67,13 +67,13 @@ export function SetupImagesInContainer(container) {
     //todo: this had problems. Check out the later approach, seen in draggableLabel (e.g. move handle on the inside, using a background image on a div)
     $(container)
         .find(".bloom-draggable")
-        .mouseenter(function() {
+        .mouseenter(function () {
             $(this).prepend(
                 "<button class='moveButton' title='Move'></button>"
             );
             $(this)
                 .find(".moveButton")
-                .mousedown(function(e) {
+                .mousedown(function (e) {
                     //reviewSlog added the <any>
                     $(this)
                         .parent()
@@ -82,17 +82,17 @@ export function SetupImagesInContainer(container) {
         });
     $(container)
         .find(".bloom-draggable")
-        .mouseleave(function() {
+        .mouseleave(function () {
             $(this)
                 .find(".moveButton")
-                .each(function() {
+                .each(function () {
                     $(this).remove();
                 });
         });
 
     $(container)
         .find("img")
-        .each(function() {
+        .each(function () {
             SetAlternateTextOnImages(this);
         });
 }
@@ -300,10 +300,10 @@ function SetupBloomCanvas(bloomCanvas: HTMLElement) {
     SetupChangeImageButton(bloomCanvas);
 
     $(bloomCanvas)
-        .mouseenter(function() {
+        .mouseenter(function () {
             handleMouseEnterBloomCanvas(this);
         })
-        .mouseleave(function(e: JQueryMouseEventObject) {
+        .mouseleave(function (e: JQueryMouseEventObject) {
             // Page numbers displaying inside the bloom-canvas must have their
             // width and height constrained.  That way, hovering over the page number
             // triggers the mouseleave event, and the image editing buttons are hidden
@@ -338,9 +338,8 @@ export function getImageFromContainer(
 export function getImageFromCanvasElement(
     canvasElement: HTMLElement
 ): HTMLImageElement | null {
-    const imageContainer = canvasElement.getElementsByClassName(
-        kImageContainerClass
-    )[0];
+    const imageContainer =
+        canvasElement.getElementsByClassName(kImageContainerClass)[0];
     if (!imageContainer) {
         return null;
     }
@@ -372,9 +371,8 @@ export function getBackgroundCanvasElementFromBloomCanvas(
 export function getBackgroundImageFromBloomCanvas(
     bloomCanvas: HTMLElement
 ): HTMLElement | null {
-    const bgCanvasElement = getBackgroundCanvasElementFromBloomCanvas(
-        bloomCanvas
-    );
+    const bgCanvasElement =
+        getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
     if (!bgCanvasElement) {
         return null;
     }
@@ -609,9 +607,10 @@ function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
                 else {
                     $(img).css(
                         "height",
-                        `${imageInfo.height *
-                            (container.width() /
-                                Math.max(1, imageInfo.width))}px`
+                        `${
+                            imageInfo.height *
+                            (container.width() / Math.max(1, imageInfo.width))
+                        }px`
                     );
                     $(img).css("width", "100%");
                 }
@@ -648,11 +647,7 @@ function getFileLengthString(bytes): string {
 // If the image is a placeholder:
 // - we don't want to offer to edit placeholder credits
 function IsImageReal(img) {
-    return (
-        GetRawImageUrl(img)
-            .toLowerCase()
-            .indexOf("placeholder") == -1
-    ); //don't offer to edit placeholder credits
+    return GetRawImageUrl(img).toLowerCase().indexOf("placeholder") == -1; //don't offer to edit placeholder credits
 }
 
 // Gets the src attribute out of images, and the background-image:url() of everything else
@@ -787,10 +782,10 @@ function SetAlternateTextOnImages(element) {
 // This method uses jQuery UI resizable to make it so.
 export function SetupResizableElement(element) {
     $(element)
-        .mouseenter(function() {
+        .mouseenter(function () {
             $(this).addClass("ui-mouseOver");
         })
-        .mouseleave(function() {
+        .mouseleave(function () {
             $(this).removeClass("ui-mouseOver");
         });
     // When the outer container is resized, the inner bloom-canvas is resized with it.

@@ -9,9 +9,7 @@ import { Link } from "../../react_components/link";
 
 import "./learnAboutAccessibility.less";
 
-export class LearnAboutAccessibility extends React.Component<
-    IUILanguageAwareProps
-> {
+export class LearnAboutAccessibility extends React.Component<IUILanguageAwareProps> {
     public render() {
         // prettier-ignore
         return (

@@ -73,19 +73,19 @@ export class MeasureText {
         div.style.fontFamily = fontFamily;
         div.style.fontSize = fontSize + "px";
         div.style.lineHeight = ""; // reset in case we're reusing it
-        const bottomOfTextWithDefaultLineSpace = div.getBoundingClientRect()
-            .bottom;
-        const baselineOfTextWithDefaultLineSpace = block.getBoundingClientRect()
-            .bottom;
+        const bottomOfTextWithDefaultLineSpace =
+            div.getBoundingClientRect().bottom;
+        const baselineOfTextWithDefaultLineSpace =
+            block.getBoundingClientRect().bottom;
         const fontDescent =
             bottomOfTextWithDefaultLineSpace -
             baselineOfTextWithDefaultLineSpace;
 
         if (lineHeight !== null) div.style.lineHeight = lineHeight;
-        const bottomOfTextWithActualLineSpace = div.getBoundingClientRect()
-            .bottom;
-        const baselineOfTextWithActualLineSpace = block.getBoundingClientRect()
-            .bottom;
+        const bottomOfTextWithActualLineSpace =
+            div.getBoundingClientRect().bottom;
+        const baselineOfTextWithActualLineSpace =
+            block.getBoundingClientRect().bottom;
         const layoutDescent =
             bottomOfTextWithActualLineSpace - baselineOfTextWithActualLineSpace;
 

@@ -16,9 +16,7 @@ export class EditableDivUtils {
 
         const selection = page.contentWindow.getSelection();
         if (!selection || !selection.anchorNode) return -1;
-        const active = $(selection.anchorNode)
-            .closest("div")
-            .get(0);
+        const active = $(selection.anchorNode).closest("div").get(0);
         if (active != editableDiv) return -1; // the selection is not in editableDiv at all
         if (!active || selection.rangeCount == 0) {
             return -1;
@@ -244,11 +242,11 @@ export class EditableDivUtils {
             // fix adapted from majcherek2048's about 2/3 down this page https://bugs.jqueryui.com/ticket/3740.
             // If we upgrade our jqueryui to a version that doesn't have this bug (1.10.3 or later?),
             // we'll need to back out this change.
-            start: function(event, ui) {
+            start: function (event, ui) {
                 $(this).data("startingScrollTop", $("html").scrollTop());
                 $(this).data("startingScrollLeft", $("html").scrollLeft());
             },
-            drag: function(event, ui) {
+            drag: function (event, ui) {
                 ui.position.top =
                     (ui.position.top - $(this).data("startingScrollTop")) /
                     scale;
@@ -337,9 +335,8 @@ export class EditableDivUtils {
                             // console.log("doCkEditorCleanup, before createBookmarks: ");
                             // EditableDivUtils.logElementsInnerHtml([div]);
 
-                            bookmarksForEachEditable[
-                                index
-                            ] = ckeditorSelection.createBookmarks(true);
+                            bookmarksForEachEditable[index] =
+                                ckeditorSelection.createBookmarks(true);
                         } catch (e) {
                             console.error("createBookmarks failed");
                             console.error(e);

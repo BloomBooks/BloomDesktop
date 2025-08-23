@@ -34,9 +34,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
 }> = props => {
     const [motionEnabled] = useApiBoolean("publish/canHaveMotionMode", false);
     const motionFeatureStatus = useGetFeatureStatus(kMotionToolId, true);
-    const motionFeatureMessage = useGetFeatureAvailabilityMessage(
-        motionFeatureStatus
-    );
+    const motionFeatureMessage =
+        useGetFeatureAvailabilityMessage(motionFeatureStatus);
     const motionAllowed = motionFeatureStatus?.enabled ?? false;
 
     const [hasNonWidgetGames] = useApiBoolean(
@@ -51,9 +50,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         nonWidgetGameFeatureStatus?.enabled ?? false;
     const [hasWidgets] = useApiBoolean("publish/hasWidgets", false);
     const widgetFeatureStatus = useGetFeatureStatus("widget", true);
-    const widgetFeatureMessage = useGetFeatureAvailabilityMessage(
-        widgetFeatureStatus
-    );
+    const widgetFeatureMessage =
+        useGetFeatureAvailabilityMessage(widgetFeatureStatus);
     const mayPublishWidgets = widgetFeatureStatus?.enabled ?? false;
 
     const [comicEnabled] = useApiBoolean("publish/comicEnabled", false);
@@ -123,8 +121,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     const talkingBookDisabledTooltip = isTalkingBook
         ? ""
         : couldBeTalkingBook
-        ? NoLanguagesSelected
-        : NoRecordings;
+          ? NoLanguagesSelected
+          : NoRecordings;
 
     const slPresent = useL10n(
         "The videos in this book contain {N}",

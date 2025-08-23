@@ -79,15 +79,16 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
             // If we have a non-empty music attr, we're setting new music right here.
             musicState.activeRadioValue = "newMusic";
             musicState.audioEnabled = true;
-            musicState.volume = MusicToolControls.getPlayerVolumeFromAttributeOnPage(
-                audioFileName
-            );
-            musicState.volumeSliderPosition = MusicToolControls.convertVolumeToSliderPosition(
-                musicState.volume
-            );
-            musicState.musicName = this.getDisplayNameOfMusicFile(
-                audioFileName
-            );
+            musicState.volume =
+                MusicToolControls.getPlayerVolumeFromAttributeOnPage(
+                    audioFileName
+                );
+            musicState.volumeSliderPosition =
+                MusicToolControls.convertVolumeToSliderPosition(
+                    musicState.volume
+                );
+            musicState.musicName =
+                this.getDisplayNameOfMusicFile(audioFileName);
         } else {
             // If we have the attribute, but the value is empty, we're explicitly turning it off.
             musicState.activeRadioValue = "noMusic";
@@ -367,9 +368,8 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
     }
 
     private sliderMoved(position1to100: number): void {
-        const volume = MusicToolControls.convertSliderPositionToVolume(
-            position1to100
-        );
+        const volume =
+            MusicToolControls.convertSliderPositionToVolume(position1to100);
         ToolboxToolReactAdaptor.encodeAndSetPageAttr(
             MusicToolControls.musicVolumeAttrName,
             volume.toString()

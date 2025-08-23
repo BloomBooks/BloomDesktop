@@ -93,9 +93,8 @@ const plainColors: IColorInfo[] = [
 ];
 
 // These colors are what the canvas element tool has been using for the background color chooser.
-export const TextBackgroundColors: IColorInfo[] = plainColors.concat(
-    specialColors
-);
+export const TextBackgroundColors: IColorInfo[] =
+    plainColors.concat(specialColors);
 
 // all colors, whether factory or "custom"
 // no leading "#", no gradients
@@ -130,9 +129,11 @@ export async function getHexColorsForPalette(
             // already have reported it, so we don't need to, and doing so again can have some bad
             // results, e.g., BL-11657. The worst consequence here is that we revert to factory
             // colors. Hopefully, any new customizations will be saved in the current way and work.
-            customColors = (result.data as Array<{
-                colors: string[];
-            }>).map(c => c.colors[0]);
+            customColors = (
+                result.data as Array<{
+                    colors: string[];
+                }>
+            ).map(c => c.colors[0]);
         }
         return [...factoryColors, ...customColors].map(c => c.replace("#", ""));
     });

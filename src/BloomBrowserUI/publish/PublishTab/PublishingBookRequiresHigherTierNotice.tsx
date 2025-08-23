@@ -27,8 +27,7 @@ export const PublishingBookRequiresHigherTierNotice: React.FunctionComponent<{
     );
     const nameTheFeatureMessage = useL10n2({
         english: 'The book titled "{0}" uses the "{1}" feature.',
-        key:
-            "PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation",
+        key: "PublishTab.PublishingBookRequiresHigherTierNotice.ProblemExplanation",
         params: nameTheFeatureMessageL10nParams
     });
     const requiredTierMessage = useGetFeatureAvailabilityMessage(
@@ -47,8 +46,7 @@ export const PublishingBookRequiresHigherTierNotice: React.FunctionComponent<{
     );
     const firstPageMessage = useL10n2({
         english: "Page {0} is the first page that uses this feature.",
-        key:
-            "PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage",
+        key: "PublishTab.PublishingBookRequiresHigherTierNotice.FirstProblematicPage",
         params: firstPageMessageL10nParams
     });
 

@@ -67,9 +67,10 @@ export function useGetFeatureAvailabilityMessage(
     featureStatus: FeatureStatus | undefined
 ): string {
     // Get localized strings first
-    const params = useMemo(() => [featureStatus?.localizedTier || ""], [
-        featureStatus?.localizedTier
-    ]);
+    const params = useMemo(
+        () => [featureStatus?.localizedTier || ""],
+        [featureStatus?.localizedTier]
+    );
     const featureNotInTierMessage = useL10n2({
         english:
             'This feature requires a Bloom subscription tier of at least "{0}".',

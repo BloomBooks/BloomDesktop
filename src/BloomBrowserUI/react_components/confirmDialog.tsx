@@ -34,11 +34,8 @@ export let showConfirmDialog: () => void = () => {
 };
 
 export const ConfirmDialog: React.FC<IConfirmDialogProps> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     showConfirmDialog = showDialog;
 

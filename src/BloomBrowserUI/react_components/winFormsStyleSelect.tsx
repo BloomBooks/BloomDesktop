@@ -37,7 +37,9 @@ interface FormsSelectProps {
 
 // This component initially attempted to imitate a winforms combobox in React.
 // Since we're moving away from winforms, that restriction has relaxed somewhat.
-const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => {
+const WinFormsStyleSelect: React.FunctionComponent<
+    FormsSelectProps
+> = props => {
     const selectMenuProps: Partial<MenuProps> = {
         classes: {
             paper: useStyles().menuPaper

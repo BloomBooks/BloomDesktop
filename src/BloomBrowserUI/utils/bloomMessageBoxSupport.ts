@@ -21,7 +21,8 @@ export default class BloomMessageBoxSupport {
         theOneLocalizationManager
             .asyncGetText(l10nKey, englishText, l10nComment)
             .done(localizedMessage => {
-                const container = getEditTabBundleExports().getModalDialogContainer();
+                const container =
+                    getEditTabBundleExports().getModalDialogContainer();
                 if (!container) {
                     // Fallback to alert; unlikely to happen.
                     alert(localizedMessage);

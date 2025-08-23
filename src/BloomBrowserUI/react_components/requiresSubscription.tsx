@@ -54,9 +54,10 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
         | React.ReactElement<IDisableable>
         | Array<React.ReactElement<IDisableable>>;
 }) => {
-    const memoizedFeatureName = React.useMemo(() => props.featureName, [
-        props.featureName
-    ]);
+    const memoizedFeatureName = React.useMemo(
+        () => props.featureName,
+        [props.featureName]
+    );
     const featureStatus = useGetFeatureStatus(memoizedFeatureName);
     const tierMessage = useGetFeatureAvailabilityMessage(featureStatus);
 
@@ -73,7 +74,7 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
         <img
             css={css`
                 ${"height: 16px; margin-left: 6px; cursor: pointer; " +
-                    (props.iconStyles ?? "")}
+                (props.iconStyles ?? "")}
             `}
             src={badgeUrl}
             title={tierMessage}
@@ -136,9 +137,10 @@ export const BloomEnterpriseIconWithTooltip: React.FunctionComponent<{
 export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
     featureName: string;
 }> = props => {
-    const memoizedFeatureName = React.useMemo(() => props.featureName, [
-        props.featureName
-    ]);
+    const memoizedFeatureName = React.useMemo(
+        () => props.featureName,
+        [props.featureName]
+    );
     const featureStatus = useGetFeatureStatus(memoizedFeatureName);
 
     return (
@@ -241,12 +243,12 @@ export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
                                   display: none;
                               `
                             : inSeparateDialog
-                            ? css`
-                                  padding: 10px 0px 0px 0px;
-                              `
-                            : css`
-                                  padding: 5px;
-                              `
+                              ? css`
+                                    padding: 10px 0px 0px 0px;
+                                `
+                              : css`
+                                    padding: 5px;
+                                `
                     }
                 >
                     <div className="messageSettingsDialogWrapper">
@@ -340,14 +342,11 @@ export const RequiresSubscriptionNoticeDialog: React.FunctionComponent<{
     featureName: string;
 }> = props => {
     // Designed to be invoked from WinForms land.
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog({
-        dialogFrameProvidedExternally: true,
-        initiallyOpen: true
-    });
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog({
+            dialogFrameProvidedExternally: true,
+            initiallyOpen: true
+        });
 
     return (
         <BloomDialog {...propsForBloomDialog}>
@@ -448,11 +447,8 @@ export const RequiresSubscriptionDialog: React.FunctionComponent<{
     featureName?: string;
 }> = props => {
     // Designed to be invoked natively from TypeScript land.
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
     useEffect(() => {
         showRequiresSubscriptionDialogInternal = showDialog;
         return () => {

@@ -89,7 +89,9 @@ export const getTemplatePageImageSource = (
 //   \"groups\":[{\"templateBookFolderUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryGroups/Templates/Basic Book\",
 //                     \"templateBookUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryGroups/Templates/Basic Book/Basic Book.htm\"}]}"
 
-export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps> = props => {
+export const PageChooserDialog: React.FunctionComponent<
+    IPageChooserDialogProps
+> = props => {
     const [open, setOpen] = useState(true);
 
     const closeDialog = () => {
@@ -482,13 +484,11 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         if (templatePageDiv === undefined) {
             return true;
         }
-        const selectedTemplateTranslationGroupCount = countTranslationGroupsForChangeLayout(
-            templatePageDiv
-        );
+        const selectedTemplateTranslationGroupCount =
+            countTranslationGroupsForChangeLayout(templatePageDiv);
         // Bloom canvases are never nested!
-        const selectedTemplateBloomCanvasCount = templatePageDiv.getElementsByClassName(
-            kBloomCanvasClass
-        ).length;
+        const selectedTemplateBloomCanvasCount =
+            templatePageDiv.getElementsByClassName(kBloomCanvasClass).length;
         const selectedTemplateVideoCount = countEltsOfClassNotInBloomCanvas(
             templatePageDiv,
             "bloom-videoContainer"
@@ -508,12 +508,10 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         if (!current) {
             return true;
         }
-        const currentTranslationGroupCount = countTranslationGroupsForChangeLayout(
-            current
-        );
-        const currentBloomCanvasCount = current.getElementsByClassName(
-            kBloomCanvasClass
-        ).length;
+        const currentTranslationGroupCount =
+            countTranslationGroupsForChangeLayout(current);
+        const currentBloomCanvasCount =
+            current.getElementsByClassName(kBloomCanvasClass).length;
         // ".bloom-videoContainer:not(.bloom-noVideoSelected)" is not working reliably as a selector.
         // It's also insufficient if we allow the user to change multiple pages at once to look at
         // only the current page for content.  Not checking for actual video content matches what is
@@ -761,9 +759,11 @@ export function countEltsOfClassNotInBloomCanvas(
     className: string
 ): number {
     return (
-        (Array.from(
-            currentPageDiv.getElementsByClassName(className)
-        ) as HTMLElement[])
+        (
+            Array.from(
+                currentPageDiv.getElementsByClassName(className)
+            ) as HTMLElement[]
+        )
             // filter out the ones inside a bloom-canvas
             .filter(
                 e => e.parentElement?.closest(kBloomCanvasSelector) === null

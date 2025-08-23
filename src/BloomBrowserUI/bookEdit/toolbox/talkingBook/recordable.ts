@@ -74,9 +74,8 @@ export default class Recordable {
             return [this.textBox];
         } else {
             // This only matches strict descendants, not itself
-            const matchingDescendants = this.textBox.querySelectorAll(
-                ".audio-sentence"
-            );
+            const matchingDescendants =
+                this.textBox.querySelectorAll(".audio-sentence");
 
             return Array.from(matchingDescendants) as HTMLElement[];
         }
@@ -237,9 +236,8 @@ export default class Recordable {
             this.areAnyRecordingsPresentAsync()
         ];
 
-        const [isFullyRecorded, isPartiallyRecorded] = await Promise.all(
-            asyncTasks
-        );
+        const [isFullyRecorded, isPartiallyRecorded] =
+            await Promise.all(asyncTasks);
         if (isFullyRecorded) {
             return RecordingStatus.Full;
         } else if (isPartiallyRecorded) {

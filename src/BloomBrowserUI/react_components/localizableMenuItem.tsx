@@ -79,7 +79,9 @@ const kIconCheckboxAffordance = 28;
 const kEnterpriseStickerAffordance = 28;
 const menuItemColor = "black";
 
-export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemProps> = props => {
+export const LocalizableMenuItem: React.FunctionComponent<
+    ILocalizableMenuItemProps
+> = props => {
     const variant = props.variant ?? "h6";
     const typographyProps: TypographyProps = {
         variant: variant
@@ -192,7 +194,9 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
     );
 };
 
-export const LocalizableCheckboxMenuItem: React.FunctionComponent<ILocalizableCheckboxMenuItemProps> = props => {
+export const LocalizableCheckboxMenuItem: React.FunctionComponent<
+    ILocalizableCheckboxMenuItemProps
+> = props => {
     const variant = props.variant ?? "h6";
     const typographyProps: TypographyProps = {
         variant: variant
@@ -262,7 +266,9 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<ILocalizableCh
     );
 };
 
-export const LocalizableNestedMenuItem: React.FunctionComponent<INestedMenuItemProps> = props => {
+export const LocalizableNestedMenuItem: React.FunctionComponent<
+    INestedMenuItemProps
+> = props => {
     const label = useL10n(
         props.english,
         props.l10nId,

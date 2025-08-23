@@ -74,11 +74,8 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         ""
     );
     const [boxesChecked, setBoxesChecked] = useState(0);
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     const checkChanged = (newVal: boolean) => {
         setBoxesChecked(oldCount => (newVal ? oldCount + 1 : oldCount - 1));

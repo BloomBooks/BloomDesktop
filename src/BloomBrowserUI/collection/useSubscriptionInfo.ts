@@ -66,7 +66,8 @@ export const useSubscriptionInfo = () => {
     return {
         code: subscriptionData.Code,
         tier: subscriptionData.Tier,
-        subscriptionCodeIntegrity: subscriptionData.CodeIntegrity as SubscriptionCodeIntegrity,
+        subscriptionCodeIntegrity:
+            subscriptionData.CodeIntegrity as SubscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD: subscriptionData.Expiration || "",
         subscriptionDescriptor: subscriptionData.SubscriptionDescriptor,
         subscriptionSummary: subscriptionData.Summary,

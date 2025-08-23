@@ -15,7 +15,9 @@ interface IBloomSketchPickerProps {
 }
 
 // This combines 3 'react-color' components to make our version of react-color's SketchPicker.
-const BloomSketchPicker: React.FunctionComponent<IBloomSketchPickerProps> = props => {
+const BloomSketchPicker: React.FunctionComponent<
+    IBloomSketchPickerProps
+> = props => {
     const transparencyString =
         ((1 - props.currentOpacity) * 100).toFixed(0) + "%";
 

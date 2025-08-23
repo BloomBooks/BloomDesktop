@@ -26,7 +26,9 @@ const dummyTitleGroup: IBookGroup = {
     errorPath: ""
 };
 
-const TemplateBookPagesWrapper: React.FunctionComponent<ITemplateBookPagesWrapperProps> = props => {
+const TemplateBookPagesWrapper: React.FunctionComponent<
+    ITemplateBookPagesWrapperProps
+> = props => {
     const [bg, setBg] = React.useState<IBookGroup | undefined>(undefined);
     React.useEffect(() => {
         axios
@@ -35,10 +37,11 @@ const TemplateBookPagesWrapper: React.FunctionComponent<ITemplateBookPagesWrappe
                     encodeURIComponent(props.templateBook.templateBookPath)
             )
             .then(result => {
-                const resultPageData: HTMLElement = new DOMParser().parseFromString(
-                    result.data,
-                    "text/html"
-                ).body;
+                const resultPageData: HTMLElement =
+                    new DOMParser().parseFromString(
+                        result.data,
+                        "text/html"
+                    ).body;
                 const bloomPages: HTMLDivElement[] = Array.from(
                     resultPageData.querySelectorAll(".bloom-page")
                 );
