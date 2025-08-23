@@ -123,7 +123,9 @@
             }
 
             // Language tip CSS
-            .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]) {
+            .bloom-editable[contentEditable="true"][data-languageTipContent]:not(
+                    [data-languageTipContent=""]
+                ) {
                 &:after {
                     // In editMode.less, it sets the "content" property for all text boxes (which normally always have the language tip visible).
                     // But here in text over picture, we want to default to not having the language tip visible.
@@ -235,8 +237,12 @@
     // 3) But if the text overflows the box, we don't want to center it, because that would make the top
     // and bottom of the text to disappear. So we exclude any box that has text overflow marked.  (Scrolling
     // doesn't work when the contents are forcibly centered.)  See BL-13606 (and BL-12750).
-    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow)),
-    .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow)) {
+    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(
+            :has(.overflow)
+        ),
+    .bloom-canvas-element[data-bubble*="backgroundColors"]:not(
+            [data-bubble*="`backgroundColors`:[`transparent`]"]
+        ):not(:has(.overflow)) {
         // Center the translationGroup within the textOverPic box,
         // instead of having the 2 px difference all at the bottom.
         display: flex;
