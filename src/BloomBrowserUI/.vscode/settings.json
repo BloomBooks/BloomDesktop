@@ -12,6 +12,8 @@
     "editor.detectIndentation": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
+    "prettier.endOfLine": "auto",
+    "files.eol": "auto",
     "typescript.tsdk": "./node_modules/typescript/lib",
     "workbench.colorCustomizations": {
         "statusBar.background": "#75416E",
