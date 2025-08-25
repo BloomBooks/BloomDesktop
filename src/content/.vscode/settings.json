@@ -1,5 +1,7 @@
 {
     "editor.formatOnSave": true,
+    "prettier.endOfLine": "auto",
+    "files.eol": "auto",
     "workbench.colorCustomizations": {
         "activityBar.background": "#21312D",
         "titleBar.activeBackground": "#2E443F",

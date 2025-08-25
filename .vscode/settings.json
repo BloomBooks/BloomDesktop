@@ -1,8 +1,10 @@
 {
     "editor.formatOnSave": true,
+    "prettier.endOfLine": "auto",
+    "files.eol": "auto",
     "[csharp]": {
         // Note: the csharpier should also be installed in Visual Studio, if that is used,
-        // so that we get the same formatting. But there is no way to automate instaling it.
+        // so that we get the same formatting. But there is no way to automate installing it.
         "editor.defaultFormatter": "csharpier.csharpier-vscode"
     },
     "[typescriptreact]": {
