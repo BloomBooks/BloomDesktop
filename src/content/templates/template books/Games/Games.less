@@ -1,6 +1,6 @@
 @import (reference) "../../../../BloomBrowserUI/bloomUI.less";
 // Important classes and attributes that bloom game template pages contain or that
-// bloom maniupulates to run games (maybe the classes should all be bloom-X?):
+// bloom manipulates to run games (maybe the classes should all be bloom-X?):
 // drag-item-correct, drag-item-wrong: put on canvas element items that should only show
 //    in the correct or wrong tab, or the Play tab when the user has given an answer.
 // drag-activity-{start/correct/wrong/play/solution}: put on the div above the bloom-page
@@ -35,7 +35,7 @@
 .drag-activity-correct .drag-item-correct,
 .drag-activity-wrong .drag-item-wrong {
     display: block;
-    // In front of targets ([data-target-of] has z-index=@convasElementCanvasZIndex+1),
+    // In front of targets ([data-target-of] has z-index=@canvasElementCanvasZIndex+1),
     // in case they overlap.  See BL-14627.
     z-index: @canvasElementCanvasZIndex + 2;
 }
@@ -155,7 +155,7 @@
 .drag-activity-play {
     .drag-item-wrong,
     .drag-item-correct {
-        // In front of targets ([data-target-of] has z-index=@convasElementCanvasZIndex+1),
+        // In front of targets ([data-target-of] has z-index=@canvasElementCanvasZIndex+1),
         // in case they overlap. Also in front of [data-draggable-id] elements, which are
         // in front of the targets with z-index=@canvasElementCanvasZIndex+2.  See BL-14627.
         z-index: @canvasElementCanvasZIndex + 3;
@@ -625,9 +625,12 @@
     position: absolute;
 }
 
-.numberedPage::after {
+// We need to ensure this only applies to games (not all pages).
+// We also need to ensure our specificity beats the appearance settings rules.
+// Note, these rules are handled for non-drag games in their respective .less files.
+.bloom-page[data-activity^="drag-"].numberedPage::after {
     color: var(--game-page-number-color);
-    --pageNumber-background-color: var(--page-background-color) !important;
+    --pageNumber-background-color: var(--page-background-color);
 }
 
 // These styles and more are set up in the Games.html template.
