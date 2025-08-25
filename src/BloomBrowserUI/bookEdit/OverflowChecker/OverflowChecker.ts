@@ -468,8 +468,7 @@ export default class OverflowChecker {
             $editable.addClass("overflow");
             const page = $editable.closest(".bloom-page");
             if (overflowY > 0 && page.length) {
-                cleanupNiceScroll();
-                addScrollbarsToPage(page[0]);
+                OverflowChecker.fixScrollBarsSoon(page[0]);
             }
 
             if ($editable.parents("[class*=Device]").length === 0) {
@@ -499,7 +498,7 @@ export default class OverflowChecker {
             $editable.removeClass("overflow");
             const page = $editable.closest(".bloom-page");
             if (page.length) {
-                cleanupNiceScroll();
+                OverflowChecker.fixScrollBarsSoon(page[0]);
             }
         }
 
@@ -565,7 +564,7 @@ export default class OverflowChecker {
                     });
                 let showing = false;
                 $overflowingAncestor.on("mousemove.overflow", event => {
-                    if (overflowingAncestor == null) return; // prevent bad static analysis
+                    if (overflowingAncestor === null) return; // prevent bad static analysis
                     const bounds = overflowingAncestor.getBoundingClientRect();
                     const scaleY =
                         bounds.height / overflowingAncestor.offsetHeight;
@@ -596,6 +595,22 @@ export default class OverflowChecker {
         });
         OverflowChecker.UpdatePageOverflow(container.closest(".bloom-page"));
     } // end AdjustSizeOrMarkOverflow
+
+    // Fix the NiceScroll scrollbars after a short delay to prevent flickering
+    // as the mouse drags the size of the element.
+    private static fixScrollBarsTimeout = 0;
+    private static fixScrollBarsSoon(page: Element) {
+        if (this.fixScrollBarsTimeout) {
+            clearTimeout(this.fixScrollBarsTimeout);
+        }
+        // We want to clean up niceScroll so the scroll bars are not left behind, but we get
+        // flicker if we do it continuously. This is hopefully a long enough delay so it
+        // just happens after the user stops dragging.
+        this.fixScrollBarsTimeout = window.setTimeout(() => {
+            cleanupNiceScroll();
+            addScrollbarsToPage(page[0]);
+        }, 200);
+    }
 
     // Destroy any qtip on this element that marks overflow, but leave other qtips alone.
     // This restriction is an attempt not to remove bloom hint and source bubbles.
