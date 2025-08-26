@@ -199,7 +199,7 @@ namespace BloomTests.CollectionTab
             {
                 "customCollectionStyles.css",
                 "ReaderToolsSettings-en.json",
-                "ReaderToolsWords-en.json"
+                "ReaderToolsWords-en.json",
             };
             foreach (var requiredFile in requiredCollectionLevelFiles)
                 File.WriteAllText(

@@ -12,6 +12,7 @@ using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.BloomPub;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
@@ -22,7 +23,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.WritingSystems;
-using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.Collection
 {
@@ -115,7 +115,7 @@ namespace Bloom.Collection
             };
 
         public const string kFileExtension = ".bloomCollection";
-        public const string kWildSearchPattern = $"*{kFileExtension}";   // used in directory searches
+        public const string kWildSearchPattern = $"*{kFileExtension}"; // used in directory searches
 
         /// <summary>
         /// Generate the file name for the collection settings file given the collection folder name.
@@ -140,10 +140,10 @@ namespace Bloom.Collection
         public static string GetFileDialogFilterString()
         {
             return LocalizationManager.GetString(
-                "OpenCreateNewCollectionsDialog.Bloom Collections",
-                "Bloom Collections",
-                "This shows in the file-open dialog that you use to open a different bloom collection"
-            ) + $"|{kWildSearchPattern}";
+                    "OpenCreateNewCollectionsDialog.Bloom Collections",
+                    "Bloom Collections",
+                    "This shows in the file-open dialog that you use to open a different bloom collection"
+                ) + $"|{kWildSearchPattern}";
         }
 
         /// <summary>
@@ -167,7 +167,9 @@ namespace Bloom.Collection
                 // But we can try to find it by searching for the file with the wild search pattern.
                 // This is used, for example, when joining a Team Collection, where the settings file is
                 // in a different place.
-                settingsFilePath = Directory.EnumerateFiles(collectionFolder, CollectionSettings.kWildSearchPattern).FirstOrDefault();
+                settingsFilePath = Directory
+                    .EnumerateFiles(collectionFolder, CollectionSettings.kWildSearchPattern)
+                    .FirstOrDefault();
             }
             return settingsFilePath != null;
         }
@@ -503,7 +505,7 @@ namespace Bloom.Collection
                     new[] { "National1Iso639Code", "Language2Iso639Code" },
                     new[] { "National2Iso639Code", "Language3Iso639Code" },
                     new[] { "IsShellMakingProject", "IsSourceCollection" },
-                    new[] { "Local Community", "Local-Community" } // migrate for 4.4
+                    new[] { "Local Community", "Local-Community" }, // migrate for 4.4
                 };
 
                 foreach (var fromTo in nameMigrations)
@@ -564,13 +566,11 @@ namespace Bloom.Collection
                 // user logins that are marked as editors of the collection. We want to allow them to re-upload it with fixes
                 // even if the subscription has expired.
                 // 2) this is a developer looking into a Bloom Problem Report.
-                var downloadInfoPath = RobustFile.Exists(
-                    pathToFileAboutABlorgBookWeHaveDownloadedForEditing
-                )
-                    ? pathToFileAboutABlorgBookWeHaveDownloadedForEditing
-                    : RobustFile.Exists(bloomProblemBookJsonPath)
-                        ? bloomProblemBookJsonPath
-                        : null;
+                var downloadInfoPath =
+                    RobustFile.Exists(pathToFileAboutABlorgBookWeHaveDownloadedForEditing)
+                        ? pathToFileAboutABlorgBookWeHaveDownloadedForEditing
+                    : RobustFile.Exists(bloomProblemBookJsonPath) ? bloomProblemBookJsonPath
+                    : null;
                 if (downloadInfoPath != null)
                 {
                     IgnoreExpiration = true;
@@ -622,9 +622,7 @@ namespace Bloom.Collection
                         ? defaultBookshelfTag.Substring("bookshelf:".Length)
                         : "";
                 ExpiredBookshelf =
-                    (
-                        defaultBookshelfTag != null && Subscription.IsExpired()
-                    )
+                    (defaultBookshelfTag != null && Subscription.IsExpired())
                         ? defaultBookshelfTag.Substring("bookshelf:".Length)
                         : "";
 
@@ -942,7 +940,7 @@ namespace Bloom.Collection
                 makeBookshelfFile = true,
                 bookshelfColor = Palette.kBloomLightBlueHex,
                 makeBloomBundle = true,
-                distributionTag = ""
+                distributionTag = "",
             };
 
         public bool AllowDeleteBooks

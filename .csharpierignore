@@ -1,0 +1,4 @@
+# csharpier should ignore project files created/modified by Visual Studio (it formats all XML files by default)
+
+**/*.csproj
+**/*.config

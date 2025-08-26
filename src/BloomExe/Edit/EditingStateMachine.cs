@@ -18,7 +18,7 @@ public enum State
     // In the meantime, to make sure we don't forget to load up some page in a valid state,
     // the action that always goes along with a switch to this state returns the ID of a page we
     // should navigate to next.
-    SavedAndStripped
+    SavedAndStripped,
 }
 
 /// <summary>

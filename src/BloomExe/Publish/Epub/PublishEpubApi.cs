@@ -313,7 +313,7 @@ namespace Bloom.Publish.Epub
                 new Dictionary<string, string>()
                 {
                     { "BookId", _bookSelection.CurrentSelection.ID },
-                    { "Country", _collectionSettings.Country }
+                    { "Country", _collectionSettings.Country },
                 }
             );
         }

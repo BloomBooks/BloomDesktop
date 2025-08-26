@@ -21,14 +21,15 @@ using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
 using L10NSharp;
-#if __MonoCS__
-using SIL.CommandLineProcessing;
-#endif
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Xml;
+#if __MonoCS__
+using SIL.CommandLineProcessing;
+#endif
+
 
 namespace Bloom.Publish.Epub
 {
@@ -1220,12 +1221,9 @@ namespace Bloom.Publish.Epub
                 .Cast<SafeXmlElement>();
 
             // Now check if the audio recordings actually exist for them
-            var audioSentenceElementsWithRecordedAudio = audioSentenceElements.Where(
-                x =>
-                    AudioProcessor.GetOrCreateCompressedAudio(
-                        Storage.FolderPath,
-                        x.GetAttribute("id")
-                    ) != null
+            var audioSentenceElementsWithRecordedAudio = audioSentenceElements.Where(x =>
+                AudioProcessor.GetOrCreateCompressedAudio(Storage.FolderPath, x.GetAttribute("id"))
+                != null
             );
             if (!audioSentenceElementsWithRecordedAudio.Any())
                 return;
@@ -1472,12 +1470,11 @@ namespace Bloom.Publish.Epub
         )
         {
             var mergeFiles = elementArray
-                .Select(
-                    s =>
-                        AudioProcessor.GetOrCreateCompressedAudio(
-                            Storage.FolderPath,
-                            s.GetAttribute("id")
-                        )
+                .Select(s =>
+                    AudioProcessor.GetOrCreateCompressedAudio(
+                        Storage.FolderPath,
+                        s.GetAttribute("id")
+                    )
                 )
                 .Where(s => !string.IsNullOrEmpty(s));
             Directory.CreateDirectory(Path.Combine(_contentFolder, kAudioFolder));
@@ -1905,13 +1902,15 @@ namespace Bloom.Publish.Epub
             // Find the special styles element which contains the user-defined styles.
             // These are the only elements I can find that set explicit font sizes.
             // A few of our css rules apply percentage sizes, but that should be OK.
-            var userStyles = pageDom.Head.ChildNodes
-                .Where(x => x is SafeXmlElement && x.GetAttribute("title") == "userModifiedStyles")
+            var userStyles = pageDom
+                .Head.ChildNodes.Where(x =>
+                    x is SafeXmlElement && x.GetAttribute("title") == "userModifiedStyles"
+                )
                 .FirstOrDefault();
             if (userStyles != null)
             {
-                var userStylesCData = userStyles.ChildNodes
-                    .Where(x => x is SafeXmlCDataSection)
+                var userStylesCData = userStyles
+                    .ChildNodes.Where(x => x is SafeXmlCDataSection)
                     .FirstOrDefault();
                 if (userStylesCData != null)
                 {
@@ -2183,7 +2182,9 @@ namespace Bloom.Publish.Epub
                 else
                 {
                     var isCoverImage =
-                        img.SafeSelectNodes("ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]")
+                        img.SafeSelectNodes(
+                                "ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]"
+                            )
                             .Cast<SafeXmlElement>()
                             .Count() != 0;
                     var dstPath = CopyFileToEpub(
@@ -2303,7 +2304,7 @@ namespace Bloom.Publish.Epub
             Tuple.Create("insideFrontCover", "Inside Front Cover", "pgInsideFrontCover"),
             Tuple.Create("outsideBackCover", "Outside Back Cover", "pgOutsideBackCover"),
             Tuple.Create("theEndPage", "The End", "pgTheEnd"),
-            Tuple.Create("titlePage", "Title Page", "pgTitlePage")
+            Tuple.Create("titlePage", "Title Page", "pgTitlePage"),
         };
 
         private void AddPageBreakSpan(HtmlDom pageDom, string pageDocName)
@@ -2804,11 +2805,10 @@ namespace Bloom.Publish.Epub
             if (
                 badFonts.Any()
                 && !_fontsUsedInBook
-                    .Where(
-                        x =>
-                            x.fontFamily == PublishHelper.DefaultFont
-                            && x.fontStyle == "normal"
-                            && x.fontWeight != "700"
+                    .Where(x =>
+                        x.fontFamily == PublishHelper.DefaultFont
+                        && x.fontStyle == "normal"
+                        && x.fontWeight != "700"
                     )
                     .Any()
             )
@@ -3187,8 +3187,8 @@ namespace Bloom.Publish.Epub
         private void RemoveRegularStylesheets(HtmlDom pageDom)
         {
             foreach (
-                SafeXmlElement link in pageDom.RawDom
-                    .SafeSelectNodes("//head/link")
+                SafeXmlElement link in pageDom
+                    .RawDom.SafeSelectNodes("//head/link")
                     .Cast<SafeXmlElement>()
                     .ToArray()
             )
@@ -3197,7 +3197,8 @@ namespace Bloom.Publish.Epub
                 if (!string.IsNullOrEmpty(href) && Path.GetFileName(href).StartsWith("custom"))
                     continue;
                 if (
-                    !string.IsNullOrEmpty(href) && Path.GetFileName(href) == "defaultLangStyles.css"
+                    !string.IsNullOrEmpty(href)
+                    && Path.GetFileName(href) == "defaultLangStyles.css"
                 )
                     continue;
                 // BL-9844, BL-10080 We need some special style rules for Kyrgyzstan2020
@@ -3457,8 +3458,8 @@ namespace Bloom.Publish.Epub
         private void RemoveScripts(HtmlDom pageDom)
         {
             foreach (
-                var elt in pageDom.RawDom
-                    .SafeSelectNodes("//script")
+                var elt in pageDom
+                    .RawDom.SafeSelectNodes("//script")
                     .Cast<SafeXmlElement>()
                     .ToArray()
             )
@@ -3472,8 +3473,8 @@ namespace Bloom.Publish.Epub
             // We need to preserve the tabIndex on the bloom-translationGroup as the audio ordering
             // for the inner div with audio. (BL-9016)
             foreach (
-                var elt in pageDom.RawDom
-                    .SafeSelectNodes("//*[@tabindex]")
+                var elt in pageDom
+                    .RawDom.SafeSelectNodes("//*[@tabindex]")
                     .Cast<SafeXmlElement>()
                     .ToArray()
             )
@@ -3525,8 +3526,8 @@ namespace Bloom.Publish.Epub
         private void RemoveBloomUiElements(HtmlDom pageDom)
         {
             foreach (
-                var elt in pageDom.RawDom
-                    .SafeSelectNodes("//*[contains(concat(' ',@class,' '),' bloom-ui ')]")
+                var elt in pageDom
+                    .RawDom.SafeSelectNodes("//*[contains(concat(' ',@class,' '),' bloom-ui ')]")
                     .Cast<SafeXmlElement>()
                     .ToList()
             )

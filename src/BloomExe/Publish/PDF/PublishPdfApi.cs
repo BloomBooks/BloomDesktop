@@ -291,7 +291,7 @@ namespace Bloom.Publish.PDF
                 new Dictionary<string, string>()
                 {
                     { "BookId", CurrentBook.ID },
-                    { "Country", CurrentBook.CollectionSettings.Country }
+                    { "Country", CurrentBook.CollectionSettings.Country },
                 }
             );
             CurrentBook.ReportSimplisticFontAnalytics(

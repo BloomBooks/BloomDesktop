@@ -14,13 +14,14 @@ namespace Bloom.Book
     /// </summary>
     public class StyleSheetLinkSorter : IComparer<SafeXmlElement>
     {
-        public static readonly string[] KnownCssFilePrefixesInOrder =
-            BookStorage.OrderedPrefixesOfCssFilesToSortBeforeUnknownStylesheets
-                .Append("UNKNOWN_STYLESHEETS_HERE")
-                .Concat(BookStorage.OrderedPrefixesOfCssFilesToSortAfterUnknownStylesheets)
-                .Append("pageControls.css")
-                .Append("pageThumbnailList.css")
-                .ToArray();
+        public static readonly string[] KnownCssFilePrefixesInOrder = BookStorage
+            .OrderedPrefixesOfCssFilesToSortBeforeUnknownStylesheets.Append(
+                "UNKNOWN_STYLESHEETS_HERE"
+            )
+            .Concat(BookStorage.OrderedPrefixesOfCssFilesToSortAfterUnknownStylesheets)
+            .Append("pageControls.css")
+            .Append("pageThumbnailList.css")
+            .ToArray();
 
         const int kDefaultValueForStyleSheetsThatShouldListInTheMiddle = 100;
 

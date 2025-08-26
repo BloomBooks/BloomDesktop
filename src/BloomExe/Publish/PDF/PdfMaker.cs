@@ -1,4 +1,10 @@
-﻿using Bloom.Workspace;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Windows.Forms;
+using Bloom.Workspace;
 using L10NSharp;
 using PdfDroplet.LayoutMethods;
 using PdfSharp;
@@ -7,12 +13,6 @@ using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using SIL.IO;
 using SIL.Progress;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Windows.Forms;
 
 namespace Bloom.Publish.PDF
 {
@@ -212,19 +212,21 @@ namespace Bloom.Publish.PDF
         public static string GetDistributedColorProfilesFolder()
         {
             var baseFolder = FileLocationUtilities.DirectoryOfApplicationOrSolution;
-			var distFolder = Path.Combine(baseFolder, "ColorProfiles", "CMYK");
-			if (!Directory.Exists(distFolder))
-				distFolder = Path.Combine(baseFolder, "DistFiles", "ColorProfiles", "CMYK");
+            var distFolder = Path.Combine(baseFolder, "ColorProfiles", "CMYK");
+            if (!Directory.Exists(distFolder))
+                distFolder = Path.Combine(baseFolder, "DistFiles", "ColorProfiles", "CMYK");
             return distFolder;
-		}
+        }
 
         public static string GetUserColorProfilesFolder()
         {
-			var baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-			return Path.Combine(baseFolder, "SIL", "Bloom", "ColorProfiles", "CMYK");
-		}
+            var baseFolder = Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData
+            );
+            return Path.Combine(baseFolder, "SIL", "Bloom", "ColorProfiles", "CMYK");
+        }
 
-		public class MakingPdfFailedException : Exception
+        public class MakingPdfFailedException : Exception
         {
             private MakingPdfFailedException(string message)
                 : base(message) { }

@@ -10,11 +10,11 @@ using Bloom.Collection;
 using Bloom.Publish;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.PDF;
+using Bloom.SubscriptionAndFeatures;
+using BloomTemp;
 using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
-using BloomTemp;
-using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -87,7 +87,12 @@ namespace Bloom.WebLibraryIntegration
                     {
                         // If we find duplicate IDs, we need to evaluate whether the books involved can have their IDs changed safely.
                         var parent = Path.GetDirectoryName(path);
-                        if (!CollectionSettings.TryGetSettingsFilePath(parent, out var collectionPath))
+                        if (
+                            !CollectionSettings.TryGetSettingsFilePath(
+                                parent,
+                                out var collectionPath
+                            )
+                        )
                         {
                             return true; // weird situation, but it's not in a TC so we can update the ID if we want.
                         }
@@ -191,7 +196,12 @@ namespace Bloom.WebLibraryIntegration
             if (IsPrivateFolder(uploadParams.Folder))
                 return context;
 
-            if (CollectionSettings.TryGetSettingsFilePath(uploadParams.Folder, out var collectionPath))
+            if (
+                CollectionSettings.TryGetSettingsFilePath(
+                    uploadParams.Folder,
+                    out var collectionPath
+                )
+            )
             {
                 var settings = new CollectionSettings(collectionPath);
                 if (string.IsNullOrEmpty(settings.DefaultBookshelf))
@@ -483,13 +493,13 @@ namespace Bloom.WebLibraryIntegration
                 BloomLibraryPublishModel.InitializeLanguages(book);
             }
 
-            var hasAtLeastOneLanguageToUpload = book.BookInfo.PublishSettings.BloomLibrary.TextLangs
-                .IncludedLanguages()
+            var hasAtLeastOneLanguageToUpload = book
+                .BookInfo.PublishSettings.BloomLibrary.TextLangs.IncludedLanguages()
                 .Any();
             if (!hasAtLeastOneLanguageToUpload && BookUpload.GetVideoFilesToInclude(book).Any())
             {
-                hasAtLeastOneLanguageToUpload = book.BookInfo.PublishSettings.BloomLibrary.SignLangs
-                    .IncludedLanguages()
+                hasAtLeastOneLanguageToUpload = book
+                    .BookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages()
                     .Any();
             }
 

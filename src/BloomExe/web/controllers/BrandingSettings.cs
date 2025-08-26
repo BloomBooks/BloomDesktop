@@ -1,12 +1,12 @@
-﻿using Newtonsoft.Json;
-using SIL.IO;
-using SIL.Linq;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Dynamic;
 using System.IO; // Add this for Path operations
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
+using SIL.IO;
+using SIL.Linq;
 
 namespace Bloom.Api
 {
@@ -120,7 +120,7 @@ namespace Bloom.Api
             "BloomProgram",
             "Pretend-Project",
             // Real enterprise descriptors which just use the default branding.
-            "Gereja-Protestan-Maluku"
+            "Gereja-Protestan-Maluku",
         };
 
         /// <summary>
@@ -192,7 +192,6 @@ namespace Bloom.Api
         /// <param name="brandingNameOrFolderPath"> Normally, the branding is just a name, which we look up in the official branding folder
         //but unit tests can instead provide a path to the folder.
         /// </param>
-
         public static Settings CachedBrandingSettings;
         private static string CachedBrandingSettingsName;
         private static string CachedBrandingSettingsPath;
@@ -349,6 +348,7 @@ namespace Bloom.Api
             }
             return null; // it is normal not to find the brandings. We hand out license keys before the brandings have been fully developed and shipped.
         }
+
         public static string GetSummaryHtml(string branding)
         {
             BrandingSettings.ParseSubscriptionDescriptor(
@@ -364,6 +364,5 @@ namespace Bloom.Api
             var html = RobustFile.ReadAllText(summaryFile, Encoding.UTF8);
             return html.Replace("{flavor}", flavor).Replace("SUBUNIT", subUnitName);
         }
-
     }
 }

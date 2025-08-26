@@ -172,8 +172,8 @@ namespace Bloom
                     visibility = new Dictionary<string, object>()
                     {
                         { "$type", "LimitedVisibility" },
-                        { "permittedGroups", new[] { new { id = developersGroupId } } }
-                    }
+                        { "permittedGroups", new[] { new { id = developersGroupId } } },
+                    },
                 };
 
                 var jsonstring = JsonConvert.SerializeObject(commentData);
@@ -224,7 +224,7 @@ namespace Bloom
             var fileName = Path.GetFileName(filePath);
             HttpContent content = new MultipartFormDataContent
             {
-                { new ByteArrayContent(RobustFile.ReadAllBytes(filePath)), fileName, fileName }
+                { new ByteArrayContent(RobustFile.ReadAllBytes(filePath)), fileName, fileName },
             };
             HttpResponseMessage response = null;
             string problem = null;

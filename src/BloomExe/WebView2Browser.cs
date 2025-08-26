@@ -1,3 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
@@ -9,18 +19,8 @@ using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
-using SIL.Windows.Forms.Miscellaneous;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using SIL.Windows.Forms.ImageToolbox;
+using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom
 {

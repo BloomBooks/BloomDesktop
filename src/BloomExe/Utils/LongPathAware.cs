@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Text;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using SIL.Reporting;
 
 namespace Bloom.Utils

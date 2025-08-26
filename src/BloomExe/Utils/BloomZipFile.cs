@@ -71,7 +71,7 @@ namespace Bloom.Utils
                 IsUnicodeText = true,
                 CompressionMethod = compressIfAble
                     ? CompressionMethod.Deflated
-                    : CompressionMethod.Stored
+                    : CompressionMethod.Stored,
             };
 
             _zipStream.PutNextEntry(newEntry);
@@ -93,7 +93,7 @@ namespace Bloom.Utils
                 DateTime = System.DateTime.Now,
                 Size = contents.Length,
                 IsUnicodeText = true,
-                CompressionMethod = CompressionMethod.Deflated
+                CompressionMethod = CompressionMethod.Deflated,
             };
             _zipStream.PutNextEntry(newEntry);
             var buffer = System.Text.Encoding.UTF8.GetBytes(contents);

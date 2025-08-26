@@ -2618,7 +2618,7 @@ p {
             {
                 "[{\"colors\":[\"rgb(98, 19, 45)\"]},{\"colors\":[\"white\",\"#7b8eb8\"]}]",
                 "[{\"colors\":[\"#000000\"]},{\"colors\":[\"oldLace\"]}]",
-                "[{\"colors\":[\"rgba(87, 87, 87, 0.66)\"]},{\"colors\":[\"#000000\"]},{\"colors\":[\"purple\"]}]"
+                "[{\"colors\":[\"rgba(87, 87, 87, 0.66)\"]},{\"colors\":[\"#000000\"]},{\"colors\":[\"purple\"]}]",
             };
             var bookDom = new HtmlDom(
                 @"<html><head></head><body>

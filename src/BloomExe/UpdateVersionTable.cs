@@ -119,7 +119,7 @@ namespace Bloom
             return new UpdateTableLookupResult
             {
                 URL = String.Empty,
-                Error = new WebException(parsingErrorMsg)
+                Error = new WebException(parsingErrorMsg),
             };
         }
 
@@ -164,7 +164,7 @@ namespace Bloom
                     errorResult = new UpdateTableLookupResult
                     {
                         URL = string.Empty,
-                        Error = new WebException(msg)
+                        Error = new WebException(msg),
                     };
                     return false;
                 }

@@ -43,7 +43,7 @@ namespace Bloom.Book
             "#E48C84", // light red
             "#B0DEE4", // light blue
             "#98D0B9", // light green
-            "#C2A6BF" // light purple
+            "#C2A6BF", // light purple
         };
 
         //We only randomize the initial value for each run. Without it, we were making a lot
@@ -347,8 +347,8 @@ namespace Bloom.Book
                 //English names.
                 var englishTitle = title.GetExactAlternative("en").ToLowerInvariant();
                 var SHRPMatches = new[] { "p1", "p2", "p3", "p4", "SHRP" };
-                var couldBeOldStyleUgandaSHRPBook = SHRPMatches.Any(
-                    m => englishTitle.Contains(m.ToLowerInvariant())
+                var couldBeOldStyleUgandaSHRPBook = SHRPMatches.Any(m =>
+                    englishTitle.Contains(m.ToLowerInvariant())
                 );
 
                 //if this book is one of the ones we're editing in our collection, it really
@@ -400,7 +400,7 @@ namespace Bloom.Book
         {
             ToNewline, // Environment.Newline
             ToSpace, // " "
-            ToSimpleNewline // "\n", used for export to meta.json
+            ToSimpleNewline, // "\n", used for export to meta.json
         }
 
         // what can be in here is *XHTML*, e.g. bold, italics, etc.
@@ -783,7 +783,8 @@ namespace Bloom.Book
             // Often GetBrokenBookRecommendation and FatalErrorDescription both come from _storage.ErrorMessagesHtml.
             // Try not to say the same thing twice.
             if (
-                FatalErrorDescription != null && !builder.ToString().Contains(FatalErrorDescription)
+                FatalErrorDescription != null
+                && !builder.ToString().Contains(FatalErrorDescription)
             )
                 builder.Append(FatalErrorDescription);
 
@@ -1484,105 +1485,105 @@ namespace Bloom.Book
                     _pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398382"] = new GuidAndPath()
                     {
                         Guid = BasicTextAndImageGuid,
-                        Path = "Basic Book/Basic Book.html"
+                        Path = "Basic Book/Basic Book.html",
                     };
                     _pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398383"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383",
-                        Path = "Basic Book/Basic Book.html"
+                        Path = "Basic Book/Basic Book.html",
                     }; // Picture in Middle
                     _pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398384"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384",
-                        Path = "Basic Book/Basic Book.html"
+                        Path = "Basic Book/Basic Book.html",
                     }; // Picture on Bottom
                     _pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398385"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
-                        Path = "Basic Book/Basic Book.html"
+                        Path = "Basic Book/Basic Book.html",
                     };
                     _pageMigrations["d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"] = new GuidAndPath()
                     {
                         Guid = JustTextGuid,
-                        Path = "Basic Book/Basic Book.html"
+                        Path = "Basic Book/Basic Book.html",
                     };
                     _pageMigrations["FD115DFF-0415-4444-8E76-3D2A18DBBD27"] = new GuidAndPath()
                     {
                         Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27",
-                        Path = "Basic Book/Basic Book.html"
+                        Path = "Basic Book/Basic Book.html",
                     }; // Picture & Word
                     // Big book [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
                     _pageMigrations["AF708725-E961-44AA-9149-ADF66084A04F"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
-                        Path = "Big Book/Big Book.html"
+                        Path = "Big Book/Big Book.html",
                     };
                     _pageMigrations["D9A55EB6-43A8-4C6A-8891-2C1CDD95772C"] = new GuidAndPath()
                     {
                         Guid = JustTextGuid,
-                        Path = "Big Book/Big Book.html"
+                        Path = "Big Book/Big Book.html",
                     };
                     // Decodable reader [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
                     _pageMigrations["f95c0314-ce47-4b47-a638-06325ad1a963"] = new GuidAndPath()
                     {
                         Guid = BasicTextAndImageGuid,
-                        Path = "Decodable Reader/Decodable Reader.html"
+                        Path = "Decodable Reader/Decodable Reader.html",
                     };
                     _pageMigrations["c0847f89-b58a-488a-bbee-760ce4a13567"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383",
-                        Path = "Decodable Reader/Decodable Reader.html"
+                        Path = "Decodable Reader/Decodable Reader.html",
                     }; // Picture in Middle
                     _pageMigrations["f99b252a-26b1-40c8-b543-dbe0b05f08a5"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384",
-                        Path = "Decodable Reader/Decodable Reader.html"
+                        Path = "Decodable Reader/Decodable Reader.html",
                     }; // Picture on Bottom
                     _pageMigrations["c506f278-cb9f-4053-9e29-f7a9bdf64445"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
-                        Path = "Decodable Reader/Decodable Reader.html"
+                        Path = "Decodable Reader/Decodable Reader.html",
                     };
                     _pageMigrations["e4ff6195-b0b6-4909-8025-4424ee9188ea"] = new GuidAndPath()
                     {
                         Guid = JustTextGuid,
-                        Path = "Decodable Reader/Decodable Reader.html"
+                        Path = "Decodable Reader/Decodable Reader.html",
                     };
                     _pageMigrations["bd85f898-0a45-45b3-8e34-faaac8945a0c"] = new GuidAndPath()
                     {
                         Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27",
-                        Path = "Decodable Reader/Decodable Reader.html"
+                        Path = "Decodable Reader/Decodable Reader.html",
                     }; // Picture & Word
                     // Leveled reader [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
                     _pageMigrations["e9f2142b-f135-4bcd-9123-5a2623f5302f"] = new GuidAndPath()
                     {
                         Guid = BasicTextAndImageGuid,
-                        Path = "Leveled Reader/Leveled Reader.html"
+                        Path = "Leveled Reader/Leveled Reader.html",
                     };
                     _pageMigrations["c5aae471-f801-4c5d-87b7-1614d56b0c53"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383",
-                        Path = "Leveled Reader/Leveled Reader.html"
+                        Path = "Leveled Reader/Leveled Reader.html",
                     }; // Picture in Middle
                     _pageMigrations["a1f437fe-c002-4548-af02-fe84d048b8fc"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384",
-                        Path = "Leveled Reader/Leveled Reader.html"
+                        Path = "Leveled Reader/Leveled Reader.html",
                     }; // Picture on Bottom
                     _pageMigrations["d7599aa7-f35c-4029-8aa2-9afda870bcfa"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
-                        Path = "Leveled Reader/Leveled Reader.html"
+                        Path = "Leveled Reader/Leveled Reader.html",
                     };
                     _pageMigrations["d93a28c6-9ff8-4f61-a820-49093e3e275b"] = new GuidAndPath()
                     {
                         Guid = JustTextGuid,
-                        Path = "Leveled Reader/Leveled Reader.html"
+                        Path = "Leveled Reader/Leveled Reader.html",
                     };
                     _pageMigrations["a903467a-dad2-4767-8be9-54336cae7731"] = new GuidAndPath()
                     {
                         Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27",
-                        Path = "Leveled Reader/Leveled Reader.html"
+                        Path = "Leveled Reader/Leveled Reader.html",
                     }; // Picture & Word
                 }
                 return _pageMigrations;
@@ -1621,7 +1622,7 @@ namespace Bloom.Book
                 "imageInMiddle",
                 "imageOnBottom",
                 "textWholePage",
-                "pictureAndWordPage"
+                "pictureAndWordPage",
             };
             HtmlDom.MergeClassesIntoNewPage(page, newPage, classesToDrop);
             SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPage, layoutOfThisBook);
@@ -2139,7 +2140,7 @@ namespace Bloom.Book
                 var languagesWeAlreadyHave = new HashSet<string>
                 {
                     CollectionSettings.Language1Tag,
-                    CollectionSettings.Language2Tag
+                    CollectionSettings.Language2Tag,
                 };
                 if (!String.IsNullOrEmpty(CollectionSettings.Language3Tag))
                     languagesWeAlreadyHave.Add(CollectionSettings.Language3Tag);
@@ -2926,7 +2927,7 @@ namespace Bloom.Book
             {
                 Language1Tag,
                 BookData.MetadataLanguage1Tag,
-                BookData.MetadataLanguage2Tag
+                BookData.MetadataLanguage2Tag,
             };
             foreach (var lang in xmatterOnlyLangs)
             {
@@ -3064,8 +3065,8 @@ namespace Bloom.Book
                 }
             }
             foreach (
-                var div in RawDom.DocumentElement
-                    .SafeSelectNodes("//div[@data-audiorecordingmode]")
+                var div in RawDom
+                    .DocumentElement.SafeSelectNodes("//div[@data-audiorecordingmode]")
                     .Cast<SafeXmlElement>()
                     .ToList()
             )
@@ -4832,8 +4833,8 @@ namespace Bloom.Book
         private void RemoveObsoleteSoundAttributes(HtmlDom htmlDom)
         {
             foreach (
-                var span in htmlDom.RawDom
-                    .SafeSelectNodes("//span[@data-duration and @id]")
+                var span in htmlDom
+                    .RawDom.SafeSelectNodes("//span[@data-duration and @id]")
                     .Cast<SafeXmlElement>()
             )
             {
@@ -4857,7 +4858,8 @@ namespace Bloom.Book
         private void RemoveObsoleteImageAttributes(HtmlDom htmlDom)
         {
             foreach (
-                var img in htmlDom.RawDom
+                var img in htmlDom
+                    .RawDom
                     // a normal fully up-to-date book shouldn't have imgs directly in bloom-canvas,
                     // but books we're migrating might.
                     .SafeSelectNodes(
@@ -4867,8 +4869,7 @@ namespace Bloom.Book
             )
             {
                 if (
-                    img.ParentNode
-                        .GetOptionalStringAttribute("class", "")
+                    img.ParentNode.GetOptionalStringAttribute("class", "")
                         .Contains("bloom-scale-with-code")
                     // Compare JS function SetupImage in bloomImages.ts. We stopped using explicit image
                     // sizes in 2018 and added image canvas elements in 2022, so it should be very safe to
@@ -5026,7 +5027,7 @@ namespace Bloom.Book
                         IncludeFilesForContinuedEditing = true,
                         NarrationLanguages = null, // include every narration language
                         WantVideo = true,
-                        WantMusic = true
+                        WantMusic = true,
                     };
                     // Ignore 'meta.json' since this stores currentTool and toolboxIsOpen, which are irrelevant to whether
                     // the book has changed. OTOH, we need to do something about Draft status and Features which are not irrelevant.
@@ -5072,7 +5073,10 @@ namespace Bloom.Book
                         var name = Path.GetFileName(path);
                         if (
                             name == "customCollectionStyles.css"
-                            || name.EndsWith(CollectionSettings.kFileExtension, StringComparison.Ordinal)
+                            || name.EndsWith(
+                                CollectionSettings.kFileExtension,
+                                StringComparison.Ordinal
+                            )
                         )
                         {
                             //AppendDebugInfo(debugBldr, path);
@@ -5149,15 +5153,15 @@ namespace Bloom.Book
             // In that approach the data-book attribute is on the imageContainer.
             // Note that we want the coverImage from a page, instead of the dataDiv because the former
             // "doesn't have the data in the form that GetImageElementUrl can handle."
-            coverImgElt = Storage.Dom
-                .SafeSelectNodes("//div[not(@id='bloomDataDiv')]/div[@data-book='coverImage']")
+            coverImgElt = Storage
+                .Dom.SafeSelectNodes("//div[not(@id='bloomDataDiv')]/div[@data-book='coverImage']")
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             // If that fails, we look for an img with the relevant attribute. Happily this doesn't conflict with the data-div.
             if (coverImgElt == null)
             {
-                coverImgElt = Storage.Dom
-                    .SafeSelectNodes("//img[@data-book='coverImage']")
+                coverImgElt = Storage
+                    .Dom.SafeSelectNodes("//img[@data-book='coverImage']")
                     .Cast<SafeXmlElement>()
                     .FirstOrDefault();
             }
@@ -5519,7 +5523,7 @@ namespace Bloom.Book
                 // FYI: this might be "", but that's OK. Pass it through anyway
                 BookInfo.MetaData.Feature_SignLanguage_LangCodes = new string[]
                 {
-                    this.CollectionSettings.SignLanguageTag
+                    this.CollectionSettings.SignLanguageTag,
                 };
             else
                 BookInfo.MetaData.Feature_SignLanguage_LangCodes =
@@ -5855,8 +5859,8 @@ namespace Bloom.Book
 
         private IEnumerable<string> GetRequiredLanguages()
         {
-            return new[] { BookData.Language1.Tag, Language2Tag, Language3Tag }.Where(
-                l => !string.IsNullOrEmpty(l)
+            return new[] { BookData.Language1.Tag, Language2Tag, Language3Tag }.Where(l =>
+                !string.IsNullOrEmpty(l)
             );
         }
 

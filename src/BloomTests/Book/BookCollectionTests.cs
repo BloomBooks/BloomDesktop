@@ -50,7 +50,7 @@ namespace BloomTests.Book
                             _folder.Path,
                             "test"
                         ),
-                        Language1Tag = "xyz"
+                        Language1Tag = "xyz",
                     }
                 ),
                 new PageListChangedEvent(),

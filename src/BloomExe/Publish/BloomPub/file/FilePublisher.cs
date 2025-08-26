@@ -4,9 +4,9 @@
 using System;
 using System.Drawing;
 using Bloom.Book;
+using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
-using Bloom.Utils;
 
 namespace Bloom.Publish.BloomPub.file
 {

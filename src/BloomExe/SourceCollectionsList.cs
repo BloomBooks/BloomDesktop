@@ -63,8 +63,8 @@ namespace Bloom
 
         private Book.Book FindAndCreateTemplateBookByFileName(string fileName)
         {
-            return FindAndCreateTemplateBook(
-                templateDirectory => Path.GetFileName(templateDirectory) == fileName
+            return FindAndCreateTemplateBook(templateDirectory =>
+                Path.GetFileName(templateDirectory) == fileName
             );
         }
 

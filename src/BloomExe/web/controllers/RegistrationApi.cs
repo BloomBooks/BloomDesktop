@@ -31,7 +31,7 @@ namespace Bloom.web.controllers
                         email = info.Email,
                         organization,
                         usingFor,
-                        hadEmailAlready = !string.IsNullOrWhiteSpace(info.Email)
+                        hadEmailAlready = !string.IsNullOrWhiteSpace(info.Email),
                     }
                 );
             }

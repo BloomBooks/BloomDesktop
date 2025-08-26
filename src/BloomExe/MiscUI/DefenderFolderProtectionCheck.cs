@@ -1,10 +1,10 @@
 using System;
 using System.IO;
+using System.Windows.Forms;
+using Bloom.Properties;
 using L10NSharp;
 using SIL.IO;
 using SIL.PlatformUtilities;
-using Bloom.Properties;
-using System.Windows.Forms;
 
 namespace Bloom.MiscUI
 {

@@ -124,7 +124,7 @@ namespace BloomTests.ToPalaso
                 {
                     file1.FileName,
                     file2.FileName,
-                    file3.FileName
+                    file3.FileName,
                 };
                 Assert.AreEqual(3, _MostRecentPathsList.Paths.Length);
                 Assert.AreEqual(file1.FileName, _MostRecentPathsList.Paths[0]);
@@ -146,7 +146,7 @@ namespace BloomTests.ToPalaso
                 {
                     file1.FileName,
                     file2.FileName,
-                    file3.FileName
+                    file3.FileName,
                 };
                 _MostRecentPathsList.AddNewPath(file2.FileName);
                 string[] mruPaths = _MostRecentPathsList.Paths;
@@ -171,7 +171,7 @@ namespace BloomTests.ToPalaso
                     file1.FileName,
                     file2.FileName,
                     file1.FileName,
-                    file3.FileName
+                    file3.FileName,
                 };
                 Assert.AreEqual(3, _MostRecentPathsList.Paths.Length);
                 Assert.AreEqual(file1.FileName, _MostRecentPathsList.Paths[0]);

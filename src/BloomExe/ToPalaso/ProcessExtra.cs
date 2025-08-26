@@ -1,12 +1,12 @@
-﻿using SIL.IO;
-using SIL.PlatformUtilities;
-using SIL.Reporting;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using SIL.IO;
+using SIL.PlatformUtilities;
+using SIL.Reporting;
 
 namespace Bloom.ToPalaso
 {

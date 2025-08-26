@@ -565,8 +565,8 @@ namespace Bloom.Utils
                 {
                     Default = true,
                     Text = L10NSharp.LocalizationManager.GetString("Common.OK", "OK"),
-                    Id = "ok"
-                }
+                    Id = "ok",
+                },
             };
             MiscUI.BloomMessageBox.Show(
                 Form.ActiveForm,
@@ -807,7 +807,10 @@ namespace Bloom.Utils
                 StringBuilder bldr = new StringBuilder();
 
                 // language is set if TryGetParts() succeeds, so we can assert it is not null or empty.
-                Debug.Assert(!string.IsNullOrEmpty(language), "language code should never be null or empty after IetfLanguageTag.TryGetParts() succeeds");
+                Debug.Assert(
+                    !string.IsNullOrEmpty(language),
+                    "language code should never be null or empty after IetfLanguageTag.TryGetParts() succeeds"
+                );
                 // Language codes are always all lowercase.
                 language = language.ToLowerInvariant();
                 bldr.Append(language);
@@ -834,7 +837,10 @@ namespace Bloom.Utils
                     bldr.Append(variant);
                 }
                 var newTag = bldr.ToString();
-                Debug.Assert(tag.ToLowerInvariant() == newTag.ToLowerInvariant(), $"Fixing capitalization in a language tag shouldn't greatly change it: {tag} => {newTag}");
+                Debug.Assert(
+                    tag.ToLowerInvariant() == newTag.ToLowerInvariant(),
+                    $"Fixing capitalization in a language tag shouldn't greatly change it: {tag} => {newTag}"
+                );
                 return newTag;
             }
             return tag; // failed to parse: return the original
@@ -856,7 +862,10 @@ namespace Bloom.Utils
             string outerExceptionType = null;
             string outerSource = null;
             var outerStackTrace = new StringBuilder();
-            while (exception.InnerException != null && Regex.IsMatch(exception.StackTrace, "^\\s*at Autofac\\."))
+            while (
+                exception.InnerException != null
+                && Regex.IsMatch(exception.StackTrace, "^\\s*at Autofac\\.")
+            )
             {
                 if (outerExceptionType == null)
                     outerExceptionType = exception.GetType().FullName;

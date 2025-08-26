@@ -1,9 +1,9 @@
-using NUnit.Framework;
-using Bloom.Book;
-using Bloom.Publish;
 using System.Collections.Generic;
 using System.Linq;
+using Bloom.Book;
+using Bloom.Publish;
 using Newtonsoft.Json;
+using NUnit.Framework;
 
 namespace BloomTests.Publish
 {

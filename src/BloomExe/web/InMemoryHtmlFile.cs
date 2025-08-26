@@ -11,7 +11,7 @@ namespace Bloom.Api
         JustCheckingPage, // Currently used in epub/BloomPub page checking. Causes Server to replace videos with placeholders.
         Nav, // Navigating to a new page?
         Preview, // Preview whole book
-        Frame // Editing View is updating single displayed page
+        Frame, // Editing View is updating single displayed page
     }
 
     /// <summary>

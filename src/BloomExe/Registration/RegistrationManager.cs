@@ -1,9 +1,9 @@
+using System;
+using System.Windows.Forms;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Utils;
 using DesktopAnalytics;
-using System;
-using System.Windows.Forms;
 
 namespace Bloom.Registration
 {
@@ -87,11 +87,9 @@ namespace Bloom.Registration
             Registration.Default.FirstName = firstName;
             Registration.Default.Surname = surname;
             Registration.Default.Email =
-                email == ""
-                    ? ""
-                    : MiscUtils.IsValidEmail(email)
-                        ? email.Trim()
-                        : "";
+                email == "" ? ""
+                : MiscUtils.IsValidEmail(email) ? email.Trim()
+                : "";
             Registration.Default.Organization = organization;
             Registration.Default.HowUsing = howAreYouUsing;
             Registration.Default.Save();
@@ -119,7 +117,7 @@ namespace Bloom.Registration
                 FirstName = Registration.Default.FirstName,
                 LastName = Registration.Default.Surname,
                 Email = Registration.Default.Email,
-                UILanguageCode = Settings.Default.UserInterfaceLanguage
+                UILanguageCode = Settings.Default.UserInterfaceLanguage,
             };
             userInfo.OtherProperties.Add("Organization", Registration.Default.Organization);
             userInfo.OtherProperties.Add("HowUsing", Registration.Default.HowUsing);

@@ -90,14 +90,13 @@ namespace BloomTests.web
         [Test]
         public void Get_Unrecognized_Throws()
         {
-            Assert.Throws<System.Net.WebException>(
-                () =>
-                    ApiTest.GetString(
-                        _server,
-                        endPoint: "foo88bar",
-                        endOfUrlForTest: "foobar",
-                        handler: request => request.PostSucceeded()
-                    )
+            Assert.Throws<System.Net.WebException>(() =>
+                ApiTest.GetString(
+                    _server,
+                    endPoint: "foo88bar",
+                    endOfUrlForTest: "foobar",
+                    handler: request => request.PostSucceeded()
+                )
             );
         }
     }

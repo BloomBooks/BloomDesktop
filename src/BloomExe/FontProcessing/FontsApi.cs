@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing.Text;
+using System.IO;
+using System.Linq;
 using Bloom.Api;
 using Newtonsoft.Json;
-using System.Collections.Concurrent;
-using SIL.Reporting;
-using System.Linq;
 using SIL.IO;
-using System.IO;
+using SIL.Reporting;
 
 namespace Bloom.FontProcessing
 {
@@ -71,7 +71,7 @@ namespace Bloom.FontProcessing
                     "medium",
                     "semibold",
                     "light",
-                    "narrow"
+                    "narrow",
                 };
 
                 foreach (var family in installedFontCollection.Families)
@@ -103,7 +103,9 @@ namespace Bloom.FontProcessing
         /// calls this a second time (or calls AvailableFontMetadata) before it finishes, then a partial
         /// list of fonts is returned.
         /// </remarks>
-        public static IEnumerable<FontMetadata> GetAllFontMetadata(IEnumerable<string> fontNames = null)
+        public static IEnumerable<FontMetadata> GetAllFontMetadata(
+            IEnumerable<string> fontNames = null
+        )
         {
             // This return shouldn't be used but might be triggered by a test.
             if (_finder != null && !Program.RunningUnitTests)

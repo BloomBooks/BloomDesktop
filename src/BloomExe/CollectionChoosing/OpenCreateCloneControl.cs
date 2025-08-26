@@ -2,15 +2,15 @@ using System;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
-using SIL.Windows.Forms.Extensions;
-using SIL.i18n;
-using System.Linq;
 using Bloom.Workspace;
+using SIL.i18n;
 using SIL.IO;
+using SIL.Windows.Forms.Extensions;
 
 namespace Bloom.CollectionChoosing
 {

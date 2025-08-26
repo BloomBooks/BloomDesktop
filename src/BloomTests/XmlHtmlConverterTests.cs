@@ -44,12 +44,11 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_HasErrors_ReportsError()
         {
-            Assert.Throws<ApplicationException>(
-                () =>
-                    XmlHtmlConverter.GetXmlDomFromHtml(
-                        "<!DOCTYPE html><html><head>    <blahblah> </head></html>",
-                        false
-                    )
+            Assert.Throws<ApplicationException>(() =>
+                XmlHtmlConverter.GetXmlDomFromHtml(
+                    "<!DOCTYPE html><html><head>    <blahblah> </head></html>",
+                    false
+                )
             );
         }
 

@@ -215,8 +215,8 @@ namespace Bloom.web.controllers
                 // it doesn't work: the event handler is never called. So I'm going to compromise and let
                 // the first call to this (and the first after we empty the queue) do so. (There may be a race
                 // condition in which more than one thread does it, but that's OK because we remove before adding.)
-                var formToInvokeOn = Application.OpenForms
-                    .Cast<Form>()
+                var formToInvokeOn = Application
+                    .OpenForms.Cast<Form>()
                     .FirstOrDefault(f => f is Shell);
                 if (formToInvokeOn != null)
                 {
@@ -446,8 +446,8 @@ namespace Bloom.web.controllers
             // Update the badge as well as part of the thumbnail.  We need to use the exact BookInfo object stored
             // in the BookCollection because that is the one the API server uses to provide data to the web client.
 
-            var bookInfos = _collectionModel.TheOneEditableCollection
-                .GetBookInfos()
+            var bookInfos = _collectionModel
+                .TheOneEditableCollection.GetBookInfos()
                 .Where(info => info.Id == book.ID)
                 .ToList();
             // Even for one book, this is sometimes slow. And this is called from an API handler that runs on the UI thread.

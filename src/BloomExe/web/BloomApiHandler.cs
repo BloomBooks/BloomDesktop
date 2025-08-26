@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Bloom.Book;
-using Bloom.Collection;
 using System.Threading;
 using System.Threading.Tasks;
+using Bloom.Book;
+using Bloom.Collection;
 
 namespace Bloom.Api
 {
@@ -207,7 +207,7 @@ namespace Bloom.Api
                 {
                     Handler = handler,
                     HandleOnUIThread = handleOnUiThread,
-                    RequiresSync = false
+                    RequiresSync = false,
                 };
         }
 

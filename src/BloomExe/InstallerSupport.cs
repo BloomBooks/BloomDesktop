@@ -127,7 +127,7 @@ namespace Bloom
                     var props = new Dictionary<string, string>
                     {
                         ["newVersion"] = v.ToString(),
-                        ["channel"] = ApplicationUpdateSupport.ChannelName
+                        ["channel"] = ApplicationUpdateSupport.ChannelName,
                     };
                     Analytics.Track("Update Version", props);
                 })

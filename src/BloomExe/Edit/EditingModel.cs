@@ -644,7 +644,7 @@ namespace Bloom.Edit
                                 new Dictionary<string, string>
                                 {
                                     { "template-source", (page as IPage).Book.Title },
-                                    { "page", (page as IPage).Caption }
+                                    { "page", (page as IPage).Caption },
                                 }
                             );
                         }
@@ -751,21 +751,21 @@ namespace Bloom.Edit
                 // update which ones are selected. Since there may be ones with Selected true from a previous book,
                 // clear them first, so we end up with selections appropriate to this one.
                 _contentLanguages.ForEach(l => l.Selected = false);
-                var lang1 = _contentLanguages.FirstOrDefault(
-                    l => l.LangTag == _bookSelection.CurrentSelection.Language1Tag
+                var lang1 = _contentLanguages.FirstOrDefault(l =>
+                    l.LangTag == _bookSelection.CurrentSelection.Language1Tag
                 );
                 // We must have one language selected. If nothing matches, select the first.
                 if (lang1 == null)
                     lang1 = _contentLanguages[0];
                 lang1.Selected = true;
 
-                var lang2 = _contentLanguages.FirstOrDefault(
-                    l => l.LangTag == _bookSelection.CurrentSelection.Language2Tag
+                var lang2 = _contentLanguages.FirstOrDefault(l =>
+                    l.LangTag == _bookSelection.CurrentSelection.Language2Tag
                 );
                 if (lang2 != null)
                     lang2.Selected = true;
-                var lang3 = _contentLanguages.FirstOrDefault(
-                    l => l.LangTag == _bookSelection.CurrentSelection.Language3Tag
+                var lang3 = _contentLanguages.FirstOrDefault(l =>
+                    l.LangTag == _bookSelection.CurrentSelection.Language3Tag
                 );
                 if (lang3 != null)
                     lang3.Selected = true;
@@ -1094,8 +1094,8 @@ namespace Bloom.Edit
         public void UpdateMetaData(string url)
         {
             var match = UrlPathString.CreateFromUnencodedString(url).UrlEncoded;
-            var imgElt = _pageSelection.CurrentSelection
-                .GetDivNodeForThisPage()
+            var imgElt = _pageSelection
+                .CurrentSelection.GetDivNodeForThisPage()
                 .SafeSelectNodes($".//img[@src='{match}']")
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
@@ -1172,8 +1172,8 @@ namespace Bloom.Edit
             // But that situation is not currently possible through our UI, and further thought
             // suggests we want to know who says it is CC0. So commenting that aspect out.
             var copyrightOk = metadata.IsMinimallyComplete; // || metadata.License?.Token == "cc0";
-            var firstElementChild = licenseBlock.ChildNodes
-                .Cast<SafeXmlNode>()
+            var firstElementChild = licenseBlock
+                .ChildNodes.Cast<SafeXmlNode>()
                 .FirstOrDefault(x => x is SafeXmlElement);
             var haveMissingNotice =
                 firstElementChild?.GetAttribute("class") == "ui-missingCopyrightNotice";
@@ -1805,8 +1805,8 @@ namespace Bloom.Edit
         {
             using (var dlg = new ProgressDialogForeground()) //REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
             {
-                dlg.ShowAndDoWork(
-                    progress => CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress)
+                dlg.ShowAndDoWork(progress =>
+                    CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress)
                 );
             }
         }
@@ -2013,7 +2013,7 @@ namespace Bloom.Edit
             // This speeds up the process of tweaking branding files
             if (Debugger.IsAttached)
             {
-                _developerFileWatcher = new FileSystemWatcher { IncludeSubdirectories = true, };
+                _developerFileWatcher = new FileSystemWatcher { IncludeSubdirectories = true };
                 _developerFileWatcher.Path =
                     FileLocationUtilities.GetDirectoryDistributedWithApplication(
                         BloomFileLocator.BrowserRoot
@@ -2035,8 +2035,8 @@ namespace Bloom.Edit
                         return;
                     // if we've been called already in the past 5 seconds, don't do it again
                     if (
-                        DateTime.Now
-                            .Subtract(_lastTimeWeReloadedBecauseOfDeveloperChange)
+                        DateTime
+                            .Now.Subtract(_lastTimeWeReloadedBecauseOfDeveloperChange)
                             .TotalSeconds >= 2
                     )
                     {

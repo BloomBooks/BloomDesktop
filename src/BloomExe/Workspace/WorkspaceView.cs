@@ -424,7 +424,7 @@ namespace Bloom.Workspace
                     deletable,
                     collectionKind,
                     aboutBookInfoUrl,
-                    isTemplate = book?.IsTemplateBook
+                    isTemplate = book?.IsTemplateBook,
                 }
             );
             return result;
@@ -855,7 +855,7 @@ namespace Bloom.Workspace
                 LangTag = code,
                 MenuText = menuText,
                 FractionApproved = FractionApproved(code),
-                FractionTranslated = FractionTranslated(code)
+                FractionTranslated = FractionTranslated(code),
             };
         }
 
@@ -1143,7 +1143,7 @@ namespace Bloom.Workspace
                                 _toolStrip.Items.Remove(_zoomWrapper);
                         }
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
-                    }
+                    },
                 }
             );
         }
@@ -1599,7 +1599,7 @@ namespace Bloom.Workspace
             FullSize,
             Stage1,
             Stage2,
-            Stage3
+            Stage3,
         }
 
         private Shrinkage _currentShrinkage = Shrinkage.FullSize;

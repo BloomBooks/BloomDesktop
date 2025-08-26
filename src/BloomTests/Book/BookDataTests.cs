@@ -12,6 +12,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using L10NSharp;
 using NUnit.Framework;
 using SIL.IO;
@@ -19,7 +20,6 @@ using SIL.Reporting;
 using SIL.TestUtilities;
 using SIL.Text;
 using SIL.Windows.Forms.ClearShare;
-using Bloom.SubscriptionAndFeatures;
 
 // TODO (default name BL-13703) currently, the Tag setter also automatically sets the name using LibPalasso logic.
 // If we make changes to that logic now that we are changing default names with the new
@@ -287,8 +287,8 @@ namespace BloomTests.Book
                 ceStyle.Item2.Unencoded,
                 Is.EqualTo("width: 254.663px; top: 0px; left: 197.168px; height: 231px;")
             );
-            var sizeBasedOnDefault = attributes.FirstOrDefault(
-                x => x.Item1 == "data-canvas-imgsizebasedon"
+            var sizeBasedOnDefault = attributes.FirstOrDefault(x =>
+                x.Item1 == "data-canvas-imgsizebasedon"
             );
             Assert.That(sizeBasedOnDefault, Is.Not.Null);
             Assert.That(sizeBasedOnDefault.Item2.Unencoded, Is.EqualTo("649,231"));
@@ -326,7 +326,7 @@ namespace BloomTests.Book
                         "width: 254.663px; top: 0px; left: 197.168px; height: 231px;"
                     )
                 ),
-                Tuple.Create("data-canvas-imgsizebasedon", XmlString.FromUnencoded("649,231"))
+                Tuple.Create("data-canvas-imgsizebasedon", XmlString.FromUnencoded("649,231")),
             };
             dsv.SetAttributeList("*", attributes);
             var imgNode =
@@ -1694,14 +1694,14 @@ namespace BloomTests.Book
             );
             var collectionSettings = CreateCollection();
             var data = new BookData(dom, collectionSettings, null);
-            Assert.Throws<ApplicationException>(
-                () => data.SetMultilingualContentLanguages(new[] { "de" })
+            Assert.Throws<ApplicationException>(() =>
+                data.SetMultilingualContentLanguages(new[] { "de" })
             );
-            Assert.Throws<ApplicationException>(
-                () => data.SetMultilingualContentLanguages(new[] { "fr", "de" })
+            Assert.Throws<ApplicationException>(() =>
+                data.SetMultilingualContentLanguages(new[] { "fr", "de" })
             );
-            Assert.Throws<ApplicationException>(
-                () => data.SetMultilingualContentLanguages(new[] { "fr", "en", "de" })
+            Assert.Throws<ApplicationException>(() =>
+                data.SetMultilingualContentLanguages(new[] { "fr", "en", "de" })
             );
         }
 
@@ -2005,7 +2005,7 @@ namespace BloomTests.Book
                 {
                     Country = country,
                     Province = province,
-                    District = district
+                    District = district,
                 },
                 null
             );

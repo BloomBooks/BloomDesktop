@@ -7,19 +7,19 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionTab;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
-using Bloom.Publish.BloomPub;
 using Bloom.Publish.BloomLibrary;
+using Bloom.Publish.BloomPub;
+using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
+using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 using BloomTemp;
 using Newtonsoft.Json;
 using SIL.IO;
-using Bloom.WebLibraryIntegration;
-using Bloom.Workspace;
 using SIL.Reporting;
-using Bloom.CollectionTab;
-using Bloom.SafeXml;
-using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.web.controllers
 {
@@ -273,7 +273,7 @@ namespace Bloom.web.controllers
                                         includeText = includeText,
                                         containsAnyAudio = _languagesWithAudio.Contains(langCode),
                                         includeAudio = includeAudio,
-                                        required = required
+                                        required = required,
                                     };
                                     var json = JsonConvert.SerializeObject(value);
                                     return json;
@@ -470,7 +470,7 @@ namespace Bloom.web.controllers
                     .BookSelection
                     .CurrentSelection
                     .TitleBestForUserDisplay,
-                featurePreventingPublishing = featureStatusForSerialization
+                featurePreventingPublishing = featureStatusForSerialization,
             };
 
             var result = JsonConvert.SerializeObject(resultObject);

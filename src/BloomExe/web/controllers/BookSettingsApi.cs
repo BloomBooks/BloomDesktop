@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
+using System.Text.RegularExpressions;
+using System.Windows;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.SafeXml;
 using Bloom.web.controllers;
 using Newtonsoft.Json;
-using SIL.IO;
-using System.Text.RegularExpressions;
 using SIL.Extensions;
-using Bloom.SafeXml;
-using System.Windows;
+using SIL.IO;
 
 namespace Bloom.Api
 {
@@ -122,7 +122,7 @@ namespace Bloom.Api
                             .CurrentSelection
                             .BookInfo
                             .AppearanceSettings
-                            .GetCopyOfProperties
+                            .GetCopyOfProperties,
                     };
                     // The book settings dialog wants to edit the content language visibility as if it was just another
                     // appearance setting. But we have another control that manipulates it, and a long-standing place to

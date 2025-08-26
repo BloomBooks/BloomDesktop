@@ -24,7 +24,7 @@ namespace Bloom.web
         IssueTrackingSystem,
         IssueTrackingSystemBackend,
         LocalizingSystem,
-        LastVersionForPreWindows10
+        LastVersionForPreWindows10,
     }
 
     public static class ErrorLevelExtensions

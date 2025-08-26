@@ -2,10 +2,10 @@ using System;
 using System.IO;
 using Bloom.Book;
 using Bloom.Publish.BloomPub;
+using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
-using ICSharpCode.SharpZipLib.Zip;
 
 namespace BloomTests.Book
 {
@@ -176,7 +176,7 @@ namespace BloomTests.Book
                                 "book/audio/musicfile1.mp3",
                                 "book/audio/musicfile2.ogg",
                                 "book/audio/musicfile3.wav",
-                                "book/audio/narration.mp3"
+                                "book/audio/narration.mp3",
                             }
                         );
                     }
@@ -316,7 +316,7 @@ namespace BloomTests.Book
                                 "book/video/signlanguageVid.mp4",
                                 "book/activities/My Widget/odd.html",
                                 "book/activities/My Widget/strange.js",
-                                "book/activities/My Widget/Resources/includable.blob"
+                                "book/activities/My Widget/Resources/includable.blob",
                             }
                         );
                     }

@@ -1,5 +1,5 @@
-﻿using SIL.Reporting;
-using System;
+﻿using System;
+using SIL.Reporting;
 
 namespace Bloom.ErrorReporter
 {

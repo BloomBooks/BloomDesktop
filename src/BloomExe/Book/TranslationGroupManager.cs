@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml;
-using Bloom.SafeXml;
 using Bloom.Api;
+using Bloom.SafeXml;
 using L10NSharp;
 using SIL.Reporting;
 using SIL.WritingSystems;
@@ -24,7 +24,6 @@ namespace Bloom.Book
     ///		<div class="bloom-editable" contenteditable="true" lang="tpi">Mama i tok:</div>
     ///		<div class="bloom-editable contenteditable="true" lang="xyz">abada fakwan</div>
     ///	</div>
-
     /// </summary>
     public static class TranslationGroupManager
     {
@@ -368,7 +367,9 @@ namespace Bloom.Book
                 var defLangs = g.GetAttribute("data-default-languages");
 
                 // missing attribute or empty is treated as "auto", and this menu definitely affects those.
-                if (string.IsNullOrEmpty(defLangs) || defLangs.ToLowerInvariant().StartsWith("auto"))
+                if (
+                    string.IsNullOrEmpty(defLangs) || defLangs.ToLowerInvariant().StartsWith("auto")
+                )
                     return true;
 
                 var visVariable = g.GetAttribute("data-visibility-variable");
@@ -565,13 +566,11 @@ namespace Bloom.Book
                 editable.AddClass("bloom-contentFirst");
                 return;
             }
-            var visibleSiblingLangs = (editable.ParentNode).ChildNodes
-                .Where(ed => ed is SafeXmlElement)
+            var visibleSiblingLangs = (editable.ParentNode)
+                .ChildNodes.Where(ed => ed is SafeXmlElement)
                 .Cast<SafeXmlElement>()
-                .Where(
-                    ed =>
-                        ed != editable
-                        && ed.GetAttribute("class").Contains("bloom-visibility-code-on")
+                .Where(ed =>
+                    ed != editable && ed.GetAttribute("class").Contains("bloom-visibility-code-on")
                 )
                 .Select(e => e.GetAttribute("lang"))
                 .ToList();
@@ -720,10 +719,8 @@ namespace Bloom.Book
                 dataDefaultLanguages == null
                 || dataDefaultLanguages.Length == 0
                 || String.IsNullOrWhiteSpace(dataDefaultLanguages[0])
-                || dataDefaultLanguages[0].Equals(
-                    "auto",
-                    StringComparison.InvariantCultureIgnoreCase
-                )
+                || dataDefaultLanguages[0]
+                    .Equals("auto", StringComparison.InvariantCultureIgnoreCase)
             )
             {
                 return lang == bookData.Language1.Tag
@@ -1020,8 +1017,8 @@ namespace Bloom.Book
                 var defaultStyle = HtmlDom.GetStyle(groupElement); // groupElement setting takes precedence
                 if (string.IsNullOrEmpty(defaultStyle))
                 {
-                    var node = editableChildrenOfTheGroup.FirstOrDefault(
-                        x => !string.IsNullOrEmpty(HtmlDom.GetStyle(x))
+                    var node = editableChildrenOfTheGroup.FirstOrDefault(x =>
+                        !string.IsNullOrEmpty(HtmlDom.GetStyle(x))
                     );
                     if (node != null)
                         defaultStyle = HtmlDom.GetStyle(node);

@@ -93,7 +93,7 @@ namespace BloomTests.CLI
                 {
                     Path = _bookFolder.FolderPath,
                     Preset = "shellbook",
-                    VernacularTag = "en"
+                    VernacularTag = "en",
                 }
             );
             Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
@@ -115,7 +115,7 @@ namespace BloomTests.CLI
                 {
                     Path = _bookFolder.FolderPath,
                     Preset = "shellbook",
-                    VernacularTag = "en"
+                    VernacularTag = "en",
                 }
             );
             Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
@@ -184,7 +184,7 @@ namespace BloomTests.CLI
                 {
                     Path = _bookFolder.FolderPath,
                     Preset = "shellbook",
-                    VernacularTag = "en"
+                    VernacularTag = "en",
                 }
             );
             Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
@@ -209,7 +209,7 @@ namespace BloomTests.CLI
                 {
                     Path = _bookFolder.FolderPath,
                     Preset = "shellbook",
-                    VernacularTag = "en"
+                    VernacularTag = "en",
                 }
             );
             Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
@@ -226,7 +226,7 @@ namespace BloomTests.CLI
                 {
                     Path = _bookFolder.FolderPath,
                     Preset = "shellbook",
-                    VernacularTag = "en"
+                    VernacularTag = "en",
                 }
             );
             Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
@@ -253,7 +253,7 @@ namespace BloomTests.CLI
                     Preset = "shellbook",
                     VernacularTag = "en",
                     NationalLanguage1Tag = "fr",
-                    NationalLanguage2Tag = "sp"
+                    NationalLanguage2Tag = "sp",
                 }
             );
             Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");

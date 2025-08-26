@@ -501,8 +501,8 @@ namespace Bloom.Book
             if (featureVersionRequirementList != null && featureVersionRequirementList.Length >= 1)
             {
                 return featureVersionRequirementList
-                    .Where(
-                        x => CurrentBloomDesktopVersion() < new Version(x.BloomDesktopMinVersion)
+                    .Where(x =>
+                        CurrentBloomDesktopVersion() < new Version(x.BloomDesktopMinVersion)
                     )
                     .ToArray();
             }
@@ -783,7 +783,7 @@ namespace Bloom.Book
             LookForNextPageDiv, // Then looking for the next page...first its "<div"
             LookForNextPageClass, // Then for its class attribute
             LookForBloomPageClass, // and within that for "bloom-page"
-            CopyingTailEnd // and once we replaced the page and found the next one we just copy the rest
+            CopyingTailEnd, // and once we replaced the page and found the next one we just copy the rest
         }
 
         // This method implements a state machine (using the SearchState states above) which reads a bloom HTML
@@ -1044,7 +1044,7 @@ namespace Bloom.Book
                 FeaturePhrase = "Whole Text Box Audio",
                 BloomDesktopMinVersion = "4.4",
                 BloomPlayerMinVersion = "1.0",
-                XPath = "//*[@data-audiorecordingmode='TextBox']"
+                XPath = "//*[@data-audiorecordingmode='TextBox']",
             },
             new Feature()
             {
@@ -1054,7 +1054,7 @@ namespace Bloom.Book
                 FeaturePhrase = "Whole Text Box Audio in Front/Back Matter",
                 BloomDesktopMinVersion = "4.7",
                 BloomPlayerMinVersion = "1.0",
-                XPath = "//div[@data-xmatter-page]//*[@data-audiorecordingmode='TextBox']"
+                XPath = "//div[@data-xmatter-page]//*[@data-audiorecordingmode='TextBox']",
             },
             new Feature()
             {
@@ -1064,7 +1064,7 @@ namespace Bloom.Book
                 BloomPlayerMinVersion = "1.0",
                 // We've updated Bloom to only store SVGs in the file if they are non-transparent. So now a
                 // Bloom book is considered 'comical' for Publishing, etc. if it has a comical-generated SVG.
-                XPath = ComicalXpath
+                XPath = ComicalXpath,
             },
             new Feature()
             {
@@ -1078,7 +1078,7 @@ namespace Bloom.Book
                 XPath =
                     "//div[contains(@class,'"
                     + HtmlDom.kCanvasElementClass
-                    + "') and contains(@data-bubble, '`caption`') and contains(@data-bubble, '`tails`:[{`')]"
+                    + "') and contains(@data-bubble, '`caption`') and contains(@data-bubble, '`tails`:[{`')]",
             },
             new Feature()
             {
@@ -1086,7 +1086,7 @@ namespace Bloom.Book
                 FeaturePhrase = "Hide audio split markers (|) outside the talking book tool",
                 BloomDesktopMinVersion = "5.5",
                 BloomPlayerMinVersion = "1.0",
-                XPath = "//span[contains(@class,'bloom-audio-split-marker')]"
+                XPath = "//span[contains(@class,'bloom-audio-split-marker')]",
             },
             new Feature()
             {
@@ -1097,7 +1097,7 @@ namespace Bloom.Book
                 XPath =
                     "//div[contains(@class,'"
                     + HtmlDom.kCanvasElementClass
-                    + "')]/div[contains(@class, 'bloom-imageContainer')]/img[contains(@style, 'width') and contains(@style, 'left') ]"
+                    + "')]/div[contains(@class, 'bloom-imageContainer')]/img[contains(@style, 'width') and contains(@style, 'left') ]",
             },
             new Feature()
             {
@@ -1106,7 +1106,7 @@ namespace Bloom.Book
                 BloomDesktopMinVersion = "6.2",
                 BloomPlayerMinVersion = "2.0",
                 XPath =
-                    "//div[@data-activity='drag-letter-to-target' or @data-activity='drag-image-to-target' or @data-activity='drag-sort-sentence' ]"
+                    "//div[@data-activity='drag-letter-to-target' or @data-activity='drag-image-to-target' or @data-activity='drag-sort-sentence' ]",
             },
             new Feature()
             {
@@ -1116,7 +1116,7 @@ namespace Bloom.Book
                 // which will know how to reverse the migration.
                 BloomDesktopMinVersion = "6.2",
                 BloomPlayerMinVersion = "2.0",
-                XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]"
+                XPath = $"//div[contains(@class,'{HtmlDom.kCanvasElementClass}') ]",
             },
             new Feature()
             {
@@ -1127,8 +1127,8 @@ namespace Bloom.Book
                 BloomDesktopMinVersion = "6.2",
                 BloomPlayerMinVersion = "2.0",
                 // This is used for all images so will nearly always succeed fast.
-                XPath = $"//div[contains(@class,'{HtmlDom.kBloomCanvasClass}') ]"
-            }
+                XPath = $"//div[contains(@class,'{HtmlDom.kBloomCanvasClass}') ]",
+            },
         };
 
         // We should keep somewhat aware of how long this takes to run.
@@ -1181,7 +1181,7 @@ namespace Bloom.Book
                             FeatureId = feature.FeatureId,
                             FeaturePhrase = feature.FeaturePhrase,
                             BloomDesktopMinVersion = feature.BloomDesktopMinVersion,
-                            BloomPlayerMinVersion = feature.BloomPlayerMinVersion
+                            BloomPlayerMinVersion = feature.BloomPlayerMinVersion,
                         }
                     );
                 }
@@ -1251,7 +1251,7 @@ namespace Bloom.Book
                     "license",
                     "video-placeholder",
                     "coverImage200",
-                    "widget-placeholder"
+                    "widget-placeholder",
                 }
             );
             foreach (
@@ -1262,8 +1262,8 @@ namespace Bloom.Book
             {
                 var filename = Path.GetFileName(path);
                 if (
-                    ignoredFilenameStarts.Any(
-                        s => filename.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)
+                    ignoredFilenameStarts.Any(s =>
+                        filename.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)
                     )
                 )
                     continue;
@@ -1498,8 +1498,8 @@ namespace Bloom.Book
 
             // The dom only includes the ID, so we return all possible file names
             foreach (var narrationId in narrationIds)
-                foreach (var filename in GetNarrationAudioFileNames(narrationId, includeWav))
-                    yield return filename;
+            foreach (var filename in GetNarrationAudioFileNames(narrationId, includeWav))
+                yield return filename;
         }
 
         /// <summary>
@@ -2131,7 +2131,7 @@ namespace Bloom.Book
                 PrefixForCorruptHtmFiles, // Used to rename corrupt htm files before restoring backup
                 "_conflict", // owncloud
                 "[conflict]", // Google Drive
-                "conflicted copy" // Dropbox
+                "conflicted copy", // Dropbox
             };
             candidates.RemoveAll(
                 (name) => decoyMarkers.Any(d => name.ToLowerInvariant().Contains(d))
@@ -2178,12 +2178,12 @@ namespace Bloom.Book
             var okayFiles = new List<string>
             {
                 theRealOne,
-                Path.Combine(folderPath, "configuration.htm")
+                Path.Combine(folderPath, "configuration.htm"),
             };
             var allCandidates = GetAllHtmCandidates(folderPath).ToList();
             allCandidates.RemoveAll(f => okayFiles.Contains(f));
-            return allCandidates.Where(
-                f => !Path.GetFileName(f).ToLowerInvariant().StartsWith("readme-")
+            return allCandidates.Where(f =>
+                !Path.GetFileName(f).ToLowerInvariant().StartsWith("readme-")
             );
         }
 
@@ -2292,7 +2292,7 @@ namespace Bloom.Book
                         "Bloom had a problem finding the HTML file in "
                             + FolderPath
                             + ". You may need technical help in sorting this out.",
-                        ex.Message
+                        ex.Message,
                     }
                 );
 
@@ -2700,7 +2700,7 @@ namespace Bloom.Book
                     "placeHolder.png",
                     BookInfo.AppearanceSettings.BasePageCssName,
                     "previewMode.css",
-                    "origami.css"
+                    "origami.css",
                 }
             );
 
@@ -2786,8 +2786,8 @@ namespace Bloom.Book
                 ?.HarvesterMayConvertToDefaultTheme ?? false;
 
         public ExpandoObject BrandingAppearanceSettings =>
-            Api.BrandingSettings
-                .GetSettingsOrNull(CollectionSettings.Subscription.BrandingKey)
+            Api
+                .BrandingSettings.GetSettingsOrNull(CollectionSettings.Subscription.BrandingKey)
                 ?.Appearance;
 
         // Brandings come with logos and such... we want them in the book folder itself so that they work
@@ -2826,11 +2826,10 @@ namespace Bloom.Book
                 var filesToCopy = Directory
                     .EnumerateFiles(brandingFolder) //<--- .NET 4.5
                     // note this is how the branding.css gets into a book folder
-                    .Where(
-                        path =>
-                            ".png,.svg,.jpg,.css"
-                                .Split(',')
-                                .Contains(Path.GetExtension(path).ToLowerInvariant())
+                    .Where(path =>
+                        ".png,.svg,.jpg,.css"
+                            .Split(',')
+                            .Contains(Path.GetExtension(path).ToLowerInvariant())
                     );
                 var gotBrandingCss = false;
                 foreach (var sourcePath in filesToCopy)
@@ -3517,8 +3516,8 @@ namespace Bloom.Book
 
         public void EnsureOriginalTitle()
         {
-            var dataDiv = Dom.RawDom
-                .SafeSelectNodes("//div[@id='bloomDataDiv']")
+            var dataDiv = Dom
+                .RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']")
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             if (dataDiv == null)
@@ -3526,8 +3525,8 @@ namespace Bloom.Book
             var originalTitle = dataDiv.SafeSelectNodes(".//div[@data-book='originalTitle']");
             if (originalTitle.Length > 0)
                 return;
-            var titles = Dom.RawDom
-                .SafeSelectNodes("//div[@data-book='bookTitle']")
+            var titles = Dom
+                .RawDom.SafeSelectNodes("//div[@data-book='bookTitle']")
                 .Cast<SafeXmlElement>()
                 .ToList();
             if (titles.Count == 0)
@@ -3741,8 +3740,8 @@ namespace Bloom.Book
                 .Cast<SafeXmlElement>();
             foreach (var ic in imageContainers)
             {
-                var firstImage = ic.ChildNodes.FirstOrDefault(
-                    x => x is SafeXmlElement && ((SafeXmlElement)x).Name == "img"
+                var firstImage = ic.ChildNodes.FirstOrDefault(x =>
+                    x is SafeXmlElement && ((SafeXmlElement)x).Name == "img"
                 );
                 if (firstImage == null)
                     continue;
@@ -3837,7 +3836,7 @@ namespace Bloom.Book
             "customCollectionStyles.css",
             "appearance.css",
             "customBookStyles.css",
-            "customBookStyles2.css"
+            "customBookStyles2.css",
         };
 
         /// <summary>
@@ -4079,39 +4078,36 @@ namespace Bloom.Book
             // We want to keep the most specific feature, so we look for the highest subscription tier.
             // If we get down to the Pro tier, then we know that Game is more specific than Overlay,
             // and Overlay is more specific than the other features.
-            var enterpriseFeatures = featureList.FindAll(
-                x =>
-                    FeatureRegistry.Features
-                        .FindAll(
-                            y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Enterprise
-                        )
-                        .Count > 0
+            var enterpriseFeatures = featureList.FindAll(x =>
+                FeatureRegistry
+                    .Features.FindAll(y =>
+                        y.Feature == x && y.SubscriptionTier == SubscriptionTier.Enterprise
+                    )
+                    .Count > 0
             );
             if (enterpriseFeatures.Count > 0)
             {
                 featureList.RemoveAll(x => x != enterpriseFeatures[0]);
                 return;
             }
-            var communityFeatures = featureList.FindAll(
-                x =>
-                    FeatureRegistry.Features
-                        .FindAll(
-                            y =>
-                                y.Feature == x
-                                && y.SubscriptionTier == SubscriptionTier.LocalCommunity
-                        )
-                        .Count > 0
+            var communityFeatures = featureList.FindAll(x =>
+                FeatureRegistry
+                    .Features.FindAll(y =>
+                        y.Feature == x && y.SubscriptionTier == SubscriptionTier.LocalCommunity
+                    )
+                    .Count > 0
             );
             if (communityFeatures.Count > 0)
             {
                 featureList.RemoveAll(x => x != communityFeatures[0]);
                 return;
             }
-            var proFeatures = featureList.FindAll(
-                x =>
-                    FeatureRegistry.Features
-                        .FindAll(y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Pro)
-                        .Count > 0
+            var proFeatures = featureList.FindAll(x =>
+                FeatureRegistry
+                    .Features.FindAll(y =>
+                        y.Feature == x && y.SubscriptionTier == SubscriptionTier.Pro
+                    )
+                    .Count > 0
             );
             if (proFeatures.Count > 0)
             {
@@ -4251,7 +4247,7 @@ namespace Bloom.Book
             "languageDisplay.css",
             "langVisibility.css",
             "editOriginalMode.css",
-            "editTranslationMode.css"
+            "editTranslationMode.css",
         };
 
         // These go before "unknown" stylesheets in the sort order
@@ -4277,17 +4273,17 @@ namespace Bloom.Book
             // the other. But the order should be consistent, and if both are there, typically customBookStyles2.css
             // came from our system, while the other was added by the user. So allow the user one to win.
             "customBookStyles2.css",
-            "customBookStyles.css"
+            "customBookStyles.css",
         };
 
         // RemoveNormalStyleSheetsLinks uses this list to get rid of old css files before we add new ones.
         // This list must include all the CSS files that AppearanceRelatedCssFiles might ever return so we can
         // delete the ones we don't want
         public static readonly string[] AutomaticallyAddedCssFilePrefixes =
-        // These are split up for the sake of the StyleSheetLinkSorter
-        OrderedPrefixesOfCssFilesToSortBeforeUnknownStylesheets
-            .Concat(OrderedPrefixesOfCssFilesToSortAfterUnknownStylesheets)
-            .ToArray();
+            // These are split up for the sake of the StyleSheetLinkSorter
+            OrderedPrefixesOfCssFilesToSortBeforeUnknownStylesheets
+                .Concat(OrderedPrefixesOfCssFilesToSortAfterUnknownStylesheets)
+                .ToArray();
 
         /// <summary>
         /// Relative to the book folder, where should we find the customCollectionStyles.css file?

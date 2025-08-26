@@ -1,4 +1,12 @@
-﻿using Bloom;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+using Bloom;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -11,14 +19,6 @@ using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
 
 // It would be nice to have some tests for the new FirebaseLogin code, too, but so far
 // we have not been able to get that code to run except after starting Bloom fully.
@@ -214,8 +214,8 @@ namespace BloomTests.WebLibraryIntegration
             // The only omitted one that messes up current unit tests is meta.bak
             var filesToUpload = Directory
                 .GetFiles(originalBookFolder, "*.*", SearchOption.AllDirectories)
-                .Where(
-                    p => !p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles)
+                .Where(p =>
+                    !p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles)
                 );
             int fileCount = filesToUpload.Count();
             _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
@@ -638,7 +638,7 @@ namespace BloomTests.WebLibraryIntegration
                     Language1Tag = "dmx", // Dema language of Mozambique (arbitrary choice)
                     Language2Tag = "en",
                     Language3Tag = "fr",
-                    Subscription = new Subscription("Test-Expired-005691-4935") // expired 2/3/2025
+                    Subscription = new Subscription("Test-Expired-005691-4935"), // expired 2/3/2025
                 }
             );
             var (bookObjectId, s3PrefixUploadedTo) = await _uploader.UploadBook_ForUnitTestAsync(
@@ -679,7 +679,9 @@ namespace BloomTests.WebLibraryIntegration
                 var collectionPath = Path.GetDirectoryName(newBookFolder2);
                 var collectionName = Path.GetFileName(collectionPath);
                 Assert.That(collectionName, Is.EqualTo("From Bloom Library - one"));
-                var settings2 = new CollectionSettings(CollectionSettings.GetSettingsFilePath(collectionPath));
+                var settings2 = new CollectionSettings(
+                    CollectionSettings.GetSettingsFilePath(collectionPath)
+                );
                 Assert.That(settings2.Language1Tag, Is.EqualTo("dmx"));
                 Assert.That(settings2.Language2Tag, Is.EqualTo("en"));
                 Assert.That(settings2.Language3Tag, Is.EqualTo("fr"));
@@ -741,7 +743,9 @@ namespace BloomTests.WebLibraryIntegration
                     collectionName,
                     Does.StartWith("From Bloom Library - This ངའ་ཁས་འབབ needs")
                 );
-                var settings2 = new CollectionSettings(CollectionSettings.GetSettingsFilePath(collectionPath));
+                var settings2 = new CollectionSettings(
+                    CollectionSettings.GetSettingsFilePath(collectionPath)
+                );
                 Assert.That(settings2.Language1Tag, Is.EqualTo("xk"));
                 Assert.That(settings2.Language2Tag, Is.EqualTo("fr"));
                 Assert.That(settings2.Language3Tag, Is.EqualTo("de"));
@@ -890,8 +894,8 @@ namespace BloomTests.WebLibraryIntegration
             // so we'd better not wait for that to be there, either.
             var count = Directory
                 .GetFiles(bookPath)
-                .Count(
-                    p => !p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles)
+                .Count(p =>
+                    !p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles)
                 );
             for (int i = 0; i < 30; i++)
             {

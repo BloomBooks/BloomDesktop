@@ -32,7 +32,7 @@ namespace Bloom.Api
             boolean,
             @object,
             array,
-            @null
+            @null,
         }
 
         // public static methods
@@ -180,14 +180,11 @@ namespace Bloom.Api
             where T : IEnumerable
         {
             return obj.Cast<object>()
-                .Select(
-                    o =>
-                        new XStreamingElement(
-                            "item",
-                            CreateTypeAttr(GetJsonType(o)),
-                            CreateJsonNode(o)
-                        )
-                );
+                .Select(o => new XStreamingElement(
+                    "item",
+                    CreateTypeAttr(GetJsonType(o)),
+                    CreateJsonNode(o)
+                ));
         }
 
         private static IEnumerable<XStreamingElement> CreateXObject(object obj)
@@ -195,14 +192,11 @@ namespace Bloom.Api
             return obj.GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Select(pi => new { Name = pi.Name, Value = pi.GetValue(obj, null) })
-                .Select(
-                    a =>
-                        new XStreamingElement(
-                            a.Name,
-                            CreateTypeAttr(GetJsonType(a.Value)),
-                            CreateJsonNode(a.Value)
-                        )
-                );
+                .Select(a => new XStreamingElement(
+                    a.Name,
+                    CreateTypeAttr(GetJsonType(a.Value)),
+                    CreateJsonNode(a.Value)
+                ));
         }
 
         private static string CreateJsonString(XStreamingElement element)
@@ -404,13 +398,9 @@ namespace Bloom.Api
                     (IsArray)
                         ? xml.Elements().Select(x => ToValue(x))
                         : xml.Elements()
-                            .Select(
-                                x =>
-                                    (dynamic)
-                                        new KeyValuePair<string, object>(
-                                            x.Name.LocalName,
-                                            ToValue(x)
-                                        )
+                            .Select(x =>
+                                (dynamic)
+                                    new KeyValuePair<string, object>(x.Name.LocalName, ToValue(x))
                             );
                 result = (binder.Type == typeof(object[])) ? ie.ToArray() : ie;
             }

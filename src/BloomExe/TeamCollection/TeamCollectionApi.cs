@@ -1,3 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -14,13 +21,6 @@ using Newtonsoft.Json;
 using Sentry;
 using SIL.IO;
 using SIL.Reporting;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Windows.Forms;
 
 namespace Bloom.TeamCollection
 {
@@ -216,7 +216,7 @@ namespace Bloom.TeamCollection
                         { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
                         { "User", CurrentUser },
                         { "BookId", _bookSelection?.CurrentSelection?.ID },
-                        { "BookName", _bookSelection?.CurrentSelection?.Title }
+                        { "BookName", _bookSelection?.CurrentSelection?.Title },
                     }
                 );
 
@@ -369,7 +369,7 @@ namespace Bloom.TeamCollection
                         { "CollectionName", _settings?.CollectionName },
                         { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
                         { "User", CurrentUser },
-                        { "JoinType", joinType } // create, open, or merge
+                        { "JoinType", joinType }, // create, open, or merge
                     }
                 );
 
@@ -496,7 +496,7 @@ namespace Bloom.TeamCollection
                         isDisconnected = false,
                         isNewLocalBook = true,
                         checkinMessage = "",
-                        isUserAdmin = _tcManager.OkToEditCollectionSettings
+                        isUserAdmin = _tcManager.OkToEditCollectionSettings,
                     }
                 );
             }
@@ -577,7 +577,7 @@ namespace Bloom.TeamCollection
                     isDisconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected,
                     isNewLocalBook,
                     checkinMessage,
-                    isUserAdmin = _tcManager.OkToEditCollectionSettings
+                    isUserAdmin = _tcManager.OkToEditCollectionSettings,
                 }
             );
         }
@@ -654,7 +654,7 @@ namespace Bloom.TeamCollection
                             { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
                             { "User", CurrentUser },
                             { "BookId", _bookSelection?.CurrentSelection?.ID },
-                            { "BookName", _bookSelection?.CurrentSelection?.Title }
+                            { "BookName", _bookSelection?.CurrentSelection?.Title },
                         }
                     );
 
@@ -928,7 +928,7 @@ namespace Bloom.TeamCollection
                             { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
                             { "User", CurrentUser },
                             { "BookId", bookInfo.Id },
-                            { "BookName", bookInfo.Title }
+                            { "BookName", bookInfo.Title },
                         }
                     );
                 }
@@ -968,7 +968,7 @@ namespace Bloom.TeamCollection
                             { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
                             { "User", CurrentUser },
                             { "BookId", bookInfo.Id },
-                            { "BookName", bookInfo.Title }
+                            { "BookName", bookInfo.Title },
                         }
                     );
                     BookHistory.AddEvent(bookInfo, BookHistoryEventType.SyncProblem, msg);
@@ -1156,7 +1156,7 @@ namespace Bloom.TeamCollection
                         { "CollectionId", _settings?.CollectionId },
                         { "CollectionName", _settings?.CollectionName },
                         { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
-                        { "User", CurrentUser }
+                        { "User", CurrentUser },
                     }
                 );
 

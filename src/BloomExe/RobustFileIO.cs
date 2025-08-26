@@ -1,12 +1,13 @@
-﻿#if !__MonoCS__
-using NAudio.Wave;
-#endif
-using System.IO;
+﻿using System.IO;
+using Bloom.ImageProcessing;
 using SIL.Code;
 using SIL.IO;
 using SIL.Windows.Forms.ClearShare;
 using TidyManaged;
-using Bloom.ImageProcessing;
+#if !__MonoCS__
+using NAudio.Wave;
+#endif
+
 
 namespace Bloom
 {

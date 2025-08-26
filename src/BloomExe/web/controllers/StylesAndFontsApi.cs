@@ -1,13 +1,13 @@
-using Bloom.Api;
-using Bloom.Book;
-using Bloom.SafeXml;
-using L10NSharp;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Bloom.Api;
+using Bloom.Book;
+using Bloom.SafeXml;
+using L10NSharp;
+using Newtonsoft.Json;
 
 namespace Bloom.web.controllers
 {
@@ -91,13 +91,14 @@ namespace Bloom.web.controllers
                         var styleAndFont = new StyleAndFont();
                         styleAndFont.style = style;
                         styleAndFont.languageTag = tag;
-                        var modifiedForLang = modified.FirstOrDefault(
-                            s => s.languageTag == tag && !string.IsNullOrEmpty(s.fontName)
+                        var modifiedForLang = modified.FirstOrDefault(s =>
+                            s.languageTag == tag && !string.IsNullOrEmpty(s.fontName)
                         );
                         if (modifiedForLang != null)
                             styleAndFont.fontName = modifiedForLang.fontName;
                         else if (
-                            modified.Length == 1 && !string.IsNullOrEmpty(modified[0].fontName)
+                            modified.Length == 1
+                            && !string.IsNullOrEmpty(modified[0].fontName)
                         )
                             styleAndFont.fontName = modified[0].fontName;
                         else
@@ -112,10 +113,8 @@ namespace Bloom.web.controllers
             foreach (var styleAndFont in modifiedStylesAndFonts)
             {
                 if (
-                    !stylesAndFonts.Exists(
-                        s =>
-                            s.style == styleAndFont.style
-                            && s.languageTag == styleAndFont.languageTag
+                    !stylesAndFonts.Exists(s =>
+                        s.style == styleAndFont.style && s.languageTag == styleAndFont.languageTag
                     )
                 )
                 {
@@ -156,7 +155,7 @@ namespace Bloom.web.controllers
             var collectionLevelFonts = new HashSet<(string fontName, string languageTag)>
             {
                 (book.CollectionSettings.Language1.FontName, book.CollectionSettings.Language1Tag),
-                (book.CollectionSettings.Language2.FontName, book.CollectionSettings.Language2Tag)
+                (book.CollectionSettings.Language2.FontName, book.CollectionSettings.Language2Tag),
             };
             if (!String.IsNullOrEmpty(book.CollectionSettings.Language3Tag))
             {
@@ -303,7 +302,7 @@ namespace Bloom.web.controllers
                         new PageInfo
                         {
                             id = pageDiv.GetAttribute("id"),
-                            description = GetPageDescription(pageDiv)
+                            description = GetPageDescription(pageDiv),
                         }
                     );
                 }
@@ -379,8 +378,9 @@ namespace Bloom.web.controllers
                     var styleAndFont = new StyleAndFont();
                     styleAndFont.style = match.Groups[1].Value;
                     styleAndFont.languageTag = match.Groups[4]?.Value ?? "*";
-                    styleAndFont.fontName = match.Groups[7].Value
-                        .Replace("!important", "")
+                    styleAndFont.fontName = match
+                        .Groups[7]
+                        .Value.Replace("!important", "")
                         .Trim(new[] { ' ', '\t', '"', '\'' });
                     stylesAndFonts.Add(styleAndFont);
                 }

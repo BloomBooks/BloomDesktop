@@ -42,7 +42,7 @@ namespace Bloom.Edit
                 Dock = DockStyle.Fill,
                 WordWrap = true,
                 Multiline = true,
-                Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 12)
+                Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 12),
             };
 
             tab.Controls.Add(textBox);

@@ -1,10 +1,10 @@
-﻿using Amazon.S3;
-using Amazon.S3.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Amazon.S3;
+using Amazon.S3.Model;
 
 namespace Bloom.WebLibraryIntegration
 {

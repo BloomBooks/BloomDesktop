@@ -41,7 +41,7 @@ namespace BloomTests.web.controllers
                     "c:\\installation dir\\templates\\some book that is not a template at all.html",
                     pathToBasicBook,
                     pathToCurrentTemplateHtml,
-                    pathToZebra
+                    pathToZebra,
                 };
                 var result = PageTemplatesApi.GetBookTemplatePaths(
                     pathToCurrentTemplateHtml,
