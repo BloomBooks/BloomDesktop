@@ -1,3 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
@@ -6,12 +12,6 @@ using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
 using SIL.IO;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Bloom.TeamCollection
 {
@@ -477,11 +477,10 @@ namespace Bloom.TeamCollection
                 // changes until reloading for some other reason.
                 return Directory
                     .EnumerateFiles(Path.Combine(_repoFolderPath, "Other"))
-                    .Any(
-                        p => // We don't care about colorPalettes.json changing because the
-                            // local copy is always two-way merged with the repo copy.  See BL-14254.
-                            Path.GetFileName(p) != "colorPalettes.json"
-                            && new FileInfo(p).LastWriteTime > savedModTime
+                    .Any(p => // We don't care about colorPalettes.json changing because the
+                        // local copy is always two-way merged with the repo copy.  See BL-14254.
+                        Path.GetFileName(p) != "colorPalettes.json"
+                        && new FileInfo(p).LastWriteTime > savedModTime
                     );
             }
             catch (Exception ex)
@@ -1068,7 +1067,7 @@ namespace Bloom.TeamCollection
                     + "Please try again later. If the problem continues, restart your computer.";
                 throw new CannotLockException(msg)
                 {
-                    SyncAgent = isDropbox ? @"Dropbox" : "Unknown"
+                    SyncAgent = isDropbox ? @"Dropbox" : "Unknown",
                 };
             }
             lock (_lockObject)
@@ -1231,7 +1230,7 @@ namespace Bloom.TeamCollection
                         conflictingCollection = repoFolderPathFromLinkPath,
                         joiningRepo = repoFolder,
                         joiningGuid,
-                        localGuid
+                        localGuid,
                     },
                     "Join Team Collection"
                 )

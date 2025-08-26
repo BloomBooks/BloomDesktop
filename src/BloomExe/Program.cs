@@ -1,43 +1,43 @@
 using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Collections.Generic;
-using System.Configuration;
+using Bloom.CLI;
 using Bloom.Collection;
 using Bloom.Collection.BloomPack;
+using Bloom.CollectionChoosing;
+using Bloom.ErrorReporter;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Registration;
+using Bloom.SafeXml;
+using Bloom.TeamCollection;
 using Bloom.ToPalaso;
+using Bloom.Utils;
+using Bloom.web;
+using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
+using CommandLine;
 using L10NSharp;
+using Markdig.Extensions.Alerts;
+using Sentry;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
 using SIL.Windows.Forms.Registration;
 using SIL.Windows.Forms.Reporting;
 using SIL.Windows.Forms.UniqueToken;
-using System.Linq;
-using System.Threading.Tasks;
-using Bloom.CLI;
-using Bloom.CollectionChoosing;
-using Bloom.ErrorReporter;
-using Bloom.TeamCollection;
-using Bloom.MiscUI;
-using Bloom.web;
-using CommandLine;
-using Sentry;
 using SIL.WritingSystems;
-using System.Text;
-using Bloom.Utils;
-using Bloom.web.controllers;
-using Bloom.SafeXml;
-using Markdig.Extensions.Alerts;
 
 namespace Bloom
 {
@@ -161,7 +161,7 @@ namespace Bloom
                     "createArtifacts",
                     "spreadsheetExport",
                     "spreadsheetImport",
-                    "sendFontAnalytics"
+                    "sendFontAnalytics",
                 }.Contains(args1[0])
             ) //restrict using the commandline parser to cases were it should work
             {
@@ -171,8 +171,8 @@ namespace Bloom
 
                 RunningInConsoleMode = true;
 
-                var mainTask = CommandLine.Parser.Default
-                    .ParseArguments(
+                var mainTask = CommandLine
+                    .Parser.Default.ParseArguments(
                         args1,
                         new[]
                         {
@@ -560,11 +560,8 @@ namespace Bloom
                                 if (Utils.LongPathAware.GetExceedsMaxPath(path))
                                 {
                                     var pathForWantOfAClosure = path;
-                                    StartupScreenManager.AddStartupAction(
-                                        () =>
-                                            Utils.LongPathAware.ReportLongPath(
-                                                pathForWantOfAClosure
-                                            )
+                                    StartupScreenManager.AddStartupAction(() =>
+                                        Utils.LongPathAware.ReportLongPath(pathForWantOfAClosure)
                                     );
                                     // go forwards as if we weren't given an explicit collection to open (except we're showing a report about what happened)
                                     // (That is, if the collection path is too long to open successfully, we don't add it to MruProjects, so will start up
@@ -628,8 +625,8 @@ namespace Bloom
                         // Kick off getting all the font metadata for fonts currently installed in the system.
                         // This can take several seconds on slow machines with lots of fonts installed, so we
                         // run it in the background once at startup.  (The results are cached automatically.)
-                        System.Threading.Tasks.Task.Run(
-                            () => FontProcessing.FontsApi.GetAllFontMetadata()
+                        System.Threading.Tasks.Task.Run(() =>
+                            FontProcessing.FontsApi.GetAllFontMetadata()
                         );
 
                         // This has served its purpose on Linux, and with Geckofx60 it interferes with CommandLineRunner.
@@ -959,11 +956,11 @@ namespace Bloom
             Settings.Default.Save();
 
             // Note: MainContext needs to be set from WinForms land (Application.Run() from System.Windows.Forms), not from here.
-            StartupScreenManager.AddStartupAction(
-                () => MainContext = SynchronizationContext.Current
+            StartupScreenManager.AddStartupAction(() =>
+                MainContext = SynchronizationContext.Current
             );
-            StartupScreenManager.AddStartupAction(
-                () => StartUpShellBasedOnMostRecentUsedIfPossible()
+            StartupScreenManager.AddStartupAction(() =>
+                StartUpShellBasedOnMostRecentUsedIfPossible()
             );
             StartupScreenManager.DoLastOfAllAfterClosingSplashScreen = () =>
             {
@@ -1131,7 +1128,6 @@ namespace Bloom
             //First, we try to get the mutex quickly and quitely.
             //If that fails, we put up a dialog and wait a number of seconds,
             //while we wait for the mutex to come free.
-
 
             string mutexId = "bloom";
             //			string mutexId = pathToProject;
@@ -1760,7 +1756,7 @@ namespace Bloom
             var orderedReporters = new IBloomErrorReporter[]
             {
                 SentryErrorReporter.Instance,
-                HtmlErrorReporter.Instance
+                HtmlErrorReporter.Instance,
             };
             var htmlAndSentryReporter = new CompositeErrorReporter(
                 orderedReporters,
@@ -1852,7 +1848,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
                 {
                     "bloom-collection.png",
                     Path.Combine(imageDir, "application-bloom-collection.png")
-                }
+                },
             }; // Dictionary<sourceFileName, destinationFullFileName>
 
             // check each file now
@@ -1884,9 +1880,9 @@ Anyone looking specifically at our issue tracking system can read what you sent 
                 {
                     FileName = "update-desktop-database",
                     Arguments = Path.Combine(shareDir, "applications"),
-                    UseShellExecute = false
+                    UseShellExecute = false,
                 },
-                EnableRaisingEvents = true // so we can run another process when this one finishes
+                EnableRaisingEvents = true, // so we can run another process when this one finishes
             };
 
             // after the desktop database is updated, update the mime database
@@ -1898,9 +1894,9 @@ Anyone looking specifically at our issue tracking system can read what you sent 
                     {
                         FileName = "update-mime-database",
                         Arguments = Path.Combine(shareDir, "mime"),
-                        UseShellExecute = false
+                        UseShellExecute = false,
                     },
-                    EnableRaisingEvents = true // so we can run another process when this one finishes
+                    EnableRaisingEvents = true, // so we can run another process when this one finishes
                 };
 
                 // after the mime database is updated, set the file association
@@ -1912,8 +1908,8 @@ Anyone looking specifically at our issue tracking system can read what you sent 
                         {
                             FileName = "xdg-mime",
                             Arguments = "default bloom.desktop application/bloom-collection",
-                            UseShellExecute = false
-                        }
+                            UseShellExecute = false,
+                        },
                     };
 
                     Debug.Print("Setting file association");

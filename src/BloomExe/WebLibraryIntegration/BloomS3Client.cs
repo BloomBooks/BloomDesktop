@@ -107,7 +107,7 @@ namespace Bloom.WebLibraryIntegration
             return new AmazonS3Credentials
             {
                 AccessKey = accessKeys.S3AccessKey,
-                SecretAccessKey = accessKeys.S3SecretAccessKey
+                SecretAccessKey = accessKeys.S3SecretAccessKey,
             };
         }
 
@@ -188,7 +188,7 @@ namespace Bloom.WebLibraryIntegration
                     BucketName = _bucketName,
                     FilePath = pathToFile,
                     Key = Path.GetFileName(pathToFile),
-                    CannedACL = S3CannedACL.PublicRead // Allows any browser to download it.
+                    CannedACL = S3CannedACL.PublicRead, // Allows any browser to download it.
                 };
                 // no-cache means "The response may be stored by any cache, even if the response is normally non-cacheable. However,
                 // the stored response MUST always go through validation with the origin server first before using it..."
@@ -255,7 +255,7 @@ namespace Bloom.WebLibraryIntegration
                 Key = s3Key,
                 // Allows any browser to download it.
                 // Purposefully, this is the only ACL our temporary permissions allow us to set.
-                CannedACL = S3CannedACL.PublicRead
+                CannedACL = S3CannedACL.PublicRead,
             };
 
             SetContentDisposition(request, localFilePath);
@@ -310,7 +310,7 @@ namespace Bloom.WebLibraryIntegration
             var request = new GetObjectRequest()
             {
                 BucketName = bucketName,
-                Key = storageKeyOfFile
+                Key = storageKeyOfFile,
             };
             // We actually don't need any credentials to download the files we are dealing with because they are public read,
             // but it simplifies the code a bit to just reuse the existing IAmazonS3 object.
@@ -497,7 +497,7 @@ namespace Bloom.WebLibraryIntegration
                     {
                         BucketName = bucketName,
                         Key = objKey,
-                        FilePath = Path.Combine(tempDestPath, filepath)
+                        FilePath = Path.Combine(tempDestPath, filepath),
                     };
                     transferUtility.Download(req);
                     if (downloadProgress != null)

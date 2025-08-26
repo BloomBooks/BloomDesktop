@@ -1,8 +1,8 @@
-﻿using SIL.Reporting;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
+using SIL.Reporting;
 
 namespace Bloom.MiscUI
 {

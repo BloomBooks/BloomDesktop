@@ -2,8 +2,8 @@
 using System.Drawing.Imaging;
 using System.IO;
 using Bloom;
-using Bloom.ImageProcessing;
 using Bloom.Api;
+using Bloom.ImageProcessing;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;

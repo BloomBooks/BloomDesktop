@@ -1,12 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using Newtonsoft.Json;
+using System.Dynamic;
 using System.IO;
+using Bloom.Utils;
+using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
-using Bloom.Utils;
-using System.Dynamic;
-using System.Collections.Generic;
 
 namespace Bloom.Book
 {
@@ -47,7 +47,10 @@ namespace Bloom.Book
                         // We need to convert the old value to the new one, without preserving the old value.
                         // The new value will be null if it has never been set, otherwise it may be the
                         // empty string.
-                        var oldPrefs = JsonConvert.DeserializeObject<ExpandoObject>(RobustFile.ReadAllText(fileName)) as IDictionary<string, object>;
+                        var oldPrefs =
+                            JsonConvert.DeserializeObject<ExpandoObject>(
+                                RobustFile.ReadAllText(fileName)
+                            ) as IDictionary<string, object>;
                         if (oldPrefs != null && oldPrefs.TryGetValue("cmykPdf", out var cmykPdf))
                         {
                             if (cmykPdf is bool && (bool)cmykPdf)

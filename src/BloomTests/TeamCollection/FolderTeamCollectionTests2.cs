@@ -1,17 +1,17 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using Bloom;
+using Bloom.Book;
+using Bloom.Collection;
+using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.web;
 using BloomTemp;
 using Moq;
 using NUnit.Framework;
 using SIL.IO;
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using Bloom.Book;
-using Bloom.MiscUI;
-using Bloom.Collection;
 
 namespace BloomTests.TeamCollection
 {
@@ -46,7 +46,9 @@ namespace BloomTests.TeamCollection
                         "Strange book content",
                         bookFolderName2
                     );
-                    var settingsPath = CollectionSettings.GetSettingsFilePath(collectionFolder.FolderPath);
+                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
 
                     // As an aside, this is a convenient place to check that a TC manager created when TC settings does not exist
                     // functions and does not have a current collection.
@@ -101,7 +103,9 @@ namespace BloomTests.TeamCollection
                     Assert.That(File.Exists(teamCollectionLinkPath));
                     var collectionFileContent = RobustFile.ReadAllText(teamCollectionLinkPath);
                     Assert.That(collectionFileContent, Is.EqualTo(sharedFolder.FolderPath));
-                    var sharedSettingsPath = CollectionSettings.GetSettingsFilePath(collectionFolder.FolderPath);
+                    var sharedSettingsPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
                     Assert.That(
                         RobustFile.ReadAllText(sharedSettingsPath),
                         Is.EqualTo("This is a fake settings file")
@@ -238,7 +242,9 @@ namespace BloomTests.TeamCollection
                     )
                 )
                 {
-                    var settingsPath = CollectionSettings.GetSettingsFilePath(collectionFolder.FolderPath);
+                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
                     var tcManager = new TeamCollectionManager(
                         settingsPath,
                         null,
@@ -727,7 +733,9 @@ namespace BloomTests.TeamCollection
                         collectionFolder.FolderPath,
                         repoFolder.FolderPath
                     );
-                    var otherPath = CollectionSettings.GetSettingsFilePath(collectionFolder.FolderPath);
+                    var otherPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
                     Directory.CreateDirectory(Path.GetDirectoryName(otherPath));
                     // this test doesn't need this folder except that StartMonitoring does.
                     Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
@@ -819,7 +827,9 @@ namespace BloomTests.TeamCollection
                         collectionFolder.FolderPath,
                         repoFolder.FolderPath
                     );
-                    var otherPath = CollectionSettings.GetSettingsFilePath(collectionFolder.FolderPath);
+                    var otherPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
                     // this test doesn't need this folder except that StartMonitoring does.
                     Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
                     File.WriteAllText(otherPath, "This is the initial value");

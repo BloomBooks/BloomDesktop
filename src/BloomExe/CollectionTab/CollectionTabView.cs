@@ -434,12 +434,12 @@ namespace Bloom.CollectionTab
             // This is just updating badges. It's not time-critical, and can take a while, so run in the background.
             var bookInfos = String.IsNullOrEmpty(bookId)
                 ? _model.TheOneEditableCollection.GetBookInfos().ToList()
-                : _model.TheOneEditableCollection
-                    .GetBookInfos()
+                : _model
+                    .TheOneEditableCollection.GetBookInfos()
                     .Where(info => info.Id == bookId)
                     .ToList();
-            Task.Run(
-                () => _model.TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(bookInfos)
+            Task.Run(() =>
+                _model.TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(bookInfos)
             );
         }
     }

@@ -1,14 +1,14 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using System.Drawing;
-using Bloom.Workspace;
-using VisualStyles = System.Windows.Forms.VisualStyles;
 using System.ComponentModel;
 using System.ComponentModel.Design;
-using System.Collections;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
 using System.Windows.Forms.Design;
+using Bloom.Workspace;
+using VisualStyles = System.Windows.Forms.VisualStyles;
 
 namespace Messir.Windows.Forms
 {

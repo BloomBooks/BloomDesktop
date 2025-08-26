@@ -15,7 +15,7 @@ namespace Bloom.TeamCollection
         Error, // Errors you should check into sometime
         ClobberPending, // Your current work is about to be overwritten, drop everything!
         Disconnected, // It's a TC, but we can't connect right now, so most things are disabled.
-        None // The current collection is not a team collection.
+        None, // The current collection is not a team collection.
     }
 
     public interface ITeamCollectionMessageLog
@@ -72,17 +72,15 @@ namespace Bloom.TeamCollection
             {
                 // correctly 0 if none match
                 var index =
-                    Messages.FindLastIndex(
-                        m =>
-                            m.MessageType == MessageAndMilestoneType.LogDisplayed
-                            || m.MessageType == MessageAndMilestoneType.Reloaded
+                    Messages.FindLastIndex(m =>
+                        m.MessageType == MessageAndMilestoneType.LogDisplayed
+                        || m.MessageType == MessageAndMilestoneType.Reloaded
                     ) + 1;
                 return Messages
                     .Skip(index)
-                    .Where(
-                        m =>
-                            m.MessageType == MessageAndMilestoneType.Error
-                            || m.MessageType == MessageAndMilestoneType.ErrorNoReload
+                    .Where(m =>
+                        m.MessageType == MessageAndMilestoneType.Error
+                        || m.MessageType == MessageAndMilestoneType.ErrorNoReload
                     )
                     .ToList();
             }
@@ -108,10 +106,9 @@ namespace Bloom.TeamCollection
                     + 1;
                 return Messages
                     .Skip(index)
-                    .Where(
-                        m =>
-                            m.MessageType == MessageAndMilestoneType.Error
-                            || m.MessageType == MessageAndMilestoneType.NewStuff
+                    .Where(m =>
+                        m.MessageType == MessageAndMilestoneType.Error
+                        || m.MessageType == MessageAndMilestoneType.NewStuff
                     )
                     .ToList();
             }
@@ -144,11 +141,10 @@ namespace Bloom.TeamCollection
         {
             get
             {
-                var last = Messages.FindLast(
-                    m =>
-                        m.MessageType == MessageAndMilestoneType.ClobberPending
-                        || m.MessageType == MessageAndMilestoneType.ShowedClobbered
-                        || m.MessageType == MessageAndMilestoneType.Reloaded
+                var last = Messages.FindLast(m =>
+                    m.MessageType == MessageAndMilestoneType.ClobberPending
+                    || m.MessageType == MessageAndMilestoneType.ShowedClobbered
+                    || m.MessageType == MessageAndMilestoneType.Reloaded
                 );
                 return last?.MessageType == MessageAndMilestoneType.ClobberPending ? last : null;
             }
@@ -158,8 +154,8 @@ namespace Bloom.TeamCollection
         {
             get
             {
-                var last = Messages.FindLast(
-                    m => m.MessageType == MessageAndMilestoneType.Reloaded
+                var last = Messages.FindLast(m =>
+                    m.MessageType == MessageAndMilestoneType.Reloaded
                 );
                 return last == null ? DateTime.MinValue : last.When;
             }
@@ -241,16 +237,15 @@ namespace Bloom.TeamCollection
                 // the message is redundant with a current session report. But currently we reset completely for each
                 // session, and problems (particularly the one produced by a bad zip file in the repo) tend to be very
                 // frequent. We need to look at everything to weed out duplicates.
-                return Messages.Any(
-                    msg =>
-                        (
-                            msg.MessageType == MessageAndMilestoneType.Error
-                            || msg.MessageType == MessageAndMilestoneType.ErrorNoReload
-                        )
-                        && msg.L10NId == l10nId
-                        && msg.RawEnglishMessageTemplate == message
-                        && MatchParams(msg.Param0, param0)
-                        && MatchParams(msg.Param1, param1)
+                return Messages.Any(msg =>
+                    (
+                        msg.MessageType == MessageAndMilestoneType.Error
+                        || msg.MessageType == MessageAndMilestoneType.ErrorNoReload
+                    )
+                    && msg.L10NId == l10nId
+                    && msg.RawEnglishMessageTemplate == message
+                    && MatchParams(msg.Param0, param0)
+                    && MatchParams(msg.Param1, param1)
                 );
             }
             return false;
@@ -323,7 +318,7 @@ namespace Bloom.TeamCollection
                         kWebSocketContext,
                         ProgressKind.Progress,
                         "No new activity."
-                    )
+                    ),
                 };
             }
 

@@ -37,7 +37,7 @@ namespace Bloom.MiscUI
                         messageHtml,
                         rightButtonDefinitions = rightButtons,
                         icon = icon.ToString().ToLowerInvariant(),
-                        closeWithAPICall = true
+                        closeWithAPICall = true,
                     }
                 )
             )
@@ -83,8 +83,8 @@ namespace Bloom.MiscUI
                 {
                     Text = closeText,
                     Id = "close",
-                    Default = true
-                }
+                    Default = true,
+                },
             };
             var openForm = Shell.GetShellOrOtherOpenForm();
             return Show(openForm, message, messageBoxButtons, icon);

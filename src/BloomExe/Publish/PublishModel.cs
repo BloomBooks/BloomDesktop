@@ -1,3 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -15,13 +22,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Windows.Forms;
 
 namespace Bloom.Publish
 {
@@ -48,7 +48,7 @@ namespace Bloom.Publish
             AllPagesNoBooklet,
             BookletCover,
             BookletPages, //include front and back matter that isn't coverstock
-            InnerContent //excludes all front and back matter
+            InnerContent, //excludes all front and back matter
         }
 
         public enum BookletLayoutMethod
@@ -56,7 +56,7 @@ namespace Bloom.Publish
             NoBooklet,
             SideFold,
             CutAndStack,
-            Calendar
+            Calendar,
         }
 
         private Book.Book _currentlyLoadedBook;
@@ -336,7 +336,7 @@ namespace Bloom.Publish
                             Author = _currentlyLoadedBook.BookInfo.MetaData.Author,
                             Title = _currentlyLoadedBook.BookInfo.MetaData.Title,
                             Summary = _currentlyLoadedBook.BookInfo.MetaData.Summary,
-                            Keywords = GetKeywords(_currentlyLoadedBook.BookInfo.MetaData)
+                            Keywords = GetKeywords(_currentlyLoadedBook.BookInfo.MetaData),
                         },
                         worker,
                         doWorkEventArgs,
@@ -704,7 +704,7 @@ namespace Bloom.Publish
                         { "Portion", Enum.GetName(typeof(BookletPortions), BookletPortion) },
                         { "Layout", PageLayout.ToString() },
                         { "BookId", BookSelection.CurrentSelection.ID },
-                        { "Country", _collectionSettings.Country }
+                        { "Country", _collectionSettings.Country },
                     }
                 );
                 this._currentlyLoadedBook.ReportSimplisticFontAnalytics(
@@ -866,7 +866,7 @@ namespace Bloom.Publish
                         new Layout()
                         {
                             SizeAndOrientation = SizeAndOrientation.FromString("B5Portrait"),
-                            Style = "HideProductionNotes"
+                            Style = "HideProductionNotes",
                         }
                     );
                     foreach (var page in book.GetPages())
@@ -892,7 +892,7 @@ namespace Bloom.Publish
                     new Layout()
                     {
                         SizeAndOrientation = SizeAndOrientation.FromString("B5Portrait"),
-                        Style = "HideProductionNotes"
+                        Style = "HideProductionNotes",
                     }
                 );
 
@@ -951,8 +951,8 @@ namespace Bloom.Publish
             // If that happens, removing the outer loop and checking the data-book attribute (and
             // maybe the data-derived attribute) may become necessary.
             foreach (
-                var page in dom.RawDom
-                    .SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                var page in dom
+                    .RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
                     .Cast<SafeXmlElement>()
                     .ToList()
             )
@@ -1089,12 +1089,11 @@ namespace Bloom.Publish
                         .Cast<SafeXmlElement>();
 
                     var mergeFiles = audioSentenceElements
-                        .Select(
-                            s =>
-                                AudioProcessor.GetOrCreateCompressedAudio(
-                                    this.BookSelection.CurrentSelection.FolderPath,
-                                    s.GetAttribute("id")
-                                )
+                        .Select(s =>
+                            AudioProcessor.GetOrCreateCompressedAudio(
+                                this.BookSelection.CurrentSelection.FolderPath,
+                                s.GetAttribute("id")
+                            )
                         )
                         .Where(s => !string.IsNullOrEmpty(s));
                     if (mergeFiles.Any())

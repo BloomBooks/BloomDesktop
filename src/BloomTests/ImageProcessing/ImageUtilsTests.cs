@@ -374,8 +374,8 @@ namespace BloomTests.ImageProcessing
                 using (var tempFile = TempFile.WithExtension(".jpg"))
                 {
                     // Verify setup
-                    Assert.Throws<System.InvalidOperationException>(
-                        () => ImageUtils.SaveImageMetadata(image, tempFile.Path)
+                    Assert.Throws<System.InvalidOperationException>(() =>
+                        ImageUtils.SaveImageMetadata(image, tempFile.Path)
                     );
 
                     // SUT

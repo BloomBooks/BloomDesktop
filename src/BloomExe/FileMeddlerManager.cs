@@ -28,7 +28,7 @@ namespace Bloom
                             FileName = meddle,
                             WorkingDirectory = folderPath,
                             //UseShellExecute = false,	// causes hang opening a Team Collection for some reason
-                            ErrorDialog = false
+                            ErrorDialog = false,
                         }
                     );
                     _meddlers[folderPath] = proc;

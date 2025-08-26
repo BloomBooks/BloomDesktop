@@ -97,11 +97,10 @@ namespace Bloom.web.controllers
             }
 
             var sizeAndOrientation = _bookSelection.CurrentSelection.GetLayout().SizeAndOrientation;
-            addPageSettings.orientation = sizeAndOrientation.IsSquare
-                ? "square"
-                : sizeAndOrientation.IsLandScape
-                    ? "landscape"
-                    : "portrait";
+            addPageSettings.orientation =
+                sizeAndOrientation.IsSquare ? "square"
+                : sizeAndOrientation.IsLandScape ? "landscape"
+                : "portrait";
 
             addPageSettings.templateBooks = GetBookTemplatePaths(
                     GetPathToCurrentTemplateHtml(),
@@ -128,7 +127,7 @@ namespace Bloom.web.controllers
             return GetBooksInCollectionDirectories(
                 new[]
                 {
-                    _bookSelection.CurrentSelection.CollectionSettings.FolderPath // Start with the current collection
+                    _bookSelection.CurrentSelection.CollectionSettings.FolderPath, // Start with the current collection
                 }.Concat(_sourceCollectionsList.GetCollectionFolders()) // add all other source collections)
             );
         }
@@ -241,8 +240,8 @@ namespace Bloom.web.controllers
             // but adding the handler to the idle event definitely does, and invoking this whole block
             // ensures that everything to do with the idle event, including creating the thumbnail,
             // happens on that thread, and saves us worrying about locking the list.
-            Application.OpenForms
-                .Cast<Form>()
+            Application
+                .OpenForms.Cast<Form>()
                 .First(x => x is Shell)
                 .Invoke(
                     (Action)(
@@ -285,8 +284,8 @@ namespace Bloom.web.controllers
                                 // labels typically include a trailing newline.
                                 IPage templatePage = templateBook
                                     .GetPages()
-                                    .FirstOrDefault(
-                                        page => page.Caption.Replace("&", "+").Trim() == caption
+                                    .FirstOrDefault(page =>
+                                        page.Caption.Replace("&", "+").Trim() == caption
                                     );
                                 if (templatePage == null)
                                     templatePage = templateBook.GetPages().FirstOrDefault(); // may get something useful?? or throw??
@@ -336,9 +335,11 @@ namespace Bloom.web.controllers
                                 dynamic props1 = props;
                                 // Strip off the parameter that we no longer need so that the dialog code can use the path.
                                 // See BL-13722 for what happens if we don't do this.
-                                var path = expectedPathOfThumbnailImage.Replace("?generateThumbnailIfNecessary=true", "");
-                                props1.src = path
-                                    .ToLocalhost()
+                                var path = expectedPathOfThumbnailImage.Replace(
+                                    "?generateThumbnailIfNecessary=true",
+                                    ""
+                                );
+                                props1.src = path.ToLocalhost()
                                     .Replace(
                                         BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
                                         BloomServer.ServerUrlWithBloomPrefixEndingInSlash
@@ -494,8 +495,8 @@ namespace Bloom.web.controllers
                 })
             );
 
-            var indexOfBasicBook = bookTemplatePaths.FindIndex(
-                p => p.ToLowerInvariant().Contains("basic book")
+            var indexOfBasicBook = bookTemplatePaths.FindIndex(p =>
+                p.ToLowerInvariant().Contains("basic book")
             );
             if (indexOfBasicBook > 1)
             {

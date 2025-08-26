@@ -439,7 +439,7 @@ namespace Bloom.ErrorReporter
                             level = ProblemLevel.kNotify,
                             reportLabel = reportButtonLabel,
                             secondaryLabel = extraButtonLabel,
-                            message = message
+                            message = message,
                         };
 
                         // Precondition: we must be on the UI thread for Gecko to work.
@@ -568,7 +568,8 @@ namespace Bloom.ErrorReporter
                     fallbackReporter.ReportFatalMessageWithStackTrace(message, null);
             }
             else if (
-                levelOfProblem == ProblemLevel.kNonFatal || levelOfProblem == ProblemLevel.kUser
+                levelOfProblem == ProblemLevel.kNonFatal
+                || levelOfProblem == ProblemLevel.kUser
             )
             {
                 // FYI, if levelOfProblem==kUser, we're unfortunately going to be

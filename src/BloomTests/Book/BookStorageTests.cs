@@ -42,7 +42,7 @@ namespace BloomTests.Book
                 {
                     //FileLocationUtilities.GetDirectoryDistributedWithApplication( "factoryCollections"),
                     BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book"),
-                    BloomFileLocator.GetFactoryXMatterDirectory()
+                    BloomFileLocator.GetFactoryXMatterDirectory(),
                 }
             );
             _fixtureFolder = new TemporaryFolder("BloomBookStorageTest");
@@ -1400,7 +1400,7 @@ namespace BloomTests.Book
                     PathToSettingsFile = CollectionSettings.GetPathForNewSettings(folder, "test"),
                     Language1Tag = "xyz",
                     Language2Tag = "en",
-                    Language3Tag = "fr"
+                    Language3Tag = "fr",
                 }
             );
             var book = new Bloom.Book.Book(
@@ -1449,7 +1449,7 @@ namespace BloomTests.Book
                     PathToSettingsFile = CollectionSettings.GetPathForNewSettings(folder, "test"),
                     Language1Tag = "xyz",
                     Language2Tag = "en",
-                    Language3Tag = "fr"
+                    Language3Tag = "fr",
                 }
             );
             var book = new Bloom.Book.Book(
@@ -2381,12 +2381,12 @@ These are similar but already have game-theme classes
          data-analyticscategories=""drag-activity"" data-activity=""drag-image-to-target"" data-tool-id=""game"">
       <div class=""marginBox"">
         <div class=""split-pane-component-inner"">
-          <div class=""bloom-canvas bloom-has-canvas-element"" data-title=""For the current paper size: • The image container is 672 x 378 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2100 x 1182 dots would fill this container at 300 DPI."" title="""" data-imgsizebasedon=""672,378"">
+          <div class=""bloom-canvas bloom-has-canvas-element"" data-title=""For the current paper size: ï¿½ The image container is 672 x 378 dots. ï¿½ For print publications, you want between 300-600 DPI (Dots Per Inch). ï¿½ An image with 2100 x 1182 dots would fill this container at 300 DPI."" title="""" data-imgsizebasedon=""672,378"">
             <div class=""bloom-canvas-element bloom-backgroundImage"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style="" width: 672px; top: 0px; left: 0px; height: 378px;"">
-              <div class=""bloom-imageContainer"" data-title=""For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."" title=""For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI.""><img src=""placeHolder.png"" style="" width: 672px; top: -141.088px; left: 0px;"" alt="""" /></div>
+              <div class=""bloom-imageContainer"" data-title=""For the current paper size: ï¿½ The image container is 652 x 358 dots. ï¿½ For print publications, you want between 300-600 DPI (Dots Per Inch). ï¿½ An image with 2038 x 1119 dots would fill this container at 300 DPI."" title=""For the current paper size: ï¿½ The image container is 652 x 358 dots. ï¿½ For print publications, you want between 300-600 DPI (Dots Per Inch). ï¿½ An image with 2038 x 1119 dots would fill this container at 300 DPI.""><img src=""placeHolder.png"" style="" width: 672px; top: -141.088px; left: 0px;"" alt="""" /></div>
             </div>
             <div class=""bloom-canvas-element bloom-gif drag-item-correct"" style="" height: 220px; left: 370px; top: 70px; width: 230px; position: absolute;"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"">
-              <div tabindex=""0"" class=""bloom-imageContainer"" title=""""><img src=""smiling-flowers.gif"" alt="""" data-copyright=""Copyright © 2025, Ilona Spaeder"" data-creator=""Ilona Spaeder"" data-license=""Custom License"" /></div>
+              <div tabindex=""0"" class=""bloom-imageContainer"" title=""""><img src=""smiling-flowers.gif"" alt="""" data-copyright=""Copyright ï¿½ 2025, Ilona Spaeder"" data-creator=""Ilona Spaeder"" data-license=""Custom License"" /></div>
             </div>
             <div class=""bloom-canvas-element bloom-passive-element"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style=""height: 35.5px;"" data-bloom-active=""true"">
               <div class=""bloom-translationGroup bloom-leadingElement"" data-default-languages=""V"" data-hasqtip=""true"" data-eager-placeholder-l10n-id=""EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions"" style=""font-size: 21.3333px;"" aria-describedby=""qtip-0"">
@@ -2399,7 +2399,7 @@ These are similar but already have game-theme classes
               </div>
             </div>
             <div class=""bloom-canvas-element bloom-gif drag-item-wrong"" style="" height: 220px; left: 370px; top: 70px; width: 220px; position: absolute;"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"">
-              <div tabindex=""0"" class=""bloom-imageContainer"" title=""""><img src=""sad-face.gif"" alt="""" data-copyright=""Copyright © 2025, Ilona Spaeder"" data-creator=""Ilona Spaeder"" data-license=""Custom License"" /></div>
+              <div tabindex=""0"" class=""bloom-imageContainer"" title=""""><img src=""sad-face.gif"" alt="""" data-copyright=""Copyright ï¿½ 2025, Ilona Spaeder"" data-creator=""Ilona Spaeder"" data-license=""Custom License"" /></div>
             </div>
           </div>
         </div>
@@ -2482,7 +2482,7 @@ These are similar but already have game-theme classes
               <div class=""bloom-canvas bloom-leadingElement bloom-has-canvas-element"" data-imgsizebasedon=""438,328"" data-title=""Name: 100_1243.jpg"" title="""">
                 <svg version=""1.1"" ></svg>
                 <div class=""bloom-canvas-element bloom-backgroundImage"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style=""width: 437.333px; left: 0.333333px; top: 0px; height: 328px;"">
-                  <div class=""bloom-leadingElement bloom-imageContainer""><img src=""100_1243.jpg"" alt="""" data-copyright=""Copyright © 2010, Stephen McConnel"" data-creator=""Stephen McConnel"" data-license=""cc-by"" /></div>
+                  <div class=""bloom-leadingElement bloom-imageContainer""><img src=""100_1243.jpg"" alt="""" data-copyright=""Copyright ï¿½ 2010, Stephen McConnel"" data-creator=""Stephen McConnel"" data-license=""cc-by"" /></div>
                 </div>
                 <div class=""bloom-canvas-element"" style=""left: 270px; top: 30px; width: 150px; height: 27px;"" data-bubble=""{`version`:`1.0`,`style`:`speech`,`tails`:[{`tipX`:282,`tipY`:121,`midpointX`:301.5,`midpointY`:89,`autoCurve`:false}],`level`:2}"">
                   <div class=""bloom-translationGroup bloom-leadingElement"" data-default-languages=""V"" style=""font-size: 16px;"">
@@ -2512,8 +2512,8 @@ These are similar but already have game-theme classes
 ";
             var storage = GetInitialStorageWithCustomHtml(twoOverlayPagesHtml);
             var assertThatDom = AssertThatXmlIn.Dom(storage.Dom.RawDom);
-            var xpathOverlay = FeatureRegistry.Features
-                .Find(f => f.Feature == FeatureName.Overlay)
+            var xpathOverlay = FeatureRegistry
+                .Features.Find(f => f.Feature == FeatureName.Overlay)
                 .ExistsInPageXPath;
 
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(

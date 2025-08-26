@@ -1,12 +1,12 @@
-#if !debug
-using Bloom.WebLibraryIntegration;
-#endif
-using L10NSharp;
-using SIL.Reporting;
 using System;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using L10NSharp;
+using SIL.Reporting;
+#if !debug
+using Bloom.WebLibraryIntegration;
+#endif
 
 namespace Bloom.ErrorReporter
 {

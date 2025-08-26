@@ -299,11 +299,9 @@ namespace Bloom.web.controllers
             try
             {
                 var subject =
-                    reportKind == "User"
-                        ? "User Problem"
-                        : reportKind == "Fatal"
-                            ? "Crash Report"
-                            : "Error Report";
+                    reportKind == "User" ? "User Problem"
+                    : reportKind == "Fatal" ? "Crash Report"
+                    : "Error Report";
 
                 issueSubmission = new YouTrackIssueSubmitter(YouTrackProjectKey);
                 if (
@@ -440,7 +438,7 @@ namespace Bloom.web.controllers
                             .CollectionSettings
                             .Subscription
                             .Descriptor,
-                        issueId = basename // the issueID (unless we're doing an email report, in which case it's "ProblemBook")
+                        issueId = basename, // the issueID (unless we're doing an email report, in which case it's "ProblemBook")
                     };
                     _reportZipFile.AddTopLevelFileWithText(
                         "BloomProblemBook.json",
@@ -1336,10 +1334,10 @@ namespace Bloom.web.controllers
         private static object GetNameString(string firstName, string lastName)
         {
             return !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName)
-                ? lastName + ", " + firstName
+                    ? lastName + ", " + firstName
                 : string.IsNullOrWhiteSpace(lastName) && string.IsNullOrWhiteSpace(firstName)
                     ? "unknown"
-                    : (lastName + firstName).Trim();
+                : (lastName + firstName).Trim();
         }
 
         private static void GetStandardErrorReportingProperties(StringBuilder bldr, bool appendLog)
@@ -1509,7 +1507,9 @@ namespace Bloom.web.controllers
         private static IEnumerable<string> GetCollectionFilePaths(string collectionFolder)
         {
             var result = Directory.GetFiles(collectionFolder, "*CollectionStyles.css").ToList();
-            result.AddRange(Directory.GetFiles(collectionFolder, CollectionSettings.kWildSearchPattern));
+            result.AddRange(
+                Directory.GetFiles(collectionFolder, CollectionSettings.kWildSearchPattern)
+            );
             return result;
         }
 

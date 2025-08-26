@@ -880,12 +880,11 @@ namespace BloomTests.TeamCollection
             Assert.That(
                 _tcLog.Messages,
                 Has.Exactly(1)
-                    .Matches<TeamCollectionMessage>(
-                        m =>
-                            m.RawEnglishMessageTemplate == msg
-                            && (m.Param0 ?? "") == (param0 ?? "")
-                            && (m.Param1 ?? "") == (param1 ?? "")
-                            && m.MessageType == expectedType
+                    .Matches<TeamCollectionMessage>(m =>
+                        m.RawEnglishMessageTemplate == msg
+                        && (m.Param0 ?? "") == (param0 ?? "")
+                        && (m.Param1 ?? "") == (param1 ?? "")
+                        && m.MessageType == expectedType
                     )
             );
         }
@@ -903,11 +902,10 @@ namespace BloomTests.TeamCollection
             Assert.That(
                 _tcLog.Messages,
                 Has.Exactly(1)
-                    .Matches<TeamCollectionMessage>(
-                        m =>
-                            m.RawEnglishMessageTemplate == msg
-                            && (m.Param0 ?? "") == (param0 ?? "")
-                            && (m.Param1 ?? "") == (param1 ?? "")
+                    .Matches<TeamCollectionMessage>(m =>
+                        m.RawEnglishMessageTemplate == msg
+                        && (m.Param0 ?? "") == (param0 ?? "")
+                        && (m.Param1 ?? "") == (param1 ?? "")
                     )
             );
         }

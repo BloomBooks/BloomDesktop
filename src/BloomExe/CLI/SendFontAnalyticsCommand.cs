@@ -1,12 +1,12 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Bloom.Book;
+using Bloom.Properties;
+using Bloom.Publish.BloomPub;
+using BloomTemp;
 using CommandLine;
 using L10NSharp;
-using Bloom.Properties;
-using Bloom.Book;
-using BloomTemp;
-using Bloom.Publish.BloomPub;
 using SIL.Reporting;
 
 namespace Bloom.CLI

@@ -56,8 +56,8 @@ namespace Bloom.Utils
             }
             else
             {
-                return System.Diagnostics.Process
-                    .GetProcesses()
+                return System
+                    .Diagnostics.Process.GetProcesses()
                     .Any(p => p.ProcessName.Contains("dropbox"));
             }
         }

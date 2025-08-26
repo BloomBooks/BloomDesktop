@@ -10,11 +10,7 @@ namespace Bloom.web.controllers
     {
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            apiHandler.RegisterEndpointHandler(
-                "logger/writeEvent",
-                HandleLoggerWriteEvent,
-                false
-            );
+            apiHandler.RegisterEndpointHandler("logger/writeEvent", HandleLoggerWriteEvent, false);
         }
 
         private void HandleLoggerWriteEvent(ApiRequest request)

@@ -1,7 +1,7 @@
-using Bloom.Api;
 using System;
 using System.Globalization;
 using System.Linq;
+using Bloom.Api;
 
 namespace Bloom.SubscriptionAndFeatures
 {
@@ -154,7 +154,12 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 if (IsExpired() || string.IsNullOrWhiteSpace(Descriptor))
                     return "Default";
-                BrandingSettings.ParseSubscriptionDescriptor(Descriptor, out var folder, out var flavor, out var subUnitName);
+                BrandingSettings.ParseSubscriptionDescriptor(
+                    Descriptor,
+                    out var folder,
+                    out var flavor,
+                    out var subUnitName
+                );
                 if (folder == "Default" || folder == "Local-Community")
                     return folder;
                 return Descriptor; // a normal Enterprise code, perhaps with a region or flavor

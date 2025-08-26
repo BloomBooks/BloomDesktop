@@ -63,8 +63,8 @@ namespace Bloom.web
                     // Surely there's a way to do this more safely with JSON.net but I haven't found it yet
                     var props = string.Join(
                         ",",
-                        attrs.Select(
-                            a => ("\"" + a.Name + "\": \"" + a.Value.Replace("\"", "\\\"") + "\"")
+                        attrs.Select(a =>
+                            ("\"" + a.Name + "\": \"" + a.Value.Replace("\"", "\\\"") + "\"")
                         )
                     );
                     request.ReplyWithJson("{" + props + "}");

@@ -140,8 +140,8 @@ namespace Bloom.Publish.BloomPub.wifi
             var host = Dns.GetHostEntry(Dns.GetHostName());
 
             foreach (
-                var ipAddress in host.AddressList.Where(
-                    ipAddress => ipAddress.AddressFamily == AddressFamily.InterNetwork
+                var ipAddress in host.AddressList.Where(ipAddress =>
+                    ipAddress.AddressFamily == AddressFamily.InterNetwork
                 )
             )
             {

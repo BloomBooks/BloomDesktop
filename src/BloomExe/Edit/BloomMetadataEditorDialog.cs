@@ -2,9 +2,9 @@ using System;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using L10NSharp;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ClearShare.WinFormsUI;
-using L10NSharp;
 
 namespace Bloom.Edit
 {
@@ -57,8 +57,8 @@ namespace Bloom.Edit
             const int copyrightPanelReduction = 30;
             // The actual copyright holder field is docked in such a way that all we have to do is shrink the
             // containing panel (and move the lower controls up).
-            var copyrightPanel = MetadataControl.Controls
-                .Cast<Control>()
+            var copyrightPanel = MetadataControl
+                .Controls.Cast<Control>()
                 .First(x => x is TableLayoutPanel);
             copyrightPanel.Height -= copyrightPanelReduction;
             foreach (Control c in MetadataControl.Controls)
@@ -68,8 +68,8 @@ namespace Bloom.Edit
             }
 
             // We will also place the CC license picture over on the right, saving its height plus a little padding.
-            var ccLicenseBox = MetadataControl.Controls
-                .Cast<Control>()
+            var ccLicenseBox = MetadataControl
+                .Controls.Cast<Control>()
                 .First(x => x is BetterPictureBox);
             int ccLicenseBoxReduction = ccLicenseBox.Height + 5;
             foreach (Control c in MetadataControl.Controls)
@@ -86,8 +86,8 @@ namespace Bloom.Edit
             ccLicenseBox.Width += 500;
 
             // Even before these tweaks, this control sometimes lost part of its last letter to the label on its right.
-            var cc0Box = MetadataControl.Controls
-                .Cast<Control>()
+            var cc0Box = MetadataControl
+                .Controls.Cast<Control>()
                 .First(x => x.Name == "_publicDomainCC0");
             cc0Box.BringToFront();
 
@@ -119,8 +119,8 @@ namespace Bloom.Edit
 
             // This is just a tweak. It wasn't well aligned before, but now it's between two other boxes
             // and closer to one of them, it is more noticeable, so we adjust it.
-            var moreInfoBox = MetadataControl.Controls
-                .Cast<Control>()
+            var moreInfoBox = MetadataControl
+                .Controls.Cast<Control>()
                 .First(x => x.Name == "_linkToDefinitionOfNonCommercial");
             moreInfoBox.Left -= 5;
 

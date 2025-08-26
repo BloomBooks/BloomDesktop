@@ -171,8 +171,8 @@ namespace BloomTests.Spreadsheet
             );
             Rows = Sheet.ContentRows.ToList();
             AllRows = Sheet.AllRows();
-            PageContentRows = Rows.Where(
-                    r => r.MetadataKey == InternalSpreadsheet.PageContentRowLabel
+            PageContentRows = Rows.Where(r =>
+                    r.MetadataKey == InternalSpreadsheet.PageContentRowLabel
                 )
                 .ToList();
         }
@@ -711,8 +711,7 @@ namespace BloomTests.Spreadsheet
                         var cell = _worksheet.Cells[r + 1, c + 1];
                         if (
                             cell.Value != null
-                            && cell.Value
-                                .ToString()
+                            && cell.Value.ToString()
                                 .Contains("There is a segment marker |in this sentence.")
                         )
                         {

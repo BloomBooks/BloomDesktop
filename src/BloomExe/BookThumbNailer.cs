@@ -123,7 +123,7 @@ namespace Bloom
                 Width = 200,
                 CenterImageUsingTransparentPadding = false,
                 FileName = "coverImage200.jpg",
-                BorderStyle = GetThumbnailBorderStyle(book)
+                BorderStyle = GetThumbnailBorderStyle(book),
             };
             CreateThumbnailOfCoverImage(book, options);
         }
@@ -355,7 +355,7 @@ namespace Bloom
             {
                 //since this is destined for HTML, it's much easier to handle if there is no pre-padding
                 CenterImageUsingTransparentPadding = false,
-                RequestId = requestId
+                RequestId = requestId,
             };
 
             if (height != -1)
@@ -392,10 +392,10 @@ namespace Bloom
                 BackgroundColor = Color.White, // matches the hand-made previews.
                 BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.None, // allows the HTML to add its preferred border in the larger preview
                 CenterImageUsingTransparentPadding = true,
-                MustRegenerate = mustRegenerate
+                MustRegenerate = mustRegenerate,
             };
-            var pageDiv = pageDom.RawDom
-                .SafeSelectNodes("descendant-or-self::div[contains(@class,'bloom-page')]")
+            var pageDiv = pageDom
+                .RawDom.SafeSelectNodes("descendant-or-self::div[contains(@class,'bloom-page')]")
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             // The actual page size is rather arbitrary, but we want the right ratio for A4.

@@ -11,13 +11,13 @@ using Bloom.Book;
 using Bloom.Publish;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web.controllers;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.PlatformUtilities;
 using BloomBook = Bloom.Book.Book;
-using Bloom.SubscriptionAndFeatures;
 
 namespace BloomTests.Publish
 {
@@ -333,8 +333,8 @@ namespace BloomTests.Publish
         {
             XNamespace opf = "http://www.idpf.org/2007/opf";
 
-            var navPage = _manifestDoc.Root
-                .Element(opf + "manifest")
+            var navPage = _manifestDoc
+                .Root.Element(opf + "manifest")
                 .Elements(opf + "item")
                 .Last()
                 .Attribute("href")

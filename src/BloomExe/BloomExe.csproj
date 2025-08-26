@@ -2,7 +2,9 @@
 	<PropertyGroup>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
-		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'"
+			>..\..\</SolutionDir
+		>
 		<OutputPath>..\..\output\$(Configuration)\</OutputPath>
 		<Platform Condition=" '$(Platform)' == '' ">x86</Platform>
 		<AssemblyTitle>Bloom</AssemblyTitle>
@@ -161,9 +163,19 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 	<Target Name="CopySomeFiles" AfterTargets="Build">
 		<Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
 		<Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" />
-		<Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
-		<Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
-		<Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
+		<Copy
+			SourceFiles="@(BasicBookCssFiles)"
+			DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader"
+		/>
+		<Copy
+			SourceFiles="@(BasicBookCssFiles)"
+			DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader"
+		/>
+		<Copy
+			SourceFiles="@(RemoteDebugFiles)"
+			DestinationFolder="$(OutDir)/remoteDebugging"
+			Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'"
+		/>
 		<Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
 		<Message Text="CopySomeFiles target completed." Importance="high" />
 	</Target>
@@ -175,8 +187,14 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 	</Target>
 	<Target Name="CopyX86SqliteForArm" AfterTargets="ReallyAfterBuild">
 		<MakeDir Directories="$(OutDir)runtimes\win-arm64\native" />
-		<Copy SourceFiles="$(OutDir)runtimes\win-x86\native\e_sqlite3.dll" DestinationFiles="$(OutDir)e_sqlite3.dll" />
-		<Message Text="BL-13934 sqlite looks in the ARM64 directory, but then fails because actually we're running as an x86 process still, as of Bloom 6.2. So for now we're cheating and just putting the x86 version in." Importance="high" />
+		<Copy
+			SourceFiles="$(OutDir)runtimes\win-x86\native\e_sqlite3.dll"
+			DestinationFiles="$(OutDir)e_sqlite3.dll"
+		/>
+		<Message
+			Text="BL-13934 sqlite looks in the ARM64 directory, but then fails because actually we're running as an x86 process still, as of Bloom 6.2. So for now we're cheating and just putting the x86 version in."
+			Importance="high"
+		/>
 	</Target>
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.0.0" />

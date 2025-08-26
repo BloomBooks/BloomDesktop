@@ -195,7 +195,7 @@ namespace BloomTests.Publish
                     nothingRight,
                     onlyPhashRight,
                     editableWrongPhash,
-                    editableRightPhash
+                    editableRightPhash,
                 };
 
                 var canUpload = (string id) =>

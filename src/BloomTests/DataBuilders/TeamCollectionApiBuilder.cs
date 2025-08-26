@@ -1,12 +1,12 @@
-﻿using Bloom.Api;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.TeamCollection;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace BloomTests.DataBuilders
 {

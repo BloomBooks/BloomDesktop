@@ -715,8 +715,8 @@ namespace Bloom.Book
                 // We don't need to copy any backups, and we don't want userPrefs because they are likely
                 // to include a page number and we want the new book to open at the cover.
                 if (
-                    new[] { ".jade", ".less", ".md", ".bak", ".userprefs", ".map" }.Any(
-                        ex => ex == ext
+                    new[] { ".jade", ".less", ".md", ".bak", ".userprefs", ".map" }.Any(ex =>
+                        ex == ext
                     )
                 )
                     continue;
@@ -735,7 +735,7 @@ namespace Bloom.Book
                 var directoriesToSkip = new[]
                 {
                     "template",
-                    Book.ReadMeImagesFolderName.ToLowerInvariant()
+                    Book.ReadMeImagesFolderName.ToLowerInvariant(),
                 };
                 if (!directoriesToSkip.Contains(Path.GetFileName(dirPath).ToLowerInvariant()))
                 {

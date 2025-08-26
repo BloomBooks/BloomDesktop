@@ -181,7 +181,7 @@ namespace Bloom.Publish.BloomPub
                 IncludeFilesNeededForBloomPlayer = true,
                 WantMusic = true,
                 WantVideo = true,
-                NarrationLanguages = null
+                NarrationLanguages = null,
             };
             // these are artifacts of uploading book to BloomLibrary.org and not useful in BloomPubs
             filter.AlwaysReject("thumbnail-256.png");
@@ -698,19 +698,15 @@ namespace Bloom.Publish.BloomPub
             {
                 question = questionElt.InnerText.Trim(),
                 answers = answerElts
-                    .Select(
-                        a =>
-                            new Answer()
-                            {
-                                text = a.InnerText.Trim(),
-                                correct = (
-                                    (a.ParentNode?.ParentNode as SafeXmlElement)?.GetAttribute(
-                                        "class"
-                                    ) ?? ""
-                                ).Contains("correct-answer")
-                            }
-                    )
-                    .ToArray()
+                    .Select(a => new Answer()
+                    {
+                        text = a.InnerText.Trim(),
+                        correct = (
+                            (a.ParentNode?.ParentNode as SafeXmlElement)?.GetAttribute("class")
+                            ?? ""
+                        ).Contains("correct-answer"),
+                    })
+                    .ToArray(),
             };
             group.questions = new[] { question };
 
@@ -780,8 +776,8 @@ namespace Bloom.Publish.BloomPub
                     .ToArray()
             )
             {
-                var img = imgContainer.ChildNodes.FirstOrDefault(
-                    n => n is SafeXmlElement && n.Name == "img"
+                var img = imgContainer.ChildNodes.FirstOrDefault(n =>
+                    n is SafeXmlElement && n.Name == "img"
                 );
                 if (img == null || string.IsNullOrEmpty(img.GetAttribute("src")))
                     continue;
@@ -877,7 +873,8 @@ namespace Bloom.Publish.BloomPub
             fontsWanted.RemoveWhere(x => x.fontFamily == PublishHelper.DefaultFont);
             // We don't need to embed Andika New Basic, because Andika will handle it.
             fontsWanted.RemoveWhere( // The default Andika font will handle Andika New Basic
-                x => x.fontFamily == "Andika New Basic"
+                x =>
+                x.fontFamily == "Andika New Basic"
             );
 
             PublishHelper.CheckFontsForEmbedding(
@@ -971,7 +968,7 @@ namespace Bloom.Publish.BloomPub
                     // now add those may not actually show up in firefox, but are in the pre-existing
                     // unit tests, presumably with written-by-hand html?
                     "</br>",
-                    "<p />"
+                    "<p />",
                 };
                 var lines = source.InnerXml.Split(separators, StringSplitOptions.None);
                 var questions = new List<Question>();

@@ -1,11 +1,11 @@
-using SIL.IO;
-using SIL.Windows.Forms.Extensions;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Utils;
 using Newtonsoft.Json;
+using SIL.IO;
+using SIL.Windows.Forms.Extensions;
 
 namespace Bloom.web
 {

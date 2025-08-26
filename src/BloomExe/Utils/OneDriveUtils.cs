@@ -26,7 +26,7 @@ namespace Bloom.Utils
             "8004def7",
             "8007016a",
             "80070194",
-            "80071129"
+            "80071129",
         };
 
         public static bool IsOneDriveErrorCode(string errorCode)

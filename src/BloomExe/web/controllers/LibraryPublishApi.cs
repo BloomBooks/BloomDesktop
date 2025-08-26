@@ -1,3 +1,9 @@
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Publish;
 using Bloom.Publish.BloomLibrary;
@@ -6,12 +12,6 @@ using Bloom.Workspace;
 using L10NSharp;
 using SIL.Progress;
 using SIL.Reporting;
-using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Bloom.web.controllers
 {
@@ -166,7 +166,7 @@ namespace Bloom.web.controllers
                 licenseToken = Model.LicenseToken,
                 licenseRights = Model.LicenseRights,
                 isTemplate = Model.IsTemplate,
-                isTitleOKToPublish = Model.IsTitleOKToPublish
+                isTitleOKToPublish = Model.IsTitleOKToPublish,
             };
             request.ReplyWithJson(bookInfo);
         }
@@ -453,7 +453,7 @@ namespace Bloom.web.controllers
             new
             {
                 error = true, // Inform the client there was an error. Don't continue with the upload.
-                shouldShow = false // Don't show the dialog. (Currently this is ignored if error is true; in that case, we never show the dialog.)
+                shouldShow = false, // Don't show the dialog. (Currently this is ignored if error is true; in that case, we never show the dialog.)
             };
 
         private async Task HandleUploadAfterChangingBookId(ApiRequest request)
@@ -523,8 +523,8 @@ namespace Bloom.web.controllers
         {
             if (request.HttpMethod == HttpMethods.Get)
             {
-                var currentTopicKey = Model.Book.BookData
-                    .GetVariableOrNull("topic", "en")
+                var currentTopicKey = Model
+                    .Book.BookData.GetVariableOrNull("topic", "en")
                     .Unencoded;
                 string result;
                 if (string.IsNullOrEmpty(currentTopicKey))

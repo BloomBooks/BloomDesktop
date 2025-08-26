@@ -5,7 +5,9 @@
 		<AssemblyName>BloomPdfMaker</AssemblyName>
 		<TargetFramework>net472</TargetFramework>
 		<LangVersion>11.0</LangVersion>
-		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'"
+			>..\..\</SolutionDir
+		>
 		<OutputPath>..\..\output\$(Configuration)\</OutputPath>
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 		<AssemblyTitle>BloomPdfMaker</AssemblyTitle>

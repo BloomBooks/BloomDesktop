@@ -98,7 +98,7 @@ namespace Bloom.Spreadsheet
             new KeyValuePair<string, string>(
                 ImageThumbnailColumnLabel,
                 ImageThumbnailColumnFriendlyName
-            ) // a small version of the image embedded and displayed in the excel sheet
+            ), // a small version of the image embedded and displayed in the excel sheet
             // Todo: (lang slot) // L1, L2, L3, auto etc...which languages should be visible here?
         };
 
@@ -283,7 +283,6 @@ namespace Bloom.Spreadsheet
         /// <param name="langCode">The language code. It should not include surrounding brackets</param>
         /// <param name="langDisplayName">The display name of the language, which will be used as the column friendly name</param>
         /// <returns>The index of the column (0-based)</returns>
-
         public int AddColumnForLang(string langCode, string langDisplayName)
         {
             string columnLabel = "[" + langCode + "]";
@@ -350,7 +349,7 @@ namespace Bloom.Spreadsheet
             new List<int>
             {
                 GetColumnForTag(PageNumberColumnLabel),
-                GetColumnForTag(ImageSourceColumnLabel)
+                GetColumnForTag(ImageSourceColumnLabel),
             };
 
         public void SortHiddenContentRowsToTheBottom()

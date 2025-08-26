@@ -63,7 +63,7 @@ namespace Bloom.TeamCollection
         // Reloaded) cause Indicator state ClobberPending (if we ever
         // support that...current plans are to show ClobberPending using
         // a toast).
-        ShowedClobbered
+        ShowedClobbered,
     }
 
     /// <summary>

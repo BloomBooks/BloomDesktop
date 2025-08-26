@@ -94,7 +94,7 @@ namespace Bloom.Publish.Epub
             if (!string.IsNullOrEmpty(mediaElt?.InnerText))
                 _manifest.metadata.MediaOverlay = new ReadiumMediaProps()
                 {
-                    ActiveClass = mediaElt.InnerText
+                    ActiveClass = mediaElt.InnerText,
                 };
         }
 
@@ -115,7 +115,7 @@ namespace Bloom.Publish.Epub
                     var roItem = new ReadiumItem()
                     {
                         type = "application/xhtml+xml",
-                        href = "content/" + spineManifestItem.GetAttribute("href")
+                        href = "content/" + spineManifestItem.GetAttribute("href"),
                     };
                     var mediaOverlayId = spineManifestItem.GetAttribute("media-overlay");
                     if (!string.IsNullOrEmpty(mediaOverlayId))
@@ -132,7 +132,7 @@ namespace Bloom.Publish.Epub
                         );
                         roItem.properties = new ReadiumProperty()
                         {
-                            MediaOverlay = readiumMediaName
+                            MediaOverlay = readiumMediaName,
                         };
                         var smilContent = RobustFile.ReadAllText(overlayPath, Encoding.UTF8);
                         var smilDoc = SafeXmlDocument.Create();
@@ -157,7 +157,7 @@ namespace Bloom.Publish.Epub
                         {
                             role = new[] { "section", "bodymatter", "chapter" },
                             text = "content/" + textRef,
-                            narration = narrations
+                            narration = narrations,
                         };
                         for (int i = 0; i < parElts.Length; i++)
                         {
@@ -180,7 +180,7 @@ namespace Bloom.Publish.Epub
                                     + "#t="
                                     + clipStart.ToString(CultureInfo.InvariantCulture)
                                     + ","
-                                    + clipEnd.ToString(CultureInfo.InvariantCulture)
+                                    + clipEnd.ToString(CultureInfo.InvariantCulture),
                             };
                         }
 
@@ -203,7 +203,7 @@ namespace Bloom.Publish.Epub
             {
                 type = "application/webpub+json",
                 rel = "self",
-                href = _outputPath.ToLocalhost()
+                href = _outputPath.ToLocalhost(),
             };
             // The manifest that R2D2BC generated had another link (probably only for books with media overlays)
             //{

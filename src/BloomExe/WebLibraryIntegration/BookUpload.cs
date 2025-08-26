@@ -1,17 +1,27 @@
 using System;
+using System;
+using System.Collections.Generic;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics;
+using System.IO;
 using System.IO;
 using System.Linq;
+using System.Linq;
+using System.Net;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Windows.Forms;
 using Amazon.Runtime;
 using Amazon.S3;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.SafeXml;
@@ -26,16 +36,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Bloom.ImageProcessing;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -488,7 +488,7 @@ namespace Bloom.WebLibraryIntegration
                         Path = fullFilePath
                             .Substring(stagingDirectory.Length + 1)
                             .Replace("\\", "/"),
-                        Hash = BloomS3Client.GetProbableEtag(fullFilePath)
+                        Hash = BloomS3Client.GetProbableEtag(fullFilePath),
                     }
                 );
             }
@@ -519,7 +519,7 @@ namespace Bloom.WebLibraryIntegration
                     includeNarrationAudio ? audioLanguagesToInclude : Array.Empty<string>()
                 ),
                 WantVideo = true,
-                WantMusic = includeMusic
+                WantMusic = includeMusic,
             };
             if (pdfToInclude != null)
                 filter.AlwaysAccept(pdfToInclude);
@@ -739,8 +739,8 @@ namespace Bloom.WebLibraryIntegration
             var matchingBooks = GetBooksOnServer(bookInstanceId);
             // We are counting on there not being more than one book uploaded by any given user
             // with the same ID; we have prevented that from the earliest days of book uploading.
-            var result = matchingBooks.FirstOrDefault(
-                b => b.uploader?.email == Settings.Default.WebUserId
+            var result = matchingBooks.FirstOrDefault(b =>
+                b.uploader?.email == Settings.Default.WebUserId
             );
             if (result != null)
             {
@@ -903,8 +903,8 @@ namespace Bloom.WebLibraryIntegration
             {
                 var bookFolder = book.FolderPath;
 
-                var languagesToUpload = book.BookInfo.PublishSettings.BloomLibrary.TextLangs
-                    .IncludedLanguages()
+                var languagesToUpload = book
+                    .BookInfo.PublishSettings.BloomLibrary.TextLangs.IncludedLanguages()
                     .ToArray();
                 var languagesToAdvertiseOnBlorg = book.GetTextLanguagesToAdvertiseOnBloomLibrary(
                         languagesToUpload
@@ -1002,8 +1002,8 @@ namespace Bloom.WebLibraryIntegration
 
                 // Figure out which languages to upload audio for.
                 // There's no point in including languages for which we won't have text.
-                var audioLanguagesToUpload = book.BookInfo.PublishSettings.BloomLibrary.AudioLangs
-                    .IncludedLanguages()
+                var audioLanguagesToUpload = book
+                    .BookInfo.PublishSettings.BloomLibrary.AudioLangs.IncludedLanguages()
                     .Intersect(
                         book.BookInfo.PublishSettings.BloomLibrary.TextLangs.IncludedLanguages()
                     );

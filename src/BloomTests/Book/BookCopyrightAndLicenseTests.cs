@@ -29,7 +29,7 @@ namespace BloomTests.Book
                     ),
                     Language1Tag = "xyz",
                     Language2Tag = "en",
-                    Language3Tag = "fr"
+                    Language3Tag = "fr",
                 }
             );
             ErrorReport.IsOkToInteractWithUser = false;
@@ -259,7 +259,7 @@ namespace BloomTests.Book
                         true,
                         true,
                         CreativeCommonsLicense.DerivativeRules.Derivatives
-                    )
+                    ),
                 },
                 startingDataDivContent: "",
                 xpath: "//*[@data-book='licenseDescription' and @lang='fr' and contains(., 'création')]",
@@ -278,7 +278,7 @@ namespace BloomTests.Book
                         true,
                         true,
                         CreativeCommonsLicense.DerivativeRules.Derivatives
-                    )
+                    ),
                 },
                 startingDataDivContent: "",
                 xpath: "//*[@data-book='licenseImage' and text()='license.png']",
@@ -318,7 +318,7 @@ namespace BloomTests.Book
                 new Metadata()
                 {
                     CopyrightNotice = "foo",
-                    License = new CustomLicense() { RightsStatement = "custom rights" }
+                    License = new CustomLicense() { RightsStatement = "custom rights" },
                 },
                 startingDataDivContent: "<div data-book='licenseDescription' lang='fr'>Some old French</div>",
                 xpath: "//*[@data-book='licenseDescription']",

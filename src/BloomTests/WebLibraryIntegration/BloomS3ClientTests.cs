@@ -53,13 +53,12 @@ namespace BloomTests.WebLibraryIntegration
         [Test]
         public void DownloadBook_DoesNotExist_Throws()
         {
-            Assert.Throws<DirectoryNotFoundException>(
-                () =>
-                    _client.DownloadBook(
-                        BloomS3Client.UnitTestBucketName,
-                        "notthere",
-                        _workFolder.FolderPath
-                    )
+            Assert.Throws<DirectoryNotFoundException>(() =>
+                _client.DownloadBook(
+                    BloomS3Client.UnitTestBucketName,
+                    "notthere",
+                    _workFolder.FolderPath
+                )
             );
         }
 
@@ -136,7 +135,7 @@ namespace BloomTests.WebLibraryIntegration
             var listMatchingObjectsRequest = new ListObjectsV2Request()
             {
                 BucketName = UnitTestBucketName,
-                Prefix = prefix
+                Prefix = prefix,
             };
 
             ListObjectsV2Response matchingFilesResponse;
@@ -152,9 +151,9 @@ namespace BloomTests.WebLibraryIntegration
                 var deleteObjectsRequest = new DeleteObjectsRequest()
                 {
                     BucketName = UnitTestBucketName,
-                    Objects = matchingFilesResponse.S3Objects
-                        .Select(s3Object => new KeyVersion() { Key = s3Object.Key })
-                        .ToList()
+                    Objects = matchingFilesResponse
+                        .S3Objects.Select(s3Object => new KeyVersion() { Key = s3Object.Key })
+                        .ToList(),
                 };
 
                 var response = amazonS3.DeleteObjects(deleteObjectsRequest);

@@ -25,7 +25,7 @@ namespace BloomTests.Book
                 Language1Tag = "xyz",
                 Language2Tag = "fr",
                 Language3Tag = "es",
-                XMatterPackName = "Factory"
+                XMatterPackName = "Factory",
             };
             ErrorReport.IsOkToInteractWithUser = false;
 
@@ -666,7 +666,6 @@ namespace BloomTests.Book
         /// <summary>
         /// Checks that elements in bloomDataDiv are updated too
         /// </summary>
-
         [Test]
         public void UpdateContentLanguageClasses_BloomDataDiv_ElementsAreUpdatedToo()
         {
@@ -2231,8 +2230,8 @@ namespace BloomTests.Book
                     1
                 );
 
-            var groupElements = bookDom.RawDom
-                .SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")
+            var groupElements = bookDom
+                .RawDom.SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")
                 .Cast<SafeXmlElement>();
             Assert.That(groupElements.Count(), Is.EqualTo(5));
 

@@ -21,7 +21,7 @@ namespace Bloom.Collection
         public enum CollectionType
         {
             TheOneEditableCollection,
-            SourceCollection
+            SourceCollection,
         }
 
         public delegate BookCollection Factory(string path, CollectionType collectionType); //autofac uses this
@@ -335,8 +335,8 @@ namespace Bloom.Collection
                 _bookInfos.RemoveAt(oldIndex);
             }
 
-            int newIndex = _bookInfos.FindIndex(
-                x => comp.Compare(newKey, Path.GetFileName(x.FolderPath)) <= 0
+            int newIndex = _bookInfos.FindIndex(x =>
+                comp.Compare(newKey, Path.GetFileName(x.FolderPath)) <= 0
             );
             if (newIndex < 0)
                 newIndex = _bookInfos.Count;
@@ -543,7 +543,8 @@ namespace Bloom.Collection
                 )
                 {
                     if (
-                        bookInfo.BloomLibraryStatus == null || bookInfo.BloomLibraryStatus != status
+                        bookInfo.BloomLibraryStatus == null
+                        || bookInfo.BloomLibraryStatus != status
                     )
                     {
                         bookInfo.BloomLibraryStatus = status;

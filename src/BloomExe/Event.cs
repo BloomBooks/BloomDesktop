@@ -16,7 +16,7 @@ namespace Bloom
         protected enum LoggingLevel
         {
             Minor,
-            Major
+            Major,
         };
 
         private LoggingLevel _loggingLevel;
@@ -198,7 +198,7 @@ namespace Bloom
         {
             SaveBeforeRefresh,
             SaveBeforeRefreshFullSave,
-            JustRedisplay
+            JustRedisplay,
         }
 
         public PageRefreshEvent()

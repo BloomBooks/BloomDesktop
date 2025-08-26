@@ -1,9 +1,9 @@
-﻿using Bloom.Api;
+﻿using System;
+using System.Windows.Forms;
+using Bloom.Api;
 using Bloom.ErrorReporter;
 using Bloom.MiscUI;
 using Moq;
-using System;
-using System.Windows.Forms;
 
 namespace BloomTests.DataBuilders
 {

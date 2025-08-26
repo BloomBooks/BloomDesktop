@@ -392,8 +392,10 @@ namespace Bloom.Publish
             {
                 // epub-check doesn't like these attributes (BL-6036).  I suppose BloomReader might find them useful.
                 foreach (
-                    var div in dom.Body
-                        .SafeSelectNodes("//div[contains(@class, 'split-pane-component-inner')]")
+                    var div in dom
+                        .Body.SafeSelectNodes(
+                            "//div[contains(@class, 'split-pane-component-inner')]"
+                        )
                         .Cast<SafeXmlElement>()
                 )
                 {
@@ -407,8 +409,8 @@ namespace Bloom.Publish
             // exists, it probably has a style attribute (position:fixed) that epubcheck won't like.
             // (fixed position way off the screen to hide it)
             foreach (
-                var div in dom.Body
-                    .SafeSelectNodes("//*[@data-cke-hidden-sel]")
+                var div in dom
+                    .Body.SafeSelectNodes("//*[@data-cke-hidden-sel]")
                     .Cast<SafeXmlElement>()
             )
             {
@@ -494,7 +496,7 @@ namespace Bloom.Publish
                                 {
                                     fontFamily = font,
                                     fontStyle = info.fontStyle,
-                                    fontWeight = info.fontWeight
+                                    fontWeight = info.fontWeight,
                                 }
                             );
                         }
@@ -505,7 +507,7 @@ namespace Bloom.Publish
                     {
                         fontFamily = info.fontFamily,
                         fontStyle = info.fontStyle,
-                        fontWeight = info.fontWeight
+                        fontWeight = info.fontWeight,
                     };
                     _mapIdToFontInfo[info.id] = fontInfo;
                 }
@@ -821,7 +823,7 @@ namespace Bloom.Publish
                     {
                         fontFamily = font,
                         fontStyle = fontInfo.fontStyle,
-                        fontWeight = fontInfo.fontWeight
+                        fontWeight = fontInfo.fontWeight,
                     }
                 )
             )
@@ -834,7 +836,7 @@ namespace Bloom.Publish
                 {
                     fontFamily = font,
                     fontStyle = fontInfo.fontStyle,
-                    fontWeight = fontInfo.fontWeight
+                    fontWeight = fontInfo.fontWeight,
                 }
             );
             // We need more information for font analytics.  This still suffers from the limitation on multiple languages being
@@ -911,7 +913,7 @@ namespace Bloom.Publish
                             {
                                 fontFamily = font1,
                                 fontStyle = newCurrentFont.fontStyle,
-                                fontWeight = newCurrentFont.fontWeight
+                                fontWeight = newCurrentFont.fontWeight,
                             };
                         if (
                             IsRealTextDisplayedInDesiredFont(
@@ -989,7 +991,7 @@ namespace Bloom.Publish
                 IncludeFilesNeededForBloomPlayer = includeVideoAndActivities,
                 WantVideo = includeVideoAndActivities,
                 NarrationLanguages = narrationLanguages,
-                WantMusic = true
+                WantMusic = true,
             };
             filter.CopyBookFolderFiltered(tempFolderPath);
             var collectionStylesSource = Path.Combine(
@@ -1010,7 +1012,7 @@ namespace Bloom.Publish
             // We can always save in a temp book
             var bookInfo = new BookInfo(tempFolderPath, true, new AlwaysEditSaveContext())
             {
-                UseDeviceXMatter = !isTemplateBook
+                UseDeviceXMatter = !isTemplateBook,
             };
 
             var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
@@ -1031,7 +1033,11 @@ namespace Bloom.Publish
                     SignLanguageApi.ProcessVideos(videoContainerElements, modifiedBook.FolderPath);
                 }
             }
-            ImageUtils.ReallyCropImages(modifiedBook.RawDom, modifiedBook.FolderPath, modifiedBook.FolderPath);
+            ImageUtils.ReallyCropImages(
+                modifiedBook.RawDom,
+                modifiedBook.FolderPath,
+                modifiedBook.FolderPath
+            );
             // Must come after ReallyCropImages, because any cropping for background images is
             // destroyed by SimplifyBackgroundImages.
             SimplifyBackgroundImages(modifiedBook.RawDom);
@@ -1082,14 +1088,14 @@ namespace Bloom.Publish
                 // the elements that need this transformation. The backgroundImage elements ("background
                 // canvas elements") are removed, and the img is moved to the bloom-canvas.
                 var imgContainer =
-                    canvasElement.ChildNodes.FirstOrDefault(
-                        c => c is SafeXmlElement ce && ce.LocalName == "div"
+                    canvasElement.ChildNodes.FirstOrDefault(c =>
+                        c is SafeXmlElement ce && ce.LocalName == "div"
                     ) as SafeXmlElement;
                 if (imgContainer == null || !imgContainer.HasClass("bloom-imageContainer"))
                     return;
                 var img =
-                    imgContainer.ChildNodes.FirstOrDefault(
-                        c => c is SafeXmlElement ce && ce.LocalName == "img"
+                    imgContainer.ChildNodes.FirstOrDefault(c =>
+                        c is SafeXmlElement ce && ce.LocalName == "img"
                     ) as SafeXmlElement;
                 if (img == null)
                     return;
@@ -1100,8 +1106,8 @@ namespace Bloom.Publish
                 if (bloomCanvas == null || !bloomCanvas.HasClass(HtmlDom.kBloomCanvasClass))
                     return;
                 var bcImg =
-                    bloomCanvas.ChildNodes.FirstOrDefault(
-                        c => c is SafeXmlElement ce && ce.LocalName == "img"
+                    bloomCanvas.ChildNodes.FirstOrDefault(c =>
+                        c is SafeXmlElement ce && ce.LocalName == "img"
                     ) as SafeXmlElement;
                 if (bcImg != null && bcImg.GetAttribute("src") != "placeHolder.png")
                     return; // paranoia
@@ -1110,8 +1116,8 @@ namespace Bloom.Publish
                     bloomCanvas.RemoveChild(bcImg);
                 }
                 var svg =
-                    bloomCanvas.ChildNodes.FirstOrDefault(
-                        c => c is SafeXmlElement ce && ce.LocalName == "svg"
+                    bloomCanvas.ChildNodes.FirstOrDefault(c =>
+                        c is SafeXmlElement ce && ce.LocalName == "svg"
                     ) as SafeXmlElement;
                 var insertBefore = svg != null ? svg.NextSibling : bloomCanvas.FirstChild;
                 bloomCanvas.InsertBefore(img, insertBefore);
@@ -1125,8 +1131,8 @@ namespace Bloom.Publish
                     );
                 canvasElement.ParentNode.RemoveChild(canvasElement);
                 if (
-                    !bloomCanvas.ChildNodes.Any(
-                        c => c is SafeXmlElement ce && ce.HasClass("bloom-canvas-element")
+                    !bloomCanvas.ChildNodes.Any(c =>
+                        c is SafeXmlElement ce && ce.HasClass("bloom-canvas-element")
                     )
                 )
                 {
@@ -1154,7 +1160,6 @@ namespace Bloom.Publish
                 }
             }
         }
-
 
         #region IDisposable Support
         // This code added to correctly implement the disposable pattern.
@@ -1511,7 +1516,7 @@ namespace Bloom.Publish
                 var fontNames = new List<string>
                 {
                     DefaultFont, // Ensure that Andika's metadata is always available.
-                    "ABeeZee" // Another font distributed with Bloom
+                    "ABeeZee", // Another font distributed with Bloom
                 };
                 foreach (var font in fontsWanted)
                 {
@@ -1748,7 +1753,7 @@ namespace Bloom.Publish
                 "sans-serif",
                 "cursive",
                 "fantasy",
-                "monospace"
+                "monospace",
             };
             foreach (var font in fontsFound)
             {

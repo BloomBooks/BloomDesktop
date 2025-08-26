@@ -1,6 +1,6 @@
+using Bloom.SubscriptionAndFeatures;
 using Moq;
 using NUnit.Framework;
-using Bloom.SubscriptionAndFeatures;
 
 namespace BloomTests.FeatureStatusTests
 {
