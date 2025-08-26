@@ -35,8 +35,8 @@ namespace Bloom.web.controllers
                 case HttpMethods.Get:
                     // The spec is here: https://docs.google.com/document/d/e/2PACX-1vREQ7fUXgSE7lGMl9OJkneddkWffO4sDnMG5Vn-IleK35fJSFqnC-6ulK1Ss3eoETCHeLn0wPvcxJOf/pub
                     // See also https://www.w3.org/Submission/2017/SUBM-epub-a11y-20170125/#sec-conf-reporting.
-                    var licenseUrl = _bookSelection.CurrentSelection
-                        .GetLicenseMetadata()
+                    var licenseUrl = _bookSelection
+                        .CurrentSelection.GetLicenseMetadata()
                         .License.Url;
                     if (string.IsNullOrEmpty(licenseUrl))
                         licenseUrl = null; // allows us to use ?? below.
@@ -49,7 +49,7 @@ namespace Bloom.web.controllers
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.metapicture",
                                 "Picture"
-                            )
+                            ),
                         },
                         name = new
                         {
@@ -58,18 +58,18 @@ namespace Bloom.web.controllers
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.name",
                                 "Name"
-                            )
+                            ),
                         },
                         numberOfPages = new
                         {
                             type = "readOnlyText",
-                            value = _bookSelection.CurrentSelection
-                                .GetLastNumberedPageNumber()
+                            value = _bookSelection
+                                .CurrentSelection.GetLastNumberedPageNumber()
                                 .ToString(),
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.numberOfPages",
                                 "Number of pages"
-                            )
+                            ),
                         },
                         inLanguage = new
                         {
@@ -78,7 +78,7 @@ namespace Bloom.web.controllers
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.inLanguage",
                                 "Language"
-                            )
+                            ),
                         },
                         // "All rights reserved" is purposely not localized, so it remains an accurate representation of
                         // the English information that will be put in the file in place of a License URL.
@@ -89,7 +89,7 @@ namespace Bloom.web.controllers
                             translatedLabel = LocalizationManager.GetString(
                                 "Common.License",
                                 "License"
-                            )
+                            ),
                         },
                         author = new
                         {
@@ -98,7 +98,7 @@ namespace Bloom.web.controllers
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.author",
                                 "Author"
-                            )
+                            ),
                         },
                         summary = new
                         {
@@ -107,7 +107,7 @@ namespace Bloom.web.controllers
                             translatedLabel = LocalizationManager.GetString(
                                 "PublishTab.Upload.Summary",
                                 "Summary"
-                            )
+                            ),
                         },
                         typicalAgeRange = new
                         {
@@ -117,7 +117,7 @@ namespace Bloom.web.controllers
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.typicalAgeRange",
                                 "Typical age range"
-                            )
+                            ),
                         },
                         level = new
                         {
@@ -131,7 +131,7 @@ namespace Bloom.web.controllers
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.level",
                                 "Reading level"
-                            )
+                            ),
                         },
                         subjects = new
                         {
@@ -140,7 +140,7 @@ namespace Bloom.web.controllers
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.subjects",
                                 "Subjects"
-                            )
+                            ),
                         },
                         a11yLevel = new
                         {
@@ -151,7 +151,7 @@ namespace Bloom.web.controllers
                                 "BookMetadata.a11yLevel",
                                 "Accessibility level"
                             ),
-                            helpurl = "http://www.idpf.org/epub/a11y/accessibility.html#sec-acc-pub-wcag"
+                            helpurl = "http://www.idpf.org/epub/a11y/accessibility.html#sec-acc-pub-wcag",
                         },
                         a11yCertifier = new
                         {
@@ -161,7 +161,7 @@ namespace Bloom.web.controllers
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.a11yCertifier",
                                 "Level certified by"
-                            )
+                            ),
                         },
                         hazards = new
                         {
@@ -171,7 +171,7 @@ namespace Bloom.web.controllers
                                 "BookMetadata.hazards",
                                 "Hazards"
                             ),
-                            helpurl = "http://www.idpf.org/epub/a11y/techniques/techniques.html#meta-004"
+                            helpurl = "http://www.idpf.org/epub/a11y/techniques/techniques.html#meta-004",
                         },
                         a11yFeatures = new
                         {
@@ -182,8 +182,8 @@ namespace Bloom.web.controllers
                                 "BookMetadata.a11yFeatures",
                                 "Accessibility features"
                             ),
-                            helpurl = "http://www.idpf.org/epub/a11y/techniques/techniques.html#meta-003"
-                        }
+                            helpurl = "http://www.idpf.org/epub/a11y/techniques/techniques.html#meta-003",
+                        },
                     };
                     var translatedStringPairs = new
                     {
@@ -204,21 +204,20 @@ namespace Bloom.web.controllers
                             "Sign Language"
                         ),
                     };
-                    var blob = new { metadata, translatedStringPairs, };
+                    var blob = new { metadata, translatedStringPairs };
                     request.ReplyWithJson(blob);
                     break;
                 case HttpMethods.Post:
                     var json = request.RequiredPostJson();
                     var settings = DynamicJson.Parse(json);
-                    _bookSelection.CurrentSelection.BookInfo.MetaData.Author = settings[
-                        "author"
-                    ].value.Trim();
-                    _bookSelection.CurrentSelection.BookInfo.MetaData.Summary = settings[
-                        "summary"
-                    ].value.Trim();
+                    _bookSelection.CurrentSelection.BookInfo.MetaData.Author = settings["author"]
+                        .value.Trim();
+                    _bookSelection.CurrentSelection.BookInfo.MetaData.Summary = settings["summary"]
+                        .value.Trim();
                     _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange = settings[
                         "typicalAgeRange"
-                    ].value.Trim();
+                    ]
+                        .value.Trim();
                     _bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription =
                         settings["level"].value.Trim();
                     _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects = settings[
@@ -226,16 +225,18 @@ namespace Bloom.web.controllers
                     ].value;
                     _bookSelection.CurrentSelection.BookInfo.MetaData.A11yLevel = settings[
                         "a11yLevel"
-                    ].value.Trim();
+                    ]
+                        .value.Trim();
                     _bookSelection.CurrentSelection.BookInfo.MetaData.A11yCertifier = settings[
                         "a11yCertifier"
-                    ].value.Trim();
-                    _bookSelection.CurrentSelection.BookInfo.MetaData.Hazards = settings[
-                        "hazards"
-                    ].value.Trim();
+                    ]
+                        .value.Trim();
+                    _bookSelection.CurrentSelection.BookInfo.MetaData.Hazards = settings["hazards"]
+                        .value.Trim();
                     _bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures = settings[
                         "a11yFeatures"
-                    ].value.Trim();
+                    ]
+                        .value.Trim();
                     _bookSelection.CurrentSelection.Save();
                     request.PostSucceeded();
                     break;

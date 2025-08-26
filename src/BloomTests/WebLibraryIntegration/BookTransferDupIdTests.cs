@@ -93,7 +93,7 @@ namespace BloomTests.WebLibraryIntegration
                 bookFolder2,
                 bookFolder3,
                 bookFolder4,
-                bookFolder5
+                bookFolder5,
             };
             _guid1 = Guid.NewGuid().ToString();
             _guid2 = Guid.NewGuid().ToString();

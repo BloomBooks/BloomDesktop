@@ -1,10 +1,3 @@
-using Bloom.Api;
-using Bloom.Book;
-using Bloom.ErrorReporter;
-using Bloom.ToPalaso;
-using L10NSharp;
-using SIL.IO;
-using SIL.Reporting;
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -12,6 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Api;
+using Bloom.Book;
+using Bloom.ErrorReporter;
+using Bloom.ToPalaso;
+using L10NSharp;
+using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom
 {

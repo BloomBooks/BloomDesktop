@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using Bloom;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
-using Bloom.Api;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.Reporting;
@@ -30,7 +30,7 @@ namespace BloomTests.Edit
             {
                 Language2Tag = "en",
                 Language1Tag = "xyz",
-                XMatterPackName = "Factory"
+                XMatterPackName = "Factory",
             };
 
             ErrorReport.IsOkToInteractWithUser = false;
@@ -45,7 +45,7 @@ namespace BloomTests.Edit
                     ),
                     BloomFileLocator.GetBrowserDirectory("bookLayout"),
                     BloomFileLocator.GetBrowserDirectory("bookEdit", "css"),
-                    BloomFileLocator.GetFactoryXMatterDirectory()
+                    BloomFileLocator.GetFactoryXMatterDirectory(),
                 }
             );
 
@@ -162,9 +162,9 @@ namespace BloomTests.Edit
                         {
                             veg = "v",
                             fruit = "f",
-                            nuts = "n"
-                        }
-                    }
+                            nuts = "n",
+                        },
+                    },
                 }
             );
             var secondData = DynamicJson.Serialize(
@@ -176,9 +176,9 @@ namespace BloomTests.Edit
                         {
                             bread = "b",
                             fruit = "{f\\:",
-                            nuts = "\"nut\""
-                        }
-                    }
+                            nuts = "\"nut\"",
+                        },
+                    },
                 }
             );
 
@@ -210,9 +210,9 @@ namespace BloomTests.Edit
                         food = new
                         {
                             vegetables = new string[] { @"beans", @"""fruit""", @"nu""ts" },
-                            meats = new string[] { @"'fish'", @"be'ef", @"chicken" }
-                        }
-                    }
+                            meats = new string[] { @"'fish'", @"be'ef", @"chicken" },
+                        },
+                    },
                 }
             );
             var secondData = DynamicJson.Serialize(
@@ -228,10 +228,10 @@ namespace BloomTests.Edit
                                 @"'fresh fish'",
                                 @"be'ef",
                                 @"chicken",
-                                @"turkey"
-                            }
-                        }
-                    }
+                                @"turkey",
+                            },
+                        },
+                    },
                 }
             );
 

@@ -242,7 +242,7 @@ namespace Bloom.Book
                 ".json",
                 ".txt",
                 ".js",
-                ".distribution"
+                ".distribution",
             }
         );
 
@@ -258,7 +258,6 @@ namespace Bloom.Book
         /// <summary>
         /// This overload is more convenient for testing, and is also the core of the implementation.
         /// </summary>
-
         public bool ShouldAllowRelativePath(string pathFromRootFolder)
         {
             pathFromRootFolder = normalizePath(pathFromRootFolder);
@@ -324,12 +323,11 @@ namespace Bloom.Book
                     if (NarrationLanguages != null)
                     {
                         var narrationLangs = new HashSet<string>(NarrationLanguages);
-                        narrationElements = narrationElements.Where(
-                            node =>
-                                narrationLangs.Contains(
-                                    node.ParentOrSelfWithClass("bloom-editable")
-                                        .GetOptionalStringAttribute("lang", null)
-                                )
+                        narrationElements = narrationElements.Where(node =>
+                            narrationLangs.Contains(
+                                node.ParentOrSelfWithClass("bloom-editable")
+                                    .GetOptionalStringAttribute("lang", null)
+                            )
                         );
                     }
 

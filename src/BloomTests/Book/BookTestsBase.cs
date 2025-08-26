@@ -149,11 +149,8 @@ namespace BloomTests.Book
                 .Setup(x => x.LocateDirectory("Factory-XMatter", It.IsAny<string>()))
                 .Returns(xMatter.CombineForPath("Factory-XMatter"));
             _fileLocator
-                .Setup(
-                    x =>
-                        x.LocateFileWithThrow(
-                            "Factory-XMatter".CombineForPath("Factory-XMatter.htm")
-                        )
+                .Setup(x =>
+                    x.LocateFileWithThrow("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))
                 )
                 .Returns(xMatter.CombineForPath("Factory-XMatter", "Factory-XMatter.htm"));
 
@@ -167,11 +164,10 @@ namespace BloomTests.Book
                 .Setup(x => x.LocateDirectory("Traditional-XMatter", It.IsAny<string>()))
                 .Returns(xMatter.CombineForPath("Traditional-XMatter"));
             _fileLocator
-                .Setup(
-                    x =>
-                        x.LocateFileWithThrow(
-                            "Traditional-XMatter".CombineForPath("Traditional-XMatter.htm")
-                        )
+                .Setup(x =>
+                    x.LocateFileWithThrow(
+                        "Traditional-XMatter".CombineForPath("Traditional-XMatter.htm")
+                    )
                 )
                 .Returns(xMatter.CombineForPath("Traditional-XMatter", "Factory-XMatter.htm"));
             _fileLocator
@@ -188,11 +184,8 @@ namespace BloomTests.Book
                 .Setup(x => x.LocateDirectory("BigBook-XMatter", It.IsAny<string>()))
                 .Returns(xMatter.CombineForPath("BigBook-XMatter"));
             _fileLocator
-                .Setup(
-                    x =>
-                        x.LocateFileWithThrow(
-                            "BigBook-XMatter".CombineForPath("BigBook-XMatter.htm")
-                        )
+                .Setup(x =>
+                    x.LocateFileWithThrow("BigBook-XMatter".CombineForPath("BigBook-XMatter.htm"))
                 )
                 .Returns(xMatter.CombineForPath("BigBook-XMatter", "BigBook-XMatter.htm"));
 
@@ -206,9 +199,8 @@ namespace BloomTests.Book
                 .Setup(x => x.LocateDirectory("Device-XMatter", It.IsAny<string>()))
                 .Returns(xMatter.CombineForPath("Device-XMatter"));
             _fileLocator
-                .Setup(
-                    x =>
-                        x.LocateFileWithThrow("Device-XMatter".CombineForPath("Device-XMatter.htm"))
+                .Setup(x =>
+                    x.LocateFileWithThrow("Device-XMatter".CombineForPath("Device-XMatter.htm"))
                 )
                 .Returns(xMatter.CombineForPath("Device-XMatter", "Device-XMatter.htm"));
 
@@ -320,7 +312,7 @@ namespace BloomTests.Book
                     ),
                     Language1Tag = "xyz",
                     Language2Tag = "en",
-                    Language3Tag = "fr"
+                    Language3Tag = "fr",
                 }
             );
         }

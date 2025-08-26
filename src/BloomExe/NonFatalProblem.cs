@@ -18,7 +18,7 @@ namespace Bloom
         None,
         Alpha,
         Beta,
-        All
+        All,
     }
 
     public enum PassiveIf
@@ -26,7 +26,7 @@ namespace Bloom
         None,
         Alpha,
         Beta,
-        All
+        All,
     }
 
     /// <summary>
@@ -382,7 +382,7 @@ namespace Bloom
                 case ModalIf.All:
                     return new string[]
                     {
-                        "" /*will match anything*/
+                        "", /*will match anything*/
                     };
                 case ModalIf.Beta:
                     return new string[] { "developer", "alpha", "beta" };

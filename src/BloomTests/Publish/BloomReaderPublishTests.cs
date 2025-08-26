@@ -13,6 +13,7 @@ using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.Publish.BloomPub;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
@@ -22,7 +23,6 @@ using SIL.PlatformUtilities;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
-using Bloom.SubscriptionAndFeatures;
 using Directory = System.IO.Directory;
 using File = System.IO.File;
 
@@ -108,7 +108,7 @@ namespace BloomTests.Publish
                 "readerStyles.css", // gets added
                 "Device-XMatter.css", // added when we apply this xmatter
                 "customCollectionStyles.css", // should be copied from parent directory
-                "defaultLangStyles.css"
+                "defaultLangStyles.css",
             };
             string collectionStylesPath = null;
 
@@ -175,7 +175,7 @@ namespace BloomTests.Publish
                 "book.pdf",
                 "thumbnail-256.png",
                 "thumbnail-70.png", // these are artifacts of uploading book to BloomLibrary.org
-                "Traditional-XMatter.css" // since we're adding Device-XMatter.css, this is no longer needed
+                "Traditional-XMatter.css", // since we're adding Device-XMatter.css, this is no longer needed
             };
 
             TestHtmlAfterCompression(
@@ -1650,7 +1650,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Times New Roman",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 );
                 fontsWanted.Add(
@@ -1658,7 +1658,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Wen Yei",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 );
                 fontsWanted.Add(
@@ -1666,7 +1666,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Calibre",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 );
                 fontsWanted.Add(
@@ -1674,7 +1674,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "NotAllowed",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 );
                 fontsWanted.Add(
@@ -1682,7 +1682,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "NotFound",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ); // probably wouldn't happen with new approach for fonts, but leave in the test
 
@@ -1696,10 +1696,9 @@ namespace BloomTests.Publish
                 );
                 // 0.00 megs is culture-specific; ignore that part.
                 Assert.That(
-                    stubProgress.MessagesNotLocalized.Any(
-                        s =>
-                            s.StartsWith("Embedding font Times New Roman at a cost of 0")
-                            && s.EndsWith("00 megs")
+                    stubProgress.MessagesNotLocalized.Any(s =>
+                        s.StartsWith("Embedding font Times New Roman at a cost of 0")
+                        && s.EndsWith("00 megs")
                     )
                 );
                 Assert.That(
@@ -1718,10 +1717,9 @@ namespace BloomTests.Publish
                 );
                 // 0.20 megs is culture-specific.
                 Assert.That(
-                    stubProgress.MessagesNotLocalized.Any(
-                        s =>
-                            s.StartsWith("Embedding font Calibre at a cost of 0")
-                            && s.EndsWith("20 megs")
+                    stubProgress.MessagesNotLocalized.Any(s =>
+                        s.StartsWith("Embedding font Calibre at a cost of 0")
+                        && s.EndsWith("20 megs")
                     )
                 );
 
@@ -1861,7 +1859,7 @@ namespace BloomTests.Publish
                         .BookInfo
                         .PublishSettings
                         .BloomPub
-                        .PublishAsMotionBookIfApplicable
+                        .PublishAsMotionBookIfApplicable,
                 };
                 if (languagesToInclude != null)
                     bloomPubPublishSettings.LanguagesToInclude = languagesToInclude;

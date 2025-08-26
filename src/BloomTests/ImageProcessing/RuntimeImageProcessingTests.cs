@@ -2,10 +2,9 @@
 using System.Drawing.Imaging;
 using System.IO;
 using Bloom;
+using Bloom.ImageProcessing;
 using NUnit.Framework;
 using SIL.IO;
-
-using Bloom.ImageProcessing;
 
 namespace BloomTests.RuntimeImageProcessing
 {
@@ -19,7 +18,7 @@ namespace BloomTests.RuntimeImageProcessing
             using (
                 var cache = new RuntimeImageProcessor(new BookRenamedEvent())
                 {
-                    TargetDimension = 100
+                    TargetDimension = 100,
                 }
             )
             using (var file = MakeTempPNGImage(200, 80))
@@ -40,7 +39,7 @@ namespace BloomTests.RuntimeImageProcessing
             using (
                 var cache = new RuntimeImageProcessor(new BookRenamedEvent())
                 {
-                    TargetDimension = 100
+                    TargetDimension = 100,
                 }
             )
             using (var file = MakeTempJPGImage(200, 80))
@@ -66,7 +65,7 @@ namespace BloomTests.RuntimeImageProcessing
             using (
                 var cache = new RuntimeImageProcessor(new BookRenamedEvent())
                 {
-                    TargetDimension = 100
+                    TargetDimension = 100,
                 }
             )
             using (var file = MakeTempPNGImage(10, 10))

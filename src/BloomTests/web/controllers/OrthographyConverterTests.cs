@@ -34,7 +34,7 @@ namespace BloomTests.web.controllers
             {
                 { "ab", "a''b''" },
                 { "abc", "a'b'c'" },
-                { "a", "a'''" }
+                { "a", "a'''" },
             };
 
             var converter = new OrthographyConverter(mappings);
@@ -51,7 +51,7 @@ namespace BloomTests.web.controllers
             var mappings = new Dictionary<string, string>()
             {
                 { "abc", "a'b'c'" },
-                { "bc", "b''c''" }
+                { "bc", "b''c''" },
             };
 
             var converter = new OrthographyConverter(mappings);

@@ -9,13 +9,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
-using Bloom.ImageProcessing;
 using Bloom.Api;
-using SIL.Reporting;
 using Bloom.Book;
+using Bloom.ImageProcessing;
 using Bloom.Properties;
-using SIL.IO;
 using Bloom.SafeXml;
+using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom
 {
@@ -77,7 +77,7 @@ namespace Bloom
             {
                 Solid,
                 Dashed,
-                None
+                None,
             }
 
             public Color BackgroundColor = Color.White;

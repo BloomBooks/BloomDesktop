@@ -35,7 +35,7 @@ namespace Bloom.WebLibraryIntegration
                 );
                 var settings = new NewCollectionSettings()
                 {
-                    PathToSettingsFile = pathToSettingsFile
+                    PathToSettingsFile = pathToSettingsFile,
                     // All other defaults are fine
                 };
                 settings.Language1.Tag = "en";

@@ -367,7 +367,8 @@ namespace Bloom.ImageProcessing
                     // PNG thumbnails created from jpeg files seem to often be way too big, so try to save them as jpeg
                     // files instead if it saves space.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-5605.
                     if (
-                        appearsToBeJpeg && Path.GetFileName(pathToProcessedImage) == "thumbnail.png"
+                        appearsToBeJpeg
+                        && Path.GetFileName(pathToProcessedImage) == "thumbnail.png"
                     )
                     {
                         var jpgPath = Path.ChangeExtension(pathToProcessedImage, "jpg");

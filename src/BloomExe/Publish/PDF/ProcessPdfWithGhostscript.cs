@@ -36,7 +36,7 @@ namespace Bloom.Publish.PDF
         public enum OutputType
         {
             DesktopPrinting, // shrink images to 600dpi in compressed format
-            Printshop // shrink images to 300dpi, convert color to CMYK (-dPDFSETTINGS=/prepress + other options)
+            Printshop, // shrink images to 300dpi, convert color to CMYK (-dPDFSETTINGS=/prepress + other options)
         };
 
         private readonly OutputType _type;
@@ -242,7 +242,10 @@ namespace Bloom.Publish.PDF
                     bldr.Append(" -dMonoImageResolution=1200");
                     break;
                 case OutputType.Printshop:
-                    Debug.Assert(!string.IsNullOrEmpty(_colorProfile), "color profile must be set for printshop");
+                    Debug.Assert(
+                        !string.IsNullOrEmpty(_colorProfile),
+                        "color profile must be set for printshop"
+                    );
                     // This reduces images to 300dpi, converting the color to CMYK.
                     bldr.Append(" -dPDFSETTINGS=/prepress");
                     bldr.Append(" -sColorConversionStrategy=CMYK");
@@ -267,7 +270,10 @@ namespace Bloom.Publish.PDF
                                 userFolder
                             );
                             // fall back to the default CMYK profile.
-                            cmykProfile = Path.Combine(PdfMaker.GetDistributedColorProfilesFolder(), "USWebCoatedSWOP.icc");
+                            cmykProfile = Path.Combine(
+                                PdfMaker.GetDistributedColorProfilesFolder(),
+                                "USWebCoatedSWOP.icc"
+                            );
                         }
                     }
                     bldr.AppendFormat(" -sDefaultRGBProfile=\"{0}\"", rgbProfile);

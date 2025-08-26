@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Drawing;
+using System.Text.RegularExpressions;
+using Bloom.SafeXml;
 using Bloom.Spreadsheet;
 using NUnit.Framework;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
-using System.Text.RegularExpressions;
-using System.Drawing;
-using Bloom.SafeXml;
 
 namespace BloomTests.Spreadsheet
 {

@@ -118,10 +118,13 @@ namespace Bloom.web.controllers
                         () =>
                         { // Saved DOM must be up to date with possibly new imageUrl
                             bool wasNormalSuccessfulSave = View.SaveImageMetadata(metadata);
-							// The filename can be null if coming in from the libpalaso toolbox callback,
-							// in which case wasNormalSuccessfulSave will be false anyway.
-							bool isNormalImageType = View.FileNameOfImageBeingModified != null &&
-								ImageUpdater.IsNormalImagePath(View.FileNameOfImageBeingModified);
+                            // The filename can be null if coming in from the libpalaso toolbox callback,
+                            // in which case wasNormalSuccessfulSave will be false anyway.
+                            bool isNormalImageType =
+                                View.FileNameOfImageBeingModified != null
+                                && ImageUpdater.IsNormalImagePath(
+                                    View.FileNameOfImageBeingModified
+                                );
                             bool shouldAskUserIfCopyMetadataToAllImages =
                                 wasNormalSuccessfulSave && isNormalImageType;
                             bool copyMetadataToAllImages = shouldAskUserIfCopyMetadataToAllImages
@@ -171,7 +174,7 @@ namespace Bloom.web.controllers
                     originalCopyrightAndLicenseText = $"{originalMetadata.CopyrightNotice}, {licenseText}",
                     originalCopyrightYear = originalMetadata.GetCopyrightYear(),
                     originalCopyrightHolder = originalMetadata.GetCopyrightBy(),
-                    originalLicense = GetLicense(originalMetadata)
+                    originalLicense = GetLicense(originalMetadata),
                 };
             }
 
@@ -200,7 +203,7 @@ namespace Bloom.web.controllers
             {
                 licenseType = GetLicenseType(metadata.License),
                 creativeCommonsInfo = creativeCommonsInfoJson,
-                rightsStatement = metadata.License?.RightsStatement ?? string.Empty
+                rightsStatement = metadata.License?.RightsStatement ?? string.Empty,
             };
         }
 
@@ -210,7 +213,7 @@ namespace Bloom.web.controllers
             {
                 allowCommercial = "yes",
                 allowDerivatives = "yes",
-                intergovernmentalVersion = false
+                intergovernmentalVersion = false,
             };
         }
 
@@ -221,7 +224,7 @@ namespace Bloom.web.controllers
                 token = ccLicense.Token,
                 allowCommercial = ccLicense.CommercialUseAllowed ? "yes" : "no",
                 allowDerivatives = GetCcDerivativeRulesAsString(ccLicense.DerivativeRule),
-                intergovernmentalVersion = ccLicense.IntergovernmentalOrganizationQualifier
+                intergovernmentalVersion = ccLicense.IntergovernmentalOrganizationQualifier,
             };
         }
 
@@ -305,7 +308,7 @@ namespace Bloom.web.controllers
                     IntergovernmentalOrganizationQualifier = settings
                         .licenseInfo
                         .creativeCommonsInfo
-                        .intergovernmentalVersion
+                        .intergovernmentalVersion,
                 };
             }
             else if (settings.licenseInfo.licenseType == "publicDomain")

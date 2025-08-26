@@ -150,7 +150,7 @@ namespace BloomTests.CLI
                     {
                         BookPath = bookFolderPath,
                         CollectionPath = collectionFilePath,
-                        BloomDigitalOutputPath = Path.Combine(testFolder.FolderPath, "output")
+                        BloomDigitalOutputPath = Path.Combine(testFolder.FolderPath, "output"),
                     }
                 );
 
@@ -230,7 +230,7 @@ namespace BloomTests.CLI
                     {
                         BookPath = bookFolderPath,
                         CollectionPath = collectionFilePath,
-                        BloomPubOutputPath = Path.Combine(testFolder.FolderPath, "output")
+                        BloomPubOutputPath = Path.Combine(testFolder.FolderPath, "output"),
                     }
                 );
 
@@ -286,7 +286,7 @@ namespace BloomTests.CLI
                     {
                         BookPath = bookFolderPath,
                         CollectionPath = collectionFilePath,
-                        JsonTextsOutputPath = jsonOutputPath
+                        JsonTextsOutputPath = jsonOutputPath,
                     }
                 );
 

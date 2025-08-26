@@ -19,7 +19,7 @@ namespace Bloom.CLI
         Success = 0,
         BookPathDirectoryNotFound = 1,
         ReportIOError = 2,
-        UnhandledException = 4
+        UnhandledException = 4,
     }
 
     /// <summary>

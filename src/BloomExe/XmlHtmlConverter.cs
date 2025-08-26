@@ -416,7 +416,7 @@ namespace Bloom
                 Indent = true,
                 CheckCharacters = true,
                 OmitXmlDeclaration = true,
-                ConformanceLevel = ConformanceLevel.Fragment
+                ConformanceLevel = ConformanceLevel.Fragment,
             };
             using (var writer = XmlWriter.Create(xmlStringBuilder, settings))
             {
@@ -441,7 +441,7 @@ namespace Bloom
             {
                 Indent = true,
                 CheckCharacters = true,
-                OmitXmlDeclaration = true
+                OmitXmlDeclaration = true,
             };
             var xmlStringBuilder = new StringBuilder();
             using (var writer = XmlWriter.Create(xmlStringBuilder, settings))
@@ -526,10 +526,11 @@ namespace Bloom
         static string FixVoidElementEndTags(string html)
         {
             // list of tags taken from https://developer.mozilla.org/en-US/docs/Glossary/Void_element
-            string[] voidEndTags = new string[] {
+            string[] voidEndTags = new string[]
+            {
                 "></area>",
                 "></base>",
-                "></br>",   // handled separately above, but here for completeness
+                "></br>", // handled separately above, but here for completeness
                 "></col>",
                 "></embed>",
                 "></hr>",

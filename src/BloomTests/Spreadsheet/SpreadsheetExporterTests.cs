@@ -143,8 +143,8 @@ namespace BloomTests.Spreadsheet
         [Test]
         public void ExportsDataDivTextInAllLanguages()
         {
-            var bookTitleRow = _rows.FirstOrDefault(
-                r => r.MetadataKey == InternalSpreadsheet.BookTitleRowLabel
+            var bookTitleRow = _rows.FirstOrDefault(r =>
+                r.MetadataKey == InternalSpreadsheet.BookTitleRowLabel
             );
             Assert.That(bookTitleRow, Is.Not.Null);
             Assert.That(bookTitleRow.GetCell("[en]").Text, Is.EqualTo("My 3rd Basic Book"));
@@ -153,8 +153,8 @@ namespace BloomTests.Spreadsheet
                 Is.EqualTo("Mi tercer libro básico")
             );
 
-            var insideBackCoverRow = _rows.FirstOrDefault(
-                r => r.MetadataKey == "[inside back cover]"
+            var insideBackCoverRow = _rows.FirstOrDefault(r =>
+                r.MetadataKey == "[inside back cover]"
             );
             Assert.That(insideBackCoverRow, Is.Not.Null);
             Assert.That(

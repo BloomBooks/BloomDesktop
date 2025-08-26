@@ -43,7 +43,7 @@ namespace Bloom.CLI
 
             var layout = new Layout
             {
-                SizeAndOrientation = SizeAndOrientation.FromString(options.SizeAndOrientation)
+                SizeAndOrientation = SizeAndOrientation.FromString(options.SizeAndOrientation),
             };
 
             if (
@@ -68,11 +68,11 @@ namespace Bloom.CLI
                 Language2Tag = string.IsNullOrWhiteSpace(options.NationalLanguage1Tag)
                     ? options.VernacularTag
                     : options.NationalLanguage1Tag,
-                Language3Tag = options.NationalLanguage2Tag
+                Language3Tag = options.NationalLanguage2Tag,
             };
 
             XMatterPackFinder xmatterFinder = new XMatterPackFinder(
-                new[] { BloomFileLocator.GetFactoryXMatterDirectory(), }
+                new[] { BloomFileLocator.GetFactoryXMatterDirectory() }
             );
             var locator = new BloomFileLocator(
                 collectionSettings,
@@ -133,7 +133,7 @@ public class HydrateParameters
 {
     public enum PresetOption
     {
-        Shellbook
+        Shellbook,
     }
 
     private PresetOption _preset;

@@ -1,23 +1,23 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
+using Bloom.Collection;
+using Bloom.CollectionTab;
+using Bloom.ImageProcessing;
+using Bloom.SafeXml;
+using Bloom.Utils;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using SIL.IO;
-using System.Drawing;
-using System;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Xml;
-using Bloom.ImageProcessing;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
-using System.Collections.Generic;
-using Bloom.Collection;
-using Bloom.CollectionTab;
-using Bloom.Utils;
-using Bloom.SafeXml;
 
 namespace Bloom.Book
 {
@@ -31,7 +31,7 @@ namespace Bloom.Book
             ".png",
             ".bmp",
             ".jpg",
-            ".jpeg"
+            ".jpeg",
         };
 
         internal static void MakeSizedThumbnail(
@@ -250,7 +250,7 @@ namespace Bloom.Book
                         ? CompressionMethod.Deflated
                         : CompressionMethod.Stored,
                     DateTime = fi.LastWriteTime,
-                    IsUnicodeText = true
+                    IsUnicodeText = true,
                 };
 
                 byte[] modifiedContent = null;

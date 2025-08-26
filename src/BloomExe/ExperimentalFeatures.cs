@@ -45,10 +45,9 @@ namespace Bloom
             else
             {
                 // Replace does no harm if the feature is not found in the string.
-                Settings.Default.EnabledExperimentalFeatures =
-                    Settings.Default.EnabledExperimentalFeatures
-                        .Replace(featureName, "")
-                        .Replace(",,", ",");
+                Settings.Default.EnabledExperimentalFeatures = Settings
+                    .Default.EnabledExperimentalFeatures.Replace(featureName, "")
+                    .Replace(",,", ",");
             }
             Settings.Default.EnabledExperimentalFeatures =
                 Settings.Default.EnabledExperimentalFeatures.Trim(',');

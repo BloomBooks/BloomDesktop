@@ -104,7 +104,7 @@ namespace Bloom.Edit
 
             var settings = new Dictionary<string, object>
             {
-                { "current", request.CurrentBook.BookInfo.CurrentTool }
+                { "current", request.CurrentBook.BookInfo.CurrentTool },
             };
 
             foreach (var tool in request.CurrentBook.BookInfo.Tools)

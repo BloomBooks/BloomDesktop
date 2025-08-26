@@ -11,7 +11,7 @@ namespace Bloom.Api
         Put,
         Post,
         Delete,
-        Options
+        Options,
     };
 
     public interface IRequestInfo

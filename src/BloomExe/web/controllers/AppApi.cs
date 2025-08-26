@@ -1,14 +1,14 @@
+using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using Bloom.Book;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.web;
 using Bloom.Workspace;
 using SIL.IO;
-using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
 
 namespace Bloom.Api
 {
@@ -130,7 +130,8 @@ namespace Bloom.Api
             );
 
             apiHandler.RegisterEndpointHandler(
-                kAppUrlPrefix + "versionNumber", request =>
+                kAppUrlPrefix + "versionNumber",
+                request =>
                 {
                     var assembly = Assembly.GetEntryAssembly();
                     var ver = assembly.GetName().Version;
@@ -140,7 +141,8 @@ namespace Bloom.Api
             );
 
             apiHandler.RegisterEndpointHandler(
-                kAppUrlPrefix + "versionBuildDate", request =>
+                kAppUrlPrefix + "versionBuildDate",
+                request =>
                 {
                     var assembly = Assembly.GetEntryAssembly();
                     var file = PathHelper.StripFilePrefix(assembly.Location);

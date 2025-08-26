@@ -1,8 +1,3 @@
-using Bloom.Api;
-using Bloom.MiscUI;
-using Bloom.web;
-using L10NSharp;
-using SIL.IO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,15 +8,20 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.History;
+using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
-using SIL.Reporting;
 using DesktopAnalytics;
+using L10NSharp;
 using SIL.Code;
+using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
@@ -915,7 +915,7 @@ namespace Bloom.TeamCollection
         {
             None,
             ColorPalette,
-            Other
+            Other,
         }
 
         /// <summary>
@@ -1032,7 +1032,10 @@ namespace Bloom.TeamCollection
             // Note that collectionName is the name of the collection, not the folder.
             // So our normal simple approach of using the folder name may fail here.
             var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(parentFolder));
-            var collectionPath = Path.Combine(parentFolder, CollectionSettings.GetFileName(collectionName));
+            var collectionPath = Path.Combine(
+                parentFolder,
+                CollectionSettings.GetFileName(collectionName)
+            );
             if (RobustFile.Exists(collectionPath))
                 return collectionPath;
             // occasionally, mainly when making a temp folder during joining, the bloomCollection file may not
@@ -1999,8 +2002,8 @@ namespace Bloom.TeamCollection
                         "https://docs.bloomlibrary.org/team-collections-advanced-topics/#2488e17a8a6140bebcef068046cc57b7";
                     var admins = string.Join(
                         ", ",
-                        (_tcManager?.Settings?.Administrators ?? new string[0]).Select(
-                            e => ProblemReportApi.GetObfuscatedEmail(e)
+                        (_tcManager?.Settings?.Administrators ?? new string[0]).Select(e =>
+                            ProblemReportApi.GetObfuscatedEmail(e)
                         )
                     );
                     var extraInfo =
@@ -2039,7 +2042,7 @@ namespace Bloom.TeamCollection
             "Cópia em conflito", // Spanish
             "конфликтующая копия", // Russian
             "冲突副本", // zh-cn, mainland chinese
-            "衝突複本" // zh-tx, taiwan
+            "衝突複本", // zh-tx, taiwan
             // Probably many others
         };
 
@@ -2721,14 +2724,14 @@ namespace Bloom.TeamCollection
                             titleIcon = "/bloom/teamCollection/Team Collection.svg",
                             titleColor = "white",
                             titleBackgroundColor = Palette.kBloomBlueHex,
-                            showReportButton = "never"
+                            showReportButton = "never",
                         },
                         "Sync Team Collection"
                     )
                     // winforms dialog properties
                     {
                         Width = 620,
-                        Height = 550
+                        Height = 550,
                     },
                 doWhat,
                 doWhenMainActionFalse
@@ -2767,7 +2770,7 @@ namespace Bloom.TeamCollection
                     { "CollectionId", CollectionId },
                     { "CollectionName", _tcManager?.Settings?.CollectionName },
                     { "Backend", GetBackendType() },
-                    { "User", TeamCollectionManager.CurrentUser }
+                    { "User", TeamCollectionManager.CurrentUser },
                 }
             );
 

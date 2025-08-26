@@ -69,7 +69,7 @@ namespace BloomTests.Book
                     ),
                     Language1Tag = "xyz",
                     Language2Tag = "en",
-                    Language3Tag = "fr"
+                    Language3Tag = "fr",
                 }
             );
         }

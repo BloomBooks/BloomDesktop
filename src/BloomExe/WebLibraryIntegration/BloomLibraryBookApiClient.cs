@@ -97,8 +97,8 @@ namespace Bloom.WebLibraryIntegration
                 throw new ApplicationException(messageToShowUserOnFailure);
             }
 
-            var operationLocation = response.Headers.FirstOrDefault(
-                h => h.Name == "Operation-Location"
+            var operationLocation = response.Headers.FirstOrDefault(h =>
+                h.Name == "Operation-Location"
             );
             if (operationLocation == null)
             {
@@ -238,7 +238,7 @@ namespace Bloom.WebLibraryIntegration
                 { "name", bookTitle },
                 { "files", JsonConvert.SerializeObject(bookFiles) },
                 { "clientName", $"Bloom {ApplicationUpdateSupport.ChannelName}" },
-                { "clientVersion", Application.ProductVersion }
+                { "clientVersion", Application.ProductVersion },
             };
             request.AddJsonBody(obj);
 
@@ -268,7 +268,7 @@ namespace Bloom.WebLibraryIntegration
                 {
                     AccessKey = result.credentials.AccessKeyId,
                     SecretAccessKey = result.credentials.SecretAccessKey,
-                    SessionToken = result.credentials.SessionToken
+                    SessionToken = result.credentials.SessionToken,
                 },
                 s3PrefixToUploadTo,
                 result["filesToUpload"].ToObject<string[]>()
@@ -303,7 +303,7 @@ namespace Bloom.WebLibraryIntegration
                 {
                     transactionId,
                     metadata,
-                    becomeUploader
+                    becomeUploader,
                 }
             );
 

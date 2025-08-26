@@ -422,7 +422,7 @@ namespace BloomTests.Collection
                     makeBloomBundle = false,
                     bookshelfColor = "#FF0000",
                     distributionTag = "distTag",
-                    bookshelfLabel = "bookshelfLabel"
+                    bookshelfLabel = "bookshelfLabel",
                 };
 
             // System under test

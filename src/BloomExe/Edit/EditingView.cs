@@ -3,33 +3,33 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.CollectionTab;
+using Bloom.ErrorReporter;
 using Bloom.ImageProcessing;
+using Bloom.MiscUI;
 using Bloom.Properties;
-using Bloom.Api;
+using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.Workspace;
 using L10NSharp;
+using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
-using SIL.Windows.Forms.Miscellaneous;
-using TempFile = SIL.IO.TempFile;
-using SIL.IO;
 using SIL.Windows.Forms.ImageToolbox.ImageGallery;
+using SIL.Windows.Forms.Miscellaneous;
 using SIL.Windows.Forms.Widgets;
-using System.Globalization;
-using Bloom.web;
-using System.Reflection;
-using System.Threading.Tasks;
-using Bloom.Utils;
-using Bloom.MiscUI;
-using Bloom.ErrorReporter;
+using TempFile = SIL.IO.TempFile;
 
 namespace Bloom.Edit
 {
@@ -170,7 +170,7 @@ namespace Bloom.Edit
                 new float[] { 0, 1, 0, 0, 0 }, // green scaling factor of 1
                 new float[] { 0, 0, 1, 0, 0 }, // blue scaling factor of 1
                 new float[] { 0, 0, 0, 1, 0 }, // alpha scaling factor of 1
-                new float[] { 0, 0, 0, 0, 1 }
+                new float[] { 0, 0, 0, 0, 1 },
             }; // three translations of 0.0
             var colorMatrix = new ColorMatrix(colorMatrixElements);
             _undoButton.ImageAttributes.SetColorMatrix(
@@ -1025,7 +1025,7 @@ namespace Bloom.Edit
                     {
                         InitialDirectory =
                             _gifDirectory ?? Environment.SpecialFolder.MyPictures.ToString(),
-                        Filter = "gif|*.gif"
+                        Filter = "gif|*.gif",
                     }
                 )
                 {
@@ -1303,7 +1303,7 @@ namespace Bloom.Edit
                 // Enhance: can we provide any of this for a GIF?
                 copyright = "",
                 license = "",
-                creator = ""
+                creator = "",
             };
             _model.UpdateImageInBrowser(args);
         }
@@ -1328,8 +1328,8 @@ namespace Bloom.Edit
                     | BindingFlags.Static
                     | BindingFlags.Public
                     | BindingFlags.NonPublic;
-                var metaInfo = palasoImage.Metadata
-                    .GetType()
+                var metaInfo = palasoImage
+                    .Metadata.GetType()
                     .GetField("_originalTaglibMetadata", bindFlags);
                 var taglibMetadata = metaInfo.GetValue(palasoImage.Metadata) as TagLib.Image.File;
                 if (taglibMetadata == null)
@@ -1890,7 +1890,8 @@ namespace Bloom.Edit
                     {
                         zoomInt = (int)Math.Round(zoomFloat * 10F) * 10;
                         if (
-                            zoomInt < ZoomControl.kMinimumZoom || zoomInt > ZoomControl.kMaximumZoom
+                            zoomInt < ZoomControl.kMinimumZoom
+                            || zoomInt > ZoomControl.kMaximumZoom
                         )
                             return 100; // bad antique value - normalize to real size.
                         return zoomInt;

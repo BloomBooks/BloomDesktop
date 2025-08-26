@@ -1,8 +1,8 @@
-﻿using SIL.IO;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Security.AccessControl;
+using SIL.IO;
 
 namespace Bloom.Utils
 {

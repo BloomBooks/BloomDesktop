@@ -51,8 +51,8 @@ namespace Bloom
             AudioRecording audioRecording
         )
         {
-            queueRenameOfCollection.Subscribe(
-                newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-')
+            queueRenameOfCollection.Subscribe(newName =>
+                _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-')
             );
             _collectionSettings = collectionSettings;
             _collectionClosingEvent = collectionClosingEvent;
@@ -237,7 +237,7 @@ namespace Bloom
                         // still trying to save after the first click on Close. But if the first attempt fails,
                         // we don't want to stay in a state where all attempts to close the program are ignored.
                         _startedClosingEvent = false;
-                    }
+                    },
                 }
             );
             e.Cancel = true;

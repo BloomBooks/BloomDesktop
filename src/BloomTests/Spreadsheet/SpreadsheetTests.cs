@@ -1,12 +1,12 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Bloom.Book;
 using Bloom.Spreadsheet;
 using Moq;
 using NUnit.Framework;
 using OfficeOpenXml;
 using SIL.IO;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace BloomTests.Spreadsheet
 {
@@ -566,8 +566,8 @@ namespace BloomTests.Spreadsheet
                         );
                         ExcelRange rowTypeCell = worksheet.Cells[r + 1, 1];
                         if (
-                            rowTypeCell.Value
-                                .ToString()
+                            rowTypeCell
+                                .Value.ToString()
                                 .Equals(InternalSpreadsheet.PageContentRowLabel)
                         )
                         {

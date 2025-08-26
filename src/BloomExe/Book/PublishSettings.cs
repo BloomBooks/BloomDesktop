@@ -61,7 +61,7 @@ namespace Bloom.Book
                     // do not override the default value that we already have loaded.
                     new JsonSerializerSettings()
                     {
-                        NullValueHandling = NullValueHandling.Ignore
+                        NullValueHandling = NullValueHandling.Ignore,
                     }
                 );
             }

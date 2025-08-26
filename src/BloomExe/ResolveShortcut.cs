@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Diagnostics;
-using System.IO;
 
 namespace Bloom
 {
@@ -24,7 +24,7 @@ namespace Bloom
             SLGP_UNCPRIORITY = 0x2,
 
             /// <summary>Retrieves the raw path name. A raw path is something that might not exist and may include environment variables that need to be expanded</summary>
-            SLGP_RAWPATH = 0x4
+            SLGP_RAWPATH = 0x4,
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
@@ -84,7 +84,7 @@ namespace Bloom
             SLR_NOLINKINFO = 0x40,
 
             /// <summary>Call the Microsoft Windows Installer</summary>
-            SLR_INVOKE_MSI = 0x80
+            SLR_INVOKE_MSI = 0x80,
         }
 
         /// <summary>The IShellLink interface allows Shell links to be created, modified, and resolved</summary>

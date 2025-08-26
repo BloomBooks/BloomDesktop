@@ -32,7 +32,9 @@ namespace BloomTests.TeamCollection
         public void OneTimeSetUp()
         {
             _localCollection = new TemporaryFolder("TeamCollectionApiTests");
-            var collectionPath = CollectionSettings.GetSettingsFilePath(_localCollection.FolderPath);
+            var collectionPath = CollectionSettings.GetSettingsFilePath(
+                _localCollection.FolderPath
+            );
             _tcManager = new TeamCollectionManager(
                 collectionPath,
                 new BloomWebSocketServer(),
@@ -133,7 +135,7 @@ namespace BloomTests.TeamCollection
         {
             var ex = new FolderTeamCollection.CannotLockException("We can't do it")
             {
-                SyncAgent = "Dropbox"
+                SyncAgent = "Dropbox",
             };
             var msg = _api.MakeLockFailedMessageFromException(ex, "c:/nowhere/My book");
             Assert.That(
@@ -149,7 +151,7 @@ namespace BloomTests.TeamCollection
         {
             var ex = new FolderTeamCollection.CannotLockException("We can't do it")
             {
-                SyncAgent = "Unknown"
+                SyncAgent = "Unknown",
             };
             var msg = _api.MakeLockFailedMessageFromException(ex, "c:/nowhere/Some book");
             Assert.That(
@@ -333,11 +335,11 @@ namespace BloomTests.TeamCollection
         )
         {
             var mockTeamCollection = new Mock<Bloom.TeamCollection.FolderTeamCollection>();
-            apiBuilder.MockTeamCollectionManager
-                .SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
+            apiBuilder
+                .MockTeamCollectionManager.SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
                 .Returns(mockTeamCollection.Object);
-            apiBuilder.MockTeamCollectionManager
-                .SetupGet(x => x.CurrentCollection)
+            apiBuilder
+                .MockTeamCollectionManager.SetupGet(x => x.CurrentCollection)
                 .Returns(mockTeamCollection.Object);
             mockTeamCollection
                 .Setup(x => x.GetPathToBookFileInRepo(It.IsAny<string>()))
@@ -410,8 +412,8 @@ namespace BloomTests.TeamCollection
             var api = apiBuilder.Build();
             api.RegisterWithApiHandler(_server.ApiHandler);
 
-            apiBuilder.MockTeamCollectionManager
-                .SetupGet(x => x.MessageLog)
+            apiBuilder
+                .MockTeamCollectionManager.SetupGet(x => x.MessageLog)
                 .Returns((ITeamCollectionMessageLog)null);
 
             TestDelegate systemUnderTest = () =>
@@ -434,8 +436,8 @@ namespace BloomTests.TeamCollection
             api.RegisterWithApiHandler(_server.ApiHandler);
 
             var mockMessageLog = new Mock<ITeamCollectionMessageLog>();
-            apiBuilder.MockTeamCollectionManager
-                .SetupGet(x => x.MessageLog)
+            apiBuilder
+                .MockTeamCollectionManager.SetupGet(x => x.MessageLog)
                 .Returns(mockMessageLog.Object);
             mockMessageLog
                 .Setup(x => x.GetProgressMessages())
@@ -443,7 +445,7 @@ namespace BloomTests.TeamCollection
                     new BloomWebSocketProgressEvent[]
                     {
                         new BloomWebSocketProgressEvent("unused", ProgressKind.Progress, "1"),
-                        new BloomWebSocketProgressEvent("unused", ProgressKind.Progress, "2")
+                        new BloomWebSocketProgressEvent("unused", ProgressKind.Progress, "2"),
                     }
                 );
 
@@ -493,8 +495,8 @@ namespace BloomTests.TeamCollection
             api.RegisterWithApiHandler(_server.ApiHandler);
 
             var mockTeamCollection = new Mock<Bloom.TeamCollection.TeamCollection>();
-            apiBuilder.MockTeamCollectionManager
-                .SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
+            apiBuilder
+                .MockTeamCollectionManager.SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
                 .Returns(mockTeamCollection.Object);
 
             var mockBook = new Mock<Bloom.Book.Book>();
@@ -520,8 +522,8 @@ namespace BloomTests.TeamCollection
             api.RegisterWithApiHandler(_server.ApiHandler);
 
             var mockTeamCollection = new Mock<Bloom.TeamCollection.TeamCollection>();
-            apiBuilder.MockTeamCollectionManager
-                .SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
+            apiBuilder
+                .MockTeamCollectionManager.SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
                 .Returns(mockTeamCollection.Object);
 
             // apiBuilder.MockBookSelection.Object.CurrentSelection will return null
@@ -544,8 +546,8 @@ namespace BloomTests.TeamCollection
             api.RegisterWithApiHandler(_server.ApiHandler);
 
             var mockTeamCollection = new Mock<Bloom.TeamCollection.TeamCollection>();
-            apiBuilder.MockTeamCollectionManager
-                .SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
+            apiBuilder
+                .MockTeamCollectionManager.SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
                 .Returns(mockTeamCollection.Object);
 
             var mockBook = new Mock<Bloom.Book.Book>();
@@ -570,8 +572,8 @@ namespace BloomTests.TeamCollection
             var api = apiBuilder.Build();
             api.RegisterWithApiHandler(_server.ApiHandler);
 
-            apiBuilder.MockTeamCollectionManager
-                .SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
+            apiBuilder
+                .MockTeamCollectionManager.SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
                 .Returns(() => throw new ApplicationException());
 
             // System Under Test
@@ -617,8 +619,8 @@ namespace BloomTests.TeamCollection
             var mockTeamCollection = new Mock<Bloom.TeamCollection.TeamCollection>();
             mockTeamCollection.SetupGet(x => x.RepoDescription).Returns("Fake Description");
 
-            apiBuilder.MockTeamCollectionManager
-                .SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
+            apiBuilder
+                .MockTeamCollectionManager.SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
                 .Returns(mockTeamCollection.Object);
 
             // System Under Test
@@ -638,8 +640,8 @@ namespace BloomTests.TeamCollection
             var api = apiBuilder.Build();
             api.RegisterWithApiHandler(_server.ApiHandler);
 
-            apiBuilder.MockTeamCollectionManager
-                .SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
+            apiBuilder
+                .MockTeamCollectionManager.SetupGet(x => x.CurrentCollectionEvenIfDisconnected)
                 .Returns(() => throw new ApplicationException());
 
             TestDelegate systemUnderTest = () =>

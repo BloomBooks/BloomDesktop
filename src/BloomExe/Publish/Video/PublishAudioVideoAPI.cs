@@ -101,7 +101,7 @@ namespace Bloom.Publish.Video
                                 format = settings.Format,
                                 pageTurnDelay = settings.PageTurnDelayDouble,
                                 motion = settings.Motion,
-                                pageRange
+                                pageRange,
                             }
                         );
                     }
@@ -155,7 +155,7 @@ namespace Bloom.Publish.Video
                     {
                         request.ReplyWithText(
                             request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings
-                                ?? ""
+                            ?? ""
                         );
                     }
                     else
@@ -452,7 +452,7 @@ namespace Bloom.Publish.Video
             PerMonitorAware = -3,
 
             /* Fails if used before Creators Update. */
-            PerMonitorAwareV2 = -4
+            PerMonitorAwareV2 = -4,
         }
 
         // Use with care...Windows only! And the option we want to use only works after the 'creators update'
@@ -472,14 +472,14 @@ namespace Bloom.Publish.Video
                     new MessageBoxButton()
                     {
                         Text = LocalizationManager.GetString("Common.Continue", "Continue"),
-                        Id = "continue"
+                        Id = "continue",
                     },
                     new MessageBoxButton()
                     {
                         Text = LocalizationManager.GetString("Common.Cancel", "Cancel"),
                         Id = "cancel",
-                        Default = true
-                    }
+                        Default = true,
+                    },
                 };
                 if (
                     BloomMessageBox.Show(

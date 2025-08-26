@@ -511,7 +511,7 @@ namespace Bloom.web.controllers
                 select $"{{\"englishKey\":\"{key}\",\"translated\":\"{keyToLocalizedTopicDictionary[key]}\"}}";
             var data = new List<string>
             {
-                $"{{\"englishKey\":\"No Topic\",\"translated\":\"{localizedNoTopic}\"}}"
+                $"{{\"englishKey\":\"No Topic\",\"translated\":\"{localizedNoTopic}\"}}",
             };
             data.AddRange(arrayOfKeyValuePairs);
             dynamic answer = new ExpandoObject();
@@ -524,8 +524,8 @@ namespace Bloom.web.controllers
             else
             {
                 var currentBook = View.Model.CurrentBook;
-                var currentTopicKey = currentBook.BookData
-                    .GetVariableOrNull("topic", "en")
+                var currentTopicKey = currentBook
+                    .BookData.GetVariableOrNull("topic", "en")
                     .Unencoded;
                 if (string.IsNullOrEmpty(currentTopicKey))
                     currentTopicKey = "No Topic";

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Publish;
@@ -493,8 +493,8 @@ namespace BloomTests.Book
                     {
                         LangTag = "23456",
                         Name = "Abcde",
-                        EthnologueCode = "abc"
-                    }
+                        EthnologueCode = "abc",
+                    },
                 },
                 ToolStates = new List<ToolboxToolState>(
                     new[] { ToolboxToolState.CreateFromToolId("decodableReader") }
@@ -502,7 +502,7 @@ namespace BloomTests.Book
                 AllowUploadingToBloomLibrary = false,
                 CountryName = "InTheBush",
                 ProvinceName = "Provence",
-                DistrictName = "Ocean"
+                DistrictName = "Ocean",
             };
             var result = meta.WebDataJson;
 
@@ -818,7 +818,7 @@ namespace BloomTests.Book
                 "motion",
                 "comic",
                 "activity",
-                "widget"
+                "widget",
             };
             var metadata = new BookMetaData();
 

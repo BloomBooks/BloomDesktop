@@ -10,20 +10,20 @@
 // to use this package. We qualify as non-commercial as a charitable organization
 // (also as educational).
 
-using Bloom.ImageProcessing;
-using OfficeOpenXml;
-using OfficeOpenXml.Style;
-using SIL.IO;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Bloom.ImageProcessing;
 using Bloom.web;
-using System.Linq;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
+using SIL.IO;
 using static SQLite.TableMapping;
-using System.Drawing.Imaging;
 
 namespace Bloom.Spreadsheet
 {
@@ -281,7 +281,7 @@ namespace Bloom.Spreadsheet
                 InternalSpreadsheet.RowTypeColumnLabel,
                 InternalSpreadsheet.ImageSourceColumnLabel,
                 InternalSpreadsheet.ImageThumbnailColumnLabel,
-                InternalSpreadsheet.PageNumberColumnLabel
+                InternalSpreadsheet.PageNumberColumnLabel,
             }
         );
 

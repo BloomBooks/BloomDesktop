@@ -1355,7 +1355,7 @@ namespace Bloom.Api
                 );
                 _listener = new HttpListener
                 {
-                    AuthenticationSchemes = AuthenticationSchemes.Anonymous
+                    AuthenticationSchemes = AuthenticationSchemes.Anonymous,
                 };
                 _listener.Prefixes.Add(ServerUrlEndingInSlash);
                 _listener.Start();
@@ -1461,11 +1461,9 @@ namespace Bloom.Api
                     {
                         zoneAlarm = Process
                             .GetProcesses()
-                            .Any(
-                                p =>
-                                    p.Modules
-                                        .Cast<ProcessModule>()
-                                        .Any(m => m.ModuleName.Contains("ZoneAlarm"))
+                            .Any(p =>
+                                p.Modules.Cast<ProcessModule>()
+                                    .Any(m => m.ModuleName.Contains("ZoneAlarm"))
                             );
                     }
                     catch (Exception error)
@@ -1887,7 +1885,7 @@ namespace Bloom.Api
                 "simplecomprehensionquiz.js",
                 // bloom-player always asks for questions.json for every book.
                 // Being only for quiz pages, not every book has it, so we don't want spurious error reports.
-                BloomPubMaker.kQuestionFileName.ToLowerInvariant()
+                BloomPubMaker.kQuestionFileName.ToLowerInvariant(),
             };
             return !stuffToIgnore.Any(s => localPath.ToLowerInvariant().Contains(s));
         }
@@ -2193,11 +2191,10 @@ namespace Bloom.Api
 
                         // wait for each worker thread to stop
                         foreach (
-                            var kvp in _workers.Where(
-                                kvp =>
-                                    (kvp.Value != null)
-                                    && kvp.Value.IsAlive
-                                    && (kvp.Value.ThreadState != ThreadState.Unstarted)
+                            var kvp in _workers.Where(kvp =>
+                                (kvp.Value != null)
+                                && kvp.Value.IsAlive
+                                && (kvp.Value.ThreadState != ThreadState.Unstarted)
                             )
                         )
                         {

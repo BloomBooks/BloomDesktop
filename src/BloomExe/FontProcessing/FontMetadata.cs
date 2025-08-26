@@ -37,7 +37,7 @@ namespace Bloom.FontProcessing
             ".ttf",
             ".otf",
             ".woff",
-            ".woff2"
+            ".woff2",
         };
 
         // Four possible values for determinedSuitability
@@ -216,7 +216,10 @@ namespace Bloom.FontProcessing
             GlyphTypeface gtf = null;
             try
             {
-                if (fileExtension.ToLowerInvariant() == ".woff" || fileExtension.ToLowerInvariant() == ".woff2")
+                if (
+                    fileExtension.ToLowerInvariant() == ".woff"
+                    || fileExtension.ToLowerInvariant() == ".woff2"
+                )
                 {
                     // WOFF and WOFF2 are not supported by GlyphTypeface, so we have to use a different method.
                     if (ProcessWithFontServer(fontName))
@@ -275,11 +278,7 @@ namespace Bloom.FontProcessing
                 if (ProcessWithFontServer(fontName))
                     return; // we got the metadata from the font server, so we are done.
                 // file is somehow corrupt or not really a font file? Just ignore it.
-                Console.WriteLine(
-                    "GlyphTypeface for \"{0}\" threw an exception: {1}",
-                    fontPath,
-                    e
-                );
+                Console.WriteLine("GlyphTypeface for \"{0}\" threw an exception: {1}", fontPath, e);
                 determinedSuitability = kInvalid;
                 determinedSuitabilityNotes = $"GlyphTypeface exception: {e}";
                 return;

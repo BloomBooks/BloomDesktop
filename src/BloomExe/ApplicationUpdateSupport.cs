@@ -34,7 +34,7 @@ namespace Bloom
         internal enum BloomUpdateMessageVerbosity
         {
             Quiet,
-            Verbose
+            Verbose,
         }
 
         internal static bool BloomUpdateInProgress
@@ -271,7 +271,8 @@ namespace Bloom
                         ShowFailureNotification(failMsg);
                     }
                     else if (
-                        result.Error == null || string.IsNullOrWhiteSpace(result.Error.Message)
+                        result.Error == null
+                        || string.IsNullOrWhiteSpace(result.Error.Message)
                     )
                     {
                         SIL.Reporting.ErrorReport.NotifyUserOfProblem(
@@ -382,7 +383,7 @@ namespace Bloom
         {
             GotNewVersion,
             AlreadyUpToDate,
-            InstallFailed
+            InstallFailed,
         }
 
         internal class UpdateResult

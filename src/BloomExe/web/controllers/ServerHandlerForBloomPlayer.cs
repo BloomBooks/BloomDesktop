@@ -40,7 +40,7 @@ static class ServerHandlerForBloomPlayer
                     new[]
                     {
                         // for now, we're only searching in this collection, but in theory there could be a need to support looking over other collections
-                        currentCollectionFolderPath
+                        currentCollectionFolderPath,
                     }
                 );
 

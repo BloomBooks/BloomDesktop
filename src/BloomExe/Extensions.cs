@@ -16,7 +16,6 @@ namespace Bloom
         /// </summary>
         /// <param name="fileName">The raw filename used by the operating system</param>
         /// <returns>A well-formed, singly-encoded URL (special characters in the filename will be duly escaped, except for directory separators, which will be converted to '/' (if necessary))</returns>
-
         public static string ToLocalhost(this string fileName)
         {
             // don't do this if it is done already
@@ -243,7 +242,7 @@ namespace Bloom
                 exceptionTypesToRetry = new HashSet<Type>
                 {
                     Type.GetType("System.IO.IOException"),
-                    Type.GetType("System.Runtime.InteropServices.ExternalException")
+                    Type.GetType("System.Runtime.InteropServices.ExternalException"),
                 };
             }
 

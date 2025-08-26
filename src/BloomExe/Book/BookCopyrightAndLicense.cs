@@ -76,7 +76,7 @@ namespace Bloom.Book
                 {
                     metadata.License = new CustomLicense
                     {
-                        RightsStatement = GetBestMultiTextBaseValue(licenseNotes, bookData)
+                        RightsStatement = GetBestMultiTextBaseValue(licenseNotes, bookData),
                     };
                 }
                 else

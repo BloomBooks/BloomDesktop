@@ -51,7 +51,7 @@ namespace Bloom.TeamCollection
                 return new BookStatus()
                 {
                     lockedBy = TeamCollection.FakeUserIndicatingNewBook,
-                    lockedWhere = TeamCollectionManager.CurrentMachine
+                    lockedWhere = TeamCollectionManager.CurrentMachine,
                 };
             }
         }

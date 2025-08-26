@@ -10,7 +10,7 @@
         None,
         Self,
         Other,
-        Deleted
+        Deleted,
     }
 
     public class BookStatusChangeEventArgs

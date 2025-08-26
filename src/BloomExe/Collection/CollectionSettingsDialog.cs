@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Properties;
@@ -9,10 +13,6 @@ using L10NSharp;
 using SIL.Extensions;
 using SIL.Reporting;
 using SIL.Windows.Forms.SettingProtection;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Windows.Forms;
 
 namespace Bloom.Collection
 {
@@ -367,7 +367,7 @@ namespace Bloom.Collection
                     new
                     {
                         initialLanguageTag = languageIdentifier,
-                        initialCustomName = potentiallyCustomName
+                        initialCustomName = potentiallyCustomName,
                     }
                 )
             )
@@ -502,8 +502,10 @@ namespace Bloom.Collection
             // the file, we want to clear it from memory to restore the status quo coming into the
             // dialog.  We signal to do this by setting clearDefaultBookshelfAfterSaving. (BL-15056)
             var clearDefaultBookshelfAfterSaving = false;
-            if (String.IsNullOrEmpty(PendingDefaultBookshelf) &&
-                !string.IsNullOrEmpty(_collectionSettings.ExpiredBookshelf))
+            if (
+                String.IsNullOrEmpty(PendingDefaultBookshelf)
+                && !string.IsNullOrEmpty(_collectionSettings.ExpiredBookshelf)
+            )
             {
                 if (_pendingSubscription == null)
                 {
@@ -558,8 +560,12 @@ namespace Bloom.Collection
                 return false; // no subscription, so can't be the same
             if (_originalSubscription.Descriptor == _pendingSubscription.Descriptor)
                 return true;
-            if (_pendingSubscription.Descriptor.StartsWith(_originalSubscription.Descriptor + "-") ||
-                _originalSubscription.Descriptor.StartsWith(_pendingSubscription.Descriptor + "-"))
+            if (
+                _pendingSubscription.Descriptor.StartsWith(_originalSubscription.Descriptor + "-")
+                || _originalSubscription.Descriptor.StartsWith(
+                    _pendingSubscription.Descriptor + "-"
+                )
+            )
             {
                 // This may be the case when the user has entered a new subscription code that is for
                 // the same subscription, but it is incorrectly entered.  An incorrectly entered
@@ -833,8 +839,7 @@ namespace Bloom.Collection
             // this.settingsProtectionLauncherButton1 has a private TextBox named betterLinkLabel1, which is the one we want to click
             // use reflection to get at the control and raise the OnClick() event
             var betterLinkLabel1 =
-                this.settingsProtectionLauncherButton1
-                    .GetType()
+                this.settingsProtectionLauncherButton1.GetType()
                     .GetField(
                         "betterLinkLabel1",
                         System.Reflection.BindingFlags.NonPublic

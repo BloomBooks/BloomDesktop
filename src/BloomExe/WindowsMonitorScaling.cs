@@ -31,7 +31,7 @@ namespace Bloom
             MDT_Effective_DPI = 0,
             MDT_Angular_DPI = 1,
             MDT_Raw_DPI = 2,
-            MDT_Default = MDT_Effective_DPI
+            MDT_Default = MDT_Effective_DPI,
         }
 
         internal static int GetMonitorScalingFactorFromControl(Control visibleControl)

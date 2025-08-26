@@ -10,20 +10,20 @@ using System.Threading.Tasks;
 using System.Web.UI.WebControls;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Book;
+using Bloom.Collection;
+using Bloom.History;
+using Bloom.ImageProcessing;
+using Bloom.MiscUI;
+using Bloom.SafeXml;
+using Bloom.TeamCollection;
+using Bloom.Utils;
+using Bloom.web;
+using Bloom.web.controllers;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
-using Bloom.Book;
-using Bloom.MiscUI;
-using Bloom.web;
-using Bloom.Collection;
-using Bloom.History;
-using Bloom.ImageProcessing;
-using Bloom.web.controllers;
-using Bloom.Utils;
-using Bloom.SafeXml;
-using Bloom.TeamCollection;
 
 namespace Bloom.Spreadsheet
 {
@@ -429,8 +429,8 @@ namespace Bloom.Spreadsheet
             {
                 if (lang == "*")
                     continue;
-                var langName = _sheet.Header.ColumnNameRow
-                    .GetCell(_sheet.GetRequiredColumnForLang(lang))
+                var langName = _sheet
+                    .Header.ColumnNameRow.GetCell(_sheet.GetRequiredColumnForLang(lang))
                     .Content;
                 // If this is the sign language, update the name only if the name is different.
                 // (The sign language is recorded separately in the collection settings.)
@@ -493,7 +493,8 @@ namespace Bloom.Spreadsheet
 
         public static string GetLabelFromPage(SafeXmlElement page)
         {
-            var labelElt = page?.SafeSelectNodes(".//div[@class='pageLabel' and @lang='en']")
+            var labelElt = page
+                ?.SafeSelectNodes(".//div[@class='pageLabel' and @lang='en']")
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             if (labelElt != null)
@@ -520,7 +521,7 @@ namespace Bloom.Spreadsheet
                 {
                     var sourceCollectionPaths = new[]
                     {
-                        Path.GetDirectoryName(_pathToBookFolder)
+                        Path.GetDirectoryName(_pathToBookFolder),
                     }.Concat(
                         SourceCollectionsList.GetCollectionFolders(
                             ProjectContext.SourceRootFolders()
@@ -575,8 +576,8 @@ namespace Bloom.Spreadsheet
 
         private void ImportUserDefinedStylesForPage(PageRecord result)
         {
-            var head = result.Page.OwnerDocument
-                .GetElementsByTagName("head")
+            var head = result
+                .Page.OwnerDocument.GetElementsByTagName("head")
                 .Cast<SafeXmlElement>()
                 .First();
             var userStylesOnPage = HtmlDom.GetUserModifiableStylesUsedOnPage(head, result.Page);
@@ -869,8 +870,8 @@ namespace Bloom.Spreadsheet
             {
                 var group = currentBloomCanvas
                     .GetElementsByTagName("div")
-                    .FirstOrDefault(
-                        e => e.GetAttribute("class").Contains("bloom-imageDescription")
+                    .FirstOrDefault(e =>
+                        e.GetAttribute("class").Contains("bloom-imageDescription")
                     );
                 if (group == null)
                 {
@@ -1221,7 +1222,8 @@ namespace Bloom.Spreadsheet
                             .SafeSelectNodes(".//div[@class='pageLabel']")
                             .Cast<SafeXmlElement>()
                             .FirstOrDefault()
-                            ?.InnerText ?? "";
+                            ?.InnerText
+                        ?? "";
                     Progress($"Adding page {PageNumberToReport} using a {pageLabel} layout");
                     return;
                 }
@@ -1261,13 +1263,12 @@ namespace Bloom.Spreadsheet
                 .ToArray();
             foreach (var e in editables)
             {
-                var allInGroup = e.ParentNode.ChildNodes
-                    .Cast<SafeXmlNode>()
-                    .Where(
-                        x =>
-                            x != e
-                            && x is SafeXmlElement y
-                            && y.GetAttribute("class").Contains("bloom-editable")
+                var allInGroup = e
+                    .ParentNode.ChildNodes.Cast<SafeXmlNode>()
+                    .Where(x =>
+                        x != e
+                        && x is SafeXmlElement y
+                        && y.GetAttribute("class").Contains("bloom-editable")
                     );
                 if (allInGroup.Any())
                     e.ParentNode.RemoveChild(e);
@@ -1708,7 +1709,8 @@ namespace Bloom.Spreadsheet
                 {
                     _blockOnPageIndexes[i]++;
                     if (
-                        _blocksOnPage[i] == null || _blockOnPageIndexes[i] >= _blocksOnPage[i].Count
+                        _blocksOnPage[i] == null
+                        || _blockOnPageIndexes[i] >= _blocksOnPage[i].Count
                     )
                     {
                         haveAllNeeded = false;
@@ -2320,6 +2322,6 @@ namespace Bloom.Spreadsheet
         // of blocks on a page. Sometimes, we want a different page for Landscape.
         // If so, we can or this value in to make a suitable key.
         // It is not actually a type of block.
-        Landscape = 1024
+        Landscape = 1024,
     }
 }

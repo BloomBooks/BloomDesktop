@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using SIL.IO;
-using System.Diagnostics;
 
 namespace Bloom
 {

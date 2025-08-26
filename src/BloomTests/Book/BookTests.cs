@@ -13,6 +13,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Publish;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web.controllers;
 using BloomTemp;
 using Moq;
@@ -21,7 +22,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Windows.Forms.ClearShare;
-using Bloom.SubscriptionAndFeatures;
 
 namespace BloomTests.Book
 {
@@ -113,8 +113,7 @@ namespace BloomTests.Book
             // there should only be one appearance rule... i.e. make sure we didn't just make a second one
             Assert.AreEqual(
                 1,
-                book.RawDom
-                    .SafeSelectNodes("//style[contains(text(),'--cover-background-color')]")
+                book.RawDom.SafeSelectNodes("//style[contains(text(),'--cover-background-color')]")
                     .Count()
             );
         }
@@ -672,7 +671,6 @@ namespace BloomTests.Book
         //	AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='French']",1);
         //}
 
-
         [Test]
         public void SetMultilingualContentLanguages_UpdatesLanguagesOfBookFieldInDOM()
         {
@@ -692,7 +690,7 @@ namespace BloomTests.Book
                     ),
                     Language1Tag = "th",
                     Language2Tag = "fr",
-                    Language3Tag = "es"
+                    Language3Tag = "es",
                 }
             );
             var bookData = new BookData(_bookDom, _collectionSettings, null);
@@ -1395,15 +1393,15 @@ namespace BloomTests.Book
 
         private SafeXmlNode GetLegacyCoverColorStyleNode(Bloom.Book.Book book)
         {
-            return book.RawDom
-                .SafeSelectNodes("//style[contains(text(),'.bloom-page.coverColor')]")
+            return book
+                .RawDom.SafeSelectNodes("//style[contains(text(),'.bloom-page.coverColor')]")
                 .First();
         }
 
         private SafeXmlNode GetAppearanceCoverBackgroundFallbackStyleNode(Bloom.Book.Book book)
         {
-            return book.RawDom
-                .SafeSelectNodes("//style[contains(text(),'--cover-background-color')]")
+            return book
+                .RawDom.SafeSelectNodes("//style[contains(text(),'--cover-background-color')]")
                 .First();
         }
 
@@ -1436,9 +1434,8 @@ namespace BloomTests.Book
             // SUT
             var book = CreateBook();
             Assert.IsTrue(
-                GetUserModifiedStylesNode(book).InnerText.Contains(
-                    ".normal-style[lang='fr'] { font-size: 9pt ! important; }"
-                )
+                GetUserModifiedStylesNode(book)
+                    .InnerText.Contains(".normal-style[lang='fr'] { font-size: 9pt ! important; }")
             );
         }
 
@@ -3426,7 +3423,7 @@ namespace BloomTests.Book
                         ),
                         Language1Tag = "en",
                         Language2Tag = "fr",
-                        Language3Tag = "es"
+                        Language3Tag = "es",
                     }
                 )
             );
@@ -4900,8 +4897,9 @@ namespace BloomTests.Book
             Assert.AreEqual(
                 3.1,
                 double.Parse(
-                    book.RawDom
-                        .SelectSingleNode("//div[@id='guid1']/div[contains(@class,'bloom-canvas')]")
+                    book.RawDom.SelectSingleNode(
+                            "//div[@id='guid1']/div[contains(@class,'bloom-canvas')]"
+                        )
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -4911,8 +4909,9 @@ namespace BloomTests.Book
             Assert.AreEqual(
                 4,
                 double.Parse(
-                    book.RawDom
-                        .SelectSingleNode("//div[@id='guid3']/div[contains(@class,'bloom-canvas')]")
+                    book.RawDom.SelectSingleNode(
+                            "//div[@id='guid3']/div[contains(@class,'bloom-canvas')]"
+                        )
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -4965,8 +4964,9 @@ namespace BloomTests.Book
             Assert.AreEqual(
                 3.1,
                 double.Parse(
-                    book.RawDom
-                        .SelectSingleNode("//div[@id='guid1']/div[contains(@class,'bloom-canvas')]")
+                    book.RawDom.SelectSingleNode(
+                            "//div[@id='guid1']/div[contains(@class,'bloom-canvas')]"
+                        )
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -4976,8 +4976,9 @@ namespace BloomTests.Book
             Assert.AreEqual(
                 4,
                 double.Parse(
-                    book.RawDom
-                        .SelectSingleNode("//div[@id='guid3']/div[contains(@class,'bloom-canvas')]")
+                    book.RawDom.SelectSingleNode(
+                            "//div[@id='guid3']/div[contains(@class,'bloom-canvas')]"
+                        )
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -4987,8 +4988,9 @@ namespace BloomTests.Book
             Assert.AreEqual(
                 3.1,
                 double.Parse(
-                    book.RawDom
-                        .SelectSingleNode("//div[@id='guid5']/div[contains(@class,'bloom-canvas')]")
+                    book.RawDom.SelectSingleNode(
+                            "//div[@id='guid5']/div[contains(@class,'bloom-canvas')]"
+                        )
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -6164,10 +6166,8 @@ namespace BloomTests.Book
         //    Assert.True(Bloom.Book.Book.ShouldPageBeRemovedForCurrentSubscription(page));
         //}
 
-
         // Originally, video was enterprise-only, so the logic was reversed.
         // Now we want to be sure that video does not trigger a page as enterprise-only.
-
 
         // Retiring this: checking pages for the now more complex subscription complians is now part of the FeatureStatus class
         //       [Test]

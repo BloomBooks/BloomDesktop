@@ -1,11 +1,11 @@
-﻿using Bloom.Book;
-using Bloom.Collection;
-using Bloom.Spreadsheet;
-using CommandLine;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Bloom.Book;
+using Bloom.Collection;
+using Bloom.Spreadsheet;
+using CommandLine;
 
 namespace Bloom.CLI
 {

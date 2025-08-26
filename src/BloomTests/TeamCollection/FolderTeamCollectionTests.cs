@@ -521,7 +521,7 @@ namespace BloomTests.TeamCollection
                 "ReaderToolsSettings-en.json",
                 "ReaderToolsWords-tok.json",
                 "ReaderToolsSettings-tok.json",
-                "configuration.txt"
+                "configuration.txt",
             };
             foreach (var name in otherFileNames)
             {

@@ -539,7 +539,7 @@ namespace Bloom.Publish.Video
                 {
                     src = UrlToFile((string)item.src),
                     volume = item.volume,
-                    startTime = DateTime.Parse(item.startTime)
+                    startTime = DateTime.Parse(item.startTime),
                 };
                 if (item.IsDefined("endTime"))
                 {
@@ -1196,7 +1196,7 @@ namespace Bloom.Publish.Video
             ES_AWAYMODE_REQUIRED = 0x00000040,
             ES_CONTINUOUS = 0x80000000,
             ES_DISPLAY_REQUIRED = 0x00000002,
-            ES_SYSTEM_REQUIRED = 0x00000001
+            ES_SYSTEM_REQUIRED = 0x00000001,
             // Legacy flag, should not be used.
             // ES_USER_PRESENT = 0x00000004
         }
@@ -1249,7 +1249,7 @@ namespace Bloom.Publish.Video
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
                         RedirectStandardInput = true,
-                    }
+                    },
                 };
                 if (workingDirectory != null)
                 {
@@ -1497,7 +1497,7 @@ namespace Bloom.Publish.Video
                     { "format", _book.BookInfo.PublishSettings.AudioVideo.Format },
                     { "BookId", _book.ID },
                     { "Country", _book.CollectionSettings.Country },
-                    { "Language", _book.BookData.Language1.Tag }
+                    { "Language", _book.BookData.Language1.Tag },
                 }
             );
         }
@@ -1515,7 +1515,6 @@ namespace Bloom.Publish.Video
         //	base.SetBoundsCore(x, y, width, height, specified);
         //	MoveWindow(Handle, x, y, width, height, true);
         //}
-
 
         /// <summary>
         /// Given a particular video format that the user has selected, decide how big the
@@ -1568,7 +1567,6 @@ namespace Bloom.Publish.Video
                         //    * We could specifically add 4:5 page layout for them, and fix this if condition to handle layouts other than "A5 Portrait" properly
                         //    * We can add a "format" called "Facebook Ad" (in addition to the existing "Facebook")
                         //    * In the meantime, they can use 13cm Square. Alternatively, Letter (Portrait) is very close to 4:5, just a tiny bit bigger (1.29 instead of 1.25).
-
 
                         //////////////
                         // ENHANCE: //
@@ -1775,7 +1773,7 @@ namespace Bloom.Publish.Video
             new Resolution(854, 480), // 480p
             new Resolution(640, 360), // 360p
             new Resolution(426, 240), // 240p
-            new Resolution(256, 144) // 144p
+            new Resolution(256, 144), // 144p
         };
 
         private static readonly Resolution[] youtubePortraitResolutionsHighToLow =

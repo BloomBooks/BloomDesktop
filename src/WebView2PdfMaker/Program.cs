@@ -260,7 +260,7 @@ namespace WebView2PdfMaker
                 new PaperSize("quarterletter", 107.95, 139.7),
                 new PaperSize("legal", 215.9, 355.6),
                 new PaperSize("halflegal", 177.8, 215.9),
-                new PaperSize("device16x9", 100, 1600d / 9d)
+                new PaperSize("device16x9", 100, 1600d / 9d),
             };
 
             var match = sizes.Find(s => s.Name == name);

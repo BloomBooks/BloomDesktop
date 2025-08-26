@@ -81,13 +81,13 @@ namespace BloomTests.Publish
             {
                 fontFamily = "ABeeZee",
                 fontStyle = "normal",
-                fontWeight = "700"
+                fontWeight = "700",
             };
             var secondFont = new PublishHelper.FontInfo
             {
                 fontFamily = "Aileron",
                 fontStyle = "normal",
-                fontWeight = "700"
+                fontWeight = "700",
             };
             Assert.That(_helper.FontsUsed.Contains(firstFont), Is.True);
             Assert.That(_helper.FontsUsed.Contains(secondFont), Is.True);
@@ -106,7 +106,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -118,7 +118,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.True
@@ -130,7 +130,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -142,7 +142,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -154,7 +154,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -166,7 +166,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.True
@@ -178,7 +178,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -190,7 +190,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -202,7 +202,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -214,7 +214,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -226,7 +226,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -238,7 +238,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -278,25 +278,25 @@ namespace BloomTests.Publish
             {
                 fontFamily = "ABeeZee",
                 fontStyle = "normal",
-                fontWeight = "400"
+                fontWeight = "400",
             };
             var secondFont = new PublishHelper.FontInfo
             {
                 fontFamily = "Aileron",
                 fontStyle = "normal",
-                fontWeight = "400"
+                fontWeight = "400",
             };
             var thirdFont = new PublishHelper.FontInfo
             {
                 fontFamily = "Andika",
                 fontStyle = "italic",
-                fontWeight = "400"
+                fontWeight = "400",
             };
             var fourthFont = new PublishHelper.FontInfo
             {
                 fontFamily = "Andika",
                 fontStyle = "normal",
-                fontWeight = "400"
+                fontWeight = "400",
             };
             Assert.That(_helper.FontsUsed.Contains(firstFont), Is.True);
             Assert.That(_helper.FontsUsed.Contains(secondFont), Is.True);
@@ -317,7 +317,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.True
@@ -329,7 +329,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -341,7 +341,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -353,7 +353,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -365,7 +365,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.True
@@ -377,7 +377,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -389,7 +389,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -401,7 +401,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -413,7 +413,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -425,7 +425,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -437,7 +437,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.True
@@ -449,7 +449,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -545,7 +545,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -557,7 +557,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -569,7 +569,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -581,7 +581,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -593,7 +593,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -605,7 +605,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -617,7 +617,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -629,7 +629,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -641,7 +641,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -653,7 +653,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -665,7 +665,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -677,7 +677,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -703,7 +703,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -713,7 +713,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -723,7 +723,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -732,7 +732,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "ABeeZee",
                     fontStyle = "normal",
-                    fontWeight = "700"
+                    fontWeight = "700",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -741,7 +741,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "ABeeZee",
                     fontStyle = "normal",
-                    fontWeight = "700"
+                    fontWeight = "700",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -750,7 +750,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "Aileron",
                     fontStyle = "normal",
-                    fontWeight = "700"
+                    fontWeight = "700",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -759,7 +759,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "Andika",
                     fontStyle = "normal",
-                    fontWeight = "700"
+                    fontWeight = "700",
                 }
             );
 
@@ -776,7 +776,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -786,7 +786,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -796,7 +796,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -805,7 +805,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "Andika",
                     fontStyle = "italic",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -814,7 +814,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "ABeeZee",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -823,7 +823,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "Aileron",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
 
@@ -840,7 +840,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -850,7 +850,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -860,7 +860,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -869,7 +869,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "Andika",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -878,7 +878,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "ABeeZee",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -887,7 +887,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "Aileron",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
         }

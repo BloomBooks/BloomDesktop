@@ -1,11 +1,11 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System.IO;
+using Bloom;
 using Bloom.Collection;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.PlatformUtilities;
-using Bloom;
 
 namespace BloomTests.Collection
 {

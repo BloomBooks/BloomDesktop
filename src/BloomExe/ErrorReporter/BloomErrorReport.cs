@@ -1,7 +1,7 @@
-﻿using SIL.Reporting;
-using System;
+﻿using System;
 using System.Diagnostics;
 using Bloom.MiscUI;
+using SIL.Reporting;
 
 namespace Bloom.ErrorReporter
 {

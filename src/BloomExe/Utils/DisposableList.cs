@@ -35,7 +35,6 @@ namespace Bloom.Utils
                 //
                 // Nothing to do.
 
-
                 disposedValue = true;
             }
         }

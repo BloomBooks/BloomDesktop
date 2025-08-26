@@ -116,7 +116,7 @@ namespace Bloom.Book
         public enum HowToPublishImageDescriptions
         {
             None,
-            OnPage //Removed Links in Bloom 4.6 on June 28, 2019.
+            OnPage, //Removed Links in Bloom 4.6 on June 28, 2019.
         }
 
         public virtual string Id
@@ -613,7 +613,7 @@ namespace Bloom.Book
                     "Primer",
                     "Science",
                     "Story Book",
-                    "Traditional Story"
+                    "Traditional Story",
                 };
             }
         }
@@ -641,11 +641,10 @@ namespace Bloom.Book
                 // in the language of the web site user rather than the language of the uploader.
                 notes = regex.Replace(
                     notes,
-                    new MatchEvaluator(
-                        m =>
-                            m.Groups[1].Value
-                            + m.Groups[2].Value.Substring(0, 2)
-                            + "(download book to read full email address)"
+                    new MatchEvaluator(m =>
+                        m.Groups[1].Value
+                        + m.Groups[2].Value.Substring(0, 2)
+                        + "(download book to read full email address)"
                     )
                 );
                 LicenseNotes = notes;
@@ -1383,8 +1382,8 @@ namespace Bloom.Book
                 // currently we kind of have 3 competing ways: the thumbnail menu item, if the tool itself has a check mark, and
                 // the ancestry of the book.
 
-                var leveledReaderTool = ToolStates?.SingleOrDefault(
-                    t => t.ToolId == "leveledReader"
+                var leveledReaderTool = ToolStates?.SingleOrDefault(t =>
+                    t.ToolId == "leveledReader"
                 );
                 if (
                     leveledReaderTool == null
@@ -1407,8 +1406,8 @@ namespace Bloom.Book
         {
             get
             {
-                var decodableReaderTool = ToolStates?.SingleOrDefault(
-                    t => t.ToolId == "decodableReader"
+                var decodableReaderTool = ToolStates?.SingleOrDefault(t =>
+                    t.ToolId == "decodableReader"
                 );
                 if (decodableReaderTool == null)
                     return 0;
@@ -1771,6 +1770,6 @@ namespace Bloom.Book
         Language3,
         MetadataLanguage1,
         MetadataLanguage2,
-        SignLanguage
+        SignLanguage,
     }
 }

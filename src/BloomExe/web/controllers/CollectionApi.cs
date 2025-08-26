@@ -184,7 +184,10 @@ namespace Bloom.web.controllers
                                             folderPath
                                         );
                                     var msg = "Error selecting book: " + folderPath;
-                                    var ex = new Exception(msg, MiscUtils.UnwrapUntilInterestingException(e));
+                                    var ex = new Exception(
+                                        msg,
+                                        MiscUtils.UnwrapUntilInterestingException(e)
+                                    );
                                     // For some reason, BookInfo can't be serialized, so we'll add the pieces to the exception.
                                     ex.Data.Add("ErrorBookFolder", folderPath);
                                     if (
@@ -534,7 +537,7 @@ namespace Bloom.web.controllers
                                     && !c.ContainsDownloadedBooks
                                     && !c.PathToDirectory.StartsWith(
                                         BloomFileLocator.FactoryCollectionsDirectory
-                                    )
+                                    ),
                             }
                         );
                     }
@@ -585,10 +588,9 @@ namespace Bloom.web.controllers
                 }
             }
             var jsonInfos = bookInfos
-                .Where(
-                    info =>
-                        collection.Type == BookCollection.CollectionType.TheOneEditableCollection
-                        || info.ShowThisBookAsSource()
+                .Where(info =>
+                    collection.Type == BookCollection.CollectionType.TheOneEditableCollection
+                    || info.ShowThisBookAsSource()
                 )
                 .Select(info =>
                 {
@@ -606,7 +608,7 @@ namespace Bloom.web.controllers
                         collectionId = collection.PathToDirectory,
                         folderName = info.FolderName,
                         folderPath = info.FolderPath,
-                        isFactory = collection.IsFactoryInstalled
+                        isFactory = collection.IsFactoryInstalled,
                     };
                 })
                 .ToArray();
@@ -715,13 +717,13 @@ namespace Bloom.web.controllers
         {
             var bookId = apiRequest.RequiredParam("book-id");
 
-            var infos = _collectionModel.TheOneEditableCollection
-                .GetBookInfos()
+            var infos = _collectionModel
+                .TheOneEditableCollection.GetBookInfos()
                 .Where(info => info.Id == bookId && info.BloomLibraryStatus != null)
                 .ToList();
             if (infos.Count == 0)
             {
-                apiRequest.ReplyWithJson(new { bookUrl = "", });
+                apiRequest.ReplyWithJson(new { bookUrl = "" });
             }
             else
             {
@@ -736,9 +738,9 @@ namespace Bloom.web.controllers
                         bookUrl = info.BloomLibraryStatus.BloomLibraryBookUrl,
                         draft = info.BloomLibraryStatus.Draft,
                         inCirculation = !info.BloomLibraryStatus.NotInCirculation,
-                        harvestState = info.BloomLibraryStatus.HarvesterState
-                            .ToString()
-                            .ToLowerInvariant()
+                        harvestState = info
+                            .BloomLibraryStatus.HarvesterState.ToString()
+                            .ToLowerInvariant(),
                     }
                 );
             }

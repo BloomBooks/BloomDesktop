@@ -80,15 +80,14 @@ namespace BloomTests.Book
                 StringSplitOptions.RemoveEmptyEntries
             );
             var xmatterCss = parts[1];
-            parts = parts[0].Split(
-                new[] { "/* From branding.json */" },
-                StringSplitOptions.RemoveEmptyEntries
-            );
+            parts = parts[0]
+                .Split(new[] { "/* From branding.json */" }, StringSplitOptions.RemoveEmptyEntries);
             var brandingCss = parts[1];
-            parts = parts[0].Split(
-                new[] { "/* From this book's appearance settings */" },
-                StringSplitOptions.RemoveEmptyEntries
-            );
+            parts = parts[0]
+                .Split(
+                    new[] { "/* From this book's appearance settings */" },
+                    StringSplitOptions.RemoveEmptyEntries
+                );
             ;
             var ownCss = parts[1];
 
@@ -180,7 +179,6 @@ namespace BloomTests.Book
             // such a property, and at will not be emitted at all. This may not be sufficient for our needs, but until that is clear, this case just isn't handled.
         }
         */
-
 
         static bool MayBeIncompatible(string css)
         {
@@ -317,7 +315,7 @@ namespace BloomTests.Book
             var cssFilesToCheck = new[]
             {
                 Tuple.Create("customBookStyles.css", ""),
-                Tuple.Create("customCollectionStyles.css", "")
+                Tuple.Create("customCollectionStyles.css", ""),
             };
             var dom = hasOverlays
                 ? new HtmlDom(
@@ -381,7 +379,7 @@ namespace BloomTests.Book
                 Tuple.Create(
                     "customCollectionStyles.css",
                     AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme
-                )
+                ),
             };
             _pathToCustomCss = _settings.GetThemeAndSubstituteCss(
                 cssFilesToCheck,
@@ -398,7 +396,7 @@ namespace BloomTests.Book
                 {
                     cssFilesToCheck[0],
                     cssFilesToCheck[1],
-                    Tuple.Create("customBookStyles2.css", RobustFile.ReadAllText(_pathToCustomCss))
+                    Tuple.Create("customBookStyles2.css", RobustFile.ReadAllText(_pathToCustomCss)),
                 },
                 true
             );
@@ -410,7 +408,7 @@ namespace BloomTests.Book
                 new[]
                 {
                     "from the current appearance theme, 'zero-margin-ebook'",
-                    "/* From this book's appearance settings */"
+                    "/* From this book's appearance settings */",
                 },
                 StringSplitOptions.None
             );
@@ -620,7 +618,7 @@ public class AppearanceSettingsTest : AppearanceSettings
     {
         var testDef1 = new CssDisplayVariableDef("boolean-test-L2-show", "coverFields", true);
         var testDef2 = new CssDisplayVariableDef("boolean-test-L3-show", "coverFields", false);
-        propertyDefinitions = propertyDefinitions.Concat(new[] { testDef1, testDef2, }).ToArray();
+        propertyDefinitions = propertyDefinitions.Concat(new[] { testDef1, testDef2 }).ToArray();
         testDef1.SetDefault(_properties);
         testDef2.SetDefault(_properties);
     }
