@@ -533,13 +533,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                             l10nKey="PublishTab.RecordVideo.Record"
                             l10nComment="'Record' as in 'Record a video recording'"
                             clickApiEndpoint="publish/av/recordVideo"
-                            iconBeforeText={
-                                <RecordIcon
-                                    css={css`
-                                        color: white;
-                                    `}
-                                />
-                            }
+                            iconBeforeText={<RecordIcon />}
                         >
                             Record
                         </BloomButton>
