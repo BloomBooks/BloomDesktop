@@ -46,12 +46,12 @@ We don't want developer and tester runs (and crashes) polluting our statistics. 
 In a terminal, run `dotnet tool restore`. This will install any tools we have put in .config/dotnet-tools.json along with the correct versions.
 In Visual Studio, under Extensions, install "CSharpier". The extension's version will not be the same as the CSharpier installed by 'dotnet tool restore', but that's not a problem.
 In Tools/Options, under CSharpier:General, set `Reformat with CSharpier on Save` to `true`. Note that you should set it for this solution, not globally.
-You should also install the CSharpier extension in vscode.
+You should also install the CSharpier extension in VSCode.
 CSharpier should be using the version specified in `.config/dotnet-tools.json`.
-When testing a new version of CSharpier, to format everything, run `dotnet csharpier src/BloomExe`
-To hide reformatting-only commits from git blame, add the sha of the commit to `.git-blame-ignore-revs`
+When upgrading to a new version of CSharpier, to format everything, run `dotnet csharpier format src/BloomExe src/BloomTests src/WebView2PdfMaker`.
+To hide reformatting-only commits from git blame, add the sha of the commit to `.git-blame-ignore-revs`.
 
-For Typescript formatting, we use the Prettier extension in VCode.
+For Typescript formatting, we use the Prettier extension in VSCode.
 
 ### Updating as you edit files
 

@@ -7,6 +7,9 @@
         // so that we get the same formatting. But there is no way to automate installing it.
         "editor.defaultFormatter": "csharpier.csharpier-vscode"
     },
+    "[xml]": {
+        "editor.defaultFormatter": "csharpier.csharpier-vscode"
+    },
     "[typescriptreact]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
