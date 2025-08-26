@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
-using System.Xml.Linq;
+using System.Threading;
 using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
@@ -603,6 +605,44 @@ namespace BloomTests.Collection
         public void ValidateAdministrators_ValidEmails_ReturnsTrue(string input)
         {
             Assert.That(CollectionSettings.ValidateAdministrators(input), Is.True);
+        }
+
+        [TestCase("en", "en", ExpectedResult = "English")]
+        [TestCase("fr", "en", ExpectedResult = "French")]
+        [TestCase("fr", "fr", ExpectedResult = "français")]
+        [TestCase("zh-CN", "zh-CN", ExpectedResult = "中文(中国)")]
+        // For invalid "inLanguage" subtags, fall back to returning tag.
+        // (Actually, we don't care what we get as long as it's reasonable,
+        // but previously, invalid subtags threw an exception; see BL-15159.)
+        [TestCase("en", "twi", ExpectedResult = "en")]
+        [TestCase("fr", "twi", ExpectedResult = "fr")]
+        [TestCase("en", "invalid", ExpectedResult = "en")]
+        [TestCase("fr", "invalid", ExpectedResult = "fr")]
+        [TestCase("en", "zzz", ExpectedResult = "en")]
+        [TestCase("fr", "zzz", ExpectedResult = "fr")]
+        [TestCase("en", "zzz-x-My Language", ExpectedResult = "en")]
+        [TestCase("fr", "zzz-x-My Language", ExpectedResult = "fr")]
+        public string GetLanguageName_TagIsNotInCollectionSettings_GetsCorrectLanguageName(
+            string tag,
+            string inLanguage
+        )
+        {
+            var originalCulture = Thread.CurrentThread.CurrentCulture;
+            try
+            {
+                Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+
+                var settings = new CollectionSettings { Language2Tag = "de" };
+
+                // Validate Setup
+                Assert.That(settings.AllLanguages.Select(l => l.Tag), Does.Not.Contain(tag));
+
+                return settings.GetLanguageName(tag, inLanguage);
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = originalCulture;
+            }
         }
     }
 }
