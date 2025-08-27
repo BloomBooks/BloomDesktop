@@ -42,7 +42,8 @@ namespace Bloom.Publish.Video
 
         private UserControl _content;
         private Process _ffmpegProcess;
-        private bool _ffmpegExited;
+        private bool _ffmpegExitStarted;
+        private bool _ffmpegExitCompleted;
         private StringBuilder _errorData;
         private DateTime _startTimeForVideoCapture;
         private string _videoOnlyPath;
@@ -464,7 +465,11 @@ namespace Bloom.Publish.Video
             {
                 // Stop the recording BEFORE we close the window, otherwise, we capture a bit of it fading away.
                 Debug.WriteLine("Telling ffmpeg to quit");
-                _ffmpegProcess.StandardInput.WriteLine("q");
+                if (!_ffmpegExitStarted)
+                {
+                    _ffmpegExitStarted = true;
+                    _ffmpegProcess.StandardInput.WriteLine("q");
+                }
                 _ffmpegProcess.WaitForExit();
             }
 
@@ -1083,7 +1088,7 @@ namespace Bloom.Publish.Video
         {
             try
             {
-                if (_ffmpegExited)
+                if (_ffmpegExitCompleted)
                     return 0;
 
                 var progressFileContents = RobustIO.ReadAllTextFromFileWhichMightGetWrittenTo(
@@ -1255,11 +1260,12 @@ namespace Bloom.Publish.Video
                 {
                     _ffmpegProcess.StartInfo.WorkingDirectory = workingDirectory;
                 }
-                _ffmpegExited = false;
+                _ffmpegExitStarted = false;
+                _ffmpegExitCompleted = false;
                 _ffmpegProcess.EnableRaisingEvents = true;
                 _ffmpegProcess.Exited += (object sender, EventArgs e) =>
                 {
-                    _ffmpegExited = true;
+                    _ffmpegExitCompleted = true;
                 };
                 _errorData.Clear(); // no longer need any errors from first ffmpeg run
                 // Configure for async capture of stderror. See comment below.
@@ -1345,8 +1351,9 @@ namespace Bloom.Publish.Video
             _saveReceived = false;
             _webSocketServer.SendString("recordVideo", "recording", "false");
             base.OnClosed(e);
-            if (_recording && _ffmpegProcess != null)
+            if (_recording && _ffmpegProcess != null && !_ffmpegExitStarted)
             {
+                _ffmpegExitStarted = true;
                 _ffmpegProcess.StandardInput.WriteLine("q"); // stop it asap
             }
 

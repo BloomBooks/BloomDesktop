@@ -450,7 +450,7 @@ namespace BloomTests.Publish
 				<link rel='stylesheet' href='customBookStyles.css'/>" + extraHeadContent;
             if (createPhysicalFile)
             {
-                book = CreateBookWithPhysicalFile(MakeBookHtml(body, head));
+                book = CreateBookWithPhysicalFile(body, head);
             }
             else
             {
