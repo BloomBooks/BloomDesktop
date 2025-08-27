@@ -83,7 +83,7 @@ namespace BloomTests.Book
         {
             string dataDivContent =
                 @"<div lang='en' data-book='licenseNotes'>my custom</div>
-					<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
+					<div data-book='copyright' lang='*' class='bloom-content1'>Copyright © 2012, test</div>";
             Assert.AreEqual("my custom", GetMetadata(dataDivContent).License.RightsStatement);
         }
 
@@ -92,7 +92,7 @@ namespace BloomTests.Book
         {
             string dataDivContent =
                 @"<div lang='en' data-book='licenseNotes'>my custom</div>
-					<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
+					<div data-book='copyright' lang='*' class='bloom-content1'>Copyright © 2012, test</div>";
             Assert.IsTrue(GetMetadata(dataDivContent).License is CustomLicense);
         }
 
@@ -133,7 +133,7 @@ namespace BloomTests.Book
             //nb: the real testing is done on the palaso class that does the reading, this is just a quick sanity check
             var dataDivContent =
                 @"<div lang='en' data-book='licenseDescription'>This could say anything</div>
-			<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
+			<div data-book='copyright' lang='*' class='bloom-content1'>Copyright © 2012, test</div>";
             Assert.IsTrue(GetMetadata(dataDivContent).License is NullLicense);
         }
 
@@ -141,7 +141,7 @@ namespace BloomTests.Book
         public void GetLicenseMetadata_HasSymbolInCopyright_FullCopyrightStatmentAcquired()
         {
             string dataDivContent =
-                @"<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
+                @"<div data-book='copyright' lang='*' class='bloom-content1'>Copyright © 2012, test</div>";
             Assert.AreEqual("Copyright © 2012, test", GetMetadata(dataDivContent).CopyrightNotice);
         }
 

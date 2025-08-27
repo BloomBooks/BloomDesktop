@@ -64,16 +64,24 @@ namespace BloomTests.Publish
             _bookServer = CreateBookServer();
         }
 
-        private const string kMinimumValidBookHtml =
-            @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css'></link></head><body>
-					<div class='bloom-page' id='guid1'></div>
-			</body></html>";
+        private const string kMinimumValidBookHeadContent =
+            @"<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>";
+        private const string kMinimumValidBookBodyContent =
+            @"<div class='bloom-page' id='guid1'></div>";
+
+        private const string kCommonTestHeadContent =
+            @"
+        							<meta charset='UTF-8'></meta>
+									<link rel='stylesheet' href='defaultLangStyles.css' type='text/css'></link>
+									<link rel='stylesheet' href='customCollectionStyles.css' type='text/css'></link>";
 
         [Test]
         public void CompressBookForDevice_FileNameIsCorrect()
         {
             var testBook = CreateBookWithPhysicalFile(
-                kMinimumValidBookHtml,
+                @"<body>
+					<div class='bloom-page' id='guid1'></div>
+			</body>",
                 bringBookUpToDate: true
             );
 
@@ -113,7 +121,8 @@ namespace BloomTests.Publish
             string collectionStylesPath = null;
 
             TestHtmlAfterCompression(
-                kMinimumValidBookHtml,
+                kMinimumValidBookBodyContent,
+                bookHeadContent: kMinimumValidBookHeadContent,
                 actionsOnFolderBeforeCompressing: folderPath =>
                 {
                     // These png files have to be real; just putting some text in it leads to out-of-memory failures when Bloom
@@ -179,7 +188,8 @@ namespace BloomTests.Publish
             };
 
             TestHtmlAfterCompression(
-                kMinimumValidBookHtml,
+                kMinimumValidBookBodyContent,
+                bookHeadContent: kMinimumValidBookHeadContent,
                 actionsOnFolderBeforeCompressing: folderPath =>
                 {
                     // The png files have to be real; just putting some text in them leads to out-of-memory failures when Bloom
@@ -239,35 +249,31 @@ namespace BloomTests.Publish
         public void CompressBookForDevice_RemovesImgElementsWithMissingSrc_AndContentEditable()
         {
             const string imgsToRemove = "<img src='nonsence.svg'/><img src=\"rubbish\"/>";
-            var htmlTemplate =
-                @"<html>
-									<body>
-										<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
-											<div class='pageLabel' lang='en'>
-												Outside Back Cover
-											</div>
-											<div class='pageDescription' lang='en'></div>
+            var bodyTemplate =
+                @"<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+                    <div class='pageLabel' lang='en'>
+                        Outside Back Cover
+                    </div>
+                    <div class='pageDescription' lang='en'></div>
 
-											<div class='marginBox'>
-											<div class='bloom-translationGroup' data-default-languages='N1'>
-												<div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational1 bloom-visibility-code-on' lang='fr' contenteditable='false' data-book='outsideBackCover'>
-													<label class='bubble'>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</label>
-												</div>
+                    <div class='marginBox'>
+                    <div class='bloom-translationGroup' data-default-languages='N1'>
+                        <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational1 bloom-visibility-code-on' lang='fr' contenteditable='false' data-book='outsideBackCover'>
+                            <label class='bubble'>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</label>
+                        </div>
 
-												<div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational2' lang='de'contenteditable='true' data-book='outsideBackCover'></div>
+                        <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational2' lang='de'contenteditable='true' data-book='outsideBackCover'></div>
 
-												<div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-content1' lang='ksf' contenteditable='true' data-book='outsideBackCover'></div>
-											</div>
-											{0}
-											</div>
-										</div>
-									</body>
-									</html>";
-            var htmlOriginal = string.Format(htmlTemplate, imgsToRemove);
-            var testBook = CreateBookWithPhysicalFile(htmlOriginal, bringBookUpToDate: true);
+                        <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-content1' lang='ksf' contenteditable='true' data-book='outsideBackCover'></div>
+                    </div>
+                    {0}
+                    </div>
+                </div>";
+            var bodyOriginal = string.Format(bodyTemplate, imgsToRemove);
+            var testBook = CreateBookWithPhysicalFile(bodyOriginal, bringBookUpToDate: true);
 
             TestHtmlAfterCompression(
-                htmlOriginal,
+                bodyOriginal,
                 actionsOnFolderBeforeCompressing: bookFolderPath => // Simulate the typical situation where we have the regular but not the wide svg
                     File.WriteAllText(
                         Path.Combine(bookFolderPath, "somelogo.svg"),
@@ -293,26 +299,22 @@ namespace BloomTests.Publish
         [Test]
         public void CompressBookForDevice_RemovesUnwantedLanguages()
         {
-            var htmlTemplate =
-                @"<html>
-									<body>
-										<div class='bloom-page A5Portrait' ' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'
-											<div class='marginBox'>
-											<div class='bloom-translationGroup' data-default-languages='N1' id='test1'>
+            var bodyContent =
+                @"<div class='bloom-page A5Portrait' ' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+                    <div class='marginBox'>
+                    <div class='bloom-translationGroup' data-default-languages='N1' id='test1'>
 
-												<div class='bloom-editable bloom-contentNational2' lang='de'contenteditable='true'>German content</div>
+                        <div class='bloom-editable bloom-contentNational2' lang='de'contenteditable='true'>German content</div>
 
-												<div class='bloom-editable bloom-content1' lang='ksf' contenteditable='true' >ksf Content</div>
+                        <div class='bloom-editable bloom-content1' lang='ksf' contenteditable='true' >ksf Content</div>
 
-												<div class='bloom-editable' lang='fr' contenteditable='true' >French content</div>
-											</div>
-											</div>
-										</div>
-									</body>
-									</html>";
+                        <div class='bloom-editable' lang='fr' contenteditable='true' >French content</div>
+                    </div>
+                    </div>
+                </div>";
 
             TestHtmlAfterCompression(
-                htmlTemplate,
+                bodyContent,
                 assertionsOnResultingHtmlString: html =>
                 {
                     var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
@@ -348,10 +350,8 @@ namespace BloomTests.Publish
         public void CompressBookForDevice_SetsExpectedFeaturesAndAttributes()
         {
             const string imgsToRemove = "<img src='nonsence.svg'/><img src=\"rubbish\"/>";
-            var htmlTemplate =
+            var bodyTemplate =
                 @"
-<html>
-<body>
 	<div class='bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual' data-page='' id='3dba74c5-adc9-4c0d-9934-e8484fb6e2e2' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398382' data-page-number='4' lang=''>
 		<div class='marginBox'>
             <div style='min-height: 42px;' class='split-pane horizontal-percent'>
@@ -403,14 +403,12 @@ namespace BloomTests.Publish
                 </div>
             </div>
         </div>
-	</div>
-</body>
-</html>";
-            var htmlOriginal = string.Format(htmlTemplate, imgsToRemove);
-            var testBook = CreateBookWithPhysicalFile(htmlOriginal, bringBookUpToDate: true);
+	</div>";
+            var bodyOriginal = string.Format(bodyTemplate, imgsToRemove);
+            var testBook = CreateBookWithPhysicalFile(bodyOriginal, bringBookUpToDate: true);
 
             TestHtmlAfterCompression(
-                htmlOriginal,
+                bodyOriginal,
                 actionsOnFolderBeforeCompressing: bookFolderPath =>
                 {
                     // The page above expects these two audio files to exist. Their content doesn't matter.
@@ -472,9 +470,8 @@ namespace BloomTests.Publish
         public void CompressBookForDevice_ImgInImageContainer_ConvertedToBackground()
         {
             // The odd file names here are an important part of the test; they need to get converted to proper URL syntax.
-            const string bookHtml =
-                @"<html>
-										<body>
+            const string bodyContent =
+                @"
 											<div class='bloom-page' id='blah'>
 												<div class='marginBox'>
 													<div class='bloom-canvas bloom-leadingElement'>"
@@ -483,12 +480,10 @@ namespace BloomTests.Publish
 													<div class='bloom-canvas bloom-leadingElement'>"
                 + "<img src=\"HL00'14 1.svg\"/>"
                 + @"</div>
-											</div>
-										</body>
-									</html>";
+											</div>";
 
             TestHtmlAfterCompression(
-                bookHtml,
+                bodyContent,
                 actionsOnFolderBeforeCompressing: bookFolderPath =>
                     File.WriteAllText(
                         Path.Combine(bookFolderPath, "HL00'14 1.svg"),
@@ -528,24 +523,16 @@ namespace BloomTests.Publish
             // It's also important that the book contains something like contenteditable that will be removed when
             // sending the book. The sha is based on the actual file contents of the book, not the
             // content actually embedded in the bloompub.
-            var bookHtml =
-                @"<html>
-								<head>
-									<meta charset='UTF-8'></meta>
-									<link rel='stylesheet' href='defaultLangStyles.css' type='text/css'></link>
-									<link rel='stylesheet' href='customCollectionStyles.css' type='text/css'></link>
-								</head>
-								<body>
-									<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+            var bodyContent =
+                @"<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
 										<div  contenteditable='true'>something</div>
-									</div>
-								</body>
-							</html>";
+									</div>";
 
             string entryContents = null;
 
             TestHtmlAfterCompression(
-                bookHtml,
+                bodyContent,
+                bookHeadContent: kCommonTestHeadContent,
                 actionsOnFolderBeforeCompressing: bookFolderPath => // Simulate the typical situation where we have the regular but not the wide svg
                     File.WriteAllText(
                         Path.Combine(bookFolderPath, "back-cover-outside.svg"),
@@ -585,7 +572,8 @@ namespace BloomTests.Publish
         )
         {
             TestHtmlAfterCompression(
-                kMinimumValidBookHtml,
+                kMinimumValidBookBodyContent,
+                bookHeadContent: kMinimumValidBookHeadContent,
                 assertionsOnZipArchive: zipHtmlObj =>
                 {
                     Assert.AreEqual(
@@ -597,14 +585,8 @@ namespace BloomTests.Publish
             );
         }
 
-        const string kQuestionPagesHtml =
-            @"<html>
-<head>
-	<meta charset='UTF-8'></meta>
-	<link rel='stylesheet' href='defaultLangStyles.css' type='text/css'></link>
-	<link rel='stylesheet' href='customCollectionStyles.css' type='text/css'></link>
-</head>
-<body>
+        const string kQuestionPagesBodyContent =
+            @"
 	<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
 		<div  contenteditable='true'>This page should make it into the book</div>
 	</div>
@@ -735,9 +717,7 @@ namespace BloomTests.Publish
                 </div>
             </div>
         </div>
-    </div>
-</body>
-</html>";
+    </div>";
 
         private void LegacyQuestionsPagesAssertionsOnResultingHtmlString(string html)
         {
@@ -754,7 +734,8 @@ namespace BloomTests.Publish
         public void CompressBookForDevice_NotBloomEnterprise_LegacyQuestionsPages_PagesAreRemoved()
         {
             TestHtmlAfterCompression(
-                kQuestionPagesHtml,
+                kQuestionPagesBodyContent,
+                bookHeadContent: kCommonTestHeadContent,
                 assertionsOnResultingHtmlString: LegacyQuestionsPagesAssertionsOnResultingHtmlString,
                 assertionsOnZipArchive: paramObj =>
                 {
@@ -782,7 +763,8 @@ namespace BloomTests.Publish
             // If we want to test corner cases it might be easier to test BloomReaderFileMaker.ExtractQuestionGroups directly.
 
             TestHtmlAfterCompression(
-                kQuestionPagesHtml,
+                kQuestionPagesBodyContent,
+                bookHeadContent: kCommonTestHeadContent,
                 assertionsOnResultingHtmlString: LegacyQuestionsPagesAssertionsOnResultingHtmlString,
                 assertionsOnZipArchive: paramObj =>
                 {
@@ -850,14 +832,8 @@ namespace BloomTests.Publish
             );
         }
 
-        private const string kNewQuizPageTestsHtml =
-            @"<html>
-<head>
-	<meta charset='UTF-8'></meta>
-	<link rel='stylesheet' href='defaultLangStyles.css' type='text/css'></link>
-	<link rel='stylesheet' href='customCollectionStyles.css' type='text/css'></link>
-</head>
-<body>
+        private const string kNewQuizPageBodyContent =
+            @"
 	<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
 		<div  contenteditable='true'>This page should make it into the book</div>
 	</div>
@@ -898,15 +874,13 @@ namespace BloomTests.Publish
 				<script src='simpleComprehensionQuiz.js' />
             </div>
         </div>
-    </div>
-</body>
-</html>";
+    </div>";
 
         [Test]
         public void CompressBookForDevice_BloomEnterprise_ConvertsNewQuizPagesToJson_AndKeepsThem()
         {
             TestHtmlAfterCompression(
-                kNewQuizPageTestsHtml,
+                kNewQuizPageBodyContent,
                 assertionsOnResultingHtmlString: html =>
                 {
                     // The quiz pages should not be removed.
@@ -983,14 +957,8 @@ namespace BloomTests.Publish
         public void CompressBookForDevice_MakesThumbnailFromCoverPicture()
         {
             // This requires a real book file (which a mocked book usually doesn't have).
-            var bookHtml =
-                @"<html>
-								<head>
-									<meta charset='UTF-8'></meta>
-									<link rel='stylesheet' href='defaultLangStyles.css' type='text/css'></link>
-									<link rel='stylesheet' href='customCollectionStyles.css' type='text/css'></link>
-								</head>
-								<body>
+            var bodyContent =
+                @"
 									<div id='bloomDataDiv'>
 										<div data-book='coverImage' lang='*'>
 											Listen to My Body_Cover.png
@@ -1000,12 +968,11 @@ namespace BloomTests.Publish
 										<div class='marginBox'>"
                 + "<div class=\"bloom-imageContainer bloom-background-image-in-style-attr\" data-book=\"coverImage\" style=\"background-image:url('Listen%20to%20My%20Body_Cover.png')\"></div>"
                 + @"</div>
-									</div>
-								</body>
-							</html>";
+									</div>";
 
             TestHtmlAfterCompression(
-                bookHtml,
+                bodyContent,
+                bookHeadContent: kCommonTestHeadContent,
                 actionsOnFolderBeforeCompressing: bookFolderPath =>
                 {
                     File.Copy(
@@ -1037,13 +1004,8 @@ namespace BloomTests.Publish
         }
 
         private const string kPathToTestVideos = "src/BloomTests/videos";
-        private const string kVideoTestHtml =
-            @"<html>
-					<head>
-						<meta charset='UTF-8'></meta>
-						<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
-					</head>
-					<body>
+        private const string kVideoTestBodyContent =
+            @"
 						<div class='bloom-page A5Portrait' data-page='required singleton' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
 							<div class='marginBox'>
 								<div class='someSplitContainerStuff'>
@@ -1066,8 +1028,7 @@ namespace BloomTests.Publish
 								</div>
 							</div>
 						</div>
-					</body>
-				</html>";
+";
 
         private void VideoTestActionsOnFolderBeforeCompressing(string folderPath)
         {
@@ -1095,7 +1056,8 @@ namespace BloomTests.Publish
         {
             // This requires a real book file (which a mocked book usually doesn't have).
             TestHtmlAfterCompression(
-                kVideoTestHtml,
+                kVideoTestBodyContent,
+                bookHeadContent: kMinimumValidBookHeadContent,
                 actionsOnFolderBeforeCompressing: VideoTestActionsOnFolderBeforeCompressing,
                 assertionsOnZipArchive: paramObj =>
                 {
@@ -1154,7 +1116,8 @@ namespace BloomTests.Publish
         {
             // This requires a real book file (which a mocked book usually doesn't have).
             TestHtmlAfterCompression(
-                kVideoTestHtml,
+                kVideoTestBodyContent,
+                bookHeadContent: kMinimumValidBookHeadContent,
                 actionsOnFolderBeforeCompressing: VideoTestActionsOnFolderBeforeCompressing,
                 assertionsOnZipArchive: paramObj =>
                 {
@@ -1481,15 +1444,18 @@ namespace BloomTests.Publish
         [Test]
         public void CompressBookForDevice_PointsAtDeviceXMatter()
         {
-            var bookHtml =
-                @"<html><head>
+            var headContent =
+                @"
 						<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
 						<link rel='stylesheet' href='Traditional-XMatter.css' type='text/css'></link>
-					</head><body>
-					<div class='bloom-page' id='guid1'></div>
-			</body></html>";
+					";
+            var bodyContent =
+                @"
+						<div class='bloom-page' id='guid1'></div>
+					";
             TestHtmlAfterCompression(
-                bookHtml,
+                bodyContent,
+                bookHeadContent: headContent,
                 assertionsOnResultingHtmlString: html =>
                 {
                     var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
@@ -1572,8 +1538,8 @@ namespace BloomTests.Publish
         [Test]
         public void EmbedFonts_EmbedsExpectedFontsAndReportsOthers()
         {
-            var bookHtml =
-                @"<html><head>
+            var bookheadContent =
+                @"
 						<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
 						<link rel='stylesheet' href='Traditional-XMatter.css' type='text/css'></link>
 						<link rel='stylesheet' href='CustomBookStyles.css' type='text/css'></link>
@@ -1582,11 +1548,15 @@ namespace BloomTests.Publish
 							.Times-style[lang='tpi'] { font-family: Times New Roman ! important; font-size: 12pt  }
 							.Times-style[lang='zh'] { font-family: Wen Yei ! important; font-size: 12pt  }
 							/*]]>*/
-						</style>
-					</head><body>
-					<div class='bloom-page' id='guid1'></div>
-			</body></html>";
-            var testBook = CreateBookWithPhysicalFile(bookHtml, bringBookUpToDate: false);
+						</style>";
+            var bookbodyContent =
+                @"
+					<div class='bloom-page' id='guid1'></div>";
+            var testBook = CreateBookWithPhysicalFile(
+                bookbodyContent,
+                bookheadContent,
+                bringBookUpToDate: false
+            );
             var fontFileFinder = new StubFontFinder();
             FontsApi.AvailableFontMetadataDictionary.Clear();
             using (
@@ -1828,7 +1798,8 @@ namespace BloomTests.Publish
         }
 
         private void TestHtmlAfterCompression(
-            string originalBookHtml,
+            string bookbodyContent,
+            string bookHeadContent = "",
             Action<string> actionsOnFolderBeforeCompressing = null,
             Action<string> assertionsOnResultingHtmlString = null,
             Action<ZipHtmlObj> assertionsOnZipArchive = null,
@@ -1838,7 +1809,11 @@ namespace BloomTests.Publish
             string creator = BloomPubMaker.kCreatorBloom
         )
         {
-            var testBook = CreateBookWithPhysicalFile(originalBookHtml, bringBookUpToDate: true);
+            var testBook = CreateBookWithPhysicalFile(
+                bookbodyContent,
+                bookHeadContent,
+                bringBookUpToDate: true
+            );
             testBook.CollectionSettings.Subscription = Subscription.CreateTempSubscriptionForTier(
                 tier
             );
