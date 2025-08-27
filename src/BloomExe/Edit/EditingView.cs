@@ -1539,10 +1539,12 @@ namespace Bloom.Edit
         public dynamic UpdateDropdownButtons()
         {
             dynamic eventBundle = new DynamicJson();
-            bool contentLanguagesEnabled = TranslationGroupManager.IsPageAffectedByLanguageMenu(
-                _model.CurrentPage.GetDivNodeForThisPage(),
-                _model.CurrentBook.BookInfo.AppearanceSettings.UsingLegacy
-            );
+            bool contentLanguagesEnabled =
+                _model.CurrentPage != null
+                && TranslationGroupManager.IsPageAffectedByLanguageMenu(
+                    _model.CurrentPage.GetDivNodeForThisPage(),
+                    _model.CurrentBook.BookInfo.AppearanceSettings.UsingLegacy
+                );
             eventBundle.message = new
             {
                 contentLanguagesEnabled,
