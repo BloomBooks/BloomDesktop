@@ -8,14 +8,14 @@ using System.Text;
 
 namespace Bloom
 {
-    class ResolveShortcut
+    class Shortcut
     {
 #if !__MonoCS__
         //from http://stackoverflow.com/questions/139010/how-to-resolve-a-lnk-in-c
         #region Signitures imported from http://pinvoke.net
 
         [Flags()]
-        enum SLGP_FLAGS
+        public enum SLGP_FLAGS
         {
             /// <summary>Retrieves the standard short (8.3 format) file name</summary>
             SLGP_SHORTPATH = 0x1,
@@ -28,7 +28,7 @@ namespace Bloom
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        struct WIN32_FIND_DATAW
+        public struct WIN32_FIND_DATAW
         {
             public uint dwFileAttributes;
             public long ftCreationTime;
@@ -47,7 +47,7 @@ namespace Bloom
         }
 
         [Flags()]
-        enum SLR_FLAGS
+        public enum SLR_FLAGS
         {
             /// <summary>
             /// Do not display a dialog box if the link cannot be resolved. When SLR_NO_UI is set,
@@ -93,7 +93,7 @@ namespace Bloom
             InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
             Guid("000214F9-0000-0000-C000-000000000046")
         ]
-        interface IShellLinkW
+        public interface IShellLinkW
         {
             /// <summary>Retrieves the path and file name of a Shell link object</summary>
             void GetPath(
@@ -168,7 +168,7 @@ namespace Bloom
             void Resolve(IntPtr hwnd, SLR_FLAGS fFlags);
 
             /// <summary>Sets the path and file name of a Shell link object</summary>
-            void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
+            public void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
         }
 
         [
