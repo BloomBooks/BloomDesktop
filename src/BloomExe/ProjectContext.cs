@@ -737,7 +737,7 @@ namespace Bloom
                     )
                 )
                 {
-                    var collectionDirectory = ResolveShortcut.Resolve(shortcut);
+                    var collectionDirectory = Shortcut.Resolve(shortcut);
                     if (Directory.Exists(collectionDirectory))
                     {
                         foreach (var templateDirectory in SafeGetDirectories(collectionDirectory))

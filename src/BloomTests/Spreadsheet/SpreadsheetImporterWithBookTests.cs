@@ -107,8 +107,6 @@ namespace BloomTests.Spreadsheet
 
         public static string templateDom =
             @"
-<!DOCTYPE html>
-
 <html>
 <head>
 </head>

@@ -238,7 +238,7 @@ namespace BloomTests.Book
         }
 
         protected Bloom.Book.Book CreateBookWithPhysicalFile(
-            string bookHtml,
+            string bookHtmlDoc,
             CollectionSettings collectionSettings
         )
         {
@@ -251,7 +251,7 @@ namespace BloomTests.Book
                 ProjectContext.GetAfterXMatterFileLocations()
             );
 
-            File.WriteAllText(Path.Combine(_tempFolder.Path, "book.htm"), bookHtml);
+            File.WriteAllText(Path.Combine(_tempFolder.Path, "book.htm"), bookHtmlDoc);
 
             var storage = new BookStorage(
                 this._tempFolder.Path,
@@ -277,10 +277,12 @@ namespace BloomTests.Book
         }
 
         protected virtual Bloom.Book.Book CreateBookWithPhysicalFile(
-            string bookHtml,
+            string bodyContent,
+            string headContent = null,
             bool bringBookUpToDate = false
         )
         {
+            var bookHtml = XmlHtmlConverter.CreateValidHtmlString(bodyContent, headContent);
             var book = CreateBookWithPhysicalFile(bookHtml, CreateDefaultCollectionsSettings());
             if (bringBookUpToDate)
                 book.BringBookUpToDate(new NullProgress());
@@ -346,13 +348,12 @@ namespace BloomTests.Book
         private SafeXmlDocument GetThreePageDom()
         {
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml(ThreePageHtml);
+            dom.LoadXml(XmlHtmlConverter.CreateValidHtmlString(kThreePageBookBodyContent, ""));
             return dom;
         }
 
-        protected const string ThreePageHtml =
-            @"<html><head></head><body>
-				<div class='bloom-page numberedPage' id='guid1'>
+        protected const string kThreePageBookBodyContent =
+            @"<div class='bloom-page numberedPage' id='guid1'>
 					<p>
 						<textarea lang='en' id='1'  data-book='bookTitle'>tree</textarea>
 						<textarea lang='xyz' id='2'  data-book='bookTitle'>dog</textarea>
@@ -376,26 +377,16 @@ namespace BloomTests.Book
 					   <textarea lang='xyz' id='bb'  data-collection='testLibraryVariable'>bb</textarea>
 
 					</p>
-				</div>
-				</body></html>";
+				</div>";
 
-        protected void SetDom(string bodyContents, string headContents = "")
+        protected void SetDom(string bodyContent, string headContent = "")
         {
-            _bookDom = MakeDom(bodyContents, headContents);
+            _bookDom = MakeDom(bodyContent, headContent);
         }
 
-        public static HtmlDom MakeDom(string bodyContents, string headContents = "")
+        public static HtmlDom MakeDom(string bodyContent, string headContent = "")
         {
-            return new HtmlDom(MakeBookHtml(bodyContents, headContents));
-        }
-
-        protected static string MakeBookHtml(string bodyContents, string headContents)
-        {
-            return @"<html ><head>"
-                + headContents
-                + "</head><body>"
-                + bodyContents
-                + "</body></html>";
+            return new HtmlDom(XmlHtmlConverter.CreateValidHtmlString(bodyContent, headContent));
         }
 
         public BookServer CreateBookServer()

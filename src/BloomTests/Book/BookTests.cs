@@ -382,7 +382,7 @@ namespace BloomTests.Book
 						 <div lang='en'>This is some English</div>
 						</div>
 					</div>";
-            var book = CreateBookWithPhysicalFile(body, true);
+            var book = CreateBookWithPhysicalFile(body, bringBookUpToDate: true);
 
             var appearanceSettings = book.BookInfo.AppearanceSettings;
             Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("default"));
@@ -404,7 +404,7 @@ namespace BloomTests.Book
 						 <div lang='en'>This is some English</div>
 						</div>
 					</div>";
-            var book = CreateBookWithPhysicalFile(body, false);
+            var book = CreateBookWithPhysicalFile(body, bringBookUpToDate: false);
             var cssPath = Path.Combine(book.FolderPath, "customBookStyles.css");
             File.WriteAllText(cssPath, AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme);
             book.EnsureUpToDate();
@@ -429,7 +429,7 @@ namespace BloomTests.Book
 						 <div lang='en'>This is some English</div>
 						</div>
 					</div>";
-            var book = CreateBookWithPhysicalFile(body, false);
+            var book = CreateBookWithPhysicalFile(body, bringBookUpToDate: false);
             var cssPath = Path.Combine(book.FolderPath, "customBookStyles.css");
             File.WriteAllText(cssPath, @".marginBox {left: 40px;}");
             book.EnsureUpToDate();
@@ -5188,17 +5188,14 @@ namespace BloomTests.Book
         [Test]
         public void UpdateMetadataFeatures_WidgetActivityMissing_ActivityAndWidgetFeaturesFalse()
         {
-            var html =
-                @"<html>
-					<body>
-<div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
+            var bodyContent =
+                @"<div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
 	<div class='marginBox'>
 
 	</div>
-</div>
-</body></html>";
+</div>";
 
-            var book = CreateBookWithPhysicalFile(html);
+            var book = CreateBookWithPhysicalFile(bodyContent);
             book.BookInfo.MetaData.Feature_Widget = true; // spurious, see if it gets cleaned up
 
             book.UpdateMetadataFeatures(false, false, null);
@@ -5215,19 +5212,17 @@ namespace BloomTests.Book
         [Test]
         public void UpdateMetadataFeatures_WidgetActivityAdded_ActivityAndWidgetFeaturesTrue()
         {
-            var html =
-                @"<html>
-					<body>
+            var bodyContent =
+                @"
 <div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
 	<div class='marginBox'>
 		<div class='bloom-widgetContainer'>
 			<iframe src='something'></iframe>
 		</div>
 	</div>
-</div>
-</body></html>";
+</div>";
 
-            var book = CreateBookWithPhysicalFile(html);
+            var book = CreateBookWithPhysicalFile(bodyContent);
 
             book.UpdateMetadataFeatures(false, false, null);
 
@@ -6517,7 +6512,7 @@ namespace BloomTests.Book
         [Test]
         public void SetAndLockBookName_Controls_TitleBestForUserDisplay_MovesBook()
         {
-            var book = CreateBookWithPhysicalFile(ThreePageHtml);
+            var book = CreateBookWithPhysicalFile(kThreePageBookBodyContent);
             book.SetAndLockBookName("animals");
             var bookName = book.NameBestForUserDisplay;
             Assert.That(bookName, Is.EqualTo("animals"));
