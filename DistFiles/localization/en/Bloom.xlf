@@ -2039,6 +2039,7 @@
       <trans-unit id="EditTab.TextBoxProperties.BordersAndBackground" sil:dynamic="true">
         <source xml:lang="en">Borders &amp; Background</source>
         <note>ID: EditTab.TextBoxProperties.BordersAndBackground</note>
+        <note>&amp; is an abbreviation symbol for "and"</note>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.CollectionLanguage2" sil:dynamic="true">
         <source xml:lang="en">Collection Language 2</source>

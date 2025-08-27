@@ -144,7 +144,10 @@ namespace BloomTests.WebLibraryIntegration
         )
         {
             var f = new TemporaryFolder(_workFolder, bookName);
-            File.WriteAllText(Path.Combine(f.FolderPath, htmName), data);
+            File.WriteAllText(
+                Path.Combine(f.FolderPath, htmName),
+                XmlHtmlConverter.CreateHtmlString(data)
+            );
             File.WriteAllText(Path.Combine(f.FolderPath, "one.css"), @"test");
             File.WriteAllText(Path.Combine(f.FolderPath, "unmodified.css"), @"test");
 
@@ -353,7 +356,10 @@ namespace BloomTests.WebLibraryIntegration
                 Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
                 File.Delete(bookFolder.CombineForPath("one.css"));
                 File.Delete(bookFolder.CombineForPath("activities", "file-to-replace.txt"));
-                File.WriteAllText(Path.Combine(bookFolder, "one.htm"), "something new");
+                File.WriteAllText(
+                    Path.Combine(bookFolder, "one.htm"),
+                    XmlHtmlConverter.CreateHtmlString("something new")
+                );
                 File.WriteAllText(Path.Combine(bookFolder, "two.css"), @"test");
                 File.WriteAllText(
                     Path.Combine(bookFolder, "activities", "replacement-file.txt"),

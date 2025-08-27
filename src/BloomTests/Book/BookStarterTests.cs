@@ -1422,8 +1422,7 @@ namespace BloomTests.Book
                 bookIdMeta = @"<meta name='bloomBookId' content='thisNewGuy' />";
 
             var content = String.Format(
-                @"<?xml version='1.0' encoding='utf-8' ?>
-				<!DOCTYPE html>
+                @"<!DOCTYPE html>
 				<html>
 				<head>
 					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
@@ -1606,7 +1605,7 @@ namespace BloomTests.Book
             assertThatHtmlInBook.HasNoMatchForXpath("//div[@data-book='copyright']");
             // Book typically has some empty versionAcknowledgements inserted as xmatter.
             assertThatHtmlInBook.HasNoMatchForXpath(
-                "//div[@data-book='versionAcknowledgments' and text()]"
+                "//div[@data-book='versionAcknowledgments' and normalize-space(string(.)) != '']"
             );
             metadata = BookMetaData.FromFolder(Path.GetDirectoryName(path));
             Assert.That(metadata.Copyright, Is.Null);
