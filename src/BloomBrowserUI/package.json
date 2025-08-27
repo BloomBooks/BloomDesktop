@@ -127,6 +127,7 @@
         "@babel/preset-react": "^7.17.12",
         "@chromatic-com/storybook": "1.2.1",
         "@eslint/js": "^9.21.0",
+        "@playwright/test": "^1.55.0",
         "@storybook/addon-a11y": "7.6.17",
         "@storybook/addon-controls": "7.6.17",
         "@storybook/addon-docs": "^8.6.2",
