@@ -41,7 +41,7 @@ namespace Bloom.ToPalaso
             }
             var processList = Process.GetProcesses();
             var windowMap = GetAllWindows();
-            Process.Start(urlOrCmd);
+            Process.Start(new ProcessStartInfo(urlOrCmd) { UseShellExecute = true });
 
             if (Platform.IsLinux && !String.IsNullOrEmpty(libpath))
             {
@@ -111,7 +111,7 @@ namespace Bloom.ToPalaso
             }
             var processList = Process.GetProcesses();
             var windowMap = GetAllWindows();
-            Process.Start(command, arguments);
+            Process.Start(new ProcessStartInfo(command, arguments) { UseShellExecute = true });
 
             if (Platform.IsLinux && !String.IsNullOrEmpty(libpath))
             {

@@ -243,10 +243,12 @@ namespace BloomTests.Book
         public void Save_HasEmptyParagraphs_RetainsEmptyParagraphs()
         {
             var pattern = "<p></p><p></p><p>a</p><p></p><p>b</p>";
+            var bodyContent =
+                "<div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable'>"
+                + pattern
+                + "</div></div></div></body>";
             GetInitialStorageWithCustomHtml(
-                "<html><body><div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable'>"
-                    + pattern
-                    + "</div></div></div></body></html>"
+                XmlHtmlConverter.CreateDocumentWithContent(bodyContent)
             );
             AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//p", 5);
         }
@@ -270,8 +272,10 @@ namespace BloomTests.Book
         public void Save_BookHadNarrationAudioRecordedByWholeTextBox_AddsFeatureRequirementMetadata()
         {
             // Enhance: need an example in the future to test the result if two are generated. But right now this is the only feature that generates it.
+            var bodyContent =
+                "<div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable' data-audiorecordingmode='TextBox'></div></div></div>";
             GetInitialStorageWithCustomHtml(
-                "<html><head></head><body><div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable' data-audiorecordingmode='TextBox'></div></div></div></body></html>"
+                XmlHtmlConverter.CreateDocumentWithContent(bodyContent)
             );
             AssertThatXmlIn
                 .HtmlFile(_bookPath)
@@ -309,17 +313,16 @@ namespace BloomTests.Book
             var videoPath = Path.Combine(_folder.Path, "video"); //Path to the video files.
             Directory.CreateDirectory(videoPath);
             var storage = GetInitialStorageWithCustomHtml(
-                @"
-		<html><body>
-			<div class='bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual'
+                XmlHtmlConverter.CreateDocumentWithContent(
+                    @"<div class='bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual'
 				data-page='' id='566c4a7a-0789-43f5-abcb-e4a16532dedd' data-page-number='1' lang=''>
 				<div class='marginBox'>
 					<div>
 						<div class='bloom-videoContainer bloom-leadingElement bloom-selected'>
 							<video controls='controls'>
 								<source src='video/"
-                    + usedVidMp4
-                    + @"' type='video/mp4'></source>
+                        + usedVidMp4
+                        + @"' type='video/mp4'></source>
 							</video>
 						</div>
 					</div>
@@ -332,14 +335,14 @@ namespace BloomTests.Book
 						<div class='bloom-videoContainer bloom-leadingElement bloom-selected'>
 							<video controls='controls'>
 								<source src='video/"
-                    + usedVid2Mp4
-                    + @"' type='video/mp4'></source>
+                        + usedVid2Mp4
+                        + @"' type='video/mp4'></source>
 							</video>
 						</div>
 					</div>
 				</div>
-			</div>
-		</body></html>"
+			</div>"
+                )
             );
             var usedOrigFilename = usedVideoGuid + ".orig";
             var usedVidMp4Path = MakeSampleMp4Video(Path.Combine(videoPath, usedVidMp4), true);
@@ -396,38 +399,39 @@ namespace BloomTests.Book
             var usedFrontMatterBgWavFilename = usedFrontMatterBackgroundAudio + ".wav";
             var usedFrontMatterBgMp3Filename = usedFrontMatterBackgroundAudio + ".mp3";
 
+            var bodyContent =
+                $"<div id='bloomDataDiv'><div data-backgroundaudio='{usedFrontMatterBgWavFilename}'</div>"
+                + $"<div data-book='bookTitle' lang='en'><p><span id='{usedFrontMatterAudioGuid}' class='audio-sentence'>Title</span></p></div></div>"
+                + "<div class='bloom-page numberedPage customPage bloom-combinedPage "
+                + "A5Portrait side-right bloom-monolingual' data-page='' "
+                + "id='ab5bf932-b9ea-432c-84e6-f37d58d2f632' data-pagelineage="
+                + "'adcd48df-e9ab-4a07-afd4-6a24d0398383' data-page-number='1' "
+                + $"lang='' data-backgroundaudio='{usedBgWavFilename}'>"
+                + "<div class='marginBox'>"
+                + $"<p><span data-duration='2.300227' id='{usedAudioGuid}' "
+                + "class='audio-sentence' recordingmd5='undefined'>Who are you?</span></p>"
+                + "</div>"
+                + $"<div class='bloom-editable' data-audiorecordingmode='TextBox' id='{potentiallyUsefulAudioGuid}'>"
+                + "<p>"
+                + $"<span id='{usedSpanGuid1}' class='audio-sentence'>Sentence 1</span>"
+                + $"<span id='{usedSpanGuid2}' class='audio-sentence'>Sentence 2</span>"
+                + "</p>"
+                + "</div>"
+                + "</div>"
+                + "<div class='bloom-page numberedPage customPage bloom-combinedPage "
+                + "A5Portrait side-right bloom-monolingual' data-page-number='2' "
+                + $"lang='' data-backgroundaudio='{usedBgMp3Filename}'>"
+                + "<div class='marginBox'>"
+                + "<p>I am me.</p>"
+                + "</div></div>"
+                + "<div class='bloom-page numberedPage customPage bloom-combinedPage "
+                + "A5Portrait side-right bloom-monolingual' data-page-number='2' "
+                + $"lang='' data-backgroundaudio='{usedBgOggFilename}'>"
+                + "<div class='marginBox'>"
+                + "<p>I am me.</p>"
+                + "</div></div>";
             var storage = GetInitialStorageWithCustomHtml(
-                $"<html><body><div id='bloomDataDiv'><div data-backgroundaudio='{usedFrontMatterBgWavFilename}'</div>"
-                    + $"<div data-book='bookTitle' lang='en'><p><span id='{usedFrontMatterAudioGuid}' class='audio-sentence'>Title</span></p></div></div>"
-                    + "<div class='bloom-page numberedPage customPage bloom-combinedPage "
-                    + "A5Portrait side-right bloom-monolingual' data-page='' "
-                    + "id='ab5bf932-b9ea-432c-84e6-f37d58d2f632' data-pagelineage="
-                    + "'adcd48df-e9ab-4a07-afd4-6a24d0398383' data-page-number='1' "
-                    + $"lang='' data-backgroundaudio='{usedBgWavFilename}'>"
-                    + "<div class='marginBox'>"
-                    + $"<p><span data-duration='2.300227' id='{usedAudioGuid}' "
-                    + "class='audio-sentence' recordingmd5='undefined'>Who are you?</span></p>"
-                    + "</div>"
-                    + $"<div class='bloom-editable' data-audiorecordingmode='TextBox' id='{potentiallyUsefulAudioGuid}'>"
-                    + "<p>"
-                    + $"<span id='{usedSpanGuid1}' class='audio-sentence'>Sentence 1</span>"
-                    + $"<span id='{usedSpanGuid2}' class='audio-sentence'>Sentence 2</span>"
-                    + "</p>"
-                    + "</div>"
-                    + "</div>"
-                    + "<div class='bloom-page numberedPage customPage bloom-combinedPage "
-                    + "A5Portrait side-right bloom-monolingual' data-page-number='2' "
-                    + $"lang='' data-backgroundaudio='{usedBgMp3Filename}'>"
-                    + "<div class='marginBox'>"
-                    + "<p>I am me.</p>"
-                    + "</div></div>"
-                    + "<div class='bloom-page numberedPage customPage bloom-combinedPage "
-                    + "A5Portrait side-right bloom-monolingual' data-page-number='2' "
-                    + $"lang='' data-backgroundaudio='{usedBgOggFilename}'>"
-                    + "<div class='marginBox'>"
-                    + "<p>I am me.</p>"
-                    + "</div></div>"
-                    + "</body></html>"
+                XmlHtmlConverter.CreateDocumentWithContent(bodyContent)
             );
 
             // Note: These must be executed after GetInitialStorage
@@ -583,13 +587,15 @@ namespace BloomTests.Book
 
             // This HTML is messed up and contains data-backgroundaudio as the inner text instead of as an attribute
             var storage = GetInitialStorageWithCustomHtml(
-                "<html><body><div id='bloomDataDiv'><div>data-backgroundaudio</div><div>audio-sentence</div><span>audio-sentence</span></div><div class='bloom-page numberedPage customPage bloom-combinedPage "
-                    + "A5Portrait side-right bloom-monolingual' data-page='' "
-                    + "id='ab5bf932-b9ea-432c-84e6-f37d58d2f632' data-pagelineage="
-                    + "'adcd48df-e9ab-4a07-afd4-6a24d0398383' data-page-number='1' "
-                    + "lang=''><div class='marginBox'>"
-                    + "<p>Who are you?</p>"
-                    + "</div></div></body></html>"
+                XmlHtmlConverter.CreateDocumentWithContent(
+                    "<div id='bloomDataDiv'><div>data-backgroundaudio</div><div>audio-sentence</div><span>audio-sentence</span></div><div class='bloom-page numberedPage customPage bloom-combinedPage "
+                        + "A5Portrait side-right bloom-monolingual' data-page='' "
+                        + "id='ab5bf932-b9ea-432c-84e6-f37d58d2f632' data-pagelineage="
+                        + "'adcd48df-e9ab-4a07-afd4-6a24d0398383' data-page-number='1' "
+                        + "lang=''><div class='marginBox'>"
+                        + "<p>Who are you?</p>"
+                        + "</div></div>"
+                )
             );
 
             string[] unneededFilenames = { "audio-sentence", "data-backgroundaudio" };
@@ -628,9 +634,11 @@ namespace BloomTests.Book
             Directory.CreateDirectory(audioPath);
 
             var storage = GetInitialStorageWithCustomHtml(
-                "<html><body><div class='bloom-page><div class='bloom-editable' id='textBox1'>"
-                    + "<p><span class='audio-sentence' id='span1'>Sentence 1</span></p>"
-                    + "</div></div></body></html>"
+                XmlHtmlConverter.CreateDocumentWithContent(
+                    "<div class='bloom-page><div class='bloom-editable' id='textBox1'>"
+                        + "<p><span class='audio-sentence' id='span1'>Sentence 1</span></p>"
+                        + "</div></div>"
+                )
             );
 
             string timingsFilepath = Path.Combine(audioPath, "span1_timings.tsv");
@@ -674,10 +682,11 @@ namespace BloomTests.Book
             Assert.IsTrue(File.Exists(unused.cssPath));
 
             var storage = GetInitialStorageWithCustomHtml(
-                $"<html><body><div class='bloom-page'><div class='bloom-widgetContainer'>"
-                    + "    <iframe src='activities/ball%20%231/index.htm'/>"
-                    + $"</div></div>"
-                    + "</body></html>"
+                XmlHtmlConverter.CreateDocumentWithContent(
+                    $"<div class='bloom-page'><div class='bloom-widgetContainer'>"
+                        + "    <iframe src='activities/ball%20%231/index.htm'/>"
+                        + $"</div></div>"
+                )
             );
 
             // I make this call here as a reminder that it's the function the test is about,
@@ -699,10 +708,12 @@ namespace BloomTests.Book
         public void CleanupUnusedImageFiles_BookHadUnusedImages_ImagesRemoved()
         {
             var storage = GetInitialStorageWithCustomHtml(
-                "<html><body><div class='bloom-page'><div class='marginBox'>"
-                    + "<div style='background-image:url(\"keepme.png\")'></div>"
-                    + "<img src='keepme2.png'></img>"
-                    + "</div></div></body></html>"
+                XmlHtmlConverter.CreateDocumentWithContent(
+                    "<div class='bloom-page'><div class='marginBox'>"
+                        + "<div style='background-image:url(\"keepme.png\")'></div>"
+                        + "<img src='keepme2.png'></img>"
+                        + "</div></div>"
+                )
             );
             var keepName =
                 Environment.OSVersion.Platform == PlatformID.Win32NT ? "KeEpMe.pNg" : "keepme.png";
@@ -723,9 +734,11 @@ namespace BloomTests.Book
         public void CleanupUnusedImageFiles_ImageHasQuery_ImagesNotRemoved()
         {
             var storage = GetInitialStorageWithCustomHtml(
-                "<html><body><div class='bloom-page'><div class='marginBox'>"
-                    + "<img src='keepme.png?1234'></img>"
-                    + "</div></div></body></html>"
+                XmlHtmlConverter.CreateDocumentWithContent(
+                    "<div class='bloom-page'><div class='marginBox'>"
+                        + "<img src='keepme.png?1234'></img>"
+                        + "</div></div>"
+                )
             );
             var keepTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "keepme.png"));
             storage.CleanupUnusedImageFiles();
@@ -736,11 +749,12 @@ namespace BloomTests.Book
         public void CleanupUnusedImageFiles_ImageOnlyReferencedInDataDiv_ImageNotRemoved()
         {
             var storage = GetInitialStorageWithCustomHtml(
-                "<html><body>"
-                    + "<div id ='bloomDataDiv'><div data-book='coverImage'>keepme.png</div>"
-                    + "<div data-book='coverImage'> keepme.jpg </div></div>"
-                    + "<div class='bloom-page'><div class='marginBox'>"
-                    + "</div></div></body></html>"
+                XmlHtmlConverter.CreateDocumentWithContent(
+                    "<div id ='bloomDataDiv'><div data-book='coverImage'>keepme.png</div>"
+                        + "<div data-book='coverImage'> keepme.jpg </div></div>"
+                        + "<div class='bloom-page'><div class='marginBox'>"
+                        + "</div></div>"
+                )
             );
             var keepTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "keepme.png"));
             var keepTempJPG = MakeSamplePngImage(Path.Combine(_folder.Path, "keepme.jpg"));
@@ -753,8 +767,9 @@ namespace BloomTests.Book
         public void CleanupUnusedImageFiles_ThumbnailsAndPlaceholdersNotRemoved()
         {
             var storage = GetInitialStorageWithCustomHtml(
-                "<html><body><div class='bloom-page'><div class='marginBox'>"
-                    + "</div></div></body></html>"
+                XmlHtmlConverter.CreateDocumentWithContent(
+                    "<div class='bloom-page'><div class='marginBox'>" + "</div></div>"
+                )
             );
             var p1 = MakeSamplePngImage(Path.Combine(_folder.Path, "thumbnail.png"));
             var p2 = MakeSamplePngImage(Path.Combine(_folder.Path, "thumbnail88.png"));
@@ -771,7 +786,9 @@ namespace BloomTests.Book
         public void CleanupUnusedImageFiles_UnusedImageIsLocked_NotException()
         {
             var storage = GetInitialStorageWithCustomHtml(
-                "<html><body><div class='bloom-page'><div class='marginBox'></div></body></html>"
+                XmlHtmlConverter.CreateDocumentWithContent(
+                    "<div class='bloom-page'><div class='marginBox'></div></div>"
+                )
             );
             var dropmeTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "dropme.png"));
             //make it undelete-able
@@ -787,13 +804,14 @@ namespace BloomTests.Book
             // BL-6273 Hand-edited Html could pass ValidateBook, which led to improper handling of the resulting error.
             // (ValidateBook is where we determine whether to try and use the .bak file instead, or not.)
             var storage = GetInitialStorageWithCustomHtml(
-                "<html><body><div class='bloom-page' id='someId'><div class='marginBox'><div class='bloom-translationGroup'>"
-                    + "<div class='bloom-editable'>"
-                    + "</div></div>"
-                    + // not enough closing tags due to "hand-editing"
-                    "<div class='bloom-page' id='someOtherId'><div class='marginBox'><div class='bloom-translationGroup'>"
-                    + "</div></div></div>"
-                    + "</body></html>",
+                XmlHtmlConverter.CreateDocumentWithContent(
+                    "<div class='bloom-page' id='someId'><div class='marginBox'><div class='bloom-translationGroup'>"
+                        + "<div class='bloom-editable'>"
+                        + "</div></div>"
+                        + // not enough closing tags due to "hand-editing"
+                        "<div class='bloom-page' id='someOtherId'><div class='marginBox'><div class='bloom-translationGroup'>"
+                        + "</div></div></div>"
+                ),
                 false
             );
             var result = storage.ValidateBook(storage.PathToExistingHtml);
@@ -863,7 +881,9 @@ namespace BloomTests.Book
         public void Save_BookHasMissingImages_NoCrash()
         {
             var storage = GetInitialStorageWithCustomHtml(
-                "<html><body><div class='bloom-page'><div class='marginBox'><img src='keepme.png'></img></div></div></body></html>"
+                XmlHtmlConverter.CreateDocumentWithContent(
+                    "<div class='bloom-page'><div class='marginBox'><img src='keepme.png'></img></div></div>"
+                )
             );
             storage.Save();
         }
@@ -2635,7 +2655,7 @@ These are similar but already have game-theme classes
           </div>
         </div>
         <div class=""imageThenChoices"">
-          <div class=""bloom-imageContainer"" title=""Name: aor_Cat3.png>
+          <div class=""bloom-imageContainer"" title=""Name: aor_Cat3.png"">
             <img src=""aor_Cat3.png"" alt="""" data-copyright=""Copyright SIL International 2009"" data-creator="""" data-license=""cc-by-sa""></img>
           </div>
           <div class=""choices player-shuffle-buttons"">

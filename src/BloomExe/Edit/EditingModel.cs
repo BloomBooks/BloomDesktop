@@ -317,11 +317,10 @@ namespace Bloom.Edit
             if (string.IsNullOrEmpty(bodyHtml))
                 throw new ApplicationException("Got an empty body while trying to save page");
 
-            var content = bodyHtml;
             SafeXmlDocument dom;
 
-            //todo: deal with exception that can come out of this
-            dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
+            var htmlDoc = XmlHtmlConverter.CreateDocumentWithContent(bodyHtml);
+            dom = XmlHtmlConverter.GetXmlDomFromHtml(htmlDoc, false);
             var bodyDom = dom.SelectSingleNode("//body");
 
             var browserDomPage = bodyDom.SelectSingleNode(
@@ -344,7 +343,6 @@ namespace Bloom.Edit
             }
 
             SaveCustomizedCssRules(dom, userCssContent);
-            XmlHtmlConverter.ThrowIfHtmlHasErrors(dom.OuterXml);
             return dom;
         }
 
