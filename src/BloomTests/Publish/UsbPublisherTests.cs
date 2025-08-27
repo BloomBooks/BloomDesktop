@@ -103,7 +103,7 @@ namespace BloomTests.Publish
                 MockUsbPublisher.ExceptionToThrow.HandleDeviceFull
             );
 
-            var book = CreateBookWithPhysicalFile(ThreePageHtml);
+            var book = CreateBookWithPhysicalFile(kThreePageBookBodyContent);
             var bloomdPath = MakeFakeBloomdFile(book);
             testUsbPublisher.SetLastBloomPubFileSize(bloomdPath);
 

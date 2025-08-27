@@ -31,6 +31,10 @@ yarn
 
 #### Build the .NET part
 
+##### In VS Code:
+Make sure you have the C# Devkit extensions installed. Run and Debug through the gui or F5.
+
+##### In Visual Studio:
 1. Open Bloom.sln in Visual Studio
 2. Build the "WebView2PdfMaker" project
 3. Run the "BloomExe" project

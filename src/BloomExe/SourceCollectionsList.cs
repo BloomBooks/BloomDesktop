@@ -155,7 +155,7 @@ namespace Bloom
                 foreach (
                     var collectionDir in Directory
                         .GetFiles(root, "*.lnk", SearchOption.TopDirectoryOnly)
-                        .Select(ResolveShortcut.Resolve)
+                        .Select(Shortcut.Resolve)
                         .Where(Directory.Exists)
                 )
                 {
