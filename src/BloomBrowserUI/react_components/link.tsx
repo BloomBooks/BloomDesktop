@@ -72,7 +72,7 @@ export class Link extends LocalizableElement<ILinkProps, ILocalizationState> {
 
 // Usage <TextWithEmbeddedLink l10nKey="blah" href="google.com"/>Click [here] or else</TextWithEmbeddedLink>
 export class TextWithEmbeddedLink extends LocalizableElement<
-    ILocalizationProps & LinkBaseProps,
+    ILocalizationProps & { href: string } & LinkBaseProps,
     ILocalizationState
 > {
     public render() {

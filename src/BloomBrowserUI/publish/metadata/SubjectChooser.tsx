@@ -29,7 +29,6 @@ export class SubjectChooser extends React.Component<IProps> {
                 <DropdownTreeSelect
                     data={themaSubjectData}
                     onChange={(a, b) => this.handleSubjectChange(a, b)}
-                    placeholderText={""}
                 />
             </div>
         );
