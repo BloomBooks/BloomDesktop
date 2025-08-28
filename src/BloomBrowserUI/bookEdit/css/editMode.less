@@ -1110,9 +1110,14 @@ body.simulateCataracts {
 // More critically, when simulating BOTH color-blindness AND cataracts,
 // the Canvas gets merged with what is behind it. We want that to be just
 // the yellow background, not the image.
+// Placeholder images (especially background ones) have more complicated
+// visibility rules, so we don't want this one to apply to them.
+// (We decided we don't need the complication of doing color-blindness
+// simulations for placeholders, which don't appear at all in finished
+// publications.)
 body.simulateColorBlindness {
     .bloom-canvas {
-        img {
+        img:not([src="placeHolder.png"]) {
             visibility: hidden;
         }
     }

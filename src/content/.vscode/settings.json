@@ -5,5 +5,11 @@
         "titleBar.activeBackground": "#2E443F",
         "titleBar.activeForeground": "#FAFCFB"
     },
-    "cSpell.words": ["draggables", "printshop", "shellbook"]
+    "cSpell.words": [
+        "distractors",
+        "draggables",
+        "jquery",
+        "printshop",
+        "shellbook"
+    ]
 }
