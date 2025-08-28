@@ -3413,7 +3413,15 @@ namespace Bloom.Book
                     )
                 )
                     continue;
-                RobustFile.Copy(file, Path.Combine(targetDir, Path.GetFileName(file)));
+                // We need to preserve the attributes of copied files.  Normally this doesn't matter
+                // since most files have only the default Archive attribute, but users can stick in a
+                // PDF file with a ReadOnly attribute to force uploads to use the specially prepared PDF.
+                // For some reason, copying the attributes is needed in 6.2 where it wasn't needed before.
+                // See BL-15150.
+                var attr = RobustFile.GetAttributes(file);
+                var targetFile = Path.Combine(targetDir, Path.GetFileName(file));
+                RobustFile.Copy(file, targetFile);
+                RobustFile.SetAttributes(targetFile, attr);
             }
 
             foreach (var directory in Directory.GetDirectories(sourceDir))

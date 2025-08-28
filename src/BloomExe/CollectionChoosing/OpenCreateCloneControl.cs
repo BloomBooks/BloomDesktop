@@ -17,7 +17,11 @@ namespace Bloom.CollectionChoosing
     public partial class OpenCreateCloneControl : UserControl
     {
         private MostRecentPathsList _mruList;
-        private Func<string> _createNewCollectionAndReturnPath;
+
+        // argument is the open collection dialog, the owner that will determine the screen
+        // on which to open the create collection dialog. Return result is the path to the
+        // new collection.
+        private Func<IWin32Window, string> _createNewCollectionAndReturnPath;
         private string _filterString;
 
         public event EventHandler DoneChoosingOrCreatingCollection;
@@ -40,7 +44,7 @@ namespace Bloom.CollectionChoosing
         public void Init(
             MostRecentPathsList mruList,
             string filterString,
-            Func<string> createNewCollectionAndReturnPath
+            Func<IWin32Window, string> createNewCollectionAndReturnPath
         )
         {
             _filterString = filterString;
@@ -186,7 +190,9 @@ namespace Bloom.CollectionChoosing
 
         private void CreateNewCollection_LinkClicked(object sender, EventArgs e)
         {
-            var desiredOrExistingSettingsFilePath = _createNewCollectionAndReturnPath();
+            var desiredOrExistingSettingsFilePath = _createNewCollectionAndReturnPath(
+                this.ParentForm
+            );
             if (desiredOrExistingSettingsFilePath == null)
                 return;
             var settings = new CollectionSettings(desiredOrExistingSettingsFilePath);
