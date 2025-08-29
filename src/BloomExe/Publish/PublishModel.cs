@@ -422,10 +422,6 @@ namespace Bloom.Publish
             dom.RawDom.AddClassToBody("pdfPublishMode");
 
             PageLayout.UpdatePageSplitMode(dom.RawDom);
-            if (_currentlyLoadedBook.FullBleed && !GetPrintingWithFullBleed())
-            {
-                ClipBookToRemoveFullBleed(dom);
-            }
 
             XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
             dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
@@ -448,25 +444,6 @@ namespace Bloom.Publish
                 dom,
                 source: InMemoryHtmlFileSource.Pub
             );
-        }
-
-        private void ClipBookToRemoveFullBleed(HtmlDom dom)
-        {
-            // example: A5 book is full bleed. What the user saw and configured in Edit mode is RA5 paper, 3mm larger on each side.
-            // But we're not printing for full bleed. We will create an A5 page with no inset trim box.
-            // We want it to hold the trim box part of the RA5 page.
-            // to do this, we simply need to move the bloom-page element up and left by 3mm. Clipping to the page will do the rest.
-            // It would be more elegant to do this by introducing a CSS rule involving .bloom-page, but to introduce a new stylesheet
-            // we have to make it findable in the book folder, which is messy. Or, we could add a stylesheet element to the DOM;
-            // but that's messy, too, we need stuff like /*<![CDATA[*/ to make the content survive the trip from XML to HTML.
-            // So it's easiest just to stick it in the style attribute of each page.
-            foreach (
-                var page in dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
-                    .Cast<SafeXmlElement>()
-            )
-            {
-                page.SetAttribute("style", "margin-left: -3mm; margin-top: -3mm;");
-            }
         }
 
         private void AddStylesheetClasses(SafeXmlDocument dom)
