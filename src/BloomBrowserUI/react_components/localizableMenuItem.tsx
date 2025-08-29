@@ -81,7 +81,9 @@ const menuItemColor = "black";
 
 export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemProps> = props => {
     const variant = props.variant ?? "h6";
-    const typographyProps: TypographyProps = {
+    const typographyProps:
+        | TypographyProps<"span", { component?: "span" | undefined }>
+        | undefined = {
         variant: variant
     };
     const label = useL10n(
@@ -194,7 +196,9 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
 
 export const LocalizableCheckboxMenuItem: React.FunctionComponent<ILocalizableCheckboxMenuItemProps> = props => {
     const variant = props.variant ?? "h6";
-    const typographyProps: TypographyProps = {
+    const typographyProps:
+        | TypographyProps<"span", { component?: "span" | undefined }>
+        | undefined = {
         variant: variant
     };
     const label = useL10n(
