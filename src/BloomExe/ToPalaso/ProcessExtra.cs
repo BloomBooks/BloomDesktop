@@ -41,7 +41,10 @@ namespace Bloom.ToPalaso
             }
             var processList = Process.GetProcesses();
             var windowMap = GetAllWindows();
-            Process.Start(urlOrCmd);
+            // UseShellExecute defaults to true in .net framework and false in .net core, so as part of the upgrade from
+            // .net 4 to .net 8 we are setting it explicitly to preserve behavior. At least some callers of this method
+            // need UseShellExecute = true.
+            Process.Start(new ProcessStartInfo(urlOrCmd) { UseShellExecute = true });
 
             if (Platform.IsLinux && !String.IsNullOrEmpty(libpath))
             {
@@ -111,7 +114,10 @@ namespace Bloom.ToPalaso
             }
             var processList = Process.GetProcesses();
             var windowMap = GetAllWindows();
-            Process.Start(command, arguments);
+            // UseShellExecute defaults to true in .net framework and false in .net core, so as part of the upgrade from
+            // .net 4 to .net 8 we are setting it explicitly to preserve behavior. At least some callers of this method
+            // need UseShellExecute = true.
+            Process.Start(new ProcessStartInfo(command, arguments) { UseShellExecute = true });
 
             if (Platform.IsLinux && !String.IsNullOrEmpty(libpath))
             {

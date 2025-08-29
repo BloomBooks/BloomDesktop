@@ -52,7 +52,7 @@ namespace Bloom.Publish.Video
                 async request =>
                 {
                     var soundLog = request.RequiredPostJson();
-                    await _recordVideoWindow.StopRecordingAsync(soundLog);
+                    await _recordVideoWindow?.StopRecordingAsync(soundLog);
                     request.PostSucceeded();
                 },
                 true,

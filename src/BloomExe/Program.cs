@@ -2039,7 +2039,24 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 
         public static bool RunningUnitTests
         {
-            get { return Assembly.GetEntryAssembly() == null; }
+            get
+            {
+                // In .NET 8, Assembly.GetEntryAssembly() doesn't reliably return null for unit tests.
+                // Check if any test framework assemblies are loaded
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                foreach (var assembly in assemblies)
+                {
+                    var name = assembly.FullName;
+                    if (
+                        name != null
+                        && name.StartsWith("BloomTests", StringComparison.OrdinalIgnoreCase)
+                    )
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
 
         // Set to true when Bloom is running one of the command line verbs, e.g. hydrate or createArtifacts

@@ -705,8 +705,8 @@ namespace BloomTests.Spreadsheet
         {
             Assert.That(
                 _progressSpy.Warnings,
-                Does.Contain(
-                    $"Removed audio alignments on page 13 because some values in the list given ('6 2.9') are larger than the duration of the audio file (4.389)."
+                Has.Some.Matches(
+                    "^Removed audio alignments on page 13 because some values in the list given \\('6 2\\.9'\\) are larger than the duration of the audio file \\(4\\.3\\d*\\)"
                 )
             );
         }

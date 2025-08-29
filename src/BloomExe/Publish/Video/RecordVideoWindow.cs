@@ -1345,7 +1345,7 @@ namespace Bloom.Publish.Video
             _saveReceived = false;
             _webSocketServer.SendString("recordVideo", "recording", "false");
             base.OnClosed(e);
-            if (_recording && _ffmpegProcess != null)
+            if (_recording && _ffmpegProcess != null && !_ffmpegExited)
             {
                 _ffmpegProcess.StandardInput.WriteLine("q"); // stop it asap
             }

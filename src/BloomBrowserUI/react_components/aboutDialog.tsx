@@ -480,15 +480,6 @@ export const AboutDialog: React.FunctionComponent<{
                         </li>
                         <li>
                             <a
-                                href="https://github.com/markbeaton/TidyManaged"
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                TidyManaged
-                            </a>
-                        </li>
-                        <li>
-                            <a
                                 href="https://github.com/CodeSeven/toastr"
                                 target="_blank"
                                 rel="noreferrer"

@@ -131,10 +131,6 @@ Files: /usr/lib/bloom-desktop-alpha/PdfSharp.dll
 Copyright: 2005-2014 empira Software GmbH, Troisdorf (Germany)
 License: MIT
 
-Files: /usr/lib/bloom-desktop-alpha/TidyManaged.dll*
-Copyright: 2009 Mark Beaton
-License: MIT
-
 Files: /usr/lib/bloom-desktop-alpha/DistFiles/pdf/*
 Copyright: 2012 Mozilla Foundation
 License: Apache-2.0

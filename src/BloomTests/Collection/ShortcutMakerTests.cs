@@ -27,7 +27,7 @@ namespace BloomTests.Collection
                         & (FileAttributes.Directory | FileAttributes.Normal),
                     Is.Not.Null
                 );
-                Assert.That(ResolveShortcut.Resolve(expectedFile), Is.EqualTo(targetPath.Path));
+                Assert.That(Shortcut.Resolve(expectedFile), Is.EqualTo(targetPath.Path));
             }
         }
 
@@ -52,7 +52,7 @@ namespace BloomTests.Collection
                         & (FileAttributes.Directory | FileAttributes.Normal),
                     Is.Not.Null
                 );
-                Assert.That(ResolveShortcut.Resolve(expectedFile), Is.EqualTo(targetPath.Path));
+                Assert.That(Shortcut.Resolve(expectedFile), Is.EqualTo(targetPath.Path));
             }
         }
     }
