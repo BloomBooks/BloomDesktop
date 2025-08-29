@@ -389,49 +389,12 @@ export class CanvasElementManager {
         this.alignControlFrameWithActiveElement();
     }
 
-    // May 2025, just before trying to release 6.2a, JT and I decided we would be better off
-    // either being able to get rid of this function completely and just call AdjustSizeOrMarkOverflow,
-    // or have AdjustSizeOrMarkOverflow call this function.
-    // It would be better to have this logic live in one place as evidenced by the fact that we had a bug
-    // in this version which wasn't in AdjustSizeOrMarkOverflow. See BL-14771.
-    // Note that when we experimented with just calling AdjustSizeOrMarkOverflow, we ran into issues with
-    // nicescroll being turned on and off while the canvas element was being resized. This caused
-    // flickering of the text extending beyond the canvas element.
-    // The code here now (June 2025) fixes niceScroll on a timeout.
     public adjustCanvasElementHeightToContentOrMarkOverflow(
         editable: HTMLElement
     ): void {
         if (!this.activeElement) return;
-        const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(
-            editable
-        );
-        let overflowY = overflowAmounts[1];
-
-        // This mimics the relevant part of OverflowChecker.AdjustSizeOrMarkOverflow
-        overflowY = theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
-            editable,
-            overflowY
-        );
-
-        // We decided that overflow was just causing too many problems as we tried to wrap
-        // up drag activities. So for now, we are just turning off overflow reporting completely
-        // in drag activities. See BL-14783.
-        if (!isInDragActivity(editable)) {
-            editable.classList.toggle("overflow", overflowY > 0);
-        }
-        if (this.fixNiceScrollTimeout) {
-            clearTimeout(this.fixNiceScrollTimeout);
-        }
-        // We want to clean up niceScroll so the scroll bars are not left behind, but we get
-        // flicker if we do it continuously. This is hopefully a long enough delay so it
-        // just happens after the user stops dragging.
-        this.fixNiceScrollTimeout = window.setTimeout(() => {
-            cleanupNiceScroll();
-            addScrollbarsToPage(editable.closest(".bloom-page") as HTMLElement);
-        }, 200);
+        OverflowChecker.AdjustSizeOrMarkOverflow(editable);
     }
-
-    private fixNiceScrollTimeout = 0;
 
     // When the format dialog changes the amount of padding for canvas elements, adjust their sizes
     // and positions (keeping the text in the same place).
