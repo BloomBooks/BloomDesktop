@@ -1149,6 +1149,9 @@ namespace Bloom.Publish
             foreach (var img in images)
             {
                 var src = img.GetAttribute("src");
+                // We don't want to crop placeHolder.png, just not display it.  (BL-15201)
+                if (src == "placeHolder.png")
+                    continue;
                 var style = img.GetAttribute("style");
                 if (!SignifiesCropping(style))
                 {
