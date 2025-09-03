@@ -935,9 +935,15 @@ export default class AudioRecording implements IAudioRecorder {
     // in setSoundAndHighlightAsync was written. It might be because when we're first showing
     // the toolbox, the default talking book tool starts being initialized before we actually
     // set what getActiveToolId() is looking for.
-    private isTalkingBookToolActive(): boolean {
+    // This used to be isTalkingBookToolActive, but the motion tool also plays audio
+    // when previewing.
+    private doesCurrentToolPlayAudio(): boolean {
         const activeToolId = getActiveToolId();
-        return activeToolId === "talkingBook" || !activeToolId;
+        return (
+            activeToolId === "talkingBook" ||
+            activeToolId === "motion" ||
+            !activeToolId
+        );
     }
 
     public async setSoundAndHighlightAsync(
@@ -949,7 +955,7 @@ export default class AudioRecording implements IAudioRecorder {
         // tool getting the "newPageReady" method called when the new page specifies a
         // different tool to be activated.  This is the simplest fix that I've found.
         // See BL-14434.
-        if (!this.isTalkingBookToolActive()) return;
+        if (!this.doesCurrentToolPlayAudio()) return;
 
         // Note: setHighlightToAsync() should be run first so that ui-audioCurrent points to the correct element when setSoundFrom() is run.
         await this.setHighlightToAsync(setHighlightParams);
@@ -981,7 +987,16 @@ export default class AudioRecording implements IAudioRecorder {
         // e.g. the user could navigate (with arrows or mousewheel) such that oldElement is out of view, then press Play.
         // It would be worthwhile to scroll it back into view in that case.
         if (shouldScrollToElement && visible) {
-            this.scrollElementIntoView(newElement);
+            // This stops us trying to scroll into view elements being played back in
+            // a motion preview. (We don't want to make isVisible return false for this case,
+            // because then the elements won't be played back at all.)
+            const page = newElement.closest(".bloom-page");
+            if (
+                !page ||
+                window.getComputedStyle(page).visibility !== "hidden"
+            ) {
+                this.scrollElementIntoView(newElement);
+            }
         }
 
         if (oldElement === newElement && !forceRedisplay) {
@@ -2574,7 +2589,7 @@ export default class AudioRecording implements IAudioRecorder {
         // Probably redundant, but some nasty things can happen when we try to changeStateAndSetExpectedAsync()
         // when setSoundAndHighlightAsync() didn't actually set the highlight because we're in another tool.
         // This makes things a little safer.
-        if (!this.isTalkingBookToolActive()) return false;
+        if (!this.doesCurrentToolPlayAudio()) return false;
         let boxToSelect = target.closest(kAudioSentenceClassSelector);
         if (!boxToSelect) {
             // if it isn't one and isn't inside one, see if it contains one
@@ -3060,7 +3075,7 @@ export default class AudioRecording implements IAudioRecorder {
         // selected...we can get into a recursive await/call stack that freezes Bloom.
         // This is one of several places where we give up trying to select something if the tool
         // isn't active to prevent such problems.
-        if (!this.isTalkingBookToolActive()) return null;
+        if (!this.doesCurrentToolPlayAudio()) return null;
         const pageDocBody = this.getPageDocBody();
         if (!pageDocBody) {
             return null;
