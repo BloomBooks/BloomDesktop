@@ -1939,7 +1939,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     // Update the input element (checkbox) and turn on the playback order controls on the visible
     // translation-groups.
-    public setShowPlaybackOrderMode(isOn: boolean) {
+    public async setShowPlaybackOrderMode(isOn: boolean) {
         this.inShowPlaybackOrderMode = isOn;
         const docBody = this.getPageDocBody();
         if (!docBody) {
@@ -1949,6 +1949,10 @@ export default class AudioRecording implements IAudioRecorder {
             this.showPlaybackOrderUi(docBody);
         } else {
             this.removePlaybackOrderUi(docBody);
+            // Not sure we really want to make 'record' the expected action if it already
+            // has a recording. However, we do this in all kinds of places where a new
+            // element is being selected, so at least this is consistent.
+            await this.changeStateAndSetExpectedAsync("record");
         }
         this.updateDisplay();
     }
@@ -4453,8 +4457,8 @@ export default class AudioRecording implements IAudioRecorder {
                     range.insertNode(marker);
                 },
                 inShowPlaybackOrderMode: this.inShowPlaybackOrderMode,
-                setShowPlaybackOrder: (isOn: boolean) => {
-                    this.setShowPlaybackOrderMode(isOn);
+                setShowPlaybackOrder: async (isOn: boolean) => {
+                    await this.setShowPlaybackOrderMode(isOn);
                 },
                 showingImageDescriptions: this.showingImageDescriptions,
                 setShowingImageDescriptions: (isOn: boolean) => {
