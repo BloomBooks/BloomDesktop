@@ -71,8 +71,8 @@
   <Import Project="../.nuget/NuGet.targets" />
   <Target Name="RestoreBuildTasks" DependsOnTargets="CheckPrerequisites">
     <Message Text="RestartBuild=$(RestartBuild)"/>
-    <Exec Command='$(NuGetCommand) install SIL.BuildTasks -excludeVersion -version 2.5.0 -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
-    <Exec Command='$(NuGetCommand) install SIL.BuildTasks.AWS -excludeVersion -version 2.5.0 -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
+    <Exec Command='$(NuGetCommand) install SIL.BuildTasks -excludeVersion -version -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
+    <Exec Command='$(NuGetCommand) install SIL.BuildTasks.AWS -excludeVersion -version -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="BuildInternal"
 			Properties="Configuration=$(Configuration)" Condition="$(RestartBuild)" />
   </Target>
@@ -151,11 +151,14 @@
   </Target>
   <Target Name="TestOnly" DependsOnTargets="RunNUnit"/>
   <Target Name="RunNUnit">
+    <PropertyGroup>
+      <TestResultsXmlFile Condition="$(isOnTeamCity) == false">$(RootDir)/output/$(Configuration)/TestResults.xml</TestResultsXmlFile>
+      <ExtraExcludeCategories Condition="'$(teamcity_version)' != ''">SkipOnTeamCity,$(ExtraExcludeCategories)</ExtraExcludeCategories>
+    </PropertyGroup>
     <NUnit3
-			Condition="$(isOnTeamCity) == false"
 			Assemblies="@(TestAssemblies)"
-			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.16.2/tools"
-			ExcludeCategory="$(excludedCategories)"
+			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.20.1/tools"
+			ExcludeCategory="$(ExtraExcludeCategories)$(excludedCategories)"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
 			Process="$(TestProcessType)"
@@ -163,21 +166,9 @@
 			Trace="Debug"
 			Workers="1"
 			Verbose="true"
-			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"
-			TeamCity="false"/>
-    <NUnit3
-			Condition="$(isOnTeamCity) == true"
-			Assemblies="@(TestAssemblies)"
-			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.16.2/tools"
-			ExcludeCategory="SkipOnTeamCity,$(excludedCategories)"
-			WorkingDirectory="$(RootDir)/output/$(Configuration)"
-			Force32Bit="$(useNUnit-x86)"
-			Process="$(TestProcessType)"
-			Agents="1"
-			Trace="Debug"
-			Workers="1"
-			Verbose="true"
-			TeamCity="true"/>
+			OutputXmlFile="$(TestResultsXmlFile)"
+			UseNUnit3Xml="true"
+			TeamCity="$(isOnTeamCity)"/>
   </Target>
   <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
 		Condition="'$(OS)'=='Windows_NT'">
@@ -219,7 +210,7 @@
 			DestinationFolder="channels"
 			IsPublicRead="true" />
   </Target>
-  
+
   <Target Name="Installer" DependsOnTargets="VersionNumbers; Build">
     <CallTarget Targets="SignExesIfPossible"/>
     <!-- the name of the exe must also match the application product name. Use move rather than rename in case the destination
