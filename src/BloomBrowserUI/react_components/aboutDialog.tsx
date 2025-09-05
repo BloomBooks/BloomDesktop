@@ -331,15 +331,6 @@ export const AboutDialog: React.FunctionComponent<{
                         </li>
                         <li>
                             <a
-                                href="http://www.html-tidy.org/"
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                LibTidy
-                            </a>
-                        </li>
-                        <li>
-                            <a
                                 href="https://github.com/quentint/long-press"
                                 target="_blank"
                                 rel="noreferrer"
@@ -349,30 +340,11 @@ export const AboutDialog: React.FunctionComponent<{
                         </li>
                         <li>
                             <a
-                                href="https://www.toptensoftware.com/markdowndeep/"
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                MarkdownDeep
-                            </a>
-                        </li>
-                        <li>
-                            <a
                                 href="https://github.com/naudio/NAudio"
                                 target="_blank"
                                 rel="noreferrer"
                             >
                                 NAudio
-                            </a>
-                        </li>
-                        {/* why do we need to credit a test framework? */}
-                        <li>
-                            <a
-                                href="https://nunit.org/"
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                NUnit
                             </a>
                         </li>
                         <li>
@@ -448,16 +420,6 @@ export const AboutDialog: React.FunctionComponent<{
                             >
                                 sqlite-net
                             </a>
-                        </li>
-                        <li>
-                            <a
-                                href="https://github.com/squirrel/squirrel.windows"
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                squirrel
-                            </a>
-                            : Paul Betts
                         </li>
                         <li>
                             <a
