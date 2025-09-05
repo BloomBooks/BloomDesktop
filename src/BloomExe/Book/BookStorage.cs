@@ -2816,11 +2816,14 @@ namespace Bloom.Book
                 );
                 if (String.IsNullOrEmpty(brandingFolder))
                 {
-                    // This special "branding" contains a message about being patient until the branding ships.
-                    // Its purpose is to allow us to release a new branding code even before we release a version
-                    // of Bloom that properly supports it. (Note that it is, purposely, not localizable; it's only
-                    // intended to be seen by a few administrators until the branding ships.)
-                    brandingFolder = BloomFileLocator.GetBrandingFolder("Missing");
+                    // We may hand out a branding code before the branding ships.
+                    // Earlier we had a special "Missing" branding with messages asking people to be
+                    // patient until their branding ships. But (a) some users wanted a more acceptable
+                    // book appearance until the branding ships, and (b) some users don't want a
+                    // custom branding, so it saves us work if it just looks normal.
+                    // We may revise this decision, e.g., creating a branding similar to Default
+                    // but saying "Made with Bloom Enterprise"
+                    brandingFolder = BloomFileLocator.GetBrandingFolder("Default");
                 }
 
                 var filesToCopy = Directory
