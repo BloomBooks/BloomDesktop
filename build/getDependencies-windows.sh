@@ -138,7 +138,6 @@ copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableD
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp63/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfDroplet.dll ../lib/dotnet/PdfDroplet.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/libtidy.dll ../lib/dotnet/libtidy.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.exe ../lib/dotnet/HtmlXliff.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.pdb ../lib/dotnet/HtmlXliff.pdb
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlAgilityPack.dll ../lib/dotnet/HtmlAgilityPack.dll
