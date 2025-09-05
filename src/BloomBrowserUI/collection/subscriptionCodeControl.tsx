@@ -31,7 +31,7 @@ type Status =
 // SubscriptionGood: a valid, current, known code has been entered (or remembered)
 //      We get a green check, an expiration date, and a 'summary' of the branding
 // NoBrandingFilesYet: a valid code has been entered, but this version of Bloom does not recognize it
-//      We get a red ! icon and a message
+//      We get a green check and a message
 // SubscriptionExpired: a valid code has been entered, but its expiration date is past.
 //      We get a red ! icon, a red message about the expiration, and a branding summary
 // SubscriptionIncomplete: a valid subscription could be created by typing more at
@@ -309,10 +309,12 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
     const shouldShowRedExclamation = () => {
         return [
             "SubscriptionIncorrect",
-            "NoBrandingFilesYet",
             "SubscriptionExpired",
             "SubscriptionLegacy"
         ].includes(status);
+    };
+    const shouldShowGreenCheck = () => {
+        return ["SubscriptionGood", "NoBrandingFilesYet"].includes(status);
     };
     const [selectionPosition, setSelectionPosition] = React.useState<
         number | null
@@ -387,7 +389,7 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
                         padding: 5px;
                     `}
                 />
-                {status === "SubscriptionGood" && (
+                {shouldShowGreenCheck() && (
                     <span className={"evaluationCode"}>
                         <FontAwesomeIcon icon="check" />
                     </span>

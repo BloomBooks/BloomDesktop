@@ -108,22 +108,6 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// We sometimes want temporary subscriptions that use the default branding files, but which provide
-        /// access to Enterprise level features.  The base branding names for these subscriptions are listed
-        /// here.  (This is useful for workshops and other training venues.)  See BL-14872.
-        ///
-        /// There are also enterprise users who want the features but do not care to have custom branding.
-        /// We also list those here for now.
-        /// </summary>
-        public static string[] SubscriptionsThatUseDefaultBranding = new[]
-        {
-            "BloomProgram",
-            "Pretend-Project",
-            // Real enterprise descriptors which just use the default branding.
-            "Gereja-Protestan-Maluku",
-        };
-
-        /// <summary>
         /// extract the various parts of a Subscription Descriptor
         /// </summary>
         /// <param name="subscriptionDescriptor">the part of the subcription code before the numbers start</param>
@@ -175,15 +159,6 @@ namespace Bloom.Api
             parts = folderName.Split('(');
             folderName = parts[0];
             subUnitName = parts.Length > 1 ? parts[1].Replace(")", "") : "";
-
-            // If the branding is for a subscription that uses the default branding, we want to use the "Default" folder.
-            // In this case, the flavor and subUnitName are irrelevant, so we set them to empty strings.
-            if (BrandingSettings.SubscriptionsThatUseDefaultBranding.Contains(folderName))
-            {
-                folderName = "Default";
-                flavor = "";
-                subUnitName = "";
-            }
         }
 
         /// <summary>
@@ -272,9 +247,9 @@ namespace Bloom.Api
                             );
                             if (string.IsNullOrEmpty(cssPath))
                             {
-                                // Branding has not yet shipped. We want the branding.json from the "Missing" branding
+                                // Branding has not yet shipped. We want the branding.json from the "Default" branding (earlier "Missing")
                                 settingsPath = BloomFileLocator.GetOptionalBrandingFile(
-                                    "Missing",
+                                    "Default",
                                     "branding.json"
                                 );
                             }
