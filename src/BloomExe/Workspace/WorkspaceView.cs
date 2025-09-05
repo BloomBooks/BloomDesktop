@@ -598,12 +598,16 @@ namespace Bloom.Workspace
         private void _applicationUpdateCheckTimer_Tick(object sender, EventArgs e)
         {
             _applicationUpdateCheckTimer.Enabled = false;
-            if (!Debugger.IsAttached && Platform.IsWindows)
+            if (
+                !Debugger.IsAttached
+                && Platform.IsWindows
+                && !InstallerSupport.SharedByAllUsers()
+                && !ApplicationUpdateSupport.IsDev
+            )
             {
                 ApplicationUpdateSupport.CheckForAVelopackUpdate(
                     ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet,
-                    () => RestartBloom(),
-                    Settings.Default.AutoUpdate
+                    () => RestartBloom()
                 );
             }
         }
@@ -1437,18 +1441,6 @@ namespace Bloom.Workspace
 
         private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
         {
-            if (ApplicationUpdateSupport.BloomUpdateInProgress)
-            {
-                //enhance: ideally, what this would do is show a toast of whatever it is Velopack is doing: checking, downloading, waiting for a restart.
-                MessageBox.Show(
-                    this,
-                    LocalizationManager.GetString(
-                        "CollectionTab.UpdateCheckInProgress",
-                        "Bloom is already working on checking for updates."
-                    )
-                );
-                return;
-            }
             if (Debugger.IsAttached)
             {
                 MessageBox.Show(this, "Sorry, you cannot check for updates from the debugger.");
@@ -1474,8 +1466,7 @@ namespace Bloom.Workspace
             {
                 ApplicationUpdateSupport.CheckForAVelopackUpdate(
                     ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Verbose,
-                    () => RestartBloom(),
-                    Settings.Default.AutoUpdate
+                    () => RestartBloom()
                 );
             }
         }
