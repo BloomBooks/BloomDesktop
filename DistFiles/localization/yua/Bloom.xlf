@@ -1495,8 +1495,8 @@
         <note>ID: EditTab.ContentLanguagesDropdown</note>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip">
-        <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
-        <target xml:lang="yua" state="needs-translation">Choose language to make this a bilingual or trilingual book</target>
+        <source xml:lang="en">This is disabled because it won't change anything on this page.</source>
+        <target xml:lang="yua" state="needs-translation">This is disabled because it won't change anything on this page.</target>
         <note>ID: EditTab.ContentLanguagesDropdown.DisabledTooltip</note>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip">
@@ -6176,8 +6176,8 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: SubscriptionStatus.ProTeamCollectionNotSupported</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingProSubscription">
-        <source xml:lang="en">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</source>
-        <target xml:lang="yua" state="needs-translation">Using **Pro** subscription for **{0}**{.bloom-Red}. Expires {1}</target>
+        <source xml:lang="en">Using **Pro** subscription for {0}. Expires {1}</source>
+        <target xml:lang="yua" state="needs-translation">Using **Pro** subscription for {0}. Expires {1}</target>
         <note>ID: SubscriptionStatus.UsingProSubscription</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">
