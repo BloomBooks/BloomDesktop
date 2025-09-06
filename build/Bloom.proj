@@ -214,7 +214,6 @@
     <!-- the name of the exe must also match the application product name. Use move rather than rename in case the destination
 		already exists from a previous build. Review: we could do this in installer\content after the following copies.-->
     <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe $(RootDir)\output\$(Configuration)\Bloom$(channel).exe"/>
-    <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe.config $(RootDir)\output\$(Configuration)\Bloom$(channel).exe.config"/>
     <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.pdb $(RootDir)\output\$(Configuration)\Bloom$(channel).pdb"/>
     <!-- Copy everything we want installed on the user's computer into ../installer/content. (First we remove the directory,
     so as not to include anything obsolete from an earlier build).-->
