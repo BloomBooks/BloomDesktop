@@ -134,10 +134,6 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<Prefer32Bit>True</Prefer32Bit>
 	</PropertyGroup>
-	<PropertyGroup>
-		<!-- We should delete this when we get rid of WebThumbNailList.Designer.cs. I believe we are only using binary formatter serialization in working with the ImageStream there. -->
-		<EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
-	</PropertyGroup>
 	<ItemGroup>
 		<SourceFiles Include="..\..\lib\dotnet\*.config" />
 		<LameFiles Include="..\..\lib\lame\lame*.*" />

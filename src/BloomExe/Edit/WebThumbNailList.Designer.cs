@@ -30,14 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WebThumbNailList));
-            this._thumbnailImageList = new System.Windows.Forms.ImageList(this.components);
             this.SuspendLayout();
-            // 
-            // _thumbnailImageList
-            // 
-            this._thumbnailImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("_thumbnailImageList.ImageStream")));
-            this._thumbnailImageList.TransparentColor = System.Drawing.Color.Transparent;
-            this._thumbnailImageList.Images.SetKeyName(0, "x-office-document.png");
             // 
             // WebThumbNailList
             // 
@@ -48,11 +41,8 @@
             this.Name = "WebThumbNailList";
             this.Size = new System.Drawing.Size(150, 491);
             this.ResumeLayout(false);
-
         }
 
         #endregion
-
-        private System.Windows.Forms.ImageList _thumbnailImageList;
     }
 }
