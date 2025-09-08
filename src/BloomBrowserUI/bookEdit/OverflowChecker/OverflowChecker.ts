@@ -608,7 +608,7 @@ export default class OverflowChecker {
         // just happens after the user stops dragging.
         this.fixScrollBarsTimeout = window.setTimeout(() => {
             cleanupNiceScroll();
-            addScrollbarsToPage(page[0]);
+            addScrollbarsToPage(page);
         }, 200);
     }
 
