@@ -328,9 +328,9 @@ namespace Bloom
 
                 var path = Assembly.GetEntryAssembly().ManifestModule.FullyQualifiedName;
                 // Use a very specific channel name on developer machines based on build configuration.
-                if (path.Replace('\\', '/').EndsWith("/output/Debug/Bloom.exe"))
+                if (path.Replace('\\', '/').EndsWith("/output/Debug/Bloom.dll"))
                     return "Developer/Debug"; // verifies this code is running on a developer machine.
-                if (path.Replace('\\', '/').EndsWith("/output/Release/Bloom.exe"))
+                if (path.Replace('\\', '/').EndsWith("/output/Release/Bloom.dll"))
                     return "Developer/Release"; // verifies this code is running on a developer machine.
                 if (Platform.IsUnix)
                 {
@@ -351,7 +351,7 @@ namespace Bloom
                     .GetEntryAssembly()
                     .ManifestModule.Name.Replace("bloom", "")
                     .Replace("Bloom", "")
-                    .Replace(".exe", "")
+                    .Replace(".dll", "")
                     .Trim();
                 return (s == "") ? "Release" : s;
             }
