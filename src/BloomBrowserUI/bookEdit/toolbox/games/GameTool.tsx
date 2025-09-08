@@ -332,6 +332,7 @@ const makeArrowShape = (
             "svg"
         );
         arrow.setAttribute("id", "target-arrow");
+        arrow.setAttribute("class", "bloom-ui"); // so it won't be saved with the page
         draggable.parentElement!.appendChild(arrow);
     }
 
