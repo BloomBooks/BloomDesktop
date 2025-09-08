@@ -222,12 +222,16 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             };
             // Unless the element is created and made draggable and resizable in the page iframe's execution context,
             // the dragging and resizing just don't work.
-            return getEditablePageBundleExports()!.makeElement(
+            const result = getEditablePageBundleExports()!.makeElement(
                 htmlForDraggable,
                 $(bloomCanvasToAnimate),
                 argsForResizable,
                 argsForDraggable
             );
+            // This is an extra guarantee that it doesn't end up persisted; also, it prevents
+            // CanvasElementManager.AdjustChildrenIfSizeChanged from taking it into account.
+            result.get(0).classList.add("bloom-ui");
+            return result;
         };
         const bloomBlue = "#1D94A4";
         const bloomPurple = "#96668F";
@@ -484,7 +488,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private observer: MutationObserver;
-    private sizeObserver: MutationObserver;
+    private sizeObserver: ResizeObserver;
 
     private updateChoosePictureState(): void {
         // If they once choose a picture, there's no going back to a placeholder (on this page).
@@ -492,73 +496,38 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         this.observer.disconnect();
     }
 
-    private resizeRectanglesDelay: number = 200;
-    private resizeInProgress: boolean = false;
-    private resizeOldStyle: string | null;
+    private resizeOldWidth = 0;
+    private resizeOldHeight = 0;
 
-    // This is called when the size of the picture changes. We also get LOTS
-    // of spurious calls, for example, while resizing the rectangles. And even
-    // when really resizing the bloom-canvas, we get too many calls, and
-    // the handler gets behind the events and things get sluggish if not worse.
-    // Worse, when resizing the rectangles, somehow the scaleImage code is triggered
-    // on the main image, and the size and position attributes may briefly
-    // be cleared, so for a short time they may really be changed, though no
-    // permanent change is occurring.
-    // Waiting briefly and then seeing whether the style really changed
-    // prevents the spurious events from triggering regeneration of the rectangles
-    // during resizing, which can prevent the resizing altogether.
-    // Simply waiting briefly reduces the frequency of regenerating
-    // the rectangles to something manageable and makes it feel much more responsive.
+    // This is called when the size of the bloom canvas changes.
+    // It seems to get called constantly even when nothing has actually changed,
+    // perhaps because makeRectsVisible actually re-creates the obsever, so we
+    // debounce it by checking for an actual size change.
+    // (Earlier versions using MutationObserver also debounced it to happen at most every 200ms;
+    // that no longer seems to be necessary for smooth resizing.)
     private pictureSizeChanged(): void {
-        if (this.resizeInProgress) {
-            return;
-        }
-        setTimeout(() => {
-            // allow any future notifications to be processed.
-            this.resizeInProgress = false;
-            const images = this.getImages();
-            if (images[0].getAttribute("style") === this.resizeOldStyle) {
-                return; // spurious notification
-            }
-        }, this.resizeRectanglesDelay);
-        this.resizeInProgress = true; // ignore notifications until timeout
-    }
-
-    private getImages(): Array<HTMLImageElement> {
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
-        if (!bloomCanvasToAnimate) return []; // paranoid
-        // not interested in images inside the resize rectangles.
-        return Array.prototype.slice
-            .call(bloomCanvasToAnimate.getElementsByTagName("img"))
-            .filter(v => v.parentElement === bloomCanvasToAnimate);
+        if (
+            !bloomCanvasToAnimate ||
+            (bloomCanvasToAnimate.offsetHeight === this.resizeOldHeight &&
+                bloomCanvasToAnimate.offsetWidth === this.resizeOldWidth)
+        )
+            return;
+        // We don't actually need to redo everything this does, but it's the easiest way
+        // to ensure everything is correct.
+        this.makeRectsVisible();
     }
 
     private setupResizeObserver(): void {
         if (this.sizeObserver) {
             this.sizeObserver.disconnect();
         }
-        this.sizeObserver = new MutationObserver(() =>
-            this.pictureSizeChanged()
-        );
-        const images = this.getImages();
-
-        // I'm not sure how images can be an empty list...possibly while the page is shutting down??
-        // But I've seen the JS error, so being defensive...we can't observe an image that doesn't exist.
-        if (images.length > 0) {
-            const style = images[0].getAttribute("style");
-            this.resizeOldStyle = style;
-            // THE FOLLOWING COMMENT IS OUT OF DATE, AS WE DON'T USE scaleImage ANYMORE.
-            // FROM READING pIctureSizeChanged() MAYBE ALL THIS CAN BE REMOVED NOW?
-            // jquery's scaleImage function adjusts the position and size of the element to
-            // keep it centered when the size of the bloom-canvas changes.
-            // margin-top and margin-left are only set using style; height and width
-            // are also set in their own attributes. But if any of them changes, the style does.
-            // We would prefer to use a ResizeObserver, but Gecko doesn't implement it yet.
-            this.sizeObserver.observe(images[0], {
-                attributes: true,
-                attributeFilter: ["style"]
-            });
-        }
+        const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
+        if (!bloomCanvasToAnimate) return;
+        this.sizeObserver = new ResizeObserver(() => this.pictureSizeChanged());
+        this.sizeObserver.observe(bloomCanvasToAnimate);
+        this.resizeOldHeight = bloomCanvasToAnimate.offsetHeight;
+        this.resizeOldWidth = bloomCanvasToAnimate.offsetWidth;
     }
 
     private setupImageObserver(): void {
