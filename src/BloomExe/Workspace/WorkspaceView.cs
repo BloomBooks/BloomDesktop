@@ -821,7 +821,9 @@ namespace Bloom.Workspace
             UpdateMenuTextToShorterNameOfSelection(toolStripButton, item.Text);
 
             // Currently needed for the language chooser to update its localization
-            BloomWebSocketServer.Instance.SendString("app", "uiLanguageChanged", tag.LangTag);
+            // We cannot call this when choosing/creating an initial collection because
+            // BloomWebSocketServer.Instance is set only while loading the collection.  (BL-15230)
+            BloomWebSocketServer.Instance?.SendString("app", "uiLanguageChanged", tag.LangTag);
 
             finishClickAction?.Invoke();
         }
