@@ -151,6 +151,15 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
 		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
 	</ItemGroup>
+
+	<PropertyGroup>
+		<LocalizationDir>..\..\DistFiles\localizations\</LocalizationDir>
+	</PropertyGroup>
+	<ItemGroup>
+		<SourcePalasoFile Include="$(NuGetPackageRoot)sil.libpalaso.l10ns\16.2.0-beta0027\content\Palaso.en.xlf" />
+		<TranslatedPalasoFiles Include="$(NuGetPackageRoot)sil.libpalaso.l10ns\16.2.0-beta0027\content\**\*.xlf" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<DeleteForSILMedia Include="$(OutDir)lib\win-x64\*.*" />
 		<DeleteForSILMedia Include="$(OutDir)lib\win-x86\*.*" />
@@ -171,6 +180,9 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 		<Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
 		<Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
 		<RemoveDir Directories="@(RemoveForSILMedia)" />
+		<Message Text="Copying Palaso.xlf files from nuget package to DistFiles" Importance="high" />
+		<Copy SourceFiles="@(SourcePalasoFile)" DestinationFiles="$(LocalizationDir)en\Palaso.xlf" />
+		<Copy SourceFiles="@(TranslatedPalasoFiles)" DestinationFiles="$(LocalizationDir)%(RecursiveDir)Palaso.xlf" Condition="'%(RecursiveDir)' != ''" />
 		<Message Text="ReallyAfterBuild target completed." Importance="high" />
 	</Target>
 	<Target Name="CopyX86SqliteForArm" AfterTargets="ReallyAfterBuild">
@@ -204,6 +216,7 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />
 		<PackageReference Include="SIL.Core.Desktop" Version="16.2.0-beta0029" />
 		<PackageReference Include="SIL.DesktopAnalytics" Version="4.0.4" />
+		<PackageReference Include="SIL.libpalaso.l10ns" Version="16.2.0-beta0027" />
 		<PackageReference Include="SIL.Media" Version="16.2.0-beta0029" />
 		<PackageReference Include="SIL.Windows.Forms" Version="16.2.0-beta0029" />
 		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="16.2.0-beta0029" />
