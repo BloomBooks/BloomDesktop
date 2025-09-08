@@ -78,7 +78,7 @@ namespace Bloom.Workspace
 			this._containerPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
 			| System.Windows.Forms.AnchorStyles.Left)
 			| System.Windows.Forms.AnchorStyles.Right)));
-			this._containerPanel.Location = new System.Drawing.Point(0, 74);
+			this._containerPanel.Location = new System.Drawing.Point(0, 64);
 			this._containerPanel.Name = "_containerPanel";
 			this._containerPanel.Size = new System.Drawing.Size(1098, 463);
 			this._containerPanel.TabIndex = 16;
@@ -90,7 +90,7 @@ namespace Bloom.Workspace
 			this._toolSpecificPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
 			this._toolSpecificPanel.Location = new System.Drawing.Point(357, 2);
 			this._toolSpecificPanel.Name = "_toolSpecificPanel";
-			this._toolSpecificPanel.Size = new System.Drawing.Size(652, 66);
+			this._toolSpecificPanel.Size = new System.Drawing.Size(652, 60);
 			this._toolSpecificPanel.TabIndex = 17;
 			//
 			// _L10NSharpExtender
@@ -183,7 +183,7 @@ namespace Bloom.Workspace
 			this._toolStrip.Location = new System.Drawing.Point(30, 0);
 			this._toolStrip.Name = "_toolStrip";
 			this._toolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this._toolStrip.Size = new System.Drawing.Size(59, 66);
+			this._toolStrip.Size = new System.Drawing.Size(59, 60);
 			this._toolStrip.TabIndex = 28;
 			this._toolStrip.Text = "_toolStrip";
 			//
@@ -397,7 +397,7 @@ namespace Bloom.Workspace
 			this._L10NSharpExtender.SetLocalizingId(this._panelHoldingToolStrip, "HelpMenu.WorkspaceView._panelHoldingToolStrip");
 			this._panelHoldingToolStrip.Location = new System.Drawing.Point(1006, 3);
 			this._panelHoldingToolStrip.Name = "_panelHoldingToolStrip";
-			this._panelHoldingToolStrip.Size = new System.Drawing.Size(89, 66);
+			this._panelHoldingToolStrip.Size = new System.Drawing.Size(89, 59);
 			this._panelHoldingToolStrip.TabIndex = 29;
 			//
 			// _applicationUpdateCheckTimer
@@ -423,7 +423,7 @@ namespace Bloom.Workspace
 			this._reactCollectionTab.Padding = new System.Windows.Forms.Padding(0);
 			this._reactCollectionTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 			this._reactCollectionTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
-			this._reactCollectionTab.Size = new System.Drawing.Size(103, 71);
+			this._reactCollectionTab.Size = new System.Drawing.Size(103, 60);
 			this._reactCollectionTab.Text = "Collections";
 			this._reactCollectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			//
