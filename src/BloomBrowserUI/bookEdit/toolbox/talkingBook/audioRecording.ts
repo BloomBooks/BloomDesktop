@@ -4124,15 +4124,18 @@ export default class AudioRecording implements IAudioRecorder {
         element: JQuery
     ): TextFragment[] {
         // review: possibly this cleanup should be part of stringToSentences(),
-        // remove any span, em, strong, b, i, u, sup elements that are empty
-        // stringToSentences doesn't handle them reliably, and they just add clutter
+        // remove any em, strong, b, i, u, sup elements that are empty.
+        // Don't remove spans here, some of them (with attributes) are important even if empty
+        // (for example, soft returns are represented as <span class="bloom-linebreak"></span>),
+        // and if there are no attributes, they will get removed below.
+        // stringToSentences doesn't handle empty elements reliably, and they just add clutter
         element
             .find(
-                "span:empty, em:empty, strong:empty, b:empty, i:empty, u:empty, sup:empty"
+                "em:empty, strong:empty, b:empty, i:empty, u:empty, sup:empty"
             )
             .remove();
         // unwrap any span elements that have no attributes and so change nothing
-        // I don't think this prevents a bug, but it reduces clutter.
+        // This will get rid of at least some empty spans, and it reduces clutter.
         const copyElt = element.get(0);
         for (const span of Array.from(copyElt.getElementsByTagName("span"))) {
             if (span.attributes.length === 0) {
