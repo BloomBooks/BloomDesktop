@@ -228,6 +228,11 @@
         <target xml:lang="pt-PT" state="final">Bloom teve problemas ao escrever arquivos nessa localização ({0}). Verifique se você tem permissão para escrever lá.</target>
         <note>ID: Spreadsheet.WriteFailed</note>
       </trans-unit>
+      <trans-unit id="Spreadsheet.CannotExportDragAndDropGamePages">
+        <source xml:lang="en">Bloom cannot export because {0} pages contain drag-and-drop games.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Bloom cannot export because {0} pages contain drag-and-drop games.</target>
+        <note>ID: Spreadsheet.CannotExportDragAndDropGamePages</note>
+      </trans-unit>
       <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer" approved="yes">
         <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
         <target xml:lang="pt-PT" state="final">Coloque a resposta correta neste botão. Bloom irá randomizar a ordem mais tarde.</target>

@@ -228,6 +228,11 @@
         <target xml:lang="az" state="translated">Bloom o yerə ({0}) fayları yazmağa çətinliklə rast gəldi. Ora yazmağa icazə olduğunuzu yoxlayın.</target>
         <note>ID: Spreadsheet.WriteFailed</note>
       </trans-unit>
+      <trans-unit id="Spreadsheet.CannotExportDragAndDropGamePages">
+        <source xml:lang="en">Bloom cannot export because {0} pages contain drag-and-drop games.</source>
+        <target xml:lang="az" state="needs-translation">Bloom cannot export because {0} pages contain drag-and-drop games.</target>
+        <note>ID: Spreadsheet.CannotExportDragAndDropGamePages</note>
+      </trans-unit>
       <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
         <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
         <target xml:lang="az" state="translated">Bu düyməyə düzgün cavabı qoyun. Bloom nizamı sonradan təsadüfi edəcək.</target>
