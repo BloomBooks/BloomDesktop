@@ -1206,7 +1206,7 @@ export function localizeCkeditorTooltips(bar: JQuery) {
 }
 
 // This is invoked when we are about to change pages.
-function removeOrigami() {
+function removeEditingDebris() {
     // We are mirroring the origami layoutToggleClickHandler() here, in case the user changes
     // pages while the origami toggle in on.
     // The DOM here is for just one page, so there's only ever one marginBox.
@@ -1226,7 +1226,7 @@ export function requestPageContent() {
     try {
         // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports().
         getToolboxBundleExports()?.removeToolboxMarkup();
-        removeOrigami(); // Enhance this makes a change when better it would only changed the
+        removeEditingDebris(); // Enhance this makes a change when better it would only changed the
         const content = getBodyContentForSavePage();
         const userStylesheet = userStylesheetContent();
         postString(
