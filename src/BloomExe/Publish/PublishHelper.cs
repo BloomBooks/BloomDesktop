@@ -1082,35 +1082,37 @@ namespace Bloom.Publish
                 .ToArray();
             foreach (var canvasElement in backgroundImageCanvasElements)
             {
-                // All these early returns are paranoia. If we find a div with class bloom-backgroundImage,
-                // it WILL contain an image container that contains an img, and WILL be a child of
+                // Most of these early continues are paranoia. If we find a div with class bloom-backgroundImage,
+                // on a page, it WILL contain an image container that contains an img, and WILL be a child of
                 // a bloom-canvas. So the xpath above targets exactly
                 // the elements that need this transformation. The backgroundImage elements ("background
                 // canvas elements") are removed, and the img is moved to the bloom-canvas.
+                // One exception that has occurred is in an old, migrated book where an element in the data-div
+                // had this class, but only the image file name as content.
                 var imgContainer =
                     canvasElement.ChildNodes.FirstOrDefault(c =>
                         c is SafeXmlElement ce && ce.LocalName == "div"
                     ) as SafeXmlElement;
                 if (imgContainer == null || !imgContainer.HasClass("bloom-imageContainer"))
-                    return;
+                    continue;
                 var img =
                     imgContainer.ChildNodes.FirstOrDefault(c =>
                         c is SafeXmlElement ce && ce.LocalName == "img"
                     ) as SafeXmlElement;
                 if (img == null)
-                    return;
+                    continue;
                 var src = img.GetAttribute("src");
                 if (string.IsNullOrEmpty(src))
-                    return;
+                    continue;
                 var bloomCanvas = canvasElement.ParentNode as SafeXmlElement;
                 if (bloomCanvas == null || !bloomCanvas.HasClass(HtmlDom.kBloomCanvasClass))
-                    return;
+                    continue;
                 var bcImg =
                     bloomCanvas.ChildNodes.FirstOrDefault(c =>
                         c is SafeXmlElement ce && ce.LocalName == "img"
                     ) as SafeXmlElement;
                 if (bcImg != null && bcImg.GetAttribute("src") != "placeHolder.png")
-                    return; // paranoia
+                    continue; // paranoia
                 if (bcImg != null)
                 {
                     bloomCanvas.RemoveChild(bcImg);

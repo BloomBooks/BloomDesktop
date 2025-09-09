@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -818,7 +819,23 @@ namespace Bloom.Workspace
             UpdateMenuTextToShorterNameOfSelection(toolStripButton, item.Text);
 
             // Currently needed for the language chooser to update its localization
-            BloomWebSocketServer.Instance.SendString("app", "uiLanguageChanged", tag.LangTag);
+            // BloomWebSocketServer.Instance is set only while loading a collection.
+            // If we don't have a collection yet, then we need to create a temporary
+            // server just to send this one message.  (BL-15230)
+            if (BloomWebSocketServer.Instance == null)
+            {
+                using (var server = new BloomWebSocketServer())
+                {
+                    server.Init(
+                        (BloomServer.portForHttp + 1).ToString(CultureInfo.InvariantCulture)
+                    );
+                    server.SendString("app", "uiLanguageChanged", tag.LangTag);
+                }
+            }
+            else
+            {
+                BloomWebSocketServer.Instance.SendString("app", "uiLanguageChanged", tag.LangTag);
+            }
 
             finishClickAction?.Invoke();
         }
