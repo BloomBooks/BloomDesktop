@@ -84,18 +84,37 @@ namespace Bloom
             Action restartBloom
         )
         {
+            // In Bloom 6.3, we updated to DotNet 8. So at this point, there's no reason to check OS versions;
+            // This Velopack-based update code only runs in 6.3, and 6.3 (at least by the time we release a beta)
+            // only runs on an OS that is at least 10; in fact, it has to be quite a recent 10. But that check
+            // needs to be in the old Squirrel code in 6.2, to prevent updating to 6.3 at all. If we're in 6.3,
+            // we don't currently need to check OS version.
+            // I'm keeping the old code to remember the last state of things for version checking. Sometime, 6.3
+            // might need to check that someone has at least Windows 12 before updating to 7.0 or 8.0!
+            // Earlier code just gave up without any message if the OS was too old.
+            // The code here is written to display the "you are up to date" message, with the thought that
+            // the user is as up-to-date as they can be on this OS. But that may not be true; we have no
+            // way to know whether they are at the latest version for their OS. If JohnH agrees with my
+            // idea that we should always say something when the user asks to check for updates, it should
+            // be something like, "Bloom cannot automatically update to the latest version because your
+            // operating system is too old to run it." It would be nice if we knew whether they have the
+            // latest version for their OS, nicer still if we could update to it, but neither is currently
+            // possible. Conceivably we could have a click action that opens Bloom's downloads page at the
+            // section about latest version for each OS.
+
+            // Here is the old code and earlier comment.
             // In early 2023, MS stopped updating WebView2 for Windows 7, 8, and 8.1. So for 5.4, we would like to "just get the latest 5.4".
             // But at the moment, we aren't investing in that. We're just stranding these users at whatever 5.4 version they have.
             // The other checks are for paranoia. We should not be calling this in those cases.
-            if (
-                Environment.OSVersion.Version.Major < 10
-                || InstallerSupport.SharedByAllUsers()
-                || IsDev
-            )
-            {
-                ShowToastForUpToDate(verbosity);
-                return;
-            }
+            //if (
+            //    Environment.OSVersion.Version.Major < 10
+            //    || InstallerSupport.SharedByAllUsers()
+            //    || IsDev
+            //)
+            //{
+            //    ShowToastForUpToDate(verbosity);
+            //    return;
+            //}
 
 #if !__MonoCS__
             switch (_status)
