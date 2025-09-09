@@ -68,6 +68,7 @@ namespace Bloom
         }
 
         static UploadStatus _status = UploadStatus.NothingKnown;
+        private static Exception _updateException;
 
         /// <summary>
         /// See if any updates are available and if approved, download them. Once they are ready a notification
@@ -104,7 +105,7 @@ namespace Bloom
                     break;
                 case UploadStatus.Failed:
                     // Hopefully we don't get into this state. Don't think it's worth localizing.
-                    MessageBox.Show("Restart Bloom to try checking for updates again");
+                    ShowToastForError("Restart Bloom to try checking for updates again");
                     return;
                 case UploadStatus.LookingForUpdates:
                     // We don't need this message if the caller is the timer (presumably AFTER the user already
@@ -135,38 +136,55 @@ namespace Bloom
                     return;
             }
 
-            // We do not yet know of any updates. See if there are any.
-            // (Conceivably, we could have found updates, but an even newer version has been
-            // released since we checked. But if
-            // we support checking again, we have to deal with the possibility that we already
-            // downloaded updates for the version we found out about before. A very complicated
-            // bit of code gets even more so. I decided that if we've detected a new version,
-            // we won't actually look again during this run.)
-
-            if (!GetUpdateUrl(verbosity, out var updateUrl))
-                return; // we can stay in NothingKnown state, allow user to try again.
-
-            // Now we're starting stuff we don't want to overlap with other update efforts.
-            // Thus the other states all display a message and return above.
-            _status = UploadStatus.LookingForUpdates;
-
-            _bloomUpdateManager = new UpdateManager(updateUrl);
-            _newVersion = await _bloomUpdateManager.CheckForUpdatesAsync();
-            if (_newVersion == null)
+            try
             {
-                ShowToastForUpToDate(verbosity);
-                _bloomUpdateManager = null; // no updates, so no need to keep this object around
-                _status = UploadStatus.NothingKnown; // allows user to try again
+                // We do not yet know of any updates. See if there are any.
+                // (Conceivably, we could have found updates, but an even newer version has been
+                // released since we checked. But if
+                // we support checking again, we have to deal with the possibility that we already
+                // downloaded updates for the version we found out about before. A very complicated
+                // bit of code gets even more so. I decided that if we've detected a new version,
+                // we won't actually look again during this run.)
+
+                if (!GetUpdateUrl(verbosity, out var updateUrl))
+                    return; // we can stay in NothingKnown state, allow user to try again.
+
+                // Now we're starting stuff we don't want to overlap with other update efforts.
+                // Thus the other states all display a message and return above.
+                _status = UploadStatus.LookingForUpdates;
+
+                _bloomUpdateManager = new UpdateManager(updateUrl);
+                _newVersion = await _bloomUpdateManager.CheckForUpdatesAsync();
+                if (_newVersion == null)
+                {
+                    ShowToastForUpToDate(verbosity);
+                    _bloomUpdateManager = null; // no updates, so no need to keep this object around
+                    _status = UploadStatus.NothingKnown; // allows user to try again
+                    return;
+                }
+
+                // There are updates available. If the user is not installing updates automatically,
+                // ask whether to download them.
+                if (!Settings.Default.AutoUpdate)
+                {
+                    _status = UploadStatus.FoundUpdates;
+                    ShowToastForFoundUpdates(verbosity, restartBloom);
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                // Hopefully this is very rare. Don't think it's worth localizing.
+                // But we do want some indication of a problem if we can't get updates.
+                // Review: should we go straight to "NotifyUserOfProblem" if verbosity
+                // is verbose (i.e., called by Check for Updates user action)?
+                ShowToastForError(
+                    "Bloom was unable to check for updates. Restart to try again.",
+                    e
+                );
                 return;
             }
-            // There are updates available. If the user is not installing updates automatically,
-            // ask whether to download them.
-            if (!Settings.Default.AutoUpdate)
-            {
-                _status = UploadStatus.FoundUpdates;
-                ShowToastForFoundUpdates(verbosity, restartBloom);
-                return;
-            }
+
             // If autoupdate is true, we just go ahead and download the updates.
             DownloadAndApplyUpdates(restartBloom);
 #endif
@@ -202,13 +220,11 @@ namespace Bloom
             catch (Exception e)
             {
                 // Hopefully this is very rare. Don't think it's worth localizing. But it's dangerous not
-                // to catch all exceptions in an async void method.
-                ErrorReport.NotifyUserOfProblem(
-                    e,
-                    "Bloom was unable to download and install updates. Restart to try again."
+                // to catch all exceptions in an async void method, according to a VS popup.
+                ShowToastForError(
+                    "Bloom was unable to download and install updates. Restart to try again.",
+                    e
                 );
-                // I'm not confident of getting back to a state where it's safe to try again.
-                _status = UploadStatus.Failed;
             }
 #endif
         }
@@ -248,6 +264,21 @@ namespace Bloom
                 DownloadAndApplyUpdates(restartBloom);
             };
             notifierAvail.Show(msgAvail, actionInstall, 10);
+        }
+
+        private static void ShowToastForError(string msg, Exception e = null)
+        {
+            // I'm not confident of getting back to a state where it's safe to try again.
+            _status = UploadStatus.Failed;
+            if (e != null)
+                _updateException = e;
+            var notifierError = new ToastNotifier();
+            notifierError.Image.Image = Resources.Bloom; // or error icon? But wants to be recognizable as Bloom.
+            notifierError.ToastClicked += (sender, args) =>
+            {
+                ErrorReport.NotifyUserOfProblem(_updateException, msg);
+            };
+            notifierError.Show(msg, "", 10);
         }
 
         private static bool _restartingAfterToastClicked = false;
