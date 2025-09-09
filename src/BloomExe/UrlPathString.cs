@@ -86,7 +86,8 @@ namespace Bloom
             get
             {
                 var x = UrlEncoded;
-                return x.Replace("%2f", "/").Replace("%3a", ":");
+                return x.Replace("%2f", "/", System.StringComparison.InvariantCultureIgnoreCase)
+                    .Replace("%3a", ":", System.StringComparison.InvariantCultureIgnoreCase);
             }
         }
 
