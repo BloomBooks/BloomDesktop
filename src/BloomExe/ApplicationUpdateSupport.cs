@@ -12,6 +12,7 @@ using Bloom.Properties;
 using L10NSharp;
 using SIL.PlatformUtilities;
 #if !__MonoCS__
+using Bloom.ErrorReporter;
 using SIL.Reporting;
 using Velopack;
 #endif
@@ -28,8 +29,6 @@ namespace Bloom
 #if !__MonoCS__
         internal static UpdateManager _bloomUpdateManager;
         private static UpdateInfo _newVersion;
-        private static bool _haveNewVersionDownloaded;
-        private static bool _downloadInProgress;
 #endif
 
         internal enum BloomUpdateMessageVerbosity
@@ -38,147 +37,303 @@ namespace Bloom
             Verbose,
         }
 
-        internal static bool BloomUpdateInProgress
+        enum UploadStatus
         {
-#if __MonoCS__
-            get { return false; }
-#else
-            get { return _downloadInProgress; }
-#endif
+            // First call this session, or previous call(s) completed and found no updates
+            // Transition to LookingForUpdates when we start looking
+            NothingKnown,
+
+            // gathering information
+            // Transition to
+            // - NothingKnown if we find no updates
+            // - FoundUpdates if we find updates and autoupdate is off
+            // - Downloading if we find updates and autoupdate is on
+            LookingForUpdates,
+
+            // We found updates, and autoupdate is off, so we are waiting for the user to say
+            // whether to download and install them.
+            // Transition to Downloading if the user agrees to go ahead.
+            FoundUpdates,
+
+            // Doing the download.
+            // Transition to DownloadedWaitingForRestart when done.
+            Downloading,
+
+            // We have downloaded the updates and are waiting for the user to quit or restart Bloom
+            // Never leaves this state until Bloom quits, at which point we install the new version.
+            // If the user clicked a Restart toast, Bloom will restart automatically after the install.
+            DownloadedWaitingForRestart,
+
+            // something went wrong. We don't allow more tries this session.
+            Failed,
         }
+
+        static UploadStatus _status = UploadStatus.NothingKnown;
+        private static Exception _updateException;
 
         /// <summary>
         /// See if any updates are available and if approved, download them. Once they are ready a notification
         /// pops up and the user can restart Bloom to run the new version. (Or if you don't, they will get installed
         /// when Bloom quits.)
-        /// The restartBloom argument is an action that is executed if the user clicks the toast that suggests
-        /// a restart. This is the responsibility of the caller (typically the workspace view). Typically it
-        /// just shuts down Bloom; the update and restart are managed automatically by Velopack.
         /// </summary>
+        /// <param name="verbosity">Quiet if we are called from a timer; verbose if the user requested the check.</param>
+        /// <param name="restartBloom">An action that is executed if the user clicks the toast that suggests
+        /// a restart. This is the responsibility of the caller (the workspace view). It
+        /// just shuts down Bloom; the update and restart are managed automatically by Velopack.</param>
         internal static async void CheckForAVelopackUpdate(
             BloomUpdateMessageVerbosity verbosity,
-            Action restartBloom,
-            bool autoUpdate
+            Action restartBloom
         )
         {
+            // In Bloom 6.3, we updated to DotNet 8. So at this point, there's no reason to check OS versions;
+            // This Velopack-based update code only runs in 6.3, and 6.3 (at least by the time we release a beta)
+            // only runs on an OS that is at least 10; in fact, it has to be quite a recent 10. But that check
+            // needs to be in the old Squirrel code in 6.2, to prevent updating to 6.3 at all. If we're in 6.3,
+            // we don't currently need to check OS version.
+            // I'm keeping the old code to remember the last state of things for version checking. Sometime, 6.3
+            // might need to check that someone has at least Windows 12 before updating to 7.0 or 8.0!
+            // Earlier code just gave up without any message if the OS was too old.
+            // The code here is written to display the "you are up to date" message, with the thought that
+            // the user is as up-to-date as they can be on this OS. But that may not be true; we have no
+            // way to know whether they are at the latest version for their OS. If JohnH agrees with my
+            // idea that we should always say something when the user asks to check for updates, it should
+            // be something like, "Bloom cannot automatically update to the latest version because your
+            // operating system is too old to run it." It would be nice if we knew whether they have the
+            // latest version for their OS, nicer still if we could update to it, but neither is currently
+            // possible. Conceivably we could have a click action that opens Bloom's downloads page at the
+            // section about latest version for each OS.
+
+            // Here is the old code and earlier comment.
             // In early 2023, MS stopped updating WebView2 for Windows 7, 8, and 8.1. So for 5.4, we would like to "just get the latest 5.4".
             // But at the moment, we aren't investing in that. We're just stranding these users at whatever 5.4 version they have.
-            if (Environment.OSVersion.Version.Major < 10)
-            {
-                return;
-            }
+            // The other checks are for paranoia. We should not be calling this in those cases.
+            //if (
+            //    Environment.OSVersion.Version.Major < 10
+            //    || InstallerSupport.SharedByAllUsers()
+            //    || IsDev
+            //)
+            //{
+            //    ShowToastForUpToDate(verbosity);
+            //    return;
+            //}
 
 #if !__MonoCS__
-            // If we already have a new version, we can skip this bit.
-            // Conceivably, there could be an even newer version since we checked. But if
-            // we support checking again, we have to deal with the possibility that we already
-            // downloaded updates for the version we found out about before. A very complicated
-            // bit of code gets even more so. I decided that if we've detected a new version,
-            // we won't actually look again during this run.
-            if (_newVersion == null)
+            switch (_status)
             {
-                if (!OkToInitiateUpdateManager)
+                case UploadStatus.NothingKnown:
+                    // The rest of this method looks for them and deals with the results
+                    break;
+                case UploadStatus.Failed:
+                    // Hopefully we don't get into this state. Don't think it's worth localizing.
+                    ShowToastForError("Restart Bloom to try checking for updates again");
                     return;
+                case UploadStatus.LookingForUpdates:
+                    // We don't need this message if the caller is the timer (presumably AFTER the user already
+                    // asked us to check).
+                    if (verbosity == BloomUpdateMessageVerbosity.Verbose)
+                    {
+                        var message = LocalizationManager.GetString(
+                            "CollectionTab.UpdateCheckInProgress",
+                            "Bloom is already working on checking for updates."
+                        );
+                        var workingNotifier = new ToastNotifier();
+                        workingNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
+                        workingNotifier.Show(message, "", 5);
+                    }
+
+                    return;
+                // Conceivably the appropriate toast is still up. Very likely in the last case, since that
+                // one doesn't go away. But it's harmless to show it again, and maybe the new animation will
+                // help the user notice it.
+                case UploadStatus.FoundUpdates:
+                    ShowToastForFoundUpdates(verbosity, restartBloom);
+                    return;
+                case UploadStatus.Downloading:
+                    ShowToastForDownloading();
+                    return;
+                case UploadStatus.DownloadedWaitingForRestart:
+                    ShowToastForDownloadedWaitingForRestart(restartBloom);
+                    return;
+            }
+
+            try
+            {
+                // We do not yet know of any updates. See if there are any.
+                // (Conceivably, we could have found updates, but an even newer version has been
+                // released since we checked. But if
+                // we support checking again, we have to deal with the possibility that we already
+                // downloaded updates for the version we found out about before. A very complicated
+                // bit of code gets even more so. I decided that if we've detected a new version,
+                // we won't actually look again during this run.)
+
                 if (!GetUpdateUrl(verbosity, out var updateUrl))
-                    return;
+                    return; // we can stay in NothingKnown state, allow user to try again.
+
+                // Now we're starting stuff we don't want to overlap with other update efforts.
+                // Thus the other states all display a message and return above.
+                _status = UploadStatus.LookingForUpdates;
 
                 _bloomUpdateManager = new UpdateManager(updateUrl);
                 _newVersion = await _bloomUpdateManager.CheckForUpdatesAsync();
                 if (_newVersion == null)
                 {
-                    if (verbosity == BloomUpdateMessageVerbosity.Verbose)
-                    {
-                        // Only show this if the user manually initiated the check.
-                        var message = LocalizationManager.GetString(
-                            "CollectionTab.UpToDate",
-                            "Your Bloom is up to date."
-                        );
-                        var noneNotifier = new ToastNotifier();
-                        noneNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
-                        noneNotifier.Show(message, "", 5);
-                    }
+                    ShowToastForUpToDate(verbosity);
+                    _bloomUpdateManager = null; // no updates, so no need to keep this object around
+                    _status = UploadStatus.NothingKnown; // allows user to try again
+                    return;
+                }
 
-                    _bloomUpdateManager = null; // no updates, so no need to keep this object around, and allows user to try again
+                // There are updates available. If the user is not installing updates automatically,
+                // ask whether to download them.
+                if (!Settings.Default.AutoUpdate)
+                {
+                    _status = UploadStatus.FoundUpdates;
+                    ShowToastForFoundUpdates(verbosity, restartBloom);
                     return;
                 }
             }
-
-            // There are updates available. If the user is not installing updates automatically,
-            // ask whether to download them (unless we already have them...if so, go straight to
-            // the download complete toast, though that one should never have gone away).
-            if (!autoUpdate && !_haveNewVersionDownloaded)
+            catch (Exception e)
             {
-                var msgAvail = LocalizationManager.GetString(
-                    "CollectionTab.UpdatesAvailable",
-                    "A new version of Bloom is available."
+                // Hopefully this is very rare. Don't think it's worth localizing.
+                // But we do want some indication of a problem if we can't get updates.
+                // Review: should we go straight to "NotifyUserOfProblem" if verbosity
+                // is verbose (i.e., called by Check for Updates user action)?
+                ShowToastForError(
+                    "Bloom was unable to check for updates. Restart to try again.",
+                    e
                 );
-                var actionInstall = LocalizationManager.GetString(
-                    "CollectionTab.UpdateNow",
-                    "Update Now"
-                );
-                var notifierAvail = new ToastNotifier();
-                notifierAvail.Image.Image = Resources.Bloom;
-                notifierAvail.ToastClicked += (sender, args) =>
-                {
-                    DownloadAndApplyUpdates(verbosity, restartBloom);
-                };
-                notifierAvail.Show(msgAvail, actionInstall, 10);
                 return;
             }
+
             // If autoupdate is true, we just go ahead and download the updates.
-            DownloadAndApplyUpdates(verbosity, restartBloom);
+            DownloadAndApplyUpdates(restartBloom);
+#endif
         }
 
-        private static bool restartingAfterToastClicked = false;
+        private static async void DownloadAndApplyUpdates(Action restartBloom)
+        {
+#if !__MonoCS__
+            try
+            {
+                _status = UploadStatus.Downloading;
+                ShowToastForDownloading();
 
-        private static async void DownloadAndApplyUpdates(
+                await _bloomUpdateManager.DownloadUpdatesAsync(_newVersion);
+                _status = UploadStatus.DownloadedWaitingForRestart;
+                ShowToastForDownloadedWaitingForRestart(restartBloom);
+
+                // When we exit, apply the updates. (If autoupdate is false, this is still appropriate,
+                // because the user responded to the message about updates available by clicking "Update Now",
+                // so we're just completing something already approved).
+                Application.ApplicationExit += (sender, args) =>
+                {
+                    if (!_restartingAfterToastClicked)
+                    {
+                        // If the user clicked the toast, we already made the call to WaitExitThenApplyUpdates,
+                        // with arguments that WILL show a progress bar and restart Bloom.
+                        // If that didn't happen, we call it now with different args, so that the updates are applied
+                        // (but Bloom will not restart automatically).
+                        _bloomUpdateManager.WaitExitThenApplyUpdates(null, true, false);
+                    }
+                };
+            }
+            catch (Exception e)
+            {
+                // Hopefully this is very rare. Don't think it's worth localizing. But it's dangerous not
+                // to catch all exceptions in an async void method, according to a VS popup.
+                ShowToastForError(
+                    "Bloom was unable to download and install updates. Restart to try again.",
+                    e
+                );
+            }
+#endif
+        }
+
+        private static void ShowToastForUpToDate(BloomUpdateMessageVerbosity verbosity)
+        {
+            if (verbosity == BloomUpdateMessageVerbosity.Verbose)
+            {
+                // Only show this if the user manually initiated the check.
+                var message = LocalizationManager.GetString(
+                    "CollectionTab.UpToDate",
+                    "Your Bloom is up to date."
+                );
+                var noneNotifier = new ToastNotifier();
+                noneNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
+                noneNotifier.Show(message, "", 5);
+            }
+        }
+
+        private static void ShowToastForFoundUpdates(
             BloomUpdateMessageVerbosity verbosity,
             Action restartBloom
         )
         {
-            // If we got here, we have a new version to download, and we want to install it,
-            // either because autoupdates are on, or because the user already said to update now.
-            // However, the actual installation requires restarting Bloom, so we won't do it
-            // until the user either quits Bloom or clicks the toast that says to restart now.
-            if (!_haveNewVersionDownloaded)
+            var msgAvail = LocalizationManager.GetString(
+                "CollectionTab.UpdatesAvailable",
+                "A new version of Bloom is available."
+            );
+            var actionInstall = LocalizationManager.GetString(
+                "CollectionTab.UpdateNow",
+                "Update Now"
+            );
+            var notifierAvail = new ToastNotifier();
+            notifierAvail.Image.Image = Resources.Bloom;
+            notifierAvail.ToastClicked += (sender, args) =>
             {
-                // We are ready to do the download. Disable the command to check for updates
-                // until we are done.
-                _downloadInProgress = true;
-                // Show a notification that we're downloading the update.
-                // We could show a progress bar, but it would be hard to get it right.
+                DownloadAndApplyUpdates(restartBloom);
+            };
+            notifierAvail.Show(msgAvail, actionInstall, 10);
+        }
 
-                // Velopack may use a more sophisticated algorithm to decide which to download,
-                // but this should be good enough to give the user an idea.
-                var fullSize = _newVersion.TargetFullRelease.Size;
-                var deltasSize = _newVersion.DeltasToTarget.Sum(d => d.Size);
-                var downloadSize = deltasSize;
-                if (_newVersion.DeltasToTarget.Length > 0 && fullSize < deltasSize)
-                    downloadSize = fullSize;
-                var updatingMsg = String.Format(
-                    LocalizationManager.GetString(
-                        "CollectionTab.Updating",
-                        "Downloading update to {0} ({1}K)"
-                    ),
-                    _newVersion.TargetFullRelease.Version.ToString(),
-                    downloadSize / 1024
-                );
+        private static void ShowToastForError(string msg, Exception e = null)
+        {
+            // I'm not confident of getting back to a state where it's safe to try again.
+            _status = UploadStatus.Failed;
+            if (e != null)
+                _updateException = e;
+            var notifierError = new ToastNotifier();
+            notifierError.Image.Image = Resources.Bloom; // or error icon? But wants to be recognizable as Bloom.
+            notifierError.ToastClicked += (sender, args) =>
+            {
+                ErrorReport.NotifyUserOfProblem(_updateException, msg);
+            };
+            notifierError.Show(msg, "", 10);
+        }
 
-                var updatingNotifier = new ToastNotifier();
-                updatingNotifier.Image.Image = Resources.Bloom;
-                // Since it's not conveying any new information, I don't think it needs to
-                // hang around. The user can "check for updates" again if they want to,
-                // and get the same message.
-                updatingNotifier.Show(updatingMsg, "", 5);
+        private static bool _restartingAfterToastClicked = false;
 
-                await _bloomUpdateManager.DownloadUpdatesAsync(_newVersion);
-                _haveNewVersionDownloaded = true;
-                _downloadInProgress = false;
-            }
+        private static void ShowToastForDownloading()
+        {
+            // Show a notification that we're downloading the update.
+            // We could show a progress bar, but it would be hard to get it right.
 
-            // In theory we don't need this if we already showed it, since it doesn't go away.
-            // But maybe there's some tricky thing the user can do to hide it, or maybe they
-            // missed it and the new animation will catch their attention. It's harmless to show it again.
+            // Velopack may use a more sophisticated algorithm to decide which to download,
+            // but this should be good enough to give the user an idea.
+            var fullSize = _newVersion.TargetFullRelease.Size;
+            var deltasSize = _newVersion.DeltasToTarget.Sum(d => d.Size);
+            var downloadSize = deltasSize;
+            if (_newVersion.DeltasToTarget.Length > 0 && fullSize < deltasSize)
+                downloadSize = fullSize;
+            var updatingMsg = String.Format(
+                LocalizationManager.GetString(
+                    "CollectionTab.Updating",
+                    "Downloading update to {0} ({1}K)"
+                ),
+                _newVersion.TargetFullRelease.Version.ToString(),
+                downloadSize / 1024
+            );
+
+            var updatingNotifier = new ToastNotifier();
+            updatingNotifier.Image.Image = Resources.Bloom;
+            // Since it's not conveying any new information, I don't think it needs to
+            // hang around. The user can "check for updates" again if they want to,
+            // and get the same message.
+            updatingNotifier.Show(updatingMsg, "", 5);
+        }
+
+        private static void ShowToastForDownloadedWaitingForRestart(Action restartBloom)
+        {
             var msg = String.Format(
                 LocalizationManager.GetString(
                     "CollectionTab.UpdateInstalled",
@@ -200,28 +355,12 @@ namespace Bloom
             notifier.Image.Image = Resources.Bloom;
             notifier.ToastClicked += (sender, args) =>
             {
-                restartingAfterToastClicked = true;
+                _restartingAfterToastClicked = true;
                 _bloomUpdateManager.WaitExitThenApplyUpdates(null);
                 Logger.WriteMinorEvent("shutting Bloom down in order to apply updates");
                 restartBloom();
             };
             notifier.Show(msg, action, -1); //stay up until clicked
-
-            // When we exit, apply the updates. (If autoupdate is false, this is still appropriate,
-            // because the user responded to the message about updates available by clicking "Update Now",
-            // so we're just completing something already approved).
-            Application.ApplicationExit += (sender, args) =>
-            {
-                if (!restartingAfterToastClicked)
-                {
-                    // If the user clicked the toast, we already made the call to WaitExitThenApplyUpdates,
-                    // with arguments that WILL show a progress bar and restart Bloom.
-                    // If that didn't happen, we call it now with different args, so that the updates are applied
-                    // (but Bloom will not restart automatically).
-                    _bloomUpdateManager.WaitExitThenApplyUpdates(null, true, false);
-                }
-            };
-#endif
         }
 
         // returns true if we should proceed with the update check.
@@ -362,28 +501,6 @@ namespace Bloom
                 }
                 return "Release";
             }
-        }
-
-        /// <summary>
-        /// True if it is currently possible to start checking for or getting updates.
-        /// This approach is only relevant for Windows.
-        /// If some bloom update activity is already in progress we must not start another one...that crashes.
-        /// If we were installed in Program Files (using the --allUsers installer command-line argument
-        /// in administrator mode), we don't attempt updates.
-        /// </summary>
-        internal static bool OkToInitiateUpdateManager
-        {
-#if __MonoCS__
-            get { return false; }
-#else
-            get
-            {
-                return Platform.IsWindows
-                    && _bloomUpdateManager == null
-                    && !InstallerSupport.SharedByAllUsers()
-                    && !ApplicationUpdateSupport.IsDev;
-            }
-#endif
         }
 
         internal enum UpdateOutcome
