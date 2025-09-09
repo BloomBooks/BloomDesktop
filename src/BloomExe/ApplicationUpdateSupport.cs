@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.MiscUI;
@@ -326,11 +327,13 @@ namespace Bloom
                 if (Program.RunningUnitTests)
                     return kChannelNameForUnitTests;
 
-                var path = Assembly.GetEntryAssembly().ManifestModule.FullyQualifiedName;
+                var path = Assembly
+                    .GetEntryAssembly()
+                    .ManifestModule.FullyQualifiedName.Replace('\\', '/');
                 // Use a very specific channel name on developer machines based on build configuration.
-                if (path.Replace('\\', '/').EndsWith("/output/Debug/Bloom.dll"))
+                if (path.EndsWith("/output/Debug/Bloom.dll"))
                     return "Developer/Debug"; // verifies this code is running on a developer machine.
-                if (path.Replace('\\', '/').EndsWith("/output/Release/Bloom.dll"))
+                if (path.EndsWith("/output/Release/Bloom.dll"))
                     return "Developer/Release"; // verifies this code is running on a developer machine.
                 if (Platform.IsUnix)
                 {
@@ -347,13 +350,17 @@ namespace Bloom
                         return "ReleaseInternal";
                     return "Release";
                 }
-                var s = Assembly
-                    .GetEntryAssembly()
-                    .ManifestModule.Name.Replace("bloom", "")
-                    .Replace("Bloom", "")
-                    .Replace(".dll", "")
-                    .Trim();
-                return (s == "") ? "Release" : s;
+                // If path contains /BloomX/current/, then X is the channel name.
+                // Note that the path is to the Bloom.dll, not to the Bloom{channel}.exe.
+                // Also note that the Release will just have "/Bloom/current/"
+                var match = Regex.Match(path, @"/Bloom([^/]*)/current/", RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    var channelName = match.Groups[1].Value;
+                    if (!string.IsNullOrEmpty(channelName))
+                        return channelName;
+                }
+                return "Release";
             }
         }
 
