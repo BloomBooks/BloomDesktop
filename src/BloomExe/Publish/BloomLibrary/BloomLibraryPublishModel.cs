@@ -891,14 +891,14 @@ namespace Bloom.Publish.BloomLibrary
 
             const string slash = "%2f";
             var folderWithoutLastSlash = baseUrl;
-            if (baseUrl.EndsWith(slash))
+            if (baseUrl.EndsWith(slash, StringComparison.InvariantCultureIgnoreCase))
             {
                 folderWithoutLastSlash = baseUrl.Substring(0, baseUrl.Length - 3);
             }
 
             var index = folderWithoutLastSlash.LastIndexOf(
                 slash,
-                StringComparison.InvariantCulture
+                StringComparison.InvariantCultureIgnoreCase
             );
             var pathWithoutBookName = folderWithoutLastSlash.Substring(0, index);
             var pathToHarvestedBookFolder = pathWithoutBookName
@@ -907,12 +907,10 @@ namespace Bloom.Publish.BloomLibrary
 
             // Harvested books are stored in a separate S3 bucket from the original uploads.
             // Harvester stores harvested thumbnails in a 'thumbnails' subfolder,
-            // whereas the orignally-uploaded book doesn't have a separate subfolder for thumbnails.
+            // whereas the originally-uploaded book doesn't have a separate subfolder for thumbnails.
             // BloomLibrary code depends on this location to find the thumbnails it displays.
             return CreateUrlWithCacheBusting(
-                pathToHarvestedBookFolder
-                    + "/thumbnails/"
-                    + BloomLibraryPublishModel.kThumbnailFileName,
+                pathToHarvestedBookFolder + "/thumbnails/" + kThumbnailFileName,
                 lastUpdate
             );
         }

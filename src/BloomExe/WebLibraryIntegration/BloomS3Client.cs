@@ -570,8 +570,15 @@ namespace Bloom.WebLibraryIntegration
             // Yes, this encoding means the slashes are converted to %2f.
             // That's unfortunate, but that's how we've always done it.
             // And that's how old Blooms expect to receive it, so we're stuck with it.
-            // Use WebUtility for encoding in .NET 8
-            return $"https://s3.amazonaws.com/{_bucketName}/{WebUtility.UrlEncode(prefixForBookFiles)}";
+            var encodedPrefix = WebUtility.UrlEncode(prefixForBookFiles);
+            // Ensure hex values in percent-encoding are lowercase. This is for historical reasons.
+            // Older Blooms can only handle %2f, not %2F.
+            encodedPrefix = Regex.Replace(
+                encodedPrefix,
+                @"%[0-9A-F]{2}",
+                match => match.Value.ToLowerInvariant()
+            );
+            return $"https://s3.amazonaws.com/{_bucketName}/{encodedPrefix}";
         }
 
         private static Regex s_s3UrlRegex = new Regex(
@@ -602,7 +609,9 @@ namespace Bloom.WebLibraryIntegration
         // Note that baseUrl is url-encoded, including (who knows why?...) the slashes (%2f). Older Blooms expect the %2f.
         public static string GetPrefixFromBaseUrl(string baseUrl)
         {
-            var match = s_s3UrlRegex.Match(baseUrl.Replace("%2f", "/"));
+            var match = s_s3UrlRegex.Match(
+                baseUrl.Replace("%2f", "/", StringComparison.InvariantCultureIgnoreCase)
+            );
             if (!match.Success)
                 throw new ArgumentException("Not a valid base URL", nameof(baseUrl));
             return WebUtility.UrlDecode(match.Groups[1].Value);
