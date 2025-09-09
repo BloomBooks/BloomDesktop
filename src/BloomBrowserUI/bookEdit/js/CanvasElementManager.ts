@@ -6847,6 +6847,11 @@ export class CanvasElementManager {
                     (bloomCanvasWidth - imgWidth) / 2 + "px";
                 bgCanvasElement.style.height = bloomCanvasHeight + "px";
             }
+            // If the image was cropped, we want to adjust the cropping to the new size.
+            // If it wasn't cropped, we want to leave it alone (it will default to fitting
+            // within the canvas element).
+            // Note that if useSizeOfNewImage is true, we assume there is no cropping yet,
+            // so we don't do this adjustment.
             if (!useSizeOfNewImage && img?.style.width) {
                 // need to adjust image settings to preserve cropping
                 const scale = bgCanvasElement.clientWidth / oldCeWidth;
