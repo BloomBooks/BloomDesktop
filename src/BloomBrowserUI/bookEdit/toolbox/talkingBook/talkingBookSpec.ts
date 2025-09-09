@@ -1,5 +1,5 @@
 import TalkingBookTool from "./talkingBook";
-import {
+import AudioRecording, {
     theOneAudioRecorder,
     AudioMode,
     getAllAudioModes,
@@ -745,6 +745,37 @@ describe("talking book tests", () => {
             expect(spans).toHaveLength(2); // Should preserve the phrase splits instead of converting to sentence splits
             expect(spans[0]).toHaveAttr("recordingmd5", checksums[0]);
             expect(spans[1]).toHaveAttr("recordingmd5", checksums[1]);
+        });
+    });
+
+    describe("elementToSentencesWithCleanup tests", () => {
+        it("should convert elements to sentences and clean up", async () => {
+            // Setup
+            const divHtml = $(`
+                <div class="bloom-editable" id="div1">
+                    <p>
+                        <span id="1.1" class="audio-sentence">Sentence<em></em><b></b> <strong>1.</strong> </span>
+                        <span id="1.2" class="audio-sentence"><span>Sentence 2</span> 2</span>
+                    </p>
+                </div>`);
+            // System under test
+            const fragments = await AudioRecording.elementToSentencesWithCleanup(
+                divHtml
+            );
+
+            // Verify
+            // removed because empty
+            expect(divHtml.get(0).getElementsByTagName("em")).toHaveLength(0);
+            expect(divHtml.get(0).getElementsByTagName("b")).toHaveLength(0);
+            // kept because it has content
+            expect(divHtml.get(0).getElementsByTagName("strong")).toHaveLength(
+                1
+            );
+            const spans = divHtml.get(0).getElementsByTagName("span");
+            // The redundant one around Sentence2 should have been removed.
+            expect(spans).toHaveLength(2);
+            expect(spans[0]).toHaveText("Sentence 1.");
+            expect(spans[1]).toHaveText("Sentence 2 2");
         });
     });
 });

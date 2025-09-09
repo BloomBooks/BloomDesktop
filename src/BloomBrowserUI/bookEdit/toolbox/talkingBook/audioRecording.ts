@@ -944,9 +944,15 @@ export default class AudioRecording implements IAudioRecorder {
     // in setSoundAndHighlightAsync was written. It might be because when we're first showing
     // the toolbox, the default talking book tool starts being initialized before we actually
     // set what getActiveToolId() is looking for.
-    private isTalkingBookToolActive(): boolean {
+    // This used to be isTalkingBookToolActive, but the motion tool also plays audio
+    // when previewing.
+    private doesCurrentToolPlayAudio(): boolean {
         const activeToolId = getActiveToolId();
-        return activeToolId === "talkingBook" || !activeToolId;
+        return (
+            activeToolId === "talkingBook" ||
+            activeToolId === "motion" ||
+            !activeToolId
+        );
     }
 
     public async setSoundAndHighlightAsync(
@@ -958,7 +964,7 @@ export default class AudioRecording implements IAudioRecorder {
         // tool getting the "newPageReady" method called when the new page specifies a
         // different tool to be activated.  This is the simplest fix that I've found.
         // See BL-14434.
-        if (!this.isTalkingBookToolActive()) return;
+        if (!this.doesCurrentToolPlayAudio()) return;
 
         // Note: setHighlightToAsync() should be run first so that ui-audioCurrent points to the correct element when setSoundFrom() is run.
         await this.setHighlightToAsync(setHighlightParams);
@@ -990,7 +996,16 @@ export default class AudioRecording implements IAudioRecorder {
         // e.g. the user could navigate (with arrows or mousewheel) such that oldElement is out of view, then press Play.
         // It would be worthwhile to scroll it back into view in that case.
         if (shouldScrollToElement && visible) {
-            this.scrollElementIntoView(newElement);
+            // This stops us trying to scroll into view elements being played back in
+            // a motion preview. (We don't want to make isVisible return false for this case,
+            // because then the elements won't be played back at all.)
+            const page = newElement.closest(".bloom-page");
+            if (
+                !page ||
+                window.getComputedStyle(page).visibility !== "hidden"
+            ) {
+                this.scrollElementIntoView(newElement);
+            }
         }
 
         if (oldElement === newElement && !forceRedisplay) {
@@ -1933,7 +1948,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     // Update the input element (checkbox) and turn on the playback order controls on the visible
     // translation-groups.
-    public setShowPlaybackOrderMode(isOn: boolean) {
+    public async setShowPlaybackOrderMode(isOn: boolean) {
         this.inShowPlaybackOrderMode = isOn;
         const docBody = this.getPageDocBody();
         if (!docBody) {
@@ -1943,6 +1958,10 @@ export default class AudioRecording implements IAudioRecorder {
             this.showPlaybackOrderUi(docBody);
         } else {
             this.removePlaybackOrderUi(docBody);
+            // Not sure we really want to make 'record' the expected action if it already
+            // has a recording. However, we do this in all kinds of places where a new
+            // element is being selected, so at least this is consistent.
+            await this.changeStateAndSetExpectedAsync("record");
         }
         this.updateDisplay();
     }
@@ -2580,7 +2599,7 @@ export default class AudioRecording implements IAudioRecorder {
         // Probably redundant, but some nasty things can happen when we try to changeStateAndSetExpectedAsync()
         // when setSoundAndHighlightAsync() didn't actually set the highlight because we're in another tool.
         // This makes things a little safer.
-        if (!this.isTalkingBookToolActive()) return false;
+        if (!this.doesCurrentToolPlayAudio()) return false;
         let boxToSelect = target.closest(kAudioSentenceClassSelector);
         if (!boxToSelect) {
             // if it isn't one and isn't inside one, see if it contains one
@@ -3066,7 +3085,7 @@ export default class AudioRecording implements IAudioRecorder {
         // selected...we can get into a recursive await/call stack that freezes Bloom.
         // This is one of several places where we give up trying to select something if the tool
         // isn't active to prevent such problems.
-        if (!this.isTalkingBookToolActive()) return null;
+        if (!this.doesCurrentToolPlayAudio()) return null;
         const pageDocBody = this.getPageDocBody();
         if (!pageDocBody) {
             return null;
@@ -3294,7 +3313,11 @@ export default class AudioRecording implements IAudioRecorder {
                         // function it returns. However, this is fixing a pathological legacy situation.
                         // If it occurs at all, it should get fixed when the page is first loaded,
                         // and not happen during typing.)
-                        $(child).replaceWith($(child).html()); // clean up.
+                        // Note: we want to use contents() here rather than html(), partly because it saves
+                        // the work of parsing the HTML, but also, using the old html() could preserve
+                        // (pathological) nested elements with the audio-sentence class that would otherwise
+                        // be removed by other iterations of this loop.
+                        $(child).replaceWith($(child).contents()); // clean up.
                         needAnotherTry = true; // start the whole method over.
                         return false; // break the 'each' loop
                     }
@@ -3377,11 +3400,11 @@ export default class AudioRecording implements IAudioRecorder {
                 id: $(this).attr("id"),
                 md5: $(this).attr("recordingmd5")
             });
-            $(this).replaceWith($(this).html()); // strip out the audio-sentence wrapper so we can re-partition.
+            $(this).replaceWith($(this).contents()); // strip out the audio-sentence wrapper so we can re-partition.
         });
 
-        const htmlFragments: TextFragment[] = this.stringToSentences(
-            copy.html()
+        const htmlFragments = AudioRecording.elementToSentencesWithCleanup(
+            copy
         );
         let textFragments: TextFragment[] | null = this.stringToSentences(
             elt.text()
@@ -3437,9 +3460,15 @@ export default class AudioRecording implements IAudioRecorder {
                     reuse.splice(0, 1);
                 }
                 if (reuseThis) {
-                    // SOMETHING remains we can reuse
+                    // SOMETHING remains we can reuse. It's md5 does not match any current sentence,
+                    // but it DOES match the ID we are reusing, which means it matches the text that
+                    // was last recorded with that ID, so it's valid (if we ever care) to tells us
+                    // that the recording does not match the current text. (But don't clutter things
+                    // by converting a missing recordingmd5 to an explicit "undefined".)
                     newId = reuseThis.id;
-                    newMd5 = ' recordingmd5="' + reuseThis.md5 + '"';
+                    if (reuseThis.md5 && reuseThis.md5 !== "undefined") {
+                        newMd5 = ' recordingmd5="' + reuseThis.md5 + '"';
+                    }
                 }
                 if (!newId) {
                     let text: string;
@@ -4082,6 +4111,48 @@ export default class AudioRecording implements IAudioRecorder {
         return theOneLibSynphony.stringToSentences(text);
     }
 
+    // Return the html of the element broken up into sentences. Each sentence is a complete
+    // HTML unit; markup which extends across sentence boundaries in the original is
+    // ended at the end of one sentence and restarted at the start of the next.
+    // The element being split undergoes some cleanup: various empty elements are removed,
+    // and any span elements that have no attributes are unwrapped.
+    // Review: possibly we should do this in more places where we pass element.html() to stringToSentences
+    // if we really care about the result being valid HTML fragments. I think all the callers of
+    // stringToSentences (above) are OK, but there are a few places where we call theOneLibSynphony.stringToSentences
+    // connected with the leveled reader tool.
+    public static elementToSentencesWithCleanup(
+        element: JQuery
+    ): TextFragment[] {
+        // review: possibly this cleanup should be part of stringToSentences(),
+        // remove any em, strong, b, i, u, sup elements that are empty.
+        // Don't remove spans here, some of them (with attributes) are important even if empty
+        // (for example, soft returns are represented as <span class="bloom-linebreak"></span>),
+        // and if there are no attributes, they will get removed below.
+        // stringToSentences doesn't handle empty elements reliably, and they just add clutter
+        element
+            .find(
+                "em:empty, strong:empty, b:empty, i:empty, u:empty, sup:empty"
+            )
+            .remove();
+        // unwrap any span elements that have no attributes and so change nothing
+        // This will get rid of at least some empty spans, and it reduces clutter.
+        const copyElt = element.get(0);
+        for (const span of Array.from(copyElt.getElementsByTagName("span"))) {
+            if (span.attributes.length === 0) {
+                // This span has no attributes, so it doesn't change anything.
+                // We can just unwrap it.
+                const parent = span.parentNode;
+                if (parent) {
+                    while (span.firstChild) {
+                        parent.insertBefore(span.firstChild, span);
+                    }
+                    parent.removeChild(span);
+                }
+            }
+        }
+        return theOneLibSynphony.stringToSentences(element.html());
+    }
+
     public getAutoSegmentLanguageCode(): string {
         const langCodeFromAutoSegmentSettings = ""; // TODO: IMPLEMENT ME after we convert to having the recording mode setting only apply to the current text box. It'll make this set of settings easier to figure out.
         let langCode = langCodeFromAutoSegmentSettings;
@@ -4395,8 +4466,8 @@ export default class AudioRecording implements IAudioRecorder {
                     range.insertNode(marker);
                 },
                 inShowPlaybackOrderMode: this.inShowPlaybackOrderMode,
-                setShowPlaybackOrder: (isOn: boolean) => {
-                    this.setShowPlaybackOrderMode(isOn);
+                setShowPlaybackOrder: async (isOn: boolean) => {
+                    await this.setShowPlaybackOrderMode(isOn);
                 },
                 showingImageDescriptions: this.showingImageDescriptions,
                 setShowingImageDescriptions: (isOn: boolean) => {
