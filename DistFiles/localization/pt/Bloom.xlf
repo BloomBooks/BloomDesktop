@@ -104,7 +104,7 @@
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout.Footnote" sil:dynamic="true" approved="yes">
         <source xml:lang="en">While the ideal is that a single book can serve everyone, the ePUB standard and ePUB readers do not actually support that. They currently only work for blind people who speak a language that is supported by "Text to Speech" (TTS) systems. At this time, TTS is only available for large or commercially interesting languages. Until the standard and accessible readers improve, it is necessary to make special versions of accessible books for minority language speakers. For blind readers to hear the image descriptions, we need to put something special on the page. In this version of Bloom, you do this by clicking the "Include image descriptions on page" checkbox in the Publish:ePUB screen. Future versions may have other options in this area.</source>
-        <target xml:lang="pt-PT" state="final">O ideal seria criar um livro que pudesse servir a todos. Infelizmente, isto não é possível atualmente com o formato ePUB e leitores ePUB. Eles trabalham somente para pessoas cegas que falam um idioma que é suportado pelos programas "Text to Speech" (TTS) ou "Texto a voz". Atualmente, o TTS só está disponível para certos idiomas com mais falantes. Até que o formato ePUB e os leitores sejam melhorados, é necessário criar versões especiais de livros acessíveis a falantes de idiomas minoritários. Para que os leitores cegos possam ouvir as descrições nas imagens, temos que incluir algo especial na página. Nesta versão da Bloom, isto pode ser feito clicando na caixa "Incluir descrições de imagens na página" na tela Publish:ePUB. As futuras versões terão outras opções nesta área.</target>
+        <target xml:lang="pt-PT" state="final">O ideal seria criar um livro que pudesse servir a todos. Infelizmente, isto não é possível atualmente com o formato ePUB e leitores ePUB. Eles trabalham somente para pessoas cegas que falam uma línguaa que é suportado pelos programas "Text to Speech" (TTS) ou "Texto a voz". Atualmente, o TTS só está disponível para certas línguas com mais falantes. Até que o formato ePUB e os leitores sejam melhorados, é necessário criar versões especiais de livros acessíveis a falantes de línguas minoritários. Para que os leitores cegos possam ouvir as descrições das imagens, temos que incluir algo especial na página. Nesta versão da Bloom, isto pode ser feito clicando na caixa "Incluir descrições de imagens na página" na tela Publish:ePUB. As futuras versões terão outras opções nesta área.</target>
         <note>ID: AccessibilityCheck.LearnAbout.Footnote</note>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.ManualChecksHeading" sil:dynamic="true" approved="yes">
@@ -1103,6 +1103,11 @@
         <source xml:lang="en">Copyright</source>
         <target xml:lang="pt-PT" state="final">Direitos autorais</target>
         <note>ID: Common.Copyright</note>
+      </trans-unit>
+      <trans-unit id="Common.Default">
+        <source xml:lang="en">Default</source>
+        <target xml:lang="pt-PT" state="translated">Padrão</target>
+        <note>ID: Common.Default</note>
       </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
         <source xml:lang="en">Delete</source>
@@ -6587,9 +6592,9 @@ is mostly status, which shows on the Collection Tab -->
           Readers drag images to the correct target areas on the screen.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-          Readers drag images to the correct target areas on the screen.
-          This game can be customized in many ways using the Game Tool.
+        <target xml:lang="pt-PT" state="translated">
+          Os leitores arrastam imagens para as áreas corretas na tela. 
+          Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Targets</note>
       </trans-unit>
@@ -6598,9 +6603,9 @@ is mostly status, which shows on the Collection Tab -->
           Readers match each image to the correct word.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-          Readers match each image to the correct word.
-          This game can be customized in many ways using the Game Tool.
+        <target xml:lang="pt-PT" state="translated">
+          Os leitores arrastam cada imagem para a palavra correta na tela. 
+          Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Words</note>
       </trans-unit>
@@ -6609,9 +6614,9 @@ is mostly status, which shows on the Collection Tab -->
           Readers listen to several sound recordings and choose the one that matches a word.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-          Readers listen to several sound recordings and choose the one that matches a word.
-          This game can be customized in many ways using the Game Tool.
+        <target xml:lang="pt-PT" state="translated">
+          Os leitores ouvem várias gravações de som e escolhem a que corresponde a uma palavra.
+          Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Sound to Word</note>
       </trans-unit>
@@ -6620,9 +6625,8 @@ is mostly status, which shows on the Collection Tab -->
           Readers match several sound recordings to the correct words.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-          Readers match several sound recordings to the correct words.
-          This game can be customized in many ways using the Game Tool.
+        <target xml:lang="pt-PT" state="translated">
+          Os leitores associam diversas gravações de som às palavras corretas.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Sounds to Words</note>
       </trans-unit>
@@ -6630,8 +6634,8 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">
           Readers see an image and drag one of several words to match. This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-          Readers see an image and drag one of several words to match. This game can be customized in many ways using the Game Tool.
+        <target xml:lang="pt-PT" state="translated">
+          Apresentados com uma imagem e várias palavras, os leitores arrastam a palavra correta para a imagem. Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Match Word with Image</note>
       </trans-unit>
@@ -6881,7 +6885,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comprehension Quiz" sil:dynamic="true">
         <source xml:lang="en">Comprehension Quiz</source>
-        <target xml:lang="pt-PT" state="needs-translation">Comprehension Quiz</target>
+        <target xml:lang="pt-PT" state="translated">Teste de compreensão</target>
         <note>ID: TemplateBooks.PageLabel.Comprehension Quiz</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comic Full Page with Footer" sil:dynamic="true" approved="yes">
@@ -7101,17 +7105,17 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Images to Shadows" sil:dynamic="true">
         <source xml:lang="en">Drag Images to Shadows</source>
-        <target xml:lang="pt-PT" state="needs-translation">Drag Images to Shadows</target>
+        <target xml:lang="pt-PT" state="translated">Arraste as imagens até as sombras</target>
         <note>ID: TemplateBooks.PageLabel.Drag Images to Shadows</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Images to Targets" sil:dynamic="true">
         <source xml:lang="en">Drag Images to Targets</source>
-        <target xml:lang="pt-PT" state="needs-translation">Drag Images to Targets</target>
+        <target xml:lang="pt-PT" state="translated">Arraste as Imagens para os Alvos</target>
         <note>ID: TemplateBooks.PageLabel.Drag Images to Targets</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Images to Words" sil:dynamic="true">
         <source xml:lang="en">Drag Images to Words</source>
-        <target xml:lang="pt-PT" state="needs-translation">Drag Images to Words</target>
+        <target xml:lang="pt-PT" state="translated">Arrasta as Imagens para as palavras</target>
         <note>ID: TemplateBooks.PageLabel.Drag Images to Words</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true">
@@ -7131,12 +7135,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Order Words" sil:dynamic="true">
         <source xml:lang="en">Order Words</source>
-        <target xml:lang="pt-PT" state="needs-translation">Order Words</target>
+        <target xml:lang="pt-PT" state="translated">Ordenar as palavras</target>
         <note>ID: TemplateBooks.PageLabel.Order Words</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Custom Game" sil:dynamic="true">
         <source xml:lang="en">Custom Game</source>
-        <target xml:lang="pt-PT" state="needs-translation">Custom Game</target>
+        <target xml:lang="pt-PT" state="translated">Jogo Personalizado</target>
         <note>ID: TemplateBooks.PageLabel.Custom Game</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog" approved="yes">

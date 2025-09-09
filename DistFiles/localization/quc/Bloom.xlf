@@ -1105,6 +1105,11 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <target xml:lang="quc" state="final">Ya'tal chech le b'anal rech</target>
         <note>ID: Common.Copyright</note>
       </trans-unit>
+      <trans-unit id="Common.Default">
+        <source xml:lang="en">Default</source>
+        <target xml:lang="quc" state="needs-translation">Default</target>
+        <note>ID: Common.Default</note>
+      </trans-unit>
       <trans-unit id="Common.Delete">
         <source xml:lang="en">Delete</source>
         <target xml:lang="quc" state="translated">Uchupik</target>
