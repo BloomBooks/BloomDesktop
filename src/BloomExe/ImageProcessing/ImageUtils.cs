@@ -2061,6 +2061,8 @@ namespace Bloom.ImageProcessing
             foreach (var img in images)
             {
                 var src = img.GetAttribute("src");
+                if (src == "placeHolder.png")
+                    continue; // we still don't want to crop placeHolder.png (BL-15229)
                 var style = img.GetAttribute("style");
                 var imgContainer = img.ParentNode as SafeXmlElement;
                 var canvasElement = imgContainer?.ParentNode as SafeXmlElement;

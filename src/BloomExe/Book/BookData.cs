@@ -411,7 +411,8 @@ namespace Bloom.Book
             var itemsToDelete = new HashSet<Tuple<string, string>>();
             DataSet incomingData = SynchronizeDataItemsFromContentsOfElement(
                 elementToReadFrom,
-                itemsToDelete
+                itemsToDelete,
+                info
             );
             UpdateToolRelatedDataFromBookInfo(info, incomingData, itemsToDelete);
             incomingData.UpdateGenericLanguageString(
@@ -777,7 +778,7 @@ namespace Bloom.Book
         /// english topic (which serves as the 'key') from the datadiv. It then finds the placeholder
         /// for the topic and fills it with the best translation it can find.
         /// </summary>
-        private void SetUpDisplayOfTopicInBook(DataSet data)
+        private void SetUpDisplayOfTopicInBook(DataSet data, BookInfo info = null)
         {
             var topicPageElement = this._dom.SelectSingleNode("//div[@data-derived='topic']");
             if (topicPageElement == null)
@@ -817,7 +818,20 @@ namespace Bloom.Book
             if (string.IsNullOrEmpty(englishTopic) || englishTopic == "NoTopic")
                 return;
 
-            parentOfTopicDisplayElement.SetAttribute("data-have-topic", "true");
+            // Even if we have a topic, if we don't want to show it on the page,
+            // we don't want this attribute set to true.
+            // This was a tough call. The main effect of data-have-topic being false is to center the
+            // language name. We do want that to happen when the topic is hidden, as well as when it
+            // is not set. So does it make more sense to have code here take into account the
+            // appearance setting, or should the CSS know about both reasons for centering?
+            // I don't see a strong reason either way, so I let it be decided by the fact that
+            // there's no obvious way in CSS to get the centering behavior (done by setting both
+            // margins to auto) based on whether --cover-topic-show is 'none' or
+            // 'doShow-css-will-ignore-this-and-use-default'. So data-have-topic could plausibly
+            // be renamed data-show-topic (or we could just use a class), but I'm not sure what
+            // backwards compatibility issues that might cause, so decided not to rename.
+            if (ShouldShowTopic(info))
+                parentOfTopicDisplayElement.SetAttribute("data-have-topic", "true");
 
             var stringId = "Topics." + englishTopic;
 
@@ -841,6 +855,22 @@ namespace Bloom.Book
 
             topicPageElement.SetAttribute("lang", langOfTopicToShowOnCover);
             topicPageElement.InnerText = bestTranslation;
+        }
+
+        private bool ShouldShowTopic(BookInfo info)
+        {
+            // default (e.g., in tests, where we may not get this argument) is to show it.
+            if (info == null || info.AppearanceSettings == null)
+                return true;
+            // Not sure how the variable might not be set, but we'll default to the old behavior
+            if (
+                !info.AppearanceSettings.TryGetBooleanPropertyValue(
+                    "cover-topic-show",
+                    out bool showTopic
+                )
+            )
+                return true;
+            return showTopic;
         }
 
         private void UpdateIsbn(BookInfo info)
@@ -1121,7 +1151,8 @@ namespace Bloom.Book
         /// <param name="elementToReadFrom"> </param>
         private DataSet SynchronizeDataItemsFromContentsOfElement(
             SafeXmlNode elementToReadFrom,
-            HashSet<Tuple<string, string>> itemsToDelete
+            HashSet<Tuple<string, string>> itemsToDelete,
+            BookInfo info = null
         )
         {
             // We make a new dataset here, distinct from _dataset in our member variable. This is because, in GatherDataItemsFromXElement below,
@@ -1151,7 +1182,7 @@ namespace Bloom.Book
             // calls below are possibly redundant).
             UpdateTitle();
             SetupDisplayOfLanguagesOfBook(_dataset);
-            SetUpDisplayOfTopicInBook(_dataset);
+            SetUpDisplayOfTopicInBook(_dataset, info);
             return data;
         }
 
