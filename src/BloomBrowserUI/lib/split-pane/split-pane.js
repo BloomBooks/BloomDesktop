@@ -17,6 +17,7 @@ import { get } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../localizationManager/localizationManager";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import { kBloomCanvasClass } from "../../bookEdit/js/bloomImages";
+import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManager";
 
 (function($) {
     $.fn.splitPane = function() {
@@ -257,6 +258,14 @@ import { kBloomCanvasClass } from "../../bookEdit/js/bloomImages";
                         );
                     }
                     $splitPane.resize();
+                    // Usually, one half of a split is an image, and has a background canvas element
+                    // that must be adjusted to fit the new size. Usually this happens automatically,
+                    // because of a ResizeObserver in CanvasElementManager that is installed when
+                    // there is a mousedown in the splitter and removed on mouseup. But the adjustment
+                    // that we make after a double-click gets missed because it happens after the mouseup.
+                    // It's a bit of a hack, the but the best solution I can see is to just have this direct
+                    // call to the CAM to fix things up.
+                    theOneCanvasElementManager.adjustAfterOrigamiDoubleClick();
                 }
             });
         }

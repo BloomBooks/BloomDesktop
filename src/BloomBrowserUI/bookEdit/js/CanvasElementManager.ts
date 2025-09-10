@@ -5992,6 +5992,14 @@ export class CanvasElementManager {
         this.turnOnCanvasElementEditing();
     }
 
+    public adjustAfterOrigamiDoubleClick() {
+        // make sure we're not still in a dragging-the-splitter state
+        theOneCanvasElementManager.resumeComicEditing();
+        // this is automatic for changes that happen while we're dragging,
+        // but dragging gets stopped by mouse up, so we need to do it here.
+        theOneCanvasElementManager.handleResizeAdjustments();
+    }
+
     private draggingSplitter = false;
 
     // mouse down in an origami slider: if comic editing is on, remember that, and turn it off.
@@ -6899,7 +6907,8 @@ export class CanvasElementManager {
         ) as HTMLElement[]).filter(
             c =>
                 c.style.left !== "" &&
-                c.classList.contains("bloom-ui") === false
+                c.classList.contains("bloom-ui") === false &&
+                c.tagName.toLowerCase() !== "canvas"
         );
         if (children.length === 0) return;
 
@@ -7038,6 +7047,7 @@ export class CanvasElementManager {
         const newHeightPadding = newHeight - newChildrenHeight;
         const newLeft = oldLeftPaddingFraction * newWidthPadding;
         const newTop = oldTopPaddingFraction * newHeightPadding;
+        let needComicalUpdate = false;
         // OK, so the rectangle that represents the union of all the children (or the background image) is going to
         // be scaled by 'scale' and moved to (newLeft, newTop).
         // Now we need to adjust the position and possibly size of each child.
@@ -7050,6 +7060,17 @@ export class CanvasElementManager {
             let newChildWidth = child.clientWidth;
             let newChildHeight = child.clientHeight;
             let reposition = true;
+            const bubbleSpec = Bubble.getBubbleSpec(child);
+            // This test is not as precise as the one in ComicalJs.Bubble.isTransparent,
+            // but it seems to work. My intuition is that text-only bubbles (no tails, spec=none)
+            // which have colored backgrounds might need a Comical update, but in practice
+            // they don't seem to. In fact, the only thing that wasn't working when
+            // I didn't force an update was that tails got left behind when moving a bubble
+            // as part of double-clicking a divider.)
+            needComicalUpdate =
+                needComicalUpdate ||
+                (!!bubbleSpec.tails && bubbleSpec.tails.length > 0) ||
+                bubbleSpec.spec !== "none";
             if (
                 Array.from(child.children).some(
                     (c: HTMLElement) =>
@@ -7099,7 +7120,7 @@ export class CanvasElementManager {
                 child.style.height = newChildHeight + "px";
             }
             if (child.classList.contains(kCanvasElementClass)) {
-                const tails: TailSpec[] = Bubble.getBubbleSpec(child).tails;
+                const tails: TailSpec[] = bubbleSpec.tails;
                 tails.forEach(tail => {
                     tail.tipX = newLeft + (tail.tipX - left) * scale;
                     tail.tipY = newTop + (tail.tipY - top) * scale;
@@ -7135,6 +7156,10 @@ export class CanvasElementManager {
                 }
             }
         });
+        if (needComicalUpdate) {
+            // Move the bubbles to be consistent with the updated specs and positions.
+            Comical.update(bloomCanvas);
+        }
     }
 
     public static adjustCanvasElementAlternates(
