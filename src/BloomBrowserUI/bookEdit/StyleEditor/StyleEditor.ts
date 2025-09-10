@@ -198,9 +198,7 @@ export default class StyleEditor {
     ): string | null {
         if ($(target).hasClass(oldCoverTitleClass)) {
             const newStyleName: string = "Title-On-Cover-style";
-            $(target)
-                .removeClass(oldCoverTitleClass)
-                .addClass(newStyleName);
+            $(target).removeClass(oldCoverTitleClass).addClass(newStyleName);
             return newStyleName;
         }
 
@@ -571,9 +569,8 @@ export default class StyleEditor {
         create: boolean,
         documentToUse: Document = document
     ): CSSStyleRule | null {
-        const styleSheet = this.GetOrCreateUserModifiedStyleSheet(
-            documentToUse
-        );
+        const styleSheet =
+            this.GetOrCreateUserModifiedStyleSheet(documentToUse);
         if (styleSheet == null) {
             return null;
         }
@@ -679,9 +676,10 @@ export default class StyleEditor {
         }
     }
 
-    public getAudioHiliteProps(
-        styleName: string
-    ): { hiliteTextColor: string | undefined; hiliteBgColor: string } {
+    public getAudioHiliteProps(styleName: string): {
+        hiliteTextColor: string | undefined;
+        hiliteBgColor: string;
+    } {
         const sentenceRule = this.GetRuleForStyle(
             styleName,
             // The two should have the same content, so for reading, we only need one.
@@ -1249,8 +1247,9 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        const oldPaddingStr = window.getComputedStyle(this.boxBeingEdited)
-            .paddingLeft;
+        const oldPaddingStr = window.getComputedStyle(
+            this.boxBeingEdited
+        ).paddingLeft;
         CanvasElementManager.adjustCanvasElementsForPaddingChange(
             this.boxBeingEdited.ownerDocument.body,
             StyleEditor.GetStyleNameForElement(this.boxBeingEdited) ?? "",
@@ -1443,7 +1442,7 @@ export default class StyleEditor {
         if (index >= 0) {
             button.addClass("selectedIcon");
             const group = id.substring(0, index);
-            $(".propButton").each(function() {
+            $(".propButton").each(function () {
                 const item = $(this);
                 if (
                     this !== button.get(0) &&
@@ -1556,9 +1555,7 @@ export default class StyleEditor {
         // Recommended way to insert an item into a select2 control and select it (one of the trues makes it selected)
         // See http://codepen.io/alexweissman/pen/zremOV
         const newState = new Option(typedStyle, typedStyle, true, true);
-        $("#styleSelect")
-            .append(newState)
-            .trigger("change");
+        $("#styleSelect").append(newState).trigger("change");
         // Ensure we know this style in the future.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4438.
         this.styles.push(new FormattingStyle(typedStyle, typedStyle));
 
@@ -2032,9 +2029,8 @@ export default class StyleEditor {
             return "center";
         }
 
-        const positionJustifyButton = document.getElementById(
-            "position-justify"
-        );
+        const positionJustifyButton =
+            document.getElementById("position-justify");
         if (
             positionJustifyButton &&
             positionJustifyButton.classList.contains("selectedIcon")
@@ -2221,7 +2217,7 @@ export default class StyleEditor {
     // Remove any additions we made to the element for the purpose of UI alone
     public static CleanupElement(element) {
         const $el = $(element);
-        $el.find(".bloom-ui").each(function() {
+        $el.find(".bloom-ui").each(function () {
             $(this).remove();
         });
 
@@ -2293,9 +2289,8 @@ export default class StyleEditor {
                     this.textColorTitle = results[2].data.text;
 
                     this.boxBeingEdited = targetBox;
-                    const styleName = StyleEditor.GetBaseStyleNameForElement(
-                        targetBox
-                    );
+                    const styleName =
+                        StyleEditor.GetBaseStyleNameForElement(targetBox);
                     const current = this.getFormatValues();
                     this.styles = this.getFormattingStyles();
                     if (
@@ -2334,9 +2329,7 @@ export default class StyleEditor {
                         const visibleTabs = $(".tab-page:visible");
                         if (visibleTabs.length === 1) {
                             // When there is only one tab, we want to hide the tab itself.
-                            $(visibleTabs[0])
-                                .find("h2.tab")
-                                .remove();
+                            $(visibleTabs[0]).find("h2.tab").remove();
                         }
 
                         this.setupSelectControls(

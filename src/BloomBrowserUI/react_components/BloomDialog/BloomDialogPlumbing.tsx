@@ -20,10 +20,11 @@ export interface IBloomDialogEnvironmentParams {
     mode?: Mode;
 }
 
-export const normalDialogEnvironmentForStorybook: IBloomDialogEnvironmentParams = {
-    dialogFrameProvidedExternally: false,
-    initiallyOpen: true
-};
+export const normalDialogEnvironmentForStorybook: IBloomDialogEnvironmentParams =
+    {
+        dialogFrameProvidedExternally: false,
+        initiallyOpen: true
+    };
 
 // Storybook stories use this to open dialogs that take their settings via parameters to the open function, rather than props.
 // Example

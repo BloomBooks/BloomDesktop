@@ -221,8 +221,8 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                                         {profile === "none"
                                             ? noProfile
                                             : profile === "USWebCoatedSWOP"
-                                            ? cmykSwop2
-                                            : profile}
+                                              ? cmykSwop2
+                                              : profile}
                                     </MenuItem>
                                 ))}
                             </Select>

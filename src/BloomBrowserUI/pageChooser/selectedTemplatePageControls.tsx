@@ -46,15 +46,14 @@ interface ISelectedTemplatePageProps {
 }
 
 // Displays a large preview of a template page in the Add Page or Change Layout dialog.
-export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemplatePageProps> = (
-    props: ISelectedTemplatePageProps
-) => {
+export const SelectedTemplatePageControls: React.FunctionComponent<
+    ISelectedTemplatePageProps
+> = (props: ISelectedTemplatePageProps) => {
     const previewPaneLeftPadding = 15;
 
     const [continueChecked, setContinueChecked] = useState(false);
-    const [convertWholeBookChecked, setConvertWholeBookChecked] = useState(
-        false
-    );
+    const [convertWholeBookChecked, setConvertWholeBookChecked] =
+        useState(false);
     const minimumPagesToAdd = 1;
     const maximumPagesToAdd = 99;
     const [numberToAdd, setNumberToAdd] = useState<number>(minimumPagesToAdd);

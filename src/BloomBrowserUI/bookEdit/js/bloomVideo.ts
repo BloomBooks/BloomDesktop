@@ -196,9 +196,8 @@ export function doVideoCommand(
         showSignLanguageTool();
     } else if (command === "playEarlier") {
         // Find the preceding video container element, if any, and move it after the current one
-        const previousVideoContainer = findPreviousVideoContainer(
-            videoContainer
-        );
+        const previousVideoContainer =
+            findPreviousVideoContainer(videoContainer);
         if (previousVideoContainer) {
             SwapVideoPositionsInDom(previousVideoContainer, videoContainer);
         }

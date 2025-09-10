@@ -10,9 +10,7 @@ import { ApiBackedCheckbox } from "../../react_components/apiBackedCheckbox";
 import WebSocketManager from "../../utils/WebSocketManager";
 import "../../lib/errorHandler";
 
-export class AccessibilityChecklist extends React.Component<
-    IUILanguageAwareProps
-> {
+export class AccessibilityChecklist extends React.Component<IUILanguageAwareProps> {
     constructor(props) {
         super(props);
     }

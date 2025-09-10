@@ -500,10 +500,7 @@ export class ReaderToolsModel {
             this.setElementAttribute(
                 eltId,
                 "class",
-                old
-                    .replace(className, "")
-                    .replace("  ", " ")
-                    .trim()
+                old.replace(className, "").replace("  ", " ").trim()
             );
         }
     }
@@ -839,11 +836,7 @@ export class ReaderToolsModel {
         const stages = this.synphony.getStages(stageNumber);
 
         // compact to remove empty items if no graphemes are selected
-        return _.compact(
-            _.pluck(stages, "letters")
-                .join(" ")
-                .split(" ")
-        );
+        return _.compact(_.pluck(stages, "letters").join(" ").split(" "));
     }
 
     /**
@@ -978,9 +971,8 @@ export class ReaderToolsModel {
         ) {
             this.redoStack.push(this.undoStack.pop());
         }
-        this.activeElement.innerHTML = this.undoStack[
-            this.undoStack.length - 1
-        ].html;
+        this.activeElement.innerHTML =
+            this.undoStack[this.undoStack.length - 1].html;
         const restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
         if (restoreOffset < 0) return;
         EditableDivUtils.makeSelectionIn(
@@ -1008,9 +1000,8 @@ export class ReaderToolsModel {
         if (this.redoStack.length > 0) {
             this.undoStack.push(this.redoStack.pop());
         }
-        this.activeElement.innerHTML = this.undoStack[
-            this.undoStack.length - 1
-        ].html;
+        this.activeElement.innerHTML =
+            this.undoStack[this.undoStack.length - 1].html;
         const restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
         if (restoreOffset < 0) return;
         EditableDivUtils.makeSelectionIn(
@@ -1074,7 +1065,8 @@ export class ReaderToolsModel {
             case MarkupType.Leveled:
                 if (editableElements.length > 0) {
                     const options = {
-                        maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage(),
+                        maxWordsPerSentence:
+                            this.maxWordsPerSentenceOnThisPage(),
                         maxWordsPerPage: this.maxWordsPerPage(),
                         maxGlyphsPerWord: this.maxGlyphsPerWord(),
                         maxSentencesPerPage: this.maxSentencesPerPage()
@@ -1125,10 +1117,7 @@ export class ReaderToolsModel {
                     focusWords: cumulativeWords,
                     previousWords: cumulativeWords,
                     // theOneLibSynphony lowercases the text, so we must do the same with sight words.  (BL-2550)
-                    sightWords: sightWords
-                        .join(" ")
-                        .toLowerCase()
-                        .split(/\s/),
+                    sightWords: sightWords.join(" ").toLowerCase().split(/\s/),
                     knownGraphemes: this.stageGraphemes
                 });
 
@@ -1389,9 +1378,8 @@ export class ReaderToolsModel {
         const result: TextFragment[][] = [];
         for (let i = 0; i < pageStrings.length; i++) {
             const page = pageStrings[i];
-            let fragments: TextFragment[] = theOneLibSynphony.stringToSentences(
-                page
-            );
+            let fragments: TextFragment[] =
+                theOneLibSynphony.stringToSentences(page);
 
             // remove inter-sentence space
             fragments = fragments.filter(frag => {
@@ -1609,7 +1597,8 @@ export class ReaderToolsModel {
 
     // We'd like to use /\p{Mn}/gu to match diacritics, but FF60 apparently doesn't support it.
     // https://apps.timwhitlock.info/js/regex# provided this which is claimed to be equivalent.
-    private static unicodeMn = /[\u0300-\u036f\u0483-\u0487\u0591-\u05bd\u05bf\u05c1-\u05c2\u05c4-\u05c5\u05c7\u0610-\u061a\u064b-\u065e\u0670\u06d6-\u06dc\u06df-\u06e4\u06e7-\u06e8\u06ea-\u06ed\u0711\u0730-\u074a\u07a6-\u07b0\u07eb-\u07f3\u0901-\u0902\u093c\u0941-\u0948\u094d\u0951-\u0954\u0962-\u0963\u0981\u09bc\u09c1-\u09c4\u09cd\u09e2-\u09e3\u0a01-\u0a02\u0a3c\u0a41-\u0a42\u0a47-\u0a48\u0a4b-\u0a4d\u0a51\u0a70-\u0a71\u0a75\u0a81-\u0a82\u0abc\u0ac1-\u0ac5\u0ac7-\u0ac8\u0acd\u0ae2-\u0ae3\u0b01\u0b3c\u0b3f\u0b41-\u0b44\u0b4d\u0b56\u0b62-\u0b63\u0b82\u0bc0\u0bcd\u0c3e-\u0c40\u0c46-\u0c48\u0c4a-\u0c4d\u0c55-\u0c56\u0c62-\u0c63\u0cbc\u0cbf\u0cc6\u0ccc-\u0ccd\u0ce2-\u0ce3\u0d41-\u0d44\u0d4d\u0d62-\u0d63\u0dca\u0dd2-\u0dd4\u0dd6\u0e31\u0e34-\u0e3a\u0e47-\u0e4e\u0eb1\u0eb4-\u0eb9\u0ebb-\u0ebc\u0ec8-\u0ecd\u0f18-\u0f19\u0f35\u0f37\u0f39\u0f71-\u0f7e\u0f80-\u0f84\u0f86-\u0f87\u0f90-\u0f97\u0f99-\u0fbc\u0fc6\u102d-\u1030\u1032-\u1037\u1039-\u103a\u103d-\u103e\u1058-\u1059\u105e-\u1060\u1071-\u1074\u1082\u1085-\u1086\u108d\u135f\u1712-\u1714\u1732-\u1734\u1752-\u1753\u1772-\u1773\u17b7-\u17bd\u17c6\u17c9-\u17d3\u17dd\u180b-\u180d\u18a9\u1920-\u1922\u1927-\u1928\u1932\u1939-\u193b\u1a17-\u1a18\u1b00-\u1b03\u1b34\u1b36-\u1b3a\u1b3c\u1b42\u1b6b-\u1b73\u1b80-\u1b81\u1ba2-\u1ba5\u1ba8-\u1ba9\u1c2c-\u1c33\u1c36-\u1c37\u1dc0-\u1de6\u1dfe-\u1dff\u20d0-\u20dc\u20e1\u20e5-\u20f0\u2de0-\u2dff\u302a-\u302f\u3099-\u309a\ua66f\ua67c-\ua67d\ua802\ua806\ua80b\ua825-\ua826\ua8c4\ua926-\ua92d\ua947-\ua951\uaa29-\uaa2e\uaa31-\uaa32\uaa35-\uaa36\uaa43\uaa4c\ufb1e\ufe00-\ufe0f\ufe20-\ufe26]|\ud800\uddfd|\ud802[\ude01-\ude03\ude05-\ude06\ude0c-\ude0f\ude38-\ude3a\ude3f]|\ud834[\udd67-\udd69\udd7b-\udd82\udd85-\udd8b\uddaa-\uddad\ude42-\ude44]|\udb40[\udd00-\uddef]/g;
+    private static unicodeMn =
+        /[\u0300-\u036f\u0483-\u0487\u0591-\u05bd\u05bf\u05c1-\u05c2\u05c4-\u05c5\u05c7\u0610-\u061a\u064b-\u065e\u0670\u06d6-\u06dc\u06df-\u06e4\u06e7-\u06e8\u06ea-\u06ed\u0711\u0730-\u074a\u07a6-\u07b0\u07eb-\u07f3\u0901-\u0902\u093c\u0941-\u0948\u094d\u0951-\u0954\u0962-\u0963\u0981\u09bc\u09c1-\u09c4\u09cd\u09e2-\u09e3\u0a01-\u0a02\u0a3c\u0a41-\u0a42\u0a47-\u0a48\u0a4b-\u0a4d\u0a51\u0a70-\u0a71\u0a75\u0a81-\u0a82\u0abc\u0ac1-\u0ac5\u0ac7-\u0ac8\u0acd\u0ae2-\u0ae3\u0b01\u0b3c\u0b3f\u0b41-\u0b44\u0b4d\u0b56\u0b62-\u0b63\u0b82\u0bc0\u0bcd\u0c3e-\u0c40\u0c46-\u0c48\u0c4a-\u0c4d\u0c55-\u0c56\u0c62-\u0c63\u0cbc\u0cbf\u0cc6\u0ccc-\u0ccd\u0ce2-\u0ce3\u0d41-\u0d44\u0d4d\u0d62-\u0d63\u0dca\u0dd2-\u0dd4\u0dd6\u0e31\u0e34-\u0e3a\u0e47-\u0e4e\u0eb1\u0eb4-\u0eb9\u0ebb-\u0ebc\u0ec8-\u0ecd\u0f18-\u0f19\u0f35\u0f37\u0f39\u0f71-\u0f7e\u0f80-\u0f84\u0f86-\u0f87\u0f90-\u0f97\u0f99-\u0fbc\u0fc6\u102d-\u1030\u1032-\u1037\u1039-\u103a\u103d-\u103e\u1058-\u1059\u105e-\u1060\u1071-\u1074\u1082\u1085-\u1086\u108d\u135f\u1712-\u1714\u1732-\u1734\u1752-\u1753\u1772-\u1773\u17b7-\u17bd\u17c6\u17c9-\u17d3\u17dd\u180b-\u180d\u18a9\u1920-\u1922\u1927-\u1928\u1932\u1939-\u193b\u1a17-\u1a18\u1b00-\u1b03\u1b34\u1b36-\u1b3a\u1b3c\u1b42\u1b6b-\u1b73\u1b80-\u1b81\u1ba2-\u1ba5\u1ba8-\u1ba9\u1c2c-\u1c33\u1c36-\u1c37\u1dc0-\u1de6\u1dfe-\u1dff\u20d0-\u20dc\u20e1\u20e5-\u20f0\u2de0-\u2dff\u302a-\u302f\u3099-\u309a\ua66f\ua67c-\ua67d\ua802\ua806\ua80b\ua825-\ua826\ua8c4\ua926-\ua92d\ua947-\ua951\uaa29-\uaa2e\uaa31-\uaa32\uaa35-\uaa36\uaa43\uaa4c\ufb1e\ufe00-\ufe0f\ufe20-\ufe26]|\ud800\uddfd|\ud802[\ude01-\ude03\ude05-\ude06\ude0c-\ude0f\ude38-\ude3a\ude3f]|\ud834[\udd67-\udd69\udd7b-\udd82\udd85-\udd8b\uddaa-\uddad\ude42-\ude44]|\udb40[\udd00-\uddef]/g;
 
     public static getWordLength(word: string): number {
         // I'm not completely sure that all and only class Mn characters
@@ -1686,9 +1675,8 @@ export class ReaderToolsModel {
         }
         // handle sample texts files that are just a set of space-delimited words
         else {
-            const words = theOneLibSynphony.getWordsFromHtmlString(
-                fileContents
-            );
+            const words =
+                theOneLibSynphony.getWordsFromHtmlString(fileContents);
             // Limit the number of words processed from files.  The program hangs on very long lists.
             let lim = words.length;
             const wordNames = Object.keys(this.allWords);
@@ -1896,9 +1884,7 @@ export class ReaderToolsModel {
         } else {
             msgDiv.html(
                 theOneLocalizationManager.simpleFormat(
-                    $(toolbox)
-                        .find("#allowed_word_list_truncated_text")
-                        .html(),
+                    $(toolbox).find("#allowed_word_list_truncated_text").html(),
                     [this.maxAllowedWords.toLocaleString(uiLang)]
                 )
             );

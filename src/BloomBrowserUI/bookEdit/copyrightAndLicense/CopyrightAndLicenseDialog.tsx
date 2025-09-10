@@ -52,11 +52,8 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
     data: ICopyrightAndLicenseData;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     // Configure the local function (`show`) for showing the dialog to be the one derived from useSetupBloomDialog (`showDialog`)
     // which allows js launchers of the dialog to make it visible (by calling showCopyrightAndLicenseInfoOrDialog)
@@ -74,13 +71,11 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
         postBoolean("editView/setModalState", propsForBloomDialog.open);
     }, [propsForBloomDialog.open]);
 
-    const [
-        useOriginalCopyrightAndLicense,
-        setUseOriginalCopyrightAndLicense
-    ] = useState(
-        !!props.data.derivativeInfo &&
-            props.data.derivativeInfo.useOriginalCopyright
-    );
+    const [useOriginalCopyrightAndLicense, setUseOriginalCopyrightAndLicense] =
+        useState(
+            !!props.data.derivativeInfo &&
+                props.data.derivativeInfo.useOriginalCopyright
+        );
     const [copyrightInfo, setCopyrightInfo] = useState(
         props.data.copyrightInfo
     );
@@ -129,29 +124,32 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                     margin-bottom: 0;
                 `}
             />
-            {// This absolutely positioned div will appear to the right of the title text
-            licenseInfo && (
-                <div
-                    css={css`
-                        position: absolute;
-                        top: 20px;
-                        right: 20px;
-                        z-index: 1; // Otherwise, the DialogMiddle can end up on top of it
-                    `}
-                >
-                    <LicenseBadge
-                        licenseInfo={
-                            useOriginalCopyrightAndLicense
-                                ? props.data.derivativeInfo!.originalLicense!
-                                : licenseInfo
-                        }
-                        onChange={(newLicenseInfo: ILicenseInfo) => {
-                            setLicenseInfo(newLicenseInfo);
-                        }}
-                        disabled={useOriginalCopyrightAndLicense}
-                    />
-                </div>
-            )}
+            {
+                // This absolutely positioned div will appear to the right of the title text
+                licenseInfo && (
+                    <div
+                        css={css`
+                            position: absolute;
+                            top: 20px;
+                            right: 20px;
+                            z-index: 1; // Otherwise, the DialogMiddle can end up on top of it
+                        `}
+                    >
+                        <LicenseBadge
+                            licenseInfo={
+                                useOriginalCopyrightAndLicense
+                                    ? props.data.derivativeInfo!
+                                          .originalLicense!
+                                    : licenseInfo
+                            }
+                            onChange={(newLicenseInfo: ILicenseInfo) => {
+                                setLicenseInfo(newLicenseInfo);
+                            }}
+                            disabled={useOriginalCopyrightAndLicense}
+                        />
+                    </div>
+                )
+            }
             <DialogMiddle
                 css={css`
                     width: ${props.dialogEnvironment

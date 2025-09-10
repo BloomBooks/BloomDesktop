@@ -44,10 +44,11 @@ export type StatusPanelState =
     | "lockedByMeDisconnected" // We're disconnected, but before that happened the book was checked out to me, here
     | "error"; // we couldn't get the IBookTeamCollectionStatus; should never happen.
 
-export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCollectionStatus> = props => {
-    const [tcPanelState, setTcPanelState] = useState<StatusPanelState>(
-        "initializing"
-    );
+export const TeamCollectionBookStatusPanel: React.FunctionComponent<
+    IBookTeamCollectionStatus
+> = props => {
+    const [tcPanelState, setTcPanelState] =
+        useState<StatusPanelState>("initializing");
     // Indicates how far along the check-in bar should be (0-100).
     // Non-zero value, when in lockedByMe state, also indicates that we should
     // show the bar and make other alterations in the panel layout.
@@ -432,7 +433,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                     <StatusPanelCommon
                         css={css`
                             ${busy &&
-                                "cursor: progress; .checkout-button{cursor:progress;}"}
+                            "cursor: progress; .checkout-button{cursor:progress;}"}
                         `}
                         title={mainTitleUnlocked}
                         subTitle={subTitleUnlocked}
@@ -479,7 +480,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                     <StatusPanelCommon
                         css={css`
                             ${busy &&
-                                "cursor: progress; .checkin-button{cursor:progress;}"};
+                            "cursor: progress; .checkin-button{cursor:progress;}"};
                             .panel-children {
                                 margin-top: 10px; // leaves some extra space for the "What changes did you make" overlay
                             }
@@ -493,8 +494,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             checkInFailed
                                 ? subTitleCheckInFailed
                                 : checkInProgress === 0
-                                ? subTitleLockedByMe
-                                : ""
+                                  ? subTitleLockedByMe
+                                  : ""
                         }
                         icon={avatar}
                         //menu={} // eventually the "About my Avatar..." and "Forget Changes" menu gets passed in here.

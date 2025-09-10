@@ -17,11 +17,8 @@ import { css } from "@emotion/react";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 
 export const ForumInvitationDialogLauncher: React.FunctionComponent = () => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useEventLaunchedBloomDialog("ForumInvitationDialog");
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useEventLaunchedBloomDialog("ForumInvitationDialog");
 
     return propsForBloomDialog.open ? (
         <ForumInvitationDialog

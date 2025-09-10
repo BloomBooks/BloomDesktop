@@ -1,7 +1,7 @@
 import { theOneLibSynphony, setLangData } from "./synphony_lib";
 import _ from "underscore";
 
-describe("Check Story", function() {
+describe("Check Story", function () {
     const lettersInLanguage = [
         "a",
         "b",
@@ -438,15 +438,15 @@ describe("Check Story", function() {
         });
     }
 
-    beforeEach(function() {
+    beforeEach(function () {
         generateTestData();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         //
     });
 
-    it("Validate letter combination separately from letters", function() {
+    it("Validate letter combination separately from letters", function () {
         var inputText = "a bad cad chad ch,ad had d,ach d,ac";
         var knownGPCs = ["a", "b", "ch", "d", "n"];
         var results = theOneLibSynphony.checkStory(
@@ -460,7 +460,7 @@ describe("Check Story", function() {
         expect(results.remaining_words.length).toBe(3); // cad had d,ac
     });
 
-    it("Check letter combination and letters", function() {
+    it("Check letter combination and letters", function () {
         var inputText = "a bad cad chad ch,ad had d,ach d,ac";
         var knownGPCs = ["a", "b", "ch", "h", "d", "n"];
         var results = theOneLibSynphony.checkStory(
@@ -474,7 +474,7 @@ describe("Check Story", function() {
         expect(results.remaining_words.length).toBe(2); // cad d,ac
     });
 
-    it("Check usage of single quote as GPC", function() {
+    it("Check usage of single quote as GPC", function () {
         var inputText = "o'o 'obo bodo' cob";
         var knownGPCs = ["'", "b", "o", "d"];
         var results = theOneLibSynphony.checkStory(
@@ -488,7 +488,7 @@ describe("Check Story", function() {
         expect(results.remaining_words.length).toBe(1); // cobc
     });
 
-    it("Check single quote in digraph, but not as single character", function() {
+    it("Check single quote in digraph, but not as single character", function () {
         var inputText = "o'o b'ob bob' ob'o cob";
         var knownGPCs = ["b", "b'", "o", "d"];
         var results = theOneLibSynphony.checkStory(
@@ -502,7 +502,7 @@ describe("Check Story", function() {
         expect(results.remaining_words.length).toBe(2); // o'o cob
     });
 
-    it("Check hyphen in digraph, but not as single character", function() {
+    it("Check hyphen in digraph, but not as single character", function () {
         var inputText = "o-o b-ob bob- ob-o do-b";
         var knownGPCs = ["b", "o", "-o", "d"];
         var results = theOneLibSynphony.checkStory(
@@ -520,7 +520,7 @@ describe("Check Story", function() {
     // in possible_words. The exterior hyphens are stripped off of '-obo' and 'bodo-'.
     // Not sure why or how much trouble it'd be to fix. Also not sure it's a problem, since
     // hyphens are usually word internal things (except in linguistics).
-    it("Check usage of hyphen as GPC", function() {
+    it("Check usage of hyphen as GPC", function () {
         var inputText = "o-o -obo bodo- cob d,oc";
         var knownGPCs = ["b", "-", "o", "d"];
         var results = theOneLibSynphony.checkStory(
@@ -534,7 +534,7 @@ describe("Check Story", function() {
         expect(results.remaining_words.length).toBe(2); // cob d,oc
     });
 
-    it("Check double letter combinations", function() {
+    it("Check double letter combinations", function () {
         var inputText = "a and nad dan aa dad aand naad daan";
         var knownGPCs = ["a", "d", "n"];
         var results = theOneLibSynphony.checkStory(
@@ -549,7 +549,7 @@ describe("Check Story", function() {
     });
 
     // BL-4720
-    it("The only unknown letter is part of a known digraph", function() {
+    it("The only unknown letter is part of a known digraph", function () {
         var inputText = "a an ang gang ga nga ngag";
         var knownGPCs = _.without(lettersInLanguage, "g"); // g is the only unknown letter
         expect(_.contains(knownGPCs, "ng")).toBe(true); // make sure our test is set up correctly. 'ng' is known

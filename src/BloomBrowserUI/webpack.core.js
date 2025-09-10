@@ -8,7 +8,7 @@ var webpack = require("webpack");
 var WebpackBuildNotifierPlugin = require("webpack-build-notifier");
 
 function NothingPlugin() {
-    this.apply = function() {};
+    this.apply = function () {};
 }
 
 module.exports = {

@@ -26,12 +26,11 @@ export interface INumberChooserDialogProps {
 
 // This component is intended to be wrapped by another function that passes a BloomApi
 // onclick handler. For example, see duplicateManyDialog.tsx.
-export const NumberChooserDialog: React.FunctionComponent<INumberChooserDialogProps> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+export const NumberChooserDialog: React.FunctionComponent<
+    INumberChooserDialogProps
+> = props => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     const [numberChosen, setNumberChosen] = useState(props.min);
 

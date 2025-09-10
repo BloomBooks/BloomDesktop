@@ -84,14 +84,14 @@ export interface IReactTool {
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
 export class ToolBox {
     public toolboxIsShowing() {
-        return (<HTMLInputElement>$(parent.window.document)
-            .find("#pure-toggle-right")
-            .get(0)).checked;
+        return (<HTMLInputElement>(
+            $(parent.window.document).find("#pure-toggle-right").get(0)
+        )).checked;
     }
     public toggleToolbox() {
-        (<HTMLInputElement>$(parent.window.document)
-            .find("#pure-toggle-right")
-            .get(0)).click();
+        (<HTMLInputElement>(
+            $(parent.window.document).find("#pure-toggle-right").get(0)
+        )).click();
     }
     private builtToolbox: boolean = false;
     public adjustToolListForPage(page: HTMLElement) {
@@ -326,7 +326,7 @@ export class ToolBox {
         $(parent.window.document).ready(() => {
             $(parent.window.document)
                 .find("#pure-toggle-right")
-                .change(function() {
+                .change(function () {
                     showToolboxChanged(!this.checked);
                 });
         });
@@ -375,9 +375,7 @@ export class ToolBox {
                                 $("#toolbox").accordion({
                                     heightStyle: "fill"
                                 });
-                                $("body")
-                                    .find("*[data-i18n]")
-                                    .localize(); // run localization
+                                $("body").find("*[data-i18n]").localize(); // run localization
 
                                 get("currentUiLanguage", result => {
                                     const langName = result.data;
@@ -397,9 +395,8 @@ export class ToolBox {
                                         // TODO: This only works when the tool is loaded up for the first time.
                                         // It doesn't work if you open a new tool after the talking book tool is initialized for the first time.
                                         // TODO: How to re-translate when UI lang changed.
-                                        const i18nId = node.getAttribute(
-                                            "data-i18n"
-                                        );
+                                        const i18nId =
+                                            node.getAttribute("data-i18n");
                                         if (!i18nId) {
                                             node.setAttribute("lang", langName);
                                         } else {
@@ -446,9 +443,8 @@ export class ToolBox {
                                 // optimize: maybe we can overlap these?
                                 const nextToolId = toolsToLoad.pop();
                                 const checkBoxId = nextToolId + "Check";
-                                const toolId = ToolBox.addToolToString(
-                                    nextToolId
-                                );
+                                const toolId =
+                                    ToolBox.addToolToString(nextToolId);
                                 beginAddTool(checkBoxId, toolId, false, () =>
                                     loadNextTool()
                                 );
@@ -503,7 +499,7 @@ export class ToolBox {
     // Returns 'true' if the checkbox in the More... tab for the requested tool (w/"Tool" suffix!) is checked.
     public isToolActive(toolId: string): boolean {
         const tools = $("*[data-toolId]");
-        const filteredTools = tools.filter(function() {
+        const filteredTools = tools.filter(function () {
             return $(this).attr("data-toolId") === toolId;
         });
         return filteredTools.length > 0;
@@ -613,7 +609,7 @@ function showOrHideTool(chkboxId: string, tool: string, turnOn: boolean) {
         beginAddTool(chkboxId, tool, true);
     } else {
         $("*[data-toolId]")
-            .filter(function() {
+            .filter(function () {
                 return $(this).attr("data-toolId") === tool;
             })
             .remove();
@@ -806,7 +802,7 @@ function getToolElement(tool: ITool): HTMLElement | null {
         const toolName = ToolBox.addToolToString(tool.id());
         $("#toolbox")
             .find("> h3")
-            .each(function() {
+            .each(function () {
                 if ($(this).attr("data-toolId") === toolName) {
                     // REVIEW: this may in fact be unneeded but I'm just trying to get eslint set up and conceivably it is intentional
                     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -858,7 +854,7 @@ function setCurrentTool(toolID: string) {
     if (toolID) {
         let foundTool = false;
         // find the index of the tool whose "data-toolId" attribute equals the value of "currentTool"
-        accordionHeaders.each(function() {
+        accordionHeaders.each(function () {
             if ($(this).attr("data-toolId") === toolID) {
                 foundTool = true;
                 // break from the each() loop
@@ -874,10 +870,7 @@ function setCurrentTool(toolID: string) {
     }
     if (!toolID) {
         // Leave idx at 0, and update currentTool to the corresponding ID.
-        toolID = toolbox
-            .find("> h3")
-            .first()
-            .attr("data-toolId");
+        toolID = toolbox.find("> h3").first().attr("data-toolId");
     }
     if (idx >= accordionHeaders.length - 1) {
         // don't pick the More... tool, pick whatever happens to be first.
@@ -995,7 +988,7 @@ function beginAddTool(
         let toolLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim();
         toolLabel = ToolBox.addToolToString(toolLabel, true);
 
-        const reactTool = (tool as unknown) as IReactTool;
+        const reactTool = tool as unknown as IReactTool;
 
         // Currently, all subscription tools are React, so we haven't implemented a way to add the subscription badge to old-style tools
         const possibleSubscriptionBadge = reactTool.featureName
@@ -1067,9 +1060,9 @@ function handleKeyboardInput(): void {
 
         const selection: Selection | null = page.contentWindow.getSelection();
         const anchor: Node | null = selection ? selection.anchorNode : null;
-        const active = anchor ? <HTMLDivElement>$(anchor)
-                  .closest("div")
-                  .get(0) : null;
+        const active = anchor
+            ? <HTMLDivElement>$(anchor).closest("div").get(0)
+            : null;
         if (
             !active ||
             (selection &&
@@ -1161,7 +1154,8 @@ function handleKeyboardInput(): void {
                         ckeditorSelection = ckeditorOfThisBox.getSelection();
                         bookmarks = ckeditorSelection.createBookmarks(true);
 
-                        const actualUpdateFunc = await currentTool.updateMarkupAsync();
+                        const actualUpdateFunc =
+                            await currentTool.updateMarkupAsync();
                         if (
                             keydownEventCounter ==
                             counterValueThatIdentifiesThisKeyDown
@@ -1387,17 +1381,15 @@ async function addFeatureStatusMessageTitlesToSubscriptionBadges(
 ): Promise<void> {
     const subscriptionBadges = element.find(".subscription-badge");
     const promises: Promise<void>[] = [];
-    subscriptionBadges.each(function(_i, subscriptionBadge: HTMLElement) {
+    subscriptionBadges.each(function (_i, subscriptionBadge: HTMLElement) {
         if (subscriptionBadge.hasAttribute("title")) return;
-        const featureName = subscriptionBadge.parentElement?.getAttribute(
-            "data-feature"
-        );
+        const featureName =
+            subscriptionBadge.parentElement?.getAttribute("data-feature");
         if (!featureName) return;
 
         const promise = (async () => {
-            const { enabled, message } = await getFeatureEnabledAndMessage(
-                featureName
-            );
+            const { enabled, message } =
+                await getFeatureEnabledAndMessage(featureName);
             subscriptionBadge.setAttribute("title", message);
             if (!enabled) {
                 subscriptionBadge.addEventListener("click", () =>
@@ -1467,7 +1459,7 @@ function loadToolboxTool(
         let insertBefore = toolboxElt
             .children() // children() includes both the headers and the contents of the tools
             .filter(".ui-accordion-header") // we only want to sort this into the headers...
-            .filter(function() {
+            .filter(function () {
                 // Note that we aren't (as of 4.4) setting the "locale" of the browser to match the
                 // UI language. In my tests, it's stuck at "en-US" (navigator.language). But if we ever do
                 // set this, then this will do a better job of ordering. Meanwhile, no worse.

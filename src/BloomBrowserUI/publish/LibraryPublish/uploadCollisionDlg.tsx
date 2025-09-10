@@ -72,12 +72,11 @@ export let showUploadCollisionDialog: () => void = () => {
     console.error("showUploadCollisionDialog is not set up yet.");
 };
 
-export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProps> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+export const UploadCollisionDlg: React.FunctionComponent<
+    IUploadCollisionDlgProps
+> = props => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
     showUploadCollisionDialog = showDialog;
 
     enum RadioState {

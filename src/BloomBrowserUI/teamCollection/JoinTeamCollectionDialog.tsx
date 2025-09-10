@@ -55,11 +55,8 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
     localGuid?: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     const dialogTitle = useL10n(
         'Join the Bloom Team Collection "%0"',
@@ -98,8 +95,8 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
             JoinCollectionState.MatchesExistingNonTeamCollection
             ? "TeamCollection.JoinAndMerge"
             : dialogState === JoinCollectionState.MatchesExistingTeamCollection
-            ? "TeamCollection.Open"
-            : "TeamCollection.Join";
+              ? "TeamCollection.Open"
+              : "TeamCollection.Join";
     }
 
     function getJoinButtonEnglish(): string {
@@ -107,8 +104,8 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
             JoinCollectionState.MatchesExistingNonTeamCollection
             ? "Join and Merge"
             : dialogState === JoinCollectionState.MatchesExistingTeamCollection
-            ? "Open"
-            : "Join";
+              ? "Open"
+              : "Join";
         // Leaving it as "join" for the pathological cases, though it will be disabled.
     }
 

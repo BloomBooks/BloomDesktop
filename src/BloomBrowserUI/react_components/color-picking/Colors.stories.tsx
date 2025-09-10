@@ -66,9 +66,8 @@ export const BackgroundTextColor = () =>
     React.createElement(() => {
         const [chooserShowing, setChooserShowing] = useState(false);
         const [backgroundChooser, setBackgroundChooser] = useState(true); // false is text chooser
-        const [overDivStyles, setOverDivStyles] = useState(
-            initialOverDivStyles
-        );
+        const [overDivStyles, setOverDivStyles] =
+            useState(initialOverDivStyles);
         const [
             chooserCurrentBackgroundColor,
             setChooserCurrentBackgroundColor
@@ -77,13 +76,12 @@ export const BackgroundTextColor = () =>
             colors: ["#ffffff"],
             opacity: 1
         });
-        const [chooserCurrentTextColor, setChooserCurrentTextColor] = useState<
-            IColorInfo
-        >({
-            name: "black",
-            colors: ["#000000"],
-            opacity: 1
-        });
+        const [chooserCurrentTextColor, setChooserCurrentTextColor] =
+            useState<IColorInfo>({
+                name: "black",
+                colors: ["#000000"],
+                opacity: 1
+            });
         const handleColorChange = (
             color: IColorInfo,
             colorIsBackground: boolean
@@ -172,9 +170,8 @@ BackgroundTextColor.story = {
 
 export const ColorPickerDialog = () =>
     React.createElement(() => {
-        const [overDivStyles, setOverDivStyles] = useState(
-            initialOverDivStyles
-        );
+        const [overDivStyles, setOverDivStyles] =
+            useState(initialOverDivStyles);
         const [
             chooserCurrentBackgroundColor,
             setChooserCurrentBackgroundColor
@@ -233,20 +230,18 @@ export const ColorPickerDialog = () =>
 
 export const ColorPickerWDefault = () =>
     React.createElement(() => {
-        const [overDivStyles, setOverDivStyles] = useState(
-            initialOverDivStyles
-        );
+        const [overDivStyles, setOverDivStyles] =
+            useState(initialOverDivStyles);
         const defaultColorInfo: IColorInfo = {
             colors: ["#ffbf00"],
             opacity: 1
         };
-        const [chooserCurrentTextColor, setChooserCurrentTextColor] = useState<
-            IColorInfo
-        >({
-            name: "black",
-            colors: ["#000000"],
-            opacity: 1
-        });
+        const [chooserCurrentTextColor, setChooserCurrentTextColor] =
+            useState<IColorInfo>({
+                name: "black",
+                colors: ["#000000"],
+                opacity: 1
+            });
         const handleColorChange = (color: IColorInfo) => {
             console.log("Color change:");
             console.log(

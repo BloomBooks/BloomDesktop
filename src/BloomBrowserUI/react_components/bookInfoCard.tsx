@@ -21,7 +21,9 @@ interface IBookInfoCardProps {
     canUpload?: boolean;
 }
 
-export const BookInfoCard: React.FunctionComponent<IBookInfoCardProps> = props => {
+export const BookInfoCard: React.FunctionComponent<
+    IBookInfoCardProps
+> = props => {
     // room for 4 lines; show up to 4 unless we have more, then show 3 and a "more" message
     const langsToShow = props.languages.length > 4 ? 3 : 4;
     const languageList = props.languages

@@ -131,10 +131,10 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                                 badge === BadgeType.Published
                                     ? "/bloom/images/on-blorg-badges/on-blorg-normal.svg"
                                     : badge === BadgeType.Draft
-                                    ? "/bloom/images/on-blorg-badges/on-blorg-draft.svg"
-                                    : badge === BadgeType.Harvesting
-                                    ? "/bloom/images/on-blorg-badges/on-blorg-harvesting.svg"
-                                    : "/bloom/images/on-blorg-badges/on-blorg-problem.svg"
+                                      ? "/bloom/images/on-blorg-badges/on-blorg-draft.svg"
+                                      : badge === BadgeType.Harvesting
+                                        ? "/bloom/images/on-blorg-badges/on-blorg-harvesting.svg"
+                                        : "/bloom/images/on-blorg-badges/on-blorg-problem.svg"
                             }
                         />
                     </BloomTooltip>

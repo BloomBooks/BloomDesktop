@@ -91,9 +91,8 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the epub
     );
 
-    const [currentTaskApi, setCurrentTaskApi] = useState<string>(
-        kUpdatePreviewApi
-    );
+    const [currentTaskApi, setCurrentTaskApi] =
+        useState<string>(kUpdatePreviewApi);
 
     const [landscape] = useApiBoolean("publish/epub/landscape", false);
 

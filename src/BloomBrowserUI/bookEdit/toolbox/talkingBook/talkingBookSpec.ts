@@ -414,8 +414,8 @@ describe("talking book tests", () => {
             }
 
             const page1 = getFrameElementById("page", "page1");
-            const numCurrents = page1?.querySelectorAll(".ui-audioCurrent")
-                .length;
+            const numCurrents =
+                page1?.querySelectorAll(".ui-audioCurrent").length;
             expect(numCurrents).toBe(
                 1,
                 "Only 1 item is allowed to be the current: " + page1?.innerHTML
@@ -759,9 +759,8 @@ describe("talking book tests", () => {
                     </p>
                 </div>`);
             // System under test
-            const fragments = await AudioRecording.elementToSentencesWithCleanup(
-                divHtml
-            );
+            const fragments =
+                await AudioRecording.elementToSentencesWithCleanup(divHtml);
 
             // Verify
             // removed because empty

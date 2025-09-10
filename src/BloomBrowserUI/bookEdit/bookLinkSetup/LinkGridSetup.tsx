@@ -22,10 +22,8 @@ const LinkGridSetup: React.FC<{
     links: Link[]; // the set of links that are currently in the grid
     onLinksChanged: (links: Link[]) => void;
 }> = props => {
-    const [
-        selectedSource,
-        setSelectedSource
-    ] = useState<BookInfoForLinks | null>(null);
+    const [selectedSource, setSelectedSource] =
+        useState<BookInfoForLinks | null>(null);
     const [targets, setTargets] = useState<Link[]>(props.links); // initialize with links prop
     const [isPageDialogOpen, setIsPageDialogOpen] = useState(false);
 

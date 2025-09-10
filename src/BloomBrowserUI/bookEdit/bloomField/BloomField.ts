@@ -219,9 +219,10 @@ export default class BloomField {
             event.data.dataValue = this.reconstituteParagraphsOnPlainTextPaste(
                 event.data
             );
-            event.data.dataValue = this.convertStandardFormatVerseMarkersToSuperscript(
-                event.data.dataValue
-            );
+            event.data.dataValue =
+                this.convertStandardFormatVerseMarkersToSuperscript(
+                    event.data.dataValue
+                );
 
             event.data.dataValue = this.fixPasteData(event.data.dataValue);
             event.data.dataValue = this.removeUselessSpanMarkup(
@@ -236,9 +237,10 @@ export default class BloomField {
             ) {
                 // We need to generate a new guid-based id, use it to copy the audio file, and
                 // insert it into the span when targeting a Sentence recording mode div.
-                event.data.dataValue = this.copyAudioFilesWithNewIdsDuringPasting(
-                    event.data.dataValue
-                );
+                event.data.dataValue =
+                    this.copyAudioFilesWithNewIdsDuringPasting(
+                        event.data.dataValue
+                    );
             } else {
                 // Remove all audio related span markup when targeting a TextBox recording mode div.
                 event.data.dataValue = this.removeAudioSpanMarkupDuringPasting(
@@ -287,9 +289,8 @@ export default class BloomField {
         // * BloomSourceBubbles.SetupTooltips() has focus and blur handlers for Source Bubbles
         //   which remove or add the passive-bubble class.
         ckeditor.on("focus", event => {
-            const qtipId = event.editor?.element?.getAttribute(
-                "aria-describedby"
-            );
+            const qtipId =
+                event.editor?.element?.getAttribute("aria-describedby");
             if (qtipId) {
                 const tipElement = $(`#${qtipId}`);
                 if (tipElement) {
@@ -299,9 +300,8 @@ export default class BloomField {
             }
         });
         ckeditor.on("blur", event => {
-            const qtipId = event.editor?.element?.getAttribute(
-                "aria-describedby"
-            );
+            const qtipId =
+                event.editor?.element?.getAttribute("aria-describedby");
             if (qtipId) {
                 const tipElement = $(`#${qtipId}`);
                 if (tipElement) {
@@ -312,7 +312,7 @@ export default class BloomField {
         });
 
         ckeditor.addCommand("pasteHyperlink", {
-            exec: function(edt) {
+            exec: function (edt) {
                 get("common/clipboardText", result => {
                     if (!result.data) {
                         return; // More sanity checks are in bloomEditing.updateCkEditorButtonStatus
@@ -562,7 +562,7 @@ export default class BloomField {
         //the image - container(which in turn contains the caption).
         $(divToProtect)
             .children()
-            .filter(function() {
+            .filter(function () {
                 return this.localName.toLowerCase() != "div";
             })
             .each(() => {
@@ -572,7 +572,7 @@ export default class BloomField {
         //note this is still only one level deep, so it doesn't endanger the caption
         $(divToProtect)
             .contents()
-            .filter(function() {
+            .filter(function () {
                 return (
                     this.nodeType == Node.TEXT_NODE &&
                     this.textContent.trim().length > 0
@@ -617,7 +617,7 @@ export default class BloomField {
     // Without this, ctrl+a followed by a left-arrow or right-arrow gets you out of all paragraphs,
     // so you can start messing things up.
     private static PreventArrowingOutIntoField(field: HTMLElement) {
-        $(field).keydown(function(e) {
+        $(field).keydown(function (e) {
             const leftArrowPressed = e.key === "ArrowLeft";
             const rightArrowPressed = e.key === "ArrowRight";
             if (leftArrowPressed || rightArrowPressed) {
@@ -638,11 +638,7 @@ export default class BloomField {
     private static EnsureStartsWithParagraphElement(field: HTMLElement) {
         if (
             $(field).children().length > 0 &&
-            $(field)
-                .children()
-                .first()
-                .prop("tagName")
-                .toLowerCase() === "p"
+            $(field).children().first().prop("tagName").toLowerCase() === "p"
         ) {
             return;
         }
@@ -653,11 +649,7 @@ export default class BloomField {
         //Enhance: move any errant paragraphs to after the bloom-canvas
         if (
             $(field).children().length > 0 &&
-            $(field)
-                .children()
-                .last()
-                .prop("tagName")
-                .toLowerCase() === "p"
+            $(field).children().last().prop("tagName").toLowerCase() === "p"
         ) {
             return;
         }
@@ -699,9 +691,7 @@ export default class BloomField {
         if ($(field).hasClass("WordFind-style")) return;
 
         BloomField.ConvertTopLevelTextNodesToParagraphs(field);
-        $(field)
-            .find("br")
-            .remove();
+        $(field).find("br").remove();
 
         // in cases where we are embedding images inside of bloom-editables, the paragraphs actually have to go at the
         // end, for reason of wrapping. See SHRP C1P4 Pupils Book
@@ -726,17 +716,9 @@ export default class BloomField {
     ) {
         const range = document.createRange();
         if (position === CursorPosition.start) {
-            range.selectNodeContents(
-                $(field)
-                    .find("p")
-                    .first()[0]
-            );
+            range.selectNodeContents($(field).find("p").first()[0]);
         } else {
-            range.selectNodeContents(
-                $(field)
-                    .find("p")
-                    .last()[0]
-            );
+            range.selectNodeContents($(field).find("p").last()[0]);
         }
         range.collapse(position === CursorPosition.start); //true puts it at the start
         const sel = window.getSelection();
@@ -766,8 +748,9 @@ export default class BloomField {
     // inadvertently remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
     // tries to safeguard elements bearing that class.
     private static PreventRemovalOfSomeElements(field: HTMLElement) {
-        const numberThatShouldBeThere = $(field).find(".bloom-preventRemoval")
-            .length;
+        const numberThatShouldBeThere = $(field).find(
+            ".bloom-preventRemoval"
+        ).length;
         if (numberThatShouldBeThere > 0) {
             $(field).keyup(e => {
                 if (
@@ -786,12 +769,8 @@ export default class BloomField {
         // Since the elements that should not be deleted are part of a parallel field in a
         // template language, initial page setup will copy it into a new version of the messed
         // up one if the relevant language version is missing altogether
-        $(field).blur(function(e) {
-            if (
-                $(this)
-                    .html()
-                    .indexOf("RESETRESET") > -1
-            ) {
+        $(field).blur(function (e) {
+            if ($(this).html().indexOf("RESETRESET") > -1) {
                 $(this).remove();
                 alert(
                     "Now go to another book, then back to this book and page."
@@ -832,11 +811,7 @@ export default class BloomField {
         //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason,
         //and that gets characters in the wrong place because this messes with the insertion point. So now
         //we check to see if the space is still there before touching it
-        if (
-            $(field)
-                .html()
-                .indexOf("&nbsp;") === 0
-        ) {
+        if ($(field).html().indexOf("&nbsp;") === 0) {
             //earlier we stuck a &nbsp; in to work around a FF bug on empty boxes.
             //now remove it a soon as they type something
 

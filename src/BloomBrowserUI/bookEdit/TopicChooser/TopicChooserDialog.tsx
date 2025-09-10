@@ -38,12 +38,11 @@ interface ITopicChooserDialogProps {
     availableTopics?: ITopicChoice[];
 }
 
-export const TopicChooserDialog: React.FunctionComponent<ITopicChooserDialogProps> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+export const TopicChooserDialog: React.FunctionComponent<
+    ITopicChooserDialogProps
+> = props => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     // Configure the local function (`show`) for showing the dialog to be the one derived from useSetupBloomDialog (`showDialog`)
     // which allows js launchers of the dialog to make it visible (by calling showCopyrightAndLicenseInfoOrDialog)

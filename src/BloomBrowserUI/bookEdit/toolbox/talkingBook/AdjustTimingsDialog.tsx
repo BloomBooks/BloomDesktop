@@ -45,14 +45,10 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     applyTimingsFile: (timingsFilePath?: string) => Promise<string | undefined>;
     closing: (canceling: boolean) => void;
 }> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
-    const [segments, setSegments] = useState<
-        { start: number; end: number; text: string }[]
-    >();
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
+    const [segments, setSegments] =
+        useState<{ start: number; end: number; text: string }[]>();
     // Should the next render of the AdjustTimingsControl adjust the segments based on the audio?
     // This should only happen on the render immediately after we create the segments based on the text length.
     const [shouldAdjustSegments, setShouldAdjustSegments] = useState(false);
@@ -83,10 +79,8 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         []
     );
     // More menu
-    const [
-        moreElForAdvancedMenu,
-        setMoreElForAdvancedMenu
-    ] = React.useState<null | HTMLElement>(null);
+    const [moreElForAdvancedMenu, setMoreElForAdvancedMenu] =
+        React.useState<null | HTMLElement>(null);
     const moreMenuOpen = Boolean(moreElForAdvancedMenu);
     const handleClick = () => {
         const anchor = document.getElementById(timingsMenuId);
@@ -145,10 +139,11 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                         "The placeholder {0} will be replaced with the dependency that needs to be installed."
                     )
                     .done(localizedMessage => {
-                        const missingDependencyHoverTip = theOneLocalizationManager.simpleFormat(
-                            localizedMessage,
-                            ["aeneas"]
-                        );
+                        const missingDependencyHoverTip =
+                            theOneLocalizationManager.simpleFormat(
+                                localizedMessage,
+                                ["aeneas"]
+                            );
                         setMissingAeneasTip(missingDependencyHoverTip);
                     });
             }
@@ -369,9 +364,8 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                         l10nId="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile"
                         onClick={async () => {
                             closeMoreMenu();
-                            const newTimes = await props.applyTimingsFile(
-                                timingsFilePath
-                            );
+                            const newTimes =
+                                await props.applyTimingsFile(timingsFilePath);
                             if (newTimes) {
                                 setAudioRecordingEndTimes(newTimes);
                             }

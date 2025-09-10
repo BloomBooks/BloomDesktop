@@ -48,11 +48,8 @@ export default {
 
 export const SimpleDialog = () => {
     return React.createElement(() => {
-        const {
-            showDialog,
-            closeDialog,
-            propsForBloomDialog
-        } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
+        const { showDialog, closeDialog, propsForBloomDialog } =
+            useSetupBloomDialog(normalDialogEnvironmentForStorybook);
         // normally here we would assign showDialog to an exported function that
         // other parts of the UI can use to show this dialog. But that doesn't
         // really work here in story-land, so we'll just use it below in a button.
@@ -92,11 +89,8 @@ export const SimpleDialog = () => {
 
 export const DialogWithCloseIcon = () => {
     return React.createElement(() => {
-        const {
-            showDialog,
-            closeDialog,
-            propsForBloomDialog
-        } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
+        const { showDialog, closeDialog, propsForBloomDialog } =
+            useSetupBloomDialog(normalDialogEnvironmentForStorybook);
         return (
             <div>
                 <BloomDialog onCancel={closeDialog} {...propsForBloomDialog}>
@@ -134,11 +128,8 @@ DialogWithCloseIcon.story = {
 
 export const DialogWithProgressAndClose = () => {
     return React.createElement(() => {
-        const {
-            showDialog,
-            closeDialog,
-            propsForBloomDialog
-        } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
+        const { showDialog, closeDialog, propsForBloomDialog } =
+            useSetupBloomDialog(normalDialogEnvironmentForStorybook);
         return (
             <div>
                 <BloomDialog
@@ -183,11 +174,8 @@ DialogWithProgressAndClose.story = {
 
 export const DialogWithTheKitchenSink = () => {
     return React.createElement(() => {
-        const {
-            showDialog,
-            closeDialog,
-            propsForBloomDialog
-        } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
+        const { showDialog, closeDialog, propsForBloomDialog } =
+            useSetupBloomDialog(normalDialogEnvironmentForStorybook);
         return (
             <BloomDialog onCancel={closeDialog} {...propsForBloomDialog}>
                 <DialogTitle

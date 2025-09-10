@@ -195,8 +195,8 @@ export class LocalizableElement<
                 // getLocalization when they change...they are used in the output that it produces.
                 // l10nParam0: this.props.l10nParam0,
                 // l10nParam1: this.props.l10nParam1,
-                temporarilyDisableI18nWarning: this.props
-                    .temporarilyDisableI18nWarning,
+                temporarilyDisableI18nWarning:
+                    this.props.temporarilyDisableI18nWarning,
                 callback: (localizedText, success) => {
                     if (this.isComponentMounted) {
                         this.setState({
@@ -293,8 +293,8 @@ export class LocalizableElement<
             (controlIsEnabled
                 ? this.state.tipEnabledTranslation
                 : this.state.tipDisabledTranslation
-                ? this.state.tipDisabledTranslation
-                : this.state.tipEnabledTranslation) || ""
+                  ? this.state.tipDisabledTranslation
+                  : this.state.tipEnabledTranslation) || ""
         );
     }
 

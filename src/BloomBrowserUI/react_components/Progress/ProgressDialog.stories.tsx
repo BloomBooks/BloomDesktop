@@ -49,49 +49,40 @@ const kLongListOfAllTypes: Array<IStoryMessage> = [
     { k: "Progress", m: "Working hard...", delay: 3000 },
     {
         k: "Warning",
-        m:
-            "This warning be in gold and should cause the title bar to also turn gold, while the spinner and title text should be black color.",
+        m: "This warning be in gold and should cause the title bar to also turn gold, while the spinner and title text should be black color.",
         delay: 3000
     },
     {
         k: "Progress",
-        m:
-            "Cillum reprehenderit sit esse amet ut ullamco ex deserunt mollit aliqua nulla aute ipsum..."
+        m: "Cillum reprehenderit sit esse amet ut ullamco ex deserunt mollit aliqua nulla aute ipsum..."
     },
     {
         k: "Progress",
-        m:
-            "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
+        m: "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
     },
     {
         k: "Progress",
-        m:
-            "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
+        m: "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
     },
     {
         k: "Progress",
-        m:
-            "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
+        m: "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
     },
     {
         k: "Progress",
-        m:
-            "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
+        m: "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
     },
     {
         k: "Progress",
-        m:
-            "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
+        m: "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
     },
     {
         k: "Progress",
-        m:
-            "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
+        m: "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
     },
     {
         k: "Progress",
-        m:
-            "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
+        m: "Bunch of progress messages to force us to scroll. Reprehenderit commodo proident ad minim velit velit cupidatat excepteur do. Magna laborum elit culpa qui veniam aliqua laboris enim magna aute irure aliqua quis. Cillum aliqua et anim nulla ipsum consectetur aliquip eu est. Ex aliquip consequat officia et."
     },
     {
         k: "Note",
@@ -155,15 +146,13 @@ export const ShortWithReportButtonIfThereIsAnError = () => {
                         },
                         {
                             k: "Progress",
-                            m:
-                                "This one should take 3 seconds to complete, and the progress spinner should be showing during this time.",
+                            m: "This one should take 3 seconds to complete, and the progress spinner should be showing during this time.",
                             delay: 3000,
                             progress: "indefinite"
                         },
                         {
                             k: "Error",
-                            m:
-                                "This error should cause the title bar to go red and the report button to become available when the dialog is finished."
+                            m: "This error should cause the title bar to go red and the report button to become available when the dialog is finished."
                         },
                         {
                             id: "show-buttons"
@@ -225,8 +214,7 @@ export const NotWrappedInADialog = () => {
                     sendEvents([
                         {
                             k: "Progress",
-                            m:
-                                "This one is not wrapped in a material dialog, in order to test expanding out to whatever width is available, like we need when wrapping in a winforms dialog. 1 of 3 messages.",
+                            m: "This one is not wrapped in a material dialog, in order to test expanding out to whatever width is available, like we need when wrapping in a winforms dialog. 1 of 3 messages.",
                             progress: "indefinite"
                         },
                         {

@@ -35,10 +35,8 @@ export function getLocalization({
         )
         .done(result => {
             const text = result.text ?? english;
-            let incorporatingParameters = theOneLocalizationManager.simpleFormat(
-                text,
-                l10nParams || []
-            );
+            let incorporatingParameters =
+                theOneLocalizationManager.simpleFormat(text, l10nParams || []);
 
             // some legacy strings will have an ampersand which winforms interpreted as an accelerator key
             // enhance: we could conceivably implement this, using the html "accesskey" attribute

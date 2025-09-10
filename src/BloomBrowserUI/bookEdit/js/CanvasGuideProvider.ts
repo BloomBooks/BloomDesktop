@@ -453,8 +453,9 @@ export class CanvasGuideProvider {
         coordinate: number,
         alignedElements: ElementBounds[]
     ): void {
-        const line = this.alignmentLines.find(l => l.position === position)
-            ?.element;
+        const line = this.alignmentLines.find(
+            l => l.position === position
+        )?.element;
         if (!line || alignedElements.length < 2) return; // Need at least two elements to align
 
         const isHorizontal =
@@ -467,8 +468,9 @@ export class CanvasGuideProvider {
             const minLeft = Math.min(...alignedElements.map(b => b.left));
             const maxRight = Math.max(...alignedElements.map(b => b.right));
 
-            line.style.top = `${coordinate -
-                parseFloat(this.GUIDE_LINE_THICKNESS) / 2}px`; // Center line thickness
+            line.style.top = `${
+                coordinate - parseFloat(this.GUIDE_LINE_THICKNESS) / 2
+            }px`; // Center line thickness
             line.style.left = `${minLeft}px`;
             line.style.width = `${maxRight - minLeft}px`;
             line.style.height = this.GUIDE_LINE_THICKNESS; // Ensure height is set correctly
@@ -478,8 +480,9 @@ export class CanvasGuideProvider {
             const minTop = Math.min(...alignedElements.map(b => b.top));
             const maxBottom = Math.max(...alignedElements.map(b => b.bottom));
 
-            line.style.left = `${coordinate -
-                parseFloat(this.GUIDE_LINE_THICKNESS) / 2}px`; // Center line thickness
+            line.style.left = `${
+                coordinate - parseFloat(this.GUIDE_LINE_THICKNESS) / 2
+            }px`; // Center line thickness
             line.style.top = `${minTop}px`;
             line.style.height = `${maxBottom - minTop}px`;
             line.style.width = this.GUIDE_LINE_THICKNESS; // Ensure width is set correctly
@@ -565,15 +568,17 @@ export class CanvasGuideProvider {
             if (dimension === EqualDimension.Width) {
                 // Horizontal line centered vertically
                 indicatorClone.style.left = `${bounds.left}px`;
-                indicatorClone.style.top = `${bounds.middle -
-                    lineThickness / 2}px`; // Center the line
+                indicatorClone.style.top = `${
+                    bounds.middle - lineThickness / 2
+                }px`; // Center the line
                 indicatorClone.style.width = `${bounds.width}px`;
                 indicatorClone.style.height = this.EQUAL_DIM_LINE_THICKNESS; // Ensure height is set
             } else {
                 // Height
                 // Vertical line centered horizontally
-                indicatorClone.style.left = `${bounds.center -
-                    lineThickness / 2}px`; // Center the line
+                indicatorClone.style.left = `${
+                    bounds.center - lineThickness / 2
+                }px`; // Center the line
                 indicatorClone.style.top = `${bounds.top}px`;
                 indicatorClone.style.height = `${bounds.height}px`;
                 indicatorClone.style.width = this.EQUAL_DIM_LINE_THICKNESS; // Ensure width is set

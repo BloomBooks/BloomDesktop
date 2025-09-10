@@ -61,7 +61,7 @@ export const BoxWithIconAndText: React.FunctionComponent<{
                 display: flex;
                 flex-direction: column;
                 background-color: ${props.backgroundColor ||
-                    kLightBlueBackground};
+                kLightBlueBackground};
                 border-radius: ${kBorderRadiusForSpecialBlocks};
                 padding: ${kDialogPadding};
                 color: ${props.color || kBloomBlue};

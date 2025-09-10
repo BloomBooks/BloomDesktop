@@ -16,16 +16,19 @@ const defaultContentfulLocale = "en-US";
 // {loading:false, result:[], error:true}.
 // Note: BloomLibrary2 has a version of this code that caches the results.
 // BloomEditor doesn't need that yet.
-export function useContentful(
-    query: any
-): { loading: boolean; result: any[]; error: boolean } {
+export function useContentful(query: any): {
+    loading: boolean;
+    result: any[];
+    error: boolean;
+} {
     const [results, setResults] = useState<{
         queryString: string;
         result: any[] | undefined;
         error: boolean;
     }>({ queryString: "", result: [], error: false });
 
-    const locale = /* useGetContentfulBestLocale() || */ defaultContentfulLocale;
+    const locale =
+        /* useGetContentfulBestLocale() || */ defaultContentfulLocale;
 
     const queryString = JSON.stringify(query);
     useEffect(() => {

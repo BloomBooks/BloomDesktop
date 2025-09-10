@@ -134,13 +134,13 @@ function markDecodableStatus(): void {
     const editableElements = $(".bloom-content1");
     editableElements
         .find("span." + (<textMarkup>$).cssSightWord())
-        .each(function() {
+        .each(function () {
             this.qtip({ content: sightWord });
         });
 
     editableElements
         .find("span." + (<textMarkup>$).cssWordNotFound())
-        .each(function() {
+        .each(function () {
             this.qtip({ content: notDecodable });
         });
 
@@ -160,7 +160,7 @@ function markLeveledStatus(): void {
     const editableElements = $(".bloom-content1");
     editableElements
         .find("span." + (<textMarkup>$).cssSentenceTooLong())
-        .each(function() {
+        .each(function () {
             $(this).qtip({ content: tooLong });
         });
 }
@@ -411,13 +411,14 @@ export function makeLetterWordList(): void {
     for (let i = 0; i < settings.stages.length; i++) {
         const stageGPCS: string[] = settings.stages[i].letters.split(" ");
         knownGPCS = _.union(knownGPCS, stageGPCS);
-        const stageWords: string[] = getTheOneReaderToolsModel().selectWordsFromSynphony(
-            true,
-            stageGPCS,
-            knownGPCS,
-            true,
-            true
-        );
+        const stageWords: string[] =
+            getTheOneReaderToolsModel().selectWordsFromSynphony(
+                true,
+                stageGPCS,
+                knownGPCS,
+                true,
+                true
+            );
         settings.stages[i].words = <string[]>_.toArray(stageWords);
     }
 
@@ -524,7 +525,8 @@ export function createToggle(isForLeveled: boolean) {
 
 export function isToggleOff(isForLeveled: boolean): boolean {
     const prefix = isForLeveled ? "leveled" : "decodable";
-    const classes = document.getElementById(prefix + "-reader-tool-content")
-        ?.classList;
+    const classes = document.getElementById(
+        prefix + "-reader-tool-content"
+    )?.classList;
     return classes?.contains("turned-off") ?? false;
 }

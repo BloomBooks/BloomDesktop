@@ -101,7 +101,7 @@ export class DecodableReaderToolboxTool implements ITool {
 
         $(container)
             .find(".bloom-editable")
-            .focusin(function() {
+            .focusin(function () {
                 getTheOneReaderToolsModel().noteFocus(this); // 'This' is the element that just got focus.
             });
 

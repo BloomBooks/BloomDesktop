@@ -83,7 +83,7 @@ export function useSubscribeToWebSocketForObject<T>(
     useEffect(() => {
         const websocketListener = e => {
             if (e.id === eventId) {
-                listener((e as unknown) as T);
+                listener(e as unknown as T);
             }
         };
         WebSocketManager.addListener(clientContext, websocketListener);
@@ -243,9 +243,8 @@ export default class WebSocketManager {
                     ].forEach(callback => callback(e));
                 }
             };
-            WebSocketManager.clientContextToDispatcherFunction[
-                clientContext
-            ] = listener;
+            WebSocketManager.clientContextToDispatcherFunction[clientContext] =
+                listener;
             WebSocketManager.socketMap[clientContext].addEventListener(
                 "message",
                 listener
@@ -347,11 +346,10 @@ export default class WebSocketManager {
         clientContext: string,
         listener: (messageEvent: IBloomWebSocketEvent) => void
     ): void {
-        WebSocketManager.clientContextCallbacks[
-            clientContext
-        ] = WebSocketManager.clientContextCallbacks[clientContext].filter(
-            l => l !== listener
-        );
+        WebSocketManager.clientContextCallbacks[clientContext] =
+            WebSocketManager.clientContextCallbacks[clientContext].filter(
+                l => l !== listener
+            );
     }
 
     // useful for storybook stories to send messages
@@ -359,9 +357,9 @@ export default class WebSocketManager {
         clientContext: string,
         event: T
     ) {
-        WebSocketManager.clientContextCallbacks[
-            clientContext
-        ].forEach(listener => listener(event));
+        WebSocketManager.clientContextCallbacks[clientContext].forEach(
+            listener => listener(event)
+        );
     }
 
     /**

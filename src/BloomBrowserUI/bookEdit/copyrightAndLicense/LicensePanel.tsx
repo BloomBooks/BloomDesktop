@@ -202,9 +202,8 @@ export const LicensePanel: React.FunctionComponent<{
                                     .allowCommercial === "yes"
                             }
                             onCheckChanged={checked => {
-                                licenseInfo.creativeCommonsInfo.allowCommercial = checked
-                                    ? "yes"
-                                    : "no";
+                                licenseInfo.creativeCommonsInfo.allowCommercial =
+                                    checked ? "yes" : "no";
                                 reportChange();
                             }}
                         />
@@ -227,9 +226,8 @@ export const LicensePanel: React.FunctionComponent<{
                                     .allowDerivatives !== "no"
                             }
                             onCheckChanged={checked => {
-                                licenseInfo.creativeCommonsInfo.allowDerivatives = checked
-                                    ? "yes"
-                                    : "no";
+                                licenseInfo.creativeCommonsInfo.allowDerivatives =
+                                    checked ? "yes" : "no";
                                 reportChange();
                             }}
                         />
@@ -249,9 +247,8 @@ export const LicensePanel: React.FunctionComponent<{
                                     .allowDerivatives === "yes"
                             }
                             onCheckChanged={checked => {
-                                licenseInfo.creativeCommonsInfo.allowDerivatives = checked
-                                    ? "yes"
-                                    : "sharealike";
+                                licenseInfo.creativeCommonsInfo.allowDerivatives =
+                                    checked ? "yes" : "sharealike";
                                 reportChange();
                             }}
                         />

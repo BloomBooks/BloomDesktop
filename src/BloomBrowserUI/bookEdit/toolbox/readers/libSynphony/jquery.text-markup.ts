@@ -30,7 +30,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * @param {Object} options
      * @returns {Object}
      */
-    $.fn.checkLeveledReader = function(options) {
+    $.fn.checkLeveledReader = function (options) {
         let allWords = "";
         const longWords: string[] = [];
 
@@ -98,9 +98,8 @@ import { ReaderToolsModel } from "../readerToolsModel";
                     const cleanText = removeAllHtmlMarkupFromString(
                         fragment.text
                     );
-                    const words = theOneLibSynphony.getWordsFromHtmlString(
-                        cleanText
-                    );
+                    const words =
+                        theOneLibSynphony.getWordsFromHtmlString(cleanText);
                     if (opts.maxGlyphsPerWord > 0) {
                         for (const w of words) {
                             if (
@@ -124,9 +123,8 @@ import { ReaderToolsModel } from "../readerToolsModel";
                         // all of those leading close </span> tags to preserve proper
                         // nesting of the marked sentence.
                         let leadingClosers = "";
-                        const leadingCloseSpans = fragment.text.match(
-                            /^( *<\/span>)+ */
-                        );
+                        const leadingCloseSpans =
+                            fragment.text.match(/^( *<\/span>)+ */);
                         if (leadingCloseSpans) {
                             leadingClosers = leadingCloseSpans[0];
                         }
@@ -189,7 +187,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
             // Review: is there a need to handle elements that contain both sentence text AND child elements with their own text?
         };
 
-        this.each(function() {
+        this.each(function () {
             checkRoot($(this));
         });
         // highlight the page for too many words or sentences found
@@ -223,7 +221,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * @param {Object} options
      * @returns {Object}
      */
-    $.fn.checkDecodableReader = function(options) {
+    $.fn.checkDecodableReader = function (options) {
         const opts = $.extend(
             {
                 focusWords: [],
@@ -239,7 +237,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
         this.removeSynphonyMarkup();
 
         // get all text
-        this.each(function() {
+        this.each(function () {
             text += " " + removeAllHtmlMarkupFromString($(this).html());
         });
 
@@ -255,7 +253,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
         );
 
         // markup
-        this.each(function() {
+        this.each(function () {
             stashNonTextUIElementsInEditBox(this);
             let html = $(this).html();
 
@@ -298,10 +296,10 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * Finds the maximum word count in the selected sentences.
      * @returns {int}
      */
-    $.fn.getMaxSentenceLength = function() {
+    $.fn.getMaxSentenceLength = function () {
         let maxWords = 0;
 
-        this.each(function() {
+        this.each(function () {
             // split into sentences
             let fragments = theOneLibSynphony.stringToSentences(
                 removeAllHtmlMarkupFromString($(this).html())
@@ -330,10 +328,10 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * Returns the count of all words in the selected elements.
      * @returns {int}
      */
-    $.fn.getTotalWordCount = function() {
+    $.fn.getTotalWordCount = function () {
         let wordCount = 0;
 
-        this.each(function() {
+        this.each(function () {
             // split into sentences
             let fragments = theOneLibSynphony.stringToSentences(
                 removeAllHtmlMarkupFromString($(this).html())
@@ -355,32 +353,17 @@ import { ReaderToolsModel } from "../readerToolsModel";
     /**
      * Removes all the markup that was inserted by this addin
      */
-    $.fn.removeSynphonyMarkup = function() {
-        this.each(function() {
+    $.fn.removeSynphonyMarkup = function () {
+        this.each(function () {
             // remove markup for deleted text
-            $(this)
-                .find("span[data-segment=sentence]:empty")
-                .remove();
-            $(this)
-                .find("span[data-segment=word]:empty")
-                .remove();
-            $(this)
-                .find("span[data-segment=grapheme]:empty")
-                .remove();
+            $(this).find("span[data-segment=sentence]:empty").remove();
+            $(this).find("span[data-segment=word]:empty").remove();
+            $(this).find("span[data-segment=grapheme]:empty").remove();
 
             // remove previous sentence markup
-            $(this)
-                .find("span[data-segment=sentence]")
-                .contents()
-                .unwrap();
-            $(this)
-                .find("span[data-segment=word]")
-                .contents()
-                .unwrap();
-            $(this)
-                .find("span[data-segment=grapheme]")
-                .contents()
-                .unwrap();
+            $(this).find("span[data-segment=sentence]").contents().unwrap();
+            $(this).find("span[data-segment=word]").contents().unwrap();
+            $(this).find("span[data-segment=grapheme]").contents().unwrap();
         });
 
         // remove page markup
@@ -517,7 +500,8 @@ export function removeAllHtmlMarkupFromString(textHtml: string): string {
     textHtml = textHtml.replace(ckeRegex, "");
 
     // Remove phrase delimiters used by the talking book tool.
-    const phraseDelimeterRegex = /<span class=["']bloom-audio-split-marker["']>.<\/span>/g;
+    const phraseDelimeterRegex =
+        /<span class=["']bloom-audio-split-marker["']>.<\/span>/g;
     textHtml = textHtml.replace(phraseDelimeterRegex, "");
 
     // Both open and close tags for markup

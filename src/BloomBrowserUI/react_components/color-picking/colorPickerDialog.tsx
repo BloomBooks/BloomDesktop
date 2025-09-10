@@ -213,8 +213,9 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
             const newSwatchColorArray = swatchColorArray.slice(); // Get a new array copy of the old (a different reference)
             if (numberToDelete > 0) {
                 // Remove 'numberToDelete' swatches from oldest custom swatches
-                const defaultNumber = getDefaultColorsFromPalette(props.palette)
-                    .length;
+                const defaultNumber = getDefaultColorsFromPalette(
+                    props.palette
+                ).length;
                 const indexToRemove =
                     swatchColorArray.length - defaultNumber - numberToDelete;
                 if (indexToRemove >= 0) {
@@ -255,27 +256,27 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
 
     // Function for comparing a color with an array of colors to see if the color is already
     // in the array. We pass this function to .find().
-    const colorCompareFunc = (colorA: IColorInfo) => (
-        colorB: IColorInfo
-    ): boolean => {
-        if (colorB.colors.length !== colorA.colors.length) {
-            return false; // One is a gradient and the other is not.
-        }
-        if (colorA.colors.length > 1) {
-            // In the case of both being gradients, check the second color first.
-            const gradientAColor2 = tinycolor(colorA.colors[1]);
-            const gradientBColor2 = tinycolor(colorB.colors[1]);
-            if (gradientAColor2.toHex() !== gradientBColor2.toHex()) {
-                return false;
+    const colorCompareFunc =
+        (colorA: IColorInfo) =>
+        (colorB: IColorInfo): boolean => {
+            if (colorB.colors.length !== colorA.colors.length) {
+                return false; // One is a gradient and the other is not.
             }
-        }
-        const gradientAColor1 = tinycolor(colorA.colors[0]);
-        const gradientBColor1 = tinycolor(colorB.colors[0]);
-        return (
-            gradientAColor1.toHex() === gradientBColor1.toHex() &&
-            colorA.opacity === colorB.opacity
-        );
-    };
+            if (colorA.colors.length > 1) {
+                // In the case of both being gradients, check the second color first.
+                const gradientAColor2 = tinycolor(colorA.colors[1]);
+                const gradientBColor2 = tinycolor(colorB.colors[1]);
+                if (gradientAColor2.toHex() !== gradientBColor2.toHex()) {
+                    return false;
+                }
+            }
+            const gradientAColor1 = tinycolor(colorA.colors[0]);
+            const gradientBColor1 = tinycolor(colorB.colors[0]);
+            return (
+                gradientAColor1.toHex() === gradientBColor1.toHex() &&
+                colorA.opacity === colorB.opacity
+            );
+        };
 
     const handleOnChange = (color: IColorInfo) => {
         setCurrentColor(color);

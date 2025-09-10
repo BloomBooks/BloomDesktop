@@ -29,11 +29,8 @@ import { propsToClassKey } from "@mui/styles";
 export const MakeReaderTemplateBloomPackDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
     showMakeReaderTemplateBloomPackDialog = showDialog;
     return (
         <BloomDialog {...propsForBloomDialog}>
@@ -60,9 +57,8 @@ export const InnerMakeReaderTemplateBloomPackDialog: React.FunctionComponent<{
         });
     }, []);
 
-    const [saveConfirmationChecked, setSaveConfirmationChecked] = useState(
-        false
-    );
+    const [saveConfirmationChecked, setSaveConfirmationChecked] =
+        useState(false);
 
     const [collectionHasBooks, setCollectionHasBooks] = useState(false);
 

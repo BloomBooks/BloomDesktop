@@ -93,9 +93,8 @@ export class SignLanguageToolControls extends React.Component<
         // and have 'this' refer to the right thing.
         // See: https://reactjs.org/docs/handling-events.html
         this.handleSliderRangeChange = this.handleSliderRangeChange.bind(this);
-        this.handleSliderRangeAfterChange = this.handleSliderRangeAfterChange.bind(
-            this
-        );
+        this.handleSliderRangeAfterChange =
+            this.handleSliderRangeAfterChange.bind(this);
     }
     public static kToolID = "signLanguage";
     public readonly state: IComponentState = {
@@ -360,11 +359,13 @@ export class SignLanguageToolControls extends React.Component<
                 <Label l10nKey="Common.Info">Info</Label>
                 {this.state.videoStatistics.duration !== "unknown" && (
                     <div>
-                        {/* duration is stored with tenths of seconds, but only displayed with seconds*/
-                        this.state.videoStatistics.duration.substr(
-                            0,
-                            this.state.videoStatistics.duration.length - 2
-                        )}
+                        {
+                            /* duration is stored with tenths of seconds, but only displayed with seconds*/
+                            this.state.videoStatistics.duration.substr(
+                                0,
+                                this.state.videoStatistics.duration.length - 2
+                            )
+                        }
                     </div>
                 )}
                 <div>{this.state.videoStatistics.fileSize}</div>
@@ -775,10 +776,10 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     public static setup(root): SignLanguageToolControls {
-        return (ReactDOM.render(
+        return ReactDOM.render(
             <SignLanguageToolControls />,
             root
-        ) as unknown) as SignLanguageToolControls;
+        ) as unknown as SignLanguageToolControls;
     }
 }
 
@@ -814,9 +815,9 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             classes += " bloom-selected";
         }
         const page = ToolBox.getPage();
-        return (page
-            ? Array.from(page.getElementsByClassName(classes))
-            : []) as HTMLElement[];
+        return (
+            page ? Array.from(page.getElementsByClassName(classes)) : []
+        ) as HTMLElement[];
     }
 
     public static getSelectedVideoPathAndTiming(): string | null {
@@ -899,8 +900,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         if (
             y < clientRect.height - 40 * scale && // above the control bar across the bottom
             (y < heightOfPlayCenter - buttonRadius || // above the play button
-            y > heightOfPlayCenter + buttonRadius || // below the play button
-            x < clientRect.width / 2 - buttonRadius || // left of play button
+                y > heightOfPlayCenter + buttonRadius || // below the play button
+                x < clientRect.width / 2 - buttonRadius || // left of play button
                 x > clientRect.width / 2 + buttonRadius)
         ) {
             // right of play button
@@ -1054,7 +1055,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                     container.previousElementSibling &&
                     container.previousElementSibling.firstChild
                 )
-                    container.previousElementSibling.firstChild.textContent = recordingLabel;
+                    container.previousElementSibling.firstChild.textContent =
+                        recordingLabel;
             });
     }
 

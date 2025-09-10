@@ -75,9 +75,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
 
     // Caution: Every time onReset() is called, key is updated -> new instance -> all state goes back to default
     // That means the initial state must be what you want when onReset() is called (AKA whenever "Preview" is clicked)
-    const [currentTaskApi, setCurrentTaskApi] = useState<string>(
-        kUpdatePreviewApi
-    );
+    const [currentTaskApi, setCurrentTaskApi] =
+        useState<string>(kUpdatePreviewApi);
 
     const onCurrentTaskComplete =
         currentTaskApi === kUpdatePreviewApi
@@ -187,8 +186,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                             publishMethod === "file"
                                 ? "file/save"
                                 : publishMethod === "usb"
-                                ? "usb/start"
-                                : "wifi/start";
+                                  ? "usb/start"
+                                  : "wifi/start";
                         const apiEndpoint = `publish/bloompub/${apiSuffix}`;
                         setPublishStarted(true);
                         setCurrentTaskApi(apiEndpoint);

@@ -46,7 +46,9 @@ import { splitIntoGraphemes } from "../../../utils/textUtils";
 import { kCanvasElementClass } from "../overlay/canvasElementUtils";
 import { kBloomCanvasSelector } from "../../js/bloomImages";
 
-export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> = props => {
+export const GamePromptDialog: React.FunctionComponent<
+    IGamePromptDialogProps
+> = props => {
     const promptL10nId = props.prompt?.getAttribute("data-caption-l10nid");
     const caption = useL10n("", promptL10nId);
     // The translation group that React creates in the dialog, kept in sync with the one in the prompt
@@ -379,9 +381,8 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 setGeneratedDraggableId(newDraggable);
                 // Ensure the new draggable starts out empty.  See BL-14348.
                 // (This covers all languages present, visible or not.)
-                const paras = newDraggable.querySelectorAll(
-                    "div.Letter-style>p"
-                );
+                const paras =
+                    newDraggable.querySelectorAll("div.Letter-style>p");
                 paras.forEach(p => {
                     p.textContent = "";
                 });
@@ -415,8 +416,9 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         shuffledDraggables.splice(letters.length); // don't want any invisible ones taking up space
         shuffle(shuffledDraggables, isTheTextInDraggablesTheSame);
         for (let i = 0; i < shuffledDraggables.length; i++) {
-            shuffledDraggables[i].style.left = `${draggableX +
-                i * separation}px`;
+            shuffledDraggables[i].style.left = `${
+                draggableX + i * separation
+            }px`;
             shuffledDraggables[i].style.top = `${draggableY}px`;
             // Note that we use draggables, not shuffledDraggables, here. We want the targets
             // in the correct order, not the random order.

@@ -54,9 +54,10 @@ export function getBorderThickness(element) {
 // the padding, but not the border, margin. However, unlike clientHeight and clientWidth,
 // this size will include the scrollbar since we use getBoundingClientRect().
 // This may also behave differently from .clientHeight and .clientWidth when used on the root element
-export function getExactClientSize(
-    element: HTMLElement
-): { width: number; height: number } {
+export function getExactClientSize(element: HTMLElement): {
+    width: number;
+    height: number;
+} {
     const scalingFactor = EditableDivUtils.getPageScale();
     const boundingRect = element.getBoundingClientRect();
     const borderThicknesses = getBorderThickness(element);

@@ -69,9 +69,8 @@ export default class BloomSourceBubbles {
 
         // If divForBubble contains more than two languages, create a dropdown menu to contain the
         // extra possibilities. The menu will show (x), where x is the number of items in the dropdown.
-        divForBubble = BloomSourceBubbles.CreateDropdownIfNecessary(
-            divForBubble
-        );
+        divForBubble =
+            BloomSourceBubbles.CreateDropdownIfNecessary(divForBubble);
 
         // Turns the tabbed and linked div bundle into a qtip bubble attached to the elementThatHasBubble.
         // Also makes sure the tooltips are setup correctly.
@@ -104,7 +103,7 @@ export default class BloomSourceBubbles {
         });
 
         //make the source texts in the bubble read-only and remove any user font size adjustments
-        divForBubble.find("textarea, div").each(function(): boolean {
+        divForBubble.find("textarea, div").each(function (): boolean {
             //don't want empty items in the bubble
             const $this = $(this);
             if (BloomSourceBubbles.hasNoText(this)) {
@@ -165,7 +164,7 @@ export default class BloomSourceBubbles {
         // BL-2357
         items = BloomSourceBubbles.SmartOrderSourceTabs(items, newLangTag);
         const list = $this.find("nav ul");
-        items.each(function() {
+        items.each(function () {
             const sourceElement = this as HTMLElement;
             const langTag = sourceElement.getAttribute("lang");
             if (langTag) {
@@ -188,9 +187,9 @@ export default class BloomSourceBubbles {
                         localizedLanguageName +
                         "</a></li>"
                 );
-                (list.get(
-                    0
-                ) as HTMLElement).lastElementChild?.firstElementChild?.addEventListener(
+                (
+                    list.get(0) as HTMLElement
+                ).lastElementChild?.firstElementChild?.addEventListener(
                     "click",
                     () => postString("editView/sourceTextTab", langTag)
                 );
@@ -315,7 +314,7 @@ export default class BloomSourceBubbles {
         let moveFrom = 0;
         let objToMove;
         const itemArray = items.toArray();
-        items.each(function(idx, obj): boolean {
+        items.each(function (idx, obj): boolean {
             const langTag = $(this).attr("lang");
             if (langTag === langCode && position < idx) {
                 moveFrom = idx;
@@ -357,10 +356,7 @@ export default class BloomSourceBubbles {
                 tabs.length > 1 &&
                 tabs.first().attr("id") === "hint"
             ) {
-                selectLangTag = tabs
-                    .first()
-                    .next()
-                    .attr("id");
+                selectLangTag = tabs.first().next().attr("id");
             }
             if (selectLangTag) {
                 // Somehow easytabs.select is NOT deselecting the item it selected by default.
@@ -395,7 +391,7 @@ export default class BloomSourceBubbles {
             "<li class='dropdown-menu'><div>0</div><ul class='dropdown-list'></ul></li>";
         divForBubble.find("nav ul").append(dropMenu);
         const container = divForBubble.find(".dropdown-list");
-        tabs.each(function(idx): boolean {
+        tabs.each(function (idx): boolean {
             if (idx < firstSelectOption - 1) return true; // continue to next iteration of .each()
             const $this = $(this);
             const link = $this.find("a").clone(false); // don't want to keep easytab click event
@@ -409,7 +405,7 @@ export default class BloomSourceBubbles {
 
         tabs.remove(".removeThisOne");
 
-        container.find("li").each(function() {
+        container.find("li").each(function () {
             this.addEventListener(
                 "click",
                 BloomSourceBubbles.styledSelectChangeHandler,
@@ -428,9 +424,7 @@ export default class BloomSourceBubbles {
         const newLangTag = event.target.href.split("#")[1];
 
         // Figure out which qtip we're in and go find the associated bloom-translationGroup
-        const qtip = $(event.target)
-            .closest(".qtip")
-            .attr("id");
+        const qtip = $(event.target).closest(".qtip").attr("id");
         const group = $(document).find(
             '.bloom-translationGroup[aria-describedby="' + qtip + '"]'
         );
@@ -479,13 +473,13 @@ export default class BloomSourceBubbles {
                 clearTimeout(BloomSourceBubbles.debounceTimeout);
             }
 
-            BloomSourceBubbles.debounceTimeout = (setTimeout(() => {
+            BloomSourceBubbles.debounceTimeout = setTimeout(() => {
                 observer.disconnect(); // don't want to respond to changes that reposition makes
                 $(document.querySelectorAll("[data-hasqtip]")).qtip(
                     "reposition"
                 );
                 observer.observe(document.body, config);
-            }, 100) as any) as number;
+            }, 100) as any as number;
         });
         // observe everything...even (for example) dialogs that are outside the page.
         // For example, the GamePromptDialog has a source bubble and can be moved.
@@ -527,7 +521,7 @@ export default class BloomSourceBubbles {
         }
 
         // turn that tab thing into a bubble, and attach it to the original div ("group")
-        $group.each(function() {
+        $group.each(function () {
             // const targetHeight = Math.max(55, $(this).height()); // This ensures we get at least one line of the source text!
 
             const $this: JQuery = $(this);
@@ -599,9 +593,8 @@ export default class BloomSourceBubbles {
                     render: (event, api) => {
                         if (!api.elements.tooltip || !api.elements.tooltip[0])
                             return;
-                        const paras = api.elements.tooltip[0].getElementsByTagName(
-                            "p"
-                        );
+                        const paras =
+                            api.elements.tooltip[0].getElementsByTagName("p");
                         for (let i = 0; i < paras.length; i++) {
                             const p = paras[i] as HTMLElement;
                             // won't let us tab to it, but lets it get focus when we do a drag selection,
@@ -626,9 +619,11 @@ export default class BloomSourceBubbles {
                                         wholeSource.ownerDocument &&
                                         wholeSource.ownerDocument.defaultView
                                     ) {
-                                        const selection = wholeSource.ownerDocument.defaultView.getSelection();
+                                        const selection =
+                                            wholeSource.ownerDocument.defaultView.getSelection();
                                         if (selection) {
-                                            const range = wholeSource.ownerDocument.createRange();
+                                            const range =
+                                                wholeSource.ownerDocument.createRange();
                                             range.selectNodeContents(
                                                 wholeSource
                                             );

@@ -97,7 +97,7 @@ var allXliffFiles = globule.find(paths.xliff);
 // and need to use it to execute HtmlXliff.exe
 var IsLinux = globule.find(["/opt/mono5-sil/**/mono"]).length > 0;
 
-gulp.task("less", function() {
+gulp.task("less", function () {
     var less = require("gulp-less");
     return gulp
         .src(paths.less)
@@ -107,7 +107,7 @@ gulp.task("less", function() {
             less()
                 // Without this, the task will happily go on its merry way and you have to
                 // scroll up through the log messages to know if there was any problem at all.
-                .on("error", function(error) {
+                .on("error", function (error) {
                     console.error(error.message);
                     process.exit(1);
                 })
@@ -116,7 +116,7 @@ gulp.task("less", function() {
         .pipe(gulp.dest(outputDir)); //drop all css's into the same dirs.
 });
 
-gulp.task("pug", function() {
+gulp.task("pug", function () {
     var pug = require("gulp-pug");
     return gulp
         .src(paths.pug)
@@ -129,7 +129,7 @@ gulp.task("pug", function() {
         .pipe(gulp.dest(outputDir)); //drop all html's into the same dirs.
 });
 
-gulp.task("webpack", function() {
+gulp.task("webpack", function () {
     var webpackconfig = require("./webpack.config.js");
     return gulp
         .src("unused", { allowEmpty: true }) // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
@@ -137,7 +137,7 @@ gulp.task("webpack", function() {
         .pipe(gulp.dest(outputDir));
 });
 
-gulp.task("webpack-prod", function() {
+gulp.task("webpack-prod", function () {
     var webpackconfig = require("./webpack.config-prod.js");
     return gulp
         .src("unused", { allowEmpty: true }) // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
@@ -145,13 +145,13 @@ gulp.task("webpack-prod", function() {
         .pipe(gulp.dest(outputDir));
 });
 
-gulp.task("clean", function() {
+gulp.task("clean", function () {
     return del([outputDir + "/**/*"], { force: true });
 });
 
 //This task is needed to move files we are *not* running through some
 //compiler into the outputDir directory.
-gulp.task("copy", function() {
+gulp.task("copy", function () {
     // this prefix:3 thing strips off node_modules/jquery/dist so that the file ends up right in the ouput dir
     gulp.src("./node_modules/jquery/dist/jquery.min.js").pipe(
         gulpCopy(outputDir, { prefix: 3 })
@@ -171,46 +171,46 @@ gulp.task("copy", function() {
         .pipe(gulpCopy(outputDir));
 });
 
-gulp.task("watchInner", function() {
+gulp.task("watchInner", function () {
     watch(
         paths.less,
-        batch(function(events, done) {
+        batch(function (events, done) {
             gulp.start("copy", done);
         })
     );
     watch(
         paths.less,
-        batch(function(events, done) {
+        batch(function (events, done) {
             gulp.start("less", done);
         })
     );
     watch(
         paths.pug,
-        batch(function(events, done) {
+        batch(function (events, done) {
             gulp.start("pug", done);
         })
     );
     watch(
         paths.help,
-        batch(function(events, done) {
+        batch(function (events, done) {
             gulp.start("markdownHelp", done);
         })
     );
     watch(
         paths.templateReadme,
-        batch(function(events, done) {
+        batch(function (events, done) {
             gulp.start("markdownTemplateReadme", done);
         })
     );
     watch(
         paths.infoPages,
-        batch(function(events, done) {
+        batch(function (events, done) {
             gulp.start("markdownInfoPages", done);
         })
     );
     watch(
         paths.distInfo,
-        batch(function(events, done) {
+        batch(function (events, done) {
             gulp.start("markdownDistInfo", done);
         })
     );
@@ -218,7 +218,7 @@ gulp.task("watchInner", function() {
 
 gulp.task("watchlp", gulp.series(gulp.parallel("less", "pug"), "watchInner"));
 
-gulp.task("watch", async function() {
+gulp.task("watch", async function () {
     console.log(
         '****** PLEASE run "webpack --watch" in a separate console *********'
     );
@@ -237,7 +237,7 @@ gulp.task("watch", async function() {
     );
 });
 
-gulp.task("markdownHelp", function() {
+gulp.task("markdownHelp", function () {
     //here we are assigning an unfortunately named stylesheet that goes with all Bloom help pages
     return basicMarkdown(
         paths.help,
@@ -246,12 +246,12 @@ gulp.task("markdownHelp", function() {
     );
 });
 
-gulp.task("markdownTemplateReadme", function() {
+gulp.task("markdownTemplateReadme", function () {
     return gulp
         .src(paths.templateReadme)
         .pipe(debug({ title: "md:" }))
         .pipe(
-            tap(function(file) {
+            tap(function (file) {
                 var result = markdownIt.render(file.contents.toString());
                 // wrap the generated HTML in a document and make it use our standard stylesheet.
                 // strip out the string we insert to obfuscate email addresses in source code.
@@ -270,20 +270,20 @@ gulp.task("markdownTemplateReadme", function() {
         .pipe(debug({ title: " md --> " }));
 });
 
-gulp.task("markdownInfoPages", function() {
+gulp.task("markdownInfoPages", function () {
     return basicMarkdown(paths.infoPages, "", "/infoPages");
 });
 
-gulp.task("markdownDistInfo", function() {
+gulp.task("markdownDistInfo", function () {
     return basicMarkdown(paths.distInfo, "", "");
 });
 
-gulp.task("translateHtmlFiles", function() {
+gulp.task("translateHtmlFiles", function () {
     return gulp
         .src(paths.htmlFiles)
         .pipe(debug({ title: "translateHtmlFiles:" }))
         .pipe(
-            tap(function(file) {
+            tap(function (file) {
                 var xliffFiles = getXliffFiles(file.path);
                 for (i = 0; i < xliffFiles.length; ++i) {
                     var xliffFile = xliffFiles[i]; // needed for error message to work
@@ -296,7 +296,7 @@ gulp.task("translateHtmlFiles", function() {
                     cmd = cmd + ' -x "' + xliffFile + '"';
                     cmd = cmd + ' -o "' + outfile + '"';
                     cmd = cmd + ' "' + file.path + '"';
-                    child_process.exec(cmd, function(err, stdout, stderr) {
+                    child_process.exec(cmd, function (err, stdout, stderr) {
                         if (err) {
                             console.error(
                                 `\nTRANSLATE ${file.path} WITH ${xliffFile}\n${stdout}\n\n${stderr}`
@@ -309,12 +309,12 @@ gulp.task("translateHtmlFiles", function() {
         );
 });
 
-gulp.task("createXliffFiles", function() {
+gulp.task("createXliffFiles", function () {
     return gulp
         .src(paths.htmlFiles)
         .pipe(debug({ title: "createXliffFiles:" }))
         .pipe(
-            tap(function(file) {
+            tap(function (file) {
                 var xliffFile = getXliffFilename(file.path);
                 var cmd = "";
                 if (IsLinux)
@@ -325,7 +325,7 @@ gulp.task("createXliffFiles", function() {
                         "..\\..\\lib\\dotnet\\HtmlXliff.exe --extract --preserve";
                 cmd = cmd + ' -o "' + xliffFile + '"';
                 cmd = cmd + ' "' + file.path + '"';
-                child_process.exec(cmd, function(err, stdout, stderr) {
+                child_process.exec(cmd, function (err, stdout, stderr) {
                     if (err) {
                         console.error(
                             `\nCREATE ${xliffFile} FROM ${file.path}\n${stdout}\n\n${stderr}`
@@ -337,11 +337,11 @@ gulp.task("createXliffFiles", function() {
         );
 });
 
-gulp.task("brandings", async function() {
+gulp.task("brandings", async function () {
     return child_process.exec("npm run buildBrandings");
 });
 
-gulp.task("compileTemplateTypescript", function() {
+gulp.task("compileTemplateTypescript", function () {
     // Specifying no typeRoots is a kludge. Without it, the task reports large numbers of
     // errors in various .d.ts files in node_modules that aren't even referenced
     // by the file we're supposed to be compiling. If we eventually get stuff in the template books
@@ -420,7 +420,7 @@ gulp.task(
 // Find which of the translated xliff files match up with the given html file.
 // Note that allXliffFiles uses / to separate directories even on Windows, but
 // htmFile uses / on Linux and \ on Windows.
-var getXliffFiles = function(htmFile) {
+var getXliffFiles = function (htmFile) {
     var pathPieces = htmFile.split("/");
     if (htmFile.includes("\\")) pathPieces = htmFile.split("\\");
     var basename = pathPieces[pathPieces.length - 1];
@@ -440,7 +440,7 @@ var getXliffFiles = function(htmFile) {
 
 // Get the language code from the xlfFile path and put it into the htmFile path
 // (replacing the English language code) for an output file pathname.
-var getOutputFilename = function(htmFile, xlfFile) {
+var getOutputFilename = function (htmFile, xlfFile) {
     var langCode = "";
     if (xlfFile.search("/ReadMe-") > 0)
         // as in "blah/foo/ReadMe-en.htm"
@@ -451,7 +451,7 @@ var getOutputFilename = function(htmFile, xlfFile) {
 };
 
 // Get the name of the English Xliff file corresponding to the English HTML file.
-var getXliffFilename = function(htmFile) {
+var getXliffFilename = function (htmFile) {
     var htmPieces = htmFile.split("/");
     if (htmFile.includes("\\")) htmPieces = htmFile.split("\\");
     var basename = htmPieces[htmPieces.length - 1];
@@ -470,12 +470,12 @@ var getXliffFilename = function(htmFile) {
     }
 };
 
-var basicMarkdown = function(files, style, folder) {
+var basicMarkdown = function (files, style, folder) {
     return gulp
         .src(files)
         .pipe(debug({ title: "md:" }))
         .pipe(
-            tap(function(file) {
+            tap(function (file) {
                 var result = markdownIt.render(file.contents.toString());
                 // convert to full HTML, ensuring that the file is known to be utf-8.
                 file.contents = Buffer.from(

@@ -137,9 +137,8 @@ export const showGamePromptDialog = (onlyIfEmpty: boolean) => {
 };
 
 export const hideGamePromptDialog = (page: HTMLElement) => {
-    const dialogRoot = page.ownerDocument.getElementsByClassName(
-        "bloom-ui-dialog"
-    )[0];
+    const dialogRoot =
+        page.ownerDocument.getElementsByClassName("bloom-ui-dialog")[0];
     if (dialogRoot) {
         ReactDOM.unmountComponentAtNode(dialogRoot);
         dialogRoot.remove();
@@ -181,9 +180,9 @@ export const adjustTarget = (
     target: HTMLElement | undefined,
     forceAdjustAll?: boolean
 ) => {
-    let arrow = (draggable.ownerDocument.getElementById(
+    let arrow = draggable.ownerDocument.getElementById(
         "target-arrow"
-    ) as unknown) as SVGSVGElement;
+    ) as unknown as SVGSVGElement;
     if (!target) {
         // if there is a target, we'll adjust the existing arrow if any.
         // If not, get rid of any arrow now.
@@ -1386,19 +1385,21 @@ const DragActivityControls: React.FunctionComponent<{
                     />
                 )}
 
-                {// At one point, we had extra controls in the Wrong tab to add Try Again and Show Answer buttons,
-                // but decided to build those in.
-                props.activeTab === wrongTabIndex && (
-                    <CorrectWrongControls
-                        soundType="wrong"
-                        instructionsL10nKey="EditTab.Toolbox.DragActivity.WrongInstructions"
-                        whenTheAnswerIsSubKey="WhenWrong"
-                        classToAddToItems="drag-item-wrong"
-                        soundOptions={wrongSoundOptions}
-                        currentSound={wrongSoundId}
-                        onSoundItemChosen={onSoundItemChosen}
-                    />
-                )}
+                {
+                    // At one point, we had extra controls in the Wrong tab to add Try Again and Show Answer buttons,
+                    // but decided to build those in.
+                    props.activeTab === wrongTabIndex && (
+                        <CorrectWrongControls
+                            soundType="wrong"
+                            instructionsL10nKey="EditTab.Toolbox.DragActivity.WrongInstructions"
+                            whenTheAnswerIsSubKey="WhenWrong"
+                            classToAddToItems="drag-item-wrong"
+                            soundOptions={wrongSoundOptions}
+                            currentSound={wrongSoundId}
+                            onSoundItemChosen={onSoundItemChosen}
+                        />
+                    )
+                }
                 {props.activeTab === playTabIndex && (
                     <div>
                         <Div

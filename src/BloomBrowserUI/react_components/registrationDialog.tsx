@@ -31,9 +31,11 @@ interface IRegistrationDialogProps {
     onSave?: (isValidEmail: boolean) => void;
 }
 
-export const RegistrationDialogLauncher: React.FunctionComponent<IRegistrationDialogProps & {
-    dialogEnvironment?: IBloomDialogEnvironmentParams;
-}> = props => {
+export const RegistrationDialogLauncher: React.FunctionComponent<
+    IRegistrationDialogProps & {
+        dialogEnvironment?: IBloomDialogEnvironmentParams;
+    }
+> = props => {
     // eslint needed useSetup and useEvent to be in the same order on every render
     const useSetup = useSetupBloomDialog(props.dialogEnvironment);
     const useEventLaunched = useEventLaunchedBloomDialog("RegistrationDialog");
@@ -62,11 +64,13 @@ export const RegistrationDialogLauncher: React.FunctionComponent<IRegistrationDi
     ) : null;
 };
 
-export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProps & {
-    closeDialog: () => void;
-    showDialog: () => void;
-    propsForBloomDialog: IBloomDialogProps;
-}> = props => {
+export const RegistrationDialog: React.FunctionComponent<
+    IRegistrationDialogProps & {
+        closeDialog: () => void;
+        showDialog: () => void;
+        propsForBloomDialog: IBloomDialogProps;
+    }
+> = props => {
     const [mayChangeEmail, setMayChangeEmail] = useState(true);
     const registrationIsOptional =
         props.registrationIsOptional ??

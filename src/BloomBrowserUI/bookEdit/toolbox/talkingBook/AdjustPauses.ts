@@ -95,9 +95,8 @@ export function adjustPausesToQuietestNearby(
             subIntervalScores.push(max);
         }
         const bestSubIntervalScore = Math.min(...subIntervalScores);
-        const bestSubIntervalIndex = subIntervalScores.indexOf(
-            bestSubIntervalScore
-        );
+        const bestSubIntervalIndex =
+            subIntervalScores.indexOf(bestSubIntervalScore);
         const newEndTime =
             (Math.floor(
                 firstIndexToExamine +

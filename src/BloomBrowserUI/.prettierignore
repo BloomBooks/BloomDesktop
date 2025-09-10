@@ -1,0 +1,8 @@
+lib
+typings
+Readium
+modified_libraries
+bookEdit/iconfont
+bookEdit/html/font-awesome
+*.md
+ThemaData.json

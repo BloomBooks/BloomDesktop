@@ -71,18 +71,24 @@ export class CheckItem extends React.Component<IProps, IState> {
             <li className={`checkItem ${this.state.checkResult.resultClass}`}>
                 <Label l10nKey={labelKey}>{this.props.label}</Label>
                 <ul>
-                    {// problem descriptions are already localized by the backend
-                    this.state.checkResult.problems.map((problem, index) => (
-                        //react requires unique keys on each
-                        <li key={"p" + index}>
-                            {problem.message}
-                            {problem.problemText ? (
-                                <blockquote>{problem.problemText}</blockquote>
-                            ) : (
-                                ""
-                            )}
-                        </li>
-                    ))}
+                    {
+                        // problem descriptions are already localized by the backend
+                        this.state.checkResult.problems.map(
+                            (problem, index) => (
+                                //react requires unique keys on each
+                                <li key={"p" + index}>
+                                    {problem.message}
+                                    {problem.problemText ? (
+                                        <blockquote>
+                                            {problem.problemText}
+                                        </blockquote>
+                                    ) : (
+                                        ""
+                                    )}
+                                </li>
+                            )
+                        )
+                    }
                 </ul>
             </li>
         );

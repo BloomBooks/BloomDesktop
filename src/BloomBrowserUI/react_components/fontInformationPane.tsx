@@ -22,8 +22,8 @@ const FontInformationPane: React.FunctionComponent<{
         suitability === "ok"
             ? "primary" // BloomBlue
             : suitability === "unknown"
-            ? "textPrimary" // black
-            : "error"; // red
+              ? "textPrimary" // black
+              : "error"; // red
 
     const OkayFontMessage = useL10n(
         "The metadata inside this font indicates that it is legal to use for all Bloom purposes.",
@@ -63,10 +63,10 @@ const FontInformationPane: React.FunctionComponent<{
         suitability === "ok"
             ? OkayFontMessage
             : suitability === "unknown"
-            ? UnknownFontMessage
-            : suitability === "invalid"
-            ? UnsuitableFontFormatMessage
-            : UnsuitableFontLicenseMessage;
+              ? UnknownFontMessage
+              : suitability === "invalid"
+                ? UnsuitableFontFormatMessage
+                : UnsuitableFontLicenseMessage;
 
     const styleWording = useL10n(
         "Styles",

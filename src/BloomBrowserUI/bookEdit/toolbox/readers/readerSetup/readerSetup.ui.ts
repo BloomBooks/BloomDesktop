@@ -50,9 +50,8 @@ function process_UI_Message(event: MessageEvent): void {
                             "</span>";
                         foundNotSupported = true;
                     } else {
-                        const ext:
-                            | string
-                            | undefined = filenameComponents.pop();
+                        const ext: string | undefined =
+                            filenameComponents.pop();
                         if (!ext || extensions.indexOf(ext) === -1) {
                             array[index] =
                                 element +
@@ -72,9 +71,8 @@ function process_UI_Message(event: MessageEvent): void {
             const fileList: string =
                 s || getInnerHtmlSafely("please-add-texts");
 
-            (<HTMLElement>(
-                document.getElementById("dls_word_lists")
-            )).innerHTML = fileList.replace(/\r/g, "<br>");
+            (<HTMLElement>document.getElementById("dls_word_lists")).innerHTML =
+                fileList.replace(/\r/g, "<br>");
             return;
         }
 
@@ -202,7 +200,7 @@ export function displayLetters(): void {
         );
     }
 
-    $("div.rs-letters").onSafe("click", function() {
+    $("div.rs-letters").onSafe("click", function () {
         selectLetter(this);
     });
 }
@@ -225,16 +223,14 @@ export function selectStage(tr: HTMLTableRowElement): void {
     if (tr.classList.contains("selected")) return;
 
     const currentStage = (<HTMLTableCellElement>tr.cells[0]).innerHTML;
-    (<HTMLElement>(
-        document.getElementById("setup-stage-number")
-    )).innerHTML = currentStage;
-    (<HTMLElement>(
-        document.getElementById("setup-remove-stage")
-    )).innerHTML = theOneLocalizationManager.getText(
-        "ReaderSetup.RemoveStage",
-        "Remove Stage {0}",
-        currentStage
-    );
+    (<HTMLElement>document.getElementById("setup-stage-number")).innerHTML =
+        currentStage;
+    (<HTMLElement>document.getElementById("setup-remove-stage")).innerHTML =
+        theOneLocalizationManager.getText(
+            "ReaderSetup.RemoveStage",
+            "Remove Stage {0}",
+            currentStage
+        );
     (<HTMLInputElement>(
         document.getElementById("setup-stage-sight-words")
     )).value = (<HTMLTableCellElement>tr.cells[2]).innerHTML;
@@ -254,15 +250,15 @@ export function selectStage(tr: HTMLTableRowElement): void {
 }
 
 function requestWordsForSelectedStage(): void {
-    const tr = <HTMLTableRowElement>$("#stages-table")
-        .find("tbody tr.selected")
-        .get(0);
+    const tr = <HTMLTableRowElement>(
+        $("#stages-table").find("tbody tr.selected").get(0)
+    );
 
     desiredGPCs = (<HTMLTableCellElement>tr.cells[1]).innerHTML.split(" ");
     previousGPCs = $.makeArray(
         $(tr)
             .prevAll()
-            .map(function() {
+            .map(function () {
                 return (<HTMLTableCellElement>this.cells[1]).innerHTML.split(
                     " "
                 );
@@ -276,7 +272,7 @@ function requestWordsForSelectedStage(): void {
     sightWords = $.makeArray(
         $(tr)
             .prevAll()
-            .map(function() {
+            .map(function () {
                 return (<HTMLTableCellElement>this.cells[2]).innerHTML.split(
                     " "
                 );
@@ -315,17 +311,13 @@ function selectLetter(div: HTMLDivElement): void {
 
     // update the css classes
     if (div.classList.contains("unselected-letter"))
-        $(div)
-            .removeClass("unselected-letter")
-            .addClass("current-letter");
+        $(div).removeClass("unselected-letter").addClass("current-letter");
     else if (div.classList.contains("current-letter"))
-        $(div)
-            .removeClass("current-letter")
-            .addClass("unselected-letter");
+        $(div).removeClass("current-letter").addClass("unselected-letter");
     else return;
 
     // update the stages table
-    const letters = $(".current-letter").map(function() {
+    const letters = $(".current-letter").map(function () {
         return this.innerHTML;
     });
     tr.find("td:nth-child(2)").html($.makeArray(letters).join(" "));
@@ -356,7 +348,7 @@ export function selectLetters(tr: HTMLTableRowElement) {
     stage_letters = $.makeArray(
         $(tr)
             .prevAll()
-            .map(function() {
+            .map(function () {
                 return (<HTMLTableCellElement>this.cells[1]).innerHTML.split(
                     " "
                 );
@@ -397,21 +389,18 @@ export function selectLevel(tr: HTMLTableRowElement) {
 
     const currentLevel = getCellInnerHTML(tr, 0);
     setLevelLabel(currentLevel);
-    (<HTMLElement>(
-        document.getElementById("setup-remove-level")
-    )).innerHTML = theOneLocalizationManager.getText(
-        "ReaderSetup.RemoveLevel",
-        "Remove Level {0}",
-        currentLevel
-    );
+    (<HTMLElement>document.getElementById("setup-remove-level")).innerHTML =
+        theOneLocalizationManager.getText(
+            "ReaderSetup.RemoveLevel",
+            "Remove Level {0}",
+            currentLevel
+        );
 
     $("#levels-table")
         .find("tbody tr.selected")
         .removeClass("selected")
         .addClass("linked");
-    $(tr)
-        .removeClass("linked")
-        .addClass("selected");
+    $(tr).removeClass("linked").addClass("selected");
 
     // check boxes and text boxes
     for (let i = 0; i < levelSettings.length; i++) {
@@ -518,9 +507,8 @@ function displayAllowedWordsForSelectedStage(wordsStr: string): void {
     $.divsToColumnsBasedOnLongestWord("word", longestWord);
 
     // display the count
-    (<HTMLElement>(
-        document.getElementById("setup-words-count")
-    )).innerHTML = words.length.toString();
+    (<HTMLElement>document.getElementById("setup-words-count")).innerHTML =
+        words.length.toString();
 }
 
 function displayWordsForSelectedStage(wordsStr: string): void {
@@ -579,9 +567,8 @@ function displayWordsForSelectedStage(wordsStr: string): void {
     $.divsToColumnsBasedOnLongestWord("word", longestWord);
 
     // display the count
-    (<HTMLElement>(
-        document.getElementById("setup-words-count")
-    )).innerHTML = words.length.toString();
+    (<HTMLElement>document.getElementById("setup-words-count")).innerHTML =
+        words.length.toString();
 }
 
 function addNewStage(): void {
@@ -593,7 +580,7 @@ function addNewStage(): void {
     );
 
     // click event for stage rows
-    tbody.find("tr:last").onSafe("click", function() {
+    tbody.find("tr:last").onSafe("click", function () {
         selectStage(this);
         displayLetters();
         selectLetters(this);
@@ -625,7 +612,7 @@ function addNewLevel(): void {
     );
 
     // click event for stage rows
-    tbody.find("tr:last").onSafe("click", function() {
+    tbody.find("tr:last").onSafe("click", function () {
         selectLevel(this);
     });
 
@@ -651,7 +638,7 @@ function tabBeforeActivate(ui): void {
 
         // update letters in stages
         const rows: JQuery = tbody.find("tr");
-        rows.each(function() {
+        rows.each(function () {
             // get the letters for this stage
             let letters = (<HTMLTableCellElement>this.cells[1]).innerHTML.split(
                 " "
@@ -748,9 +735,7 @@ function handleThingsToRemember(jqueryEvent: JQueryEventObject): void {
  */
 function updateSightWords(ta: HTMLInputElement): void {
     const words: string = cleanSpaceDelimitedList(ta.value);
-    $("#stages-table")
-        .find("tbody tr.selected td:nth-child(3)")
-        .html(words);
+    $("#stages-table").find("tbody tr.selected td:nth-child(3)").html(words);
 }
 
 function removeStage(): void {
@@ -758,18 +743,10 @@ function removeStage(): void {
 
     // remove the current stage
     const current_row: JQuery = tbody.find("tr.selected");
-    const current_stage: number = parseInt(
-        current_row
-            .find("td")
-            .eq(0)
-            .html()
-    );
+    const current_stage: number = parseInt(current_row.find("td").eq(0).html());
 
     // remember for the next step
-    const allowedWordsFile = current_row
-        .find("td")
-        .eq(3)
-        .html();
+    const allowedWordsFile = current_row.find("td").eq(3).html();
 
     current_row.remove();
 
@@ -807,10 +784,9 @@ function resetStageDetail(): void {
 function renumberRows(rows: JQuery): void {
     let rowNum = 1;
 
-    $.each(rows, function() {
-        (<HTMLTableCellElement>(
-            (<HTMLTableRowElement>this).cells[0]
-        )).innerHTML = (rowNum++).toString();
+    $.each(rows, function () {
+        (<HTMLTableCellElement>(<HTMLTableRowElement>this).cells[0]).innerHTML =
+            (rowNum++).toString();
     });
 }
 
@@ -819,12 +795,7 @@ function removeLevel(): void {
 
     // remove the current level
     const current_row: JQuery = tbody.find("tr.selected");
-    const current_stage: number = parseInt(
-        current_row
-            .find("td")
-            .eq(0)
-            .html()
-    );
+    const current_stage: number = parseInt(current_row.find("td").eq(0).html());
     current_row.remove();
 
     const rows = tbody.find("tr");
@@ -888,24 +859,21 @@ function updateNumbers(tableId: string): void {
 
     if (tableId === "levels-table") {
         setLevelLabel(currentStage);
-        (<HTMLElement>(
-            document.getElementById("setup-remove-level")
-        )).innerHTML = theOneLocalizationManager.getText(
-            "ReaderSetup.RemoveLevel",
-            "Remove Level {0}",
-            currentStage
-        );
+        (<HTMLElement>document.getElementById("setup-remove-level")).innerHTML =
+            theOneLocalizationManager.getText(
+                "ReaderSetup.RemoveLevel",
+                "Remove Level {0}",
+                currentStage
+            );
     } else {
-        (<HTMLElement>(
-            document.getElementById("setup-stage-number")
-        )).innerHTML = currentStage;
-        (<HTMLElement>(
-            document.getElementById("setup-remove-stage")
-        )).innerHTML = theOneLocalizationManager.getText(
-            "ReaderSetup.RemoveStage",
-            "Remove Stage {0}",
-            currentStage
-        );
+        (<HTMLElement>document.getElementById("setup-stage-number")).innerHTML =
+            currentStage;
+        (<HTMLElement>document.getElementById("setup-remove-stage")).innerHTML =
+            theOneLocalizationManager.getText(
+                "ReaderSetup.RemoveStage",
+                "Remove Stage {0}",
+                currentStage
+            );
     }
 }
 
@@ -947,7 +915,7 @@ function attachEventHandlers(): void {
             return false;
         });
 
-        $("#setup-stage-sight-words").onSafe("keyup", function() {
+        $("#setup-stage-sight-words").onSafe("keyup", function () {
             updateSightWords(this);
             requestWordsForSelectedStage();
         });
@@ -972,7 +940,7 @@ function attachEventHandlers(): void {
         toRemember.onSafe("keyup", storeThingsToRemember);
 
         const levelDetail = $("#level-detail");
-        levelDetail.find(".level-checkbox").onSafe("change", function() {
+        levelDetail.find(".level-checkbox").onSafe("change", function () {
             const mainTableSpanClass = this.id.replace(/^use-/, "");
             const txtBox: HTMLInputElement = <HTMLInputElement>(
                 document.getElementById("max-" + mainTableSpanClass)
@@ -985,7 +953,7 @@ function attachEventHandlers(): void {
             );
         });
 
-        levelDetail.find(".level-textbox").onSafe("keyup", function() {
+        levelDetail.find(".level-textbox").onSafe("keyup", function () {
             // By design, the id of the .level-textbox element (in the detail pane) is
             // always "max-" appended to the class used to mark the corresponding elements
             // (one per row, so we can't use ID there) in the main table.
@@ -1003,9 +971,7 @@ function attachEventHandlers(): void {
                 if (fileName) setAllowedWordsFile(fileName);
 
                 // hide stale controls
-                $("#setup-stage-matching-words")
-                    .find("div")
-                    .hide();
+                $("#setup-stage-matching-words").find("div").hide();
             });
             return false;
         });
@@ -1014,25 +980,21 @@ function attachEventHandlers(): void {
             setAllowedWordsFile("");
 
             // hide stale controls
-            $("#setup-stage-matching-words")
-                .find("div")
-                .hide();
+            $("#setup-stage-matching-words").find("div").hide();
 
             return false;
         });
 
         const allowedDiv = $("#allowed-words-file-div");
-        allowedDiv.onSafe("mouseenter", function() {
+        allowedDiv.onSafe("mouseenter", function () {
             const title = getInnerHtmlSafely("remove_word_list");
             const anchor = $(this).find("a");
             anchor.attr("title", title);
             anchor.show();
         });
 
-        allowedDiv.onSafe("mouseleave", function() {
-            $(this)
-                .find("a")
-                .hide();
+        allowedDiv.onSafe("mouseleave", function () {
+            $(this).find("a").hide();
         });
     }
 }
@@ -1088,9 +1050,7 @@ function setAllowedWordsFile(fileName: string): void {
         fileName = ""; // to be sure it isn't undefined
     }
 
-    $("#stages-table")
-        .find("tbody tr.selected td:nth-child(4)")
-        .html(fileName);
+    $("#stages-table").find("tbody tr.selected td:nth-child(4)").html(fileName);
 
     // remove file if no longer used
     if (currentFile) {
@@ -1200,12 +1160,8 @@ function finishInitializing() {
         processMarkdown(matchingElem as HTMLElement);
     });
 
-    $("#stages-table")
-        .find("tbody")
-        .sortable({ stop: updateStageNumbers });
-    $("#levels-table")
-        .find("tbody")
-        .sortable({ stop: updateLevelNumbers });
+    $("#stages-table").find("tbody").sortable({ stop: updateStageNumbers });
+    $("#levels-table").find("tbody").sortable({ stop: updateLevelNumbers });
     const window = toolboxWindow();
     if (window) {
         window.postMessage("Texts", "*");
@@ -1228,9 +1184,7 @@ import { getToolboxBundleExports } from "../../../js/bloomFrames";
 
 $(document).ready(() => {
     attachEventHandlers();
-    $("body")
-        .find("*[data-i18n]")
-        .localize(finishInitializing);
+    $("body").find("*[data-i18n]").localize(finishInitializing);
     //This should always be found in real life, but in unit tests it may not exist.
     getToolboxBundleExports()?.addWordListChangedListener(
         "wordListChanged.ReaderSetup",

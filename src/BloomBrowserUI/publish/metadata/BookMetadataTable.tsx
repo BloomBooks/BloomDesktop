@@ -45,8 +45,8 @@ export default class BookMetadataTable extends React.Component<IProps> {
                             key,
                             value: this.props.metadata[key].value,
                             type: this.props.metadata[key].type,
-                            translatedLabel: this.props.metadata[key]
-                                .translatedLabel,
+                            translatedLabel:
+                                this.props.metadata[key].translatedLabel,
                             helpurl: this.props.metadata[key].helpurl
                         };
                     })}
@@ -111,9 +111,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                                     f.type == "bigEditableText"
                                                 }
                                                 onBlur={(
-                                                    event: React.FocusEvent<
-                                                        HTMLTextAreaElement
-                                                    >
+                                                    event: React.FocusEvent<HTMLTextAreaElement>
                                                 ) => {
                                                     this.props.metadata[
                                                         f.key
@@ -180,7 +178,8 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                             this.capitalizeFirstChar(hazardName)
                                         }
                                         onChange={list =>
-                                            (this.props.metadata.hazards.value = list)
+                                            (this.props.metadata.hazards.value =
+                                                list)
                                         }
                                         label={
                                             this.props.translatedControlStrings[
@@ -224,7 +223,8 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         }
                                         itemName={featureName}
                                         onChange={list =>
-                                            (this.props.metadata.a11yFeatures.value = list)
+                                            (this.props.metadata.a11yFeatures.value =
+                                                list)
                                         }
                                         label={
                                             this.props.translatedControlStrings[

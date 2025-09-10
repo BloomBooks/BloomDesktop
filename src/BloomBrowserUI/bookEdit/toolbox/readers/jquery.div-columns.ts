@@ -35,7 +35,7 @@ interface JQueryStatic {
             const marginRight = parseInt(div.css("margin-right"));
 
             // limit the list to elements with text wider than min-width allows
-            const elements = $("div." + cssClassName).filter(function() {
+            const elements = $("div." + cssClassName).filter(function () {
                 return this.offsetWidth > minWidth;
             });
 

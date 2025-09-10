@@ -14,7 +14,9 @@ interface IColorChooserProps {
 }
 
 // A reusable color chooser.
-export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props => {
+export const ColorChooser: React.FunctionComponent<
+    IColorChooserProps
+> = props => {
     const [chooserVisible, setChooserVisible] = useState(
         !!props.initiallyVisible
     );
@@ -70,9 +72,10 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
                             style={{ backgroundColor: color }}
                             data-color={color}
                             onClick={event => {
-                                const newColor = event.currentTarget.getAttribute(
-                                    "data-color"
-                                );
+                                const newColor =
+                                    event.currentTarget.getAttribute(
+                                        "data-color"
+                                    );
                                 if (props.onColorChanged && newColor) {
                                     props.onColorChanged(newColor);
                                 }

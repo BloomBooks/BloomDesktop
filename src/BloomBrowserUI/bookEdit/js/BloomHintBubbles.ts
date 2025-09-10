@@ -31,7 +31,7 @@ export default class BloomHintBubbles {
         //so it is preferred when making new templates by hand.
         $(container)
             .find(".bloom-editable:visible label.bubble")
-            .each(function() {
+            .each(function () {
                 const labelElement = $(this);
                 const whatToSay = labelElement.text();
                 if (!whatToSay) return;
@@ -92,7 +92,7 @@ export default class BloomHintBubbles {
 
         $(container)
             .find("*.bloom-canvas > label.bubble")
-            .each(function() {
+            .each(function () {
                 const labelElement = $(this);
                 const bloomCanvas = $(this).parent();
                 const whatToSay = labelElement.text();
@@ -106,7 +106,7 @@ export default class BloomHintBubbles {
         //and need a place to preserve the contents of the <label>, which is in danger of being edited away.
         $(container)
             .find("*[data-hint]")
-            .each(function() {
+            .each(function () {
                 let whatToSay = $(this).attr("data-hint"); //don't use .data(), as that will trip over any } in the hint and try to interpret it as json
                 if (!whatToSay) return;
 
@@ -149,11 +149,10 @@ export default class BloomHintBubbles {
         );
         // Posting 'hint' to editView/sourceTextTab doesn't currently work. See comment on handler.
         // But it may be wanted, so I decided to keep the code that does it for now.
-        (headers.get(
-            0
-        ) as HTMLElement).firstElementChild?.firstElementChild?.addEventListener(
-            "click",
-            () => postString("editView/sourceTextTab", "hint")
+        (
+            headers.get(0) as HTMLElement
+        ).firstElementChild?.firstElementChild?.addEventListener("click", () =>
+            postString("editView/sourceTextTab", "hint")
         );
         const nav = $(headers.parent());
         whatToSay =

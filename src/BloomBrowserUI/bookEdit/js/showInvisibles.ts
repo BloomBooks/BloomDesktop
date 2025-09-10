@@ -13,8 +13,7 @@ const invisibles = [
     { name: "Combining Grapheme Joiner", re: "\u034F", symbol: "\uE07A" },
     {
         name: "Zero Width Space",
-        re:
-            "&ZeroWidthSpace;|&NegativeMediumSpace;|&NegativeThickSpace;|&NegativeThinSpace;|&NegativeVeryThinSpace;|\u200B",
+        re: "&ZeroWidthSpace;|&NegativeMediumSpace;|&NegativeThickSpace;|&NegativeThinSpace;|&NegativeVeryThinSpace;|\u200B",
         symbol: "\uE081"
     },
     {
@@ -96,7 +95,7 @@ export function showInvisibles(e) {
     inShowInvisiblesMode = true;
     editable.html((i, html) => {
         // for each replacement, replace all instances of the invisible char/entity with the symbol
-        invisibles.forEach(function(invisibleType) {
+        invisibles.forEach(function (invisibleType) {
             // Just in case there were invisibles-replacement spans left in the document,
             // don't match anything immediately following data-original="
             const re = new RegExp(
@@ -114,7 +113,7 @@ export function showInvisibles(e) {
     // Make one qtip per type of invisible character to explain the symbol to the user without cluttering the page too much
     const invisibleCharTypesWithQtips = new Set();
 
-    $(".invisibles").each(function() {
+    $(".invisibles").each(function () {
         const $this: JQuery = $(this);
         if (
             !invisibleCharTypesWithQtips.has(
@@ -136,7 +135,7 @@ export function showInvisibles(e) {
                 },
                 hide: {
                     inactive: 2000,
-                    effect: function() {
+                    effect: function () {
                         $(this).fadeOut(250);
                     }
                 }
@@ -150,7 +149,7 @@ export function hideInvisibles(e) {
         inShowInvisiblesMode = false;
 
         // destroy all qtips
-        $(".invisibles").each(function() {
+        $(".invisibles").each(function () {
             const $this: JQuery = $(this);
             $this.qtip("destroy");
         });
@@ -161,7 +160,7 @@ export function hideInvisibles(e) {
             return html.replace(
                 /<span class="invisibles"[^<>]*data-original="(?:\\u(....)|(&[a-z,0-9]*;))"[^<>]*>.<\/span>/g,
                 // p1 will match unicode char codes, p2 will html entities
-                function(match, p1, p2) {
+                function (match, p1, p2) {
                     return invisibleFromCode(p1, p2);
                 }
             );

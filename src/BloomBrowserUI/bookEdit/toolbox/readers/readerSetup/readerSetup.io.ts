@@ -96,9 +96,8 @@ export interface ToolboxWindow extends Window {
 }
 export function toolboxWindow(): ToolboxWindow | undefined {
     if (window.parent) {
-        const toolboxFrameElement = window.parent.document.getElementById(
-            "toolbox"
-        );
+        const toolboxFrameElement =
+            window.parent.document.getElementById("toolbox");
         if (toolboxFrameElement) {
             const window = (<HTMLIFrameElement>toolboxFrameElement)
                 .contentWindow;
@@ -183,15 +182,13 @@ function loadReaderSetupData(jsonData: string): void {
 
     // language tab
     previousLetters = data.letters;
-    (<HTMLInputElement>(
-        document.getElementById("dls_letters")
-    )).value = previousLetters;
+    (<HTMLInputElement>document.getElementById("dls_letters")).value =
+        previousLetters;
     (<HTMLInputElement>document.getElementById("dls_sentence_punct")).value =
         data.sentencePunct;
     setPreviousMoreWords(data.moreWords.replace(/ /g, "\n"));
-    (<HTMLInputElement>(
-        document.getElementById("dls_more_words")
-    )).value = previousMoreWords;
+    (<HTMLInputElement>document.getElementById("dls_more_words")).value =
+        previousMoreWords;
     $(
         'input[name="words-or-letters"][value="' + data.useAllowedWords + '"]'
     ).prop("checked", true);
@@ -221,7 +218,7 @@ function loadReaderSetupData(jsonData: string): void {
     }
 
     // click event for stage rows
-    tbody.find("tr").onSafe("click", function() {
+    tbody.find("tr").onSafe("click", function () {
         selectStage(this);
         displayLetters();
         selectLetters(this);
@@ -256,7 +253,7 @@ function loadReaderSetupData(jsonData: string): void {
     }
 
     // click event for level rows
-    tbodyLevels.find("tr").onSafe("click", function() {
+    tbodyLevels.find("tr").onSafe("click", function () {
         selectLevel(this);
     });
 

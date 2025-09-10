@@ -40,10 +40,8 @@ export const CopyrightPanel: React.FunctionComponent<{
         copyrightInfo.copyrightYear || new Date().getFullYear().toString()
     );
     const [holder, setHolder] = useState(copyrightInfo.copyrightHolder || "");
-    const [
-        useOriginalCopyrightAndLicense,
-        setUseOriginalCopyrightAndLicense
-    ] = useState(props.derivativeInfo?.useOriginalCopyright === true);
+    const [useOriginalCopyrightAndLicense, setUseOriginalCopyrightAndLicense] =
+        useState(props.derivativeInfo?.useOriginalCopyright === true);
 
     const [isSil, setIsSil] = useState(false);
 

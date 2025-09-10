@@ -50,11 +50,8 @@ export const BloomMessageBox: React.FunctionComponent<{
     // When called from Typescript, we could provide a callback like this, but we haven't needed it yet.
     //buttonClicked?: (buttonId: string) => void;
 }> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
     showBloomMessageBox = showDialog;
 
     const closeDialogForButton = buttonId => {
@@ -95,9 +92,7 @@ export const BloomMessageBox: React.FunctionComponent<{
                 Learn More
             </HtmlHelpLink>
         </DialogBottomLeftButtons>
-    ) : (
-        undefined
-    );
+    ) : undefined;
 
     const icon = (): JSX.Element | undefined => {
         switch (props.icon) {
