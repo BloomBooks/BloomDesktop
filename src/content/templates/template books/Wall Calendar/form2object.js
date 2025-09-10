@@ -24,7 +24,7 @@
  * Time: 19:02:33
  */
 
-(function(global) {
+(function (global) {
     /**
      * Returns form values represented as Javascript object
      * "name" attribute defines structure of resulting object
@@ -35,7 +35,7 @@
      * @param nodeCallback {Function} custom function to get node value
      * @param useIdIfEmptyName {Boolean} if true value of id attribute of field will be used if name of field is empty
      */
-    global.form2object = function(
+    global.form2object = function (
         rootNode,
         delimiter,
         skipEmpty,
@@ -155,11 +155,11 @@
                     arrNameFull += "_" + arrName + "_" + arrIdx;
 
                     /*
-           * Because arrIdx in field name can be not zero-based and step can be
-           * other than 1, we can't use them in target array directly.
-           * Instead we're making a hash where key is arrIdx and value is a reference to
-           * added array element
-           */
+                     * Because arrIdx in field name can be not zero-based and step can be
+                     * other than 1, we can't use them in target array directly.
+                     * Instead we're making a hash where key is arrIdx and value is a reference to
+                     * added array element
+                     */
 
                     if (!arrays[arrNameFull]) arrays[arrNameFull] = {};
                     if (arrName != "" && !currResult[arrName])

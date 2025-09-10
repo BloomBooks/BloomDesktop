@@ -4,12 +4,12 @@
  * Time: 20:09
  */
 
-(function($) {
+(function ($) {
     /**
      * jQuery wrapper for form2object()
      * Extracts data from child inputs into javascript object
      */
-    $.fn.toObject = function(options) {
+    $.fn.toObject = function (options) {
         var result = [],
             settings = {
                 mode: "first", // what to convert: 'all' or 'first' matched node
@@ -34,7 +34,7 @@
                 );
                 break;
             case "all":
-                this.each(function() {
+                this.each(function () {
                     result.push(
                         form2object(
                             this,
