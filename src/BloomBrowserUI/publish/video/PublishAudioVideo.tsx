@@ -221,7 +221,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         "bloomPubPreview",
         url => {
             setBookUrl(url);
-            setHavePreviewForOrientation(true);
+            setHavePreviewForOrientation(url !== "stopPreview");
         }
     );
     useEffect(() => {
