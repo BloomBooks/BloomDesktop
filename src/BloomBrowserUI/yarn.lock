@@ -5513,10 +5513,10 @@ bindings@^1.5.0:
   dependencies:
     file-uri-to-path "1.0.0"
 
-bloom-player@^2.14.1-alpha:
-  version "2.14.1"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.14.1.tgz#8e22898e070cc971285ba136adb2720cbc69bcf1"
-  integrity sha512-TFIhdBcBTGnJGSFWfsIlJyASUitDTbCXqLnGZPkZA3MxsfDEMsPlT1NPoxifuVNCeLKPC1QX7hAcPBZoh5O76A==
+bloom-player@^2.16.0-alpha.2:
+  version "2.16.0-alpha.2"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.16.0-alpha.2.tgz#c5c1072ab3839c001561e768453e0edf1c5f5bd8"
+  integrity sha512-0mkKkXcmhwvBkHap0l93NndOd2e8Tp6IYGG3m2qtf4FFkC3lPIqyRxI0xkz9/GkMw44RzxF4TVmOyORTQCljww==
 
 body-parser@1.20.3:
   version "1.20.3"

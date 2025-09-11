@@ -73,6 +73,7 @@ import {
     FeatureStatus,
     getFeatureStatusAsync,
 } from "../../../react_components/featureStatus";
+import { animateStyleName } from "../../../utils/shared";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -212,7 +213,7 @@ export default class AudioRecording implements IAudioRecorder {
     private playbackOrderCache: IPlaybackOrderInfo[] = [];
     private disablingOverlay: HTMLDivElement;
 
-    constructor() {
+    constructor(maySetHighlight: boolean = true) {
         this.audioSplitButton = <HTMLButtonElement>(
             document.getElementById(kAudioSplitId)!
         );
@@ -225,7 +226,7 @@ export default class AudioRecording implements IAudioRecorder {
             document.getElementById("audio-meter")!
         );
 
-        this.updateDisplay(); // review is the the best time?
+        this.updateDisplay(maySetHighlight); // review is the the best time?
     }
 
     // Class method called by exported function of the same name.
@@ -566,9 +567,6 @@ export default class AudioRecording implements IAudioRecorder {
         includeCheckForPlaybackOrder: boolean = true,
         includeCheckForTempHidden: boolean = true,
     ): HTMLElement[] {
-        // REVIEW: this may in fact be unneeded but I'm just trying to get eslint set up and conceivably it is intentional
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const $this = this;
         const pageBody = this.getPageDocBody();
         if (!pageBody) {
             return []; // shouldn't happen
@@ -983,11 +981,13 @@ export default class AudioRecording implements IAudioRecorder {
         }
 
         const visible = this.isVisible(newElement);
+        const inAnimation = newElement.closest("." + animateStyleName);
 
         // This should happen even if oldElement and newElement are the same.
         // e.g. the user could navigate (with arrows or mousewheel) such that oldElement is out of view, then press Play.
         // It would be worthwhile to scroll it back into view in that case.
-        if (shouldScrollToElement && visible) {
+        // However, we don't want it for elements that are part of an animation, because it makes the animation jerk.
+        if (shouldScrollToElement && visible && !inAnimation) {
             // This stops us trying to scroll into view elements being played back in
             // a motion preview. (We don't want to make isVisible return false for this case,
             // because then the elements won't be played back at all.)
@@ -1013,10 +1013,15 @@ export default class AudioRecording implements IAudioRecorder {
             // especially if the caller doesn't await this function.
             // This allows us to generally represent the correct current element immediately.
             newElement.classList.add(kAudioCurrent);
-            getCanvasElementManager()?.setActiveElementToClosest(
-                newElement as HTMLElement,
-            );
-            if (visible) {
+            if (!this.listening) {
+                // We don't need to mess with the canvas element focus while listening, and especially,
+                // if we're doing a motion preview we don't want to see the edit controls there.
+                getCanvasElementManager()?.setActiveElementToClosest(
+                    newElement as HTMLElement,
+                );
+            }
+            if (visible && !inAnimation) {
+                // Show a record icon
                 // This is a workaround for a Chromium bug; see BL-11633. We'd like our style rules
                 // to just put the icon on the element that has kAudioCurrent. But that element
                 // has a background color, so (due to the bug) it cannot have position:relative,
@@ -1640,7 +1645,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
     // Returns a promise that is fulfilled when the play has been STARTED (not completed).
-    public async listenAsync(): Promise<void> {
+    public async listenAsync(canvasToExclude?: HTMLElement): Promise<void> {
         this.resetAudioIfPaused();
 
         this.fixHighlighting();
@@ -1648,6 +1653,13 @@ export default class AudioRecording implements IAudioRecorder {
         this.elementsToPlayConsecutivelyStack = jQuery
             .makeArray(this.sortByTabindex(this.getAudioElements(false)))
             .reverse();
+        if (canvasToExclude) {
+            // If we are in a motion preview, we want to exclude descendents of the
+            // canvas we are animating, since we prefer to play the copies in the animation.
+            this.elementsToPlayConsecutivelyStack = this.elementsToPlayConsecutivelyStack.filter(
+                e => !canvasToExclude.contains(e)
+            );
+        }
 
         const stackSize = this.elementsToPlayConsecutivelyStack.length;
         if (stackSize === 0) {
@@ -1656,6 +1668,7 @@ export default class AudioRecording implements IAudioRecorder {
         const firstElementToPlay =
             this.elementsToPlayConsecutivelyStack[stackSize - 1]; // Remember to pop it when you're done playing it. (i.e., in playEnded)
 
+        this.listening = true;
         await this.setSoundAndHighlightAsync({
             newElement: firstElementToPlay,
             shouldScrollToElement: true,
@@ -1664,11 +1677,13 @@ export default class AudioRecording implements IAudioRecorder {
         this.setStatus("listen", Status.Active);
         return this.playCurrentInternalAsync();
     }
+    private listening = false;
 
     // This is currently used in Motion, which removes all the current
     // audio markup afterwards. If we use it in this tool, we need to do more,
     // such as setting the current state of controls.
     public stopListen(): void {
+        this.listening = false;
         this.getMediaPlayer().pause();
     }
 
@@ -1695,8 +1710,9 @@ export default class AudioRecording implements IAudioRecorder {
                 this.elementsToPlayConsecutivelyStack = [];
                 this.subElementsWithTimings = [];
                 ++this.currentAudioSessionNum;
+                this.listening = false;
 
-                if (this.recordingMode == RecordingMode.TextBox) {
+                if (this.recordingMode === RecordingMode.TextBox) {
                     // The playback mode could've been playing in Sentence mode (and highlighted the Playback Segment: a sentence)
                     // But now we need to switch the highlight back to show the Recording segment.
                     const currentTextBox = this.getCurrentTextBox();
@@ -1704,7 +1720,11 @@ export default class AudioRecording implements IAudioRecorder {
                         !!currentTextBox,
                         "CurrentTextBox not expected to be null",
                     );
-                    if (currentTextBox) {
+                    if (
+                        currentTextBox &&
+                        // don't need to reset (and activate) a motion preview element.
+                        !currentTextBox.closest("." + animateStyleName)
+                    ) {
                         await this.setCurrentAudioElementBasedOnRecordingModeAsync(
                             currentTextBox,
                             false,
@@ -4552,7 +4572,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     // Returns all elements that match CSS selector {expr} as an array.
-    // Querying can optionally be restricted to {container}â€™s descendants
+    // Querying can optionally be restricted to {container}’s descendants
     // If includeSelf is true, it includes both itself as well as its descendants.
     // Otherwise, it only includes descendants.
     // Also filters out imageDescriptions if we aren't supposed to be reading them.

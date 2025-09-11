@@ -20,6 +20,8 @@ import { kMotionToolId } from "../toolIds";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
 import { getFeatureStatusAsync } from "../../../react_components/featureStatus";
 import { TransformBasedAnimator } from "bloom-player";
+import { getCanvasElementManager } from "../overlay/canvasElementUtils";
+import { animateStyleName } from "../../../utils/shared";
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
@@ -625,8 +627,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         }
     }
 
-    //if these were ever changed, be sure to also change them in bloomUI.less
-    private animateStyleName: string = "bloom-animationPreview";
+    //if this is ever changed, be sure to also change it in bloomUI.less
     readonly hiddenStyleName: string = "bloom-hidden-for-animation";
 
     //hide everything on the page, make a copy of the canvas, and move it using the TransformBasedAnimator class from bloom-player
@@ -660,6 +661,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             this.cleanupAnimation();
             return;
         }
+        getCanvasElementManager()?.setActiveElement(undefined);
 
         const page = this.getPage();
         if (!page || !page.documentElement) return; // paranoid
@@ -671,7 +673,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
         //create the animation divs
         const animationBackground = document.createElement("div");
-        animationBackground.classList.add(this.animateStyleName);
+        animationBackground.classList.add(animateStyleName);
         const animationWrapper = document.createElement("div");
         const animationCanvas = bloomCanvasToAnimate.cloneNode(
             true,
@@ -687,9 +689,16 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             const animatedComicalCanvas = animationCanvas.querySelector(
                 ".comical-generated",
             ) as HTMLCanvasElement;
-            const drawingContext = animatedComicalCanvas.getContext("2d");
-            drawingContext?.drawImage(comicalCanvas, 0, 0);
+            // this timeout seems to be necessary in cases where comical controls were
+            // visible before we cleared the active element, to prevent the handles showing
+            // in the preview.
+            setTimeout(() => {
+                const drawingContext = animatedComicalCanvas.getContext("2d");
+                drawingContext?.drawImage(comicalCanvas, 0, 0);
+            }, 0);
         }
+        // before we add the animation elements, lest we count any recorded overlays twice.
+        const duration = this.calculateDuration(page);
 
         //Prepare the animation background
         const editorBody = bloomPage.closest("body")!;
@@ -771,7 +780,6 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         //start the animation
         const initialRect = animationCanvas.getAttribute("data-initialrect")!;
         const finalRect = animationCanvas.getAttribute("data-finalrect")!;
-        const duration = this.calculateDuration(page);
         const animationEngine = new TransformBasedAnimator(
             initialRect,
             finalRect,
@@ -781,10 +789,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         animationEngine.startAnimation();
 
         if (this.rootControl.state.previewVoice) {
-            // Play the audio during animation
-            this.narrationPlayer = new AudioRecording();
+            // Play the audio during animation. Don't mess with highlight while constructing
+            // the recorder.
+            this.narrationPlayer = new AudioRecording(false);
             this.narrationPlayer.setupForListen();
-            this.narrationPlayer.listenAsync();
+            this.narrationPlayer.listenAsync(bloomCanvasToAnimate);
         }
         if (this.rootControl.state.previewMusic) {
             MusicToolControls.previewBackgroundMusic(
@@ -809,7 +818,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
         // stop the animation by removing any elements it added to the page.
         const animationElements = Array.from(
-            page.getElementsByClassName(this.animateStyleName),
+            page.getElementsByClassName(animateStyleName),
         );
         animationElements.forEach((child) =>
             child.parentElement!.removeChild(child),
