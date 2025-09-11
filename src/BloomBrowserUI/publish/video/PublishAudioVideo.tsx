@@ -527,7 +527,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                             enabled={
                                 !recording &&
                                 isLicenseOK &&
-                                !isScalingActive &&
+                                !(isScalingActive && recordingVideo) &&
                                 havePreviewForOrientation
                             }
                             l10nKey="PublishTab.RecordVideo.Record"
