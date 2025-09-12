@@ -500,8 +500,8 @@ namespace Bloom.Book
             if (featureVersionRequirementList != null && featureVersionRequirementList.Length >= 1)
             {
                 return featureVersionRequirementList
-                    .Where(x =>
-                        CurrentBloomDesktopVersion() < new Version(x.BloomDesktopMinVersion)
+                    .Where(
+                        x => CurrentBloomDesktopVersion() < new Version(x.BloomDesktopMinVersion)
                     )
                     .ToArray();
             }
@@ -1261,8 +1261,8 @@ namespace Bloom.Book
             {
                 var filename = Path.GetFileName(path);
                 if (
-                    ignoredFilenameStarts.Any(s =>
-                        filename.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)
+                    ignoredFilenameStarts.Any(
+                        s => filename.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)
                     )
                 )
                     continue;
@@ -1497,8 +1497,8 @@ namespace Bloom.Book
 
             // The dom only includes the ID, so we return all possible file names
             foreach (var narrationId in narrationIds)
-            foreach (var filename in GetNarrationAudioFileNames(narrationId, includeWav))
-                yield return filename;
+                foreach (var filename in GetNarrationAudioFileNames(narrationId, includeWav))
+                    yield return filename;
         }
 
         /// <summary>
@@ -2181,8 +2181,8 @@ namespace Bloom.Book
             };
             var allCandidates = GetAllHtmCandidates(folderPath).ToList();
             allCandidates.RemoveAll(f => okayFiles.Contains(f));
-            return allCandidates.Where(f =>
-                !Path.GetFileName(f).ToLowerInvariant().StartsWith("readme-")
+            return allCandidates.Where(
+                f => !Path.GetFileName(f).ToLowerInvariant().StartsWith("readme-")
             );
         }
 
@@ -2617,6 +2617,45 @@ namespace Bloom.Book
             bool writeLog
         )
         {
+            // Try to identify the blocked resource. Unfortunately UnauthorizeAccessException
+            // does not provide a specific field that gives the path, but the message follows
+            // a pretty typical pattern that contains it.
+            var splitAtQuotes = noAccessError.Message.Split("'");
+            var hidden = false;
+            string directoryPath = "";
+            if (splitAtQuotes.Length == 3)
+            {
+                // The bit inside the quotes is typically the path.
+                // I don't know whether another delimiter might be used in some locales,
+                // but this is only about improving the chances of a helpful message, so at
+                // worst, we just don't provide info about the hidden folder.
+                var path = splitAtQuotes[1];
+                // See if that path, or its containing folder, is hidden. For some reason that
+                // triggers this exception, even if the user otherwise has permissions on the files,
+                // and can see them in Explorer. So we'll try to give a more helpful message if so.
+                try
+                {
+                    if (Path.IsPathRooted(path))
+                    {
+                        // if path is a path to a directory, we want a Directory Info for that directory.
+                        // if a path to a file, we want a Directory info for its containing directory.
+                        directoryPath = Directory.Exists(path) ? path : Path.GetDirectoryName(path);
+                        if (
+                            (new DirectoryInfo(directoryPath).Attributes & FileAttributes.Hidden)
+                            != 0
+                        )
+                        {
+                            hidden = true;
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // We might trigger other exceptions while trying to determine this, if it is a
+                    // different permission error. Just ignore them. This block is only about
+                    // making the error message a bit more helpful.
+                }
+            }
             // In the details shown to the user, don't need the extra diagnostic info in BloomUnauthorizedAccessException
             // (However, in the error report submitted to YouTrack, we do want that extra diagnostic info)
             Exception errorToUser = noAccessError;
@@ -2627,6 +2666,12 @@ namespace Bloom.Book
                 "Errors.DeniedAccess",
                 "Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file."
             );
+            if (hidden)
+            {
+                // If this is useful enough we may want to localize it.
+                deniedAccessMsg +=
+                    $"\nThis may be because the directory '{directoryPath}' is hidden.";
+            }
 
             var messagesForLog = new List<string>() { deniedAccessMsg, errorToUser.Message };
 
@@ -2785,8 +2830,8 @@ namespace Bloom.Book
                 ?.HarvesterMayConvertToDefaultTheme ?? false;
 
         public ExpandoObject BrandingAppearanceSettings =>
-            Api
-                .BrandingSettings.GetSettingsOrNull(CollectionSettings.Subscription.BrandingKey)
+            Api.BrandingSettings
+                .GetSettingsOrNull(CollectionSettings.Subscription.BrandingKey)
                 ?.Appearance;
 
         // Brandings come with logos and such... we want them in the book folder itself so that they work
@@ -2828,10 +2873,11 @@ namespace Bloom.Book
                 var filesToCopy = Directory
                     .EnumerateFiles(brandingFolder) //<--- .NET 4.5
                     // note this is how the branding.css gets into a book folder
-                    .Where(path =>
-                        ".png,.svg,.jpg,.css"
-                            .Split(',')
-                            .Contains(Path.GetExtension(path).ToLowerInvariant())
+                    .Where(
+                        path =>
+                            ".png,.svg,.jpg,.css"
+                                .Split(',')
+                                .Contains(Path.GetExtension(path).ToLowerInvariant())
                     );
                 var gotBrandingCss = false;
                 foreach (var sourcePath in filesToCopy)
@@ -3518,8 +3564,8 @@ namespace Bloom.Book
 
         public void EnsureOriginalTitle()
         {
-            var dataDiv = Dom
-                .RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']")
+            var dataDiv = Dom.RawDom
+                .SafeSelectNodes("//div[@id='bloomDataDiv']")
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             if (dataDiv == null)
@@ -3527,8 +3573,8 @@ namespace Bloom.Book
             var originalTitle = dataDiv.SafeSelectNodes(".//div[@data-book='originalTitle']");
             if (originalTitle.Length > 0)
                 return;
-            var titles = Dom
-                .RawDom.SafeSelectNodes("//div[@data-book='bookTitle']")
+            var titles = Dom.RawDom
+                .SafeSelectNodes("//div[@data-book='bookTitle']")
                 .Cast<SafeXmlElement>()
                 .ToList();
             if (titles.Count == 0)
@@ -3742,8 +3788,8 @@ namespace Bloom.Book
                 .Cast<SafeXmlElement>();
             foreach (var ic in imageContainers)
             {
-                var firstImage = ic.ChildNodes.FirstOrDefault(x =>
-                    x is SafeXmlElement && ((SafeXmlElement)x).Name == "img"
+                var firstImage = ic.ChildNodes.FirstOrDefault(
+                    x => x is SafeXmlElement && ((SafeXmlElement)x).Name == "img"
                 );
                 if (firstImage == null)
                     continue;
@@ -4080,36 +4126,39 @@ namespace Bloom.Book
             // We want to keep the most specific feature, so we look for the highest subscription tier.
             // If we get down to the Pro tier, then we know that Game is more specific than Overlay,
             // and Overlay is more specific than the other features.
-            var enterpriseFeatures = featureList.FindAll(x =>
-                FeatureRegistry
-                    .Features.FindAll(y =>
-                        y.Feature == x && y.SubscriptionTier == SubscriptionTier.Enterprise
-                    )
-                    .Count > 0
+            var enterpriseFeatures = featureList.FindAll(
+                x =>
+                    FeatureRegistry.Features
+                        .FindAll(
+                            y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Enterprise
+                        )
+                        .Count > 0
             );
             if (enterpriseFeatures.Count > 0)
             {
                 featureList.RemoveAll(x => x != enterpriseFeatures[0]);
                 return;
             }
-            var communityFeatures = featureList.FindAll(x =>
-                FeatureRegistry
-                    .Features.FindAll(y =>
-                        y.Feature == x && y.SubscriptionTier == SubscriptionTier.LocalCommunity
-                    )
-                    .Count > 0
+            var communityFeatures = featureList.FindAll(
+                x =>
+                    FeatureRegistry.Features
+                        .FindAll(
+                            y =>
+                                y.Feature == x
+                                && y.SubscriptionTier == SubscriptionTier.LocalCommunity
+                        )
+                        .Count > 0
             );
             if (communityFeatures.Count > 0)
             {
                 featureList.RemoveAll(x => x != communityFeatures[0]);
                 return;
             }
-            var proFeatures = featureList.FindAll(x =>
-                FeatureRegistry
-                    .Features.FindAll(y =>
-                        y.Feature == x && y.SubscriptionTier == SubscriptionTier.Pro
-                    )
-                    .Count > 0
+            var proFeatures = featureList.FindAll(
+                x =>
+                    FeatureRegistry.Features
+                        .FindAll(y => y.Feature == x && y.SubscriptionTier == SubscriptionTier.Pro)
+                        .Count > 0
             );
             if (proFeatures.Count > 0)
             {
@@ -4282,10 +4331,10 @@ namespace Bloom.Book
         // This list must include all the CSS files that AppearanceRelatedCssFiles might ever return so we can
         // delete the ones we don't want
         public static readonly string[] AutomaticallyAddedCssFilePrefixes =
-            // These are split up for the sake of the StyleSheetLinkSorter
-            OrderedPrefixesOfCssFilesToSortBeforeUnknownStylesheets
-                .Concat(OrderedPrefixesOfCssFilesToSortAfterUnknownStylesheets)
-                .ToArray();
+        // These are split up for the sake of the StyleSheetLinkSorter
+        OrderedPrefixesOfCssFilesToSortBeforeUnknownStylesheets
+            .Concat(OrderedPrefixesOfCssFilesToSortAfterUnknownStylesheets)
+            .ToArray();
 
         /// <summary>
         /// Relative to the book folder, where should we find the customCollectionStyles.css file?
