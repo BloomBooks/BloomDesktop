@@ -118,6 +118,9 @@ Andika-R.ttf
 # The ** doesn't do anything unless you specifically unexclude the subdirectories
 !.vs/**/csharpier.json
 
+# These files are installed from a nuget package, no longer under source control
+DistFiles/**/Palaso.xlf
+
 build/Bloom*.nupkg
 src/BloomBrowserUI/filesToFix.lst
 src/BloomBrowserUI/npm-debug.log
