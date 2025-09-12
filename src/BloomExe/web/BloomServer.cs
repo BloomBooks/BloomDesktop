@@ -1881,6 +1881,7 @@ namespace Bloom.Api
                 // This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
                 // of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
                 EpubMaker.kEPUBExportFolder.ToLowerInvariant(),
+                BloomPubMaker.BRExportFolder.ToLowerInvariant(),
                 // old quiz pages ask for this script, but it's now bundled with rest of edit code
                 "simplecomprehensionquiz.js",
                 // bloom-player always asks for questions.json for every book.
