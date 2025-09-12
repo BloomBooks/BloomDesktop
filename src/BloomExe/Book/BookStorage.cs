@@ -2582,6 +2582,8 @@ namespace Bloom.Book
         /// </summary>
         internal void ShowAccessDeniedErrorHtml(UnauthorizedAccessException error)
         {
+            if (!(error is BloomUnauthorizedAccessException))
+                error = BloomUnauthorizedAccessException.CreateFromException(error);
             var message = GetAccessDeniedHtml(error, writeLog: true);
 
             ErrorMessagesHtml = message;
@@ -2595,6 +2597,9 @@ namespace Bloom.Book
         /// </summary>
         internal static void ShowAccessDeniedErrorReport(UnauthorizedAccessException noAccessError)
         {
+            if (!(noAccessError is BloomUnauthorizedAccessException))
+                noAccessError = BloomUnauthorizedAccessException.CreateFromException(noAccessError);
+
             // WriteLog is false because Problem Report Dialog will log it anyway
             string summaryHtml = GetAccessDeniedHtml(noAccessError, writeLog: false);
 
@@ -2627,6 +2632,12 @@ namespace Bloom.Book
                 "Errors.DeniedAccess",
                 "Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file."
             );
+            if (noAccessError is BloomUnauthorizedAccessException bex && bex.HiddenFolder != null)
+            {
+                // If this is useful enough we may want to localize it.
+                deniedAccessMsg +=
+                    $"\nThis may be because the directory '{bex.HiddenFolder}' is hidden.";
+            }
 
             var messagesForLog = new List<string>() { deniedAccessMsg, errorToUser.Message };
 
