@@ -85,15 +85,13 @@ const CanvasElementContextControls: React.FunctionComponent<{
     setMenuOpen: (open: boolean) => void;
     menuAnchorPosition?: { left: number; top: number };
 }> = props => {
-    const imgContainer = props.canvasElement.getElementsByClassName(
-        kImageContainerClass
-    )[0];
+    const imgContainer =
+        props.canvasElement.getElementsByClassName(kImageContainerClass)[0];
     const hasImage = !!imgContainer;
     const hasText =
         props.canvasElement.getElementsByClassName("bloom-editable").length > 0;
-    const rectangles = props.canvasElement.getElementsByClassName(
-        "bloom-rectangle"
-    );
+    const rectangles =
+        props.canvasElement.getElementsByClassName("bloom-rectangle");
     // This is only used by the menu option that toggles it. If the menu stayed up, we would need a state
     // and useEffect. But since it closes when we choose an option, we can just get the current value to show
     // in the current menu opening.
@@ -194,7 +192,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
         "Background Image",
         "EditTab.Image.BackgroundImage"
     );
-    const canExpandBackgroundImage = theOneCanvasElementManager?.canExpandToFillSpace();
+    const canExpandBackgroundImage =
+        theOneCanvasElementManager?.canExpandToFillSpace();
 
     const canToggleDraggability =
         isInDraggableGame &&
@@ -436,36 +435,41 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 >
                     {hasImage && (
                         <Fragment>
-                            {// Want an attention-grabbing version of set metadata if there is none.)
-                            missingMetadata && (
-                                <ButtonWithTooltip
-                                    tipL10nKey="EditTab.Image.EditMetadataOverlay"
-                                    icon={MissingMetadataIcon}
-                                    onClick={() => runMetadataDialog()}
-                                />
-                            )}
-                            {// Choose image is only a LIKELY choice if we don't yet have one.
-                            // (or if it's a background image...not sure why, except otherwise
-                            // the toolbar might not have any icons for a background image.)
-                            (isPlaceHolder || isBackgroundImage) && (
-                                <ButtonWithTooltip
-                                    tipL10nKey="EditTab.Image.ChooseImage"
-                                    icon={SearchIcon}
-                                    onClick={_ => {
-                                        if (!props.canvasElement) return;
-                                        const imgContainer = props.canvasElement.getElementsByClassName(
-                                            kImageContainerClass
-                                        )[0] as HTMLElement;
-                                        if (!imgContainer) return;
-                                        doImageCommand(
-                                            imgContainer.getElementsByTagName(
-                                                "img"
-                                            )[0] as HTMLImageElement,
-                                            "change"
-                                        );
-                                    }}
-                                />
-                            )}
+                            {
+                                // Want an attention-grabbing version of set metadata if there is none.)
+                                missingMetadata && (
+                                    <ButtonWithTooltip
+                                        tipL10nKey="EditTab.Image.EditMetadataOverlay"
+                                        icon={MissingMetadataIcon}
+                                        onClick={() => runMetadataDialog()}
+                                    />
+                                )
+                            }
+                            {
+                                // Choose image is only a LIKELY choice if we don't yet have one.
+                                // (or if it's a background image...not sure why, except otherwise
+                                // the toolbar might not have any icons for a background image.)
+                                (isPlaceHolder || isBackgroundImage) && (
+                                    <ButtonWithTooltip
+                                        tipL10nKey="EditTab.Image.ChooseImage"
+                                        icon={SearchIcon}
+                                        onClick={_ => {
+                                            if (!props.canvasElement) return;
+                                            const imgContainer =
+                                                props.canvasElement.getElementsByClassName(
+                                                    kImageContainerClass
+                                                )[0] as HTMLElement;
+                                            if (!imgContainer) return;
+                                            doImageCommand(
+                                                imgContainer.getElementsByTagName(
+                                                    "img"
+                                                )[0] as HTMLImageElement,
+                                                "change"
+                                            );
+                                        }}
+                                    />
+                                )
+                            }
                             {(isPlaceHolder || isBackgroundImage) && (
                                 <ButtonWithTooltip
                                     tipL10nKey="EditTab.Image.PasteImage"
@@ -473,9 +477,10 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                     relativeSize={0.9}
                                     onClick={_ => {
                                         if (!props.canvasElement) return;
-                                        const imgContainer = props.canvasElement.getElementsByClassName(
-                                            kImageContainerClass
-                                        )[0] as HTMLElement;
+                                        const imgContainer =
+                                            props.canvasElement.getElementsByClassName(
+                                                kImageContainerClass
+                                            )[0] as HTMLElement;
                                         if (!imgContainer) return;
                                         doImageCommand(
                                             imgContainer.getElementsByTagName(
@@ -541,19 +546,21 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                 }}
                             />
                         )}
-                    {// Not sure of the reasoning here, since we do have a way to 'delete' a background image,
-                    // not by removing the canvas element but by setting the image back to a placeholder.
-                    // But the mockup in BL-14069 definitely doesn't have it.
-                    isBackgroundImage || isSpecialGameElementSelected || (
-                        <ButtonWithTooltip
-                            tipL10nKey="Common.Delete"
-                            icon={DeleteIcon}
-                            onClick={() => {
-                                if (!props.canvasElement) return;
-                                theOneCanvasElementManager?.deleteCurrentCanvasElement();
-                            }}
-                        />
-                    )}
+                    {
+                        // Not sure of the reasoning here, since we do have a way to 'delete' a background image,
+                        // not by removing the canvas element but by setting the image back to a placeholder.
+                        // But the mockup in BL-14069 definitely doesn't have it.
+                        isBackgroundImage || isSpecialGameElementSelected || (
+                            <ButtonWithTooltip
+                                tipL10nKey="Common.Delete"
+                                icon={DeleteIcon}
+                                onClick={() => {
+                                    if (!props.canvasElement) return;
+                                    theOneCanvasElementManager?.deleteCurrentCanvasElement();
+                                }}
+                            />
+                        )
+                    }
                     {isBackgroundImage && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.FillSpace"
@@ -1088,9 +1095,8 @@ function addImageMenuOptions(
     menuOptions.unshift(...imageMenuOptions);
 }
 function pasteLink(canvasElement: HTMLElement) {
-    const imgContainer = canvasElement.getElementsByClassName(
-        kImageContainerClass
-    )[0];
+    const imgContainer =
+        canvasElement.getElementsByClassName(kImageContainerClass)[0];
 
     getHyperlinkFromClipboard(url => {
         if (url) imgContainer.setAttribute("data-href", url);
@@ -1197,9 +1203,7 @@ function addMenuItemForTogglingDraggability(
         onClick: toggleDragability,
         icon: isDraggable(canvasElement) ? (
             <CheckIcon css={getMenuIconCss()} />
-        ) : (
-            undefined
-        )
+        ) : undefined
     });
 }
 
@@ -1231,9 +1235,7 @@ function addMenuItemsForDraggable(
         onClick: toggleIsPartOfRightAnswer,
         icon: currentDraggableTarget ? (
             <CheckIcon css={getMenuIconCss()} />
-        ) : (
-            undefined
-        )
+        ) : undefined
     });
 }
 

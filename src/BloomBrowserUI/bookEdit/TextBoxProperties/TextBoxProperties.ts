@@ -535,9 +535,7 @@ export default class TextBoxProperties {
                 this.getAffectedTranslationGroup(this.boxBeingEdited)
             ).hasClass(this.classNameForHintOnEach());
             if (showHintOnEach) {
-                $("#hint-scope")
-                    .val("show-on-each")
-                    .trigger("change");
+                $("#hint-scope").val("show-on-each").trigger("change");
                 includeLangLabel.show();
             } else {
                 // first item will be selected by default

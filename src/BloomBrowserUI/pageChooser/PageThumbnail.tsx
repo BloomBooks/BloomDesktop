@@ -8,7 +8,9 @@ interface IPageThumbnailProps {
     isLandscape: boolean;
 }
 
-export const PageThumbnail: React.FunctionComponent<IPageThumbnailProps> = props => {
+export const PageThumbnail: React.FunctionComponent<
+    IPageThumbnailProps
+> = props => {
     const thumbFrameStyles = `margin: 0 10px 10px 11px;
         width: 104px;
         display: inline-block;

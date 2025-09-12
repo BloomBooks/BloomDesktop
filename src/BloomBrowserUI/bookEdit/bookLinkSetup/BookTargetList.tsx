@@ -30,15 +30,10 @@ const SortableBookItem: React.FC<{
     link: Link;
     onRemove: (link: Link) => void;
 }> = ({ link, onRemove }) => {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition
-    } = useSortable({
-        id: link.book.id
-    });
+    const { attributes, listeners, setNodeRef, transform, transition } =
+        useSortable({
+            id: link.book.id
+        });
 
     return (
         <div

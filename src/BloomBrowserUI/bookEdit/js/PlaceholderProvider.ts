@@ -45,10 +45,11 @@ export default class PlaceholderProvider {
             if (!l1Editable) return;
             const l1Lang = l1Editable.getAttribute("lang");
             if (!l1Lang) return; // paranoia
-            const placeholderData = await theOneLocalizationManager.asyncGetTextInLangWithLangFound(
-                l10nId,
-                l1Lang
-            );
+            const placeholderData =
+                await theOneLocalizationManager.asyncGetTextInLangWithLangFound(
+                    l10nId,
+                    l1Lang
+                );
             if (eager && placeholderData.langFound === l1Lang) {
                 // We have a translation in L1, so we set the text of the bloom-editable
                 // (unless it already has text).
@@ -65,9 +66,8 @@ export default class PlaceholderProvider {
                             // If there's a ckEditor that isn't ready yet, set the text again when it is.
                             ckEditor.on("instanceReady", e => {
                                 // ckEditor may even have replaced the whole paragraph we found before.
-                                const para2 = l1Editable.getElementsByTagName(
-                                    "p"
-                                )[0];
+                                const para2 =
+                                    l1Editable.getElementsByTagName("p")[0];
                                 if (para2) {
                                     para2.innerText = placeholderData.text;
                                 }

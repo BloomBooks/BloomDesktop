@@ -6,15 +6,15 @@
 function AddToolbox(container) {
     $(container)
         .find("div.bloom-page.bloom-enablePageCustomization")
-        .each(function() {
+        .each(function () {
             $(this)
                 .find(".marginBox")
                 .droppable({
                     hoverClass: "ui-state-hover",
-                    accept: function() {
+                    accept: function () {
                         return true;
                     },
-                    drop: function(event, ui) {
+                    drop: function (event, ui) {
                         //is it being dragged in from a toolbox, or just moved around inside the page?
                         if (
                             $(ui.draggable).hasClass("widgetInPageDragToolbox")
@@ -79,11 +79,11 @@ function AddToolbox(container) {
                         "</li></ul></div>"
                 );
 
-            toolbox.find(".widgetInPageDragToolbox").each(function() {
+            toolbox.find(".widgetInPageDragToolbox").each(function () {
                 $(this).draggable({
                     //note: this is just used for drawing what you drag around..
                     //it isn't what the droppable is actually given. For that, look in the 'drop' item of the droppable() call above.
-                    helper: function(event) {
+                    helper: function (event) {
                         var tearOff = $(this).clone(); //.removeClass('widgetInPageDragToolbox');//by removing this, we show it with the actual size it will be when dropped
                         return tearOff;
                     }

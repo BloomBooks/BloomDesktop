@@ -39,15 +39,12 @@ export const EditTopBarControls: React.FunctionComponent = () => {
     });
 
     // Start Dropdowns
-    const [contentLanguagesEnabled, setContentLanguagesEnabled] = useState(
-        false
-    );
+    const [contentLanguagesEnabled, setContentLanguagesEnabled] =
+        useState(false);
     const [contentLanguagesNumber, setContentLanguagesNumber] = useState(1);
 
-    const [
-        layoutChoicesLocalizedText,
-        setLayoutChoicesLocalizedText
-    ] = useState("");
+    const [layoutChoicesLocalizedText, setLayoutChoicesLocalizedText] =
+        useState("");
 
     function setDropdowns(data: IDropdownData): void {
         setContentLanguagesEnabled(data.contentLanguagesEnabled);

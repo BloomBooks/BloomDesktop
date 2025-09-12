@@ -153,9 +153,8 @@ export class ImpairmentVisualizerControls extends React.Component<
             // For now limit it to these images because the positioning depends
             // on the img being the first thing in its parent and the parent
             // being positioned, which we can't count on for other images.
-            const containers = page.getElementsByClassName(
-                kImageContainerClass
-            );
+            const containers =
+                page.getElementsByClassName(kImageContainerClass);
             // img instanceof HTMLImageElement does not work here, possibly because img belongs to
             // a different iframe, which has its own HTMLImageElement prototype
             if (img) {

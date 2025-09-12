@@ -48,8 +48,7 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
             }
         },
         disabled: {
-            text:
-                "This situation does not happen; we don't language unless they are enabled or required.",
+            text: "This situation does not happen; we don't language unless they are enabled or required.",
             audio: {
                 l10nKey: "PublishTab.AudioLanguage.Disabled"
             }

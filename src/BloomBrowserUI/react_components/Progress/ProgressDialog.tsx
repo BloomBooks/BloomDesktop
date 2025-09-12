@@ -48,12 +48,11 @@ export interface IProgressDialogProps {
     size?: "small"; // For a much smaller dialog, when we only expect a few lines.
 }
 
-export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+export const ProgressDialog: React.FunctionComponent<
+    IProgressDialogProps
+> = props => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
     const {
         onClose: _, // Remove it from propsToPassToBloomDialog, but we don't actually want this variable (causes confusion with props.onClose)
         ...propsToPassToBloomDialog
@@ -64,9 +63,8 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
     const [sawAWarning, setSawAWarning] = useState(false);
     const [sawFatalError, setSawFatalError] = useState(false);
     const [percent, setPercent] = useState(0); // for determinate progress
-    const [messagesForErrorReporting, setMessagesForErrorReporting] = useState(
-        ""
-    );
+    const [messagesForErrorReporting, setMessagesForErrorReporting] =
+        useState("");
     const [messages, setMessages] = React.useState<Array<JSX.Element>>([]);
 
     const [listenerReady, setListenerReady] = useState(false);
@@ -260,8 +258,8 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                             ?.dialogFrameProvidedExternally
                             ? "100%"
                             : props.size === "small"
-                            ? "80px"
-                            : "400px"};
+                              ? "80px"
+                              : "400px"};
                         min-width: ${props.size === "small"
                             ? "250px"
                             : "540px"};
@@ -353,7 +351,9 @@ type IWinFormsProgressDialogProps = Omit<
  * The open state of ProgressDialog is initialized from {dialogEnvironment.initiallyOpen},
  * but then subsequently managed by this component
  */
-export const WinFormsProgressDialog: React.FunctionComponent<IWinFormsProgressDialogProps> = props => {
+export const WinFormsProgressDialog: React.FunctionComponent<
+    IWinFormsProgressDialogProps
+> = props => {
     const [isOpen, setIsOpen] = useState(props.dialogEnvironment.initiallyOpen);
     return (
         <ProgressDialog
@@ -390,14 +390,13 @@ export const EmbeddedProgressDialog: React.FunctionComponent<{
     id: string;
 }> = props => {
     const [isOpen, setIsOpen] = useState(false);
-    const [progressConfig, setProgressConfig] = useState<
-        IEmbeddedProgressDialogConfig
-    >({
-        which: "",
-        // just lets us know something is wrong if it shows up; a real title should
-        // be supplied by the code that causes it to become visible.
-        title: "This should not be seen"
-    });
+    const [progressConfig, setProgressConfig] =
+        useState<IEmbeddedProgressDialogConfig>({
+            which: "",
+            // just lets us know something is wrong if it shows up; a real title should
+            // be supplied by the code that causes it to become visible.
+            title: "This should not be seen"
+        });
     const openProgress = (args: IEmbeddedProgressDialogConfig) => {
         if (args.which !== props.id) {
             return; // message for another progress dialog, typically in another browser instance

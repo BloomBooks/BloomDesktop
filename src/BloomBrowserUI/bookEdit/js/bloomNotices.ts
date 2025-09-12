@@ -17,7 +17,7 @@ export default class BloomNotices {
         );
         $(container)
             .find(".pictureDictionaryPage")
-            .each(function() {
+            .each(function () {
                 $(this).qtipSecondary({
                     content:
                         "<div id='experimentNotice'><img src='/bloom/images/experiment.png'/>" +

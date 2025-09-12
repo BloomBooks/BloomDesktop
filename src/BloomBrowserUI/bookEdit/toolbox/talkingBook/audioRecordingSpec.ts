@@ -331,10 +331,7 @@ describe("audio recording tests", () => {
             expect(spans[1].innerHTML).toBe("This is another");
             expect(div.text()).toBe("This is a sentence. This is another");
             expect(spans.first().attr("id")).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
+                spans.first().next().attr("id")
             );
             expect(spans.first().attr("class")).toBe("audio-sentence");
             expect(spans.last().attr("class")).toBe("audio-sentence");
@@ -358,10 +355,7 @@ describe("audio recording tests", () => {
                 "d15ba5f31fa7c797c093931328581664"
             );
             expect(spans.first().attr("id")).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
+                spans.first().next().attr("id")
             );
             expect(spans.first().attr("class")).toBe("audio-sentence");
             expect(spans.last().attr("class")).toBe("audio-sentence");
@@ -424,23 +418,12 @@ describe("audio recording tests", () => {
             expect(div.text()).toBe(
                 "This is a new sentence. This is a sentence."
             );
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
-            ).toBe("abc"); // with matching md5 id should stay with sentence
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("recordingmd5")
-            ).toBe("d15ba5f31fa7c797c093931328581664");
+            expect(spans.first().next().attr("id")).toBe("abc"); // with matching md5 id should stay with sentence
+            expect(spans.first().next().attr("recordingmd5")).toBe(
+                "d15ba5f31fa7c797c093931328581664"
+            );
             expect(spans.first().attr("id")).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
+                spans.first().next().attr("id")
             );
             expect(spans.first().attr("class")).toBe("audio-sentence");
             expect(spans.last().attr("class")).toBe("audio-sentence");
@@ -464,62 +447,24 @@ describe("audio recording tests", () => {
                 "This is the first sentence. This is inserted. This is a sentence. Inserted after."
             );
             expect(spans.first().attr("id")).toBe("abcd"); // with matching md5 id should stay with sentence
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .next()
-                    .attr("id")
-            ).toBe("abc"); // with matching md5 id should stay with sentence
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .next()
-                    .attr("recordingmd5")
-            ).toBe("d15ba5f31fa7c797c093931328581664");
+            expect(spans.first().next().next().attr("id")).toBe("abc"); // with matching md5 id should stay with sentence
+            expect(spans.first().next().next().attr("recordingmd5")).toBe(
+                "d15ba5f31fa7c797c093931328581664"
+            );
             // The first span is reused just by position, since its md5 doesn't match, but it should still keep it.
             expect(spans.first().attr("recordingmd5")).toBe("qed");
             expect(spans.first().attr("id")).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
+                spans.first().next().attr("id")
             );
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
-            ).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .next()
-                    .attr("id")
+            expect(spans.first().next().attr("id")).not.toBe(
+                spans.first().next().next().attr("id")
             );
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .next()
-                    .attr("id")
-            ).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .next()
-                    .next()
-                    .attr("id")
+            expect(spans.first().next().next().attr("id")).not.toBe(
+                spans.first().next().next().next().attr("id")
             );
             expect(spans.first().attr("class")).toBe("audio-sentence");
             expect(spans.last().attr("class")).toBe("audio-sentence");
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("class")
-            ).toBe("audio-sentence");
+            expect(spans.first().next().attr("class")).toBe("audio-sentence");
         });
 
         // We can get something like this when we paste from Word
@@ -563,29 +508,15 @@ describe("audio recording tests", () => {
             // Should have removed the outer span and left the two inner ones and added a third one.
             expect(spans.length).toBe(3);
             expect(spans.first().attr("id")).toBe("abcd");
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
-            ).toBe("abde");
+            expect(spans.first().next().attr("id")).toBe("abde");
             expect(spans[0].innerHTML).toBe("This is the first.");
             expect(spans[1].innerHTML).toBe("This is the second.");
             expect(spans[2].innerHTML).toBe("This is the third.");
             expect(spans.first().attr("class")).toBe("audio-sentence");
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("class")
-            ).toBe("audio-sentence");
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .next()
-                    .attr("class")
-            ).toBe("audio-sentence");
+            expect(spans.first().next().attr("class")).toBe("audio-sentence");
+            expect(spans.first().next().next().attr("class")).toBe(
+                "audio-sentence"
+            );
         });
 
         it("does not create nested spans", () => {
@@ -620,12 +551,7 @@ describe("audio recording tests", () => {
                 "Another sentence <u><strong>boldunderlined</strong></u> finish the second."
             );
             expect(spans.first().attr("class")).toBe("audio-sentence");
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("class")
-            ).toBe("audio-sentence");
+            expect(spans.first().next().attr("class")).toBe("audio-sentence");
         });
 
         it("handles hyperlinks", () => {
@@ -647,10 +573,7 @@ describe("audio recording tests", () => {
                 "This is a link. This is another. Click them."
             );
             expect(spans.first().attr("id")).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
+                spans.first().next().attr("id")
             );
             expect(spans.first().attr("class")).toBe("audio-sentence");
             expect(spans.last().attr("class")).toBe("audio-sentence");
@@ -684,9 +607,7 @@ describe("audio recording tests", () => {
                 "number of spans does not match expected count"
             );
 
-            const parent = $("<div>")
-                .append(div)
-                .clone();
+            const parent = $("<div>").append(div).clone();
 
             const divs = parent.find("div");
             expect(divs.length).toBe(
@@ -773,9 +694,7 @@ describe("audio recording tests", () => {
             const spans = div.find("span");
             expect(spans.length).toBe(0, "number of spans");
 
-            const parent = $("<div>")
-                .append(div)
-                .clone();
+            const parent = $("<div>").append(div).clone();
             expect(StripAllGuidIds(StripEmptyClasses(parent.html()))).toBe(
                 '<div class="bloom-editable audio-sentence" data-audiorecordingmode="TextBox"><p>Hello world</p>' +
                     formatButtonHtml +
@@ -848,9 +767,7 @@ describe("audio recording tests", () => {
 
             expect(div.text()).toBe("Hello world", "div text");
 
-            const parent = $("<div>")
-                .append(div)
-                .clone();
+            const parent = $("<div>").append(div).clone();
             expect(StripAllGuidIds(StripEmptyClasses(parent.html()))).toBe(
                 '<div class="bloom-editable audio-sentence" role="textbox" data-audiorecordingmode="TextBox"><p>Hello world</p>' +
                     formatButtonHtml +
@@ -911,9 +828,7 @@ describe("audio recording tests", () => {
                 RecordingMode.Sentence
             );
 
-            const parent = $("<div>")
-                .append(div)
-                .clone();
+            const parent = $("<div>").append(div).clone();
 
             const spans = parent.find("span");
             expect(spans.length).toBe(1, "number of spans");
@@ -946,9 +861,7 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
             recording.makeAudioSentenceElementsTest(div, RecordingMode.TextBox);
 
-            let parent = $("<div>")
-                .append(div)
-                .clone();
+            let parent = $("<div>").append(div).clone();
 
             const spans = parent.find("span");
             expect(spans.length).toBe(0, "number of spans");
@@ -1012,9 +925,7 @@ describe("audio recording tests", () => {
                 div,
                 RecordingMode.Sentence
             );
-            parent = $("<div>")
-                .append(div)
-                .clone();
+            parent = $("<div>").append(div).clone();
             expect(StripAllGuidIds(StripEmptyClasses(parent.html()))).toBe(
                 StripAllGuidIds(
                     StripEmptyClasses(StripAudioCurrent(originalHtml))
@@ -1077,9 +988,7 @@ describe("audio recording tests", () => {
                 );
             });
 
-            let parentDiv = $("<div>")
-                .append(div)
-                .clone();
+            let parentDiv = $("<div>").append(div).clone();
             const expectedTextBoxDiv = $(textBoxDivHtml)
                 .attr("data-audiorecordingmode", "Sentence")
                 .removeClass("audio-sentence")
@@ -1121,9 +1030,7 @@ describe("audio recording tests", () => {
             recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
             recording.makeAudioSentenceElementsTest(div, RecordingMode.TextBox);
-            parentDiv = $("<div>")
-                .append(div)
-                .clone();
+            parentDiv = $("<div>").append(div).clone();
             expect(StripAllGuidIds(StripEmptyClasses(parentDiv.html()))).toBe(
                 StripAllGuidIds(
                     StripEmptyClasses(StripAudioCurrent(originalHtml))
@@ -1150,9 +1057,7 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
             recording.makeAudioSentenceElementsTest(div, RecordingMode.TextBox);
 
-            const parent = $("<div>")
-                .append(div)
-                .clone();
+            const parent = $("<div>").append(div).clone();
             expect(parent.html()).toBe(
                 originalHtml,
                 "re-load identical content test"
@@ -1174,9 +1079,7 @@ describe("audio recording tests", () => {
                 "Paragraph 1A. Paragraph 1B.Paragraph 2A. Paragraph 2B.",
                 "div text"
             );
-            const parent = $("<div>")
-                .append(div)
-                .clone();
+            const parent = $("<div>").append(div).clone();
             expect(StripAllGuidIds(StripEmptyClasses(parent.html()))).toBe(
                 '<div class="bloom-editable audio-sentence" data-audiorecordingmode="TextBox">' +
                     textBoxInnerHtml +
@@ -1208,9 +1111,7 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
             recording.makeAudioSentenceElementsTest(div, RecordingMode.TextBox);
 
-            const parent = $("<div>")
-                .append(div)
-                .clone();
+            const parent = $("<div>").append(div).clone();
             const expectedAudioRun1Html =
                 "<p>Paragraph 1A. Paragraph 1B.<br></p><p>Paragraph 2A. Paragraph 2B.<br></p>";
             const expectedAudioRun2Html =
@@ -1744,7 +1645,8 @@ describe("audio recording tests", () => {
         );
 
         const recording = new AudioRecording();
-        const returnedFragmentIds: AudioTextFragment[] = recording.extractFragmentsAndSetSpanIdsForAudioSegmentation();
+        const returnedFragmentIds: AudioTextFragment[] =
+            recording.extractFragmentsAndSetSpanIdsForAudioSegmentation();
 
         expect(returnedFragmentIds.length).toBe(2);
         for (let i = 0; i < returnedFragmentIds.length; ++i) {
@@ -1763,7 +1665,8 @@ describe("audio recording tests", () => {
 
         const recording = new AudioRecording();
         recording.recordingMode = RecordingMode.TextBox;
-        const returnedFragmentIds: AudioTextFragment[] = recording.extractFragmentsAndSetSpanIdsForAudioSegmentation();
+        const returnedFragmentIds: AudioTextFragment[] =
+            recording.extractFragmentsAndSetSpanIdsForAudioSegmentation();
 
         expect(
             Object.keys(recording.__testonly__sentenceToIdListMap).length

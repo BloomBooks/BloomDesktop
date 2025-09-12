@@ -31,14 +31,15 @@ DIV.bloom-frontMatter *.bloom-translationGroup textarea:not([lang="en"])
 }
 .bloom-trilingual
     *.bloom-translationGroup
-    div.bloom-editable:not(.bloom-content1):not(.bloom-content2):not(.bloom-content3),
+    div.bloom-editable:not(.bloom-content1):not(.bloom-content2):not(
+        .bloom-content3
+    ),
 .bloom-trilingual
     *.bloom-translationGroup
     textarea:not(.bloom-content1):not(.bloom-content2):not(.bloom-content3) {
     display: none !important;
 }
 
-*[lang="N2"] /* anything left with an N2, well we dont' have a language for it */
- {
+*[lang="N2"] /* anything left with an N2, well we dont' have a language for it */ {
     display: none !important;
 }

@@ -23,11 +23,8 @@ import { useEventLaunchedBloomDialog } from "../../react_components/BloomDialog/
 import { WarningBox } from "../../react_components/boxes";
 
 export const SpreadsheetExportDialogLauncher: React.FunctionComponent = () => {
-    const {
-        openingEvent,
-        closeDialog,
-        propsForBloomDialog
-    } = useEventLaunchedBloomDialog("SpreadsheetExportDialog");
+    const { openingEvent, closeDialog, propsForBloomDialog } =
+        useEventLaunchedBloomDialog("SpreadsheetExportDialog");
 
     // We extract the core here so that we can avoid running most of the hook code when this dialog is not visible.
     return propsForBloomDialog.open ? (

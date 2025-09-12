@@ -40,8 +40,8 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     );
     const [reload, setReload] = useState(0);
     const [reloadStatus, setReloadStatus] = useState(0);
-    const tierAllowsViewHistory = useGetFeatureStatus("viewBookHistory")
-        ?.enabled;
+    const tierAllowsViewHistory =
+        useGetFeatureStatus("viewBookHistory")?.enabled;
     // Force a reload when told the book changed, even if it's the same book [id]
     useSubscribeToWebSocketForEvent("bookContent", "reload", () =>
         setReload(old => old + 1)
@@ -255,8 +255,9 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
             </div>
             {selectedBookId && (
                 <iframe
-                    src={`/book-preview/index.htm?dummy=${selectedBookId +
-                        reload}`}
+                    src={`/book-preview/index.htm?dummy=${
+                        selectedBookId + reload
+                    }`}
                     height="100%"
                     width="100%"
                     css={css`
@@ -323,9 +324,9 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                         height: 100%;
                         width: calc(100% - 20px);
                         z-index: 10;
-                        pointer-events: ${
-                            props.disableEventsInIframe ? "auto" : "none"
-                        };
+                        pointer-events: ${props.disableEventsInIframe
+                            ? "auto"
+                            : "none"};
 
                         /* by subtly darkening the iframe when the mouse moves over it and setting
                     // the not-allowed cursor, we give the user a hint that this is not where to edit.
@@ -374,15 +375,17 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 )}
                 {editOrMakeProgress}
             </div>
-            {// Currently, canMakeBook is a synonym for 'book is not in the current TC'
-            // If that stops being true we might need another more specialized status flag.
-            isTeamCollection && !canMakeBook ? (
-                <div id="teamCollection">
-                    <TeamCollectionBookStatusPanel
-                        {...bookTeamCollectionStatus}
-                    />
-                </div>
-            ) : null}
+            {
+                // Currently, canMakeBook is a synonym for 'book is not in the current TC'
+                // If that stops being true we might need another more specialized status flag.
+                isTeamCollection && !canMakeBook ? (
+                    <div id="teamCollection">
+                        <TeamCollectionBookStatusPanel
+                            {...bookTeamCollectionStatus}
+                        />
+                    </div>
+                ) : null
+            }
         </div>
     );
 };

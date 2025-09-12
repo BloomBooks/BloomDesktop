@@ -60,7 +60,7 @@ function isEmpty(el) {
 }
 function setupLayoutMode() {
     theOneCanvasElementManager.suspendComicEditing("forTool");
-    $(".split-pane-component-inner").each(function(): boolean {
+    $(".split-pane-component-inner").each(function (): boolean {
         const $this = $(this);
         if ($this.find(".split-pane").length) {
             // This is an unexpected situation, probably caused by using a broken version of the
@@ -88,9 +88,7 @@ function setupLayoutMode() {
     $(".bloom-editable[contentEditable=true]").removeAttr("contentEditable");
     // Images cannot be changed (other than growing/shrinking with their containing bloom-canvas) in layout mode
     // I'm not sure these handlers still do anything we wouldn't want in layout mode, but leaving the code just in case.
-    $(".bloom-canvas")
-        .off("mouseenter")
-        .off("mouseleave");
+    $(".bloom-canvas").off("mouseenter").off("mouseleave");
     // Attaching to html allows it to work even if nothing has focus.
     $("html").on("keydown.origami", e => {
         if (e.keyCode === 89 && e.ctrlKey) {
@@ -135,7 +133,7 @@ function layoutToggleClickHandler() {
         // Hook up TextBoxProperties dialog to each text box (via its origami overlay)
         const dialog = GetTextBoxPropertiesDialog();
         const overlays = marginBox.find(".textBox-identifier");
-        overlays.each(function() {
+        overlays.each(function () {
             dialog.AttachToBox(this); // put the gear button in each text box identifier div
         });
     } else {
@@ -447,10 +445,7 @@ function createTypeSelectors(includeWidget: boolean) {
             .append(space)
             .append(htmlWidgetLink);
     } else {
-        links
-            .append(orDiv)
-            .append(space)
-            .append(textLink);
+        links.append(orDiv).append(space).append(textLink);
     }
     return $(
         "<div class='container-selector-links bloom-ui origami-ui'></div>"
@@ -481,13 +476,11 @@ function makeTextFieldClickHandler(e) {
     );
     $(translationGroup).addClass("normal-style"); // replaces above to make new text boxes normal
     container.append(translationGroup).append(getTextBoxIdentifier());
-    $(this)
-        .closest(".selector-links")
-        .remove();
+    $(this).closest(".selector-links").remove();
     // hook up TextBoxProperties dialog to this new Text Box (via its origami overlay)
     const dialog = GetTextBoxPropertiesDialog();
     const overlays = container.find(".textBox-identifier");
-    overlays.each(function() {
+    overlays.each(function () {
         dialog.AttachToBox(this);
     });
 }
@@ -504,9 +497,7 @@ function makePictureFieldClickHandler(e) {
     bloomCanvas.append(image);
     SetupImage(image); // Must attach it first so event handler gets added to parent
     container.append(bloomCanvas);
-    $(this)
-        .closest(".selector-links")
-        .remove();
+    $(this).closest(".selector-links").remove();
 }
 
 function makeVideoFieldClickHandler(e) {
@@ -522,9 +513,7 @@ function makeVideoFieldClickHandler(e) {
     // everywhere, this one is only meant to be around when needed. This call asks the server to make
     // sure it is present in the book folder.
     post("edit/pageControls/requestVideoPlaceHolder");
-    $(this)
-        .closest(".selector-links")
-        .remove();
+    $(this).closest(".selector-links").remove();
 }
 
 function makeHtmlWidgetFieldClickHandler(e) {
@@ -540,7 +529,5 @@ function makeHtmlWidgetFieldClickHandler(e) {
     // everywhere, this one is only meant to be around when needed. This call asks the server to make
     // sure it is present in the book folder.
     post("edit/pageControls/requestWidgetPlaceHolder");
-    $(this)
-        .closest(".selector-links")
-        .remove();
+    $(this).closest(".selector-links").remove();
 }

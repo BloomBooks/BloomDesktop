@@ -98,15 +98,15 @@ export default class TalkingBookTool implements ITool {
                     {
                         const originalText = node.textContent;
                         if (originalText?.includes("|")) {
-                            const matches = originalText.match(
-                                /(([^\|]+)|(\|))/g
-                            );
+                            const matches =
+                                originalText.match(/(([^\|]+)|(\|))/g);
                             if (matches && matches.length > 0) {
                                 const newNodes = matches.map(val => {
                                     if (val === "|") {
-                                        const newSpan = page.ownerDocument.createElement(
-                                            "span"
-                                        );
+                                        const newSpan =
+                                            page.ownerDocument.createElement(
+                                                "span"
+                                            );
                                         newSpan.classList.add(
                                             "bloom-audio-split-marker"
                                         );

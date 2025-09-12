@@ -428,9 +428,11 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     );
 };
 
-const VideoFormatItem: React.FunctionComponent<IFormatItem & {
-    disabled: boolean;
-}> = props => {
+const VideoFormatItem: React.FunctionComponent<
+    IFormatItem & {
+        disabled: boolean;
+    }
+> = props => {
     const id = "mouse-over-popover-" + props.format;
 
     return (

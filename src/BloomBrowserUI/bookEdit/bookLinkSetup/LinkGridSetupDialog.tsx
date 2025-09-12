@@ -35,14 +35,11 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
     initialLinks: Link[];
     setLinksCallback: (links: Link[]) => void;
 }> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog({
-        initiallyOpen: true,
-        dialogFrameProvidedExternally: false
-    });
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog({
+            initiallyOpen: true,
+            dialogFrameProvidedExternally: false
+        });
 
     const dialogTitle = useL10n("Link Grid Setup", "LinkGridSetup.Title");
 

@@ -315,9 +315,8 @@ export default class AudioRecording implements IAudioRecorder {
         toastr.options.timeOut = 10000;
         toastr.options.preventDuplicates = true;
 
-        this.wholeTextBoxAudioFeatureStatus = await getFeatureStatusAsync(
-            "WholeTextBoxAudio"
-        );
+        this.wholeTextBoxAudioFeatureStatus =
+            await getFeatureStatusAsync("WholeTextBoxAudio");
 
         return this.pullDefaultRecordingModeAsync();
     }
@@ -349,9 +348,10 @@ export default class AudioRecording implements IAudioRecorder {
             }
 
             const axiosResponse = result as AxiosResponse<any>;
-            this.cachedCollectionDefaultRecordingMode = AudioRecording.getAudioRecordingModeWithDefaultFromString(
-                axiosResponse.data
-            );
+            this.cachedCollectionDefaultRecordingMode =
+                AudioRecording.getAudioRecordingModeWithDefaultFromString(
+                    axiosResponse.data
+                );
         } catch {
             // The Bloom API call might not succeed... especially in the unit tests.
             // If so, just fallback to some reasonable default instead. Instead of propagating an error.
@@ -391,9 +391,10 @@ export default class AudioRecording implements IAudioRecorder {
                 "data-audiorecordingmode"
             );
 
-            const recordingMode = AudioRecording.getAudioRecordingModeFromString(
-                audioRecordingModeStr
-            );
+            const recordingMode =
+                AudioRecording.getAudioRecordingModeFromString(
+                    audioRecordingModeStr
+                );
             if (recordingMode !== RecordingMode.Unknown) {
                 return recordingMode;
             }
@@ -406,13 +407,15 @@ export default class AudioRecording implements IAudioRecorder {
             );
             if (firstWithRecordingMode) {
                 // For a text box that doesn't already have mode specified, first fallback is to make it the same as another text box on the page that does have it
-                const audioRecordingModeStr = firstWithRecordingMode.getAttribute(
-                    "data-audiorecordingmode"
-                );
+                const audioRecordingModeStr =
+                    firstWithRecordingMode.getAttribute(
+                        "data-audiorecordingmode"
+                    );
 
-                const recordingMode = AudioRecording.getAudioRecordingModeFromString(
-                    audioRecordingModeStr
-                );
+                const recordingMode =
+                    AudioRecording.getAudioRecordingModeFromString(
+                        audioRecordingModeStr
+                    );
                 if (recordingMode != RecordingMode.Unknown) {
                     return recordingMode;
                 }
@@ -882,9 +885,8 @@ export default class AudioRecording implements IAudioRecorder {
             return nextTextBox;
         } else {
             // That is, NextRecordingMode = Sentence
-            const nextDivAudioSegments = this.getAudioSegmentsWithinElement(
-                nextTextBox
-            );
+            const nextDivAudioSegments =
+                this.getAudioSegmentsWithinElement(nextTextBox);
             if (nextDivAudioSegments.length <= 0) {
                 return null;
             }
@@ -907,9 +909,8 @@ export default class AudioRecording implements IAudioRecorder {
 
     private removeAudioCurrent(parentElement: Element) {
         // Note that HTMLCollectionOf's length can change if you change the number of elements matching the selector.
-        const audioCurrentCollection: HTMLCollectionOf<Element> = parentElement.getElementsByClassName(
-            kAudioCurrent
-        );
+        const audioCurrentCollection: HTMLCollectionOf<Element> =
+            parentElement.getElementsByClassName(kAudioCurrent);
 
         // Convert to an array whose length won't be changed
         const audioCurrentArray: Element[] = Array.from(audioCurrentCollection);
@@ -1021,9 +1022,8 @@ export default class AudioRecording implements IAudioRecorder {
                 // has a background color, so (due to the bug) it cannot have position:relative,
                 // or we lose the cursor. So insert an empty element (which by default will have
                 // position: relative) to hold the icon.
-                const iconHolder = newElement.ownerDocument.createElement(
-                    "span"
-                );
+                const iconHolder =
+                    newElement.ownerDocument.createElement("span");
                 iconHolder.classList.add("bloom-ui-current-audio-marker");
                 iconHolder.classList.add("bloom-ui"); // makes sure it never becomes part of saved document.
                 // If we're recording by text-box, we want the icon to be at the beginning of the text box,
@@ -1096,9 +1096,8 @@ export default class AudioRecording implements IAudioRecorder {
         // Adjust the audio file that will get played by the Play (Check) button.
         // Note: The next element to be PLAYED may not be the same as the new element with the current RECORDING highlight.
         //       The element to be played might be a strict child of the element to be recorded.
-        const firstAudioSentence = this.getFirstAudioSentenceWithinElement(
-            element
-        );
+        const firstAudioSentence =
+            this.getFirstAudioSentenceWithinElement(element);
         let id: string;
         if (firstAudioSentence) {
             id = firstAudioSentence.id;
@@ -1195,9 +1194,8 @@ export default class AudioRecording implements IAudioRecorder {
     private getCurrentAudioId(): string | undefined {
         let id: string | undefined = undefined;
         const pageDocBody = this.getPageDocBody();
-        const audioCurrentElements = pageDocBody!.getElementsByClassName(
-            kAudioCurrent
-        );
+        const audioCurrentElements =
+            pageDocBody!.getElementsByClassName(kAudioCurrent);
         let currentElement: Element | null = null;
         if (audioCurrentElements.length > 0) {
             currentElement = audioCurrentElements.item(0);
@@ -1331,9 +1329,8 @@ export default class AudioRecording implements IAudioRecorder {
             ++divAudioSentenceCount;
         }
 
-        const audioSentenceCollection = textBox.getElementsByClassName(
-            kAudioSentence
-        );
+        const audioSentenceCollection =
+            textBox.getElementsByClassName(kAudioSentence);
 
         for (let i = 0; i < audioSentenceCollection.length; ++i) {
             const audioSentenceElement = audioSentenceCollection.item(i);
@@ -1392,9 +1389,8 @@ export default class AudioRecording implements IAudioRecorder {
         if (this.recordingMode == RecordingMode.TextBox) {
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
-                const audioSegments = this.getAudioSegmentsWithinElement(
-                    currentTextBox
-                );
+                const audioSegments =
+                    this.getAudioSegmentsWithinElement(currentTextBox);
 
                 if (audioSegments && audioSegments.length > 0) {
                     // This text box is in 4.5 Format (Hard Split) where it contains audio-sentence elements within it
@@ -1455,9 +1451,10 @@ export default class AudioRecording implements IAudioRecorder {
             }
 
             await this.setSoundAndHighlightAsync({
-                newElement: this.elementsToPlayConsecutivelyStack[
-                    this.elementsToPlayConsecutivelyStack.length - 1
-                ],
+                newElement:
+                    this.elementsToPlayConsecutivelyStack[
+                        this.elementsToPlayConsecutivelyStack.length - 1
+                    ],
                 shouldScrollToElement: true,
                 suppressHighlightIfNoAudio: true
             });
@@ -1618,9 +1615,8 @@ export default class AudioRecording implements IAudioRecorder {
             mediaPlayer.currentTime;
 
         // Peek at the next sentence and see if we're ready to start that one. (We might not be ready to play the next audio if the current audio got paused).
-        const subElementWithTiming = this.subElementsWithTimings[
-            subElementCount - 1
-        ];
+        const subElementWithTiming =
+            this.subElementsWithTimings[subElementCount - 1];
         const nextStartTimeInSecs = subElementWithTiming[1];
 
         if (
@@ -1657,9 +1653,8 @@ export default class AudioRecording implements IAudioRecorder {
         if (stackSize === 0) {
             return;
         }
-        const firstElementToPlay = this.elementsToPlayConsecutivelyStack[
-            stackSize - 1
-        ]; // Remember to pop it when you're done playing it. (i.e., in playEnded)
+        const firstElementToPlay =
+            this.elementsToPlayConsecutivelyStack[stackSize - 1]; // Remember to pop it when you're done playing it. (i.e., in playEnded)
 
         await this.setSoundAndHighlightAsync({
             newElement: firstElementToPlay,
@@ -1686,9 +1681,8 @@ export default class AudioRecording implements IAudioRecorder {
             const newStackCount = this.elementsToPlayConsecutivelyStack.length;
             if (newStackCount > 0) {
                 // More items to play
-                const nextElement = this.elementsToPlayConsecutivelyStack[
-                    newStackCount - 1
-                ];
+                const nextElement =
+                    this.elementsToPlayConsecutivelyStack[newStackCount - 1];
                 await this.setSoundAndHighlightAsync({
                     newElement: nextElement,
                     shouldScrollToElement: true,
@@ -1772,9 +1766,7 @@ export default class AudioRecording implements IAudioRecorder {
                     "$1"
                 );
                 //make what's left safe for html
-                label = $("<div>")
-                    .text(label)
-                    .html();
+                label = $("<div>").text(label).html();
                 // preserve the product name, which is the id we will send back if they choose it
                 const menuItem = devList.append(
                     '<li data-choice="' + i + '">' + label + "</li>"
@@ -1783,7 +1775,7 @@ export default class AudioRecording implements IAudioRecorder {
             (<any>devList)
                 .one(
                     "click",
-                    function(event) {
+                    function (event) {
                         devList.hide();
                         const choice = $(event.target).data("choice");
                         axios
@@ -2016,9 +2008,10 @@ export default class AudioRecording implements IAudioRecorder {
             const currentTranslationGroup = translationGroups[i];
             const newDiv = `<div class="bloom-ui ${kPlaybackOrderContainerClass}"></div>`;
             currentTranslationGroup.insertAdjacentHTML("afterbegin", newDiv);
-            const containerDivs = currentTranslationGroup.parentElement!.getElementsByClassName(
-                kPlaybackOrderContainerClass
-            );
+            const containerDivs =
+                currentTranslationGroup.parentElement!.getElementsByClassName(
+                    kPlaybackOrderContainerClass
+                );
             if (containerDivs.length !== 1) {
                 continue; // paranoia, we just put it there!
             }
@@ -2026,9 +2019,8 @@ export default class AudioRecording implements IAudioRecorder {
             if (containerDiv === null) {
                 continue; // paranoia, we just put it there!
             }
-            const existingTabindex = currentTranslationGroup.getAttribute(
-                "tabindex"
-            );
+            const existingTabindex =
+                currentTranslationGroup.getAttribute("tabindex");
             this.playbackOrderCache.push({
                 containerDiv: containerDiv,
                 sourceTranslationGroup: currentTranslationGroup,
@@ -2365,9 +2357,8 @@ export default class AudioRecording implements IAudioRecorder {
             if (element.classList.contains(kAudioSentence)) {
                 audioSegments.push(element);
             } else {
-                const collection = element.getElementsByClassName(
-                    kAudioSentence
-                );
+                const collection =
+                    element.getElementsByClassName(kAudioSentence);
                 for (let i = 0; i < collection.length; ++i) {
                     const audioSentenceElement = collection.item(i);
                     if (audioSentenceElement) {
@@ -2383,9 +2374,8 @@ export default class AudioRecording implements IAudioRecorder {
     // Returns a list of the audio segments (those with class "audio-sentence") in the text box (definitely a div) corresponding to the currently highlighted element (not necessariliy a div)
     public getAudioSegmentsInCurrentTextBox(): Element[] {
         const currentTextBox = this.getCurrentTextBox();
-        const audioSegments = this.getAudioSegmentsWithinElement(
-            currentTextBox
-        );
+        const audioSegments =
+            this.getAudioSegmentsWithinElement(currentTextBox);
         return audioSegments;
     }
 
@@ -2402,9 +2392,11 @@ export default class AudioRecording implements IAudioRecorder {
             return null;
         }
 
-        let audioCurrentElements = (Array.from(
-            pageBody.getElementsByClassName(kAudioCurrent)
-        ) as HTMLElement[]).filter(x => this.isVisible(x));
+        let audioCurrentElements = (
+            Array.from(
+                pageBody.getElementsByClassName(kAudioCurrent)
+            ) as HTMLElement[]
+        ).filter(x => this.isVisible(x));
 
         if (audioCurrentElements.length === 0 && maySetHighlight) {
             // Oops, ui-audioCurrent not set on anything. Just going to have to stick it onto the first element.
@@ -2441,9 +2433,8 @@ export default class AudioRecording implements IAudioRecorder {
             return null;
         }
 
-        const audioCurrentElements = pageBody.getElementsByClassName(
-            kAudioCurrent
-        );
+        const audioCurrentElements =
+            pageBody.getElementsByClassName(kAudioCurrent);
 
         if (audioCurrentElements.length === 0) {
             return null;
@@ -2466,9 +2457,8 @@ export default class AudioRecording implements IAudioRecorder {
             return null;
         }
 
-        const audioCurrentElements = pageBody.getElementsByClassName(
-            kAudioCurrent
-        );
+        const audioCurrentElements =
+            pageBody.getElementsByClassName(kAudioCurrent);
 
         if (audioCurrentElements.length === 0) {
             // Oops, ui-audioCurrent not set on anything. Just give up.
@@ -2791,9 +2781,8 @@ export default class AudioRecording implements IAudioRecorder {
         // Because the user has edited the document, any existing recordings are suspect.
         // Although some might still be useful, and some may survive, we think at this point it is more important
         // that the markup is consistent with the current text in preparation for updating the recordings to match.
-        const updateTheElement = await this.tryGetUpdateMarkupForTextBoxActionAsync(
-            currentTextBox
-        );
+        const updateTheElement =
+            await this.tryGetUpdateMarkupForTextBoxActionAsync(currentTextBox);
 
         return async () => {
             updateTheElement();
@@ -2822,7 +2811,8 @@ export default class AudioRecording implements IAudioRecorder {
         const currentTextBox = this.getCurrentTextBox();
         let selectedTextBox: HTMLElement | null;
         try {
-            selectedTextBox = await this.getWhichTextBoxShouldReceiveHighlightAsync();
+            selectedTextBox =
+                await this.getWhichTextBoxShouldReceiveHighlightAsync();
         } catch {
             // Don't bother moving it if there's any errors from awaiting it
             return false;
@@ -2983,9 +2973,8 @@ export default class AudioRecording implements IAudioRecorder {
         if (!pageDocBody) {
             return;
         }
-        const audioCurrentList = pageDocBody.getElementsByClassName(
-            kAudioCurrent
-        );
+        const audioCurrentList =
+            pageDocBody.getElementsByClassName(kAudioCurrent);
 
         if (isEarlyAbortEnabled && audioCurrentList.length >= 1) {
             // audioCurrent highlight is already working, so don't bother trying to fix anything up.
@@ -3033,9 +3022,8 @@ export default class AudioRecording implements IAudioRecorder {
             // The element itself is already an audio-sentence. Easy, just use itself.
             changeTo = element;
         } else {
-            const sentencesWithinCurrentElement = element.getElementsByClassName(
-                kAudioSentence
-            );
+            const sentencesWithinCurrentElement =
+                element.getElementsByClassName(kAudioSentence);
             if (sentencesWithinCurrentElement.length > 0) {
                 changeTo = sentencesWithinCurrentElement.item(0);
             } else {
@@ -3084,7 +3072,8 @@ export default class AudioRecording implements IAudioRecorder {
         if (!pageDocBody) {
             return null;
         }
-        const activeCanvasElement = getCanvasElementManager()?.getActiveElement();
+        const activeCanvasElement =
+            getCanvasElementManager()?.getActiveElement();
         if (activeCanvasElement) {
             // Stop if this appears to be a recursive call. See BL-14898.
             if (activeCanvasElement !== this.canvasElementBeingHighlighted) {
@@ -3110,9 +3099,8 @@ export default class AudioRecording implements IAudioRecorder {
         let nextHighlight: Element = firstSentence;
         const textBoxOfFirst = this.getTextBoxOfElement(firstSentence);
         if (textBoxOfFirst) {
-            const textBoxRecordingMode = this.getRecordingModeOfTextBox(
-                textBoxOfFirst
-            );
+            const textBoxRecordingMode =
+                this.getRecordingModeOfTextBox(textBoxOfFirst);
             if (textBoxRecordingMode === RecordingMode.TextBox) {
                 nextHighlight = textBoxOfFirst;
             }
@@ -3389,7 +3377,7 @@ export default class AudioRecording implements IAudioRecorder {
         //  TODO: Shouldn't re-use audio if the text box has a different lang associated. "Jesus" pronounced differently in differently langs.
         const reuse: any[] = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
         // If caller has manually specified a custom ID list, then let's say (for now) that we won't allow IDs to be re-used
-        markedSentences.each(function(index) {
+        markedSentences.each(function (index) {
             reuse.push({
                 id: $(this).attr("id"),
                 md5: $(this).attr("recordingmd5")
@@ -3397,9 +3385,8 @@ export default class AudioRecording implements IAudioRecorder {
             $(this).replaceWith($(this).contents()); // strip out the audio-sentence wrapper so we can re-partition.
         });
 
-        const htmlFragments = AudioRecording.elementToSentencesWithCleanup(
-            copy
-        );
+        const htmlFragments =
+            AudioRecording.elementToSentencesWithCleanup(copy);
         let textFragments: TextFragment[] | null = this.stringToSentences(
             elt.text()
         );
@@ -3730,9 +3717,8 @@ export default class AudioRecording implements IAudioRecorder {
     ): void {
         // This var is true if the Currently Highlighted Element contains audio
         // (If RecordingMode=TextBox but PlaybackMode=Sentence, this means if any of the sentences of the currently highlighted element contain audio)
-        const doesElementAudioExist: boolean = AudioRecording.DoesNarrationExist(
-            elementResponse
-        );
+        const doesElementAudioExist: boolean =
+            AudioRecording.DoesNarrationExist(elementResponse);
 
         // Clear and Play (Check) buttons
         if (doesElementAudioExist) {
@@ -3864,9 +3850,8 @@ export default class AudioRecording implements IAudioRecorder {
             // Convert names from PascalCase to camelCase.
             // The enum uses PascalCase, but the CSS uses camelCase
             const statusString: string = Status[to];
-            const className: string = AudioRecording.ToCamelCaseFromPascalCase(
-                statusString
-            );
+            const className: string =
+                AudioRecording.ToCamelCaseFromPascalCase(statusString);
             buttonElement.classList.add(className);
         }
 
@@ -3995,7 +3980,8 @@ export default class AudioRecording implements IAudioRecorder {
             return undefined;
         }
 
-        const fragmentIdTuples = this.extractFragmentsAndSetSpanIdsForAudioSegmentation();
+        const fragmentIdTuples =
+            this.extractFragmentsAndSetSpanIdsForAudioSegmentation();
 
         if (fragmentIdTuples.length > 0) {
             const inputParameters = {
@@ -4045,9 +4031,8 @@ export default class AudioRecording implements IAudioRecorder {
     public extractFragmentsAndSetSpanIdsForAudioSegmentation(): AudioTextFragment[] {
         const currentText = this.getCurrentText();
 
-        const textFragments: TextFragment[] = this.stringToSentences(
-            currentText
-        );
+        const textFragments: TextFragment[] =
+            this.stringToSentences(currentText);
 
         // Note: We will just create all new IDs for this. Which I think is reasonable.
         // If splitting the audio file, reusing audio recorded from by-sentence mode is probably less smooth.
@@ -4232,7 +4217,8 @@ export default class AudioRecording implements IAudioRecorder {
     public autoSegmentBasedOnTextLength(): number[] {
         const currentTextBox = this.getCurrentTextBox();
         if (!currentTextBox) return [];
-        const segments = this.extractFragmentsAndSetSpanIdsForAudioSegmentation();
+        const segments =
+            this.extractFragmentsAndSetSpanIdsForAudioSegmentation();
         // Generate crude estimate of audio lengths based on text lengths and total time,
         // which should be known if we have an audio recording to adjust at all.
         const durationText = currentTextBox.getAttribute("data-duration");
@@ -4300,15 +4286,13 @@ export default class AudioRecording implements IAudioRecorder {
     private updatePlaybackModeToTextBox() {
         const currentTextBox = this.getCurrentTextBox();
         if (currentTextBox) {
-            const audioSentencesInCurrentBox = currentTextBox.getElementsByClassName(
-                kAudioSentence
-            );
+            const audioSentencesInCurrentBox =
+                currentTextBox.getElementsByClassName(kAudioSentence);
             // Careful! The HTMLCollection can be dynamically modified as you iterate it (and remove classes from it).
             let collectionIndex = 0;
             while (audioSentencesInCurrentBox.length > 0) {
-                const audioSentenceElement = audioSentencesInCurrentBox.item(
-                    collectionIndex
-                );
+                const audioSentenceElement =
+                    audioSentencesInCurrentBox.item(collectionIndex);
                 if (audioSentenceElement) {
                     audioSentenceElement.classList.remove(kAudioSentence);
                     audioSentenceElement.classList.add(kSegmentClass);
@@ -4423,9 +4407,8 @@ export default class AudioRecording implements IAudioRecorder {
         // Import Recording will be improperly enabled on an empty page.
         const hasRecordableDivs =
             this.getRecordableDivs(true, false).length > 0;
-        const currentPlaybackMode = this.getCurrentPlaybackMode(
-            maySetHighlight
-        );
+        const currentPlaybackMode =
+            this.getCurrentPlaybackMode(maySetHighlight);
         let haveACurrentTextboxModeRecording =
             this.haveAudio && currentPlaybackMode === RecordingMode.TextBox;
         if (
@@ -4443,7 +4426,8 @@ export default class AudioRecording implements IAudioRecorder {
         ReactDOM.render(
             React.createElement(TalkingBookAdvancedSection, {
                 recordingMode: this.recordingMode,
-                haveACurrentTextboxModeRecording: haveACurrentTextboxModeRecording,
+                haveACurrentTextboxModeRecording:
+                    haveACurrentTextboxModeRecording,
                 setRecordingMode: async (recordingMode: RecordingMode) => {
                     this.setRecordingModeAsync(recordingMode);
                     this.updateDisplay();
@@ -4454,7 +4438,8 @@ export default class AudioRecording implements IAudioRecorder {
                 handleImportRecordingClick: () =>
                     this.handleImportRecordingClick(),
                 insertSegmentMarker: () => {
-                    const selection = this.getPageFrame()!.contentWindow!.getSelection();
+                    const selection =
+                        this.getPageFrame()!.contentWindow!.getSelection();
                     const range = selection!.getRangeAt(0);
                     const marker = document.createTextNode("|");
                     range.insertNode(marker);

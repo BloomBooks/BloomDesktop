@@ -58,7 +58,7 @@ const avatar = (lockedByMe: boolean) => (
 // JT: previously was just left uninitialized, but more recent typescript complains.
 // I think the test that uses it may be delibereately testing what the method does with
 // an undefined input.
-const emptyAvatarForProblemState: JSX.Element = (undefined as any) as JSX.Element;
+const emptyAvatarForProblemState: JSX.Element = undefined as any as JSX.Element;
 
 export default {
     title: "Team Collection components/StatusPanelCommon"
@@ -80,35 +80,38 @@ export const Available = () =>
     );
 
 export const CheckedOutByMe = () => {
-    const messageLogStub = ( // copied from TCBookStatusPanel.tsx
-        <div
-            css={css`
-                width: 320px;
-            `}
-        >
+    const messageLogStub = // copied from TCBookStatusPanel.tsx
+        (
             <div
                 css={css`
-                    font-size: 11px;
+                    width: 320px;
                 `}
             >
-                {"What changes did you make?"}
+                <div
+                    css={css`
+                        font-size: 11px;
+                    `}
+                >
+                    {"What changes did you make?"}
+                </div>
+                <input
+                    css={css`
+                        background-color: transparent;
+                        color: ${kBloomYellow};
+                        width: 100%;
+                        border: 1px solid #ffffffcc;
+                        border-radius: 4px;
+                        height: 36px;
+                    `}
+                    type="text"
+                    value={
+                        "test checkin message that's actually quite longish."
+                    }
+                    autoFocus={true}
+                    key="message"
+                />
             </div>
-            <input
-                css={css`
-                    background-color: transparent;
-                    color: ${kBloomYellow};
-                    width: 100%;
-                    border: 1px solid #ffffffcc;
-                    border-radius: 4px;
-                    height: 36px;
-                `}
-                type="text"
-                value={"test checkin message that's actually quite longish."}
-                autoFocus={true}
-                key="message"
-            />
-        </div>
-    );
+        );
 
     return testPage(
         <StatusPanelCommon

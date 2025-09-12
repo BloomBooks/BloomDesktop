@@ -46,11 +46,8 @@ interface IBulkBloomPUBPublishParams {
 export const BulkBloomPubDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
     showBulkBloomPubDialog = showDialog;
     return (
         <BloomDialog {...propsForBloomDialog}>
@@ -71,8 +68,10 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
         IBulkBloomPUBPublishParams | undefined
     >("publish/bloompub/file/bulkSaveBloomPubsParams", undefined);
 
-    const bookshelfUrlKey = useApiData<any>("settings/bookShelfData", "")
-        ?.defaultBookshelfUrlKey;
+    const bookshelfUrlKey = useApiData<any>(
+        "settings/bookShelfData",
+        ""
+    )?.defaultBookshelfUrlKey;
 
     // the server doesn't actually know the label for the bookshelf, just its urlKey. So we have to look that up ourselves.
     // If bookshelfUrlKey is falsy, then we get back an empty string for the label without actually asking the server for

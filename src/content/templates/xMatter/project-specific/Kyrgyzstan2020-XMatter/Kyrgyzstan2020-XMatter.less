@@ -42,7 +42,9 @@
 :not(.numberedPage).bloom-page {
     --page-margin-bottom: 10px;
 }
-.bloom-page:not(.outsideFrontCover):not(.outsideBackCover):not(.Device16x9Portrait):not(.Device16x9Landscape) {
+.bloom-page:not(.outsideFrontCover):not(.outsideBackCover):not(
+        .Device16x9Portrait
+    ):not(.Device16x9Landscape) {
     --page-margin-top: 15mm;
     --page-margin-bottom: 15mm;
     --page-margin-left: 15mm;
@@ -51,11 +53,16 @@
     --pageNumber-bottom: 20px;
 }
 .bloom-page.numberedPage {
-    &.Device16x9Portrait::after, &.Device16x9Landscape::after {
+    &.Device16x9Portrait::after,
+    &.Device16x9Landscape::after {
         --pageNumber-right-margin: unset;
-        --pageNumber-left-margin: calc((100% - var(--pageNumber-width, 20px)) / 2);
-        --pageNumber-always-left-margin: calc((100% - var(--pageNumber-width, 20px)) / 2);
-        text-align: unset;  // text-align: right leaves the number at the right edge, not the center.
+        --pageNumber-left-margin: calc(
+            (100% - var(--pageNumber-width, 20px)) / 2
+        );
+        --pageNumber-always-left-margin: calc(
+            (100% - var(--pageNumber-width, 20px)) / 2
+        );
+        text-align: unset; // text-align: right leaves the number at the right edge, not the center.
     }
 }
 .outsideBackCover .marginBox {

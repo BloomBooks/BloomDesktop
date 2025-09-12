@@ -6,3 +6,6 @@ d91573b013164e808f7ccc084d170df4a71f7737
 29c4a976a1e71e1457074fc8eed2263b763f3e85
 # format all html with prettier
 a8c3a95d33958acd1ae8a873143a1bcdfbc8f135
+# format all BloomBrowserUI and content files with prettier v3
+f0c5adac6de2818320ba62ba44a541a008ef55f8
+a265a18c8a0d2bd9f4b5396968a97e313d793685

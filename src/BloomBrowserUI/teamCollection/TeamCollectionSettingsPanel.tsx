@@ -31,9 +31,8 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
         ""
     );
 
-    const [adminstratorEmail, setAdminstratorEmail] = React.useState<string>(
-        ""
-    );
+    const [adminstratorEmail, setAdminstratorEmail] =
+        React.useState<string>("");
 
     useEffect(() => {
         get("settings/administrators", result => {

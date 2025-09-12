@@ -202,9 +202,8 @@ const ondragend = (
                         );
                         prototype.parentElement!.appendChild(editableInLang);
                     }
-                    editableInLang.getElementsByTagName(
-                        "p"
-                    )[0].textContent = text;
+                    editableInLang.getElementsByTagName("p")[0].textContent =
+                        text;
                     langsToWaitFor--;
                 });
         });
@@ -296,17 +295,13 @@ function getDefaultDraggableWidth(
 // It's good enough to be unique within the current page, and will very probably
 // be unique throughout the document, without being quite as long and ugly as a guid.
 export const setGeneratedDraggableId = (draggable: HTMLElement): string => {
-    let id = Math.random()
-        .toString(36)
-        .substring(2, 9);
+    let id = Math.random().toString(36).substring(2, 9);
     while (
         draggable.ownerDocument.querySelector(
             `[${kDraggableIdAttribute}="${id}"]`
         )
     ) {
-        id = Math.random()
-            .toString(36)
-            .substring(2, 9);
+        id = Math.random().toString(36).substring(2, 9);
     }
     draggable.setAttribute(kDraggableIdAttribute, id);
     return id;

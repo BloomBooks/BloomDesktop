@@ -120,7 +120,7 @@ function TrimTrailingLineBreaksInDivs(node) {
 
 function Cleanup() {
     // for stuff bloom introduces, just use this "bloom-ui" class to have it removed
-    $(".bloom-ui").each(function() {
+    $(".bloom-ui").each(function () {
         $(this).remove();
     });
 
@@ -132,13 +132,13 @@ function Cleanup() {
     $("*").removeAttr("data-easytabs");
 
     $("div.ui-resizable-handle").remove();
-    $("div, figure").each(function() {
+    $("div, figure").each(function () {
         $(this).removeClass("ui-draggable");
         $(this).removeClass("ui-resizable");
         // obsolete, but we'll keep the cleanup for a while
         $(this).removeClass("hoverUp");
     });
-    $("span").each(function() {
+    $("span").each(function () {
         $(this).removeClass("ui-disableHighlight");
         $(this).removeClass("ui-enableHighlight");
     });
@@ -149,11 +149,11 @@ function Cleanup() {
         // ui elements are supposed to have ".bloom-ui" (see above in this function)
         // Feeling cowardly, I'm introducing page-content so as to change existing behavior as little as possible.
         .not($(".page-content"))
-        .each(function() {
+        .each(function () {
             $(this).remove();
         });
 
-    $("div.bloom-editable").each(function() {
+    $("div.bloom-editable").each(function () {
         TrimTrailingLineBreaksInDivs(this);
     });
 
@@ -165,7 +165,7 @@ function Cleanup() {
 //add a delete button which shows up when you hover
 function SetupDeletable(containerDiv) {
     $(containerDiv)
-        .mouseenter(function() {
+        .mouseenter(function () {
             const button = $(
                 "<button class='deleteButton smallImageButton' title='Delete'></button>"
             );
@@ -174,10 +174,10 @@ function SetupDeletable(containerDiv) {
             });
             $(this).prepend(button);
         })
-        .mouseleave(function() {
+        .mouseleave(function () {
             $(this)
                 .find(".deleteButton")
-                .each(function() {
+                .each(function () {
                     $(this).remove();
                 });
         });
@@ -290,7 +290,7 @@ function AddEditKeyHandlers(container) {
 function AddLanguageTags(container) {
     $(container)
         .find(".bloom-editable[contentEditable=true]")
-        .each(function() {
+        .each(function () {
             const $this = $(this);
 
             // If this DIV already had a language tag, remove the content in case we decide the situation has changed.
@@ -340,9 +340,7 @@ function AddLanguageTags(container) {
 }
 
 function SetBookCopyrightAndLicenseButtonVisibility(container) {
-    const shouldShowButton = !$(container)
-        .find("DIV.copyright")
-        .text();
+    const shouldShowButton = !$(container).find("DIV.copyright").text();
     $(container)
         .find("button#editCopyrightAndLicense")
         .css("display", shouldShowButton ? "inline" : "none");
@@ -360,18 +358,14 @@ function GetOverflowChecker() {
 export function SetupThingsSensitiveToStyleChanges(container: HTMLElement) {
     $(container)
         .find(".bloom-translationGroup")
-        .each(function() {
+        .each(function () {
             // set our font size so that we can use em units when setting padding of the translation group
             // If visibility is under the control of the appearance system for this field the child we
             // want has bloom-contentFirst, otherwise, bloom-content1.
             // At the time of this writing (6.0) this is only used for cover page titles.
-            let mainChild = $(this)
-                .find(".bloom-contentFirst")
-                .first();
+            let mainChild = $(this).find(".bloom-contentFirst").first();
             if (mainChild.length === 0) {
-                mainChild = $(this)
-                    .find(".bloom-content1")
-                    .first();
+                mainChild = $(this).find(".bloom-content1").first();
             }
             const fontSizeOfL1 = mainChild.css("font-size");
             $(this).css("font-size", fontSizeOfL1);
@@ -489,7 +483,7 @@ export function SetupElements(
 
     $(container)
         .find(".bloom-editable")
-        .each(function() {
+        .each(function () {
             BloomField.ManageField(this);
         });
 
@@ -525,7 +519,7 @@ export function SetupElements(
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
     $(container)
         .find("textarea")
-        .blur(function() {
+        .blur(function () {
             this.innerHTML = this.value;
         });
 
@@ -559,11 +553,11 @@ export function SetupElements(
     //its child bloom-editable's to have data-placeholders on them
     $(container)
         .find(".bloom-translationGroup.bloom-text-for-css .bloom-editable")
-        .each(function() {
+        .each(function () {
             // initially fill it
             $(this).attr("data-text", this.textContent);
             // keep it up to date
-            $(this).on("blur paste input", function() {
+            $(this).on("blur paste input", function () {
                 $(this).attr("data-text", this.textContent);
             });
         });
@@ -571,7 +565,7 @@ export function SetupElements(
 
     $(container)
         .find(".bloom-translationGroup")
-        .each(function() {
+        .each(function () {
             //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
             const contentElements = $(this).find(
                 "textarea, div.bloom-editable"
@@ -604,18 +598,14 @@ export function SetupElements(
     // only allow plain text paste.
     $(container)
         .find("div.bloom-editable")
-        .on("paste", function(e) {
+        .on("paste", function (e) {
             const theEvent = e.originalEvent as ClipboardEvent;
             if (!theEvent.clipboardData) return;
 
             const s = theEvent.clipboardData.getData("text/plain");
             if (s == null || s === "") return;
 
-            if (
-                $(this)
-                    .parent()
-                    .hasClass("bloom-userCannotModifyStyles")
-            ) {
+            if ($(this).parent().hasClass("bloom-userCannotModifyStyles")) {
                 e.preventDefault();
                 document.execCommand("insertText", false, s);
                 //NB: odd that this doesn't work?! document.execCommand("paste", false, s);
@@ -629,13 +619,11 @@ export function SetupElements(
     //keep divs vertically centered (yes, I first tried *all* the css approaches, they don't work for our situation)
 
     //do it initially
-    $(container)
-        .find(".bloom-centerVertically")
-        .CenterVerticallyInParent();
+    $(container).find(".bloom-centerVertically").CenterVerticallyInParent();
     //reposition as needed
     $(container)
         .find(".bloom-centerVertically")
-        .resize(function() {
+        .resize(function () {
             //nb: this uses a 3rd party resize extension from Ben Alman; the built in jquery resize only fires on the window
             $(this).CenterVerticallyInParent();
         });
@@ -651,14 +639,14 @@ export function SetupElements(
     //So the job of this bit here is to take the label.placeholder and create the data-placeholders.
     $(container)
         .find("*.bloom-translationGroup > label.placeholder")
-        .each(function() {
+        .each(function () {
             const labelText = $(this).text();
 
             //put the attributes on the individual child divs
             $(this)
                 .parent()
                 .find(".bloom-editable")
-                .each(function() {
+                .each(function () {
                     //enhance: it would make sense to allow each of these to be customized for their div
                     //so that you could have a placeholder that said "Name in {lang}", for example.
                     $(this).attr("data-placeholder", labelText);
@@ -668,7 +656,7 @@ export function SetupElements(
 
     $(container)
         .find("div.bloom-editable")
-        .each(function() {
+        .each(function () {
             $(this).attr("contentEditable", "true");
         });
 
@@ -678,7 +666,7 @@ export function SetupElements(
     // The solution here is to add the readonly attribute when we detect that the css has set the cursor to "not-allowed".
     $(container)
         .find("textarea, div")
-        .focus(function() {
+        .focus(function () {
             //        if ($(this).css('border-bottom-color') == 'transparent') {
             if ($(this).css("cursor") === "not-allowed") {
                 $(this).attr("readonly", "true");
@@ -696,7 +684,7 @@ export function SetupElements(
         .find(
             "DIV.bloom-page.bloom-enablePageCustomization DIV.bloom-deletable"
         )
-        .each(function() {
+        .each(function () {
             SetupDeletable(this);
         });
 
@@ -704,7 +692,7 @@ export function SetupElements(
 
     $(container)
         .find(".bloom-resizable")
-        .each(function() {
+        .each(function () {
             SetupResizableElement(this);
         });
 
@@ -715,7 +703,7 @@ export function SetupElements(
     //them from editing it by hand.
     $(container)
         .find("div[data-derived='topic']")
-        .click(function() {
+        .click(function () {
             if ($(this).css("cursor") === "not-allowed") return;
             showTopicChooserDialog();
         });
@@ -730,11 +718,10 @@ export function SetupElements(
         $(container)
             .find("*.bloom-translationGroup")
             .not(".bloom-readOnlyInTranslationMode")
-            .each(function() {
+            .each(function () {
                 if ($(this).find("textarea, div").length > 1) {
-                    const bubble = BloomSourceBubbles.ProduceSourceBubbles(
-                        this
-                    );
+                    const bubble =
+                        BloomSourceBubbles.ProduceSourceBubbles(this);
                     if (bubble.length !== 0) {
                         divsThatHaveSourceBubbles.push(this);
                         bubbleDivs.push(bubble);
@@ -1075,7 +1062,7 @@ let reportedTextSelected = isTextSelected();
 export function bootstrap() {
     bloomQtipUtils.setQtipZindex();
 
-    $.fn.reverse = function(...args) {
+    $.fn.reverse = function (...args) {
         return this.pushStack(this.get().reverse(), ...args);
     };
 
@@ -1178,30 +1165,22 @@ export function localizeCkeditorTooltips(bar: JQuery) {
     theOneLocalizationManager
         .asyncGetText("EditTab.DirectFormatting.Bold", "Bold", "")
         .done(result => {
-            $(toolGroup)
-                .find(".cke_button__bold")
-                .attr("title", result);
+            $(toolGroup).find(".cke_button__bold").attr("title", result);
         });
     theOneLocalizationManager
         .asyncGetText("EditTab.DirectFormatting.Italic", "Italic", "")
         .done(result => {
-            $(toolGroup)
-                .find(".cke_button__italic")
-                .attr("title", result);
+            $(toolGroup).find(".cke_button__italic").attr("title", result);
         });
     theOneLocalizationManager
         .asyncGetText("EditTab.DirectFormatting.Underline", "Underline", "")
         .done(result => {
-            $(toolGroup)
-                .find(".cke_button__underline")
-                .attr("title", result);
+            $(toolGroup).find(".cke_button__underline").attr("title", result);
         });
     theOneLocalizationManager
         .asyncGetText("EditTab.DirectFormatting.Superscript", "Superscript", "")
         .done(result => {
-            $(toolGroup)
-                .find(".cke_button__superscript")
-                .attr("title", result);
+            $(toolGroup).find(".cke_button__superscript").attr("title", result);
         });
 }
 
@@ -1351,10 +1330,12 @@ export const copySelection = () => {
 async function copyImpl() {
     const sel = document.getSelection();
     if (!sel?.toString()) {
-        const activeCanvasElement = theOneCanvasElementManager?.getActiveElement();
-        const activeCanvasElementEditable = activeCanvasElement?.getElementsByClassName(
-            "bloom-editable bloom-visibility-code-on"
-        )[0] as HTMLElement;
+        const activeCanvasElement =
+            theOneCanvasElementManager?.getActiveElement();
+        const activeCanvasElementEditable =
+            activeCanvasElement?.getElementsByClassName(
+                "bloom-editable bloom-visibility-code-on"
+            )[0] as HTMLElement;
 
         // No active text selection to copy; copy the canvas element's entire content.
         // There's a slight chance that the user wanted to copy some trailing
@@ -1722,7 +1703,7 @@ export function attachToCkEditor(element) {
 function SetupBookLinkGrids(container: HTMLElement) {
     $(container)
         .find(".bloom-link-grid")
-        .click(function() {
+        .click(function () {
             //If our listeners hear back, they should close, but if something goes wrong, we don't want them to pile up.
             WebSocketManager.closeSocketsWithPrefix("makeThumbnailFile-");
 
@@ -1790,7 +1771,8 @@ function SetupBookLinkGrids(container: HTMLElement) {
                                     desiredFileNameWithoutExtension
                             );
                             postJson("editView/addImageFromUrl", {
-                                desiredFileNameWithoutExtension: desiredFileNameWithoutExtension,
+                                desiredFileNameWithoutExtension:
+                                    desiredFileNameWithoutExtension,
                                 url: link.book.thumbnail
                             });
                         });

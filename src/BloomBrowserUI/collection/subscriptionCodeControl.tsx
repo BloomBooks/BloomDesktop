@@ -325,7 +325,8 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
                 "subscriptionCodeInput"
             ) as HTMLInputElement;
             if (codeElt !== null && selectionPosition !== null) {
-                codeElt.selectionStart = codeElt.selectionEnd = selectionPosition;
+                codeElt.selectionStart = codeElt.selectionEnd =
+                    selectionPosition;
             }
         } catch (e) {
             console.error("Error restoring cursor position:", e);
@@ -336,9 +337,11 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
     ) => {
         // Store the selection position before React updates
         setSelectionPosition(
-            (document.getElementById(
-                "subscriptionCodeInput"
-            ) as HTMLInputElement)?.selectionStart
+            (
+                document.getElementById(
+                    "subscriptionCodeInput"
+                ) as HTMLInputElement
+            )?.selectionStart
         );
 
         setSubscriptionCode(event.target.value);
@@ -385,7 +388,8 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
                         margin-left: 5px;
                         padding-right: 20px; // clear of icon
                         flex-grow: 1;
-                        font-family: Consolas, monospace; // show zeros distinctly
+                        font-family:
+                            Consolas, monospace; // show zeros distinctly
                         padding: 5px;
                     `}
                 />

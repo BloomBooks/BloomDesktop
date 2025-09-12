@@ -197,12 +197,12 @@ const UniformInlineIcon: React.FunctionComponent<{
                 justify-content: center;
                 margin-right: 4px;
                 svg {
-                    fill: ${
-                        props.disabled ? "black" : theme.palette.primary.main
-                    };
+                    fill: ${props.disabled
+                        ? "black"
+                        : theme.palette.primary.main};
                     height: 100% !important;
                     ${props.iconScale !== undefined &&
-                        `transform: scale(${props.iconScale});`} /* border: solid 0.1px purple; */
+                    `transform: scale(${props.iconScale});`} /* border: solid 0.1px purple; */
                     ${props.disabled && `opacity: ${kBloomDisabledOpacity}`}
                 }
             `}

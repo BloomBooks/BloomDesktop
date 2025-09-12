@@ -148,9 +148,8 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     );
 
     const [useSandbox, setUseSandbox] = useState<boolean>(false);
-    const [uploadButtonText, setUploadButtonText] = useState<string>(
-        localizedUploadBook
-    );
+    const [uploadButtonText, setUploadButtonText] =
+        useState<string>(localizedUploadBook);
     useEffect(() => {
         getBoolean("libraryPublish/useSandbox", setUseSandbox);
     }, []);
@@ -174,9 +173,8 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         );
     }
     const [agreedPreviously, setAgreedPreviously] = useState<boolean>(false);
-    const [agreementsAccepted, setAgreementsAccepted] = useState<boolean>(
-        false
-    );
+    const [agreementsAccepted, setAgreementsAccepted] =
+        useState<boolean>(false);
     const [isPlaygroundBook, _setIsPlaygroundBook] = useApiBoolean(
         "publish/isPlaygroundBook",
         true
@@ -215,17 +213,16 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         }
     }
 
-    const [uploadCollisionInfo, setUploadCollisionInfo] = useState<
-        IUploadCollisionDlgData
-    >({
-        userEmail: "",
-        newTitle: "",
-        existingTitle: "",
-        existingCreatedDate: "",
-        existingUpdatedDate: "",
-        existingBookUrl: "",
-        count: 0
-    });
+    const [uploadCollisionInfo, setUploadCollisionInfo] =
+        useState<IUploadCollisionDlgData>({
+            userEmail: "",
+            newTitle: "",
+            existingTitle: "",
+            existingCreatedDate: "",
+            existingUpdatedDate: "",
+            existingBookUrl: "",
+            count: 0
+        });
 
     const [conflictIndex, setConflictIndex] = useState<number>(0);
 
@@ -711,7 +708,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 confirmButtonLabelL10nKey="Common.Yes"
                 cancelButtonLabel="No"
                 cancelButtonLabelL10nKey="Common.No"
-                onDialogClose={function(result: DialogResult): void {
+                onDialogClose={function (result: DialogResult): void {
                     if (result === DialogResult.Confirm) uploadOneBook();
                 }}
             />

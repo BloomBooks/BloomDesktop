@@ -82,11 +82,9 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                     padding-bottom: ${kDialogBottomPadding};
                     // dialogFrameProvidedExternally means that we're inside of a winforms dialog.
                     /// So we grow to fit it, and we supply a single black border for some reason (?)
-                    ${
-                        props.dialogFrameProvidedExternally
-                            ? `height: 100%; border: solid thin black; box-sizing: border-box;`
-                            : ""
-                    }
+                    ${props.dialogFrameProvidedExternally
+                        ? `height: 100%; border: solid thin black; box-sizing: border-box;`
+                        : ""}
 
                     // This value is the same as that given in bloomMaterialUITheme.  For some
                     // reason, it is not being applied here.  See BL-10208 and BL-10228.
@@ -380,15 +378,15 @@ export const DialogBottomLeftButtons: FunctionComponent = props => (
 
             /* -- button separation -- */
             // this is better but Firefox doesn't support it until FF 63:  gap: ${kDialogPadding};
-            button{
+            button {
                 margin-right: ${kDialogPadding};
             }
-             //padding-left: 0;//  would be good, if we could only apply it to un-outlined material buttons to make them left-align
-             // or margin-left:-8px, which left-aligns such buttons but keeps the padding, which is used in hover effects.
+            //padding-left: 0;//  would be good, if we could only apply it to un-outlined material buttons to make them left-align
+            // or margin-left:-8px, which left-aligns such buttons but keeps the padding, which is used in hover effects.
 
-             button{
-                 margin-left:0 !important;
-             }
+            button {
+                margin-left: 0 !important;
+            }
         `}
     >
         {props.children}
@@ -405,12 +403,12 @@ export const DialogBottomButtons: FunctionComponent = props => {
                 padding-top: 20px; // leave room between us and the content above us
                 display: flex;
                 justify-content: flex-end; // make buttons line up on the right, unless wrapped in <DialogBottomLeftButtons>
-                      // this is better but Firefox doesn't support it until FF 63:  gap: ${kDialogPadding};
+                // this is better but Firefox doesn't support it until FF 63:  gap: ${kDialogPadding};
 
                 /* -- button separation -- */
-                button{
-                margin-left: ${kDialogPadding};
-            }
+                button {
+                    margin-left: ${kDialogPadding};
+                }
 
                 // As per material (https://i.imgur.com/REsXU1C.png), we actually should be closer to the right than
                 // the content.

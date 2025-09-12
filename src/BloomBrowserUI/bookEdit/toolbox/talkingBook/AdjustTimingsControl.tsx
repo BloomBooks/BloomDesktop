@@ -92,7 +92,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
             }
         `;
 
-        const ws = ((WaveSurferNamespace as unknown) as any).create({
+        const ws = (WaveSurferNamespace as unknown as any).create({
             container: "#waveform",
             plugins: [rp],
             minPxPerSec: 100,
@@ -194,9 +194,8 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                         regionIndex: index
                     });
                     currentRegion = region.element;
-                    const playButton = region.element.getElementsByClassName(
-                        "playButton"
-                    )[0];
+                    const playButton =
+                        region.element.getElementsByClassName("playButton")[0];
                     if (playButton) {
                         playButton.textContent = "❚❚";
                     }

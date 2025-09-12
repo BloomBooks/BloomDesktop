@@ -28,11 +28,8 @@ import { BloomTabs } from "../react_components/BloomTabs";
 import { useEventLaunchedBloomDialog } from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 export const TeamCollectionDialogLauncher: React.FunctionComponent = () => {
-    const {
-        openingEvent,
-        closeDialog,
-        propsForBloomDialog
-    } = useEventLaunchedBloomDialog("TeamCollectionDialog");
+    const { openingEvent, closeDialog, propsForBloomDialog } =
+        useEventLaunchedBloomDialog("TeamCollectionDialog");
 
     return propsForBloomDialog.open ? (
         <TeamCollectionDialog

@@ -57,9 +57,9 @@ export default class OverflowChecker {
             // think those survive from one page load to the next, so we don't
             // need to remove them here.)
             const cleanup = (className: string) => {
-                Array.from(
-                    container.getElementsByClassName(className)
-                ).forEach(x => x.classList.remove(className));
+                Array.from(container.getElementsByClassName(className)).forEach(
+                    x => x.classList.remove(className)
+                );
             };
             cleanup("overflow");
             cleanup("thisOverflowingParent");
@@ -114,10 +114,10 @@ export default class OverflowChecker {
         // Add another handler so that when the user resizes an origami pane, we check the overflow again
         $(container)
             .find(".split-pane-component-inner")
-            .bind("_splitpaneparentresize", function() {
+            .bind("_splitpaneparentresize", function () {
                 const $this = $(this);
                 $(getElementsThatCanOverflowOrNeedToBeResized($this[0])).each(
-                    function() {
+                    function () {
                         OverflowChecker.AdjustSizeOrMarkOverflowSoon(this);
                     }
                 );
@@ -126,7 +126,7 @@ export default class OverflowChecker {
         // Turn off any overflow indicators that might have been leftover from before
         $(container)
             .find(".overflow, .thisOverflowingParent, .childOverflowingThis")
-            .each(function() {
+            .each(function () {
                 $(this).removeClass(
                     "overflow thisOverflowingParent childOverflowingThis"
                 );
@@ -145,9 +145,8 @@ export default class OverflowChecker {
     // Actual testable determination of Type I overflow or not
     // 'public' for testing (2 types of overflow are defined in AdjustSizeOrMarkOverflow below)
     public static IsOverflowingSelf(element: HTMLElement): boolean {
-        const [overflowX, overflowY] = OverflowChecker.getSelfOverflowAmounts(
-            element
-        );
+        const [overflowX, overflowY] =
+            OverflowChecker.getSelfOverflowAmounts(element);
         return overflowX > 0 || overflowY > 0;
     }
     public static getSelfOverflowAmounts(
@@ -414,9 +413,8 @@ export default class OverflowChecker {
 
         if (preventOverflowY) {
             editable.style.paddingBottom = "0";
-            const measurements = MeasureText.getDescentMeasurementsOfBox(
-                editable
-            );
+            const measurements =
+                MeasureText.getDescentMeasurementsOfBox(editable);
             const excessDescent =
                 measurements.actualDescent - measurements.layoutDescent;
             if (excessDescent > 0) {
@@ -429,17 +427,17 @@ export default class OverflowChecker {
         //          then backspace to remove the newly added line. It still indicates overflow (because it was was scrolled down, I guess).
         //          However, if you press the up arrow long enough until you get it to scroll back up, it will reset to Not Overflowing.
         //          Reloading the page will also clear it.
-        const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(
-            editable
-        );
+        const overflowAmounts =
+            OverflowChecker.getSelfOverflowAmounts(editable);
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
-        overflowY = theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
-            editable,
-            overflowY,
-            doNotShrink,
-            growAsMuchAsPossible
-        );
+        overflowY =
+            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
+                editable,
+                overflowY,
+                doNotShrink,
+                growAsMuchAsPossible
+            );
         if (preventOverflowY) {
             // The usual fairly crude calculation may indicate it's overflowing, but
             // above we did a much more precise calculation and gave it just enough padding
@@ -511,7 +509,7 @@ export default class OverflowChecker {
         );
 
         // Type 2 Overflow - We'll check ALL of these for overflow past any ancestor
-        editablePageElements.each(function() {
+        editablePageElements.each(function () {
             const $this = $(this);
             const overflowingAncestor = OverflowChecker.overflowingAncestor(
                 $this[0]
@@ -527,9 +525,8 @@ export default class OverflowChecker {
                 // bubble.  We don't want to override that qtip with an overflow warning since
                 // we have other indications of overflow available on the child.
                 // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6295.
-                const oldQtip = OverflowChecker.GetQtipContent(
-                    $overflowingAncestor
-                );
+                const oldQtip =
+                    OverflowChecker.GetQtipContent($overflowingAncestor);
                 if (oldQtip && !OverflowChecker.DoesQtipMarkOverflow(oldQtip)) {
                     return; // don't override existing qtip (probably hint or source bubble)
                 }

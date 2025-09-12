@@ -98,7 +98,7 @@ const MemoryGraph: React.FunctionComponent<{
                 yFormat={e =>
                     filesize(
                         (e as number) *
-                        1000000 /* undo conversion to GB*/ *
+                            1000000 /* undo conversion to GB*/ *
                             1000 /* kb->bytes */
                     )
                 }

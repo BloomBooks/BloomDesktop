@@ -47,7 +47,9 @@ interface IPageData {
     book: ITemplateBook;
 }
 
-export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps> = ({
+export const TemplateBookPages: React.FunctionComponent<
+    ITemplateBookPagesProps
+> = ({
     forChooseLayout,
     titleGroup,
     orientation,
@@ -99,9 +101,8 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
         ? pageData.map((currentPageDiv: IPageData, index) => {
               // Process each page and create a pageThumbnail div containing a page thumbnail image and data
               // and a clickable overlay.
-              const requiresSubscription = currentPageDiv.page.hasAttribute(
-                  "data-feature"
-              );
+              const requiresSubscription =
+                  currentPageDiv.page.hasAttribute("data-feature");
               const pageIsMarkedBilingual =
                   currentPageDiv.page.getAttribute("data-ui-mark-bilingual") ===
                   "true";
@@ -161,11 +162,9 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                               height: ${isLandscape ? "70px" : "100px"};
                               margin-left: 10px;
                               ${backgroundCss}
-                              width: ${
-                                  isLandscape && pageIsMarkedBilingual
-                                      ? "105px"
-                                      : "100px"
-                              };
+                              width: ${isLandscape && pageIsMarkedBilingual
+                                  ? "105px"
+                                  : "100px"};
                               :hover {
                                   background: ${transparentHighlightColor};
                               }

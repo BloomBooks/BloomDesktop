@@ -11,7 +11,9 @@ interface IHexColorInputProps {
 
 const hashChar = "#";
 
-export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = props => {
+export const HexColorInput: React.FunctionComponent<
+    IHexColorInputProps
+> = props => {
     const [currentColor, setCurrentColor] = useState("");
 
     // In general, we want our Hex Color input to reflect the first value in the 'colors' array.

@@ -35,9 +35,8 @@ export default class ReadersSynphonyWrapper {
             theOneLanguageDataInstance.addWord(
                 this.source.moreWords.split(" ")
             );
-            theOneLanguageDataInstance.LanguageSortOrder = this.source.letters.split(
-                " "
-            );
+            theOneLanguageDataInstance.LanguageSortOrder =
+                this.source.letters.split(" ");
         }
 
         const stgs = this.source.stages;

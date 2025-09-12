@@ -183,9 +183,7 @@ window["PasteImageCredits"] = () => {
 };
 
 $(document).ready(() => {
-    $("body")
-        .find("*[data-i18n]")
-        .localize();
+    $("body").find("*[data-i18n]").localize();
     bootstrap();
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.

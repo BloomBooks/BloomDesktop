@@ -161,9 +161,8 @@ export function closeDialog(id: string) {
 }
 
 export function toolboxIsShowing() {
-    return (<HTMLInputElement>$(document)
-        .find("#pure-toggle-right")
-        .get(0)).checked;
+    return (<HTMLInputElement>$(document).find("#pure-toggle-right").get(0))
+        .checked;
 }
 
 // Do this task when the toolbox is loaded. If it isn't already, we set a timeout and do it when we can.

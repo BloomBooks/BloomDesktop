@@ -10,7 +10,9 @@ interface ITemplateBookErrorReplacementProps {
 
 // This component replaces the usual Title/template page thumbnails group, when we can't find the template
 // book that our JSON input refers to.
-export const TemplateBookErrorReplacement: React.FunctionComponent<ITemplateBookErrorReplacementProps> = props => {
+export const TemplateBookErrorReplacement: React.FunctionComponent<
+    ITemplateBookErrorReplacementProps
+> = props => {
     const path = props.templateBookPath;
     const index = path.lastIndexOf("/");
     const templateName = path.substring(index + 1, path.length);

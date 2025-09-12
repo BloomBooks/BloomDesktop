@@ -151,14 +151,13 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     );
     const save = useL10n("Save", "Common.Save");
     const [closePending, setClosePending] = useState(false);
-    const [avSettings, setAvSettings, gotAvSettings] = useApiStateWithStatus<
-        IAudioVideoSettings
-    >("publish/av/settings", {
-        format: "facebook",
-        pageTurnDelay: 3,
-        motion: false,
-        pageRange: []
-    });
+    const [avSettings, setAvSettings, gotAvSettings] =
+        useApiStateWithStatus<IAudioVideoSettings>("publish/av/settings", {
+            format: "facebook",
+            pageTurnDelay: 3,
+            motion: false,
+            pageRange: []
+        });
 
     const recording = useWatchBooleanEvent(false, "recordVideo", "recording");
 
@@ -213,9 +212,8 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     );
 
     const [playing, setPlaying] = useState(false);
-    const [havePreviewForOrientation, setHavePreviewForOrientation] = useState(
-        false
-    );
+    const [havePreviewForOrientation, setHavePreviewForOrientation] =
+        useState(false);
     useSubscribeToWebSocketForStringMessage(
         "publish-bloompub",
         "bloomPubPreview",
@@ -311,9 +309,9 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     if (avSettings.pageRange.length == 2) {
         pageRangeSetting = `&start-page=${
             avSettings.pageRange[0]
-        }&autoplay-count=${avSettings.pageRange[1] -
-            avSettings.pageRange[0] +
-            1}`;
+        }&autoplay-count=${
+            avSettings.pageRange[1] - avSettings.pageRange[0] + 1
+        }`;
     }
     const recordingVideo = avSettings.format != "mp3";
     const circleHeight = "0.88rem";

@@ -56,22 +56,19 @@ const OverlayToolControls: React.FunctionComponent = () => {
     const [outlineColor, setOutlineColor] = useState<string | undefined>(
         undefined
     );
-    const [canvasElementType, setCanvasElementType] = useState<
-        CanvasElementType
-    >(undefined);
+    const [canvasElementType, setCanvasElementType] =
+        useState<CanvasElementType>(undefined);
     const [showTailChecked, setShowTailChecked] = useState(false);
-    const [isRoundedCornersChecked, setIsRoundedCornersChecked] = useState(
-        false
-    );
+    const [isRoundedCornersChecked, setIsRoundedCornersChecked] =
+        useState(false);
     const [isXmatter, setIsXmatter] = useState(true);
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
     const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
 
     // Add state to track whether each dropdown is open
     const [isStyleSelectOpen, setIsStyleSelectOpen] = useState(false);
-    const [isOutlineColorSelectOpen, setIsOutlineColorSelectOpen] = useState(
-        false
-    );
+    const [isOutlineColorSelectOpen, setIsOutlineColorSelectOpen] =
+        useState(false);
     function openStyleSelect() {
         setIsStyleSelectOpen(true);
         // Make sure we don't leave the select open when the tool closes.
@@ -184,16 +181,16 @@ const OverlayToolControls: React.FunctionComponent = () => {
             );
             setOutlineColor(currentFamilySpec.outerBorderColor);
             const backColor = getBackgroundColorValue(currentFamilySpec);
-            const newSwatch = getColorInfoFromSpecialNameOrColorString(
-                backColor
-            );
+            const newSwatch =
+                getColorInfoFromSpecialNameOrColorString(backColor);
             setBackgroundColorSwatch(newSwatch);
 
             const canvasElementManager = getCanvasElementManager();
             setCanvasElementType(getBubbleType(canvasElementManager));
             if (canvasElementManager) {
                 // Get the current canvas element's textColor and set it
-                const canvasElementTextColorInformation: ITextColorInfo = canvasElementManager.getTextColorInformation();
+                const canvasElementTextColorInformation: ITextColorInfo =
+                    canvasElementManager.getTextColorInformation();
                 setTextColorIsDefault(
                     canvasElementTextColorInformation.isDefault
                 );
@@ -251,9 +248,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
                 newBubbleProps["backgroundColors"] = backgroundColorArray;
             }
 
-            const newSpec = canvasElementManager.updateSelectedFamilyBubbleSpec(
-                newBubbleProps
-            );
+            const newSpec =
+                canvasElementManager.updateSelectedFamilyBubbleSpec(
+                    newBubbleProps
+                );
             // We do this because the new style's spec may affect Show Tail, or background opacity too.
             setCurrentFamilySpec(newSpec);
         }
@@ -293,9 +291,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
     const getBackgroundColorValue = (familySpec: BubbleSpec): string => {
         const canvasElementManager = getCanvasElementManager();
         if (canvasElementManager) {
-            const backgroundColorArray = canvasElementManager.getBackgroundColorArray(
-                familySpec
-            );
+            const backgroundColorArray =
+                canvasElementManager.getBackgroundColorArray(familySpec);
             if (backgroundColorArray.length === 1) {
                 return backgroundColorArray[0]; // This could be a hex string or an rgba() string
             }
@@ -693,120 +690,122 @@ const OverlayToolControls: React.FunctionComponent = () => {
             <RequiresSubscriptionOverlayWrapper
                 featureName={kOverlayToolId as string}
             >
-                {// Using most kinds of comic bubbles is problematic in various ways in Bloom games, so we don't allow it.
-                // We may eventually want to allow some controls to be used, but for now we just disable the whole thing.
-                // If we don't change our minds this string should get localized.
-                // issues:
-                // - making any kind of canvas element that has a border, tail, etc able to be dragged in Play mode would
-                // required Comical to be integrated into Bloom PLayer. I think even some things that don't seem to need
-                // Comical, like setting a background color, are currently implemented using it.
-                // - consequently it's a problem to enable any controls that would switch a play-time draggable to be
-                // a canvas element type whose rendering depends on Comical.
-                // - it's also something of a problem to have fixed canvas elements, since the parts rendered by Comical don't
-                // obey the classes we use to dim things in Correct and Wrong tabs.
-                // - if we allow Comical canvas elements to be put in the Correct or Wrong tabs, the bit rendered by Comical
-                // has to also get hidden until wanted in Start and Play modes.
-                // - the duplicate command needs enhancements to do things like duplicating the target.
-                // Enhance: if the practice of disabling some tools for some page types becomes widespread, we should
-                // generalize this somehow, so we can easily configure which tools are disabled for which page types.
-                // Without more examples, it's hard to know what would work best. For example, a page might have a data
-                // attribute that lists ids of tools that should be disabled. Or somewhere we might have a map from
-                // data-activity values to lists of tool ids that should be disabled. Or if disabling tools isn't
-                // limited to activities, we might introduce a new kind of page type attribute. Also, we may just
-                // want a single message like "This tool is not available on this page type" or something more specific
-                // like the one here.
-                OverlayTool.isCurrentPageABloomGame() ? (
-                    <Typography
-                        css={css`
-                            // "!important" is needed to keep .MuiTypography-root from overriding
-                            margin: 15px 15px 0 15px !important;
-                            text-align: center;
-                        `}
-                    >
-                        <span>
-                            The Overlay Tool cannot currently be used on Bloom
-                            Games pages. Some of the functions are duplicated in
-                            the Games Tool.
-                        </span>
-                    </Typography>
-                ) : (
-                    <div
-                        css={css`
-                            // pushes the Help region to the bottom
-                            display: flex;
-                            flex-direction: column;
-                            height: 100%;
-                        `}
-                    >
-                        <CanvasElementItemRegion
-                            className={!isXmatter ? "" : "disabled"}
+                {
+                    // Using most kinds of comic bubbles is problematic in various ways in Bloom games, so we don't allow it.
+                    // We may eventually want to allow some controls to be used, but for now we just disable the whole thing.
+                    // If we don't change our minds this string should get localized.
+                    // issues:
+                    // - making any kind of canvas element that has a border, tail, etc able to be dragged in Play mode would
+                    // required Comical to be integrated into Bloom PLayer. I think even some things that don't seem to need
+                    // Comical, like setting a background color, are currently implemented using it.
+                    // - consequently it's a problem to enable any controls that would switch a play-time draggable to be
+                    // a canvas element type whose rendering depends on Comical.
+                    // - it's also something of a problem to have fixed canvas elements, since the parts rendered by Comical don't
+                    // obey the classes we use to dim things in Correct and Wrong tabs.
+                    // - if we allow Comical canvas elements to be put in the Correct or Wrong tabs, the bit rendered by Comical
+                    // has to also get hidden until wanted in Start and Play modes.
+                    // - the duplicate command needs enhancements to do things like duplicating the target.
+                    // Enhance: if the practice of disabling some tools for some page types becomes widespread, we should
+                    // generalize this somehow, so we can easily configure which tools are disabled for which page types.
+                    // Without more examples, it's hard to know what would work best. For example, a page might have a data
+                    // attribute that lists ids of tools that should be disabled. Or somewhere we might have a map from
+                    // data-activity values to lists of tool ids that should be disabled. Or if disabling tools isn't
+                    // limited to activities, we might introduce a new kind of page type attribute. Also, we may just
+                    // want a single message like "This tool is not available on this page type" or something more specific
+                    // like the one here.
+                    OverlayTool.isCurrentPageABloomGame() ? (
+                        <Typography
+                            css={css`
+                                // "!important" is needed to keep .MuiTypography-root from overriding
+                                margin: 15px 15px 0 15px !important;
+                                text-align: center;
+                            `}
                         >
-                            <CanvasElementItemRow>
-                                <CanvasElementItem
-                                    src="/bloom/bookEdit/toolbox/overlay/comic-icon.svg"
-                                    canvasElementType="speech"
-                                />
-                                <CanvasElementImageItem />
-                                <CanvasElementItem
-                                    src="/bloom/bookEdit/toolbox/overlay/sign-language-overlay.svg"
-                                    canvasElementType="video"
-                                />
-                            </CanvasElementItemRow>
-                            <CanvasElementItemRow secondRow={true}>
-                                <CanvasElementTextItem
-                                    css={css`
-                                        margin-left: 5px; // Match the spacing on the canvas element icon above
-                                        flex-grow: 1; // Let it fill as much space as possible to the right
-                                        text-align: center; // Center the text horizontally
-
-                                        padding-top: 1em;
-                                        vertical-align: middle;
-                                        padding-bottom: 1em;
-
-                                        color: white;
-                                        border: 1px dotted white;
-                                    `}
-                                    l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
-                                />
-
-                                <CanvasElementCaptionItem
-                                    css={css`
-                                        // Horizontal positioning / sizing of the element
-                                        margin-left: 10px;
-                                        flex-grow: 1; // Allow it to fill the entire space (but with margin-left and margin-right outside of it)
-                                        text-align: center;
-
-                                        // Vertical sizing
-                                        padding-top: 5px;
-                                        padding-bottom: 5px;
-
-                                        border: 1px solid black;
-                                        color: black;
-                                        background-color: white;
-                                        box-shadow: 3px 3px black;
-                                    `}
-                                    l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
-                                />
-                            </CanvasElementItemRow>
-                        </CanvasElementItemRegion>
-
+                            <span>
+                                The Overlay Tool cannot currently be used on
+                                Bloom Games pages. Some of the functions are
+                                duplicated in the Games Tool.
+                            </span>
+                        </Typography>
+                    ) : (
                         <div
-                            id={"overlayToolControlOptionsRegion"}
-                            className={
-                                canvasElementType && !isXmatter
-                                    ? ""
-                                    : "disabled"
-                            }
+                            css={css`
+                                // pushes the Help region to the bottom
+                                display: flex;
+                                flex-direction: column;
+                                height: 100%;
+                            `}
                         >
-                            {getControlOptionsRegion()}
+                            <CanvasElementItemRegion
+                                className={!isXmatter ? "" : "disabled"}
+                            >
+                                <CanvasElementItemRow>
+                                    <CanvasElementItem
+                                        src="/bloom/bookEdit/toolbox/overlay/comic-icon.svg"
+                                        canvasElementType="speech"
+                                    />
+                                    <CanvasElementImageItem />
+                                    <CanvasElementItem
+                                        src="/bloom/bookEdit/toolbox/overlay/sign-language-overlay.svg"
+                                        canvasElementType="video"
+                                    />
+                                </CanvasElementItemRow>
+                                <CanvasElementItemRow secondRow={true}>
+                                    <CanvasElementTextItem
+                                        css={css`
+                                            margin-left: 5px; // Match the spacing on the canvas element icon above
+                                            flex-grow: 1; // Let it fill as much space as possible to the right
+                                            text-align: center; // Center the text horizontally
+
+                                            padding-top: 1em;
+                                            vertical-align: middle;
+                                            padding-bottom: 1em;
+
+                                            color: white;
+                                            border: 1px dotted white;
+                                        `}
+                                        l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
+                                    />
+
+                                    <CanvasElementCaptionItem
+                                        css={css`
+                                            // Horizontal positioning / sizing of the element
+                                            margin-left: 10px;
+                                            flex-grow: 1; // Allow it to fill the entire space (but with margin-left and margin-right outside of it)
+                                            text-align: center;
+
+                                            // Vertical sizing
+                                            padding-top: 5px;
+                                            padding-bottom: 5px;
+
+                                            border: 1px solid black;
+                                            color: black;
+                                            background-color: white;
+                                            box-shadow: 3px 3px black;
+                                        `}
+                                        l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
+                                    />
+                                </CanvasElementItemRow>
+                            </CanvasElementItemRegion>
+
+                            <div
+                                id={"overlayToolControlOptionsRegion"}
+                                className={
+                                    canvasElementType && !isXmatter
+                                        ? ""
+                                        : "disabled"
+                                }
+                            >
+                                {getControlOptionsRegion()}
+                            </div>
+                            <div id="overlayToolControlFillerRegion" />
+                            <div id={"overlayToolControlFooterRegion"}>
+                                <CanvasElementKeyHints />
+                                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Overlay_Tool/Overlay_Tool_overview.htm" />
+                            </div>
                         </div>
-                        <div id="overlayToolControlFillerRegion" />
-                        <div id={"overlayToolControlFooterRegion"}>
-                            <CanvasElementKeyHints />
-                            <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Overlay_Tool/Overlay_Tool_overview.htm" />
-                        </div>
-                    </div>
-                )}
+                    )
+                }
             </RequiresSubscriptionOverlayWrapper>
         </div>
     );

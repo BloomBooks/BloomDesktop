@@ -15,11 +15,8 @@ import { kBloomBlue } from "../bloomMaterialUITheme";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 
 export const AboutDialogLauncher: React.FunctionComponent = () => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useEventLaunchedBloomDialog("AboutDialog");
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useEventLaunchedBloomDialog("AboutDialog");
 
     show = showDialog;
 

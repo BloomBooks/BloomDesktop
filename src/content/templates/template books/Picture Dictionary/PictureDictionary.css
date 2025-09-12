@@ -106,5 +106,5 @@ div.wordAndPicture:nth-child(7) {
 
 .bloom-translationGroup .bloom-editable.bloom-content2,
 .bloom-translationGroup .bloom-editable.bloom-content3 {
-    margin-top: 0px; //override basePage
+    margin-top: 0px; /*override basePage*/
 }

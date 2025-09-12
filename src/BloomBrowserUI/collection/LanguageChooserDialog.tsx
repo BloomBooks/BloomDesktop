@@ -62,19 +62,13 @@ export const LanguageChooserDialog: React.FunctionComponent<{
     initialCustomName?: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     show = showDialog;
 
-    const initialSelection:
-        | IOrthography
-        | undefined = parseLangtagFromLangChooser(
-        props.initialLanguageTag || ""
-    );
+    const initialSelection: IOrthography | undefined =
+        parseLangtagFromLangChooser(props.initialLanguageTag || "");
     const [pendingSelection, setPendingSelection] = React.useState(
         initialSelection || ({} as IOrthography)
     );
