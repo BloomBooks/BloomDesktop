@@ -305,7 +305,11 @@ namespace Bloom
             var bloomFileKey = "Bloom" + fileKey;
             EnsureRegistryValue(bloomFileKey + @"\shell\open", "Open");
             // e.g.: HKLM\SOFTWARE\Classes\Bloom.BloomCollectionFile\shell\open\command\: ""C:\Program Files (x86)\Bloom\Bloom.exe" "%1""
-            var exe = Assembly.GetExecutingAssembly().Location;
+            // With Velopack and .net 8, most ways of getting the exe path give a path to Bloom.dll,
+            // which does not work for this purpose. For example, Assembly.GetExecutingAssembly().Location,
+            // Assembly.GetEntryAssembly().Location, and Environment.GetCommandLineArgs()[0]
+            // all yield the path to Bloom.dll. This AI suggestion seems to work.
+            var exe = Process.GetCurrentProcess().MainModule.FileName;
             EnsureRegistryValue(bloomFileKey + @"\shell\open\command", "\"" + exe + "\" \"%1\"");
         }
 
