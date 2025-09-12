@@ -17,6 +17,7 @@ import { get } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../localizationManager/localizationManager";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import { kBloomCanvasClass } from "../../bookEdit/js/bloomImages";
+import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManager";
 
 (function($) {
     $.fn.splitPane = function() {
@@ -257,6 +258,11 @@ import { kBloomCanvasClass } from "../../bookEdit/js/bloomImages";
                         );
                     }
                     $splitPane.resize();
+                    // make sure we're not still in a dragging-the-splitter state
+                    theOneCanvasElementManager.resumeComicEditing();
+                    // this is automatic for changes that happen while we're dragging,
+                    // but dragging gets stopped by mouse up, so we need to do it here.
+                    theOneCanvasElementManager.handleResizeAdjustments();
                 }
             });
         }
