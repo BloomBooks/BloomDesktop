@@ -195,8 +195,11 @@ namespace Bloom.Api
                 string brandingFolderName = null;
                 string flavor = null;
 
-                // First check if this is a direct path to a folder
-                if (Directory.Exists(brandingNameOrFolderPath))
+                // First check if this is a direct path to a folder (only in tests)
+                if (
+                    Path.IsPathRooted(brandingNameOrFolderPath)
+                    && Directory.Exists(brandingNameOrFolderPath)
+                )
                 {
                     // If it's a directory path, look for branding.json directly in that folder
                     settingsPath = Path.Combine(brandingNameOrFolderPath, "branding.json");
