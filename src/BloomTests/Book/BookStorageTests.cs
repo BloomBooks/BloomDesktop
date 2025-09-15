@@ -2094,7 +2094,7 @@ These are similar but already have game-theme classes
             // Note: This expectation is based on the localized English text of several strings.
             // Hope neither the language nor localizations change...
             string expectedHtml =
-                "Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.<br />Access to the path &#39;blah blah&#39; is denied.<br />See <a href='http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78'>http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78</a>.";
+                "See <a href='http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78'>http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78</a>.<br />Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.<br />Access to the path &#39;blah blah&#39; is denied.";
             Assert.That(storage.ErrorMessagesHtml, Is.EqualTo(expectedHtml));
         }
 
