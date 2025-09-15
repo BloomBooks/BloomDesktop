@@ -198,7 +198,7 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 		</PackageReference>
 	</ItemGroup>
 	<PropertyGroup>
-		<MSBuildCommunityTasksLib Condition=" '$(MSBuildCommunityTasksLib)' == '' ">$(PkgMSBuildTask)\tools\MSBuild.Community.Tasks.dll</MSBuildCommunityTasksLib>
+		<MSBuildCommunityTasksLib Condition=" '$(MSBuildCommunityTasksLib)' == '' ">$(SolutionDir)build\MSBuild.Community.Tasks.dll</MSBuildCommunityTasksLib>
 	</PropertyGroup>
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(MSBuildCommunityTasksLib)"/>
 	<Target Name="FixPortuguese" AfterTargets="ReallyAfterBuild">
