@@ -864,6 +864,7 @@ namespace Bloom.Utils
             var outerStackTrace = new StringBuilder();
             while (
                 exception.InnerException != null
+                && exception.StackTrace != null
                 && Regex.IsMatch(exception.StackTrace, "^\\s*at Autofac\\.")
             )
             {
