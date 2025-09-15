@@ -2640,7 +2640,7 @@ namespace Bloom.Book
 
             string encodedSeeAlsoMsg = GetHelpLinkForFilePermissions();
 
-            return $"{encodedMessageForLog}<br />{encodedSeeAlsoMsg}";
+            return $"{encodedSeeAlsoMsg}<br />{encodedMessageForLog}";
         }
 
         private static string GetHelpLinkForFilePermissions()
