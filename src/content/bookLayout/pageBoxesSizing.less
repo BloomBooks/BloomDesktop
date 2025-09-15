@@ -5,7 +5,10 @@
     .bloom-page {
         transform-origin: top left;
         transition: 0.5s ease-in-out;
-        --hide-bleed-adjustment: 0; // Gets set when publishingWithoutFullBleed.
+        // Gets a non-zero value when publishingWithoutFullBleed.
+        // MUST have a dimension! Used in calc() expressions, and a plain zero will mess
+        // up the whole calculation.
+        --hide-bleed-adjustment: 0px; // DO NOT change this to 0 without units!
         // NB: transform order is rightmost first
         transform: translate(
                 calc(
