@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -176,11 +177,67 @@ namespace Bloom.web
 
             var overflowY = HideVerticalOverflow ? " overflow-y: hidden;" : "";
 
-            // The 'body' height: auto rule keeps a winforms tab that only contains a ReactControl
-            // from unnecessary scrolling.
-            RobustFile.WriteAllText(
-                tempFile.Path,
-                $@"<!DOCTYPE html>
+            // Special development mode: if the bundle name matches one of certain tab panes, load via Vite dev server instead of webpack bundle.
+            // This allows rapid iteration without running the whole webpack build. We only do this if a dev server is assumed to be running.
+
+            // make a mapping from bundle names to vite module paths.
+            var modulePathMap = new Dictionary<string, string>
+            {
+                { "collectionsTabPaneBundle", "/collectionsTab/CollectionsTabPane.tsx" },
+                { "publishTabPaneBundle", "/publish/PublishTab/PublishTabPane.tsx" },
+            };
+            var modulePath = modulePathMap.ContainsKey(_javascriptBundleName)
+                ? modulePathMap[_javascriptBundleName]
+                : null;
+            // see if localhost:5173 is running
+            var viteDevServerRunning = IsLocalPortOpen(5173, 400);
+            if (modulePath != null && viteDevServerRunning)
+            {
+                // Map the bundle name to its TSX module path relative to BloomBrowserUI root used by Vite.
+                // Expect dev server at http://localhost:5173.
+                var moduleImportPath =
+                    _javascriptBundleName == "collectionsTabPaneBundle"
+                        ? "/collectionsTab/CollectionsTabPane.entry.tsx"
+                        : "/publish/PublishTab/PublishTabPane.entry.tsx";
+
+                RobustFile.WriteAllText(
+                    tempFile.Path,
+                    $@"<!DOCTYPE html>
+                <html style='height:100%'>
+                <head>
+                    <title>ReactControl (Vite {_javascriptBundleName})</title>
+                    <meta charset='UTF-8' />
+                    <script src='https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js'></script>
+                    <script>
+                        // Ensure legacy plugins see global jQuery in WebView2
+                        window.$ = window.$ || window.jQuery;
+                        window.jQuery = window.jQuery || window.$;
+                    </script>
+                    <script>
+                        // Provide no-op React Fast Refresh globals so dev transforms don't crash in WebView.
+                        window.__vite_plugin_react_preamble_installed__ = true;
+                        window.$RefreshSig$ = window.$RefreshSig$ || (function () {{ return function (type) {{ return type; }}; }});
+                        window.$RefreshReg$ = window.$RefreshReg$ || function () {{}};
+                    </script>
+                    <script>
+                        window.__reactControlProps__ = {props};
+                    </script>
+                    <script type='module' src='http://localhost:5173/@vite/client'></script>
+                    <script type='module' src='http://localhost:5173{moduleImportPath}'></script>
+                </head>
+                <body style='margin:0; height:100%; display:flex; flex:1; flex-direction:column; background-color:{backColor};{overflowY}'>
+                    <div id='reactRoot' style='height:100%'>Loading Vite module {moduleImportPath}...</div>
+                </body>
+                </html>"
+                );
+            }
+            else
+            {
+                // The 'body' height: auto rule keeps a winforms tab that only contains a ReactControl
+                // from unnecessary scrolling.
+                RobustFile.WriteAllText(
+                    tempFile.Path,
+                    $@"<!DOCTYPE html>
 				<html style='height:100%'>
 				<head>
 					<title>ReactControl ({_javascriptBundleName})</title>
@@ -198,8 +255,49 @@ namespace Bloom.web
 					<div id='reactRoot' style='height:100%'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
 				</body>
 				</html>"
-            );
+                );
+            }
             return tempFile;
+        }
+
+        private static bool IsLocalPortOpen(int port, int timeoutMs = 400)
+        {
+            try
+            {
+                // Try IPv6 localhost first (common on Windows), then IPv4.
+                if (TryConnect("::1", port, timeoutMs))
+                    return true;
+                if (TryConnect("127.0.0.1", port, timeoutMs))
+                    return true;
+                // As a fallback, try host name which may resolve differently.
+                if (TryConnect("localhost", port, timeoutMs))
+                    return true;
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool TryConnect(string host, int port, int timeoutMs)
+        {
+            try
+            {
+                using (var client = new System.Net.Sockets.TcpClient())
+                {
+                    var ar = client.BeginConnect(host, port, null, null);
+                    var ok = ar.AsyncWaitHandle.WaitOne(timeoutMs);
+                    if (!ok)
+                        return false;
+                    client.EndConnect(ar);
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
