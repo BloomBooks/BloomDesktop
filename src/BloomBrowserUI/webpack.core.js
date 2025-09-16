@@ -23,8 +23,15 @@ module.exports = {
                 use: [
                     {
                         loader: require.resolve("ts-loader"),
-                    },
+                        options: {
+                            // Only transpile files that are part of the bundle graph
+                            onlyCompileBundledFiles: true,
+                            // Ensure webpack/ts-loader does not try to process Vite's config
+                            transpileOnly: false
+                        }
+                    }
                 ],
+                exclude: [/vite\.config\.ts$/]
             },
             {
                 test: /\.less$/i,
