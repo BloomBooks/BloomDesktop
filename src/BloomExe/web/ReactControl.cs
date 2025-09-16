@@ -177,29 +177,17 @@ namespace Bloom.web
 
             var overflowY = HideVerticalOverflow ? " overflow-y: hidden;" : "";
 
-            // Special development mode: if the bundle name matches one of certain tab panes, load via Vite dev server instead of webpack bundle.
-            // This allows rapid iteration without running the whole webpack build. We only do this if a dev server is assumed to be running.
-
-            // make a mapping from bundle names to vite module paths.
-            var modulePathMap = new Dictionary<string, string>
+            var bundleToViteModulePathMap = new Dictionary<string, string>
             {
-                { "collectionsTabPaneBundle", "/collectionsTab/CollectionsTabPane.tsx" },
-                { "publishTabPaneBundle", "/publish/PublishTab/PublishTabPane.tsx" },
+                { "collectionsTabPaneBundle", "/collectionsTab/CollectionsTabPane.entry.tsx" },
             };
-            var modulePath = modulePathMap.ContainsKey(_javascriptBundleName)
-                ? modulePathMap[_javascriptBundleName]
+            var viteModulePath = bundleToViteModulePathMap.ContainsKey(_javascriptBundleName)
+                ? bundleToViteModulePathMap[_javascriptBundleName]
                 : null;
             // see if localhost:5173 is running
             var viteDevServerRunning = IsLocalPortOpen(5173, 400);
-            if (modulePath != null && viteDevServerRunning)
+            if (viteModulePath != null && viteDevServerRunning)
             {
-                // Map the bundle name to its TSX module path relative to BloomBrowserUI root used by Vite.
-                // Expect dev server at http://localhost:5173.
-                var moduleImportPath =
-                    _javascriptBundleName == "collectionsTabPaneBundle"
-                        ? "/collectionsTab/CollectionsTabPane.entry.tsx"
-                        : "/publish/PublishTab/PublishTabPane.entry.tsx";
-
                 RobustFile.WriteAllText(
                     tempFile.Path,
                     $@"<!DOCTYPE html>
@@ -207,12 +195,6 @@ namespace Bloom.web
                 <head>
                     <title>ReactControl (Vite {_javascriptBundleName})</title>
                     <meta charset='UTF-8' />
-                    <script src='https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js'></script>
-                    <script>
-                        // Ensure legacy plugins see global jQuery in WebView2
-                        window.$ = window.$ || window.jQuery;
-                        window.jQuery = window.jQuery || window.$;
-                    </script>
                     <script>
                         // Provide no-op React Fast Refresh globals so dev transforms don't crash in WebView.
                         window.__vite_plugin_react_preamble_installed__ = true;
@@ -222,11 +204,60 @@ namespace Bloom.web
                     <script>
                         window.__reactControlProps__ = {props};
                     </script>
+                    <script>
+                        // Shim Node-style globals for browser-only environment
+                        if (typeof window.global === 'undefined') window.global = window;
+                        if (typeof window.globalThis === 'undefined') window.globalThis = window;
+                    </script>
+                    <script type='importmap'>
+                    {{
+                      ""imports"": {{
+                        ""jquery"": ""http://localhost:5173/@id/jquery"",
+                        ""xregexp"": ""http://localhost:5173/@id/xregexp"",
+                        ""underscore"": ""http://localhost:5173/@id/underscore""
+                      }}
+                    }}
+                    </script>
+
+                    <!-- Vite HMR client -->
                     <script type='module' src='http://localhost:5173/@vite/client'></script>
-                    <script type='module' src='http://localhost:5173{moduleImportPath}'></script>
+
+                    <!-- Wait for Vite to finish optimizing deps, then import and expose globals, then load the entry. -->
+                    <script type='module'>
+
+
+
+                        async function main() {{
+                            try {{
+
+                                // Import via bare specifiers (resolved by import map) and assign globals expected by legacy libs.
+                                const jQuery = (await import('jquery')).default;
+                                // Some builds export default, others export the function itself. Normalize.
+                                const jq = jQuery && jQuery.fn ? jQuery : (jQuery && jQuery.default ? jQuery.default : jQuery);
+                                window.$ = jq;
+                                window.jQuery = jq;
+                                console.log('jQuery ready via Vite prebundle');
+
+                                const XRegExp = (await import('xregexp')).default || (await import('xregexp'));
+                                window.XRegExp = XRegExp.default || XRegExp;
+                                console.log('XRegExp ready via Vite prebundle');
+
+                                const _mod = await import('underscore');
+                                window._ = _mod.default || _mod;
+                                console.log('Underscore ready via Vite prebundle');
+
+                                // Finally, load the app entry.
+                                await import('http://localhost:5173{viteModulePath}');
+                            }} catch (e) {{
+                                console.error('Failed to initialize Vite dev page:', e);
+                            }}
+                        }}
+
+                        main();
+                    </script>
                 </head>
                 <body style='margin:0; height:100%; display:flex; flex:1; flex-direction:column; background-color:{backColor};{overflowY}'>
-                    <div id='reactRoot' style='height:100%'>Loading Vite module {moduleImportPath}...</div>
+                    <div id='reactRoot' style='height:100%'>Loading Vite module {viteModulePath}...</div>
                 </body>
                 </html>"
                 );
