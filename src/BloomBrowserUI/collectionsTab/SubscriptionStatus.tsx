@@ -1,5 +1,5 @@
 import { css } from "@emotion/react";
-import "SubscriptionStatus.less";
+import "./SubscriptionStatus.less";
 import { useApiString } from "../utils/bloomApi";
 import * as React from "react";
 import WarningIcon from "@mui/icons-material/Warning";

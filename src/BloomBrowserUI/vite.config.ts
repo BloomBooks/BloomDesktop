@@ -10,7 +10,11 @@ export default defineConfig(async () => {
     ]);
 
     return {
-        plugins: [react()],
+        plugins: [
+            // Fast Refresh injects $RefreshSig$ which can error in WebView.
+            // We disable it here for stability; HMR still works for modules.
+            react({ fastRefresh: false })
+        ],
         server: {
             port: 5173,
             strictPort: true
