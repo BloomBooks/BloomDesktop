@@ -141,7 +141,7 @@
         "@storybook/react-webpack5": "7.6.17",
         "@types/dom-mediacapture-record": "^1.0.1",
         "@types/jquery": "^1.0",
-        "@types/markdown-it": "^0.0.7",
+        "@types/markdown-it": "^14.1.2",
         "@types/rc-slider": "8.6.6",
         "@types/react": "^17",
         "@types/react-color": "^3.0.2",
