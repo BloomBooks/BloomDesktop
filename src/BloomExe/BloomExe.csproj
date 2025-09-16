@@ -188,12 +188,12 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 	<!--
 		The SIL Common Strings project uses pt-BR as the tag for Portuguese.  SIL-Bloom uses
 		pt-PT as the tag.  This needs to be fixed for Bloom to use the localizations from
-		libpalaso.  Using the FileUpdate task from the MSBuildTasks package seems like the
-		best way to achieve this result.
+		libpalaso.  Using the FileUpdate task from the SIL.BuildTasks package seems like the
+		easiest way to achieve this result.
 	-->
-	<UsingTask TaskName="FileUpdate" AssemblyFile="$(PkgMSBuildTasks)\tools\MSBuild.Community.Tasks.dll" />
+	<UsingTask TaskName="FileUpdate" AssemblyFile="$(PkgSIL_BuildTasks)\tools\SIL.BuildTasks.dll" />
 	<Target Name="FixPortuguese" AfterTargets="ReallyAfterBuild">
-		<FileUpdate Files="$(LocalizationDir)\pt\Palaso.xlf" Regex="pt-BR" ReplacementText="pt-PT" />
+		<FileUpdate File="$(LocalizationDir)\pt\Palaso.xlf" Regex="pt-BR" ReplacementText="pt-PT" />
 		<Message Text="Finished fixing Portuguese language tags in Palaso.xlf" Importance="high" />
 	</Target>
 	<Target Name="CopyX86SqliteForArm" AfterTargets="ReallyAfterBuild">
@@ -219,16 +219,13 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1518.46" />
 		<PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
 		<PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
-		<PackageReference Include="MSBuildTasks" Version="1.5.0.235" GeneratePathProperty="true">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
 		<PackageReference Include="NAudio" Version="1.10.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="PDFsharp" Version="6.2.1" />
 		<PackageReference Include="RestSharp" Version="106.12.0" />
 		<PackageReference Include="Sentry" Version="3.9.4" />
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />
+		<PackageReference Include="SIL.BuildTasks" Version="3.1.1" GeneratePathProperty="true" />
 		<PackageReference Include="SIL.Core.Desktop" Version="16.2.0-beta0029" />
 		<PackageReference Include="SIL.DesktopAnalytics" Version="4.0.4" />
 		<PackageReference Include="SIL.libpalaso.l10ns" Version="16.2.0-beta0040" GeneratePathProperty="true" />
