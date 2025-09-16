@@ -11,7 +11,7 @@
  */
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
-require("./jquery.mousewheel.js");
+import "./jquery.mousewheel.js";
 
 (function($, window, undefined) {
     var lengthOfPreviouslyInsertedCharacter = 1; //when we convert to Typescript, this is a member variable
