@@ -218,7 +218,11 @@
     <ItemGroup>
       <ReleaseFiles
         Include="..\output\release\**\*.*"
-        Exclude="**\*.xml;Bloom.vshost.exe;**\*.pdb;**\BloomTests.*;remoteDebugging;**\Moq.*;**\nunit.*.dll;**\NUnit3.*.dll" />
+        Exclude="**\*.xml;Bloom.vshost.exe;**\*.pdb;**\BloomTests.*;remoteDebugging;**\Moq.*;**\nunit.*.dll;**\NUnit3.*.dll;**\runtimes\**"  />
+      <X64Files
+        Include="..\output\release\runtimes\win-x64\**"/>
+      <Arm64Files
+        Include="..\output\release\runtimes\win-arm64\**"/>
       <PdbFiles
         Include="..\output\release\Bloom*.pdb"
         Exclude="**\*Tests.*" />
@@ -231,6 +235,8 @@
 
     <RemoveDir Directories="..\output\installer\content" />
     <Copy SourceFiles="@(ReleaseFiles)" DestinationFolder="..\output\installer\content\%(RecursiveDir)" />
+    <Copy SourceFiles="@(X64Files)" DestinationFolder="..\output\installer\content\runtimes\win-x64\%(RecursiveDir)" />
+    <Copy SourceFiles="@(Arm64Files)" DestinationFolder="..\output\installer\content\runtimes\win-arm64\%(RecursiveDir)" />
     <Copy SourceFiles="@(PdbFiles)" DestinationFolder="..\output\installer\content\%(RecursiveDir)" />
     <Copy SourceFiles="@(DistFiles)" DestinationFolder="..\output\installer\content\%(RecursiveDir)" />
     <Copy SourceFiles="@(BrowserFiles)" DestinationFolder="..\output\installer\content\browser\%(RecursiveDir)" />
