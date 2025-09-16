@@ -495,49 +495,49 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                         />
                     </div>
 
-                    {
-                        lockedToOneDownloadedBook || (
-                            <Transition in={true} appear={true} timeout={2000}>
+                    <>
+                        {!lockedToOneDownloadedBook && (
+                        <Transition in={true} appear={true} timeout={2000}>
                                 {(state) => (
-                                    <div
+                                <div
+                                    css={css`
+                                        margin: 10px;
+                                    `}
+                                    className={`group fade-${state}`}
+                                >
+                                    <H1
+                                        l10nKey={collectionsHeaderKey}
                                         css={css`
-                                            margin: 10px;
+                                            padding-bottom: 20px;
                                         `}
-                                        className={`group fade-${state}`}
                                     >
-                                        <H1
-                                            l10nKey={collectionsHeaderKey}
-                                            css={css`
-                                                padding-bottom: 20px;
-                                            `}
-                                        >
-                                            {collectionsHeaderText}
-                                        </H1>
+                                        {collectionsHeaderText}
+                                    </H1>
 
-                                        <ShowAfterDelay
-                                            waitBeforeShow={100} // REview: we really want to wait for an event that indicates the main collection is mostly painted
-                                        >
-                                            {collectionComponents}
-                                        </ShowAfterDelay>
-                                        <Link
-                                            l10nKey="CollectionTab.AddSourceCollection"
-                                            css={css`
-                                                text-transform: uppercase;
-                                                padding-bottom: 10px;
-                                            `}
+                                    <ShowAfterDelay
+                                        waitBeforeShow={100} // REview: we really want to wait for an event that indicates the main collection is mostly painted
+                                    >
+                                        {collectionComponents}
+                                    </ShowAfterDelay>
+                                    <Link
+                                        l10nKey="CollectionTab.AddSourceCollection"
+                                        css={css`
+                                            text-transform: uppercase;
+                                            padding-bottom: 10px;
+                                        `}
                                             onClick={() =>
                                                 addSourceCollection()
                                             }
-                                        >
-                                            Show another collection...
-                                        </Link>
-                                    </div>
-                                )}
-                            </Transition>
-                        )
-                        // Enhance:possibly if we're NOT showing the Sources for new Books stuff,
-                        // we could have a message saying why and to pick an Enterprise subscription to fix it.
-                    }
+                                    >
+                                        Show another collection...
+                                    </Link>
+                                </div>
+                            )}
+                        </Transition>
+                        )}
+                    </>
+                    {/* Enhance:possibly if we're NOT showing the Sources for new Books stuff,
+                    we could have a message saying why and to pick an Enterprise subscription to fix it. */}
                 </SplitPane>
                 {/* This wrapper is used to... fix up some margin/color stuff I was having trouble with from SplitPane */}
                 <div
