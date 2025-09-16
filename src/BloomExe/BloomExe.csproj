@@ -188,12 +188,15 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 	<!--
 		The SIL Common Strings project uses pt-BR as the tag for Portuguese.  SIL-Bloom uses
 		pt-PT as the tag.  This needs to be fixed for Bloom to use the localizations from
-		libpalaso.  Using the FileUpdate task from the SIL.BuildTasks package seems like the
-		easiest way to achieve this result.
+		libpalaso.  Using the FileUpdate task from the MSBuildTasks package seems like the
+		best way to achieve this result.
 	-->
-	<UsingTask TaskName="FileUpdate" AssemblyFile="$(SolutionDir)packages\SIL.BuildTasks\tools\SIL.BuildTasks.dll"/>
+	<ItemGroup>
+		<PackageReference Include="MSBuildTasks" Version="1.5.0.235" GeneratePathProperty="true" />
+	</ItemGroup>
+	<UsingTask TaskName="FileUpdate" AssemblyFile="$(PkgMSBuildTasks)\tools\MSBuild.Community.Tasks.dll"/>
 	<Target Name="FixPortuguese" AfterTargets="ReallyAfterBuild">
-		<FileUpdate File="$(LocalizationDir)\pt\Palaso.xlf" Regex="pt-BR" ReplacementText="pt-PT" />
+		<FileUpdate Files="$(LocalizationDir)\pt\Palaso.xlf" Regex="pt-BR" ReplacementText="pt-PT" />
 		<Message Text="Finished fixing Portuguese language tags in Palaso.xlf" Importance="high" />
 	</Target>
 	<Target Name="CopyX86SqliteForArm" AfterTargets="ReallyAfterBuild">
