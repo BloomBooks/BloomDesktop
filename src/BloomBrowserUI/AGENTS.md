@@ -1,6 +1,7 @@
 # Front-end
 ## Directory
 When working in the front-end, cd to src/BloomBrowserUI
+
 ## Stack
 - typescript
 - react
@@ -8,6 +9,8 @@ When working in the front-end, cd to src/BloomBrowserUI
 - Emotion
 - yarn 1.22.22
 - Never use npm commands
+
+- Never use CDNs. This is an offline app.
 
 ## Code Style
 
