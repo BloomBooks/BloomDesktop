@@ -941,6 +941,11 @@
         <source xml:lang="en">Copyright</source>
         <note>ID: Common.Copyright</note>
       </trans-unit>
+      <trans-unit id="Common.Default">
+        <source xml:lang="en">Default</source>
+        <note>ID: Common.Default</note>
+        <note>Used as an option in a menu (e.g., use the default Correct sound)</note>
+      </trans-unit>
       <trans-unit id="Common.Delete">
         <source xml:lang="en">Delete</source>
         <note>ID: Common.Delete</note>
