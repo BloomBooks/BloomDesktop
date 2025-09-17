@@ -18,6 +18,7 @@ using Bloom.SafeXml;
 using Bloom.web;
 using L10NSharp;
 using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.Spreadsheet
 {
@@ -296,6 +297,11 @@ namespace Bloom.Spreadsheet
                     ?? ""
                 )
                 .NotEncoded;
+
+            if (source == "")
+                // User hasn't set up the activity
+                return;
+
             var index = _spreadsheet.AddColumnForTag(
                 InternalSpreadsheet.WidgetSourceColumnLabel,
                 "Widgets"
@@ -1023,6 +1029,7 @@ namespace Bloom.Spreadsheet
             {
                 Console.WriteLine("Export failed: ");
                 Console.WriteLine(e);
+                Logger.WriteError(e);
                 progress.MessageWithParams(
                     "Spreadsheet.ExportFailed",
                     "{0} is a placeholder for the exception message",
