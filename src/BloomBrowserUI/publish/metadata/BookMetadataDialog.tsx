@@ -57,13 +57,13 @@ export default class BookMetadataDialog extends React.Component<
 
     public static show(signalChangeOnClose?: () => void) {
         BookMetadataDialog.signalChangeOnClose = signalChangeOnClose;
-        get("book/metadata", result => {
+        get("book/metadata", (result) => {
             BookMetadataDialog.singleton.metadata = result.data.metadata;
             BookMetadataDialog.singleton.translatedControlStrings =
                 result.data.translatedStringPairs;
 
             BookMetadataDialog.singleton.setState({
-                isOpen: true
+                isOpen: true,
             });
         });
     }

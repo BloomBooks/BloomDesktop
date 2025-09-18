@@ -2,7 +2,7 @@ import * as React from "react";
 import { ProgressBox } from "./progressBox";
 
 export default {
-    title: "Progress/Progress Box"
+    title: "Progress/Progress Box",
 };
 
 export const RawProgressBoxWithPreloadedLog = () => {
@@ -14,14 +14,14 @@ export const RawProgressBoxWithPreloadedLog = () => {
                         id: "message",
                         clientContext: "unused",
                         message: "This is a preloaded log message",
-                        progressKind: "Progress"
+                        progressKind: "Progress",
                     },
                     {
                         id: "message",
                         clientContext: "unused",
                         message: "This is a message about an error in the past",
-                        progressKind: "Error"
-                    }
+                        progressKind: "Error",
+                    },
                 ]}
             />
         );
@@ -29,5 +29,5 @@ export const RawProgressBoxWithPreloadedLog = () => {
 };
 
 RawProgressBoxWithPreloadedLog.story = {
-    name: "Raw ProgressBox with preloaded log"
+    name: "Raw ProgressBox with preloaded log",
 };

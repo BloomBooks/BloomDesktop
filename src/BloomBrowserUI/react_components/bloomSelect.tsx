@@ -27,16 +27,16 @@ export class BloomSelect extends React.Component<IProps> {
     constructor(props: IProps) {
         super(props);
 
-        this.props.options.map(item => {
+        this.props.options.map((item) => {
             if (item.l10nKey) {
                 theOneLocalizationManager
                     .asyncGetTextAndSuccessInfo(
                         item.l10nKey,
                         item.label,
                         item.comment ? item.comment : "",
-                        false
+                        false,
                     )
-                    .done(result => {
+                    .done((result) => {
                         item.label = result.text;
                     });
             }
@@ -46,16 +46,16 @@ export class BloomSelect extends React.Component<IProps> {
     public render() {
         const selectedOption = this.props.currentOption.value
             ? this.props.options.filter(
-                  x => x.value === this.props.currentOption.value
+                  (x) => x.value === this.props.currentOption.value,
               )[0]
             : this.props.options.filter(
-                  x => x.value === this.props.nullOption
+                  (x) => x.value === this.props.nullOption,
               )[0];
 
         return (
             <Select
                 value={selectedOption}
-                onChange={selectedOption => this.handleChange(selectedOption)}
+                onChange={(selectedOption) => this.handleChange(selectedOption)}
                 options={this.props.options}
                 className={this.props.className}
             />

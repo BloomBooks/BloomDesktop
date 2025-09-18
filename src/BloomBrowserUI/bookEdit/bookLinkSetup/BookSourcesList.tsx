@@ -13,14 +13,14 @@ interface BookSourcesListProps {
 export const BookSourcesList: React.FC<BookSourcesListProps> = ({
     books,
     selectedBook,
-    onSelectBook
+    onSelectBook,
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (selectedBook && containerRef.current) {
             const element = containerRef.current.querySelector(
-                `[data-book-id="${selectedBook.id}"]`
+                `[data-book-id="${selectedBook.id}"]`,
             );
             element?.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
@@ -41,7 +41,7 @@ export const BookSourcesList: React.FC<BookSourcesListProps> = ({
                 padding: 10px;
             `}
         >
-            {books.map(book => (
+            {books.map((book) => (
                 <div key={book.id} data-book-id={book.id}>
                     <LinkCard
                         link={{ book: book }}

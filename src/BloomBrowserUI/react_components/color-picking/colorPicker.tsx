@@ -22,12 +22,14 @@ interface IColorPickerProps {
     //defaultColor?: IColorInfo;  will eventually need this
 }
 
-export const ColorPicker: React.FunctionComponent<IColorPickerProps> = props => {
+export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
+    props,
+) => {
     const [colorChoice, setColorChoice] = useState(props.currentColor);
 
     const defaultStyleLabel = useL10n(
         "Default for style",
-        "EditTab.DirectFormatting.labelForDefaultColor"
+        "EditTab.DirectFormatting.labelForDefaultColor",
     );
 
     const changeColor = (swatchColor: IColorInfo) => {
@@ -50,14 +52,14 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = props => 
     const handleHexCodeChange = (hexColor: string) => {
         const newColor = {
             colors: [hexColor],
-            opacity: colorChoice.opacity // Don't change opacity
+            opacity: colorChoice.opacity, // Don't change opacity
         };
         changeColor(newColor);
     };
 
     const getColorInfoFromColorResult = (
         color: ColorResult,
-        customName: string
+        customName: string,
     ): IColorInfo => {
         // A color that comes from a react-color component (not from clicking on a swatch),
         // cannot be a gradient.
@@ -74,7 +76,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = props => 
         return {
             name: customName,
             colors: [colorString],
-            opacity: opacity
+            opacity: opacity,
         };
     };
 
@@ -87,14 +89,14 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = props => 
     const getColorSwatches = () => (
         <React.Fragment>
             {props.swatchColors
-                .filter(colorInfo => {
+                .filter((colorInfo) => {
                     if (props.noGradientSwatches) {
                         return colorInfo.colors.length === 1;
                     } else {
                         return true;
                     }
                 })
-                .filter(colorInfo => {
+                .filter((colorInfo) => {
                     return !props.transparency ? colorInfo.opacity === 1 : true;
                 })
                 .map((colorInfo: IColorInfo, i: number) => (

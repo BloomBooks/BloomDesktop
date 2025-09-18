@@ -4,7 +4,7 @@ import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import {
     post,
     useApiBoolean,
-    useCanModifyCurrentBook
+    useCanModifyCurrentBook,
 } from "../../utils/bloomApi";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { Link } from "../../react_components/link";
@@ -17,7 +17,7 @@ import {
     FormControl,
     MenuItem,
     Select,
-    Typography
+    Typography,
 } from "@mui/material";
 import { kSelectCss } from "../../bloomMaterialUITheme";
 import { useState } from "react";
@@ -31,7 +31,7 @@ const epubModes: IEpubMode[] = [
         l10nKey: "PublishTab.Epub.Fixed",
         description:
             "Ask ePUB readers to show pages exactly like you see them in Bloom",
-        descriptionL10nKey: "PublishTab.Epub.Fixed.Description"
+        descriptionL10nKey: "PublishTab.Epub.Fixed.Description",
     },
     {
         mode: "flowable",
@@ -39,8 +39,8 @@ const epubModes: IEpubMode[] = [
         l10nKey: "PublishTab.Epub.Flowable",
         description:
             "Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has overlay pages (comics).",
-        descriptionL10nKey: "PublishTab.Epub.Flowable.Description"
-    }
+        descriptionL10nKey: "PublishTab.Epub.Flowable.Description",
+    },
 ];
 
 export const EPUBSettingsGroup: React.FunctionComponent<{
@@ -49,7 +49,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
     // when refreshing.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11043.
     mode: string;
     setMode: (mode: string) => void;
-}> = props => {
+}> = (props) => {
     const canModifyCurrentBook = useCanModifyCurrentBook();
     const linkCss = "margin-top: 1em !important; display: block;";
     const disabledLinkCss = canModifyCurrentBook
@@ -60,7 +60,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
 
     const [hasCanvasElements] = useApiBoolean(
         "publish/epub/canvasElements",
-        true
+        true,
     );
 
     return (
@@ -107,20 +107,20 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                     setIsModeDropdownOpen(true);
                                 }}
                                 onClose={() => setIsModeDropdownOpen(false)}
-                                onChange={e => {
+                                onChange={(e) => {
                                     const newMode = e.target.value as string;
                                     props.setMode(newMode);
                                     props.onChange();
                                 }}
                                 style={{ width: 145 }}
-                                renderValue={f => {
+                                renderValue={(f) => {
                                     const item = epubModes.find(
-                                        item => item.mode === f
+                                        (item) => item.mode === f,
                                     )!;
                                     return <EpubModeItem {...item} />;
                                 }}
                             >
-                                {epubModes.map(item => {
+                                {epubModes.map((item) => {
                                     const disabled =
                                         hasCanvasElements &&
                                         item.mode === "flowable";
@@ -145,7 +145,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                                 l10nKey:
                                                     "PublishTab.Epub.Flowable.DisabledTooltip",
                                                 english:
-                                                    "This is disabled because an ePUB viewer in flowable mode would not be able to display the overlay pages (comics) in this book."
+                                                    "This is disabled because an ePUB viewer in flowable mode would not be able to display the overlay pages (comics) in this book.",
                                             }}
                                         >
                                             {menuItem}
@@ -163,13 +163,13 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                 label={useL10n(
                     "Accessibility",
                     "PublishTab.Epub.Accessibility",
-                    "Here, the English 'Accessibility' is a common way of referring to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc."
+                    "Here, the English 'Accessibility' is a common way of referring to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.",
                 )}
             >
                 <BloomTooltip
                     showDisabled={props.mode === "fixed"}
                     tipWhenDisabled={{
-                        l10nKey: "PublishTab.Epub.IncludeOnPage.Disabled"
+                        l10nKey: "PublishTab.Epub.IncludeOnPage.Disabled",
                     }}
                 >
                     <ApiCheckbox
@@ -251,7 +251,7 @@ interface IProps extends IEpubMode {
     popupAnchorElement?: HTMLElement | null;
 }
 
-const EpubModeItem: React.FunctionComponent<IProps> = props => {
+const EpubModeItem: React.FunctionComponent<IProps> = (props) => {
     const id = "mouse-over-popover-" + props.mode;
 
     return (
@@ -259,7 +259,7 @@ const EpubModeItem: React.FunctionComponent<IProps> = props => {
             key={"tooltip-" + props.mode}
             tip={{
                 english: props.description,
-                l10nKey: props.descriptionL10nKey
+                l10nKey: props.descriptionL10nKey,
             }}
         >
             <div

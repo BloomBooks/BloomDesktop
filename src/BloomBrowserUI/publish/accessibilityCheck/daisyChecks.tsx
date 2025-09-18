@@ -21,7 +21,7 @@ export class DaisyChecks extends React.Component<
 > {
     public readonly state: IState = {
         reportUrl: "",
-        errorMessage: undefined
+        errorMessage: undefined,
     };
 
     public componentDidMount() {
@@ -32,16 +32,16 @@ export class DaisyChecks extends React.Component<
         // using axios directly because of explicit catch.
         axios
             .get("/bloom/api/accessibilityCheck/aceByDaisyReportUrl")
-            .then(result => {
+            .then((result) => {
                 this.setState({ reportUrl: result.data });
             })
-            .catch(error => {
+            .catch((error) => {
                 if (error.message !== "Request failed with status code 417")
                     // 417 === ExpectationFailed signals error messages are already displayed.
                     this.setState({
                         errorMessage:
                             "The API call to Ace By Daisy failed. " +
-                            JSON.stringify(error)
+                            JSON.stringify(error),
                     });
             });
     }
@@ -65,8 +65,8 @@ export class DaisyChecks extends React.Component<
                                           progressKind: "Error",
                                           id: "message",
                                           clientContext: "unused",
-                                          message: this.state.errorMessage
-                                      }
+                                          message: this.state.errorMessage,
+                                      },
                                   ]
                                 : []
                         }

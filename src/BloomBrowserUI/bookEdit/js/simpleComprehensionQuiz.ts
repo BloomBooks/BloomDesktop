@@ -31,7 +31,7 @@ export function initChoiceWidgetsForEditing(): void {
     // Double-check that we are in a single page that is a simple comprehension quiz.
     const pages = document.getElementsByClassName("bloom-page");
     const quizPages = document.getElementsByClassName(
-        "simple-comprehension-quiz"
+        "simple-comprehension-quiz",
     );
     if (pages.length !== 1 || quizPages.length !== 1) {
         return;
@@ -75,7 +75,7 @@ function handleEditModeClick(evt: Event): void {
 
 function markEmptyChoices(): void {
     const choices = document.getElementsByClassName(
-        "checkbox-and-textbox-choice"
+        "checkbox-and-textbox-choice",
     );
     for (let i = 0; i < choices.length; i++) {
         if (hasVisibleContent(choices[i])) {
@@ -90,8 +90,8 @@ function hasVisibleContent(choice: Element): boolean {
     const editables = choice.getElementsByClassName("bloom-editable");
 
     return Array.from(editables).some(
-        e =>
+        (e) =>
             e.classList.contains("bloom-visibility-code-on") &&
-            (e.textContent || "").trim() !== ""
+            (e.textContent || "").trim() !== "",
     );
 }

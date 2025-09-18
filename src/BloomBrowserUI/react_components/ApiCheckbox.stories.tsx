@@ -2,7 +2,7 @@ import * as React from "react";
 import { ApiCheckbox } from "./ApiCheckbox";
 
 export default {
-    title: "BloomCheckbox/ApiCheckbox"
+    title: "BloomCheckbox/ApiCheckbox",
 };
 
 export const _ApiCheckbox = () =>
@@ -15,5 +15,5 @@ export const _ApiCheckbox = () =>
     ));
 
 _ApiCheckbox.story = {
-    name: "ApiCheckbox"
+    name: "ApiCheckbox",
 };

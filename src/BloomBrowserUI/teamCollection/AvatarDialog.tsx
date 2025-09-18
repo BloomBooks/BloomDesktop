@@ -11,7 +11,7 @@ import {
     DialogMiddle,
     DialogBottomButtons,
     DialogBottomLeftButtons,
-    DialogTitle
+    DialogTitle,
 } from "../react_components/BloomDialog/BloomDialog";
 import { get } from "../utils/bloomApi";
 import { showRegistrationDialog } from "../react_components/registrationDialog";
@@ -23,14 +23,14 @@ export const AvatarDialog: React.FunctionComponent<{
     close: () => void;
     currentUser: string;
     currentUserName: string;
-}> = props => {
+}> = (props) => {
     const title = useL10n(
         "Your Team Collection Avatar & Name",
         "TeamCollection.AvatarAndName",
         undefined,
         undefined,
         undefined,
-        true
+        true,
     );
     const avatar = (
         <BloomAvatar email={props.currentUser} name={props.currentUserName} />
@@ -89,7 +89,7 @@ export const AvatarDialog: React.FunctionComponent<{
                         onClick={() => {
                             props.close();
                             showRegistrationDialog({
-                                registrationIsOptional: false
+                                registrationIsOptional: false,
                             });
                         }}
                         hasText={true}

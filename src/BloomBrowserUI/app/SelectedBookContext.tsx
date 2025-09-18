@@ -2,14 +2,14 @@ import * as React from "react";
 import {
     DefaultSelectedBookInfo,
     ISelectedBookInfo,
-    useMonitorBookSelection
+    useMonitorBookSelection,
 } from "./selectedBook";
 
 export const SelectedBookContext = React.createContext<ISelectedBookInfo>(
-    DefaultSelectedBookInfo
+    DefaultSelectedBookInfo,
 );
 
-export const SelectedBookProvider: React.FunctionComponent = props => {
+export const SelectedBookProvider: React.FunctionComponent = (props) => {
     const selectedBookInfo = useMonitorBookSelection();
     return <SelectedBookContext.Provider value={selectedBookInfo} {...props} />;
 };

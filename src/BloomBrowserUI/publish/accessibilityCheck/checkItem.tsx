@@ -1,7 +1,7 @@
 import * as React from "react";
 import {
     IUILanguageAwareProps,
-    Label
+    Label,
 } from "../../react_components/l10nComponents";
 import axios from "axios";
 
@@ -31,7 +31,7 @@ interface IState {
 }
 export class CheckItem extends React.Component<IProps, IState> {
     public readonly state: IState = {
-        checkResult: { resultClass: "pending", problems: [] }
+        checkResult: { resultClass: "pending", problems: [] },
     };
 
     public componentDidMount() {
@@ -45,10 +45,10 @@ export class CheckItem extends React.Component<IProps, IState> {
     private queryData() {
         axios
             .get(`/bloom/api/accessibilityCheck/${this.props.apiCheckName}`)
-            .then(result => {
+            .then((result) => {
                 this.setState({ checkResult: result.data });
             })
-            .catch(error => {
+            .catch((error) => {
                 this.setState({
                     checkResult: {
                         resultClass: "unknown",
@@ -57,10 +57,10 @@ export class CheckItem extends React.Component<IProps, IState> {
                                 // note "file not found" here may have nothing to do with files
                                 // it may just be a poor choice of return codes.
                                 message: `Error from Bloom Server: ${error.message} ${error.response.statusText}`,
-                                problemText: ""
-                            }
-                        ]
-                    }
+                                problemText: "",
+                            },
+                        ],
+                    },
                 });
             });
     }
@@ -71,18 +71,24 @@ export class CheckItem extends React.Component<IProps, IState> {
             <li className={`checkItem ${this.state.checkResult.resultClass}`}>
                 <Label l10nKey={labelKey}>{this.props.label}</Label>
                 <ul>
-                    {// problem descriptions are already localized by the backend
-                    this.state.checkResult.problems.map((problem, index) => (
-                        //react requires unique keys on each
-                        <li key={"p" + index}>
-                            {problem.message}
-                            {problem.problemText ? (
-                                <blockquote>{problem.problemText}</blockquote>
-                            ) : (
-                                ""
-                            )}
-                        </li>
-                    ))}
+                    {
+                        // problem descriptions are already localized by the backend
+                        this.state.checkResult.problems.map(
+                            (problem, index) => (
+                                //react requires unique keys on each
+                                <li key={"p" + index}>
+                                    {problem.message}
+                                    {problem.problemText ? (
+                                        <blockquote>
+                                            {problem.problemText}
+                                        </blockquote>
+                                    ) : (
+                                        ""
+                                    )}
+                                </li>
+                            ),
+                        )
+                    }
                 </ul>
             </li>
         );

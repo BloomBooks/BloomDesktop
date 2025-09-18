@@ -24,16 +24,16 @@ const suitableFont: IFontMetaData = {
     variants: ["regular", "bold", "italic", "bold italic"],
     designer: "Monotype",
     fsType: "0",
-    designerURL: "http://www.google.com"
+    designerURL: "http://www.google.com",
 };
 const unknownFont: IFontMetaData = {
     name: "Chiller",
-    determinedSuitability: "unknown"
+    determinedSuitability: "unknown",
 };
 const unsuitableFont: IFontMetaData = {
     name: "Microsoft YaHei",
     determinedSuitability: "invalid",
-    determinedSuitabilityNotes: "Bloom does not support .ttc fonts."
+    determinedSuitabilityNotes: "Bloom does not support .ttc fonts.",
 };
 const moreCompleteUnknownFont: IFontMetaData = {
     name: "Back Issues BB",
@@ -46,18 +46,18 @@ const moreCompleteUnknownFont: IFontMetaData = {
     variants: ["regular"],
     determinedSuitability: "unknown",
     determinedSuitabilityNotes:
-        "Has a good fsType, but as this is an unvetted manufacturer, we cannot know unambiguously what is allowed without studying the license."
+        "Has a good fsType, but as this is an unvetted manufacturer, we cannot know unambiguously what is allowed without studying the license.",
 };
 
 const fontTestData = [
     suitableFont,
     unknownFont,
     unsuitableFont,
-    moreCompleteUnknownFont
+    moreCompleteUnknownFont,
 ];
 
 export default {
-    title: "Format dialog"
+    title: "Format dialog",
 };
 
 export const FontSelectCurrentOk = () => {
@@ -73,7 +73,7 @@ export const FontSelectCurrentOk = () => {
 };
 
 FontSelectCurrentOk.story = {
-    name: "Font Select-current ok"
+    name: "Font Select-current ok",
 };
 
 export const FontSelectCurrentUnknown = () => {
@@ -89,7 +89,7 @@ export const FontSelectCurrentUnknown = () => {
 };
 
 FontSelectCurrentUnknown.story = {
-    name: "Font Select-current unknown"
+    name: "Font Select-current unknown",
 };
 
 export const FontSelectCurrentUnsuitable = () => {
@@ -105,7 +105,7 @@ export const FontSelectCurrentUnsuitable = () => {
 };
 
 FontSelectCurrentUnsuitable.story = {
-    name: "Font Select-current unsuitable"
+    name: "Font Select-current unsuitable",
 };
 
 export const FontInformationPaneUnsuitable = () => {
@@ -121,5 +121,5 @@ export const FontInformationPaneUnsuitable = () => {
 };
 
 FontInformationPaneUnsuitable.story = {
-    name: "FontInformationPane unsuitable"
+    name: "FontInformationPane unsuitable",
 };

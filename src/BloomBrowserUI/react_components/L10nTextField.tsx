@@ -9,7 +9,7 @@ interface IProps extends StandardTextFieldProps {
 }
 
 // Displays a Text field with the label localized (only works if label is a string).
-export const L10nTextField: React.FunctionComponent<IProps> = props => {
+export const L10nTextField: React.FunctionComponent<IProps> = (props) => {
     // Do NOT initialize from props.l10nKeyForLabel; we want it to be different from that the first time,
     // so asyncGetText runs once.
     const [prevL10nKey, setPrevL10nKey] = useState("");
@@ -26,7 +26,7 @@ export const L10nTextField: React.FunctionComponent<IProps> = props => {
         setPrevL10nKey(props.l10nKeyForLabel);
         theOneLocalizationManager
             .asyncGetText(props.l10nKeyForLabel, stringLabel, undefined)
-            .done(result => {
+            .done((result) => {
                 setLabelContent(result);
             });
     }

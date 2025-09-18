@@ -5,12 +5,12 @@ import {
     DialogBottomLeftButtons,
     DialogMiddle,
     DialogTitle,
-    IBloomDialogProps
+    IBloomDialogProps,
 } from "./BloomDialog/BloomDialog";
 import {
     IBloomDialogEnvironmentParams,
     useEventLaunchedBloomDialog,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "./BloomDialog/BloomDialogPlumbing";
 import { DialogCancelButton } from "./BloomDialog/commonDialogComponents";
 import { useL10n } from "./l10nHooks";
@@ -31,9 +31,11 @@ interface IRegistrationDialogProps {
     onSave?: (isValidEmail: boolean) => void;
 }
 
-export const RegistrationDialogLauncher: React.FunctionComponent<IRegistrationDialogProps & {
-    dialogEnvironment?: IBloomDialogEnvironmentParams;
-}> = props => {
+export const RegistrationDialogLauncher: React.FunctionComponent<
+    IRegistrationDialogProps & {
+        dialogEnvironment?: IBloomDialogEnvironmentParams;
+    }
+> = (props) => {
     // eslint needed useSetup and useEvent to be in the same order on every render
     const useSetup = useSetupBloomDialog(props.dialogEnvironment);
     const useEventLaunched = useEventLaunchedBloomDialog("RegistrationDialog");
@@ -62,11 +64,13 @@ export const RegistrationDialogLauncher: React.FunctionComponent<IRegistrationDi
     ) : null;
 };
 
-export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProps & {
-    closeDialog: () => void;
-    showDialog: () => void;
-    propsForBloomDialog: IBloomDialogProps;
-}> = props => {
+export const RegistrationDialog: React.FunctionComponent<
+    IRegistrationDialogProps & {
+        closeDialog: () => void;
+        showDialog: () => void;
+        propsForBloomDialog: IBloomDialogProps;
+    }
+> = (props) => {
     const [mayChangeEmail, setMayChangeEmail] = useState(true);
     const registrationIsOptional =
         props.registrationIsOptional ??
@@ -85,17 +89,17 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
         email: "",
         organization: "",
         usingFor: "",
-        hadEmailAlready: false
+        hadEmailAlready: false,
     });
 
     // Every time the dialog is opened, set MayChangeEmail and User Info fields
     useEffect(() => {
         if (!props.propsForBloomDialog.open) return;
-        getBoolean("teamCollection/mayChangeRegistrationEmail", mayChange => {
+        getBoolean("teamCollection/mayChangeRegistrationEmail", (mayChange) => {
             setMayChangeEmail(mayChange);
         });
 
-        get("registration/userInfo", userInfo => {
+        get("registration/userInfo", (userInfo) => {
             if (userInfo?.data) {
                 setInfo(userInfo?.data);
             }
@@ -112,7 +116,7 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
                 (!emailRequiredForTeamCollection || emailIsProvided) &&
                 (isValidEmail(info.email) || !emailIsProvided) &&
                 !!info.organization?.trim() &&
-                !!info.usingFor?.trim()
+                !!info.usingFor?.trim(),
         );
     }, [info, emailRequiredForTeamCollection]);
 
@@ -130,7 +134,7 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
         autoFocus: false,
         margin: "normal",
         multiline: false,
-        fullWidth: true
+        fullWidth: true,
     };
 
     function tryToSave() {
@@ -150,7 +154,7 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
     return (
         <BloomDialog
             {...props.propsForBloomDialog}
-            onCancel={reason => {
+            onCancel={(reason) => {
                 // If registration is not optional, don't close if they try to escape or click out
                 if (
                     registrationIsOptional ||
@@ -167,7 +171,7 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
                     "Register {0}",
                     "RegisterDialog.WindowTitle",
                     "Place a {0} where the name of the program goes.",
-                    "Bloom"
+                    "Bloom",
                 )}
                 preventCloseButton={true}
             />
@@ -219,7 +223,7 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
                         l10nKey="RegisterDialog.FirstName"
                         value={info.firstName}
                         onClick={undefined}
-                        onChange={e =>
+                        onChange={(e) =>
                             setInfo({ ...info, firstName: e.target.value })
                         }
                     />
@@ -229,7 +233,7 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
                         l10nKey="RegisterDialog.Surname"
                         value={info.surname}
                         onClick={undefined}
-                        onChange={e =>
+                        onChange={(e) =>
                             setInfo({ ...info, surname: e.target.value })
                         }
                     />
@@ -246,7 +250,7 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
                         value={info.email}
                         disabled={!mayChangeEmail}
                         onClick={undefined}
-                        onChange={e =>
+                        onChange={(e) =>
                             setInfo({ ...info, email: e.target.value })
                         }
                     />
@@ -256,7 +260,7 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
                         l10nKey="RegisterDialog.Organization"
                         value={info.organization}
                         onClick={undefined}
-                        onChange={e =>
+                        onChange={(e) =>
                             setInfo({ ...info, organization: e.target.value })
                         }
                     />
@@ -268,7 +272,7 @@ export const RegistrationDialog: React.FunctionComponent<IRegistrationDialogProp
                     l10nParam0="Bloom"
                     value={info.usingFor}
                     onClick={undefined}
-                    onChange={e =>
+                    onChange={(e) =>
                         setInfo({ ...info, usingFor: e.target.value })
                     }
                     multiline={true}
@@ -309,18 +313,18 @@ let show: () => void = () => {};
 let externallySetRegistrationDialogProps: IRegistrationDialogProps | undefined;
 
 export function showRegistrationDialogForEditTab(
-    registrationIsOptional?: boolean
+    registrationIsOptional?: boolean,
 ) {
     ShowEditViewDialog(
         <RegistrationDialogLauncher
             registrationIsOptional={registrationIsOptional}
-        />
+        />,
     );
     show();
 }
 
 export function showRegistrationDialog(
-    registrationDialogProps: IRegistrationDialogProps
+    registrationDialogProps: IRegistrationDialogProps,
 ) {
     externallySetRegistrationDialogProps = registrationDialogProps;
     show();

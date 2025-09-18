@@ -1,7 +1,9 @@
 import * as React from "react";
 import { SvgIcon, SvgIconProps } from "@mui/material";
 
-export const MissingMetadataIcon: React.FunctionComponent<SvgIconProps> = props => (
+export const MissingMetadataIcon: React.FunctionComponent<SvgIconProps> = (
+    props,
+) => (
     <SvgIcon
         {...props}
         viewBox="0 0 57 57"

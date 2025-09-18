@@ -44,28 +44,28 @@ export const initialBookStatus: IBookTeamCollectionStatus = {
     isNewLocalBook: false,
     error: "",
     checkInMessage: "",
-    isUserAdmin: false
+    isUserAdmin: false,
 };
 
 export function useTColBookStatus(
     folderName: string,
-    inEditableCollection: boolean
+    inEditableCollection: boolean,
 ): IBookTeamCollectionStatus {
     const [bookStatus, setBookStatus] = useState(initialBookStatus);
     const [reload, setReload] = useState(0);
     // Force a reload when told some book's status changed
     useSubscribeToWebSocketForEvent("bookTeamCollectionStatus", "reload", () =>
-        setReload(old => old + 1)
+        setReload((old) => old + 1),
     );
     React.useEffect(() => {
         // if it's not in the editable collection, economize and don't call; the initialBookStatus will do.
         if (inEditableCollection) {
             get(
                 `teamCollection/bookStatus?folderName=${folderName}`,
-                data => {
+                (data) => {
                     setBookStatus(data.data as IBookTeamCollectionStatus);
                 },
-                err => {
+                (err) => {
                     // Something went wrong. Maybe not registered. Already reported to Sentry, we don't need
                     // another 'throw' here, with less information. Displaying the message may tell the user
                     // something. I don't think it's worth localizing the fallback message here, which is even
@@ -77,9 +77,9 @@ export function useTColBookStatus(
                         "Bloom could not determine the status of this book";
                     setBookStatus({
                         ...bookStatus,
-                        error: errorMessage
+                        error: errorMessage,
                     });
-                }
+                },
             );
         }
     }, [reload]);
@@ -89,8 +89,8 @@ export function useTColBookStatus(
 export function useIsTeamCollection() {
     const [isTeamCollection, setIsTeamCollection] = React.useState(false);
     React.useEffect(() => {
-        getBoolean("teamCollection/isTeamCollectionEnabled", teamCollection =>
-            setIsTeamCollection(teamCollection)
+        getBoolean("teamCollection/isTeamCollectionEnabled", (teamCollection) =>
+            setIsTeamCollection(teamCollection),
         );
     }, []);
     return isTeamCollection;

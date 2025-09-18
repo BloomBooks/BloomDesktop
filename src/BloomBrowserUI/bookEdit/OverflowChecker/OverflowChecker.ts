@@ -17,7 +17,7 @@ interface qtipInterface extends JQuery {
 // logically a function of OverflowChecker, but it doesn't need any member variables, and with the
 // way the old JQuery code here is messing with 'this', it's easier to just call it as an independent function
 function getElementsThatCanOverflowOrNeedToBeResized(
-    container: HTMLElement
+    container: HTMLElement,
 ): HTMLElement[] {
     //NB: for some historical reason in March 2014 the calendar still uses textareas
     // I think .bloom-visibility-code-on is more reliable here than :visible;
@@ -47,7 +47,7 @@ export default class OverflowChecker {
     // But this function should just do some basic checks and ADD the HANDLERS!
     public AddOverflowHandlers(container: HTMLElement) {
         const $editablePageElements = $(
-            getElementsThatCanOverflowOrNeedToBeResized(container)
+            getElementsThatCanOverflowOrNeedToBeResized(container),
         );
 
         // BL-1260: disable overflow checking for pages with too many elements
@@ -57,9 +57,9 @@ export default class OverflowChecker {
             // think those survive from one page load to the next, so we don't
             // need to remove them here.)
             const cleanup = (className: string) => {
-                Array.from(
-                    container.getElementsByClassName(className)
-                ).forEach(x => x.classList.remove(className));
+                Array.from(container.getElementsByClassName(className)).forEach(
+                    (x) => x.classList.remove(className),
+                );
             };
             cleanup("overflow");
             cleanup("thisOverflowingParent");
@@ -71,7 +71,7 @@ export default class OverflowChecker {
         }
 
         //Add the handler so that when the elements change, we test for overflow
-        $editablePageElements.on("keyup paste", e => {
+        $editablePageElements.on("keyup paste", (e) => {
             // Don't test for overflow on navigation keys.
             if (e.keyCode >= 33 && e.keyCode <= 40) {
                 return;
@@ -90,7 +90,7 @@ export default class OverflowChecker {
                     OverflowChecker.AdjustSizeOrMarkOverflow(
                         editable,
                         false,
-                        true
+                        true,
                     );
                 } else {
                     OverflowChecker.AdjustSizeOrMarkOverflow(editable);
@@ -103,8 +103,8 @@ export default class OverflowChecker {
                 (<qtipInterface>(
                     $(
                         getElementsThatCanOverflowOrNeedToBeResized(
-                            document.body
-                        )
+                            document.body,
+                        ),
                     )
                 )).qtip("reposition");
             }, 100); // 100 milliseconds
@@ -114,21 +114,21 @@ export default class OverflowChecker {
         // Add another handler so that when the user resizes an origami pane, we check the overflow again
         $(container)
             .find(".split-pane-component-inner")
-            .bind("_splitpaneparentresize", function() {
+            .bind("_splitpaneparentresize", function () {
                 const $this = $(this);
                 $(getElementsThatCanOverflowOrNeedToBeResized($this[0])).each(
-                    function() {
+                    function () {
                         OverflowChecker.AdjustSizeOrMarkOverflowSoon(this);
-                    }
+                    },
                 );
             });
 
         // Turn off any overflow indicators that might have been leftover from before
         $(container)
             .find(".overflow, .thisOverflowingParent, .childOverflowingThis")
-            .each(function() {
+            .each(function () {
                 $(this).removeClass(
-                    "overflow thisOverflowingParent childOverflowingThis"
+                    "overflow thisOverflowingParent childOverflowingThis",
                 );
             });
 
@@ -145,13 +145,12 @@ export default class OverflowChecker {
     // Actual testable determination of Type I overflow or not
     // 'public' for testing (2 types of overflow are defined in AdjustSizeOrMarkOverflow below)
     public static IsOverflowingSelf(element: HTMLElement): boolean {
-        const [overflowX, overflowY] = OverflowChecker.getSelfOverflowAmounts(
-            element
-        );
+        const [overflowX, overflowY] =
+            OverflowChecker.getSelfOverflowAmounts(element);
         return overflowX > 0 || overflowY > 0;
     }
     public static getSelfOverflowAmounts(
-        element: HTMLElement
+        element: HTMLElement,
     ): [number, number] {
         // Ignore Topic divs as they are chosen from a list
         if (
@@ -200,7 +199,7 @@ export default class OverflowChecker {
         // );
         const fontFudgeFactor = Math.max(
             measurements.fontDescent - measurements.actualDescent,
-            0
+            0,
         );
 
         const overflowY =
@@ -302,7 +301,7 @@ export default class OverflowChecker {
     // 'public' for testing (2 types of overflow are defined in AdjustSizeOrMarkOverflow below)
     // returns nearest ancestor that this element overflows
     public static overflowingAncestor(
-        element: HTMLElement
+        element: HTMLElement,
     ): HTMLElement | null {
         // Ignore Topic divs as they are chosen from a list
         if (
@@ -324,7 +323,7 @@ export default class OverflowChecker {
         // accurate scaling factor is the page div.  (This is inside both the div that handles page
         // zooming and the the div that does scaling for full bleed.)
         const scaledElt = document.getElementsByClassName(
-            "bloom-page"
+            "bloom-page",
         )[0] as HTMLElement;
         const scaleY =
             scaledElt.getBoundingClientRect().height / scaledElt.offsetHeight;
@@ -380,7 +379,7 @@ export default class OverflowChecker {
     public static AdjustSizeOrMarkOverflow(
         editable: HTMLElement,
         doNotShrink?: boolean,
-        growAsMuchAsPossible?: boolean
+        growAsMuchAsPossible?: boolean,
     ) {
         // There are two types of overflow that we need to check.
         // 1-When we're called by a handler on an element, we need to check that that element
@@ -409,14 +408,13 @@ export default class OverflowChecker {
         $editable.parents().removeClass("childOverflowingThis");
 
         const preventOverflowY = editable.classList.contains(
-            "bloom-padForOverflow"
+            "bloom-padForOverflow",
         );
 
         if (preventOverflowY) {
             editable.style.paddingBottom = "0";
-            const measurements = MeasureText.getDescentMeasurementsOfBox(
-                editable
-            );
+            const measurements =
+                MeasureText.getDescentMeasurementsOfBox(editable);
             const excessDescent =
                 measurements.actualDescent - measurements.layoutDescent;
             if (excessDescent > 0) {
@@ -429,17 +427,17 @@ export default class OverflowChecker {
         //          then backspace to remove the newly added line. It still indicates overflow (because it was was scrolled down, I guess).
         //          However, if you press the up arrow long enough until you get it to scroll back up, it will reset to Not Overflowing.
         //          Reloading the page will also clear it.
-        const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(
-            editable
-        );
+        const overflowAmounts =
+            OverflowChecker.getSelfOverflowAmounts(editable);
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
-        overflowY = theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
-            editable,
-            overflowY,
-            doNotShrink,
-            growAsMuchAsPossible
-        );
+        overflowY =
+            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
+                editable,
+                overflowY,
+                doNotShrink,
+                growAsMuchAsPossible,
+            );
         if (preventOverflowY) {
             // The usual fairly crude calculation may indicate it's overflowing, but
             // above we did a much more precise calculation and gave it just enough padding
@@ -477,9 +475,9 @@ export default class OverflowChecker {
                     .asyncGetText(
                         "EditTab.Overflow",
                         "This box has more text than will fit",
-                        ""
+                        "",
                     )
-                    .done(overflowText => {
+                    .done((overflowText) => {
                         $editable.qtip({
                             content:
                                 '<img data-overflow="true" height="20" width="20" style="vertical-align:middle" src="/bloom/images/Attention.svg">' +
@@ -489,8 +487,8 @@ export default class OverflowChecker {
                             position: {
                                 my: "top right",
                                 at: "right bottom",
-                                container: bloomQtipUtils.qtipZoomContainer()
-                            }
+                                container: bloomQtipUtils.qtipZoomContainer(),
+                            },
                         });
                     });
             }
@@ -507,14 +505,14 @@ export default class OverflowChecker {
         const container = $editable.closest(".marginBox");
         const quizPage = $(container).closest(".simple-comprehension-quiz");
         const editablePageElements = $(
-            getElementsThatCanOverflowOrNeedToBeResized(container.get(0))
+            getElementsThatCanOverflowOrNeedToBeResized(container.get(0)),
         );
 
         // Type 2 Overflow - We'll check ALL of these for overflow past any ancestor
-        editablePageElements.each(function() {
+        editablePageElements.each(function () {
             const $this = $(this);
             const overflowingAncestor = OverflowChecker.overflowingAncestor(
-                $this[0]
+                $this[0],
             );
             if (overflowingAncestor == null) {
                 if (!OverflowChecker.IsOverflowingSelf($this[0])) {
@@ -527,9 +525,8 @@ export default class OverflowChecker {
                 // bubble.  We don't want to override that qtip with an overflow warning since
                 // we have other indications of overflow available on the child.
                 // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6295.
-                const oldQtip = OverflowChecker.GetQtipContent(
-                    $overflowingAncestor
-                );
+                const oldQtip =
+                    OverflowChecker.GetQtipContent($overflowingAncestor);
                 if (oldQtip && !OverflowChecker.DoesQtipMarkOverflow(oldQtip)) {
                     return; // don't override existing qtip (probably hint or source bubble)
                 }
@@ -546,9 +543,9 @@ export default class OverflowChecker {
                     .asyncGetText(
                         "EditTab.OverflowContainer",
                         "A container on this page is overflowing",
-                        ""
+                        "",
                     )
-                    .done(overflowText => {
+                    .done((overflowText) => {
                         $overflowingAncestor.qtip({
                             content:
                                 '<img data-overflow="true" height="20" width="20" style="vertical-align:middle" src="/bloom/images/Attention.svg">' +
@@ -558,12 +555,12 @@ export default class OverflowChecker {
                             position: {
                                 my: "top right",
                                 at: "right bottom",
-                                container: bloomQtipUtils.qtipZoomContainer()
-                            }
+                                container: bloomQtipUtils.qtipZoomContainer(),
+                            },
                         });
                     });
                 let showing = false;
-                $overflowingAncestor.on("mousemove.overflow", event => {
+                $overflowingAncestor.on("mousemove.overflow", (event) => {
                     if (overflowingAncestor === null) return; // prevent bad static analysis
                     const bounds = overflowingAncestor.getBoundingClientRect();
                     const scaleY =

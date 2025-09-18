@@ -3,7 +3,7 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { postData } from "../utils/bloomApi";
 import FontSelectComponent, {
-    IFontMetaData
+    IFontMetaData,
 } from "../bookEdit/StyleEditor/fontSelectComponent";
 import { Link } from "./link";
 import { useL10n } from "./l10nHooks";
@@ -14,16 +14,16 @@ const SingleFontSection: React.FunctionComponent<{
     languageName: string;
     currentFontName: string;
     fontMetadata?: IFontMetaData[];
-}> = props => {
+}> = (props) => {
     const linkData = {
         languageNumber: props.languageNumber,
-        languageName: props.languageName
+        languageName: props.languageName,
     };
 
     const fontChangeHandler = (fontName: string) => {
         postData("settings/setFontForLanguage", {
             languageNumber: props.languageNumber,
-            fontName: fontName
+            fontName: fontName,
         });
     };
 
@@ -31,7 +31,7 @@ const SingleFontSection: React.FunctionComponent<{
         "Default Font for {0}",
         "CollectionSettingsDialog.BookMakingTab.DefaultFontFor",
         "{0} is a language name.",
-        props.languageName
+        props.languageName,
     );
 
     return (

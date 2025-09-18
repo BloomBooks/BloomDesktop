@@ -55,7 +55,7 @@ export function setLangData(data) {
  * @returns {LibSynphony}
  */
 
-export var LibSynphony = function() {};
+export var LibSynphony = function () {};
 
 /**
  * Returns a list of words that meet the requested criteria.
@@ -68,14 +68,14 @@ export var LibSynphony = function() {};
  * @param {Array} aPartsOfSpeech
  * @returns {Array} An array of WordObject objects
  */
-LibSynphony.prototype.selectGPCWordsWithArrayCompare = function(
+LibSynphony.prototype.selectGPCWordsWithArrayCompare = function (
     aDesiredGPCs,
     aKnownGPCs,
     restrictToKnownGPCs,
     allowUpperCase,
     aSyllableLengths,
     aSelectedGroups,
-    aPartsOfSpeech
+    aPartsOfSpeech,
 ) {
     var word_already_exists,
         aSelectedWordObjects,
@@ -128,7 +128,7 @@ LibSynphony.prototype.selectGPCWordsWithArrayCompare = function(
                             theOneLanguageDataInstance.GPCS[j]["GPCuc"] !== ""
                         ) {
                             temp.push(
-                                theOneLanguageDataInstance.GPCS[j]["GPCuc"]
+                                theOneLanguageDataInstance.GPCS[j]["GPCuc"],
                             );
                         }
                     }
@@ -149,7 +149,7 @@ LibSynphony.prototype.selectGPCWordsWithArrayCompare = function(
                 theOneLanguageDataInstance["AlwaysMatch"] !== ""
             ) {
                 alwaysMatch = alwaysMatch.concat(
-                    theOneLanguageDataInstance["AlwaysMatch"]
+                    theOneLanguageDataInstance["AlwaysMatch"],
                 );
             }
             if (
@@ -236,9 +236,9 @@ LibSynphony.prototype.selectGPCWordsWithArrayCompare = function(
  * @param {Array} aSyllableLengths An array of integers
  * @returns {Boolean|Array} An array of names (string)
  */
-LibSynphony.prototype.constructSourceArrayNames = function(
+LibSynphony.prototype.constructSourceArrayNames = function (
     aDesiredGPCs,
-    aSyllableLengths
+    aSyllableLengths,
 ) {
     var aArrayNames, aName;
     aName = aDesiredGPCs;
@@ -266,7 +266,7 @@ LibSynphony.prototype.constructSourceArrayNames = function(
  * @param {Array} aSelectedGroups An array of strings
  * @returns {Array} An array of arrays containing WordObjects
  */
-LibSynphony.prototype.chooseVocabGroups = function(aSelectedGroups) {
+LibSynphony.prototype.chooseVocabGroups = function (aSelectedGroups) {
     var groups = [];
 
     for (var i = 0; i < aSelectedGroups.length; i++) {
@@ -301,7 +301,7 @@ LibSynphony.prototype.chooseVocabGroups = function(aSelectedGroups) {
  * Processes vocabulary and creates indexes to speed lookups.
  * @param {LanguageData} [optionalLangData] Optional. If missing, the default theOneLanguageDataInstance is used.
  */
-LibSynphony.prototype.processVocabularyGroups = function(optionalLangData) {
+LibSynphony.prototype.processVocabularyGroups = function (optionalLangData) {
     var data =
         typeof optionalLangData === "undefined"
             ? theOneLanguageDataInstance
@@ -332,7 +332,7 @@ LibSynphony.prototype.processVocabularyGroups = function(optionalLangData) {
  * @param {} i
  * @returns {}
  */
-LibSynphony.prototype.buildIndexDataForWord = function(wordList, i) {
+LibSynphony.prototype.buildIndexDataForWord = function (wordList, i) {
     //creates a unique array of all gpcs in a word
     var temp = _.clone(wordList[i].GPCForm);
     var syll = wordList[i]["Syllables"];
@@ -365,7 +365,7 @@ LibSynphony.prototype.buildIndexDataForWord = function(wordList, i) {
  * @param {Array} aGPCs An array of GPCs
  * @returns {Array} An array of graphemes with the gpc notation removed
  */
-LibSynphony.prototype.fullGPC2Regular = function(aGPCs) {
+LibSynphony.prototype.fullGPC2Regular = function (aGPCs) {
     var result = [];
     for (var i = 0; i < aGPCs.length; i++) {
         var temp = "";
@@ -403,9 +403,9 @@ LibSynphony.prototype.fullGPC2Regular = function(aGPCs) {
  * @param {String} [lettersRange] set of letters prepared for use in a regex range by escaping special characters (\-])
  * @returns {Array} An array of strings
  */
-LibSynphony.prototype.getWordsFromHtmlString = function(
+LibSynphony.prototype.getWordsFromHtmlString = function (
     textHTML,
-    lettersRange
+    lettersRange,
 ) {
     // replace html break with space
     let regex = /<br><\/br>|<br>|<br \/>|<br\/>|\r?\n/g;
@@ -427,23 +427,23 @@ LibSynphony.prototype.getWordsFromHtmlString = function(
      **************************************************************************/
     regex = XRegExp(
         "(^" +
-        punct +
-        "+)" + // punctuation at the beginning of a string
-        "|(" +
-        punct +
-        "+[\\s\\p{Z}\\p{C}]+" +
-        punct +
-        "+)" + // punctuation within a sentence, between 2 words (word" "word)
-        "|([\\s\\p{Z}\\p{C}]+" +
-        punct +
-        "+)" + // punctuation within a sentence, before a word
-        "|(" +
-        punct +
-        "+[\\s\\p{Z}\\p{C}]+)" + // punctuation within a sentence, after a word
+            punct +
+            "+)" + // punctuation at the beginning of a string
+            "|(" +
+            punct +
+            "+[\\s\\p{Z}\\p{C}]+" +
+            punct +
+            "+)" + // punctuation within a sentence, between 2 words (word" "word)
+            "|([\\s\\p{Z}\\p{C}]+" +
+            punct +
+            "+)" + // punctuation within a sentence, before a word
+            "|(" +
+            punct +
+            "+[\\s\\p{Z}\\p{C}]+)" + // punctuation within a sentence, after a word
             "|(" +
             punct +
             "+$)", // punctuation at the end of a string
-        "g"
+        "g",
     );
     s = XRegExp.replace(s, regex, " ");
     s = s.trim();
@@ -472,7 +472,7 @@ LibSynphony.prototype.getWordsFromHtmlString = function(
             directional +
             isolates +
             "]+",
-        "xg"
+        "xg",
     );
     return XRegExp.split(s, regex);
 };
@@ -485,7 +485,7 @@ LibSynphony.prototype.getWordsFromHtmlString = function(
  * @param {String} textHTML
  * @returns {Array} An array of strings
  */
-LibSynphony.prototype.getUniqueWordsFromHtmlString = function(textHTML) {
+LibSynphony.prototype.getUniqueWordsFromHtmlString = function (textHTML) {
     return _.uniq(this.getWordsFromHtmlString(textHTML));
 };
 
@@ -499,7 +499,7 @@ LibSynphony.prototype.getUniqueWordsFromHtmlString = function(textHTML) {
  * @param {String} letter One or more characters treated as a decodable unit
  * @returns {String} input string possibly with \ quoted characters
  */
-LibSynphony.prototype.protectRegExpLetters = function(letter) {
+LibSynphony.prototype.protectRegExpLetters = function (letter) {
     return letter
         .replace(/\\/g, "\\\\")
         .replace(/\?/g, "\\?")
@@ -521,12 +521,12 @@ LibSynphony.prototype.protectRegExpLetters = function(letter) {
  * @param {String} sightWords $('sight_words').value
  * @returns {StoryCheckResults} Statistics
  */
-LibSynphony.prototype.checkStory = function(
+LibSynphony.prototype.checkStory = function (
     aFocusWordList,
     aWordCumulativeList,
     aGPCsKnown,
     storyHTML,
-    sightWords
+    sightWords,
 ) {
     var letters;
     var lettersRange;
@@ -534,7 +534,7 @@ LibSynphony.prototype.checkStory = function(
 
     if (aGPCsKnown.length > 0) {
         letters = this.fullGPC2Regular(aGPCsKnown)
-            .map(val => this.protectRegExpLetters(val))
+            .map((val) => this.protectRegExpLetters(val))
             .join("|");
         // When placed in a regex range, the letters don't need to be separated by |,
         // but \ ] and - do need to be quoted as they have special meaning in that context.
@@ -557,7 +557,7 @@ LibSynphony.prototype.checkStory = function(
     var story_vocab_compacted = _.uniq(story_vocab);
 
     // count total words in the story
-    var total_words = _.filter(story_vocab, function(word) {
+    var total_words = _.filter(story_vocab, function (word) {
         return isNaN(word) === true;
     }).length;
 
@@ -569,11 +569,11 @@ LibSynphony.prototype.checkStory = function(
     // first we do diffs on aFocusWordList and aWordCumulativeList with story_vocab words
     var story_focus_words = _.intersection(
         aFocusWordList,
-        story_vocab_compacted
+        story_vocab_compacted,
     );
     var story_cumulative_words = _.intersection(
         _.pluck(aWordCumulativeList, "Name"),
-        story_vocab
+        story_vocab,
     );
     this.array_sort_length(story_focus_words);
 
@@ -589,7 +589,7 @@ LibSynphony.prototype.checkStory = function(
     // GPCForm,GPCS,GPCcount,Name,Reverse,SyllShape,Syllables
     var cumulative_words = _.intersection(
         story_cumulative_words,
-        remaining_words
+        remaining_words,
     );
     remaining_words = _.difference(remaining_words, cumulative_words);
     this.array_sort_length(cumulative_words);
@@ -620,9 +620,9 @@ LibSynphony.prototype.checkStory = function(
                 "])[\\p{P}]*(" +
                 letters +
                 ")*)*)$",
-            "gi"
+            "gi",
         );
-        possible_words = _.filter(remaining_words, function(word) {
+        possible_words = _.filter(remaining_words, function (word) {
             return word.match(re);
         });
 
@@ -631,19 +631,19 @@ LibSynphony.prototype.checkStory = function(
             // get the unknown letters
             var unknownGPCs = _.difference(
                 _.pluck(theOneLanguageDataInstance["GPCS"], "GPC"),
-                letters.split("|")
+                letters.split("|"),
             ); // .join('|');
             if (Array.isArray(unknownGPCs) && unknownGPCs.length > 0) {
                 // remove from the list of unknownGPCs characters used to build multi-graphs in the list aGPCsKnown
-                unknownGPCs = _.filter(unknownGPCs, function(gpc) {
+                unknownGPCs = _.filter(unknownGPCs, function (gpc) {
                     return letters.indexOf(gpc) === -1;
                 });
                 if (unknownGPCs.length > 0) {
                     let unknownChars = unknownGPCs
-                        .map(val => this.protectRegExpLetters(val))
+                        .map((val) => this.protectRegExpLetters(val))
                         .join("|");
                     re = new XRegExp("(" + unknownChars + ")+", "gi");
-                    possible_words = _.filter(possible_words, function(word) {
+                    possible_words = _.filter(possible_words, function (word) {
                         return !word.match(re);
                     });
                 }
@@ -674,7 +674,7 @@ LibSynphony.prototype.checkStory = function(
         sight_words,
         remaining_words,
         readable,
-        total_words
+        total_words,
     );
 };
 
@@ -682,8 +682,8 @@ LibSynphony.prototype.checkStory = function(
  * Sorts the array by the length of the string elements, descending
  * @param {Array} arr
  */
-LibSynphony.prototype.array_sort_length = function(arr) {
-    arr.sort(function(a, b) {
+LibSynphony.prototype.array_sort_length = function (arr) {
+    arr.sort(function (a, b) {
         return b.length - a.length; // ASC -> a - b; DESC -> b - a
     });
 };
@@ -691,7 +691,7 @@ LibSynphony.prototype.array_sort_length = function(arr) {
 // function to escape special characters before performing a regular expression check
 // # is required when using XRegEx with the 'x' option, which makes # a line comment delimiter
 if (!RegExp.quote) {
-    RegExp.quote = function(str) {
+    RegExp.quote = function (str) {
         return (str + "").replace(/([#.?*+^$[\]\\(){}|-])/g, "\\$1");
     };
 }
@@ -704,17 +704,17 @@ if (!RegExp.quote) {
  * @param {String} extra
  * @returns {String}
  */
-LibSynphony.prototype.wrap_words_extra = function(
+LibSynphony.prototype.wrap_words_extra = function (
     storyHTML,
     aWords,
     cssClass,
-    extra
+    extra,
 ) {
     if (aWords === undefined || aWords.length === 0) return storyHTML;
 
     // Remove empty strings from the aWords array.  And if the array is then
     // empty, return the original storyHTML.
-    aWords = aWords.filter(x => x);
+    aWords = aWords.filter((x) => x);
     if (aWords.length === 0) return storyHTML;
 
     if (storyHTML.trim().length === 0) return storyHTML;
@@ -731,7 +731,7 @@ LibSynphony.prototype.wrap_words_extra = function(
 
     var regex = new XRegExp(
         beforeWord + "(" + escapedWords.join("|") + ")" + afterWord,
-        "xgi"
+        "xgi",
     );
 
     // We must not replace any occurrences inside <...>. For example, if html is abc <span class='word'>x</span>
@@ -754,8 +754,8 @@ LibSynphony.prototype.wrap_words_extra = function(
                 XRegExp.replace(
                     text,
                     regex,
-                    '$1<span class="' + cssClass + '"' + extra + ">$2</span>"
-                )
+                    '$1<span class="' + cssClass + '"' + extra + ">$2</span>",
+                ),
         );
     }
 
@@ -781,7 +781,7 @@ export function StoryCheckResults(
     sight_words,
     remaining_words,
     readableWordCount,
-    totalWordCount
+    totalWordCount,
 ) {
     // constructor code
     this.focus_words = focus_words;
@@ -797,7 +797,7 @@ export function StoryCheckResults(
  * Searches the remaining_words for words that are numbers.
  * @returns {Array}
  */
-StoryCheckResults.prototype.getNumbers = function() {
+StoryCheckResults.prototype.getNumbers = function () {
     var nums = [];
     var regex = new XRegExp("^[\\p{N}\\p{P}]+$", "g");
 
@@ -815,7 +815,7 @@ StoryCheckResults.prototype.getNumbers = function() {
  * @param {String} langDataString
  * @returns {Boolean}
  */
-LibSynphony.prototype.langDataFromString = function(langDataString) {
+LibSynphony.prototype.langDataFromString = function (langDataString) {
     // Typically langDataString is from a ReaderToolsWords-xxx.json stored in sample texts.
     // An earlier version of this code let the results of parsing this file BECOME
     // theOneLanguageDataInstance. It's not clear to me why that was done. At this point we only
@@ -843,11 +843,11 @@ LibSynphony.prototype.langDataFromString = function(langDataString) {
             for (let i = 0; i < newLangData.group1.length; i++) {
                 if (
                     !theOneLanguageDataInstance.findWord(
-                        newLangData.group1[i].Name
+                        newLangData.group1[i].Name,
                     )
                 ) {
                     theOneLanguageDataInstance.group1.push(
-                        newLangData.group1[i]
+                        newLangData.group1[i],
                     );
                 }
             }
@@ -867,7 +867,7 @@ LibSynphony.prototype.langDataFromString = function(langDataString) {
  * @param {String} langDataString
  * @returns {LanguageData}
  */
-LibSynphony.prototype.parseLangDataString = function(langDataString) {
+LibSynphony.prototype.parseLangDataString = function (langDataString) {
     // check for setLangData( ... )
     var pos = langDataString.indexOf("{");
     if (pos > 0) langDataString = langDataString.substring(pos);

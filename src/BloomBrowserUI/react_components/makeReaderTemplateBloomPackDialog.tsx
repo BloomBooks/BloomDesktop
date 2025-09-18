@@ -4,15 +4,15 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "./BloomDialog/BloomDialog";
 import {
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "./BloomDialog/BloomDialogPlumbing";
 import {
     DialogCancelButton,
-    DialogHelpButton
+    DialogHelpButton,
 } from "./BloomDialog/commonDialogComponents";
 import { useL10n } from "./l10nHooks";
 import { Div } from "./l10nComponents";
@@ -28,12 +28,9 @@ import { propsToClassKey } from "@mui/styles";
 // We extract the core here so that we can avoid running most of the hook code when this dialog is not visible.
 export const MakeReaderTemplateBloomPackDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
-}> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+}> = (props) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
     showMakeReaderTemplateBloomPackDialog = showDialog;
     return (
         <BloomDialog {...propsForBloomDialog}>
@@ -50,19 +47,18 @@ export const MakeReaderTemplateBloomPackDialog: React.FunctionComponent<{
 export const InnerMakeReaderTemplateBloomPackDialog: React.FunctionComponent<{
     closeDialog: () => void;
     propsForBloomDialog;
-}> = props => {
+}> = (props) => {
     const [collectionLanguage, setCollectionLanguage] = useState("");
     useEffect(() => {
-        get("settings/languageData", langData => {
+        get("settings/languageData", (langData) => {
             if (langData?.data) {
                 setCollectionLanguage(langData.data.languageName);
             }
         });
     }, []);
 
-    const [saveConfirmationChecked, setSaveConfirmationChecked] = useState(
-        false
-    );
+    const [saveConfirmationChecked, setSaveConfirmationChecked] =
+        useState(false);
 
     const [collectionHasBooks, setCollectionHasBooks] = useState(false);
 
@@ -76,7 +72,7 @@ export const InnerMakeReaderTemplateBloomPackDialog: React.FunctionComponent<{
             <DialogTitle
                 title={useL10n(
                     "Make Reader Template Bloom Pack",
-                    "ReaderTemplateBloomPackDialog.WindowTitle"
+                    "ReaderTemplateBloomPackDialog.WindowTitle",
                 )}
                 preventCloseButton={true}
             />

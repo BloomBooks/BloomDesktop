@@ -22,13 +22,13 @@ export const PageThumbnail: React.FunctionComponent<{
     configureReloadCallback: (id: string, callback: () => void) => void;
     onClick: React.MouseEventHandler<HTMLDivElement>;
     onContextMenu?: React.MouseEventHandler<HTMLDivElement>;
-}> = props => {
+}> = (props) => {
     // The initial content here is a blank page. It will be replaced with
     // the real content when we retrieve it from the server.
     const [content, setContent] = useState(
         `<div class="${props.pageSize} bloom-page side-${
             props.left ? "left" : "right"
-        }"><div class="marginBox">content</div></div>`
+        }"><div class="marginBox">content</div></div>`,
     );
     // This is something of a hack. When the page content needs to be reloaded,
     // an event comes to the parent list. Using the key, it will look up our callback
@@ -36,7 +36,7 @@ export const PageThumbnail: React.FunctionComponent<{
     // causes the useEffect below to run again and request the new page content.
     const [reloadValue, setReloadValue] = useState(1);
     props.configureReloadCallback(props.page.key, () =>
-        setReloadValue(reloadValue + 1)
+        setReloadValue(reloadValue + 1),
     );
     // Get the actual page content. This is appreciably slow...80ms or so on
     // a fast desktop for a complex page...mainly because of XhtmlToHtml conversion.
@@ -61,7 +61,7 @@ export const PageThumbnail: React.FunctionComponent<{
         }
         pendingPageRequestCount--;
         activePageRequestCount++;
-        get(`pageList/pageContent?id=${props.page.key}`, response => {
+        get(`pageList/pageContent?id=${props.page.key}`, (response) => {
             activePageRequestCount--;
             setContent(response.data.content); // automatically unJsonified?
         });
@@ -87,7 +87,7 @@ export const PageThumbnail: React.FunctionComponent<{
                     <div className={"pageContainer " + props.pageSize}>
                         <div
                             dangerouslySetInnerHTML={{
-                                __html: content
+                                __html: content,
                             }}
                         />
                         {/* This div overlays the page and intercepts clicks that might otherwise

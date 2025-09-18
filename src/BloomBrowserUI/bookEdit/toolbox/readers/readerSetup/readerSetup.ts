@@ -12,7 +12,7 @@ import "../libSynphony/jquery.text-markup";
 import { ReaderStage, ReaderLevel, ReaderSettings } from "../ReaderSettings";
 import {
     theOneLanguageDataInstance,
-    theOneLibSynphony
+    theOneLibSynphony,
 } from "../libSynphony/synphony_lib";
 
 import { DataWord, TextFragment } from "../libSynphony/bloomSynphonyExtensions";

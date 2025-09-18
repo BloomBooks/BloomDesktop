@@ -12,12 +12,12 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "../react_components/BloomDialog/BloomDialog";
 import {
     DialogCancelButton,
     DialogControlGroup,
-    DialogFolderChooserWithApi
+    DialogFolderChooserWithApi,
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { Checkbox } from "../react_components/checkbox";
@@ -25,12 +25,12 @@ import { TextWithEmbeddedLink } from "../react_components/link";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import {
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { ErrorBox } from "../react_components/boxes";
 import {
     RegistrationDialogLauncher,
-    showRegistrationDialog
+    showRegistrationDialog,
 } from "../react_components/registrationDialog";
 
 // Contents of a dialog launched from TeamCollectionSettingsPanel Create Team Collection button.
@@ -39,17 +39,17 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
     errorForTesting?: string;
     defaultRepoFolder?: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
-}> = props => {
+}> = (props) => {
     const [repoFolderPath, setRepoFolderPath] = useState(
-        props.defaultRepoFolder ?? ""
+        props.defaultRepoFolder ?? "",
     );
     const [errorMessage, setErrorMessage] = useState<string>(
-        props.errorForTesting ?? ""
+        props.errorForTesting ?? "",
     );
     // This listener is waiting for results that are sent when the user clicks "Choose Folder"
     // and then selects a folder. We use a listener rather than having the API request return the
     // results to guard against a browser timeout on the request.
-    const listener = e => {
+    const listener = (e) => {
         setRepoFolderPath(e.repoFolderPath);
         setErrorMessage(e.problem);
     };
@@ -57,7 +57,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         "teamCollectionCreate",
         "shared-folder-path",
         listener,
-        false
+        false,
     );
 
     const dialogTitle = useL10n(
@@ -66,27 +66,24 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         undefined,
         undefined,
         undefined,
-        true
+        true,
     );
 
     const [collectionName] = useApiStringState(
         "teamCollection/getCollectionName",
-        ""
+        "",
     );
     const [boxesChecked, setBoxesChecked] = useState(0);
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     const checkChanged = (newVal: boolean) => {
-        setBoxesChecked(oldCount => (newVal ? oldCount + 1 : oldCount - 1));
+        setBoxesChecked((oldCount) => (newVal ? oldCount + 1 : oldCount - 1));
     };
 
     const [emailExists, setEmailExists] = useState(false);
     useEffect(() => {
-        get("registration/userInfo", userInfo => {
+        get("registration/userInfo", (userInfo) => {
             if (userInfo?.data) {
                 setEmailExists(userInfo.data.email ? true : false);
             }
@@ -103,9 +100,9 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
             showRegistrationDialog({
                 registrationIsOptional: false,
                 emailRequiredForTeamCollection: true,
-                onSave: isValidEmail => {
+                onSave: (isValidEmail) => {
                     if (isValidEmail) create();
-                }
+                },
             });
     }
 

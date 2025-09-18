@@ -5,7 +5,7 @@ import {
     BookInfoForLinks,
     Link,
     PageInfoForLinks,
-    ThumbnailGenerator
+    ThumbnailGenerator,
 } from "./BookLinkTypes";
 import { BookSourcesList } from "./BookSourcesList";
 import { BookTargetList } from "./BookTargetList";
@@ -21,11 +21,9 @@ const LinkGridSetup: React.FC<{
     */
     links: Link[]; // the set of links that are currently in the grid
     onLinksChanged: (links: Link[]) => void;
-}> = props => {
-    const [
-        selectedSource,
-        setSelectedSource
-    ] = useState<BookInfoForLinks | null>(null);
+}> = (props) => {
+    const [selectedSource, setSelectedSource] =
+        useState<BookInfoForLinks | null>(null);
     const [targets, setTargets] = useState<Link[]>(props.links); // initialize with links prop
     const [isPageDialogOpen, setIsPageDialogOpen] = useState(false);
 
@@ -36,7 +34,7 @@ const LinkGridSetup: React.FC<{
     const handleAddBookLink = () => {
         if (
             selectedSource &&
-            !targets.some(item => item.book.id === selectedSource.id)
+            !targets.some((item) => item.book.id === selectedSource.id)
         ) {
             const newTargets = [...targets, { book: selectedSource }];
             setTargets(newTargets);
@@ -44,18 +42,18 @@ const LinkGridSetup: React.FC<{
 
             // Find next available book
             const currentIndex = props.sourceBooks.findIndex(
-                book => book.id === selectedSource.id
+                (book) => book.id === selectedSource.id,
             );
             const availableBooks = props.sourceBooks.filter(
-                book =>
-                    !targets.some(added => added.book.id === book.id) &&
-                    book.id !== selectedSource.id
+                (book) =>
+                    !targets.some((added) => added.book.id === book.id) &&
+                    book.id !== selectedSource.id,
             );
 
             // Try to select the next book in sequence, or the first available book
             const nextBook =
                 availableBooks.find(
-                    book => props.sourceBooks.indexOf(book) > currentIndex
+                    (book) => props.sourceBooks.indexOf(book) > currentIndex,
                 ) ||
                 availableBooks[0] ||
                 null;
@@ -77,7 +75,7 @@ const LinkGridSetup: React.FC<{
         if (selectedSource) {
             const linkWithPage = {
                 book: selectedSource,
-                page: pageInfo
+                page: pageInfo,
             };
             const newTargets = [...targets, linkWithPage];
             setTargets(newTargets);
@@ -88,7 +86,7 @@ const LinkGridSetup: React.FC<{
 
     const handleRemoveItem = (itemToRemove: Link) => {
         const newTargets = targets.filter(
-            item => item.book.id !== itemToRemove.book.id
+            (item) => item.book.id !== itemToRemove.book.id,
         );
         setTargets(newTargets);
         props.onLinksChanged(newTargets);
@@ -106,7 +104,7 @@ const LinkGridSetup: React.FC<{
                 borderRadius: 1,
                 display: "flex",
                 flexDirection: "column",
-                overflow: "hidden"
+                overflow: "hidden",
             }}
         >
             <Box
@@ -115,7 +113,7 @@ const LinkGridSetup: React.FC<{
                     gap: 3,
                     alignItems: "flex-start",
                     flex: 1,
-                    overflow: "hidden"
+                    overflow: "hidden",
                 }}
             >
                 <Box
@@ -124,7 +122,7 @@ const LinkGridSetup: React.FC<{
                         display: "flex",
                         flexDirection: "column",
                         height: "100%",
-                        overflow: "hidden"
+                        overflow: "hidden",
                     }}
                 >
                     <Box
@@ -132,7 +130,7 @@ const LinkGridSetup: React.FC<{
                             display: "flex",
                             alignItems: "center",
                             gap: 1,
-                            minHeight: 40
+                            minHeight: 40,
                         }}
                     >
                         <Typography variant="h6" sx={{ mb: 2 }}>
@@ -165,7 +163,7 @@ const LinkGridSetup: React.FC<{
                     <Box
                         sx={{
                             flex: 1,
-                            overflow: "hidden" // we want the list itself to scroll, not the parent box
+                            overflow: "hidden", // we want the list itself to scroll, not the parent box
                         }}
                     >
                         <BookSourcesList
@@ -181,7 +179,7 @@ const LinkGridSetup: React.FC<{
                         display: "flex",
                         flexDirection: "column",
                         pt: 1,
-                        marginTop: "100px"
+                        marginTop: "100px",
                     }}
                 >
                     <Button
@@ -190,7 +188,7 @@ const LinkGridSetup: React.FC<{
                         disabled={
                             !selectedSource ||
                             targets.some(
-                                item => item.book.id === selectedSource.id
+                                (item) => item.book.id === selectedSource.id,
                             )
                         }
                         // sx={{
@@ -224,7 +222,7 @@ const LinkGridSetup: React.FC<{
                         display: "flex",
                         flexDirection: "column",
                         height: "100%",
-                        overflow: "hidden"
+                        overflow: "hidden",
                     }}
                 >
                     <Typography variant="h6" sx={{ mb: 2 }}>
@@ -234,7 +232,7 @@ const LinkGridSetup: React.FC<{
                         <BookTargetList
                             links={targets}
                             onRemoveBook={handleRemoveItem}
-                            onReorderBooks={newOrder => {
+                            onReorderBooks={(newOrder) => {
                                 setTargets(newOrder);
                                 props.onLinksChanged(newOrder);
                             }}

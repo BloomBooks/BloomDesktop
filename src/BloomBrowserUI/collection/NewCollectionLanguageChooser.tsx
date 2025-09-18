@@ -1,7 +1,7 @@
 import {
     LanguageChooser,
     IOrthography,
-    defaultSearchResultModifier
+    defaultSearchResultModifier,
 } from "@ethnolib/language-chooser-react-mui";
 import * as React from "react";
 
@@ -13,17 +13,17 @@ import { useSubscribeToWebSocketForStringMessage } from "../utils/WebSocketManag
 const NewCollectionLanguageChooser: React.FunctionComponent = () => {
     function onSelectionChange(
         languageSelection: IOrthography | undefined,
-        languageTag: string | undefined
+        languageTag: string | undefined,
     ) {
         postData(
             "newCollection/selectLanguage",
-            getLanguageData(languageTag, languageSelection)
+            getLanguageData(languageTag, languageSelection),
         );
     }
 
     const [uiLanguage, setUiLanguage] = React.useState("en");
     React.useEffect(() => {
-        get("currentUiLanguage", result => {
+        get("currentUiLanguage", (result) => {
             setUiLanguage(result.data);
         });
     }, []);
@@ -31,7 +31,7 @@ const NewCollectionLanguageChooser: React.FunctionComponent = () => {
     useSubscribeToWebSocketForStringMessage(
         "app",
         "uiLanguageChanged",
-        setUiLanguage
+        setUiLanguage,
     );
 
     return (

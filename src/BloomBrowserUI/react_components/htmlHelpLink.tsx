@@ -1,7 +1,7 @@
 import {
     ILocalizationProps,
     ILocalizationState,
-    LocalizableElement
+    LocalizableElement,
 } from "./l10nComponents";
 import Link from "@mui/material/Link";
 import { getString } from "../utils/bloomApi";

@@ -6,10 +6,10 @@ import { useEffect } from "react";
 export const CollectionBookList: React.FunctionComponent<{
     className?: string;
     onBooksLoaded?: (books: Array<IBookInfo>) => void;
-}> = props => {
+}> = (props) => {
     const bookCollection = useApiData<Array<IBookInfo>>(
         `collections/books`,
-        []
+        [],
     );
 
     useEffect(() => {
@@ -30,7 +30,7 @@ export const CollectionBookList: React.FunctionComponent<{
                 white-space: nowrap;
             `}
         >
-            {bookCollection?.map(book => (
+            {bookCollection?.map((book) => (
                 <ListItem
                     key={book.id}
                     css={css`

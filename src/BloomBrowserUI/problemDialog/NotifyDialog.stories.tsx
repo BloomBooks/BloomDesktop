@@ -4,7 +4,7 @@ const message =
     "Fake error with a line break<br> and <b>bold</b> and <a href='https://google.com'>link</a>...";
 
 export default {
-    title: "Problem Report/NotifyDialog"
+    title: "Problem Report/NotifyDialog",
 };
 
 export const NotifyUserNonReportable = () => (
@@ -12,7 +12,7 @@ export const NotifyUserNonReportable = () => (
 );
 
 NotifyUserNonReportable.story = {
-    name: "NotifyUser, Non-Reportable"
+    name: "NotifyUser, Non-Reportable",
 };
 
 export const NotifyUserReportable = () => (
@@ -24,7 +24,7 @@ export const NotifyUserReportable = () => (
 );
 
 NotifyUserReportable.story = {
-    name: "NotifyUser, Reportable"
+    name: "NotifyUser, Reportable",
 };
 
 export const NotifyUserReportRetry = () => (
@@ -36,5 +36,5 @@ export const NotifyUserReportRetry = () => (
 );
 
 NotifyUserReportRetry.story = {
-    name: "NotifyUser, Report & Retry"
+    name: "NotifyUser, Report & Retry",
 };

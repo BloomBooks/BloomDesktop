@@ -5,7 +5,7 @@ import { EditableDivUtils } from "./editableDivUtils";
 // I structured this so that it can basically be synonymous with a boolean called "isScaling"
 export enum PointScaling {
     Unscaled,
-    Scaled
+    Scaled,
 }
 
 // Represents a point, and handles ensuring the scaling units remain consistent
@@ -33,7 +33,7 @@ export class Point {
         x: number,
         y: number,
         isScaled: PointScaling,
-        comment: string
+        comment: string,
     ) {
         if (isScaled) {
             const scale = Point.getScalingFactor();
@@ -85,7 +85,7 @@ export class Point {
             this.getUnscaledX() + other.getUnscaledX(),
             this.getUnscaledY() + other.getUnscaledY(),
             PointScaling.Unscaled,
-            "Addition result"
+            "Addition result",
         );
     }
 
@@ -95,7 +95,7 @@ export class Point {
             this.getUnscaledX() - other.getUnscaledX(),
             this.getUnscaledY() - other.getUnscaledY(),
             PointScaling.Unscaled,
-            "Subtraction result"
+            "Subtraction result",
         );
     }
 
@@ -105,7 +105,7 @@ export class Point {
             this.x * multiplier,
             this.y * multiplier,
             PointScaling.Unscaled,
-            "Multiplication result"
+            "Multiplication result",
         );
     }
 
@@ -115,7 +115,7 @@ export class Point {
             this.x / denominator,
             this.y / denominator,
             PointScaling.Unscaled,
-            "Division result"
+            "Division result",
         );
     }
 }

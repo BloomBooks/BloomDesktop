@@ -2,7 +2,7 @@ import * as React from "react";
 export const AudioIcon: React.FunctionComponent<{
     className?: string;
     color?: string;
-}> = props => {
+}> = (props) => {
     return (
         // This svg is basically the same as the one in CanvasElementManager.tsx's addSoundCanvasElement.
         // Likely, changes to one should be mirrored in the other.

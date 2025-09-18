@@ -12,14 +12,14 @@ import { Mode } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { SettingsGroup } from "./PublishScreenBaseComponents";
 import {
     showTopicChooserDialog,
-    TopicChooserDialog
+    TopicChooserDialog,
 } from "../../bookEdit/TopicChooser/TopicChooserDialog";
 
 export const PublishTopic: React.FunctionComponent = () => {
     const [topicName, setTopicName] = React.useState("");
 
     function retrieveTopic() {
-        get("libraryPublish/topic", result => {
+        get("libraryPublish/topic", (result) => {
             setTopicName(result.data);
         });
     }

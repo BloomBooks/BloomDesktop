@@ -7,7 +7,7 @@ const config: StorybookConfig = {
         "@storybook/addon-controls",
         "@storybook/addon-a11y",
         "@storybook/addon-webpack5-compiler-swc",
-        "@chromatic-com/storybook"
+        "@chromatic-com/storybook",
     ],
 
     framework: {
@@ -15,25 +15,25 @@ const config: StorybookConfig = {
         options: {
             fastRefresh: true,
             builder: {
-                useSWC: true
-            }
-        }
+                useSWC: true,
+            },
+        },
     },
 
     typescript: {
-        reactDocgen: false
+        reactDocgen: false,
     },
 
     docs: {
-        autodocs: false
+        autodocs: false,
     },
 
     staticDirs: [
         "../../../output/browser",
         ".",
         "../react_components",
-        "../teamCollection"
-    ]
+        "../teamCollection",
+    ],
 };
 
 export default config;

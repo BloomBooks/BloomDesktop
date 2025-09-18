@@ -28,11 +28,11 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
         activeRadioValue: "continueMusic",
         volume: MusicToolControls.kDefaultVolumeFraction,
         volumeSliderPosition: MusicToolControls.convertVolumeToSliderPosition(
-            MusicToolControls.kDefaultVolumeFraction
+            MusicToolControls.kDefaultVolumeFraction,
         ),
         audioEnabled: false,
         musicName: "",
-        playing: false
+        playing: false,
     };
     // duplicates information in HtmlDom.cs
     // The names of the attributes (of the main page div) which store the background
@@ -50,7 +50,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
 
     public pausePlayer() {
         const rawPlayer = document.getElementById(
-            "musicPlayer"
+            "musicPlayer",
         ) as HTMLMediaElement;
         if (rawPlayer) {
             rawPlayer.pause();
@@ -62,7 +62,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
     public getStateFromHtmlOfPage(): IMusicState {
         const musicState: any = {};
         let audioFileName = ToolboxToolReactAdaptor.getBloomPageAttrDecoded(
-            MusicToolControls.musicAttrName
+            MusicToolControls.musicAttrName,
         );
         const hasMusicAttr = typeof audioFileName === typeof ""; // may be false or undefined if missing
         if (!audioFileName) {
@@ -79,15 +79,16 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
             // If we have a non-empty music attr, we're setting new music right here.
             musicState.activeRadioValue = "newMusic";
             musicState.audioEnabled = true;
-            musicState.volume = MusicToolControls.getPlayerVolumeFromAttributeOnPage(
-                audioFileName
-            );
-            musicState.volumeSliderPosition = MusicToolControls.convertVolumeToSliderPosition(
-                musicState.volume
-            );
-            musicState.musicName = this.getDisplayNameOfMusicFile(
-                audioFileName
-            );
+            musicState.volume =
+                MusicToolControls.getPlayerVolumeFromAttributeOnPage(
+                    audioFileName,
+                );
+            musicState.volumeSliderPosition =
+                MusicToolControls.convertVolumeToSliderPosition(
+                    musicState.volume,
+                );
+            musicState.musicName =
+                this.getDisplayNameOfMusicFile(audioFileName);
         } else {
             // If we have the attribute, but the value is empty, we're explicitly turning it off.
             musicState.activeRadioValue = "noMusic";
@@ -125,7 +126,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
                         when the book is viewed in the Bloom Reader app.
                     </Div>
                     <RadioGroup
-                        onChange={val => this.setRadio(val)}
+                        onChange={(val) => this.setRadio(val)}
                         value={this.state.activeRadioValue}
                     >
                         <Radio
@@ -181,7 +182,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
                             style={{
                                 visibility: this.state.audioEnabled
                                     ? "visible"
-                                    : "hidden"
+                                    : "hidden",
                             }}
                         >
                             {Math.round(this.state.volume * 100)}%
@@ -196,7 +197,9 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
                                     className="musicVolumeSlider"
                                     value={this.state.volumeSliderPosition}
                                     disabled={!this.state.audioEnabled}
-                                    onChange={value => this.sliderMoved(value)}
+                                    onChange={(value) =>
+                                        this.sliderMoved(value)
+                                    }
                                 />
                             </div>
                         </div>
@@ -221,27 +224,27 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
         const player = this.getPlayer();
         if (!this.addedListenerToPlayer) {
             player.addEventListener("ended", () =>
-                this.setState({ playing: false })
+                this.setState({ playing: false }),
             );
             this.addedListenerToPlayer = true;
         }
         MusicToolControls.previewBackgroundMusic(
             player,
             () => this.state.playing,
-            playing => this.setState({ playing: playing })
+            (playing) => this.setState({ playing: playing }),
         );
     }
 
     public static previewBackgroundMusic(
         player: HTMLMediaElement,
         currentlyPlaying: () => boolean, // caller function for testing whether already playing
-        setPlayState: (boolean) => void
+        setPlayState: (boolean) => void,
     ) {
         // call-back function for changing playing state
         // automatic indentation is weird here. This is the start of the body of previewBackgroundMusic,
         // not of setPlayState, which is just a function parameter.
         const audioFileName = ToolboxToolReactAdaptor.getBloomPageAttrDecoded(
-            this.musicAttrName
+            this.musicAttrName,
         );
         if (!audioFileName) {
             return;
@@ -264,7 +267,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
         // Without this it may not play if it hasn't changed.
         player.setAttribute(
             "src",
-            musicUrl + "?nocache=" + new Date().getTime()
+            musicUrl + "?nocache=" + new Date().getTime(),
         );
         player.volume = this.getPlayerVolumeFromAttributeOnPage(audioFileName);
         player.play();
@@ -285,13 +288,13 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
             val === "newMusic" && this.state.musicName.length > 0;
         this.setState({
             activeRadioValue: val,
-            audioEnabled: audioEnabled
+            audioEnabled: audioEnabled,
         });
         switch (val) {
             case "noMusic":
                 ToolboxToolReactAdaptor.encodeAndSetPageAttr(
                     MusicToolControls.musicAttrName,
-                    ""
+                    "",
                 );
                 this.setState({ musicName: "" });
                 this.pausePlaying(); // pauses player and sets playing state to false
@@ -313,10 +316,10 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
     // is used at all. If anything goes wrong, or we're not specifying new music for this page,
     // we return the default volume.
     private static getPlayerVolumeFromAttributeOnPage(
-        audioFileName: string
+        audioFileName: string,
     ): number {
         const audioVolumeStr = ToolboxToolReactAdaptor.getBloomPageAttrDecoded(
-            this.musicVolumeAttrName
+            this.musicVolumeAttrName,
         );
         let audioVolumeFraction: number =
             MusicToolControls.kDefaultVolumeFraction;
@@ -345,34 +348,33 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
 
     // Position is always 0 to 100, and resulting volume is always 0.0 to 1.0, via a non-linear function
     private static convertSliderPositionToVolume(
-        position1To100: number
+        position1To100: number,
     ): number {
         return Math.pow(
             position1To100 / 100,
-            MusicToolControls.kLowEndVolumeSensitivity
+            MusicToolControls.kLowEndVolumeSensitivity,
         );
     }
 
     // Volume is always 0.0 to 1.0, and the resulting position is always 0 to 100
     // In between is a non-linear function.
     private static convertVolumeToSliderPosition(
-        volumeFraction: number
+        volumeFraction: number,
     ): number {
         return Math.round(
             Math.pow(
                 volumeFraction,
-                1 / MusicToolControls.kLowEndVolumeSensitivity
-            ) * 100
+                1 / MusicToolControls.kLowEndVolumeSensitivity,
+            ) * 100,
         );
     }
 
     private sliderMoved(position1to100: number): void {
-        const volume = MusicToolControls.convertSliderPositionToVolume(
-            position1to100
-        );
+        const volume =
+            MusicToolControls.convertSliderPositionToVolume(position1to100);
         ToolboxToolReactAdaptor.encodeAndSetPageAttr(
             MusicToolControls.musicVolumeAttrName,
-            volume.toString()
+            volume.toString(),
         );
         this.getPlayer().volume = volume;
         this.setState((prevState, props) => {
@@ -381,19 +383,19 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
     }
 
     private chooseMusicFile() {
-        get("music/ui/chooseFile", result => {
+        get("music/ui/chooseFile", (result) => {
             const fileName = result.data;
             if (!fileName) {
                 return;
             }
             ToolboxToolReactAdaptor.encodeAndSetPageAttr(
                 MusicToolControls.musicAttrName,
-                fileName
+                fileName,
             );
             this.setState({
                 activeRadioValue: "newMusic",
                 audioEnabled: true,
-                musicName: this.getDisplayNameOfMusicFile(fileName)
+                musicName: this.getDisplayNameOfMusicFile(fileName),
             });
         });
     }
@@ -417,10 +419,10 @@ export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
     public makeRootElement(): HTMLDivElement {
         return super.adaptReactElement(
             <MusicToolControls
-                ref={renderedElement =>
+                ref={(renderedElement) =>
                     (this.controlsElement = renderedElement)
                 }
-            />
+            />,
         );
     }
 

@@ -8,11 +8,11 @@ import {
     CutButton,
     LayoutChoicesDropdown,
     PasteButton,
-    UndoButton
+    UndoButton,
 } from "./editTopBarControls";
 
 const meta: Meta = {
-    title: "Edit Top Bar Controls"
+    title: "Edit Top Bar Controls",
 };
 
 export default meta;
@@ -40,7 +40,7 @@ export const Copy: Story = {
                 <CopyButton enabled={enabled} />
             </div>
         );
-    }
+    },
 };
 
 export const Cut: Story = {
@@ -64,7 +64,7 @@ export const Cut: Story = {
                 <CutButton enabled={enabled} />
             </div>
         );
-    }
+    },
 };
 
 export const Paste: Story = {
@@ -88,7 +88,7 @@ export const Paste: Story = {
                 <PasteButton enabled={enabled} />
             </div>
         );
-    }
+    },
 };
 
 export const Undo: Story = {
@@ -112,7 +112,7 @@ export const Undo: Story = {
                 <UndoButton enabled={enabled} />
             </div>
         );
-    }
+    },
 };
 
 export const ChooseLanguage: Story = {
@@ -136,7 +136,7 @@ export const ChooseLanguage: Story = {
                 <ContentLanguagesDropdown enabled={enabled} number={1} />
             </div>
         );
-    }
+    },
 };
 
 export const ChooseLayout: Story = {
@@ -148,5 +148,5 @@ export const ChooseLayout: Story = {
                 <LayoutChoicesDropdown localizedText="A5 Portrait" />
             </div>
         );
-    }
+    },
 };

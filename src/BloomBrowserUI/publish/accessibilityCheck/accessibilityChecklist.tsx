@@ -1,7 +1,7 @@
 ﻿import * as React from "react";
 import {
     IUILanguageAwareProps,
-    H1
+    H1,
 } from "../../react_components/l10nComponents";
 
 import "./accessibilityChecklist.less";
@@ -10,9 +10,7 @@ import { ApiBackedCheckbox } from "../../react_components/apiBackedCheckbox";
 import WebSocketManager from "../../utils/WebSocketManager";
 import "../../lib/errorHandler";
 
-export class AccessibilityChecklist extends React.Component<
-    IUILanguageAwareProps
-> {
+export class AccessibilityChecklist extends React.Component<IUILanguageAwareProps> {
     constructor(props) {
         super(props);
     }
@@ -36,7 +34,7 @@ export class AccessibilityChecklist extends React.Component<
     // We give each child the following function. The child then calls it, providing
     // a function that causes it to refresh.
     private subscribeChildToRefreshEvent(childRefreshFunction) {
-        WebSocketManager.addListener("a11yChecklist", event => {
+        WebSocketManager.addListener("a11yChecklist", (event) => {
             if (
                 event.id === "bookSelectionChanged" ||
                 event.id === "bookContentsMayHaveChanged"
@@ -76,7 +74,7 @@ export class AccessibilityChecklist extends React.Component<
                     </H1>
                     {this.addCheck(
                         "noEssentialInfoByColor",
-                        "No essential information by color"
+                        "No essential information by color",
                     )}
                     {/* This check makes sense in the TTS world, but in the Bloom world, we are saying you have
                         to have image descriptions and recordings of all images anyways. So even if there was

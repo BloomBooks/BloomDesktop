@@ -22,7 +22,7 @@ export const RequestStringDialog: React.FunctionComponent<{
     l10nKey: string; // i18n ID corresponding to label
     label: string; // appears above the edit box, labels the string being edited
     setValue: (result: string) => void; // called if user clicks OK, passed the possibly edited string.
-}> = props => {
+}> = (props) => {
     const [open, setOpen] = useState(true);
     const [content, setContent] = useState(props.initialContent);
     const handleClose = () => {
@@ -61,7 +61,7 @@ export const RequestStringDialog: React.FunctionComponent<{
                             fullWidth={true}
                             variant="standard"
                             defaultValue={props.initialContent}
-                            onChange={event => setContent(event.target.value)}
+                            onChange={(event) => setContent(event.target.value)}
                         />
                     </DialogContent>
                     <DialogActions>
@@ -98,7 +98,7 @@ export function showRequestStringDialog(
     title: string,
     l10nKey: string,
     label: string,
-    saveNewContent: (result: string) => void
+    saveNewContent: (result: string) => void,
 ) {
     root = document.createElement("div");
     document.body.appendChild(root);
@@ -111,6 +111,6 @@ export function showRequestStringDialog(
             l10nKey={l10nKey}
             label={label}
         />,
-        root
+        root,
     );
 }

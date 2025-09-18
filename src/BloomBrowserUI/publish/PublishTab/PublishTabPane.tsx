@@ -4,7 +4,7 @@ import * as ReactDOM from "react-dom";
 import {
     kBloomBlue,
     kPanelBackground,
-    lightTheme
+    lightTheme,
 } from "../../bloomMaterialUITheme";
 import { BloomTabs } from "../../react_components/BloomTabs";
 import { Tab, TabList, TabPanel } from "react-tabs";
@@ -29,10 +29,10 @@ import { RegistrationDialogLauncher } from "../../react_components/registrationD
 
 export const CheckoutNeededScreen: React.FunctionComponent<{
     titleForDisplay: string;
-}> = props => {
+}> = (props) => {
     const needsCheckoutText1 = useL10n(
         "Please check out this book from the Team Collection before publishing it.",
-        "TeamCollection.CheckoutRequiredExplanation"
+        "TeamCollection.CheckoutRequiredExplanation",
     );
 
     return (
@@ -78,14 +78,14 @@ export const PublishTabPane: React.FunctionComponent = () => {
         checkoutNeeded: false,
         canUpload: false,
         bookTitle: "",
-        featurePreventingPublishing: undefined as FeatureStatus | undefined
+        featurePreventingPublishing: undefined as FeatureStatus | undefined,
     });
     const [tabIndex, setTabIndex] = React.useState(
-        kWaitForUserToChooseTabIndex
+        kWaitForUserToChooseTabIndex,
     );
     const setup = () => {
         setTabIndex(kWaitForUserToChooseTabIndex);
-        get("publish/getInitialPublishTabInfo", result => {
+        get("publish/getInitialPublishTabInfo", (result) => {
             // There should be a current selection by now but just in case:
             if (!result.data) {
                 return;
@@ -95,7 +95,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                 canUpload: result.data.canUpload,
                 bookTitle: result.data.titleForDisplay,
                 featurePreventingPublishing:
-                    result.data.featurePreventingPublishing
+                    result.data.featurePreventingPublishing,
             });
             setPublishTabReady(true);
         });
@@ -143,44 +143,44 @@ export const PublishTabPane: React.FunctionComponent = () => {
             tipL10nKey: "PublishTab.PdfPrintButton-tooltip",
             iconSrc: "/bloom/publish/PublishTab/PdfPrint.png",
             labelL10nKey: "PublishTab.PdfPrint.Button",
-            label: "PDF & Print"
+            label: "PDF & Print",
         },
         {
             tipL10nKey: "PublishTab.ButtonThatShowsUploadForm-tooltip",
             iconSrc: "/bloom/publish/PublishTab/upload.png",
             labelL10nKey: "PublishTab.ButtonThatShowsUploadForm",
-            label: "Web"
+            label: "Web",
         },
         {
             tipL10nKey: "PublishTab.bloomPUBButton-tooltip",
             iconSrc: "/bloom/publish/PublishTab/BloomPUB.png",
             labelL10nKey: "PublishTab.bloomPUBButton",
-            label: "BloomPUB"
+            label: "BloomPUB",
         },
         {
             tipL10nKey: "PublishTab.EpubRadio-tooltip",
             iconSrc: "/bloom/publish/PublishTab/ePUBPublishButton.png",
             labelL10nKey: "PublishTab.EpubButton",
-            label: "ePUB"
+            label: "ePUB",
         },
         {
             tipL10nKey: "PublishTab.RecordVideoButton-tooltip",
             iconSrc: "/bloom/publish/PublishTab/publish video.png",
             labelL10nKey: "PublishTab.RecordVideoButton",
-            label: "Audio or Video"
-        }
+            label: "Audio or Video",
+        },
     ];
 
     function logPublishTabSelected(idx: number) {
         if (idx < 0 || idx >= publishTabs.length) {
             postString(
                 "logger/writeEvent",
-                `Publish tab selected: ${idx} (unknown)`
+                `Publish tab selected: ${idx} (unknown)`,
             );
         } else {
             postString(
                 "logger/writeEvent",
-                `Publish tab selected: ${publishTabs[idx].label}`
+                `Publish tab selected: ${publishTabs[idx].label}`,
             );
         }
     }
@@ -202,7 +202,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                             selectedColor="white"
                             labelBackgroundColor={kPanelBackground}
                             selectedIndex={tabIndex}
-                            onSelect={newIndex => {
+                            onSelect={(newIndex) => {
                                 post("publish/switchingPublishMode");
                                 logPublishTabSelected(newIndex);
                                 setTabIndex(newIndex);
@@ -271,7 +271,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                     <Tab key={index}>
                                         <BloomTooltip
                                             tip={{
-                                                l10nKey: tab.tipL10nKey
+                                                l10nKey: tab.tipL10nKey,
                                             }}
                                         >
                                             <img src={tab.iconSrc} />

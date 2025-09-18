@@ -21,7 +21,7 @@ export class MeasureText {
         fontFamily: string,
         fontSize: number,
         width: number,
-        lineHeight: string | null
+        lineHeight: string | null,
     ) {
         const t0 = performance.now();
         // Get the descent that the browser uses for various purposes,
@@ -78,19 +78,19 @@ export class MeasureText {
         div.style.fontFamily = fontFamily;
         div.style.fontSize = fontSize + "px";
         div.style.lineHeight = ""; // reset in case we're reusing it
-        const bottomOfTextWithDefaultLineSpace = div.getBoundingClientRect()
-            .bottom;
-        const baselineOfTextWithDefaultLineSpace = block.getBoundingClientRect()
-            .bottom;
+        const bottomOfTextWithDefaultLineSpace =
+            div.getBoundingClientRect().bottom;
+        const baselineOfTextWithDefaultLineSpace =
+            block.getBoundingClientRect().bottom;
         const fontDescent =
             bottomOfTextWithDefaultLineSpace -
             baselineOfTextWithDefaultLineSpace;
 
         if (lineHeight !== null) div.style.lineHeight = lineHeight;
-        const bottomOfTextWithActualLineSpace = div.getBoundingClientRect()
-            .bottom;
-        const baselineOfTextWithActualLineSpace = block.getBoundingClientRect()
-            .bottom;
+        const bottomOfTextWithActualLineSpace =
+            div.getBoundingClientRect().bottom;
+        const baselineOfTextWithActualLineSpace =
+            block.getBoundingClientRect().bottom;
         const layoutDescent =
             bottomOfTextWithActualLineSpace - baselineOfTextWithActualLineSpace;
 
@@ -150,7 +150,7 @@ export class MeasureText {
         return {
             fontDescent: fontDescent,
             actualDescent: descent,
-            layoutDescent: layoutDescent
+            layoutDescent: layoutDescent,
         };
     }
 
@@ -171,13 +171,13 @@ export class MeasureText {
             fontFamily,
             parseInt(fontSize),
             box.clientWidth,
-            lineHeight
+            lineHeight,
         );
     }
 
     private static createCanvas(
         width: number,
-        height: number
+        height: number,
     ): HTMLCanvasElement {
         const canvas = document.createElement("canvas");
         canvas.width = width;
@@ -200,7 +200,7 @@ export class MeasureText {
         canvas: HTMLCanvasElement,
         text: string,
         fontFamily: string,
-        fontSize: number
+        fontSize: number,
     ): void {
         const context = canvas.getContext("2d");
         if (context != null) {
@@ -217,7 +217,7 @@ export class MeasureText {
         canvas: HTMLCanvasElement,
         characters: string,
         fontFamily: string,
-        fontSize: number
+        fontSize: number,
     ): number {
         this.resetCanvas(canvas);
         this.drawText(canvas, characters, fontFamily, fontSize);
@@ -251,7 +251,7 @@ export class MeasureText {
         canvas: HTMLCanvasElement,
         firstRow: number,
         lastRow: number,
-        step: number
+        step: number,
     ): number {
         const imageData: ImageData | null = this.getImageData(canvas);
         if (imageData == null) {
@@ -268,7 +268,7 @@ export class MeasureText {
             const highestValue = this.scanRow(
                 imageDataArray,
                 row * valuesPerRow,
-                canvas.width
+                canvas.width,
             );
             /* 240 is a somewhat randomly picked value to deal with anti-aliasing. */
             if (highestValue > 240) {
@@ -300,7 +300,7 @@ export class MeasureText {
     private static scanRow(
         imageData: Uint8ClampedArray,
         offset: number,
-        length: number
+        length: number,
     ) {
         let highestValue = 0;
         for (let column = 0; column < length; column += 1) {

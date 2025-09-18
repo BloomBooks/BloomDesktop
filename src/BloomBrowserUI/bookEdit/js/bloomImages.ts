@@ -2,7 +2,7 @@ import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import {
     getWithConfig,
     getWithConfigAsync,
-    postJson
+    postJson,
 } from "../../utils/bloomApi";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
@@ -12,7 +12,7 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import {
     kBackgroundImageClass,
     theOneCanvasElementManager,
-    updateCanvasElementClass
+    updateCanvasElementClass,
 } from "./CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
 
@@ -44,14 +44,14 @@ export function cleanupImages() {
 export function SetupImagesInContainer(container) {
     $(container)
         .find(".bloom-imageContainer > img") // the ">" here prevents finding img's of ui affordances deep in comics
-        .each(function() {
+        .each(function () {
             SetupImage(this);
         });
     // I think this is redundant, but it might be important for a bloom-canvas
     // where the background img has not yet been converted to a background canvas element.
     $(container)
         .find(".bloom-canvas > img") // the ">" here prevents finding img's of ui affordances deep in comics
-        .each(function() {
+        .each(function () {
             SetupImage(this);
         });
 
@@ -67,13 +67,13 @@ export function SetupImagesInContainer(container) {
     //todo: this had problems. Check out the later approach, seen in draggableLabel (e.g. move handle on the inside, using a background image on a div)
     $(container)
         .find(".bloom-draggable")
-        .mouseenter(function() {
+        .mouseenter(function () {
             $(this).prepend(
-                "<button class='moveButton' title='Move'></button>"
+                "<button class='moveButton' title='Move'></button>",
             );
             $(this)
                 .find(".moveButton")
-                .mousedown(function(e) {
+                .mousedown(function (e) {
                     //reviewSlog added the <any>
                     $(this)
                         .parent()
@@ -82,17 +82,17 @@ export function SetupImagesInContainer(container) {
         });
     $(container)
         .find(".bloom-draggable")
-        .mouseleave(function() {
+        .mouseleave(function () {
             $(this)
                 .find(".moveButton")
-                .each(function() {
+                .each(function () {
                     $(this).remove();
                 });
         });
 
     $(container)
         .find("img")
-        .each(function() {
+        .each(function () {
             SetAlternateTextOnImages(this);
         });
 }
@@ -160,7 +160,7 @@ export function HandleImageError(event: Event) {
 
 export function doImageCommand(
     img: HTMLElement | undefined,
-    command: "cut" | "copy" | "paste" | "change"
+    command: "cut" | "copy" | "paste" | "change",
 ) {
     if (!img) {
         return;
@@ -194,7 +194,7 @@ export function doImageCommand(
     postJson("editView/" + command + "Image", {
         imageId,
         imageSrc,
-        imageIsGif
+        imageIsGif,
     });
 }
 
@@ -224,7 +224,7 @@ export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {
 
 function SetupChangeImageButton(bloomCanvas: HTMLElement) {
     for (const oldButton of Array.from(
-        bloomCanvas.getElementsByClassName("changeImageButton")
+        bloomCanvas.getElementsByClassName("changeImageButton"),
     )) {
         oldButton.remove();
     }
@@ -241,7 +241,7 @@ function SetupChangeImageButton(bloomCanvas: HTMLElement) {
     const titleText = "Change image";
     theOneLocalizationManager
         .asyncGetText(titleId, titleText, "tooltip text")
-        .done(translation => {
+        .done((translation) => {
             button.title = translation;
             bloomCanvas.prepend(button);
         })
@@ -300,10 +300,10 @@ function SetupBloomCanvas(bloomCanvas: HTMLElement) {
     SetupChangeImageButton(bloomCanvas);
 
     $(bloomCanvas)
-        .mouseenter(function() {
+        .mouseenter(function () {
             handleMouseEnterBloomCanvas(this);
         })
-        .mouseleave(function(e: JQueryMouseEventObject) {
+        .mouseleave(function (e: JQueryMouseEventObject) {
             // Page numbers displaying inside the bloom-canvas must have their
             // width and height constrained.  That way, hovering over the page number
             // triggers the mouseleave event, and the image editing buttons are hidden
@@ -314,13 +314,13 @@ function SetupBloomCanvas(bloomCanvas: HTMLElement) {
 }
 
 export function getImageUrlFromImageContainer(
-    HTMLElement: HTMLElement
+    HTMLElement: HTMLElement,
 ): string {
     return GetRawImageUrl(getImageFromContainer(HTMLElement));
 }
 
 export function getImageFromContainer(
-    imageContainer: HTMLElement // in one possibly obsolete caller, might be a bloom-canvas
+    imageContainer: HTMLElement, // in one possibly obsolete caller, might be a bloom-canvas
 ): HTMLImageElement | null {
     // If there is ever a case where the img we want is not a direct child of the container,
     // be careful not to fix this in a way that might accidentally return a canvas element image
@@ -329,18 +329,17 @@ export function getImageFromContainer(
     // The bloom-ui filter prevents returning controls we add to canvas elements.
     // Note: x instanceof HTMLImageElement did not work reliably.
     return Array.from(imageContainer.children).find(
-        x => x.nodeName === "IMG"
+        (x) => x.nodeName === "IMG",
     ) as HTMLImageElement;
 }
 
 // Given a canvas element which may or may not be an image canvas element, if it IS an image canvas element,
 // find its image. Otherwise, return null.
 export function getImageFromCanvasElement(
-    canvasElement: HTMLElement
+    canvasElement: HTMLElement,
 ): HTMLImageElement | null {
-    const imageContainer = canvasElement.getElementsByClassName(
-        kImageContainerClass
-    )[0];
+    const imageContainer =
+        canvasElement.getElementsByClassName(kImageContainerClass)[0];
     if (!imageContainer) {
         return null;
     }
@@ -359,10 +358,10 @@ export function getImageFromCanvasElement(
 // There are enough common behaviors to make it useful to use the same structure, and I
 // (JohnT) at least find it useful to think of it as a background canvas element.
 export function getBackgroundCanvasElementFromBloomCanvas(
-    bloomCanvas: HTMLElement
+    bloomCanvas: HTMLElement,
 ): HTMLElement | null {
     return bloomCanvas.getElementsByClassName(
-        kBackgroundImageClass
+        kBackgroundImageClass,
     )[0] as HTMLElement;
 }
 
@@ -370,11 +369,10 @@ export function getBackgroundCanvasElementFromBloomCanvas(
 // This, rather than the obsolete img that is a direct child and is always placeHolder.png,
 // is the background image that is actually displayed.
 export function getBackgroundImageFromBloomCanvas(
-    bloomCanvas: HTMLElement
+    bloomCanvas: HTMLElement,
 ): HTMLElement | null {
-    const bgCanvasElement = getBackgroundCanvasElementFromBloomCanvas(
-        bloomCanvas
-    );
+    const bgCanvasElement =
+        getBackgroundCanvasElementFromBloomCanvas(bloomCanvas);
     if (!bgCanvasElement) {
         return null;
     }
@@ -391,7 +389,7 @@ function DisableImageTooltip(container: HTMLElement | undefined | null) {
         // background image, the most complete thing is to remove them all.
         canvasElementManager
             .getAllBloomCanvasesOnPage()
-            .forEach(bloomCanvas => {
+            .forEach((bloomCanvas) => {
                 bloomCanvas.title = "";
             });
         return;
@@ -412,7 +410,7 @@ function DisableImageTooltip(container: HTMLElement | undefined | null) {
 // callers should consider the order operations are done if multiple operations happen at or near the same time
 // to ensure that the final state is the one they desire.
 export function UpdateImageTooltipVisibility(
-    container: HTMLElement | undefined | null
+    container: HTMLElement | undefined | null,
 ) {
     const theOneCanvasElementManager = getCanvasElementManager();
     if (
@@ -441,7 +439,7 @@ export function UpdateImageTooltipVisibility(
             // It's less complicated to just set the title of the main container (its events trigger because the canvas is its descendant,
             // and the canvas is receiving events)
             const bloomCanvas = container.closest(
-                kBloomCanvasSelector
+                kBloomCanvasSelector,
             ) as HTMLElement;
 
             if (bloomCanvas) {
@@ -474,7 +472,7 @@ interface IImageInfoResponse {
 }
 
 async function DetermineImageTooltipAsync(
-    bloomCanvas: HTMLElement
+    bloomCanvas: HTMLElement,
 ): Promise<string> {
     const imgElement = getBackgroundImageFromBloomCanvas(bloomCanvas);
 
@@ -491,12 +489,12 @@ async function DetermineImageTooltipAsync(
     const containerJQ = $(bloomCanvas);
     const targetDpiWidth = Math.ceil((300 * containerJQ.width()) / kBrowserDpi);
     const targetDpiHeight = Math.ceil(
-        (300 * containerJQ.height()) / kBrowserDpi
+        (300 * containerJQ.height()) / kBrowserDpi,
     );
     const isPlaceHolder = url.indexOf("placeHolder.png") > -1;
 
     const result = await getWithConfigAsync<IImageInfoResponse>("image/info", {
-        params: { image: url }
+        params: { image: url },
     });
 
     if (!result) {
@@ -515,7 +513,7 @@ async function DetermineImageTooltipAsync(
         const dpi = getDpi(
             bloomCanvas,
             imageFileInfo.width,
-            imageFileInfo.height
+            imageFileInfo.height,
         );
         const bulletForDpi = dpi < 300 ? "⚠" : "✓";
         // removed because only devs care! Bit Depth: ${imageFileInfo.bitDepth.toString()}
@@ -551,7 +549,7 @@ async function DetermineImageTooltipAsync(
 function getDpi(
     container: HTMLElement,
     imageWidth: number,
-    imageHeight: number
+    imageHeight: number,
 ): number {
     const containerJQ = $(container);
 
@@ -590,7 +588,7 @@ function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
         getWithConfig(
             "image/info",
             { params: { image: GetRawImageUrl(img) } },
-            result => {
+            (result) => {
                 const imageInfo: any = result.data;
                 const containerAspectRatio =
                     container.width() / Math.max(1, container.height());
@@ -601,7 +599,7 @@ function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
                 if (imageAspectRatio < containerAspectRatio) {
                     $(img).css(
                         "width",
-                        `${container.height() * imageAspectRatio}px`
+                        `${container.height() * imageAspectRatio}px`,
                     );
                     $(img).css("height", "100%");
                 }
@@ -609,9 +607,10 @@ function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
                 else {
                     $(img).css(
                         "height",
-                        `${imageInfo.height *
-                            (container.width() /
-                                Math.max(1, imageInfo.width))}px`
+                        `${
+                            imageInfo.height *
+                            (container.width() / Math.max(1, imageInfo.width))
+                        }px`,
                     );
                     $(img).css("width", "100%");
                 }
@@ -623,7 +622,7 @@ function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
                 // do set it that way in the stylesheet, and then overwrite that here once
                 // we have the height and width set.
                 $(img).css("object-fit", "cover");
-            }
+            },
         );
     }
 }
@@ -648,11 +647,7 @@ function getFileLengthString(bytes): string {
 // If the image is a placeholder:
 // - we don't want to offer to edit placeholder credits
 function IsImageReal(img) {
-    return (
-        GetRawImageUrl(img)
-            .toLowerCase()
-            .indexOf("placeholder") == -1
-    ); //don't offer to edit placeholder credits
+    return GetRawImageUrl(img).toLowerCase().indexOf("placeholder") == -1; //don't offer to edit placeholder credits
 }
 
 // Gets the src attribute out of images, and the background-image:url() of everything else
@@ -693,18 +688,18 @@ export function SetupMetadataButton(parent: HTMLElement) {
         bgImageCanvasElements.push(parent);
     } else {
         bgImageCanvasElements = Array.from(
-            parent.getElementsByClassName(kBackgroundImageClass)
+            parent.getElementsByClassName(kBackgroundImageClass),
         ) as HTMLElement[];
     }
     for (const bgImageCanvasElement of bgImageCanvasElements) {
         const bloomCanvas = bgImageCanvasElement.parentElement as HTMLElement;
         for (const oldButton of Array.from(
-            bloomCanvas.getElementsByClassName("editMetadataButton")
+            bloomCanvas.getElementsByClassName("editMetadataButton"),
         )) {
             oldButton.remove();
         }
         const container = bgImageCanvasElement.getElementsByClassName(
-            kImageContainerClass
+            kImageContainerClass,
         )[0] as HTMLElement;
         if (!container) {
             continue; // pathological
@@ -734,7 +729,7 @@ export function SetupMetadataButton(parent: HTMLElement) {
         });
         theOneLocalizationManager
             .asyncGetText(titleId, title, "tooltip text")
-            .done(translation => {
+            .done((translation) => {
                 const title = translation.replace(/'/g, "&apos;");
                 button.title = title;
                 bloomCanvas.prepend(button);
@@ -758,24 +753,24 @@ function SetAlternateTextOnImages(element) {
         // show English to start with in case localization never returns even a failure
         $(element).attr(
             "alt",
-            theOneLocalizationManager.simpleFormat(englishText, [decodedName])
+            theOneLocalizationManager.simpleFormat(englishText, [decodedName]),
         );
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Image.AltMsg",
                 englishText,
                 "message displayed when the picture image cannot be displayed",
-                decodedName
+                decodedName,
             )
-            .done(translation => {
+            .done((translation) => {
                 $(element).attr("alt", translation);
             })
             .fail(() => {
                 $(element).attr(
                     "alt",
                     theOneLocalizationManager.simpleFormat(englishText, [
-                        decodedName
-                    ])
+                        decodedName,
+                    ]),
                 );
             });
     } else {
@@ -787,10 +782,10 @@ function SetAlternateTextOnImages(element) {
 // This method uses jQuery UI resizable to make it so.
 export function SetupResizableElement(element) {
     $(element)
-        .mouseenter(function() {
+        .mouseenter(function () {
             $(this).addClass("ui-mouseOver");
         })
-        .mouseleave(function() {
+        .mouseleave(function () {
             $(this).removeClass("ui-mouseOver");
         });
     // When the outer container is resized, the inner bloom-canvas is resized with it.
@@ -817,12 +812,12 @@ export function SetupResizableElement(element) {
             alsoResize: bloomCanvas,
             start(e, ui) {
                 theOneCanvasElementManager.suspendComicEditing(
-                    "forJqueryResize"
+                    "forJqueryResize",
                 );
             },
             stop(e, ui) {
                 theOneCanvasElementManager.resumeComicEditing();
-            }
+            },
         });
     }
     // It actually IS a bloom-canvas. This old code expects it to directly contain
@@ -830,12 +825,12 @@ export function SetupResizableElement(element) {
     // going to attempt a full fix.
     else if ($(element).hasClass(kBloomCanvasClass)) {
         alert(
-            "applying bloom-resizable to a bloom-canvas may not work. Code in bloomImages.SetupResizableElement needs updating"
+            "applying bloom-resizable to a bloom-canvas may not work. Code in bloomImages.SetupResizableElement needs updating",
         );
         const img = $(element).find("img");
         $(element).resizable({
             handles: "nw, ne, sw, se",
-            containment: "parent"
+            containment: "parent",
         });
     }
     // some other kind of resizable. (JT Mar 2025: I don't think anything currently uses this,
@@ -852,7 +847,7 @@ export function SetupResizableElement(element) {
                 ) {
                     $(ui.element).data("doRestoreRelativePosition", "true");
                 }
-            }
+            },
         });
     }
 }
@@ -862,7 +857,7 @@ function ResizeUsingPercentages(e, ui) {
     const parent = ui.element.parent();
     ui.element.css({
         width: (ui.element.width() / parent.width()) * 100 + "%",
-        height: (ui.element.height() / parent.height()) * 100 + "%"
+        height: (ui.element.height() / parent.height()) * 100 + "%",
     });
 
     //after any resize jquery adds an absolute position, which we don't want unless the user has resized
@@ -871,7 +866,7 @@ function ResizeUsingPercentages(e, ui) {
         ui.element.css({
             position: "",
             top: "",
-            left: ""
+            left: "",
         });
     }
     $(ui.element).removeData("hadPreviouslyBeenRelocated");

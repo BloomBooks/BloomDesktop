@@ -21,7 +21,7 @@ function RunTest(index, value) {
             "  scrollH: " +
                 testHtml[0].scrollHeight +
                 " clientH: " +
-                testHtml[0].clientHeight
+                testHtml[0].clientHeight,
         );
         console.log("    Height: " + testHtml.height());
         let styleAttr = testHtml.attr("style");
@@ -38,7 +38,7 @@ function RunTest(index, value) {
                 " font-size " +
                 fontS +
                 " padding " +
-                padding
+                padding,
         );
         console.log("     OverflowSelf: " + overflowingSelf + " font: " + font);
         // added this because the failure message is not always immediately after the test output
@@ -54,7 +54,7 @@ function RunAncestorMarginTest(index: number, value: HTMLElement) {
         nameAttr = "***** This test needs a name! *****";
     if (consoleDef) console.log("\nBeginning test # " + index + " " + nameAttr);
     const overflowingAncestor = OverflowChecker.overflowingAncestor(
-        testHtml[0]
+        testHtml[0],
     );
     const overflowingMargins = overflowingAncestor != null;
     const testExpectation = testHtml.hasClass("expectToOverflow");
@@ -63,7 +63,7 @@ function RunAncestorMarginTest(index: number, value: HTMLElement) {
             "  scrollH: " +
                 testHtml[0].scrollHeight +
                 " clientH: " +
-                testHtml[0].clientHeight
+                testHtml[0].clientHeight,
         );
         console.log("    Height: " + testHtml.height());
         let styleAttr = testHtml.attr("style");
@@ -80,10 +80,10 @@ function RunAncestorMarginTest(index: number, value: HTMLElement) {
                 " font-size " +
                 fontS +
                 " padding " +
-                padding
+                padding,
         );
         console.log(
-            "     OverflowMargins: " + overflowingMargins + " font: " + font
+            "     OverflowMargins: " + overflowingMargins + " font: " + font,
         );
         // added this because the failure message is not always immediately after the test output
         console.log("     Expecting: " + testExpectation);
@@ -119,7 +119,7 @@ describe("Overflow Tests", () => {
             console.log("Commencing Margin Overflow tests...");
         }
         $(".myTest").each((index, element) =>
-            RunAncestorMarginTest(index, element as HTMLElement)
+            RunAncestorMarginTest(index, element as HTMLElement),
         );
     });
 
@@ -131,7 +131,7 @@ describe("Overflow Tests", () => {
             console.log("Commencing Fixed Ancestor Overflow tests...");
         }
         $(".myTest").each((index, element) =>
-            RunAncestorMarginTest(index, element as HTMLElement)
+            RunAncestorMarginTest(index, element as HTMLElement),
         );
     });
 });

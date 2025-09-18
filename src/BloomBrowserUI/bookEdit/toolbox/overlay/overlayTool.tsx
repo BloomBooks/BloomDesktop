@@ -8,7 +8,7 @@ import "./overlayTool.less";
 import { getEditTabBundleExports } from "../../js/bloomFrames";
 import {
     CanvasElementManager,
-    ITextColorInfo
+    ITextColorInfo,
 } from "../../js/CanvasElementManager";
 import { BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
@@ -30,7 +30,7 @@ import {
     getColorInfoFromSpecialNameOrColorString,
     getSpecialColorName,
     TextBackgroundColors,
-    TextColorPalette
+    TextColorPalette,
 } from "../../../react_components/color-picking/bloomPalette";
 import { EnableAllImageEditing } from "../../js/bloomImages";
 import {
@@ -39,7 +39,7 @@ import {
     CanvasElementItem,
     CanvasElementItemRegion,
     CanvasElementItemRow,
-    CanvasElementTextItem
+    CanvasElementTextItem,
 } from "./CanvasElementItem";
 import { getCanvasElementManager } from "./canvasElementUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
@@ -54,24 +54,21 @@ const OverlayToolControls: React.FunctionComponent = () => {
     // Declare all the hooks
     const [style, setStyle] = useState("none");
     const [outlineColor, setOutlineColor] = useState<string | undefined>(
-        undefined
+        undefined,
     );
-    const [canvasElementType, setCanvasElementType] = useState<
-        CanvasElementType
-    >(undefined);
+    const [canvasElementType, setCanvasElementType] =
+        useState<CanvasElementType>(undefined);
     const [showTailChecked, setShowTailChecked] = useState(false);
-    const [isRoundedCornersChecked, setIsRoundedCornersChecked] = useState(
-        false
-    );
+    const [isRoundedCornersChecked, setIsRoundedCornersChecked] =
+        useState(false);
     const [isXmatter, setIsXmatter] = useState(true);
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
     const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
 
     // Add state to track whether each dropdown is open
     const [isStyleSelectOpen, setIsStyleSelectOpen] = useState(false);
-    const [isOutlineColorSelectOpen, setIsOutlineColorSelectOpen] = useState(
-        false
-    );
+    const [isOutlineColorSelectOpen, setIsOutlineColorSelectOpen] =
+        useState(false);
     function openStyleSelect() {
         setIsStyleSelectOpen(true);
         // Make sure we don't leave the select open when the tool closes.
@@ -91,7 +88,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
     const deleteTooltip = useL10n("Delete", "Common.Delete");
     const duplicateTooltip = useL10n(
         "Duplicate",
-        "EditTab.Toolbox.ComicTool.Options.Duplicate"
+        "EditTab.Toolbox.ComicTool.Options.Duplicate",
     );
 
     // While renaming Comic -> Overlay, I (gjm) intentionally left several (21) "keys" with
@@ -100,28 +97,28 @@ const OverlayToolControls: React.FunctionComponent = () => {
     // Setup for color picker, in case we need it.
     const textColorTitle = useL10n(
         "Text Color",
-        "EditTab.Toolbox.ComicTool.Options.TextColor"
+        "EditTab.Toolbox.ComicTool.Options.TextColor",
     );
     const backgroundColorTitle = useL10n(
         "Background Color",
-        "EditTab.Toolbox.ComicTool.Options.BackgroundColor"
+        "EditTab.Toolbox.ComicTool.Options.BackgroundColor",
     );
 
-    const defaultTextColors: IColorInfo[] = TextColorPalette.map(color =>
-        getColorInfoFromSpecialNameOrColorString(color)
+    const defaultTextColors: IColorInfo[] = TextColorPalette.map((color) =>
+        getColorInfoFromSpecialNameOrColorString(color),
     );
 
     // Text color swatch
     // defaults to "black" text color
     const [textColorSwatch, setTextColorSwatch] = useState(
-        defaultTextColors[0]
+        defaultTextColors[0],
     );
     const [textColorIsDefault, setTextColorIsDefault] = useState(true);
 
     // Background color swatch
     // defaults to "white" background color
     const [backgroundColorSwatch, setBackgroundColorSwatch] = useState(
-        TextBackgroundColors[1]
+        TextBackgroundColors[1],
     );
 
     // If canvasElementType is not undefined, corresponds to the active canvas element's family.
@@ -136,7 +133,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
         if (!canvasElementManager) {
             console.assert(
                 false,
-                "ERROR: Bubble manager is not initialized yet. Please investigate!"
+                "ERROR: Bubble manager is not initialized yet. Please investigate!",
             );
             return;
         }
@@ -152,7 +149,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
             "canvasElement",
             (bubble: BubbleSpec | undefined) => {
                 setCurrentFamilySpec(bubble);
-            }
+            },
         );
 
         setCurrentFamilySpec(bubbleSpec);
@@ -174,31 +171,31 @@ const OverlayToolControls: React.FunctionComponent = () => {
         if (currentFamilySpec) {
             setStyle(currentFamilySpec.style);
             setShowTailChecked(
-                currentFamilySpec.tails && currentFamilySpec.tails.length > 0
+                currentFamilySpec.tails && currentFamilySpec.tails.length > 0,
             );
             setIsRoundedCornersChecked(
                 !!currentFamilySpec.cornerRadiusX &&
                     !!currentFamilySpec.cornerRadiusY &&
                     currentFamilySpec.cornerRadiusX > 0 &&
-                    currentFamilySpec.cornerRadiusY > 0
+                    currentFamilySpec.cornerRadiusY > 0,
             );
             setOutlineColor(currentFamilySpec.outerBorderColor);
             const backColor = getBackgroundColorValue(currentFamilySpec);
-            const newSwatch = getColorInfoFromSpecialNameOrColorString(
-                backColor
-            );
+            const newSwatch =
+                getColorInfoFromSpecialNameOrColorString(backColor);
             setBackgroundColorSwatch(newSwatch);
 
             const canvasElementManager = getCanvasElementManager();
             setCanvasElementType(getBubbleType(canvasElementManager));
             if (canvasElementManager) {
                 // Get the current canvas element's textColor and set it
-                const canvasElementTextColorInformation: ITextColorInfo = canvasElementManager.getTextColorInformation();
+                const canvasElementTextColorInformation: ITextColorInfo =
+                    canvasElementManager.getTextColorInformation();
                 setTextColorIsDefault(
-                    canvasElementTextColorInformation.isDefault
+                    canvasElementTextColorInformation.isDefault,
                 );
                 const newSwatch = getColorInfoFromSpecialNameOrColorString(
-                    canvasElementTextColorInformation.color
+                    canvasElementTextColorInformation.color,
                 );
                 setTextColorSwatch(newSwatch);
             }
@@ -208,7 +205,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
     }, [currentFamilySpec]);
 
     const getBubbleType = (
-        mgr: CanvasElementManager | undefined
+        mgr: CanvasElementManager | undefined,
     ): CanvasElementType => {
         if (!mgr) {
             return undefined;
@@ -220,7 +217,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
     };
 
     // Callback for style changed
-    const handleStyleChanged = event => {
+    const handleStyleChanged = (event) => {
         const newStyle = event.target.value;
 
         // Update the toolbox controls
@@ -230,7 +227,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
         const canvasElementManager = getCanvasElementManager();
         if (canvasElementManager) {
             const newBubbleProps = {
-                style: newStyle
+                style: newStyle,
             };
 
             // BL-8537: If we are choosing "caption" style, we make sure that the background color is opaque.
@@ -251,9 +248,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
                 newBubbleProps["backgroundColors"] = backgroundColorArray;
             }
 
-            const newSpec = canvasElementManager.updateSelectedFamilyBubbleSpec(
-                newBubbleProps
-            );
+            const newSpec =
+                canvasElementManager.updateSelectedFamilyBubbleSpec(
+                    newBubbleProps,
+                );
             // We do this because the new style's spec may affect Show Tail, or background opacity too.
             setCurrentFamilySpec(newSpec);
         }
@@ -270,7 +268,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
             canvasElementManager.updateSelectedFamilyBubbleSpec({
                 tails: value
                     ? [canvasElementManager.getDefaultTailSpec() as TailSpec]
-                    : []
+                    : [],
             });
         }
     };
@@ -285,7 +283,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
             const radius = newValue ? 8 : undefined; // 8 is semi-arbitrary for now. We may add a control in the future to set it.
             canvasElementManager.updateSelectedFamilyBubbleSpec({
                 cornerRadiusX: radius,
-                cornerRadiusY: radius
+                cornerRadiusY: radius,
             });
         }
     };
@@ -293,9 +291,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
     const getBackgroundColorValue = (familySpec: BubbleSpec): string => {
         const canvasElementManager = getCanvasElementManager();
         if (canvasElementManager) {
-            const backgroundColorArray = canvasElementManager.getBackgroundColorArray(
-                familySpec
-            );
+            const backgroundColorArray =
+                canvasElementManager.getBackgroundColorArray(familySpec);
             if (backgroundColorArray.length === 1) {
                 return backgroundColorArray[0]; // This could be a hex string or an rgba() string
             }
@@ -343,7 +340,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
             const backgroundColors = newColor.colors;
             canvasElementManager.setBackgroundColor(
                 backgroundColors,
-                newColor.opacity
+                newColor.opacity,
             );
             // BL-9936/11104 Without this, CanvasElementManager is up-to-date, but React doesn't know about it.
             updateReactFromComical(canvasElementManager);
@@ -354,14 +351,14 @@ const OverlayToolControls: React.FunctionComponent = () => {
     // React-initiated changes don't trigger CanvasElementManager's 'requestBubbleChangeNotification'.
     // Changing 'currentFamilySpec' is what updates the UI of the toolbox in general.
     const updateReactFromComical = (
-        canvasElementManager: CanvasElementManager
+        canvasElementManager: CanvasElementManager,
     ) => {
         const newSpec = canvasElementManager.getSelectedFamilySpec();
         setCurrentFamilySpec(newSpec);
     };
 
     // Callback when outline color of the bubble is changed
-    const handleOutlineColorChanged = event => {
+    const handleOutlineColorChanged = (event) => {
         let newValue = event.target.value;
 
         if (newValue === "none") {
@@ -375,13 +372,13 @@ const OverlayToolControls: React.FunctionComponent = () => {
 
             // Update the Comical canvas on the page frame
             canvasElementManager.updateSelectedFamilyBubbleSpec({
-                outerBorderColor: newValue
+                outerBorderColor: newValue,
             });
         }
     };
 
     const styleSupportsRoundedCorners = (
-        currentBubbleSpec: BubbleSpec | undefined
+        currentBubbleSpec: BubbleSpec | undefined,
     ) => {
         if (!currentBubbleSpec) {
             return false;
@@ -412,10 +409,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
             initialColor: textColorSwatch,
             palette: BloomPalette.Text,
             isForCanvasElement: true,
-            onChange: color => updateTextColor(color),
+            onChange: (color) => updateTextColor(color),
             onInputFocus: noteInputFocused,
             includeDefault: true,
-            onDefaultClick: defaultTextColorClicked
+            onDefaultClick: defaultTextColorClicked,
             //defaultColor???
         };
         getEditTabBundleExports().showColorPickerDialog(colorPickerDialogProps);
@@ -434,8 +431,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
             initialColor: backgroundColorSwatch,
             palette: BloomPalette.TextBackground,
             isForCanvasElement: true,
-            onChange: color => updateBackgroundColor(color),
-            onInputFocus: noteInputFocused
+            onChange: (color) => updateBackgroundColor(color),
+            onInputFocus: noteInputFocused,
         };
         // If the background color is fully transparent, change it to fully opaque
         // so that the user can choose a color immediately (and adjust opacity to
@@ -462,7 +459,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
         "Percent Transparent",
         l10nPrefix + "PercentTransparent",
         "",
-        percentTransparentFromOpacity
+        percentTransparentFromOpacity,
     );
 
     // We need to calculate this (even though we may not need to display it) to keep from violating
@@ -520,18 +517,18 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 open={isStyleSelectOpen}
                                 onOpen={openStyleSelect}
                                 onClose={() => setIsStyleSelectOpen(false)}
-                                onChange={event => {
+                                onChange={(event) => {
                                     handleStyleChanged(event);
                                     setIsStyleSelectOpen(false);
                                 }}
                                 className="canvasElementOptionDropdown"
                                 inputProps={{
                                     name: "style",
-                                    id: "canvasElement-style-dropdown"
+                                    id: "canvasElement-style-dropdown",
                                 }}
                                 MenuProps={{
                                     className:
-                                        "canvasElement-options-dropdown-menu"
+                                        "canvasElement-options-dropdown-menu",
                                 }}
                             >
                                 <MenuItem value="caption">
@@ -581,7 +578,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
                                 checked={showTailChecked}
                                 disabled={isChild(currentItemSpec)}
-                                onCheckChanged={v => {
+                                onCheckChanged={(v) => {
                                     handleShowTailChanged(v as boolean);
                                 }}
                             />
@@ -592,10 +589,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 checked={isRoundedCornersChecked}
                                 disabled={
                                     !styleSupportsRoundedCorners(
-                                        currentFamilySpec
+                                        currentFamilySpec,
                                     )
                                 }
-                                onCheckChanged={newValue => {
+                                onCheckChanged={(newValue) => {
                                     handleRoundedCornersChanged(newValue);
                                 }}
                             />
@@ -653,13 +650,13 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 className="canvasElementOptionDropdown"
                                 inputProps={{
                                     name: "outlineColor",
-                                    id: "canvasElement-outlineColor-dropdown"
+                                    id: "canvasElement-outlineColor-dropdown",
                                 }}
                                 MenuProps={{
                                     className:
-                                        "canvasElement-options-dropdown-menu"
+                                        "canvasElement-options-dropdown-menu",
                                 }}
-                                onChange={event => {
+                                onChange={(event) => {
                                     if (isBubble(currentFamilySpec)) {
                                         handleOutlineColorChanged(event);
                                         setIsOutlineColorSelectOpen(false);
@@ -693,120 +690,122 @@ const OverlayToolControls: React.FunctionComponent = () => {
             <RequiresSubscriptionOverlayWrapper
                 featureName={kOverlayToolId as string}
             >
-                {// Using most kinds of comic bubbles is problematic in various ways in Bloom games, so we don't allow it.
-                // We may eventually want to allow some controls to be used, but for now we just disable the whole thing.
-                // If we don't change our minds this string should get localized.
-                // issues:
-                // - making any kind of canvas element that has a border, tail, etc able to be dragged in Play mode would
-                // required Comical to be integrated into Bloom PLayer. I think even some things that don't seem to need
-                // Comical, like setting a background color, are currently implemented using it.
-                // - consequently it's a problem to enable any controls that would switch a play-time draggable to be
-                // a canvas element type whose rendering depends on Comical.
-                // - it's also something of a problem to have fixed canvas elements, since the parts rendered by Comical don't
-                // obey the classes we use to dim things in Correct and Wrong tabs.
-                // - if we allow Comical canvas elements to be put in the Correct or Wrong tabs, the bit rendered by Comical
-                // has to also get hidden until wanted in Start and Play modes.
-                // - the duplicate command needs enhancements to do things like duplicating the target.
-                // Enhance: if the practice of disabling some tools for some page types becomes widespread, we should
-                // generalize this somehow, so we can easily configure which tools are disabled for which page types.
-                // Without more examples, it's hard to know what would work best. For example, a page might have a data
-                // attribute that lists ids of tools that should be disabled. Or somewhere we might have a map from
-                // data-activity values to lists of tool ids that should be disabled. Or if disabling tools isn't
-                // limited to activities, we might introduce a new kind of page type attribute. Also, we may just
-                // want a single message like "This tool is not available on this page type" or something more specific
-                // like the one here.
-                OverlayTool.isCurrentPageABloomGame() ? (
-                    <Typography
-                        css={css`
-                            // "!important" is needed to keep .MuiTypography-root from overriding
-                            margin: 15px 15px 0 15px !important;
-                            text-align: center;
-                        `}
-                    >
-                        <span>
-                            The Overlay Tool cannot currently be used on Bloom
-                            Games pages. Some of the functions are duplicated in
-                            the Games Tool.
-                        </span>
-                    </Typography>
-                ) : (
-                    <div
-                        css={css`
-                            // pushes the Help region to the bottom
-                            display: flex;
-                            flex-direction: column;
-                            height: 100%;
-                        `}
-                    >
-                        <CanvasElementItemRegion
-                            className={!isXmatter ? "" : "disabled"}
+                {
+                    // Using most kinds of comic bubbles is problematic in various ways in Bloom games, so we don't allow it.
+                    // We may eventually want to allow some controls to be used, but for now we just disable the whole thing.
+                    // If we don't change our minds this string should get localized.
+                    // issues:
+                    // - making any kind of canvas element that has a border, tail, etc able to be dragged in Play mode would
+                    // required Comical to be integrated into Bloom PLayer. I think even some things that don't seem to need
+                    // Comical, like setting a background color, are currently implemented using it.
+                    // - consequently it's a problem to enable any controls that would switch a play-time draggable to be
+                    // a canvas element type whose rendering depends on Comical.
+                    // - it's also something of a problem to have fixed canvas elements, since the parts rendered by Comical don't
+                    // obey the classes we use to dim things in Correct and Wrong tabs.
+                    // - if we allow Comical canvas elements to be put in the Correct or Wrong tabs, the bit rendered by Comical
+                    // has to also get hidden until wanted in Start and Play modes.
+                    // - the duplicate command needs enhancements to do things like duplicating the target.
+                    // Enhance: if the practice of disabling some tools for some page types becomes widespread, we should
+                    // generalize this somehow, so we can easily configure which tools are disabled for which page types.
+                    // Without more examples, it's hard to know what would work best. For example, a page might have a data
+                    // attribute that lists ids of tools that should be disabled. Or somewhere we might have a map from
+                    // data-activity values to lists of tool ids that should be disabled. Or if disabling tools isn't
+                    // limited to activities, we might introduce a new kind of page type attribute. Also, we may just
+                    // want a single message like "This tool is not available on this page type" or something more specific
+                    // like the one here.
+                    OverlayTool.isCurrentPageABloomGame() ? (
+                        <Typography
+                            css={css`
+                                // "!important" is needed to keep .MuiTypography-root from overriding
+                                margin: 15px 15px 0 15px !important;
+                                text-align: center;
+                            `}
                         >
-                            <CanvasElementItemRow>
-                                <CanvasElementItem
-                                    src="/bloom/bookEdit/toolbox/overlay/comic-icon.svg"
-                                    canvasElementType="speech"
-                                />
-                                <CanvasElementImageItem />
-                                <CanvasElementItem
-                                    src="/bloom/bookEdit/toolbox/overlay/sign-language-overlay.svg"
-                                    canvasElementType="video"
-                                />
-                            </CanvasElementItemRow>
-                            <CanvasElementItemRow secondRow={true}>
-                                <CanvasElementTextItem
-                                    css={css`
-                                        margin-left: 5px; // Match the spacing on the canvas element icon above
-                                        flex-grow: 1; // Let it fill as much space as possible to the right
-                                        text-align: center; // Center the text horizontally
-
-                                        padding-top: 1em;
-                                        vertical-align: middle;
-                                        padding-bottom: 1em;
-
-                                        color: white;
-                                        border: 1px dotted white;
-                                    `}
-                                    l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
-                                />
-
-                                <CanvasElementCaptionItem
-                                    css={css`
-                                        // Horizontal positioning / sizing of the element
-                                        margin-left: 10px;
-                                        flex-grow: 1; // Allow it to fill the entire space (but with margin-left and margin-right outside of it)
-                                        text-align: center;
-
-                                        // Vertical sizing
-                                        padding-top: 5px;
-                                        padding-bottom: 5px;
-
-                                        border: 1px solid black;
-                                        color: black;
-                                        background-color: white;
-                                        box-shadow: 3px 3px black;
-                                    `}
-                                    l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
-                                />
-                            </CanvasElementItemRow>
-                        </CanvasElementItemRegion>
-
+                            <span>
+                                The Overlay Tool cannot currently be used on
+                                Bloom Games pages. Some of the functions are
+                                duplicated in the Games Tool.
+                            </span>
+                        </Typography>
+                    ) : (
                         <div
-                            id={"overlayToolControlOptionsRegion"}
-                            className={
-                                canvasElementType && !isXmatter
-                                    ? ""
-                                    : "disabled"
-                            }
+                            css={css`
+                                // pushes the Help region to the bottom
+                                display: flex;
+                                flex-direction: column;
+                                height: 100%;
+                            `}
                         >
-                            {getControlOptionsRegion()}
+                            <CanvasElementItemRegion
+                                className={!isXmatter ? "" : "disabled"}
+                            >
+                                <CanvasElementItemRow>
+                                    <CanvasElementItem
+                                        src="/bloom/bookEdit/toolbox/overlay/comic-icon.svg"
+                                        canvasElementType="speech"
+                                    />
+                                    <CanvasElementImageItem />
+                                    <CanvasElementItem
+                                        src="/bloom/bookEdit/toolbox/overlay/sign-language-overlay.svg"
+                                        canvasElementType="video"
+                                    />
+                                </CanvasElementItemRow>
+                                <CanvasElementItemRow secondRow={true}>
+                                    <CanvasElementTextItem
+                                        css={css`
+                                            margin-left: 5px; // Match the spacing on the canvas element icon above
+                                            flex-grow: 1; // Let it fill as much space as possible to the right
+                                            text-align: center; // Center the text horizontally
+
+                                            padding-top: 1em;
+                                            vertical-align: middle;
+                                            padding-bottom: 1em;
+
+                                            color: white;
+                                            border: 1px dotted white;
+                                        `}
+                                        l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
+                                    />
+
+                                    <CanvasElementCaptionItem
+                                        css={css`
+                                            // Horizontal positioning / sizing of the element
+                                            margin-left: 10px;
+                                            flex-grow: 1; // Allow it to fill the entire space (but with margin-left and margin-right outside of it)
+                                            text-align: center;
+
+                                            // Vertical sizing
+                                            padding-top: 5px;
+                                            padding-bottom: 5px;
+
+                                            border: 1px solid black;
+                                            color: black;
+                                            background-color: white;
+                                            box-shadow: 3px 3px black;
+                                        `}
+                                        l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
+                                    />
+                                </CanvasElementItemRow>
+                            </CanvasElementItemRegion>
+
+                            <div
+                                id={"overlayToolControlOptionsRegion"}
+                                className={
+                                    canvasElementType && !isXmatter
+                                        ? ""
+                                        : "disabled"
+                                }
+                            >
+                                {getControlOptionsRegion()}
+                            </div>
+                            <div id="overlayToolControlFillerRegion" />
+                            <div id={"overlayToolControlFooterRegion"}>
+                                <CanvasElementKeyHints />
+                                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Overlay_Tool/Overlay_Tool_overview.htm" />
+                            </div>
                         </div>
-                        <div id="overlayToolControlFillerRegion" />
-                        <div id={"overlayToolControlFooterRegion"}>
-                            <CanvasElementKeyHints />
-                            <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Overlay_Tool/Overlay_Tool_overview.htm" />
-                        </div>
-                    </div>
-                )}
+                    )
+                }
             </RequiresSubscriptionOverlayWrapper>
         </div>
     );
@@ -864,7 +863,7 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
         } else {
             console.assert(
                 false,
-                "CallOnNewPageReady is always expected to be defined but it is not."
+                "CallOnNewPageReady is always expected to be defined but it is not.",
             );
         }
     }
@@ -879,7 +878,7 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
 
             EnableAllImageEditing();
             canvasElementManager.detachCanvasElementChangeNotification(
-                "canvasElement"
+                "canvasElement",
             );
         }
     }

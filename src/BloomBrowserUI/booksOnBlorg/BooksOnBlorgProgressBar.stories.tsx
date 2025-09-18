@@ -16,7 +16,7 @@ const barFrame = (progressBar: JSX.Element) => (
 );
 
 export default {
-    title: "Books on Blorg/Progress"
+    title: "Books on Blorg/Progress",
 };
 
 export const Default = () => barFrame(<BooksOnBlorgProgressBar />);

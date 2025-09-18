@@ -27,32 +27,32 @@ export interface FeatureStatus {
  */
 export async function getFeatureStatusAsync(
     featureName: string | undefined,
-    forPublishing: boolean = false
+    forPublishing: boolean = false,
 ): Promise<FeatureStatus | undefined> {
     if (!featureName) return undefined;
 
-    return new Promise<FeatureStatus | undefined>(resolve => {
+    return new Promise<FeatureStatus | undefined>((resolve) => {
         get(
             `features/status?featureName=${featureName}&forPublishing=${
                 forPublishing ? "true" : "false"
             }`,
-            result => {
+            (result) => {
                 resolve(result.data);
-            }
+            },
         );
     });
 }
 
 export function useGetFeatureStatus(
     featureName: string | undefined,
-    forPublishing: boolean = false
+    forPublishing: boolean = false,
 ): FeatureStatus | undefined {
     const featureStatus = useApiObject<FeatureStatus | undefined>(
         `features/status?featureName=${featureName}&forPublishing=${
             forPublishing ? "true" : "false"
         }`,
         undefined,
-        !featureName // skip the query if we don't have a feature name
+        !featureName, // skip the query if we don't have a feature name
     );
 
     return featureName ? featureStatus : undefined;
@@ -64,22 +64,23 @@ export function openBloomSubscriptionSettings() {
 
 // Use this when you just want a minimal label type message, not a fully informative sentence.
 export function useGetFeatureAvailabilityMessage(
-    featureStatus: FeatureStatus | undefined
+    featureStatus: FeatureStatus | undefined,
 ): string {
     // Get localized strings first
-    const params = useMemo(() => [featureStatus?.localizedTier || ""], [
-        featureStatus?.localizedTier
-    ]);
+    const params = useMemo(
+        () => [featureStatus?.localizedTier || ""],
+        [featureStatus?.localizedTier],
+    );
     const featureNotInTierMessage = useL10n2({
         english:
             'This feature requires a Bloom subscription tier of at least "{0}".',
         key: "Subscription.RequiredTierForFeatureSentence",
-        params: params
+        params: params,
     });
     const featureEnabledMessage = useL10n2({
         english: "This feature is included in your {0} subscription.",
         key: "Subscription.FeatureIsIncludedSentence",
-        params: params
+        params: params,
     });
 
     // Calculate and return the message directly

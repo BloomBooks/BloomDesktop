@@ -7,14 +7,14 @@ import {
     getPageLabel,
     getTemplatePageImageSource,
     IBookGroup,
-    ITemplateBook
+    ITemplateBook,
 } from "./PageChooserDialog";
 import PageThumbnail from "./PageThumbnail";
 import TemplateBookErrorReplacement from "./TemplateBookErrorReplacement";
 import {
     kBloomBlue50Transparent,
     kBloomPurple,
-    kMutedTextGray
+    kMutedTextGray,
 } from "../bloomMaterialUITheme";
 import { Span } from "../react_components/l10nComponents";
 
@@ -32,7 +32,7 @@ export interface ITemplateBookPagesProps {
     forChooseLayout: boolean;
     onTemplatePageSelect: (
         selectedPageDiv: HTMLDivElement,
-        selectedTemplateBookUrl: string
+        selectedTemplateBookUrl: string,
     ) => void;
     onTemplatePageDoubleClick: (selectedPageDiv: HTMLDivElement) => void;
 }
@@ -47,7 +47,9 @@ interface IPageData {
     book: ITemplateBook;
 }
 
-export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps> = ({
+export const TemplateBookPages: React.FunctionComponent<
+    ITemplateBookPagesProps
+> = ({
     forChooseLayout,
     titleGroup,
     orientation,
@@ -55,10 +57,10 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
     defaultPageIdToSelect,
     firstGroup,
     onTemplatePageSelect,
-    onTemplatePageDoubleClick
+    onTemplatePageDoubleClick,
 }) => {
     const [pageData, setPageData] = useState<IPageData[] | undefined>(
-        undefined
+        undefined,
     );
     const groupTitle = titleGroup.title;
 
@@ -66,28 +68,29 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
 
     useEffect(() => {
         let bloomPages = titleGroup.books
-            .map(book => book.pages.map(page => ({ page, book })))
+            .map((book) => book.pages.map((page) => ({ page, book })))
             .flat() as IPageData[];
         if (forChooseLayout) {
             // This filters out the (empty) custom page, which is currently never a useful layout change,
             // since all data would be lost.
             bloomPages = bloomPages.filter(
-                elem => elem.page.id !== "5dcd48df-e9ab-4a07-afd4-6a24d0398386"
+                (elem) =>
+                    elem.page.id !== "5dcd48df-e9ab-4a07-afd4-6a24d0398386",
             );
         }
         // By previous usage, 'extra' pages are ones we can add (multiples of) to a book.
         // I'm not entirely clear why we call them 'extra', I think the term pre-dates me.
         // This filter by it's very nature eliminates pages with 'data-page' = 'singleton'.
         const filteredBloomPages = bloomPages.filter(
-            elem =>
-                elem.page.id && elem.page.getAttribute("data-page") === "extra"
+            (elem) =>
+                elem.page.id && elem.page.getAttribute("data-page") === "extra",
         );
 
         // Don't add a group for books that don't have template pages; just move on.
         // (This will always be true for a newly created template.)
         if (filteredBloomPages.length === 0) {
             console.log(
-                "Could not find any template pages in " + titleGroup.title
+                "Could not find any template pages in " + titleGroup.title,
             );
             return;
         }
@@ -99,9 +102,8 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
         ? pageData.map((currentPageDiv: IPageData, index) => {
               // Process each page and create a pageThumbnail div containing a page thumbnail image and data
               // and a clickable overlay.
-              const requiresSubscription = currentPageDiv.page.hasAttribute(
-                  "data-feature"
-              );
+              const requiresSubscription =
+                  currentPageDiv.page.hasAttribute("data-feature");
               const pageIsMarkedBilingual =
                   currentPageDiv.page.getAttribute("data-ui-mark-bilingual") ===
                   "true";
@@ -161,11 +163,9 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                               height: ${isLandscape ? "70px" : "100px"};
                               margin-left: 10px;
                               ${backgroundCss}
-                              width: ${
-                                  isLandscape && pageIsMarkedBilingual
-                                      ? "105px"
-                                      : "100px"
-                              };
+                              width: ${isLandscape && pageIsMarkedBilingual
+                                  ? "105px"
+                                  : "100px"};
                               :hover {
                                   background: ${transparentHighlightColor};
                               }
@@ -181,7 +181,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                           imageSource={getTemplatePageImageSource(
                               currentPageDiv.book.url,
                               getPageLabel(currentPageDiv.page),
-                              orientation
+                              orientation,
                           )}
                           isLandscape={isLandscape}
                       />
@@ -205,7 +205,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
         if (pageData && !selectedPageId) {
             if (defaultPageIdToSelect) {
                 const matchingPageDivs = pageData.filter(
-                    p => p.page.id === defaultPageIdToSelect
+                    (p) => p.page.id === defaultPageIdToSelect,
                 );
                 if (matchingPageDivs.length > 0) {
                     templatePageClickHandler(matchingPageDivs[0]);

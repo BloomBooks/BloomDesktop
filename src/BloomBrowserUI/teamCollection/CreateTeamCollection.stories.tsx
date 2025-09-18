@@ -2,7 +2,7 @@ import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
 import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 export default {
-    title: "Team Collection components/CreateTeamCollection"
+    title: "Team Collection components/CreateTeamCollection",
 };
 
 export const _CreateTeamCollectionDialog = () => (
@@ -12,7 +12,7 @@ export const _CreateTeamCollectionDialog = () => (
 );
 
 _CreateTeamCollectionDialog.story = {
-    name: "CreateTeamCollection Dialog"
+    name: "CreateTeamCollection Dialog",
 };
 
 export const CreateTeamCollectionDialogShowingPath = () => (
@@ -23,7 +23,7 @@ export const CreateTeamCollectionDialogShowingPath = () => (
 );
 
 CreateTeamCollectionDialogShowingPath.story = {
-    name: "CreateTeamCollection Dialog showing path"
+    name: "CreateTeamCollection Dialog showing path",
 };
 
 export const CreateTeamCollectionDialogShowingError = () => (
@@ -34,5 +34,5 @@ export const CreateTeamCollectionDialogShowingError = () => (
 );
 
 CreateTeamCollectionDialogShowingError.story = {
-    name: "CreateTeamCollection Dialog showing error"
+    name: "CreateTeamCollection Dialog showing error",
 };

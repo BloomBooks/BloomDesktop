@@ -8,21 +8,21 @@ describe("SubjectTreeNode tests", () => {
             label: "Plastic & reconstructive surgery",
             notes: "some notes",
             checked: false,
-            children: []
+            children: [],
         };
         const sub2: SubjectTreeNode = {
             value: "THV",
             label: "Alternative & renewable energy sources & technology",
             notes: "some notes",
             checked: false,
-            children: []
+            children: [],
         };
         const sub3: SubjectTreeNode = {
             value: "Y",
             label: "Children’s, Teenage & Educational",
             notes: "some notes",
             checked: false,
-            children: []
+            children: [],
         };
         list.push(sub1);
         list.push(sub2);
@@ -42,21 +42,21 @@ describe("SubjectTreeNode tests", () => {
             label: "Plastic & reconstructive surgery",
             notes: "some notes",
             checked: false,
-            children: []
+            children: [],
         };
         const sub2: SubjectTreeNode = {
             value: "THV",
             label: "Alternative & renewable energy sources & technology",
             notes: "some notes",
             checked: false,
-            children: []
+            children: [],
         };
         const sub3: SubjectTreeNode = {
             value: "Y",
             label: "Children’s, Teenage & Educational",
             notes: "some notes",
             checked: false,
-            children: []
+            children: [],
         };
         list.push(sub1);
         list.push(sub2);
@@ -64,11 +64,11 @@ describe("SubjectTreeNode tests", () => {
 
         const curSub1: SubjectTreeNode = {
             value: "THV",
-            label: "Alternative & renewable energy sources & technology"
+            label: "Alternative & renewable energy sources & technology",
         };
         const curSub2: SubjectTreeNode = {
             value: "Y",
-            label: "Children’s, Teenage & Educational"
+            label: "Children’s, Teenage & Educational",
         };
         const currentNodes: Array<SubjectTreeNode> = [];
         currentNodes.push(curSub1);

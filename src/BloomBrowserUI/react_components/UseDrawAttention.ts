@@ -4,7 +4,7 @@ import * as React from "react";
 // If your component uses bloomUI.less, the necessary .less rules for the .drawAttention class are already there.
 export function useDrawAttention(
     submitAttempts: number,
-    validate: () => boolean
+    validate: () => boolean,
 ) {
     const [attentionClass, setAttentionClass] = React.useState("");
     React.useEffect(() => {

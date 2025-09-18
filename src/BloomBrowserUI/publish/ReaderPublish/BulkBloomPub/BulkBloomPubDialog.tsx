@@ -6,7 +6,7 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "../../../react_components/BloomDialog/BloomDialog";
 import { DialogCancelButton } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../../react_components/l10nHooks";
@@ -19,14 +19,14 @@ import { ConditionallyEnabledBlock } from "../../../react_components/Conditional
 import {
     postData,
     useApiData,
-    useApiOneWayState
+    useApiOneWayState,
 } from "../../../utils/bloomApi";
 import { useGetLabelForCollection } from "../../../contentful/UseContentful";
 import { Div } from "../../../react_components/l10nComponents";
 import { kMutedTextGray } from "../../../bloomMaterialUITheme";
 import {
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "../../../react_components/BloomDialog/BloomDialogPlumbing";
 
 export let showBulkBloomPubDialog: () => void = () => {
@@ -45,12 +45,9 @@ interface IBulkBloomPUBPublishParams {
 // wrapping the innards so that we're only doing API queries when we're actually visible (react dialogs just sit there invisible until they are opened)
 export const BulkBloomPubDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
-}> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+}> = (props) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
     showBulkBloomPubDialog = showDialog;
     return (
         <BloomDialog {...propsForBloomDialog}>
@@ -64,15 +61,17 @@ export const BulkBloomPubDialog: React.FunctionComponent<{
 // we split this out in order to avoid querying until we open it
 export const InnerBulkBloomPubDialog: React.FunctionComponent<{
     closeDialog: () => void;
-}> = props => {
+}> = (props) => {
     // We get the state from the server, but we don't inform it every time the user touches a control.
     // We'll send the new state of the parameters if and when they click the "make" button.
     const [params, setParams] = useApiOneWayState<
         IBulkBloomPUBPublishParams | undefined
     >("publish/bloompub/file/bulkSaveBloomPubsParams", undefined);
 
-    const bookshelfUrlKey = useApiData<any>("settings/bookShelfData", "")
-        ?.defaultBookshelfUrlKey;
+    const bookshelfUrlKey = useApiData<any>(
+        "settings/bookShelfData",
+        "",
+    )?.defaultBookshelfUrlKey;
 
     // the server doesn't actually know the label for the bookshelf, just its urlKey. So we have to look that up ourselves.
     // If bookshelfUrlKey is falsy, then we get back an empty string for the label without actually asking the server for
@@ -88,12 +87,12 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
 
     const dialogTitle = useL10n(
         "Make All BloomPUBs from Collection",
-        "PublishTab.BulkBloomPub.MakeAllBloomPubs"
+        "PublishTab.BulkBloomPub.MakeAllBloomPubs",
     );
 
     const colorPickerTitle = useL10n(
         "Bookshelf Color",
-        "PublishTab.Android.BulkBookshelfColor"
+        "PublishTab.Android.BulkBookshelfColor",
     );
 
     return (
@@ -120,7 +119,8 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                             onCheckChanged={() =>
                                 setParams({
                                     ...params,
-                                    makeBookshelfFile: !params.makeBookshelfFile
+                                    makeBookshelfFile:
+                                        !params.makeBookshelfFile,
                                 })
                             }
                         ></BloomCheckbox>
@@ -184,11 +184,11 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                             width={75}
                                             onClose={(
                                                 _result,
-                                                newColor: string
+                                                newColor: string,
                                             ) => {
                                                 setParams({
                                                     ...params,
-                                                    bookshelfColor: newColor
+                                                    bookshelfColor: newColor,
                                                 });
                                             }}
                                         />
@@ -206,10 +206,10 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                         <TextField
                             label={"Distribution Tag"}
                             defaultValue={params.distributionTag}
-                            onChange={event =>
+                            onChange={(event) =>
                                 setParams({
                                     ...params,
-                                    distributionTag: event.target.value
+                                    distributionTag: event.target.value,
                                 })
                             }
                             margin="dense"
@@ -229,10 +229,10 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                             label="Compress into a single .bloombundle file"
                             checked={params.makeBloomBundle}
                             l10nKey="PublishTab.BulkBloomPub.MakeBloomBundle"
-                            onCheckChanged={checked => {
+                            onCheckChanged={(checked) => {
                                 setParams({
                                     ...params,
-                                    makeBloomBundle: !!checked
+                                    makeBloomBundle: !!checked,
                                 });
                             }}
                         ></BloomCheckbox>
@@ -248,7 +248,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                     onClick={() => {
                         postData(
                             "publish/bloompub/file/bulkSaveBloomPubs",
-                            params
+                            params,
                         );
                         props.closeDialog();
                     }}

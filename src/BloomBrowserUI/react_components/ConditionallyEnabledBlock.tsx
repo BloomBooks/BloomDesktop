@@ -4,7 +4,7 @@ import * as React from "react";
 // when disabled, this prevents interacting with children and partially hides them
 export const ConditionallyEnabledBlock: React.FunctionComponent<{
     enable: boolean;
-}> = props => {
+}> = (props) => {
     return (
         <div
             css={css`

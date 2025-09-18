@@ -5,7 +5,7 @@ import { get, getBoolean, postThatMightNavigate } from "../../utils/bloomApi";
 import { TeamCollectionBookStatusPanel } from "../../teamCollection/TeamCollectionBookStatusPanel";
 import {
     IBookTeamCollectionStatus,
-    initialBookStatus as initialBookTeamCollectionStatus
+    initialBookStatus as initialBookTeamCollectionStatus,
 } from "../../teamCollection/teamCollectionApi";
 import { useMonitorBookSelection } from "../../app/selectedBook";
 import BloomButton from "../../react_components/bloomButton";
@@ -20,7 +20,7 @@ import { ProgressDialog } from "../../react_components/Progress/ProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import {
     IBloomDialogEnvironmentParams,
-    Mode
+    Mode,
 } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { BookInfoIndicator } from "../../react_components/BookInfoIndicator";
 import { useGetFeatureStatus } from "../../react_components/featureStatus";
@@ -33,39 +33,39 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     // the overlay does not allow the events through to be captured, and the
     // splitter works.
     disableEventsInIframe: boolean;
-}> = props => {
+}> = (props) => {
     const [isTeamCollection, setIsTeamCollection] = useState(false);
     const [bookTeamCollectionStatus, setBookTeamCollectionStatus] = useState(
-        initialBookTeamCollectionStatus
+        initialBookTeamCollectionStatus,
     );
     const [reload, setReload] = useState(0);
     const [reloadStatus, setReloadStatus] = useState(0);
-    const tierAllowsViewHistory = useGetFeatureStatus("viewBookHistory")
-        ?.enabled;
+    const tierAllowsViewHistory =
+        useGetFeatureStatus("viewBookHistory")?.enabled;
     // Force a reload when told the book changed, even if it's the same book [id]
     useSubscribeToWebSocketForEvent("bookContent", "reload", () =>
-        setReload(old => old + 1)
+        setReload((old) => old + 1),
     );
     useSubscribeToWebSocketForEvent("bookTeamCollectionStatus", "reload", () =>
-        setReloadStatus(old => old + 1)
+        setReloadStatus((old) => old + 1),
     );
 
     const {
         id: selectedBookId,
         saveable,
         collectionKind,
-        aboutBookInfoUrl
+        aboutBookInfoUrl,
     } = useMonitorBookSelection();
 
     React.useEffect(() => {
         get(
             "teamCollection/selectedBookStatus",
-            data => {
+            (data) => {
                 setBookTeamCollectionStatus(
-                    data.data as IBookTeamCollectionStatus
+                    data.data as IBookTeamCollectionStatus,
                 );
             },
-            err => {
+            (err) => {
                 // Something went wrong. Maybe the user has not registered. Maybe the network has gone
                 // down. This error has already been reported to Sentry, and we don't need to do
                 // another 'throw' here, with less information. Displaying the message may tell the user
@@ -77,12 +77,12 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     err?.response?.statusText ??
                     "Bloom could not determine the status of this book";
 
-                setBookTeamCollectionStatus(prevBookStatus => ({
+                setBookTeamCollectionStatus((prevBookStatus) => ({
                     ...prevBookStatus,
                     disconnected: true,
-                    error: errorMessage
+                    error: errorMessage,
                 }));
-            }
+            },
         );
     }, [selectedBookId, saveable, reload, reloadStatus]);
 
@@ -99,8 +99,8 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     React.useEffect(() => {
-        getBoolean("teamCollection/isTeamCollectionEnabled", teamCollection =>
-            setIsTeamCollection(teamCollection)
+        getBoolean("teamCollection/isTeamCollectionEnabled", (teamCollection) =>
+            setIsTeamCollection(teamCollection),
         );
         // This code SHOULD suppress mousedown events in the iframe, except in the scroll bar,
         // thus preventing the user from doing anything much and allowing us to retire the
@@ -130,7 +130,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     }, [
         // This could change if initial (or later) selection is a source book.
         // But it only triggers the useEffect if the collectionKind actually changes.
-        collectionKind
+        collectionKind,
     ]);
 
     // Note: If canMakeBook is true, then saveable is probably false (the source book is likely not in the editable collection),
@@ -185,14 +185,14 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     const progressDialogEnvironment: IBloomDialogEnvironmentParams = {
         dialogFrameProvidedExternally: false,
         initiallyOpen: false,
-        mode: Mode.Collection
+        mode: Mode.Collection,
     };
     const [progressOpen, setProgressOpen] = useState(
-        progressDialogEnvironment.initiallyOpen
+        progressDialogEnvironment.initiallyOpen,
     );
     const longRunningOperationText = useL10n(
         "This may take a while...",
-        "Common.LongRunningOperation"
+        "Common.LongRunningOperation",
     );
     // Although you could control a single ProgressDialog instance using the "open" prop,
     // that dialog will receive messages/side effects from any other ProgressDialog that gets opened up too,
@@ -255,8 +255,9 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
             </div>
             {selectedBookId && (
                 <iframe
-                    src={`/book-preview/index.htm?dummy=${selectedBookId +
-                        reload}`}
+                    src={`/book-preview/index.htm?dummy=${
+                        selectedBookId + reload
+                    }`}
                     height="100%"
                     width="100%"
                     css={css`
@@ -323,9 +324,9 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                         height: 100%;
                         width: calc(100% - 20px);
                         z-index: 10;
-                        pointer-events: ${
-                            props.disableEventsInIframe ? "auto" : "none"
-                        };
+                        pointer-events: ${props.disableEventsInIframe
+                            ? "auto"
+                            : "none"};
 
                         /* by subtly darkening the iframe when the mouse moves over it and setting
                     // the not-allowed cursor, we give the user a hint that this is not where to edit.
@@ -374,15 +375,17 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 )}
                 {editOrMakeProgress}
             </div>
-            {// Currently, canMakeBook is a synonym for 'book is not in the current TC'
-            // If that stops being true we might need another more specialized status flag.
-            isTeamCollection && !canMakeBook ? (
-                <div id="teamCollection">
-                    <TeamCollectionBookStatusPanel
-                        {...bookTeamCollectionStatus}
-                    />
-                </div>
-            ) : null}
+            {
+                // Currently, canMakeBook is a synonym for 'book is not in the current TC'
+                // If that stops being true we might need another more specialized status flag.
+                isTeamCollection && !canMakeBook ? (
+                    <div id="teamCollection">
+                        <TeamCollectionBookStatusPanel
+                            {...bookTeamCollectionStatus}
+                        />
+                    </div>
+                ) : null
+            }
         </div>
     );
 };

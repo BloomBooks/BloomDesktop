@@ -3,18 +3,18 @@ import {
     showConfirmDialogFromOutsideReact,
     IConfirmDialogProps,
     ConfirmDialog,
-    showConfirmDialog
+    showConfirmDialog,
 } from "../confirmDialog";
 import { AutoUpdateSoftwareDialog } from "../AutoUpdateSoftwareDialog";
 import { ForumInvitationDialogLauncher } from "../forumInvitationDialog";
 import {
     INumberChooserDialogProps,
-    NumberChooserDialog
+    NumberChooserDialog,
 } from "../numberChooserDialog";
 import { AboutDialogLauncher } from "../aboutDialog";
 import {
     StorybookDialogWrapper,
-    normalDialogEnvironmentForStorybook
+    normalDialogEnvironmentForStorybook,
 } from "../BloomDialog/BloomDialogPlumbing";
 
 import { Meta, StoryObj } from "@storybook/react";
@@ -22,7 +22,7 @@ import { MakeReaderTemplateBloomPackDialog } from "../makeReaderTemplateBloomPac
 import { RegistrationDialogLauncher } from "../registrationDialog";
 
 const meta: Meta = {
-    title: "Misc/Dialogs"
+    title: "Misc/Dialogs",
 };
 
 export default meta;
@@ -35,9 +35,9 @@ const confirmDialogProps: IConfirmDialogProps = {
     messageL10nKey: "",
     confirmButtonLabel: "OK",
     confirmButtonLabelL10nKey: "",
-    onDialogClose: dialogResult => {
+    onDialogClose: (dialogResult) => {
         alert(dialogResult);
-    }
+    },
 };
 
 export const ConfirmDialogStory: Story = {
@@ -55,7 +55,7 @@ export const ConfirmDialogStory: Story = {
             </BloomButton>
             <ConfirmDialog {...confirmDialogProps} />
         </div>
-    )
+    ),
 };
 
 export const ConfirmDialogFromOutsideReactStory: Story = {
@@ -67,7 +67,7 @@ export const ConfirmDialogFromOutsideReactStory: Story = {
                 onClick={() =>
                     showConfirmDialogFromOutsideReact(
                         confirmDialogProps,
-                        document.getElementById("modal-container")
+                        document.getElementById("modal-container"),
                     )
                 }
                 enabled={true}
@@ -77,7 +77,7 @@ export const ConfirmDialogFromOutsideReactStory: Story = {
                 Open Confirm Dialog
             </BloomButton>
         </div>
-    )
+    ),
 };
 
 export const AutoUpdateSoftwareDialogStory: Story = {
@@ -86,7 +86,7 @@ export const AutoUpdateSoftwareDialogStory: Story = {
         <AutoUpdateSoftwareDialog
             dialogEnvironment={normalDialogEnvironmentForStorybook}
         />
-    )
+    ),
 };
 
 export const ForumInvitationDialogStory: Story = {
@@ -95,7 +95,7 @@ export const ForumInvitationDialogStory: Story = {
         <StorybookDialogWrapper id="ForumInvitationDialog" params={{}}>
             <ForumInvitationDialogLauncher />
         </StorybookDialogWrapper>
-    )
+    ),
 };
 
 const numberChooserDialogProps: INumberChooserDialogProps = {
@@ -103,10 +103,10 @@ const numberChooserDialogProps: INumberChooserDialogProps = {
     max: 777,
     title: "My Random Chooser Title",
     prompt: "Enter some number from 2 to 777",
-    onClick: num => {
+    onClick: (num) => {
         console.log(`We chose ${num}.`);
     },
-    dialogEnvironment: normalDialogEnvironmentForStorybook
+    dialogEnvironment: normalDialogEnvironmentForStorybook,
 };
 
 export const NumberChooserDialogStory: Story = {
@@ -115,7 +115,7 @@ export const NumberChooserDialogStory: Story = {
         <NumberChooserDialog
             {...numberChooserDialogProps}
         ></NumberChooserDialog>
-    )
+    ),
 };
 
 export const AboutDialogStory: Story = {
@@ -124,7 +124,7 @@ export const AboutDialogStory: Story = {
         <StorybookDialogWrapper id="AboutDialog" params={{}}>
             <AboutDialogLauncher />
         </StorybookDialogWrapper>
-    )
+    ),
 };
 
 export const MakeReaderTemplateBloomPackDialogStory: Story = {
@@ -133,5 +133,5 @@ export const MakeReaderTemplateBloomPackDialogStory: Story = {
         <MakeReaderTemplateBloomPackDialog
             dialogEnvironment={normalDialogEnvironmentForStorybook}
         ></MakeReaderTemplateBloomPackDialog>
-    )
+    ),
 };

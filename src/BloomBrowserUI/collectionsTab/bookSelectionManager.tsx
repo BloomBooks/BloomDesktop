@@ -17,15 +17,15 @@ export class BookSelectionManager {
     private selectedBookInfo: ISelectedBookInfo;
 
     public initialize = () => {
-        get("app/selectedBookInfo", response => {
+        get("app/selectedBookInfo", (response) => {
             this.setSelectedBookInfo(response.data);
         });
-        WebSocketManager.addListener("book-selection", e => {
+        WebSocketManager.addListener("book-selection", (e) => {
             if (e.id != "changed") {
                 return;
             }
             this.setSelectedBookInfo(
-                JSON.parse(e.message!) as ISelectedBookInfo
+                JSON.parse(e.message!) as ISelectedBookInfo,
             );
         });
     };
@@ -58,7 +58,7 @@ export class BookSelectionManager {
     // collections, where two or more books have the same ID.
     public registerForSelectedBookChanged(
         bookId: string,
-        callback: (selected: boolean) => void
+        callback: (selected: boolean) => void,
     ) {
         let callbacks = this.registrations[bookId] as Array<
             (x: boolean) => void
@@ -75,7 +75,7 @@ export class BookSelectionManager {
 
     public unregisterForSelectedBookChanged(
         bookId: string,
-        callback: (selected: boolean) => void
+        callback: (selected: boolean) => void,
     ) {
         const callbacks = this.registrations[bookId] as Array<
             (x: boolean) => void
@@ -102,7 +102,7 @@ export class BookSelectionManager {
         if (!callbacks) {
             return;
         }
-        callbacks.forEach(c => c(becomingSelected));
+        callbacks.forEach((c) => c(becomingSelected));
     }
 
     setSelectedBookInfo(info: ISelectedBookInfo) {
@@ -128,10 +128,10 @@ export class BookSelectionManager {
 // remains unselected.
 export function useIsSelected(
     manager: BookSelectionManager,
-    bookId: string
+    bookId: string,
 ): boolean {
     const [selected, setSelected] = useState(
-        bookId === manager.getSelectedBookInfo()?.id
+        bookId === manager.getSelectedBookInfo()?.id,
     );
 
     // There's some tricky stuff going on here. Our current expectation is that

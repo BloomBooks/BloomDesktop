@@ -18,13 +18,13 @@ interface IState {
 }
 export class AccessibilityCheckScreen extends React.Component<unknown, IState> {
     public readonly state: IState = {
-        bookName: "?"
+        bookName: "?",
     };
 
     public componentDidMount() {
         hookupLinkHandler();
         // Listen for changes to state from C#-land
-        WebSocketManager.addListener("a11yChecklist", event => {
+        WebSocketManager.addListener("a11yChecklist", (event) => {
             if (
                 // chose a different book
                 event.id === "bookSelectionChanged" ||
@@ -38,9 +38,9 @@ export class AccessibilityCheckScreen extends React.Component<unknown, IState> {
     }
 
     private refresh() {
-        get("accessibilityCheck/bookName", result => {
+        get("accessibilityCheck/bookName", (result) => {
             this.setState({
-                bookName: result.data
+                bookName: result.data,
             });
         });
     }
@@ -95,13 +95,13 @@ export class AccessibilityCheckScreen extends React.Component<unknown, IState> {
 }
 
 // allow plain 'ol javascript in the html to connect up react
-(window as any).connectAccessibilityCheckScreen = element => {
+(window as any).connectAccessibilityCheckScreen = (element) => {
     ReactDOM.render(
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={lightTheme}>
                 <AccessibilityCheckScreen />
             </ThemeProvider>
         </StyledEngineProvider>,
-        element
+        element,
     );
 };
