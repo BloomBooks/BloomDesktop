@@ -12,10 +12,12 @@
         // NB: transform order is rightmost first
         transform: translate(
                 calc(
-                    -1 * var(--full-bleed-excess-width) / 2 - var(--hide-bleed-adjustment)
+                    -1 * var(--full-bleed-excess-width) / 2 -
+                        var(--hide-bleed-adjustment)
                 ),
                 calc(
-                    -1 * var(--full-bleed-excess-height) / 2 - var(--hide-bleed-adjustment)
+                    -1 * var(--full-bleed-excess-height) / 2 -
+                        var(--hide-bleed-adjustment)
                 )
             )
             scale(var(--full-bleed-scale));
@@ -171,9 +173,13 @@ body.publishingWithoutFullBleed {
                 25.4;
             max-width: (floor((@Device16x9Landscape-Width / 25.4) * 96) / 96) *
                 25.4;
-            min-height: (floor((@Device16x9Landscape-Height / 25.4) * 96) / 96) *
+            min-height: (
+                    floor((@Device16x9Landscape-Height / 25.4) * 96) / 96
+                ) *
                 25.4;
-            max-height: (floor((@Device16x9Landscape-Height / 25.4) * 96) / 96) *
+            max-height: (
+                    floor((@Device16x9Landscape-Height / 25.4) * 96) / 96
+                ) *
                 25.4;
         }
     }
