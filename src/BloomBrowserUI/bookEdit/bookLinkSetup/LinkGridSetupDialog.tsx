@@ -4,12 +4,12 @@ import {
     BloomDialog,
     DialogMiddle,
     DialogBottomButtons,
-    DialogTitle
+    DialogTitle,
 } from "../../react_components/BloomDialog/BloomDialog";
 import { useSetupBloomDialog } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     DialogCancelButton,
-    DialogOkButton
+    DialogOkButton,
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { DialogResult } from "../../react_components/color-picking/colorPickerDialog";
 import {
@@ -18,7 +18,7 @@ import {
     postString,
     useApiObject,
     useApiStringState,
-    useWatchApiData
+    useWatchApiData,
 } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -27,22 +27,19 @@ import { css } from "@emotion/react";
 import {
     BookInfoForLinks,
     CollectionInfoForLinkChoosing,
-    Link
+    Link,
 } from "./BookLinkTypes";
 import { IBookInfo } from "../../collectionsTab/BooksOfCollection";
 
 export const LinkGridSetupDialog: React.FunctionComponent<{
     initialLinks: Link[];
     setLinksCallback: (links: Link[]) => void;
-}> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog({
-        initiallyOpen: true,
-        dialogFrameProvidedExternally: false
-    });
+}> = (props) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog({
+            initiallyOpen: true,
+            dialogFrameProvidedExternally: false,
+        });
 
     const dialogTitle = useL10n("Link Grid Setup", "LinkGridSetup.Title");
 
@@ -52,20 +49,21 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
     }
 
     const [selectedLinks, setSelectedLinks] = React.useState<Link[]>(
-        props.initialLinks
+        props.initialLinks,
     );
 
     const unfilteredBooks = useWatchApiData<Array<IBookInfo>>(
-        `collections/books`,
+        `collections/books?realTitle=true`,
         [],
         "editableCollectionList",
-        "unused" // we don't care about updates, so maybe we don't care about this?
+        "unused", // we don't care about updates, so maybe we don't care about this?
     );
 
-    const bookLinks: BookInfoForLinks[] = unfilteredBooks.map(book => ({
+    const bookLinks: BookInfoForLinks[] = unfilteredBooks.map((book) => ({
         id: book.id,
-        title: book.title,
-        thumbnail: `/bloom/api/collections/book/thumbnail?book-id=${book.id}`
+        title: book.folderName,
+        realTitle: book.title,
+        thumbnail: `/bloom/api/collections/book/thumbnail?book-id=${book.id}`,
     }));
 
     return (
@@ -110,12 +108,12 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
 
 export function showLinkGridSetupsDialog(
     currentLinks: Link[],
-    setLinksCallback: (links: Link[]) => void
+    setLinksCallback: (links: Link[]) => void,
 ) {
     ShowEditViewDialog(
         <LinkGridSetupDialog
             initialLinks={currentLinks}
             setLinksCallback={setLinksCallback}
-        />
+        />,
     );
 }

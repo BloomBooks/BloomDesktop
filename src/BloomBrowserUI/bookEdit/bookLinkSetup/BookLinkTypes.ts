@@ -1,6 +1,7 @@
 export interface BookInfoForLinks {
     id: string;
     title: string;
+    realTitle?: string;
     thumbnail?: string;
     pageLength?: number;
 }

@@ -3,6 +3,7 @@ import { Card, CardContent, Typography, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Link } from "./BookLinkTypes";
 import { css } from "@emotion/react";
+import { BloomTooltip } from "../../react_components/BloomToolTip";
 
 interface BookCardProps {
     link: Link;
@@ -18,7 +19,7 @@ export const LinkCard: React.FC<BookCardProps> = ({
     selected,
     onClick,
     onRemove,
-    style
+    style,
 }) => {
     return (
         <Card
@@ -43,12 +44,12 @@ export const LinkCard: React.FC<BookCardProps> = ({
                 <IconButton
                     className="removeLinkButton"
                     size="small"
-                    onClick={e => {
+                    onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         onRemove();
                     }}
-                    onMouseDown={e => {
+                    onMouseDown={(e) => {
                         e.stopPropagation();
                     }}
                     css={css`
@@ -75,49 +76,51 @@ export const LinkCard: React.FC<BookCardProps> = ({
                     <DeleteIcon fontSize="small" />
                 </IconButton>
             )}
-            <CardContent
-                css={css`
-                    padding: 0;
-                    padding-bottom: 0;
-                    display: flex;
-                    flex-direction: column;
-                    height: 100%;
-                    &:last-child {
+            <BloomTooltip tip={link.book.realTitle || link.book.title}>
+                <CardContent
+                    css={css`
+                        padding: 0;
                         padding-bottom: 0;
-                    }
-                `}
-            >
-                <img
-                    src={link.page?.thumbnail || link.book.thumbnail}
-                    alt={`${link.book.title}${
-                        link.page ? ` - Page ${link.page.pageId}` : ""
-                    }`}
-                    css={css`
-                        width: 100%;
-                        aspect-ratio: 16/9;
-                        height: 100px;
-                        object-fit: cover;
-                        object-position: center top;
-                        margin-bottom: 8px;
-                    `}
-                />
-                <Typography
-                    css={css`
-                        color: white;
-                        height: 3em;
-                        overflow: hidden;
-                        display: -webkit-box;
-                        -webkit-line-clamp: 2;
-                        -webkit-box-orient: vertical;
-                        line-height: 1.5em;
-                        font-size: 12px;
-                        text-align: center;
+                        display: flex;
+                        flex-direction: column;
+                        height: 100%;
+                        &:last-child {
+                            padding-bottom: 0;
+                        }
                     `}
                 >
-                    {link.book.title}
-                    {link.page && ` (Page ${link.page.pageId})`}
-                </Typography>
-            </CardContent>
+                    <img
+                        src={link.page?.thumbnail || link.book.thumbnail}
+                        alt={`${link.book.title}${
+                            link.page ? ` - Page ${link.page.pageId}` : ""
+                        }`}
+                        css={css`
+                            width: 100%;
+                            aspect-ratio: 16/9;
+                            height: 100px;
+                            object-fit: cover;
+                            object-position: center top;
+                            margin-bottom: 8px;
+                        `}
+                    />
+                    <Typography
+                        css={css`
+                            color: white;
+                            height: 3em;
+                            overflow: hidden;
+                            display: -webkit-box;
+                            -webkit-line-clamp: 2;
+                            -webkit-box-orient: vertical;
+                            line-height: 1.5em;
+                            font-size: 12px;
+                            text-align: center;
+                        `}
+                    >
+                        {link.book.title}
+                        {link.page && ` (Page ${link.page.pageId})`}
+                    </Typography>
+                </CardContent>
+            </BloomTooltip>
         </Card>
     );
 };
