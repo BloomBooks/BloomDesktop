@@ -17,10 +17,8 @@
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<LangVersion>11.0</LangVersion>
 		<PostBuildEvent>
-copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\meddle.exe" $(OutDir)
-xcopy "$(SolutionDir)lib\RedistributableDlls" $(OutDir) /S /R /Y
 xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 		</PostBuildEvent>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -120,10 +118,8 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 	</PropertyGroup>
 	<PropertyGroup>
 		<PostBuildEvent>
-copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\meddle.exe" $(OutDir)
-xcopy "$(SolutionDir)lib\RedistributableDlls" $(OutDir) /S /R /Y
 xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
     </PostBuildEvent>
 		<PlatformTarget>AnyCPU</PlatformTarget>
