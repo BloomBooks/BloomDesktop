@@ -848,9 +848,12 @@ namespace Bloom.Book
             SafelyAddToIdSet(id, metaFileLastWriteTime, currentFolder, idToSortedFilepathsMap);
         }
 
-        internal string GetBestTitleForUserDisplay(List<string> langCodes)
+        internal string GetBestTitleForUserDisplay(
+            List<string> langCodes,
+            bool ignoreFolderName = false
+        )
         {
-            if (FileNameLocked)
+            if (!ignoreFolderName && FileNameLocked)
                 return FolderName;
             try
             {
