@@ -56,7 +56,7 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
     );
 
     const unfilteredBooks = useWatchApiData<Array<IBookInfo>>(
-        `collections/books`,
+        `collections/books?realTitle=true`,
         [],
         "editableCollectionList",
         "unused" // we don't care about updates, so maybe we don't care about this?
@@ -64,7 +64,8 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
 
     const bookLinks: BookInfoForLinks[] = unfilteredBooks.map(book => ({
         id: book.id,
-        title: book.title,
+        title: book.folderName,
+        realTitle: book.title,
         thumbnail: `/bloom/api/collections/book/thumbnail?book-id=${book.id}`
     }));
 
