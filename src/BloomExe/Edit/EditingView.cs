@@ -1123,6 +1123,11 @@ namespace Bloom.Edit
                 )
             )
             {
+                // With the .net 8 upgrade, WinForms things shifted a bit so that the search language dropdown gets
+                // covered up. Since we're going to redo this dialog anyway, it's not worth messing with the toolbox so
+                // we simply make it wider to keep the language dropdown visible for now
+                dlg.Width += 120;
+
                 var searchLanguage = Settings.Default.ImageSearchLanguage;
                 dlg.ImageLoadingExceptionReporter = (path, ex, msg) =>
                 {
