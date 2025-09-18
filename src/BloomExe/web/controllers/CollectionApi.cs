@@ -597,13 +597,25 @@ namespace Bloom.web.controllers
                 )
                 .Select(info =>
                 {
-                    var title = info.QuickTitleUserDisplay;
+                    var wantRealTitle = request.Parameters["realTitle"] == "true";
+                    var title = info.QuickTitleUserDisplay; // same as FolderName
                     if (collection.IsFactoryInstalled)
                         title = LocalizationManager.GetDynamicString(
                             "Bloom",
                             "TemplateBooks.BookName." + title,
                             title
                         );
+                    else if (wantRealTitle && info.AllTitles != null)
+                    {
+                        var allTitlesDict = JsonConvert.DeserializeObject<
+                            Dictionary<string, string>
+                        >(info.AllTitles);
+                        var lang = _settings.Language1Tag;
+                        if (allTitlesDict.ContainsKey(lang))
+                            title = allTitlesDict[lang];
+                        else if (!string.IsNullOrEmpty(info.Title))
+                            title = info.Title;
+                    }
                     return new
                     {
                         id = info.Id,
