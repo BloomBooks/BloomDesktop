@@ -14,7 +14,7 @@ import {
     DialogBottomLeftButtons,
     DialogMiddle,
     DialogTitle,
-    IBloomDialogProps
+    IBloomDialogProps,
 } from "../react_components/BloomDialog/BloomDialog";
 import { DialogCloseButton } from "../react_components/BloomDialog/commonDialogComponents";
 import { CollectionHistoryTable } from "./CollectionHistoryTable";
@@ -28,11 +28,8 @@ import { BloomTabs } from "../react_components/BloomTabs";
 import { useEventLaunchedBloomDialog } from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 export const TeamCollectionDialogLauncher: React.FunctionComponent = () => {
-    const {
-        openingEvent,
-        closeDialog,
-        propsForBloomDialog
-    } = useEventLaunchedBloomDialog("TeamCollectionDialog");
+    const { openingEvent, closeDialog, propsForBloomDialog } =
+        useEventLaunchedBloomDialog("TeamCollectionDialog");
 
     return propsForBloomDialog.open ? (
         <TeamCollectionDialog
@@ -47,15 +44,15 @@ const TeamCollectionDialog: React.FunctionComponent<{
     showReloadButton: boolean;
     closeDialog: () => void;
     propsForBloomDialog: IBloomDialogProps;
-}> = props => {
+}> = (props) => {
     const dialogTitle = useL10n(
         "Team Collection",
-        "TeamCollection.TeamCollection"
+        "TeamCollection.TeamCollection",
     );
 
     const events = useApiData<IBloomWebSocketProgressEvent[]>(
         "teamCollection/getLog",
-        []
+        [],
     );
     // This ultimately controls which tab (currently Status or History) appears when the
     // dialog opens. The idea is that it shows the History tab unless there are important
@@ -73,11 +70,11 @@ const TeamCollectionDialog: React.FunctionComponent<{
     const [defaultTabIndex, setDefaultTabIndex] = useState(-1);
     const [disconnected] = useApiBoolean(
         "teamCollection/isDisconnected",
-        false
+        false,
     );
 
     useEffect(() => {
-        getBoolean("teamCollection/logImportant", logImportant => {
+        getBoolean("teamCollection/logImportant", (logImportant) => {
             setDefaultTabIndex(logImportant ? 0 : 1);
         });
     }, []);
@@ -167,7 +164,7 @@ const TeamCollectionDialog: React.FunctionComponent<{
                                                 // however currently BloomTabs is in "uncontrolled mode" and
                                                 // react-tabs says "In this mode you cannot force a tab change during runtime."
                                                 post(
-                                                    "teamCollection/checkInAllBooks"
+                                                    "teamCollection/checkInAllBooks",
                                                 );
                                             }}
                                         >

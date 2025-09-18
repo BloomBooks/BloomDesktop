@@ -68,14 +68,14 @@ export function TextFragment(str, isSpace) {
             jQuery(
                 "<div>" +
                     str.replace(/<br><\/br>|<br>|<br \/>|<br\/>/gi, "\n") +
-                    "</div>"
-            ).text()
+                    "</div>",
+            ).text(),
         )
-        .filter(function(word) {
+        .filter(function (word) {
             return word != "";
         });
 
-    this.wordCount = function() {
+    this.wordCount = function () {
         return this.words.length;
     };
 }
@@ -87,7 +87,7 @@ function WordCache() {
 }
 
 export function addBloomSynphonyExtensions() {
-    LibSynphony.prototype.setExtraSentencePunctuation = function(extra) {
+    LibSynphony.prototype.setExtraSentencePunctuation = function (extra) {
         // Replace characters that are magic in regexp. As a special case, period is simply removed, since it's already
         // sentence-terminating. If they want to use backslash, they will just have to double it; we can't fix it
         // because we want to allow \u0020 etc. I don't know why <> need to be replaced but they don't work otherwise.
@@ -113,8 +113,8 @@ export function addBloomSynphonyExtensions() {
                 bmp:
                     extraRe +
                     "\u17D4" + // requested for Khmer (BL-12757)
-                    "\u0021\u002e\u003f\u055c\u055e\u0589\u061f\u06d4\u0700\u0701\u0702\u0964\u0965\u104b\u1362\u1367\u1368\u166e\u1803\u1809\u1944\u1945\u203c\u203d\u2047\u2048\u2049\u3002\ufe52\ufe56\ufe57\uff01\uff0e\uff1f\uff61\u00a7"
-            }
+                    "\u0021\u002e\u003f\u055c\u055e\u0589\u061f\u06d4\u0700\u0701\u0702\u0964\u0965\u104b\u1362\u1367\u1368\u166e\u1803\u1809\u1944\u1945\u203c\u203d\u2047\u2048\u2049\u3002\ufe52\ufe56\ufe57\uff01\uff0e\uff1f\uff61\u00a7",
+            },
         ]);
     };
 
@@ -123,7 +123,7 @@ export function addBloomSynphonyExtensions() {
      * @param {String} textHTML The HTML text to split
      * @returns {Array} An array of <code>TextFragment</code> objects
      */
-    LibSynphony.prototype.stringToSentences = function(textHTML) {
+    LibSynphony.prototype.stringToSentences = function (textHTML) {
         // place holders
         const delimiter = String.fromCharCode(0);
         // Lets us treat various forms of <br> as a single whitespace character in regexps
@@ -175,7 +175,7 @@ export function addBloomSynphonyExtensions() {
         // collect empty html tags and replace with tagHolderEmpty place holder
         const regexEmptyTag = new RegExp(
             openingTagReplacement + closingTagReplacement,
-            "g"
+            "g",
         );
         const emptyTags = textHTML.match(regexEmptyTag);
         textHTML = textHTML.replace(regexEmptyTag, emptyTagReplacement);
@@ -186,7 +186,7 @@ export function addBloomSynphonyExtensions() {
         // look for paragraph ending sequences
         regex = XRegExp(
             "[^\\p{PEP}]*[\\p{PEP}]+" + "|[^\\p{PEP}]+$", // break on all paragraph ending punctuation (PEP)
-            "g"
+            "g",
         );
 
         // break the text into paragraphs
@@ -251,18 +251,18 @@ export function addBloomSynphonyExtensions() {
         // in LibSynphony.prototype.setExtraSentencePunctuation (or perhaps elsewhere in tests?)
         regex = XRegExp(
             "([\\p{SEP}]+" + // sentence ending punctuation (SEP)
-            afterSEP + // what can follow SEP in same sentence,
-            ")" + // then end group for the sentence
-            "([" +
-            openingTagReplacement +
-            "]*)" +
-            intersentenceSpace +
-            "([" +
-            closingTagReplacement +
-            "]*)" +
-            "(?![^\\p{L}]*" + // may be followed by non-letter chars
+                afterSEP + // what can follow SEP in same sentence,
+                ")" + // then end group for the sentence
+                "([" +
+                openingTagReplacement +
+                "]*)" +
+                intersentenceSpace +
+                "([" +
+                closingTagReplacement +
+                "]*)" +
+                "(?![^\\p{L}]*" + // may be followed by non-letter chars
                 "[\\p{Ll}\\p{SCP}]+)", // first letter following is not lower case. (This works by consuming all the lowercase letters/etc. up until the first uppercase letter/etc)
-            "g"
+            "g",
         );
 
         var returnVal = new Array();
@@ -277,7 +277,7 @@ export function addBloomSynphonyExtensions() {
                     "$2" +
                     "$3" +
                     "$4" +
-                    delimiter
+                    delimiter,
             );
 
             // Phrase Delimiting
@@ -293,11 +293,11 @@ export function addBloomSynphonyExtensions() {
             // restore line breaks
             paragraph = paragraph.replace(
                 new RegExp(htmlLineBreakReplacement, "g"),
-                "<br />"
+                "<br />",
             );
             paragraph = paragraph.replace(
                 new RegExp(windowsLineBreakReplacement, "g"),
-                "\r\n"
+                "\r\n",
             );
             // Something seems to be wrong around here for very complex markup involving empty elements and unclosed tags,
             // that can result in fragments with excess closing tags. One example is page 26 of the book in BL-15111.
@@ -318,9 +318,9 @@ export function addBloomSynphonyExtensions() {
                             selfClosingTagReplacement +
                             emptyTagReplacement +
                             "]",
-                        "g"
+                        "g",
                     ),
-                    ""
+                    "",
                 );
 
                 // if some tags from earlier segments are still open, reopen at start
@@ -342,7 +342,7 @@ export function addBloomSynphonyExtensions() {
                 while (fragment.indexOf(emptyTagReplacement) > -1)
                     fragment = fragment.replace(
                         new RegExp(emptyTagReplacement),
-                        emptyTags.shift()
+                        emptyTags.shift(),
                     );
 
                 // put the opening html tags back in
@@ -350,7 +350,7 @@ export function addBloomSynphonyExtensions() {
                     const tag = openTags.shift();
                     fragment = fragment.replace(
                         new RegExp(openingTagReplacement),
-                        tag
+                        tag,
                     );
                     unclosedTags.push(tag);
                 }
@@ -361,7 +361,7 @@ export function addBloomSynphonyExtensions() {
                     const closeTag = closeTags.shift();
                     fragment = fragment.replace(
                         new RegExp(closingTagReplacement),
-                        closeTag
+                        closeTag,
                     );
                     unclosedTags.pop();
                 }
@@ -387,13 +387,13 @@ export function addBloomSynphonyExtensions() {
                 while (fragment.indexOf(selfClosingTagReplacement) > -1)
                     fragment = fragment.replace(
                         new RegExp(selfClosingTagReplacement),
-                        selfTags.shift()
+                        selfTags.shift(),
                     );
 
                 // put nbsp back in
                 fragment = fragment.replace(
                     new RegExp(nbspReplacement, "g"),
-                    "&nbsp;"
+                    "&nbsp;",
                 );
 
                 // check to avoid empty segments at the end
@@ -404,7 +404,7 @@ export function addBloomSynphonyExtensions() {
                     // is this space between sentences?
                     if (fragment.substring(0, 1) === nonSentenceMarker) {
                         returnVal.push(
-                            new TextFragment(fragment.substring(1), true)
+                            new TextFragment(fragment.substring(1), true),
                         );
                     } else if (
                         j > 0 &&
@@ -423,16 +423,16 @@ export function addBloomSynphonyExtensions() {
                         returnVal.push(
                             new TextFragment(
                                 fragment.substring(0, leadingSpaceCount),
-                                true
-                            )
+                                true,
+                            ),
                         );
                         // If there's anything left over, add the rest of the fragment as a regular sentence TextFragment
                         if (leadingSpaceCount < fragment.length)
                             returnVal.push(
                                 new TextFragment(
                                     fragment.substring(leadingSpaceCount),
-                                    false
-                                )
+                                    false,
+                                ),
                             );
                     } else {
                         returnVal.push(new TextFragment(fragment, false));
@@ -450,16 +450,16 @@ export function addBloomSynphonyExtensions() {
      * @param {Element} fileInputElement
      * @param {Function} callback Function with one parameter, which will be TRUE if successful.
      */
-    LibSynphony.prototype.loadLanguageData = function(
+    LibSynphony.prototype.loadLanguageData = function (
         fileInputElement,
-        callback
+        callback,
     ) {
         var file = fileInputElement.files[0];
 
         if (!file) return;
 
         var reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             callback(theOneLibSynphony.langDataFromString(e.target.result));
         };
         reader.readAsText(file);
@@ -476,14 +476,14 @@ export function addBloomSynphonyExtensions() {
      * @param {Array} aPartsOfSpeech
      * @returns {Array} An array of strings
      */
-    LibSynphony.prototype.selectGPCWordNamesWithArrayCompare = function(
+    LibSynphony.prototype.selectGPCWordNamesWithArrayCompare = function (
         aDesiredGPCs,
         aKnownGPCs,
         restrictToKnownGPCs,
         allowUpperCase,
         aSyllableLengths,
         aSelectedGroups,
-        aPartsOfSpeech
+        aPartsOfSpeech,
     ) {
         var gpcs = theOneLibSynphony.selectGPCWordsWithArrayCompare(
             aDesiredGPCs,
@@ -492,7 +492,7 @@ export function addBloomSynphonyExtensions() {
             allowUpperCase,
             aSyllableLengths,
             aSelectedGroups,
-            aPartsOfSpeech
+            aPartsOfSpeech,
         );
         return _.pluck(gpcs, "Name");
     };
@@ -508,14 +508,14 @@ export function addBloomSynphonyExtensions() {
      * @param {Array} aPartsOfSpeech
      * @returns {Array} An array of WordObject objects
      */
-    LibSynphony.prototype.selectGPCWordsFromCache = function(
+    LibSynphony.prototype.selectGPCWordsFromCache = function (
         aDesiredGPCs,
         aKnownGPCs,
         restrictToKnownGPCs,
         allowUpperCase,
         aSyllableLengths,
         aSelectedGroups,
-        aPartsOfSpeech
+        aPartsOfSpeech,
     ) {
         // check if the list of graphemes changed
         if (!theOneWordCache) {
@@ -538,15 +538,16 @@ export function addBloomSynphonyExtensions() {
 
         theOneWordCache.desiredGPCs = aDesiredGPCs;
         theOneWordCache.knownGPCs = aKnownGPCs;
-        theOneWordCache.selectedWords = theOneLibSynphony.selectGPCWordsWithArrayCompare(
-            aDesiredGPCs,
-            aKnownGPCs,
-            restrictToKnownGPCs,
-            allowUpperCase,
-            aSyllableLengths,
-            aSelectedGroups,
-            aPartsOfSpeech
-        );
+        theOneWordCache.selectedWords =
+            theOneLibSynphony.selectGPCWordsWithArrayCompare(
+                aDesiredGPCs,
+                aKnownGPCs,
+                restrictToKnownGPCs,
+                allowUpperCase,
+                aSyllableLengths,
+                aSelectedGroups,
+                aPartsOfSpeech,
+            );
 
         return theOneWordCache.selectedWords;
     };
@@ -555,14 +556,14 @@ export function addBloomSynphonyExtensions() {
      * Adds a new DataGPC object to Vocabulary Group
      * @param grapheme Either a single grapheme (string) or an array of graphemes
      */
-    LanguageData.prototype.addGrapheme = function(grapheme) {
+    LanguageData.prototype.addGrapheme = function (grapheme) {
         if (!Array.isArray(grapheme)) grapheme = [grapheme];
 
         for (var i = 0; i < grapheme.length; i++) {
             var g = grapheme[i].toLowerCase();
 
             // check if the grapheme already exists
-            var exists = _.any(this.GPCS, function(item) {
+            var exists = _.any(this.GPCS, function (item) {
                 return item.GPC === g;
             });
 
@@ -575,10 +576,10 @@ export function addBloomSynphonyExtensions() {
      * @param word Either a single word (string) or an array of words
      * @param {int} [freq] The number of times this word occurs
      */
-    LanguageData.prototype.addWord = function(word, freq) {
+    LanguageData.prototype.addWord = function (word, freq) {
         var sortedGraphemes = _.sortBy(
             _.pluck(this.GPCS, "Grapheme"),
-            "length"
+            "length",
         ).reverse();
 
         // if this is a single word...
@@ -606,9 +607,9 @@ export function addBloomSynphonyExtensions() {
      * @param {String} word
      * @returns {DataWord} Returns undefined if not found.
      */
-    LanguageData.prototype.findWord = function(word) {
+    LanguageData.prototype.findWord = function (word) {
         for (var i = 1; i <= this.VocabularyGroups; i++) {
-            var found = _.find(this["group" + i], function(item) {
+            var found = _.find(this["group" + i], function (item) {
                 return item.Name === word;
             });
 
@@ -624,7 +625,7 @@ export function addBloomSynphonyExtensions() {
      * @param {Array} sortedGraphemes Array of all graphemes, sorted by descending length
      * @returns {Array}
      */
-    LanguageData.prototype.getGpcForm = function(word, sortedGraphemes) {
+    LanguageData.prototype.getGpcForm = function (word, sortedGraphemes) {
         var gpcForm = [];
         var hit = 1; // used to prevent infinite loop if word contains letters not in the list
 
@@ -663,7 +664,7 @@ export function addBloomSynphonyExtensions() {
         return gpcForm;
     };
 
-    LanguageData.prototype.isPartOfSurrogatePair = function(charCode) {
+    LanguageData.prototype.isPartOfSurrogatePair = function (charCode) {
         return 0xd800 <= charCode && charCode <= 0xdfff;
     };
 
@@ -673,7 +674,7 @@ export function addBloomSynphonyExtensions() {
      * @param {String} langData
      * @returns {String}
      */
-    LanguageData.toJSON = function(langData) {
+    LanguageData.toJSON = function (langData) {
         // get the group arrays
         var n = langData["VocabularyGroups"];
 
@@ -683,7 +684,7 @@ export function addBloomSynphonyExtensions() {
             langData[index] = {};
 
             // for each group, get the properties (contain '__')
-            var keys = _.filter(_.keys(group), function(k) {
+            var keys = _.filter(_.keys(group), function (k) {
                 return k.indexOf("__") > -1;
             });
             for (var i = 0; i < keys.length; i++) {
@@ -694,7 +695,7 @@ export function addBloomSynphonyExtensions() {
         return JSON.stringify(langData);
     };
 
-    LanguageData.fromJSON = function(jsonString) {
+    LanguageData.fromJSON = function (jsonString) {
         var langData = JSON.parse(jsonString);
 
         // convert the groupIndex objects back to properties of the group array

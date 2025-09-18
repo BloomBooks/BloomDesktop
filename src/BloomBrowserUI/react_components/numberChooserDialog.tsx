@@ -5,14 +5,14 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "./BloomDialog/BloomDialog";
 import BloomButton from "./bloomButton";
 import { DialogCancelButton } from "./BloomDialog/commonDialogComponents";
 import SmallNumberPicker from "./smallNumberPicker";
 import {
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "./BloomDialog/BloomDialogPlumbing";
 
 export interface INumberChooserDialogProps {
@@ -26,12 +26,11 @@ export interface INumberChooserDialogProps {
 
 // This component is intended to be wrapped by another function that passes a BloomApi
 // onclick handler. For example, see duplicateManyDialog.tsx.
-export const NumberChooserDialog: React.FunctionComponent<INumberChooserDialogProps> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+export const NumberChooserDialog: React.FunctionComponent<
+    INumberChooserDialogProps
+> = (props) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     const [numberChosen, setNumberChosen] = useState(props.min);
 

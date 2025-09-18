@@ -14,7 +14,7 @@ import {
     DisableImageEditing,
     EnableImageEditing,
     getBackgroundImageFromBloomCanvas,
-    kBloomCanvasClass
+    kBloomCanvasClass,
 } from "../../js/bloomImages";
 import { kMotionToolId } from "../toolIds";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
@@ -34,13 +34,13 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
-        this.rootControl = (ReactDOM.render(
+        this.rootControl = ReactDOM.render(
             <MotionControl
                 onPreviewClick={() => this.toggleMotionPreviewPlaying()}
-                onMotionChanged={checked => this.motionChanged(checked)}
+                onMotionChanged={(checked) => this.motionChanged(checked)}
             />,
-            root
-        ) as unknown) as MotionControl;
+            root,
+        ) as unknown as MotionControl;
         const initialState = this.getStateFromHtml();
         this.rootControl.setState(initialState);
         if (initialState.haveBloomCanvasButNoBgImage) {
@@ -69,7 +69,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private makeRectsVisible() {
         if (this.subscriptionAllowsMotion === undefined) {
             // Find out if we're really allowed to show them, then do it or not.
-            getFeatureStatusAsync("motion").then(featureStatus => {
+            getFeatureStatusAsync("motion").then((featureStatus) => {
                 this.subscriptionAllowsMotion = !!(
                     featureStatus && featureStatus.enabled
                 );
@@ -110,22 +110,17 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             defWidth: number,
             defHeight: number,
             initAttr: string,
-            color: string
+            color: string,
         ): JQuery => {
-            const [
-                left,
-                top,
-                width,
-                height,
-                needToSaveThisRectangle
-            ] = this.getActualRectFromAttrValue(
-                bloomCanvasToAnimate,
-                defLeft,
-                defTop,
-                defWidth,
-                defHeight,
-                initAttr
-            );
+            const [left, top, width, height, needToSaveThisRectangle] =
+                this.getActualRectFromAttrValue(
+                    bloomCanvasToAnimate,
+                    defLeft,
+                    defTop,
+                    defWidth,
+                    defHeight,
+                    initAttr,
+                );
             if (needToSaveThisRectangle) needToSaveRectangles = true;
 
             // So far, I can't figure out what the 3000 puts us in front of, but we have to be in front of it for dragging to work.
@@ -195,15 +190,15 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 drag: (event, ui) => {
                     const xpos = Math.min(
                         Math.max(0, ui.position.left / scale),
-                        bloomCanvasToAnimate.clientWidth - ui.helper.width()
+                        bloomCanvasToAnimate.clientWidth - ui.helper.width(),
                     );
                     const ypos = Math.min(
                         Math.max(0, ui.position.top / scale),
-                        bloomCanvasToAnimate.clientHeight - ui.helper.height()
+                        bloomCanvasToAnimate.clientHeight - ui.helper.height(),
                     );
                     ui.position.top = ypos;
                     ui.position.left = xpos;
-                }
+                },
             };
             const argsForResizable = {
                 handles: {
@@ -211,11 +206,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                     s: ".ui-resizable-s",
                     n: ".ui-resizable-n",
                     w: ".ui-resizable-w",
-                    se: "#resizeHandle"
+                    se: "#resizeHandle",
                 },
                 containment: "parent",
                 aspectRatio: true,
-                stop: (event, ui) => this.updateDataAttributes()
+                stop: (event, ui) => this.updateDataAttributes(),
             };
             // Unless the element is created and made draggable and resizable in the page iframe's execution context,
             // the dragging and resizing just don't work.
@@ -223,7 +218,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 htmlForDraggable,
                 $(bloomCanvasToAnimate),
                 argsForResizable,
-                argsForDraggable
+                argsForDraggable,
             );
             // This is an extra guarantee that it doesn't end up persisted; also, it prevents
             // CanvasElementManager.AdjustChildrenIfSizeChanged from taking it into account.
@@ -240,7 +235,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             3 / 4,
             3 / 4,
             "data-initialrect",
-            bloomBlue
+            bloomBlue,
         );
         makeResizeRect(
             "2",
@@ -250,7 +245,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             1 / 2,
             1 / 2,
             "data-finalrect",
-            bloomPurple
+            bloomPurple,
         );
         if (needToSaveRectangles) {
             // If we're using defaults or had to adjust the aspect ratio,
@@ -314,7 +309,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private getBloomCanvasToAnimate(): HTMLElement | null {
         const page = this.getPage();
         return page?.getElementsByClassName(
-            kBloomCanvasClass
+            kBloomCanvasClass,
         )[0] as HTMLElement;
     }
 
@@ -350,7 +345,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         defTop: number,
         defWidth: number,
         defHeight: number,
-        initAttr: string
+        initAttr: string,
     ): [number, number, number, number, boolean] {
         let left = defLeft,
             top = defTop,
@@ -443,7 +438,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             actualTop,
             actualWidth,
             actualHeight,
-            needToSaveRectangle
+            needToSaveRectangle,
         ];
     }
 
@@ -466,11 +461,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 bloomCanvasToAnimate.setAttribute(
                     "data-initialrect",
                     bloomCanvasToAnimate.getAttribute(
-                        "data-disabled-initialrect"
-                    ) as string
+                        "data-disabled-initialrect",
+                    ) as string,
                 );
                 bloomCanvasToAnimate.removeAttribute(
-                    "data-disabled-initialrect"
+                    "data-disabled-initialrect",
                 );
                 this.makeRectsVisible(); // ensures start/stop rectangles visible
             }
@@ -481,8 +476,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 bloomCanvasToAnimate.setAttribute(
                     "data-disabled-initialrect",
                     bloomCanvasToAnimate.getAttribute(
-                        "data-initialrect"
-                    ) as string
+                        "data-initialrect",
+                    ) as string,
                 );
                 bloomCanvasToAnimate.removeAttribute("data-initialrect");
             }
@@ -536,16 +531,15 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private setupImageObserver(): void {
         // Arrange to update things when they DO choose an image.
         this.observer = new MutationObserver(() =>
-            this.updateChoosePictureState()
+            this.updateChoosePictureState(),
         );
         // The specific thing we want to observe is the src attr of the img element embedded
         // in the background image of the first bloom-canvas. We want to update our UI if this changes from
         // placeholder to a 'real' image.
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
         if (bloomCanvasToAnimate) {
-            const bgImage = getBackgroundImageFromBloomCanvas(
-                bloomCanvasToAnimate
-            );
+            const bgImage =
+                getBackgroundImageFromBloomCanvas(bloomCanvasToAnimate);
             if (bgImage) {
                 const images = bgImage.getElementsByTagName("img");
                 // I'm not sure how images can be an empty list...possibly while the page is shutting down??
@@ -553,7 +547,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 if (images.length > 0) {
                     this.observer.observe(images[0], {
                         attributes: true,
-                        attributeFilter: ["src"]
+                        attributeFilter: ["src"],
                     });
                 }
             }
@@ -616,11 +610,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (image) {
             image.setAttribute(
                 "data-initialrect",
-                this.getTransformRectAttrValue(startRect)
+                this.getTransformRectAttrValue(startRect),
             );
             image.setAttribute(
                 "data-finalrect",
-                this.getTransformRectAttrValue(endRect)
+                this.getTransformRectAttrValue(endRect),
             );
         }
     }
@@ -672,7 +666,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const contentWindow = this.getPageFrame().contentWindow;
         if (!contentWindow) return; // paranoid
         const bloomPage = page.getElementsByClassName(
-            "bloom-page"
+            "bloom-page",
         )[0] as HTMLElement;
 
         //create the animation divs
@@ -680,18 +674,18 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         animationBackground.classList.add(this.animateStyleName);
         const animationWrapper = document.createElement("div");
         const animationCanvas = bloomCanvasToAnimate.cloneNode(
-            true
+            true,
         ) as HTMLElement;
 
         //if the page has overlays with elements such as speech bubbles, those are drawn in a <canvas/> element created by the ComicalJS library
         //when a <canvas/> is copied, its contents are not copied with it,
         //so we need to specifically copy the drawings from the original canvas to the clone
         const comicalCanvas = bloomCanvasToAnimate.querySelector(
-            ".comical-generated"
+            ".comical-generated",
         ) as HTMLCanvasElement;
         if (comicalCanvas) {
             const animatedComicalCanvas = animationCanvas.querySelector(
-                ".comical-generated"
+                ".comical-generated",
             ) as HTMLCanvasElement;
             const drawingContext = animatedComicalCanvas.getContext("2d");
             drawingContext?.drawImage(comicalCanvas, 0, 0);
@@ -703,8 +697,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // turn it into a 16:9 black rectangle to show aspect ratio
         animationBackground.style.backgroundColor = "black";
         animationBackground.style.width = `${editorBody.clientWidth}px`;
-        animationBackground.style.height = `${editorBody.clientWidth *
-            (9 / 16)}px`;
+        animationBackground.style.height = `${
+            editorBody.clientWidth * (9 / 16)
+        }px`;
         animationBackground.classList.add("bloom-ui"); //this class tells the C# code responsible for saving the page to disregard this element
 
         //Prepare the animation wrapper
@@ -717,20 +712,25 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const animationAspectRatio = canvasDimensions[0] / canvasDimensions[1];
         if (animationAspectRatio > this.animationPreviewAspectRatio) {
             animationWrapper.style.width = "100%";
-            animationWrapper.style.height = `${animationWrapper.clientWidth /
-                animationAspectRatio}px`;
+            animationWrapper.style.height = `${
+                animationWrapper.clientWidth / animationAspectRatio
+            }px`;
             animationWrapper.style.left = "0px";
-            animationWrapper.style.top = `${0.5 *
+            animationWrapper.style.top = `${
+                0.5 *
                 (animationBackground.clientHeight -
-                    animationWrapper.clientHeight)}px`;
+                    animationWrapper.clientHeight)
+            }px`;
         } else {
             animationWrapper.style.height = "100%";
-            animationWrapper.style.width = `${animationWrapper.clientHeight *
-                animationAspectRatio}px`;
+            animationWrapper.style.width = `${
+                animationWrapper.clientHeight * animationAspectRatio
+            }px`;
             animationWrapper.style.top = "0px";
-            animationWrapper.style.left = `${0.5 *
-                (animationBackground.clientWidth -
-                    animationWrapper.clientWidth)}px`;
+            animationWrapper.style.left = `${
+                0.5 *
+                (animationBackground.clientWidth - animationWrapper.clientWidth)
+            }px`;
         }
         animationWrapper.style.overflow = "hidden";
         animationWrapper.style.transform = "translateZ(0)"; //needed for overflow:hidden to have an effect on a transformed child
@@ -739,7 +739,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         animationWrapper.appendChild(animationCanvas);
         const wrapperDimensions = [
             animationWrapper.clientWidth,
-            animationWrapper.clientHeight
+            animationWrapper.clientHeight,
         ];
 
         //Overlays have their width, height, and bubble positions set by absolute pixel values
@@ -747,21 +747,22 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         //Then we can safely rescale the animationCanvas to the size we want, and the overlays will rescale with it.
         animationCanvas.style.width = `${canvasDimensions[0]}px`;
         animationCanvas.style.height = `${canvasDimensions[1]}px`;
-        animationCanvas.style.scale = `${wrapperDimensions[0] /
-            canvasDimensions[0]}`;
-        animationCanvas.style.top = `${(wrapperDimensions[1] -
-            canvasDimensions[1]) /
-            2}px`;
-        animationCanvas.style.left = `${(wrapperDimensions[0] -
-            canvasDimensions[0]) /
-            2}px`;
+        animationCanvas.style.scale = `${
+            wrapperDimensions[0] / canvasDimensions[0]
+        }`;
+        animationCanvas.style.top = `${
+            (wrapperDimensions[1] - canvasDimensions[1]) / 2
+        }px`;
+        animationCanvas.style.left = `${
+            (wrapperDimensions[0] - canvasDimensions[0]) / 2
+        }px`;
 
         //hide the animation rectangles
         animationCanvas.removeChild(
-            animationCanvas.querySelector("#animationStart")!
+            animationCanvas.querySelector("#animationStart")!,
         );
         animationCanvas.removeChild(
-            animationCanvas.querySelector("#animationEnd")!
+            animationCanvas.querySelector("#animationEnd")!,
         );
 
         //hide the whole page (styles in bloomUI.less keep the animation from being hidden)
@@ -775,7 +776,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             initialRect,
             finalRect,
             duration,
-            animationCanvas
+            animationCanvas,
         );
         animationEngine.startAnimation();
 
@@ -790,13 +791,16 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 this.getPlayer(),
                 // Enhance: implement pause, by adding playing to state.
                 () => false,
-                playing => undefined
+                (playing) => undefined,
             );
         }
-        this.stopPreviewTimeout = window.setTimeout(() => {
-            this.cleanupAnimation();
-            this.rootControl.setState({ playing: false });
-        }, (duration + 1) * 1000);
+        this.stopPreviewTimeout = window.setTimeout(
+            () => {
+                this.cleanupAnimation();
+                this.rootControl.setState({ playing: false });
+            },
+            (duration + 1) * 1000,
+        );
     }
 
     private cleanupAnimation() {
@@ -805,14 +809,14 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
         // stop the animation by removing any elements it added to the page.
         const animationElements = Array.from(
-            page.getElementsByClassName(this.animateStyleName)
+            page.getElementsByClassName(this.animateStyleName),
         );
-        animationElements.forEach(child =>
-            child.parentElement!.removeChild(child)
+        animationElements.forEach((child) =>
+            child.parentElement!.removeChild(child),
         );
 
         const bloomPage = page.getElementsByClassName(
-            "bloom-page"
+            "bloom-page",
         )[0] as HTMLElement;
         bloomPage.classList.remove("Landscape");
 
@@ -821,7 +825,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
         //show the "change layout" toggle again
         const layoutToggle = page.querySelector(
-            ".above-page-control-container"
+            ".above-page-control-container",
         ) as HTMLElement;
         if (
             layoutToggle &&
@@ -844,9 +848,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
         // Array.from required in Geckofx45
         Array.from(page.querySelectorAll(".audio-sentence")).forEach(
-            audioPortion => {
+            (audioPortion) => {
                 duration += this.getDurationOrZero(audioPortion);
-            }
+            },
         );
 
         if (duration < 0.5) {
@@ -874,7 +878,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private wrapperClassName = "bloom-ui-animationWrapper";
     private getPageFrame(): HTMLIFrameElement {
         return parent.window.document.getElementById(
-            "page"
+            "page",
         ) as HTMLIFrameElement;
     }
 
@@ -890,9 +894,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
         let src = "";
         if (bloomCanvasToAnimate) {
-            const bgImage = getBackgroundImageFromBloomCanvas(
-                bloomCanvasToAnimate
-            );
+            const bgImage =
+                getBackgroundImageFromBloomCanvas(bloomCanvasToAnimate);
             src = bgImage?.getAttribute("src") || "";
         }
 
@@ -920,7 +923,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         return {
             haveBloomCanvasButNoBgImage: doNotHaveAPicture,
             motionChecked: motionChecked,
-            motionPossible: motionPossible
+            motionPossible: motionPossible,
         };
     }
 }
@@ -952,7 +955,7 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
         motionPossible: true,
         previewVoice: true,
         previewMusic: true,
-        playing: false
+        playing: false,
     };
 
     private onMotionChanged(checked: boolean): void {
@@ -986,7 +989,7 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
                         l10nKey="EditTab.Toolbox.Motion.ThisPage"
                         // tslint:disable-next-line:max-line-length
                         l10nComment="Motion here refers to panning and zooms image when it is viewed in Bloom Reader. Google 'Ken Burns effect' to see exactly what we mean."
-                        onCheckChanged={checked =>
+                        onCheckChanged={(checked) =>
                             this.onMotionChanged(checked)
                         }
                         checked={this.state.motionChecked}
@@ -1027,7 +1030,7 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
                                 <Checkbox
                                     name="previewVoice"
                                     l10nKey="EditTab.Toolbox.Motion.Preview.Voice"
-                                    onCheckChanged={checked =>
+                                    onCheckChanged={(checked) =>
                                         this.setState({ previewVoice: checked })
                                     }
                                     checked={this.state.previewVoice}
@@ -1037,7 +1040,7 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
                                 <Checkbox
                                     name="previewMusic"
                                     l10nKey="EditTab.Toolbox.Motion.Preview.Music"
-                                    onCheckChanged={checked =>
+                                    onCheckChanged={(checked) =>
                                         this.setState({ previewMusic: checked })
                                     }
                                     checked={this.state.previewMusic}

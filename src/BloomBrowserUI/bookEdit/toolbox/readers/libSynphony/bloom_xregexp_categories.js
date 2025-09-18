@@ -60,9 +60,8 @@ export function setSentenceEndingPunctuationForBloom() {
         {
             name: "SEP",
             alias: "Sentence_Ending_Punctuation",
-            bmp:
-                "\u0021\u002e\u003f\u055c\u055e\u0589\u061f\u06d4\u0700\u0701\u0702\u0964\u0965\u104b\u1362\u1367\u1368\u166e\u1803\u1809\u1944\u1945\u203c\u203d\u2047\u2048\u2049\u3002\ufe52\ufe56\ufe57\uff01\uff0e\uff1f\uff61\u00a7"
-        }
+            bmp: "\u0021\u002e\u003f\u055c\u055e\u0589\u061f\u06d4\u0700\u0701\u0702\u0964\u0965\u104b\u1362\u1367\u1368\u166e\u1803\u1809\u1944\u1945\u203c\u203d\u2047\u2048\u2049\u3002\ufe52\ufe56\ufe57\uff01\uff0e\uff1f\uff61\u00a7",
+        },
     ]);
 }
 
@@ -87,8 +86,8 @@ XRegExp.addUnicodeData([
     {
         name: "PEP",
         alias: "Paragraph_Ending_Punctuation",
-        bmp: "\r\n\u0001\u0002\u0085\u2028\u2029"
-    }
+        bmp: "\r\n\u0001\u0002\u0085\u2028\u2029",
+    },
 ]);
 
 /******************************************************************************
@@ -128,7 +127,6 @@ XRegExp.addUnicodeData([
     {
         name: "SCP",
         alias: "Sentence_Continuing_Punctuation",
-        bmp:
-            ",-:\u055D\u060C\u060D\u07F8\u1802\u1808\u2013\u2014\u3001\uFE10\uFE11\uFE13\uFE31\uFE32\uFE50\uFE51\uFE55\uFE58\uFE63\uFF0C\uFF0D\uFF1A\uFF64"
-    }
+        bmp: ",-:\u055D\u060C\u060D\u07F8\u1802\u1808\u2013\u2014\u3001\uFE10\uFE11\uFE13\uFE31\uFE32\uFE50\uFE51\uFE55\uFE58\uFE63\uFF0C\uFF0D\uFF1A\uFF64",
+    },
 ]);

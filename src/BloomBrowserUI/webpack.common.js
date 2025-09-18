@@ -4,7 +4,7 @@ const pathToOriginalJavascriptFilesInLib = path.resolve(__dirname, "lib");
 const pathToBookEditJS = path.resolve(__dirname, "bookEdit/js");
 const pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(
     __dirname,
-    "modified_libraries"
+    "modified_libraries",
 );
 const globule = require("globule");
 
@@ -46,7 +46,7 @@ module.exports = merge(core, {
         pageControlsBundle:
             "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
         accessibilityCheckBundle: globule.find([
-            "./publish/accessibilityCheck/**/*.tsx"
+            "./publish/accessibilityCheck/**/*.tsx",
         ]),
         subscriptionSettingsBundle: "./collection/subscriptionSettingsTab.tsx",
 
@@ -61,7 +61,7 @@ module.exports = merge(core, {
             "./publish/**/*Spec.js",
             "./react_components/**/*Spec.ts",
             "./react_components/**/*.spec.ts",
-            "./utils/**/*Spec.ts"
+            "./utils/**/*Spec.ts",
         ]),
 
         // These work with c# ReactControl:
@@ -88,7 +88,7 @@ module.exports = merge(core, {
         newCollectionLanguageChooserBundle:
             "./collection/NewCollectionLanguageChooser.tsx",
         registrationDialogBundle: "./react_components/registrationDialog.tsx",
-        editTopBarControlsBundle: "./bookEdit/topbar/editTopBarControls.tsx"
+        editTopBarControlsBundle: "./bookEdit/topbar/editTopBarControls.tsx",
 
         // This slowed down webpack a ton, because the way it works is that it 1st finds it all,
         // then it excludes node_modules
@@ -102,7 +102,7 @@ module.exports = merge(core, {
         libraryTarget: "var",
 
         // Makes a single entry point module's exports accessible via Exports.
-        library: "[name]"
+        library: "[name]",
     },
     resolve: {
         // For some reason, webpack began to complain about being given minified source.
@@ -115,9 +115,9 @@ module.exports = merge(core, {
             pathToOriginalJavascriptFilesInLib,
             "node_modules",
             pathToBookEditJS,
-            pathToOriginalJavascriptFilesInModified_Libraries
+            pathToOriginalJavascriptFilesInModified_Libraries,
         ],
-        extensions: [".js", ".jsx", ".ts", ".tsx"] //We may need to add .less here... otherwise maybe it will ignore them unless they are require()'d
+        extensions: [".js", ".jsx", ".ts", ".tsx"], //We may need to add .less here... otherwise maybe it will ignore them unless they are require()'d
     },
     optimization: {
         minimize: false,
@@ -142,10 +142,10 @@ module.exports = merge(core, {
                     // to commonBundle.js.  Changing it didn't seem to have any effect in our build
                     // process.
                     minSize: 30000,
-                    reuseExistingChunk: true
-                }
-            }
-        }
+                    reuseExistingChunk: true,
+                },
+            },
+        },
     },
     module: {
         rules: [
@@ -161,7 +161,7 @@ module.exports = merge(core, {
                     /jquery-ui/,
                     /-min/,
                     /qtip/,
-                    /xregexp-all-min.js/
+                    /xregexp-all-min.js/,
                 ],
                 use: [
                     {
@@ -174,15 +174,15 @@ module.exports = merge(core, {
                                     "@babel/preset-env",
                                     {
                                         targets: {
-                                            edge: "112"
-                                        }
-                                    }
+                                            edge: "112",
+                                        },
+                                    },
                                 ],
-                                "@babel/preset-react"
-                            ].map(localResolve)
-                        }
-                    }
-                ]
+                                "@babel/preset-react",
+                            ].map(localResolve),
+                        },
+                    },
+                ],
             },
             // WOFF Font
             {
@@ -191,10 +191,10 @@ module.exports = merge(core, {
                     loader: "url-loader",
                     options: {
                         limit: 10000,
-                        mimetype: "font/woff"
-                    }
-                }
-            }
-        ]
-    }
+                        mimetype: "font/woff",
+                    },
+                },
+            },
+        ],
+    },
 });

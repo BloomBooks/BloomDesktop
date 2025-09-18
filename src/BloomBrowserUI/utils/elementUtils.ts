@@ -10,7 +10,7 @@ import { EditableDivUtils } from "../bookEdit/js/editableDivUtils";
  */
 export function farthest<E extends Element = Element>(
     startElement: Element,
-    selector: string
+    selector: string,
 ): E | null {
     let patriarch = startElement.closest<E>(selector);
 
@@ -30,22 +30,22 @@ export function farthest<E extends Element = Element>(
 export function getBorderThickness(element) {
     const styles = window.getComputedStyle(element);
     const borderTopWidth = parseFloat(
-        styles.getPropertyValue("border-top-width")
+        styles.getPropertyValue("border-top-width"),
     );
     const borderBottomWidth = parseFloat(
-        styles.getPropertyValue("border-bottom-width")
+        styles.getPropertyValue("border-bottom-width"),
     );
     const borderLeftWidth = parseFloat(
-        styles.getPropertyValue("border-left-width")
+        styles.getPropertyValue("border-left-width"),
     );
     const borderRightWidth = parseFloat(
-        styles.getPropertyValue("border-right-width")
+        styles.getPropertyValue("border-right-width"),
     );
     return {
         top: borderTopWidth,
         bottom: borderBottomWidth,
         left: borderLeftWidth,
-        right: borderRightWidth
+        right: borderRightWidth,
     };
 }
 
@@ -54,9 +54,10 @@ export function getBorderThickness(element) {
 // the padding, but not the border, margin. However, unlike clientHeight and clientWidth,
 // this size will include the scrollbar since we use getBoundingClientRect().
 // This may also behave differently from .clientHeight and .clientWidth when used on the root element
-export function getExactClientSize(
-    element: HTMLElement
-): { width: number; height: number } {
+export function getExactClientSize(element: HTMLElement): {
+    width: number;
+    height: number;
+} {
     const scalingFactor = EditableDivUtils.getPageScale();
     const boundingRect = element.getBoundingClientRect();
     const borderThicknesses = getBorderThickness(element);
@@ -68,6 +69,6 @@ export function getExactClientSize(
         (borderThicknesses.left + borderThicknesses.right);
     return {
         width: exactClientWidth,
-        height: exactClientHeight
+        height: exactClientHeight,
     };
 }

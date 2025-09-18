@@ -16,7 +16,7 @@ import { get, postBoolean } from "../../../../utils/bloomApi";
 
 function getDialogHtml(title) {
     const dialogContents = $(
-        '<div id="synphonyConfig" title="' + title + '"/>'
+        '<div id="synphonyConfig" title="' + title + '"/>',
     ).appendTo($(parentDocument()).find("body"));
 
     const html =
@@ -51,12 +51,12 @@ export function showSetupDialog(showWhat) {
             if (showWhat === "stages")
                 title = theOneLocalizationManager.getText(
                     "ReaderSetup.SetUpDecodableReaderTool",
-                    "Set up Decodable Reader Tool"
+                    "Set up Decodable Reader Tool",
                 );
             else
                 title = theOneLocalizationManager.getText(
                     "ReaderSetup.SetUpLeveledReaderTool",
-                    "Set up Leveled Reader Tool"
+                    "Set up Leveled Reader Tool",
                 );
 
             let h = 600;
@@ -67,42 +67,42 @@ export function showSetupDialog(showWhat) {
 
             getTheOneReaderToolsModel().setupType = showWhat;
 
-            get("readers/io/readerSettingsEditForbidden", result => {
+            get("readers/io/readerSettingsEditForbidden", (result) => {
                 const buttons: any = {
                     Cancel: {
                         text: theOneLocalizationManager.getText(
                             "Common.Cancel",
-                            "Cancel"
+                            "Cancel",
                         ),
                         click: () => {
                             //nb: the element pointed to here by setupDialogElement is the same as "this"
                             //however, the jquery that you'd get by saying $(this) is *not* the same one as
                             //that stored in setupDialogElement. Ref BL-3331.
                             setupDialogElement.dialog("close");
-                        }
-                    }
+                        },
+                    },
                 };
                 if (!result.data) {
                     buttons.Help = {
                         text: theOneLocalizationManager.getText(
                             "Common.Help",
-                            "Help"
+                            "Help",
                         ),
                         class: "left-button",
                         click: () => {
                             const window = settingsFrameWindow();
                             if (window) window.postMessage("Help", "*");
-                        }
+                        },
                     };
                     buttons.OK = {
                         text: theOneLocalizationManager.getText(
                             "Common.OK",
-                            "OK"
+                            "OK",
                         ),
                         click: () => {
                             const window = settingsFrameWindow();
                             if (window) window.postMessage("OK", "*");
-                        }
+                        },
                     };
                 }
                 // The showDialog function is a device to get the dialog element and its JQuery wrapper created in the frame
@@ -125,16 +125,16 @@ export function showSetupDialog(showWhat) {
                         open: () => {
                             $("#synphonyConfig").css("overflow", "hidden");
                             $('button span:contains("Help")').prepend(
-                                '<i class="fa fa-question-circle"></i> '
+                                '<i class="fa fa-question-circle"></i> ',
                             );
                         },
                         height: h,
-                        width: w
-                    }
+                        width: w,
+                    },
                 );
             });
             postBoolean("editView/setModalState", true);
-        }
+        },
     );
 }
 
@@ -199,7 +199,7 @@ export function closeSetupDialog() {
 // message is the value we got from the API which should explain why we can't edit them.
 function getSettingsForbidden(title: string, message: any): string | JQuery {
     const dialogContents = $(
-        '<div id="synphonyConfig" title="' + title + '"/>'
+        '<div id="synphonyConfig" title="' + title + '"/>',
     ).appendTo($(parentDocument()).find("body"));
 
     // overide some styles from Dialog to make it compatible with the main title.

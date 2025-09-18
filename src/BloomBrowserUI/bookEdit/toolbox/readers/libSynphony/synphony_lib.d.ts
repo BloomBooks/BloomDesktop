@@ -34,7 +34,7 @@ export class LibSynphony {
         allowUpperCase: boolean | undefined,
         aSyllableLengths: number[],
         aSelectedGroups: string[],
-        aPartsOfSpeech: string[]
+        aPartsOfSpeech: string[],
     ): string[];
 
     selectGPCWordsFromCache(
@@ -44,21 +44,21 @@ export class LibSynphony {
         allowUpperCase: boolean | undefined,
         aSyllableLengths: number[],
         aSelectedGroups: string[],
-        aPartsOfSpeech: string[]
+        aPartsOfSpeech: string[],
     ): string[];
 
     wrap_words_extra(
         storyHTML: string,
         aWords: any,
         cssClass: string,
-        extra: string
+        extra: string,
     );
     checkStory(
         aFocusWordList: any,
         aWordCumulativeList: any,
         aGPCsKnown: any,
         storyHTML: any,
-        sightWords: any
+        sightWords: any,
     );
 }
 

@@ -7,7 +7,7 @@ import {
     FormControl,
     MenuProps,
     Select,
-    SelectChangeEvent
+    SelectChangeEvent,
 } from "@mui/material";
 
 declare module "@mui/styles/defaultTheme" {
@@ -20,8 +20,8 @@ declare module "@mui/styles/defaultTheme" {
 const useStyles = makeStyles(() => ({
     menuPaper: {
         maxHeight: 225,
-        padding: 3
-    }
+        padding: 3,
+    },
 }));
 
 interface FormsSelectProps {
@@ -37,11 +37,13 @@ interface FormsSelectProps {
 
 // This component initially attempted to imitate a winforms combobox in React.
 // Since we're moving away from winforms, that restriction has relaxed somewhat.
-const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => {
+const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = (
+    props,
+) => {
     const selectMenuProps: Partial<MenuProps> = {
         classes: {
-            paper: useStyles().menuPaper
-        }
+            paper: useStyles().menuPaper,
+        },
     };
 
     if (props.popoverZindex) {
@@ -50,9 +52,9 @@ const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => 
                 ...lightTheme.components.MuiPopover,
                 styleOverrides: {
                     root: {
-                        zIndex: props.popoverZindex + " !important"
-                    }
-                }
+                        zIndex: props.popoverZindex + " !important",
+                    },
+                },
             };
     }
 

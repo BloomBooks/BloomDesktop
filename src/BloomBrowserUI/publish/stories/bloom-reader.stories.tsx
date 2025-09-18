@@ -4,7 +4,7 @@ import "../storiesApiMocks";
 
 const meta: Meta<typeof ReaderPublishScreen> = {
     title: "Publish/Bloom Reader",
-    component: ReaderPublishScreen
+    component: ReaderPublishScreen,
 };
 
 export default meta;
@@ -12,5 +12,5 @@ type Story = StoryObj<typeof ReaderPublishScreen>;
 
 export const ReaderPublishScreenStory: Story = {
     name: "ReaderPublishScreen",
-    render: () => <ReaderPublishScreen />
+    render: () => <ReaderPublishScreen />,
 };

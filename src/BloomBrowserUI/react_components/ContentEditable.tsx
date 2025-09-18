@@ -29,8 +29,8 @@ export default class ContentEditable extends React.Component<
                 id="contenteditable"
                 // Don't use onInput. It fires after every key stroke, which is bad when you're trying
                 // to enter a hex value.
-                onBlur={event => this.emitChange(event)}
-                onKeyPress={event => {
+                onBlur={(event) => this.emitChange(event)}
+                onKeyPress={(event) => {
                     if (
                         event.key === "Enter" &&
                         this.props.onEnterKeyPressed != null

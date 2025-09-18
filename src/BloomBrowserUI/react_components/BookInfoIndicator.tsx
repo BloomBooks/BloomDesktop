@@ -11,12 +11,12 @@ import {
     MessageIgnoringIncompatibleCss,
     MessageUsingMigratedThemeInsteadOfIncompatibleCss,
     MessageUsingLegacyThemeWithIncompatibleCss,
-    MessageIgnoringIncompatibleCssCanDelete
+    MessageIgnoringIncompatibleCssCanDelete,
 } from "../bookEdit/bookSettings/BookSettingsDialog";
 
 export const BookInfoIndicator: React.FunctionComponent<{
     bookId: string;
-}> = props => {
+}> = (props) => {
     type IndicatorInfo = {
         id: string;
         factoryInstalled: boolean;
@@ -30,7 +30,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
         `book/indicatorInfo?id=${props.bookId}`,
         undefined,
         "book",
-        "indicatorInfo"
+        "indicatorInfo",
     );
     const firstPossiblyConflictingCss =
         info?.firstPossiblyOffendingCssFile ?? "";
@@ -46,7 +46,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
                     onClick={() => {
                         postJson(
                             "fileIO/showInFolder",
-                            JSON.stringify({ folderPath: info.path })
+                            JSON.stringify({ folderPath: info.path }),
                         );
                     }}
                 >

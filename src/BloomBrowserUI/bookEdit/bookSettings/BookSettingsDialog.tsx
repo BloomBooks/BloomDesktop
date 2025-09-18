@@ -7,7 +7,7 @@ import {
     ConfigrCustomStringInput,
     ConfigrCustomObjectInput,
     ConfigrBoolean,
-    ConfigrSelect
+    ConfigrSelect,
 } from "@sillsdev/config-r";
 import * as React from "react";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
@@ -15,23 +15,23 @@ import {
     BloomDialog,
     DialogMiddle,
     DialogBottomButtons,
-    DialogTitle
+    DialogTitle,
 } from "../../react_components/BloomDialog/BloomDialog";
 import { useSetupBloomDialog } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     DialogCancelButton,
-    DialogOkButton
+    DialogOkButton,
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import {
     ColorDisplayButton,
-    DialogResult
+    DialogResult,
 } from "../../react_components/color-picking/colorPickerDialog";
 import {
     post,
     postJson,
     useApiObject,
-    useApiStringState
+    useApiStringState,
 } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -80,21 +80,20 @@ interface IOverrideInformation {
 
 export const BookSettingsDialog: React.FunctionComponent<{
     initiallySelectedGroupIndex?: number;
-}> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog({
-        initiallyOpen: true,
-        dialogFrameProvidedExternally: false
-    });
+}> = (props) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog({
+            initiallyOpen: true,
+            dialogFrameProvidedExternally: false,
+        });
 
-    const appearanceUIOptions: IAppearanceUIOptions = useApiObject<
-        IAppearanceUIOptions
-    >("book/settings/appearanceUIOptions", {
-        themeNames: []
-    });
+    const appearanceUIOptions: IAppearanceUIOptions =
+        useApiObject<IAppearanceUIOptions>(
+            "book/settings/appearanceUIOptions",
+            {
+                themeNames: [],
+            },
+        );
     // If we pass a new default value to useApiObject on every render, it will query the host
     // every time and then set the result, which triggers a new render, making an infinite loop.
     const defaultOverrides = React.useMemo(() => {
@@ -102,42 +101,44 @@ export const BookSettingsDialog: React.FunctionComponent<{
             xmatter: {},
             branding: {},
             xmatterName: "",
-            brandingName: ""
+            brandingName: "",
         };
     }, []);
 
-    const overrideInformation: IOverrideInformation | undefined = useApiObject<
-        IOverrideInformation
-    >("book/settings/overrides", defaultOverrides);
+    const overrideInformation: IOverrideInformation | undefined =
+        useApiObject<IOverrideInformation>(
+            "book/settings/overrides",
+            defaultOverrides,
+        );
 
     const xmatterLockedBy = useL10n(
         "Locked by {0} Front/Back matter",
         "BookSettings.LockedByXMatter",
         "",
-        overrideInformation?.xmatterName
+        overrideInformation?.xmatterName,
     );
 
     const brandingLockedBy = useL10n(
         "Locked by {0} Branding",
         "BookSettings.LockedByBranding",
         "",
-        overrideInformation?.brandingName
+        overrideInformation?.brandingName,
     );
 
     const coverLabel = useL10n("Cover", "BookSettings.CoverGroupLabel");
     const contentPagesLabel = useL10n(
         "Content Pages",
-        "BookSettings.ContentPagesGroupLabel"
+        "BookSettings.ContentPagesGroupLabel",
     );
     const languagesToShowNormalSubgroupLabel = useL10n(
         "Languages to show in normal text boxes",
         "BookSettings.NormalTextBoxLangsLabel",
-        ""
+        "",
     );
     const themeLabel = useL10n("Page Theme", "BookSettings.PageThemeLabel", "");
     const themeDescription = useL10n(
         "", // will be translated or the English will come from the xliff
-        "BookSettings.Theme.Description"
+        "BookSettings.Theme.Description",
     );
     /* can't use this yet. See https://issues.bloomlibrary.org/youtrack/issue/BL-13094/Enable-links-in-Config-r-Descriptions
     const pageThemeDescriptionElement = (
@@ -153,82 +154,80 @@ export const BookSettingsDialog: React.FunctionComponent<{
 
     const coverBackgroundColorLabel = useL10n(
         "Background Color",
-        "Common.BackgroundColor"
+        "Common.BackgroundColor",
     );
 
     const whatToShowOnCoverLabel = useL10n(
         "Front Cover",
-        "BookSettings.WhatToShowOnCover"
+        "BookSettings.WhatToShowOnCover",
     );
 
     const showLanguageNameLabel = useL10n(
         "Show Language Name",
-        "BookSettings.ShowLanguageName"
+        "BookSettings.ShowLanguageName",
     );
     const showTopicLabel = useL10n("Show Topic", "BookSettings.ShowTopic");
     const frontAndBackMatterLabel = useL10n(
         "Front & Back Matter",
-        "BookSettings.FrontAndBackMatter"
+        "BookSettings.FrontAndBackMatter",
     );
     const pageNumbersLabel = useL10n(
         "Page Numbers",
-        "BookSettings.PageNumbers"
+        "BookSettings.PageNumbers",
     );
     const showPageNumbersLabel = useL10n(
         "Show Page Numbers",
-        "BookSettings.ShowPageNumbers"
+        "BookSettings.ShowPageNumbers",
     );
     const frontAndBackMatterDescription = useL10n(
         "Normally, books use the front & back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one.",
-        "BookSettings.FrontAndBackMatter.Description"
+        "BookSettings.FrontAndBackMatter.Description",
     );
     const resolutionLabel = useL10n("Resolution", "BookSettings.Resolution");
     const bloomPubLabel = useL10n("eBooks", "PublishTab.bloomPUBButton"); // reuse the same string localized for the Publish tab
 
     const advancedLayoutLabel = useL10n(
         "Advanced Layout",
-        "BookSettings.AdvancedLayoutLabel"
+        "BookSettings.AdvancedLayoutLabel",
     );
     const textPaddingLabel = useL10n(
         "Text Padding",
-        "BookSettings.TopLevelTextPaddingLabel"
+        "BookSettings.TopLevelTextPaddingLabel",
     );
     const textPaddingDescription = useL10n(
         "Smart spacing around text boxes. Works well for simple pages, but may not suit custom layouts.",
-        "BookSettings.TopLevelTextPadding.Description"
+        "BookSettings.TopLevelTextPadding.Description",
     );
     const textPaddingDefaultLabel = useL10n(
         "Default (set by Theme)",
-        "BookSettings.TopLevelTextPadding.DefaultLabel"
+        "BookSettings.TopLevelTextPadding.DefaultLabel",
     );
     const textPadding1emLabel = useL10n(
         "1 em (font size)",
-        "BookSettings.TopLevelTextPadding.1emLabel"
+        "BookSettings.TopLevelTextPadding.1emLabel",
     );
 
     const gutterLabel = useL10n("Page Gutter", "BookSettings.Gutter.Label");
     const gutterDescription = useL10n(
         "Extra space between pages near the book spine. Increase this for books with many pages to ensure text isn't lost in the binding. This gap is applied to each side of the spine.",
-        "BookSettings.Gutter.Description"
+        "BookSettings.Gutter.Description",
     );
     const gutterDefaultLabel = useL10n(
         "Default (set by Theme)",
-        "BookSettings.Gutter.DefaultLabel"
+        "BookSettings.Gutter.DefaultLabel",
     );
 
     const coverIsImageLabel = useL10n(
         "Fill the front cover with a single image",
-        "BookSettings.CoverIsImage"
+        "BookSettings.CoverIsImage",
     );
     const coverIsImageDescription = useL10n(
         "Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
-        "BookSettings.CoverIsImage.Description"
+        "BookSettings.CoverIsImage.Description",
     );
 
     // This is a helper function to make it easier to pass the override information
-    function getAdditionalProps<T>(
-        subPath: string
-    ): {
+    function getAdditionalProps<T>(subPath: string): {
         path: string;
         overrideValue: T;
         overrideDescription?: string;
@@ -251,23 +250,22 @@ export const BookSettingsDialog: React.FunctionComponent<{
             path: "appearance." + subPath,
             overrideValue: override as T,
             // if we're disabling all appearance controls (e.g. because we're in legacy), don't list a second reason for this overload
-            overrideDescription: appearanceDisabled ? "" : description
+            overrideDescription: appearanceDisabled ? "" : description,
         };
     }
 
     const [settingsString] = useApiStringState(
         "book/settings",
         "{}",
-        () => propsForBloomDialog.open
+        () => propsForBloomDialog.open,
     );
 
     const [settings, setSettings] = React.useState<object | undefined>(
-        undefined
+        undefined,
     );
 
-    const [settingsToReturnLater, setSettingsToReturnLater] = React.useState(
-        ""
-    );
+    const [settingsToReturnLater, setSettingsToReturnLater] =
+        React.useState("");
 
     const [appearanceDisabled, setAppearanceDisabled] = React.useState(false);
 
@@ -280,9 +278,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
     // One possible approach is to have the server return the new firstPossiblyLegacyCss
     // as the result of the deleteCustomBookStyles call.
     const [theme, setTheme] = React.useState("");
-    const [firstPossiblyLegacyCss, setFirstPossiblyLegacyCss] = React.useState(
-        ""
-    );
+    const [firstPossiblyLegacyCss, setFirstPossiblyLegacyCss] =
+        React.useState("");
     const [migratedTheme, setMigratedTheme] = React.useState("");
 
     React.useEffect(() => {
@@ -298,7 +295,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
 
     React.useEffect(() => {
         setFirstPossiblyLegacyCss(
-            appearanceUIOptions?.firstPossiblyLegacyCss ?? ""
+            appearanceUIOptions?.firstPossiblyLegacyCss ?? "",
         );
         setMigratedTheme(appearanceUIOptions?.migratedTheme ?? "");
     }, [appearanceUIOptions]);
@@ -309,7 +306,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
             const liveSettings = settingsToReturnLater || settings;
             // when we're in legacy, we're just going to disable all the appearance controls
             setAppearanceDisabled(
-                (liveSettings as any)?.appearance?.cssThemeName === "legacy-5-6"
+                (liveSettings as any)?.appearance?.cssThemeName ===
+                    "legacy-5-6",
             );
             setTheme((liveSettings as IBookSettings)?.appearance?.cssThemeName);
         }
@@ -317,15 +315,14 @@ export const BookSettingsDialog: React.FunctionComponent<{
 
     const deleteCustomBookStyles = () => {
         post(
-            `book/settings/deleteCustomBookStyles?file=${firstPossiblyLegacyCss}`
+            `book/settings/deleteCustomBookStyles?file=${firstPossiblyLegacyCss}`,
         );
         setFirstPossiblyLegacyCss("");
         setMigratedTheme("");
     };
 
-    const tierAllowsFullPageCoverImage = useGetFeatureStatus(
-        "fullPageCoverImage"
-    )?.enabled;
+    const tierAllowsFullPageCoverImage =
+        useGetFeatureStatus("fullPageCoverImage")?.enabled;
 
     function saveSettingsAndCloseDialog() {
         if (settingsToReturnLater) {
@@ -395,12 +392,12 @@ export const BookSettingsDialog: React.FunctionComponent<{
                         themeOverrides={{
                             // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
                             palette: {
-                                primary: { main: kBloomBlue }
-                            }
+                                primary: { main: kBloomBlue },
+                            },
                         }}
                         showAppBar={false}
                         showJson={false}
-                        onChange={s => {
+                        onChange={(s) => {
                             setSettingsToReturnLater(s);
                             //setSettings(s);
                         }}
@@ -424,7 +421,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         label={coverIsImageLabel}
                                         description={coverIsImageDescription}
                                         {...getAdditionalProps<boolean>(
-                                            `coverIsImage`
+                                            `coverIsImage`,
                                         )}
                                         disabled={
                                             appearanceDisabled ||
@@ -465,14 +462,14 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     label={showLanguageNameLabel}
                                     disabled={appearanceDisabled}
                                     {...getAdditionalProps<boolean>(
-                                        `cover-languageName-show`
+                                        `cover-languageName-show`,
                                     )}
                                 />
                                 <ConfigrBoolean
                                     label={showTopicLabel}
                                     disabled={appearanceDisabled}
                                     {...getAdditionalProps<boolean>(
-                                        `cover-topic-show`
+                                        `cover-topic-show`,
                                     )}
                                 />
                             </ConfigrSubgroup>
@@ -485,7 +482,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     control={ColorPickerForConfigr}
                                     disabled={appearanceDisabled}
                                     {...getAdditionalProps<string>(
-                                        `cover-background-color`
+                                        `cover-background-color`,
                                     )}
                                 />
                             </ConfigrSubgroup>
@@ -517,13 +514,14 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 // I'm not seeing a clean way to reuse the logic. Some sort of higher-order component might work,
                                 // but I don't think the logic is complex enough to be worth it, when only used in two places.
                             }
-                            {firstPossiblyLegacyCss && theme === "legacy-5-6" && (
-                                <WarningBox>
-                                    <MessageUsingLegacyThemeWithIncompatibleCss
-                                        fileName={firstPossiblyLegacyCss}
-                                    />
-                                </WarningBox>
-                            )}
+                            {firstPossiblyLegacyCss &&
+                                theme === "legacy-5-6" && (
+                                    <WarningBox>
+                                        <MessageUsingLegacyThemeWithIncompatibleCss
+                                            fileName={firstPossiblyLegacyCss}
+                                        />
+                                    </WarningBox>
+                                )}
                             {firstPossiblyLegacyCss ===
                                 "customBookStyles.css" &&
                                 theme !== "legacy-5-6" && (
@@ -597,12 +595,12 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         disabled={false}
                                         path={`appearance.cssThemeName`}
                                         options={appearanceUIOptions.themeNames.map(
-                                            x => {
+                                            (x) => {
                                                 return {
                                                     label: x.label,
-                                                    value: x.value
+                                                    value: x.value,
                                                 };
-                                            }
+                                            },
                                         )}
                                         description={themeDescription}
                                     />
@@ -623,7 +621,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     label={showPageNumbersLabel}
                                     disabled={appearanceDisabled}
                                     {...getAdditionalProps<boolean>(
-                                        `pageNumber-show`
+                                        `pageNumber-show`,
                                     )}
                                 />
                             </ConfigrSubgroup>
@@ -652,19 +650,19 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     options={[
                                         {
                                             label: textPaddingDefaultLabel,
-                                            value: "" // use whatever the theme provides
+                                            value: "", // use whatever the theme provides
                                         },
                                         { label: "0 mm", value: "0mm" },
                                         { label: "2 mm", value: "2mm" },
                                         { label: "4 mm", value: "4mm" },
                                         {
                                             label: textPadding1emLabel,
-                                            value: "1em"
-                                        }
+                                            value: "1em",
+                                        },
                                     ]}
                                     description={textPaddingDescription}
                                     {...getAdditionalProps<string>(
-                                        `topLevel-text-padding`
+                                        `topLevel-text-padding`,
                                     )}
                                 />
                                 <ConfigrSelect
@@ -672,17 +670,17 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     options={[
                                         {
                                             label: gutterDefaultLabel,
-                                            value: "" // use whatever the theme provides
+                                            value: "", // use whatever the theme provides
                                         },
                                         { label: "0 mm", value: "0mm" },
                                         { label: "2 mm", value: "2mm" },
                                         { label: "4 mm", value: "4mm" },
                                         { label: "6 mm", value: "6mm" },
-                                        { label: "10 mm", value: "10mm" }
+                                        { label: "10 mm", value: "10mm" },
                                     ]}
                                     description={gutterDescription}
                                     {...getAdditionalProps<string>(
-                                        `page-gutter`
+                                        `page-gutter`,
                                     )}
                                 />
                             </ConfigrSubgroup>
@@ -733,10 +731,12 @@ type Resolution = {
     maxHeight: number;
 };
 
-const BloomResolutionSlider: React.FunctionComponent<React.PropsWithChildren<{
-    path: string;
-    label: string;
-}>> = props => {
+const BloomResolutionSlider: React.FunctionComponent<
+    React.PropsWithChildren<{
+        path: string;
+        label: string;
+    }>
+> = (props) => {
     return (
         <div>
             <ConfigrCustomObjectInput<Resolution>
@@ -761,21 +761,21 @@ const BloomResolutionSlider: React.FunctionComponent<React.PropsWithChildren<{
 const BloomResolutionSliderInner: React.FunctionComponent<{
     value: Resolution;
     onChange: (value: Resolution) => void;
-}> = props => {
+}> = (props) => {
     const sizes = [
         { l: "Small", w: 600, h: 600 },
         { l: "HD", w: 1280, h: 720 },
         { l: "Full HD", w: 1920, h: 1080 },
-        { l: "4K", w: 3840, h: 2160 }
+        { l: "4K", w: 3840, h: 2160 },
     ];
-    let currentIndex = sizes.findIndex(x => x.w === props.value.maxWidth);
+    let currentIndex = sizes.findIndex((x) => x.w === props.value.maxWidth);
     if (currentIndex === -1) {
         currentIndex = 1; // See BL-12803.
     }
     const current = sizes[currentIndex];
     const currentLabel = useL10n(
         current.l,
-        `BookSettings.eBook.Image.MaxResolution.${current.l}`
+        `BookSettings.eBook.Image.MaxResolution.${current.l}`,
     );
 
     return (
@@ -807,7 +807,7 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
                 onChange={(e, value) => {
                     props.onChange({
                         maxWidth: sizes[value as number].w,
-                        maxHeight: sizes[value as number].h
+                        maxHeight: sizes[value as number].h,
                     });
                 }}
                 valueLabelDisplay="auto"
@@ -825,7 +825,7 @@ export function showBookSettingsDialog(initiallySelectedGroupIndex?: number) {
         ShowEditViewDialog(
             <BookSettingsDialog
                 initiallySelectedGroupIndex={initiallySelectedGroupIndex}
-            />
+            />,
         );
     }
 }
@@ -833,7 +833,7 @@ export function showBookSettingsDialog(initiallySelectedGroupIndex?: number) {
 export const MessageUsingLegacyThemeWithIncompatibleCss: React.FunctionComponent<{
     fileName: string;
     className?: string;
-}> = props => {
+}> = (props) => {
     return (
         <PWithLink
             href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
@@ -852,7 +852,7 @@ export const MessageUsingLegacyThemeWithIncompatibleCss: React.FunctionComponent
 export const MessageUsingMigratedThemeInsteadOfIncompatibleCss: React.FunctionComponent<{
     fileName: string;
     className?: string;
-}> = props => {
+}> = (props) => {
     return (
         <Div
             l10nKey="BookSettings.UsingMigratedThemeInsteadOfIncompatibleCss"
@@ -870,7 +870,7 @@ export const MessageUsingMigratedThemeInsteadOfIncompatibleCss: React.FunctionCo
 export const MessageIgnoringIncompatibleCssCanDelete: React.FunctionComponent<{
     fileName: string;
     className?: string;
-}> = props => {
+}> = (props) => {
     return (
         <PWithLink
             href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
@@ -890,7 +890,7 @@ export const MessageIgnoringIncompatibleCssCanDelete: React.FunctionComponent<{
 export const MessageIgnoringIncompatibleCss: React.FunctionComponent<{
     fileName: string;
     className?: string;
-}> = props => {
+}> = (props) => {
     return (
         <PWithLink
             href="https://docs.bloomlibrary.org/incompatible-custombookstyles"
@@ -909,10 +909,10 @@ const ColorPickerForConfigr: React.FunctionComponent<{
     value: string;
     disabled: boolean;
     onChange: (value: string) => void;
-}> = props => {
+}> = (props) => {
     const coverBackgroundColorLabel = useL10n(
         "Background Color",
-        "Common.BackgroundColor"
+        "Common.BackgroundColor",
     );
 
     return (
@@ -931,9 +931,9 @@ const ColorPickerForConfigr: React.FunctionComponent<{
 };
 
 // TODO: move this to config-r
-const ConfigrCustomRow: React.FunctionComponent<React.PropsWithChildren<
-    object
->> = props => {
+const ConfigrCustomRow: React.FunctionComponent<
+    React.PropsWithChildren<object>
+> = (props) => {
     return (
         <ListItem
             css={css`

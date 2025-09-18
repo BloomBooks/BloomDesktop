@@ -86,7 +86,7 @@ export class DirectoryWatcher {
             ajaxSettings["data"] = postKeyValueDataObject;
 
         // we are expecting the value returned in 'data' to be either 'yes' or 'no'
-        $.ajax(ajaxSettings).done(data => {
+        $.ajax(ajaxSettings).done((data) => {
             self.ifChangedFireEvents(data, self);
         });
     }

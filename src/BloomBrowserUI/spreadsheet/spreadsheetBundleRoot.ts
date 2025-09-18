@@ -5,7 +5,7 @@
 import { theOneLibSynphony } from "../bookEdit/toolbox/readers/libSynphony/synphony_lib";
 import {
     TextFragment,
-    addBloomSynphonyExtensions
+    addBloomSynphonyExtensions,
 } from "../bookEdit/toolbox/readers/libSynphony/bloomSynphonyExtensions";
 import AudioRecording from "../bookEdit/toolbox/talkingBook/audioRecording";
 
@@ -18,7 +18,7 @@ function isEmptySegment(s: string): boolean {
 export function split(text: string): string {
     const fragments: TextFragment[] = theOneLibSynphony.stringToSentences(text);
     const sentences = fragments.map(
-        f => (f.isSentence && !isEmptySegment(f.text) ? "s" : " ") + f.text
+        (f) => (f.isSentence && !isEmptySegment(f.text) ? "s" : " ") + f.text,
     );
     return sentences.join("\n");
 }

@@ -8,7 +8,7 @@ interface IProps extends TypographyProps {
 }
 
 // Displays a Text field with the label localized (only works if label is a string).
-export const L10nLabel: React.FunctionComponent<IProps> = props => {
+export const L10nLabel: React.FunctionComponent<IProps> = (props) => {
     const label = useL10n(props.english, props.l10nKey);
     return <Typography {...props}>{label}</Typography>;
 };

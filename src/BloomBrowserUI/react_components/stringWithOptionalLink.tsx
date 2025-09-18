@@ -10,9 +10,9 @@ import { post } from "../utils/bloomApi";
 // but NOT to actually navigate to. We could support more options as needed.
 export const StringWithOptionalLink: React.FunctionComponent<{
     message: string;
-}> = props => {
+}> = (props) => {
     const match = props.message.match(
-        /^(.*?)<a[^>]*?href='([^>']+)'[^>]*>(.*?)<\/a>(.*)$/
+        /^(.*?)<a[^>]*?href='([^>']+)'[^>]*>(.*?)<\/a>(.*)$/,
     );
     if (match) {
         const href = match[2].replace("/bloom/api/", "");
@@ -23,7 +23,7 @@ export const StringWithOptionalLink: React.FunctionComponent<{
                     // We don't currently use the href, but to get link formatting it
                     // has to be present. May also be helpful for accessibility.
                     href={match[2]}
-                    onClick={e => {
+                    onClick={(e) => {
                         e.preventDefault(); // so it doesn't try to follow the link
                         post(href);
                     }}

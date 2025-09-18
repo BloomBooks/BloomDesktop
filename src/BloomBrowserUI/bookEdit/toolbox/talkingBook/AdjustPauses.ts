@@ -21,7 +21,7 @@ const kSubIntervalDuration = 0.1;
 export function adjustPausesToQuietestNearby(
     initialSegments: TimedTextSegment[], //A set of timed text segments that has already been aligned by a simpler method such as text length
     audioData: number[], //an array containing the amplitude of each sample of the audio clip
-    duration: number //the duration of the audio clip in seconds
+    duration: number, //the duration of the audio clip in seconds
 ): TimedTextSegment[] {
     // Look for leading pause. Here the maxAmplitude * 0.1 and the 0.7 limit
     // are pretty arbitrary. We're assuming the start of what we want will be
@@ -35,7 +35,7 @@ export function adjustPausesToQuietestNearby(
         maxAmplitude = Math.max(maxAmplitude, Math.abs(amp));
     }
     const firstSound = audioData.findIndex(
-        amp => Math.abs(amp) > maxAmplitude * 0.1
+        (amp) => Math.abs(amp) > maxAmplitude * 0.1,
     );
     //adjust is the fraction of the audio that comes after the leading silence
     let adjust = 1;
@@ -51,10 +51,10 @@ export function adjustPausesToQuietestNearby(
         // We want it instead to start half way through the non-silent final 2/3.
         return time * adjust + startOfSoundTime;
     };
-    const segments = initialSegments.map(s => ({
+    const segments = initialSegments.map((s) => ({
         start: adjustTime(s.start),
         end: adjustTime(s.end),
-        text: s.text
+        text: s.text,
     }));
     for (let i = 0; i < segments.length - 1; i++) {
         const seg = segments[i];
@@ -75,7 +75,7 @@ export function adjustPausesToQuietestNearby(
         const durationToExamine =
             (lastIndexToExamine - firstIndexToExamine) * sampleLength;
         const numberOfSubIntervals = Math.ceil(
-            durationToExamine / kSubIntervalDuration
+            durationToExamine / kSubIntervalDuration,
         );
 
         const subIntervalScores: number[] = [];
@@ -84,10 +84,10 @@ export function adjustPausesToQuietestNearby(
         for (let j = 0; j < numberOfSubIntervals; j++) {
             let max = 0;
             const subIntervalStartIndex = Math.floor(
-                firstIndexToExamine + j * numSamplesPerSubInterval
+                firstIndexToExamine + j * numSamplesPerSubInterval,
             );
             const subIntervalEndIndex = Math.floor(
-                firstIndexToExamine + (j + 1) * numSamplesPerSubInterval
+                firstIndexToExamine + (j + 1) * numSamplesPerSubInterval,
             );
             for (let k = subIntervalStartIndex; k < subIntervalEndIndex; k++) {
                 max = Math.max(max, Math.abs(audioData[k]));
@@ -95,13 +95,12 @@ export function adjustPausesToQuietestNearby(
             subIntervalScores.push(max);
         }
         const bestSubIntervalScore = Math.min(...subIntervalScores);
-        const bestSubIntervalIndex = subIntervalScores.indexOf(
-            bestSubIntervalScore
-        );
+        const bestSubIntervalIndex =
+            subIntervalScores.indexOf(bestSubIntervalScore);
         const newEndTime =
             (Math.floor(
                 firstIndexToExamine +
-                    (bestSubIntervalIndex + 0.5) * numSamplesPerSubInterval
+                    (bestSubIntervalIndex + 0.5) * numSamplesPerSubInterval,
             ) *
                 duration) /
             audioData.length;

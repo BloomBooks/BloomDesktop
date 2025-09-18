@@ -3,7 +3,7 @@ import { kBloomBlue } from "../bloomMaterialUITheme";
 import {
     ILocalizationProps,
     ILocalizationState,
-    LocalizableElement
+    LocalizableElement,
 } from "./l10nComponents";
 import * as MarkdownIt from "markdown-it";
 import * as MarkdownItAttrs from "markdown-it-attrs";
@@ -32,7 +32,7 @@ export class Markdown extends LocalizableElement<
                     }
                 }}
                 dangerouslySetInnerHTML={{
-                    __html: markd.render(this.state.translation || "")
+                    __html: markd.render(this.state.translation || ""),
                 }}
             />
         );

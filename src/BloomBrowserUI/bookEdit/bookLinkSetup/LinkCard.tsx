@@ -18,7 +18,7 @@ export const LinkCard: React.FC<BookCardProps> = ({
     selected,
     onClick,
     onRemove,
-    style
+    style,
 }) => {
     return (
         <Card
@@ -43,12 +43,12 @@ export const LinkCard: React.FC<BookCardProps> = ({
                 <IconButton
                     className="removeLinkButton"
                     size="small"
-                    onClick={e => {
+                    onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         onRemove();
                     }}
-                    onMouseDown={e => {
+                    onMouseDown={(e) => {
                         e.stopPropagation();
                     }}
                     css={css`

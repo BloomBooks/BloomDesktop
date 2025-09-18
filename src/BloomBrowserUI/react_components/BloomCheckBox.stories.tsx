@@ -3,7 +3,7 @@ import { BloomCheckbox } from "./BloomCheckBox";
 import { useState } from "react";
 import {
     FormControlLabel,
-    Checkbox as OriginalMuiCheckbox
+    Checkbox as OriginalMuiCheckbox,
 } from "@mui/material";
 import { VisuallyImpairedIcon } from "./icons/VisuallyImpairedIcon";
 import { MotionIcon } from "./icons/MotionIcon";
@@ -12,7 +12,7 @@ const kLongText =
     "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs.";
 
 export default {
-    title: "BloomCheckbox"
+    title: "BloomCheckbox",
 };
 
 export const Various = () =>
@@ -57,7 +57,7 @@ export const Various = () =>
                         icon={<VisuallyImpairedIcon />}
                         checked={checked}
                         tristate={true}
-                        onCheckChanged={newState => setChecked(newState)}
+                        onCheckChanged={(newState) => setChecked(newState)}
                         l10nKey="bogus"
                     />
                     <div>
@@ -100,14 +100,14 @@ export const Off = () =>
             <BloomCheckbox
                 label=" Click me"
                 checked={checked}
-                onCheckChanged={newState => setChecked(newState)}
+                onCheckChanged={(newState) => setChecked(newState)}
                 l10nKey="bogus"
             />
         );
     });
 
 Off.story = {
-    name: "off"
+    name: "off",
 };
 
 export const On = () =>
@@ -117,14 +117,14 @@ export const On = () =>
             <BloomCheckbox
                 label=" Click me"
                 checked={checked}
-                onCheckChanged={newState => setChecked(newState)}
+                onCheckChanged={(newState) => setChecked(newState)}
                 l10nKey="bogus"
             />
         );
     });
 
 On.story = {
-    name: "on"
+    name: "on",
 };
 
 export const Tristate = () =>
@@ -135,12 +135,12 @@ export const Tristate = () =>
                 label=" Click me"
                 checked={checked}
                 tristate={true}
-                onCheckChanged={newState => setChecked(newState)}
+                onCheckChanged={(newState) => setChecked(newState)}
                 l10nKey="bogus"
             />
         );
     });
 
 Tristate.story = {
-    name: "tristate"
+    name: "tristate",
 };

@@ -43,11 +43,11 @@ export function removeTestRoot() {
 // Makes sure that the specified HTML element ids do not exist in the document.
 // Throws an exception if one does.
 export function ensureIdsDontExist(ids: string[]) {
-    ids.forEach(id => {
+    ids.forEach((id) => {
         const elem = document.getElementById(id);
         if (elem) {
             throw new Error(
-                `ID ${id} not expected to exist but was found. Element = ${elem.outerHTML}`
+                `ID ${id} not expected to exist but was found. Element = ${elem.outerHTML}`,
             );
         }
     });
@@ -55,7 +55,7 @@ export function ensureIdsDontExist(ids: string[]) {
 
 export const customJasmineMatchers = {
     // This upgrades toBe with an arrow that points to the first character that differs.
-    toBeString: _ => {
+    toBeString: (_) => {
         return {
             compare: (actual, expected) => {
                 const pass = actual === expected;
@@ -65,11 +65,11 @@ export const customJasmineMatchers = {
 
                 return {
                     pass,
-                    message
+                    message,
                 };
-            }
+            },
         };
-    }
+    },
 };
 
 export function getStringDifference(actual: string, expected: string) {
@@ -102,13 +102,13 @@ export function getStringContext(str: string, index: number) {
     if (startIndex < 0) {
         return {
             context: str.slice(0, endIndex),
-            diffMarker: " ".repeat(index - 1) + String.fromCharCode(9660)
+            diffMarker: " ".repeat(index - 1) + String.fromCharCode(9660),
         };
     } else {
         return {
             context: "[...]" + str.slice(startIndex, endIndex),
             diffMarker:
-                " ".repeat(index - startIndex + 5) + String.fromCharCode(9660)
+                " ".repeat(index - startIndex + 5) + String.fromCharCode(9660),
         };
     }
 }

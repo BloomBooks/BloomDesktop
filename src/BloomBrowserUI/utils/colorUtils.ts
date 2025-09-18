@@ -24,7 +24,7 @@ export const kFormBackground = "#f0f0f0"; // See @form-background;
 
 export const getRgbaColorStringFromColorAndOpacity = (
     color: string,
-    opacity: number
+    opacity: number,
 ): string => {
     const rgbColor = tinycolor(color).toRgb();
     rgbColor.a = opacity;

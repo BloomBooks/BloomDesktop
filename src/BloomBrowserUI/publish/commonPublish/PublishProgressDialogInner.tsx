@@ -7,7 +7,7 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    Typography
+    Typography,
 } from "@mui/material";
 import { postDataWithConfig } from "../../utils/bloomApi";
 import { useTheme } from "@mui/material/styles";
@@ -18,7 +18,7 @@ export enum ProgressState {
     Closed,
     Working, // doing something that will lead to a "Done"
     Done,
-    Serving // doing something indefinitely, which user can stop
+    Serving, // doing something indefinitely, which user can stop
 }
 
 export const ProgressDialogInner: React.FunctionComponent<{
@@ -30,7 +30,7 @@ export const ProgressDialogInner: React.FunctionComponent<{
     onUserClosed: () => void;
     onUserStopped: () => void;
     // onUserCanceled: () => void;  // Not implemented yet
-}> = props => {
+}> = (props) => {
     const messagesDivRef = React.useRef<HTMLDivElement>(null);
     const messageEndRef = React.useRef<HTMLDivElement>(null);
     const theme = useTheme();
@@ -39,7 +39,7 @@ export const ProgressDialogInner: React.FunctionComponent<{
         postDataWithConfig(
             "publish/bloompub/textToClipboard",
             messagesDivRef.current!.innerText,
-            { headers: { "Content-Type": "text/plain" } }
+            { headers: { "Content-Type": "text/plain" } },
         );
     };
 
@@ -89,7 +89,7 @@ export const ProgressDialogInner: React.FunctionComponent<{
                         className="progress-messages"
                         ref={messagesDivRef}
                         dangerouslySetInnerHTML={{
-                            __html: props.messages
+                            __html: props.messages,
                         }}
                     />
                     <span ref={messageEndRef} />

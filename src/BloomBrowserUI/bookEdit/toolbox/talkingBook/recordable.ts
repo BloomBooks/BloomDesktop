@@ -8,7 +8,7 @@ const kAudioSentence = "audio-sentence";
 enum RecordingStatus {
     None,
     Partial,
-    Full
+    Full,
 }
 // It represents a recordable text box that has elements we can make audio recordings of.
 // This class is a work in progress. We can migrate functions from audioRecording.ts into here
@@ -19,11 +19,11 @@ export default class Recordable {
     public constructor(textBox: HTMLElement) {
         console.assert(
             textBox.classList.contains("bloom-editable"),
-            "Only bloom-editables are expected to be made Recordables"
+            "Only bloom-editables are expected to be made Recordables",
         );
         console.assert(
             textBox.tagName.toLowerCase() === "div",
-            "A non-div element was unexpectedly passed into Recordable's constructor."
+            "A non-div element was unexpectedly passed into Recordable's constructor.",
         );
         this.textBox = textBox as HTMLDivElement;
     }
@@ -36,7 +36,7 @@ export default class Recordable {
         // Consider removing in version 4.10 or sooner if it is indeed no longer needed
 
         const modeAttribute = this.textBox.getAttribute(
-            "data-audioRecordingMode"
+            "data-audioRecordingMode",
         );
         if (!modeAttribute) {
             return false;
@@ -74,9 +74,8 @@ export default class Recordable {
             return [this.textBox];
         } else {
             // This only matches strict descendants, not itself
-            const matchingDescendants = this.textBox.querySelectorAll(
-                ".audio-sentence"
-            );
+            const matchingDescendants =
+                this.textBox.querySelectorAll(".audio-sentence");
 
             return Array.from(matchingDescendants) as HTMLElement[];
         }
@@ -86,7 +85,7 @@ export default class Recordable {
         return this.getAudioSentences().map((element: Element) => {
             console.assert(
                 !!element.id,
-                "Element unexpectedly had falsy ID: " + element.innerHTML
+                "Element unexpectedly had falsy ID: " + element.innerHTML,
             );
 
             return element.id;
@@ -125,15 +124,15 @@ export default class Recordable {
     }
 
     public static async isSentenceRecordedAsync(
-        sentence: Element
+        sentence: Element,
     ): Promise<boolean> {
         if (!sentence.id) {
             return Promise.reject(
-                new Error("id was falsy on sentence: " + sentence.outerHTML)
+                new Error("id was falsy on sentence: " + sentence.outerHTML),
             );
         }
         const response = await axios.get(
-            `${kAnyRecordingApiUrl}${sentence.id}`
+            `${kAnyRecordingApiUrl}${sentence.id}`,
         );
         return Promise.resolve(response.data as boolean);
 
@@ -143,7 +142,7 @@ export default class Recordable {
     // Sets the md5 of the text box to that of its current contents
     public setChecksum(): void {
         const sentences = this.getAudioSentences();
-        sentences.forEach(sentence => {
+        sentences.forEach((sentence) => {
             const md5 = AudioRecording.getChecksum(sentence.innerText);
             sentence.setAttribute("recordingmd5", md5);
         });
@@ -151,21 +150,21 @@ export default class Recordable {
 
     public unsetChecksum(): void {
         const sentences = this.getAudioSentences();
-        sentences.forEach(sentence => {
+        sentences.forEach((sentence) => {
             sentence.removeAttribute("recordingmd5");
         });
     }
 
     public async setMd5IfMissingAsync(): Promise<void> {
         const sentences = this.getAudioSentences();
-        const asyncUpdates = sentences.map(elem => {
+        const asyncUpdates = sentences.map((elem) => {
             return this.setMd5OnSentenceIfMissingAsync(elem);
         });
         await Promise.all(asyncUpdates);
     }
 
     private async setMd5OnSentenceIfMissingAsync(
-        sentence: HTMLElement
+        sentence: HTMLElement,
     ): Promise<void> {
         if (this.isMissingRecordingChecksum(sentence)) {
             // We only want to update ones that have a recording associated with them.
@@ -216,7 +215,7 @@ export default class Recordable {
             const element = sentenceList[i];
             textMissingMarkup = textMissingMarkup.replace(
                 element.innerText,
-                ""
+                "",
             );
         }
         // regex based on what the extension method LibSynphony.stringToSentences() uses.
@@ -234,12 +233,11 @@ export default class Recordable {
     private async getRecordingStatusAsync(): Promise<RecordingStatus> {
         const asyncTasks = [
             this.isFullyRecordedAsync(),
-            this.areAnyRecordingsPresentAsync()
+            this.areAnyRecordingsPresentAsync(),
         ];
 
-        const [isFullyRecorded, isPartiallyRecorded] = await Promise.all(
-            asyncTasks
-        );
+        const [isFullyRecorded, isPartiallyRecorded] =
+            await Promise.all(asyncTasks);
         if (isFullyRecorded) {
             return RecordingStatus.Full;
         } else if (isPartiallyRecorded) {
@@ -258,8 +256,8 @@ export default class Recordable {
         // These are the elements that physically correspond to the audio recording
         const sentences = this.getAudioSentences();
 
-        const outOfDateSentences = sentences.filter(sentence =>
-            this.isSentenceOutOfDate(sentence)
+        const outOfDateSentences = sentences.filter((sentence) =>
+            this.isSentenceOutOfDate(sentence),
         );
 
         return outOfDateSentences;

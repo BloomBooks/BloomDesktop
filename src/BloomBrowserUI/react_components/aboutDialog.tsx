@@ -5,7 +5,7 @@ import {
     DialogBottomButtons,
     DialogMiddle,
     DialogTitle,
-    IBloomDialogProps
+    IBloomDialogProps,
 } from "./BloomDialog/BloomDialog";
 import { DialogCloseButton } from "./BloomDialog/commonDialogComponents";
 import { useL10n } from "./l10nHooks";
@@ -15,11 +15,8 @@ import { kBloomBlue } from "../bloomMaterialUITheme";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 
 export const AboutDialogLauncher: React.FunctionComponent = () => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useEventLaunchedBloomDialog("AboutDialog");
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useEventLaunchedBloomDialog("AboutDialog");
 
     show = showDialog;
 
@@ -36,7 +33,7 @@ export const AboutDialog: React.FunctionComponent<{
     closeDialog: () => void;
     showDialog: () => void;
     propsForBloomDialog: IBloomDialogProps;
-}> = props => {
+}> = (props) => {
     const logoURI = getBloomApiPrefix(false) + "images/SIL_Logo_80pxTall.png";
 
     const buildNumber = useApiString("app/versionNumber", "");
@@ -55,7 +52,7 @@ export const AboutDialog: React.FunctionComponent<{
                     "About {0}",
                     "AboutDialog.AboutBloom",
                     "Dialog Title",
-                    "Bloom"
+                    "Bloom",
                 )}
             />
             <DialogMiddle

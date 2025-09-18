@@ -25,7 +25,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
     setEndTimes: (endTimes: number[]) => void;
     fontFamily: string;
     shouldAdjustSegments: boolean;
-}> = props => {
+}> = (props) => {
     type playSpan = { start: number; end: number; regionIndex: number };
     type playQueue = Array<playSpan>;
     const [waveSurfer, setWaveSurfer] = useState<WaveSurfer>();
@@ -54,7 +54,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
     function playEnded() {
         const playButtons = getPlayButtons();
         playButtons.forEach(
-            (button: HTMLButtonElement) => (button.textContent = playChar)
+            (button: HTMLButtonElement) => (button.textContent = playChar),
         );
     }
 
@@ -92,14 +92,14 @@ export const AdjustTimingsControl: React.FunctionComponent<{
             }
         `;
 
-        const ws = ((WaveSurferNamespace as unknown) as any).create({
+        const ws = (WaveSurferNamespace as unknown as any).create({
             container: "#waveform",
             plugins: [rp],
             minPxPerSec: 100,
             waveColor: "#2292A2",
             progressColor: "#2292A2",
             cursorColor: "#2292A244",
-            normalize: true
+            normalize: true,
             // does nothing obvious
             //FontFace: props.fontFamily
         });
@@ -109,7 +109,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
             // only sometimes happens, probably because of our audioprocessor handler.
             // Even on the last segment it only sometimes happens, but there are cases.
             getPlayButtons().forEach(
-                (button: HTMLButtonElement) => (button.textContent = playChar)
+                (button: HTMLButtonElement) => (button.textContent = playChar),
             );
         });
         ws.on("decode", () => {
@@ -119,9 +119,9 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                 segments = adjustPausesToQuietestNearby(
                     props.segments,
                     data,
-                    ws.getDuration()
+                    ws.getDuration(),
                 );
-                props.setEndTimes(segments.map(seg => seg.end));
+                props.setEndTimes(segments.map((seg) => seg.end));
             } else {
                 segments = props.segments;
             }
@@ -135,7 +135,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                     drag: false,
                     resize: index < segments.length - 1, // don't let the end of the last region be resized
                     //color: regionColors[index % regionColors.length]
-                    color: "000000" // transparent
+                    color: "000000", // transparent
                 });
                 // This function is immediately invoked, but in case the region isn't ready yet, we'll try again until it is.
                 const makePlayButton = (region: any) => {
@@ -170,14 +170,14 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                     region.element.appendChild(playButton);
                 };
                 makePlayButton(region);
-                region.on("click", e => {
+                region.on("click", (e) => {
                     e.stopPropagation();
                     const playButtons = getPlayButtons();
                     if (playQueueRef.current!.length > 0) {
                         stopAndClearQueue();
                         playButtons.forEach(
                             (button: HTMLButtonElement) =>
-                                (button.textContent = playChar)
+                                (button.textContent = playChar),
                         );
                         if (region.element === currentRegion) {
                             currentRegion = undefined;
@@ -191,12 +191,11 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                     enqueue({
                         start: region.start,
                         end: region.end,
-                        regionIndex: index
+                        regionIndex: index,
                     });
                     currentRegion = region.element;
-                    const playButton = region.element.getElementsByClassName(
-                        "playButton"
-                    )[0];
+                    const playButton =
+                        region.element.getElementsByClassName("playButton")[0];
                     if (playButton) {
                         playButton.textContent = "❚❚";
                     }
@@ -209,7 +208,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                         //region; lint complained; seems to do nothing.
                         nextRegion.setOptions({
                             ...nextRegion,
-                            start: region.end
+                            start: region.end,
                         });
                     }
                     const prevRegion = rp.getRegions()[index - 1];
@@ -218,10 +217,12 @@ export const AdjustTimingsControl: React.FunctionComponent<{
 
                         prevRegion.setOptions({
                             ...prevRegion,
-                            end: region.start
+                            end: region.start,
                         });
                     }
-                    const endTimes = rp.getRegions().map(region => region.end);
+                    const endTimes = rp
+                        .getRegions()
+                        .map((region) => region.end);
                     props.setEndTimes(endTimes);
                     stopAndClearQueue();
 
@@ -240,14 +241,14 @@ export const AdjustTimingsControl: React.FunctionComponent<{
                         enqueue({
                             start: nextRegion.start,
                             end: Math.min(nextRegion.start + 1, nextRegion.end),
-                            regionIndex: index + 1
+                            regionIndex: index + 1,
                         });
                     }
                 });
             });
         });
 
-        ws.on("audioprocess", time => {
+        ws.on("audioprocess", (time) => {
             const currentSpan = playQueueRef.current?.[0];
             if (currentSpan && time > currentSpan.end) {
                 ws.pause();

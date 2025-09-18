@@ -9,7 +9,7 @@ export interface ICanvasElementKeyboardActions {
     moveActiveCanvasElement: (
         dx: number,
         dy: number,
-        event?: KeyboardEvent
+        event?: KeyboardEvent,
     ) => void;
     getActiveCanvasElement: () => HTMLElement | null;
 }
@@ -20,7 +20,7 @@ export class CanvasElementKeyboardProvider {
 
     constructor(
         actions: ICanvasElementKeyboardActions,
-        snapProvider: CanvasSnapProvider
+        snapProvider: CanvasSnapProvider,
     ) {
         this.actions = actions;
         this.snapProvider = snapProvider;

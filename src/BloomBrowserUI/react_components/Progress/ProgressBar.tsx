@@ -5,7 +5,7 @@ import { kBloomBlue } from "../../bloomMaterialUITheme";
 
 export const ProgressBar: React.FunctionComponent<{
     percentage: number;
-}> = props => {
+}> = (props) => {
     const widthRule = `width: ${props.percentage}%;`;
     return (
         <span

@@ -3,7 +3,7 @@ import { Link } from "../link";
 import { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta = {
-    title: "Localizable Widgets/Link"
+    title: "Localizable Widgets/Link",
 };
 
 export default meta;
@@ -11,7 +11,7 @@ type Story = StoryObj;
 
 export const EnabledLink: Story = {
     name: "enabled",
-    render: () => <Link l10nKey="bogus">link text</Link>
+    render: () => <Link l10nKey="bogus">link text</Link>,
 };
 
 // Disabled link not included as per original comment:

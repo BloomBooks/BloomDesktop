@@ -12,7 +12,7 @@ import { kBloomDisabledOpacity } from "../../utils/colorUtils";
 
 export const PreviewPanel: React.FunctionComponent<{
     className?: string;
-}> = props => {
+}> = (props) => {
     return (
         <section
             css={css`
@@ -32,7 +32,7 @@ export const PreviewPanel: React.FunctionComponent<{
     );
 };
 
-export const PublishPanel: React.FunctionComponent = props => (
+export const PublishPanel: React.FunctionComponent = (props) => (
     <section
         css={css`
             display: flex;
@@ -46,13 +46,13 @@ export const PublishPanel: React.FunctionComponent = props => (
     </section>
 );
 
-export const SettingsPanel: React.FunctionComponent = props => {
+export const SettingsPanel: React.FunctionComponent = (props) => {
     return <React.Fragment>{props.children}</React.Fragment>;
 };
 
 export const SettingsGroup: React.FunctionComponent<{
     label: string;
-}> = props => {
+}> = (props) => {
     const disabledContext = React.useContext(DisabledContext);
     return (
         <section
@@ -72,7 +72,7 @@ export const SettingsGroup: React.FunctionComponent<{
 const helpAndCommandGroupCss =
     "margin-top: 20px; display: flex; flex-direction: column;";
 
-export const HelpGroup: React.FunctionComponent = props => {
+export const HelpGroup: React.FunctionComponent = (props) => {
     return (
         <section
             css={css`
@@ -87,7 +87,7 @@ export const HelpGroup: React.FunctionComponent = props => {
     );
 };
 
-export const CommandsGroup: React.FunctionComponent = props => {
+export const CommandsGroup: React.FunctionComponent = (props) => {
     return (
         <section
             css={css`

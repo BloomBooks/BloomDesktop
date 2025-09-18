@@ -11,7 +11,9 @@ interface IHexColorInputProps {
 
 const hashChar = "#";
 
-export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = props => {
+export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = (
+    props,
+) => {
     const [currentColor, setCurrentColor] = useState("");
 
     // In general, we want our Hex Color input to reflect the first value in the 'colors' array.
@@ -41,7 +43,9 @@ export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = props
         setCurrentColor(massageColorInput(getHexColorValueFromColorInfo()));
     }, [props.initial.colors]);
 
-    const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = e => {
+    const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (
+        e,
+    ) => {
         const result = massageColorInput(e.target.value);
         setCurrentColor(result);
         if (result.length === 7) {

@@ -12,7 +12,7 @@ const gridSize = 10;
 type SnapPositionFunction = (
     event: MouseEvent | KeyboardEvent | undefined,
     x: number,
-    y: number
+    y: number,
 ) => { x: number; y: number };
 
 /**
@@ -40,7 +40,7 @@ export class CanvasSnapProvider {
         // Define the snapping functions to be applied.
         this.snapFunctions = [
             this.snapToGrid.bind(this), // Apply grid snapping first.
-            this.snapToOneAxis.bind(this) // Then apply axis locking if needed.
+            this.snapToOneAxis.bind(this), // Then apply axis locking if needed.
         ];
     }
 
@@ -52,7 +52,7 @@ export class CanvasSnapProvider {
         this.dragContext = {
             startX: undefined,
             startY: undefined,
-            axis: undefined
+            axis: undefined,
         };
     }
 
@@ -75,7 +75,7 @@ export class CanvasSnapProvider {
     public getPosition(
         event: MouseEvent | KeyboardEvent | undefined,
         x: number,
-        y: number
+        y: number,
     ): { x: number; y: number } {
         // Record the starting position on the first call during a drag.
         if (this.dragContext.startX === undefined) {
@@ -95,7 +95,7 @@ export class CanvasSnapProvider {
             snappedPosition = snapFunction(
                 event,
                 snappedPosition.x,
-                snappedPosition.y
+                snappedPosition.y,
             );
         }
 
@@ -104,25 +104,25 @@ export class CanvasSnapProvider {
 
     public getSnappedPoint(
         point: Point,
-        event: MouseEvent | KeyboardEvent | undefined
+        event: MouseEvent | KeyboardEvent | undefined,
     ): Point {
         // Get the adjusted position based on the current event and point.
         const adjustedPosition = this.getPosition(
             event,
             point.getUnscaledX(),
-            point.getUnscaledY()
+            point.getUnscaledY(),
         );
         return new Point(
             adjustedPosition.x,
             adjustedPosition.y,
             PointScaling.Unscaled,
-            "snapped point"
+            "snapped point",
         );
     }
 
     public getSnappedX(
         x: number,
-        event: MouseEvent | KeyboardEvent | undefined
+        event: MouseEvent | KeyboardEvent | undefined,
     ): number {
         // Get the adjusted X position based on the current event and X coordinate.
         const adjustedPosition = this.getPosition(event, x, 0);
@@ -130,7 +130,7 @@ export class CanvasSnapProvider {
     }
     public getSnappedY(
         y: number,
-        event: MouseEvent | KeyboardEvent | undefined
+        event: MouseEvent | KeyboardEvent | undefined,
     ): number {
         // Get the adjusted Y position based on the current event and Y coordinate.
         const adjustedPosition = this.getPosition(event, 0, y);
@@ -147,11 +147,11 @@ export class CanvasSnapProvider {
     private snapToGrid(
         _event: MouseEvent | KeyboardEvent | undefined,
         x: number,
-        y: number
+        y: number,
     ): { x: number; y: number } {
         return {
             x: Math.round(x / gridSize) * gridSize,
-            y: Math.round(y / gridSize) * gridSize
+            y: Math.round(y / gridSize) * gridSize,
         };
     }
 
@@ -168,7 +168,7 @@ export class CanvasSnapProvider {
     private snapToOneAxis(
         event: MouseEvent | KeyboardEvent | undefined,
         x: number,
-        y: number
+        y: number,
     ): { x: number; y: number } {
         // Minimum distance in pixels the mouse must move before locking to an axis.
         const axisLockThreshold = 5;

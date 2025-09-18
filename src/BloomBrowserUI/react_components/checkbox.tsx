@@ -4,7 +4,7 @@ import {
     ILocalizationProps,
     LocalizableElement,
     Label,
-    ILocalizationState
+    ILocalizationState,
 } from "./l10nComponents";
 
 interface ICheckboxProps extends ILocalizationProps {
@@ -79,10 +79,10 @@ export class Checkbox extends LocalizableElement<
                     name={this.props.name}
                     disabled={this.props.disabled}
                     checked={this.props.checked}
-                    onChange={event => {
+                    onChange={(event) => {
                         this.onChange(event.target);
                     }}
-                    ref={input => (this.input = input)}
+                    ref={(input) => (this.input = input)}
                     css={css`
                         margin-right: 10px;
                     `}

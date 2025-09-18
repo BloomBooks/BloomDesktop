@@ -7,7 +7,7 @@ import {
     MenuItem,
     Popover,
     PopoverOrigin,
-    SelectChangeEvent
+    SelectChangeEvent,
 } from "@mui/material";
 import FontDisplayBar from "../../react_components/fontDisplayBar";
 import FontInformationPane from "../../react_components/fontInformationPane";
@@ -43,14 +43,16 @@ interface FontSelectProps {
     popoverZindex?: string;
 }
 
-const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
+const FontSelectComponent: React.FunctionComponent<FontSelectProps> = (
+    props,
+) => {
     const getFontDataFromName = (fontName: string) => {
         if (!props.fontMetadata) return undefined;
-        return props.fontMetadata.find(f => f.name === fontName);
+        return props.fontMetadata.find((f) => f.name === fontName);
     };
 
     const [fontChoice, setFontChoice] = useState<IFontMetaData | undefined>(
-        undefined
+        undefined,
     );
 
     // If the font metadata isn't initially available, reload the 'fontChoice' when it "arrives".
@@ -63,14 +65,14 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
     // that shows when hovering over the suitability icon near the end of the FontDisplayBar,
     // NOT the select dropdown.
     const [popoverFont, setPopoverFont] = useState<IFontMetaData | undefined>(
-        undefined
+        undefined,
     );
     const [popoverAnchorElement, setPopoverAnchorElement] = useState<
         HTMLElement | undefined
     >(undefined);
     const handlePopoverOpen = (
         hoverTarget: HTMLElement,
-        metadata: IFontMetaData
+        metadata: IFontMetaData,
     ) => {
         setPopoverAnchorElement(hoverTarget as HTMLElement);
         setPopoverFont(metadata);
@@ -117,7 +119,7 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
 
     const transformOrigin: PopoverOrigin = {
         vertical: "top",
-        horizontal: "left"
+        horizontal: "left",
     };
 
     const textValue = fontChoice ? fontChoice.name : props.currentFontName;
@@ -139,7 +141,7 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
                 // Popver puts its top-left corner in the center of the round suitability icon.
                 anchorOrigin={{
                     vertical: "center",
-                    horizontal: "center"
+                    horizontal: "center",
                 }}
                 transformOrigin={transformOrigin}
                 disableRestoreFocus

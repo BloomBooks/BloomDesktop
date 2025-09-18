@@ -8,7 +8,7 @@ import { useApiData, useWatchApiData } from "../utils/bloomApi";
 import {
     BookButton,
     bookButtonHeight,
-    BookButtonPlaceHolder
+    BookButtonPlaceHolder,
 } from "./BookButton";
 import { BookSelectionManager } from "./bookSelectionManager";
 import LazyLoad, { forceVisible } from "react-lazyload";
@@ -41,7 +41,7 @@ export const BooksOfCollection: React.FunctionComponent<{
     lazyLoadCollection?: boolean;
     lockedToOneDownloadedBook: boolean;
     filter?: (book: IBookInfo) => boolean;
-}> = props => {
+}> = (props) => {
     if (!props.collectionId) {
         window.alert("null collectionId");
     }
@@ -63,7 +63,7 @@ export const BooksOfCollection: React.FunctionComponent<{
     }, []);
 
     const collectionQuery = `collection-id=${encodeURIComponent(
-        props.collectionId
+        props.collectionId,
     )}${reloadParameter}`;
 
     const [books, setBooks] = useState<Array<IBookInfo>>([]);
@@ -72,7 +72,7 @@ export const BooksOfCollection: React.FunctionComponent<{
         `collections/books?${collectionQuery}`,
         [],
         "editableCollectionList",
-        "reload:" + props.collectionId
+        "reload:" + props.collectionId,
     );
 
     useEffect(() => {
@@ -94,8 +94,8 @@ export const BooksOfCollection: React.FunctionComponent<{
             isFactoryInstalled: true,
             containsDownloadedBooks: false,
             id: props.collectionId,
-            languageFont: "Andika"
-        }
+            languageFont: "Andika",
+        },
     );
     // not getting these from the api currently, and I'm not sure the initial defaults will carry over
     // when we get data from the API.
@@ -132,7 +132,7 @@ export const BooksOfCollection: React.FunctionComponent<{
                     justifyContent="flex-start"
                     alignItems="flex-start"
                 >
-                    {books?.map(book => {
+                    {books?.map((book) => {
                         return (
                             <Grid
                                 item={true}

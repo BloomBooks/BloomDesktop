@@ -7,12 +7,12 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "./BloomDialog/BloomDialog";
 import {
     IBloomDialogEnvironmentParams,
     Mode,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "./BloomDialog/BloomDialogPlumbing";
 import BloomButton from "./bloomButton";
 
@@ -33,12 +33,9 @@ export let showConfirmDialog: () => void = () => {
     console.error("showConfirmDialog is not set up yet.");
 };
 
-export const ConfirmDialog: React.FC<IConfirmDialogProps> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+export const ConfirmDialog: React.FC<IConfirmDialogProps> = (props) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     showConfirmDialog = showDialog;
 
@@ -85,12 +82,12 @@ export const ConfirmDialog: React.FC<IConfirmDialogProps> = props => {
 
 export enum DialogResult {
     Confirm,
-    Cancel
+    Cancel,
 }
 
 export const showConfirmDialogFromOutsideReact = (
     props: IConfirmDialogProps,
-    container?: Element | null
+    container?: Element | null,
 ) => {
     doRender(props, container);
     showConfirmDialog();
@@ -104,7 +101,7 @@ const doRender = (props: IConfirmDialogProps, container?: Element | null) => {
         if (!props.dialogEnvironment) {
             props.dialogEnvironment = {
                 dialogFrameProvidedExternally: false,
-                initiallyOpen: false
+                initiallyOpen: false,
             };
         }
         props.dialogEnvironment.mode = Mode.Edit;

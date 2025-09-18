@@ -2,14 +2,14 @@ import { css } from "@emotion/react";
 import {
     Radio,
     RadioGroup as MuiRadioGroup,
-    FormControlLabel
+    FormControlLabel,
 } from "@mui/material";
 import { MuiRadio } from "../muiRadio";
 
 import { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta = {
-    title: "Localizable Widgets/MuiRadio"
+    title: "Localizable Widgets/MuiRadio",
 };
 
 export default meta;
@@ -47,5 +47,5 @@ export const MuiRadioStory: Story = {
                 <FormControlLabel control={<Radio />} label={"short"} />
             </div>
         </MuiRadioGroup>
-    )
+    ),
 };

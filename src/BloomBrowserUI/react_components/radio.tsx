@@ -2,7 +2,7 @@ import * as React from "react";
 import {
     ILocalizationProps,
     ILocalizationState,
-    LocalizableElement
+    LocalizableElement,
 } from "./l10nComponents";
 
 export interface IRadioProps extends ILocalizationProps {
@@ -25,7 +25,7 @@ export class Radio extends LocalizableElement<IRadioProps, ILocalizationState> {
 
     public static combineClasses(
         class1: string,
-        class2: string | null | undefined
+        class2: string | null | undefined,
     ): string {
         if (class2) {
             return class1 + " " + class2;
@@ -37,14 +37,14 @@ export class Radio extends LocalizableElement<IRadioProps, ILocalizationState> {
             <div
                 className={Radio.combineClasses(
                     "radioButton",
-                    this.props.className
+                    this.props.className,
                 )}
             >
                 <input
                     type="radio"
                     className={Radio.combineClasses(
                         "radioInput",
-                        this.props.inputClass
+                        this.props.inputClass,
                     )}
                     value={this.props.value}
                     readOnly={true}
@@ -59,7 +59,7 @@ export class Radio extends LocalizableElement<IRadioProps, ILocalizationState> {
                 <div
                     className={Radio.combineClasses(
                         "radioLabel",
-                        this.props.labelClass
+                        this.props.labelClass,
                     )}
                     onClick={() => {
                         if (!this.props.disabled && this.props.onSelected) {
@@ -100,7 +100,7 @@ export class RadioGroup extends React.Component<IRadioGroupProps> {
     // replacing <Radio> elements with a clone that has the required
     // onSelected and defaultChecked properties to function in the group.
     private recursiveFixRadio(children: React.ReactNode): React.ReactNode {
-        return React.Children.map(children, child => {
+        return React.Children.map(children, (child) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const childProps: any = {};
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,12 +110,12 @@ export class RadioGroup extends React.Component<IRadioGroupProps> {
             }
             if (childElt.type === Radio) {
                 return React.cloneElement(childElt, {
-                    onSelected: val => {
+                    onSelected: (val) => {
                         if (this.props.onChange) {
                             this.props.onChange(val);
                         }
                     },
-                    defaultChecked: childElt.props.value === this.props.value
+                    defaultChecked: childElt.props.value === this.props.value,
                 });
             }
             if (childElt.props) {
@@ -123,7 +123,7 @@ export class RadioGroup extends React.Component<IRadioGroupProps> {
                 // contains Radio children which need our modifications.
                 // This allows other, non Radio elements to be in the RadioGroup, and to contain Radio children.
                 childProps.children = this.recursiveFixRadio(
-                    childElt.props.children
+                    childElt.props.children,
                 );
                 return React.cloneElement(childElt, childProps);
             }
@@ -137,7 +137,7 @@ export class RadioGroup extends React.Component<IRadioGroupProps> {
             <div
                 className={Radio.combineClasses(
                     "radioGroup",
-                    this.props.className
+                    this.props.className,
                 )}
             >
                 {this.recursiveFixRadio(this.props.children)}

@@ -10,7 +10,7 @@ export const PublishScreenBanner: React.FunctionComponent<{
     titleL10nId: string;
     descriptionMarkdown?: string;
     descriptionL10nId?: string;
-}> = props => {
+}> = (props) => {
     const localizedTitle = useL10n(props.titleEnglish, props.titleL10nId);
 
     return (

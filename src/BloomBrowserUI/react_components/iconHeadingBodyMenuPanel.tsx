@@ -15,7 +15,7 @@ export const IconHeadingBodyMenuPanel: React.FunctionComponent<{
     body: string;
     menu?: JSX.Element; // when used in StatusPanelCommon, will eventually show a menu
     className?: string; // additional class for  root div; enables emotion CSS.
-}> = props => {
+}> = (props) => {
     // Might eventually become props
     const panelHeight = 180;
     const mainTitleHeight = 60; // just enough for two lines of heading without a scroll bar

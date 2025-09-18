@@ -6,7 +6,7 @@ import {
     post,
     postJson,
     postString,
-    useApiStringState
+    useApiStringState,
 } from "../utils/bloomApi";
 import { P } from "../react_components/l10nComponents";
 import { RequiresSubscriptionOverlayWrapper } from "../react_components/requiresSubscription";
@@ -28,15 +28,14 @@ import { DialogHelpButton } from "../react_components/BloomDialog/commonDialogCo
 export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
     const [repoFolderPath] = useApiStringState(
         "teamCollection/repoFolderPath",
-        ""
+        "",
     );
 
-    const [adminstratorEmail, setAdminstratorEmail] = React.useState<string>(
-        ""
-    );
+    const [adminstratorEmail, setAdminstratorEmail] =
+        React.useState<string>("");
 
     useEffect(() => {
-        get("settings/administrators", result => {
+        get("settings/administrators", (result) => {
             setAdminstratorEmail(result.data);
         });
     }, []);
@@ -77,10 +76,10 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
             <a
                 className="directory-link"
                 href=""
-                onClick={e => {
+                onClick={(e) => {
                     e.preventDefault();
                     postJson("fileIO/showInFolder", {
-                        folderPath: repoFolderPath
+                        folderPath: repoFolderPath,
                     });
                 }}
             >
@@ -95,7 +94,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
             <TextField
                 id="adminstratorEmails"
                 value={adminstratorEmail}
-                onChange={event => {
+                onChange={(event) => {
                     const newAdminString: string = event.target.value;
                     setAdminstratorEmail(newAdminString);
                     postString("settings/administrators", newAdminString);

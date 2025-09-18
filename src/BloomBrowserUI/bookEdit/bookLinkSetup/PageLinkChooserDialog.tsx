@@ -2,14 +2,14 @@ import * as React from "react";
 import {
     BookInfoForLinks,
     PageInfoForLinks,
-    ThumbnailGenerator
+    ThumbnailGenerator,
 } from "./BookLinkTypes";
 import { css } from "@emotion/react";
 import {
     BloomDialog,
     DialogTitle,
     DialogMiddle,
-    DialogBottomButtons
+    DialogBottomButtons,
 } from "../../react_components/BloomDialog/BloomDialog";
 import { DialogCancelButton } from "../../react_components/BloomDialog/commonDialogComponents";
 
@@ -26,7 +26,7 @@ export const PageLinkChooserDialog: React.FC<Props> = ({
     selectedBook,
     onClose,
     onPageSelected,
-    thumbnailGenerator
+    thumbnailGenerator,
 }) => {
     return (
         <BloomDialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -59,15 +59,15 @@ export const PageLinkChooserDialog: React.FC<Props> = ({
                                             pageId: pageNumber,
                                             thumbnail: thumbnailGenerator(
                                                 selectedBook.id,
-                                                pageNumber
-                                            )
+                                                pageNumber,
+                                            ),
                                         })
                                     }
                                 >
                                     <img
                                         src={thumbnailGenerator(
                                             selectedBook.id,
-                                            pageNumber
+                                            pageNumber,
                                         )}
                                         alt={`Page ${pageNumber}`}
                                         css={css`

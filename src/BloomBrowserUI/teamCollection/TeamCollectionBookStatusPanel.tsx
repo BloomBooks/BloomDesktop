@@ -12,7 +12,7 @@ import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import {
     IBloomWebSocketEvent,
-    useSubscribeToWebSocketForEvent
+    useSubscribeToWebSocketForEvent,
 } from "../utils/WebSocketManager";
 import { BookProblem } from "../react_components/bookProblem";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
@@ -44,10 +44,11 @@ export type StatusPanelState =
     | "lockedByMeDisconnected" // We're disconnected, but before that happened the book was checked out to me, here
     | "error"; // we couldn't get the IBookTeamCollectionStatus; should never happen.
 
-export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCollectionStatus> = props => {
-    const [tcPanelState, setTcPanelState] = useState<StatusPanelState>(
-        "initializing"
-    );
+export const TeamCollectionBookStatusPanel: React.FunctionComponent<
+    IBookTeamCollectionStatus
+> = (props) => {
+    const [tcPanelState, setTcPanelState] =
+        useState<StatusPanelState>("initializing");
     // Indicates how far along the check-in bar should be (0-100).
     // Non-zero value, when in lockedByMe state, also indicates that we should
     // show the bar and make other alterations in the panel layout.
@@ -74,7 +75,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     React.useEffect(() => {
         if (props.isDisconnected) {
             setTcPanelState(
-                lockedByMe ? "lockedByMeDisconnected" : "disconnected"
+                lockedByMe ? "lockedByMeDisconnected" : "disconnected",
             );
         } else if (props.invalidRepoDataErrorMsg) {
             setTcPanelState("hasInvalidRepoData");
@@ -90,7 +91,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                 setTcPanelState(
                     props.who === props.currentUser
                         ? "lockedByMeElsewhere"
-                        : "locked"
+                        : "locked",
                 );
             }
         } else {
@@ -103,7 +104,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         props.who,
         lockedByMe,
         props.currentUser,
-        props.invalidRepoDataErrorMsg
+        props.invalidRepoDataErrorMsg,
     ]);
 
     React.useEffect(() => {
@@ -134,7 +135,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         "checkinProgress",
         "progress",
         (e: CheckInProgressEvent) => setCheckInProgress(e.fraction),
-        false
+        false,
     );
 
     let avatar: JSX.Element;
@@ -160,7 +161,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         undefined,
         undefined,
         undefined,
-        true
+        true,
     );
     const subTitleUnlocked = useL10n(
         "When you check it out, no one on the team will be able to modify it or see your changes until you check it back in.",
@@ -168,7 +169,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         undefined,
         undefined,
         undefined,
-        true
+        true,
     );
     const mainTitleLockedByMe = useL10n(
         "This book is checked out to you",
@@ -176,7 +177,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         undefined,
         undefined,
         undefined,
-        true
+        true,
     );
     const subTitleLockedByMe = useL10n(
         "Are you done for now? Click this button to send your changes to your team.",
@@ -184,7 +185,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         undefined,
         undefined,
         undefined,
-        true
+        true,
     );
     const checkingIn = useL10n(
         "Checking in...",
@@ -192,7 +193,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         undefined,
         undefined,
         undefined,
-        true
+        true,
     );
     const whatChanges = useL10n(
         "What changes did you make?",
@@ -200,7 +201,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         undefined,
         undefined,
         undefined,
-        true
+        true,
     );
     const mainTitleLocked = useL10n(
         "This book is checked out to %0",
@@ -208,7 +209,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         "The %0 is the name of the person who checked out the book (or possibly email).",
         lockedByDisplay,
         undefined,
-        true
+        true,
     );
     const subTitleLocked = useL10n(
         "You cannot edit the book until %0 checks it in.",
@@ -216,7 +217,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         "The %0 is the name of the person who checked out the book.",
         lockedByDisplay,
         undefined,
-        true
+        true,
     );
     const lockedInfo = useL10n(
         "%0 checked out this book on %1.",
@@ -224,7 +225,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         "The %0 is a person's name, and the %1 is a date.",
         lockedByDisplay,
         props.when,
-        true
+        true,
     );
     const mainTitleLockedElsewhere = useL10n(
         "This book is checked out to you, but on a different computer",
@@ -232,7 +233,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         undefined,
         undefined,
         undefined,
-        true
+        true,
     );
     const subTitleLockedElsewhere = useL10n(
         "You cannot edit the book on this computer, until you check it in on %0.",
@@ -240,7 +241,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         "The %0 is the name of the computer where the book is checked out.",
         props.where,
         undefined,
-        true
+        true,
     );
     const lockedElsewhereInfo = useL10n(
         "You checked out this book on %0.",
@@ -248,7 +249,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         "The %0 is a date.",
         props.when,
         undefined,
-        true
+        true,
     );
 
     const mainTitleRemoteChanged = useL10n(
@@ -257,7 +258,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         "",
         undefined,
         undefined,
-        true
+        true,
     );
 
     const subTitleConflictingChange = useL10n(
@@ -266,7 +267,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         "",
         undefined,
         undefined,
-        true
+        true,
     );
 
     const subTitleNeedsReload = useL10n(
@@ -275,7 +276,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         "",
         undefined,
         undefined,
-        true
+        true,
     );
 
     const mainTitleDisconnected = useL10n(
@@ -284,7 +285,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         "",
         undefined,
         undefined,
-        true
+        true,
     );
 
     const subTitleDisconnected = useL10n(
@@ -293,7 +294,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         "",
         undefined,
         undefined,
-        true
+        true,
     );
 
     const subTitleCheckInFailed = useL10n(
@@ -302,7 +303,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         "",
         undefined,
         undefined,
-        true
+        true,
     );
 
     const subTitleDisconnectedCheckedOut = useL10n(
@@ -311,15 +312,15 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         "",
         undefined,
         undefined,
-        true
+        true,
     );
 
     const menuItems: (SimpleMenuItem | "-")[] = [
         {
             text: "About my Avatar...",
             l10nKey: "TeamCollection.AboutAvatar",
-            action: () => setAvatarDialogOpen(true)
-        }
+            action: () => setAvatarDialogOpen(true),
+        },
     ];
 
     if (tcPanelState === "lockedByMe") {
@@ -328,7 +329,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
             text: "Forget Changes & Check in Book...",
             l10nKey: "TeamCollection.ForgetChangesMenuItem",
             action: () => setForgetDialogOpen(true),
-            disabled: props.isNewLocalBook
+            disabled: props.isNewLocalBook,
         });
     }
 
@@ -345,7 +346,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         color: ${kBloomRed};
                     `}
                 ></WarningIcon>
-            )
+            ),
         });
     }
 
@@ -367,12 +368,12 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                 adaptV4Theme({
                     palette: {
                         primary: {
-                            main: kBloomYellow
-                        }
-                    }
-                })
+                            main: kBloomYellow,
+                        },
+                    },
+                }),
             ),
-        []
+        [],
     );
 
     const panelContents = (state: StatusPanelState): JSX.Element => {
@@ -399,7 +400,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                     setBusy(true);
 
                     // need to check for email each time checkout is pressed
-                    get("registration/userInfo", userInfo => {
+                    get("registration/userInfo", (userInfo) => {
                         if (userInfo?.data.email)
                             post(
                                 "teamCollection/attemptLockOfCurrentBook",
@@ -411,17 +412,17 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                 },
                                 () => {
                                     setBusy(false);
-                                }
+                                },
                             );
                         else {
                             showRegistrationDialog({
                                 registrationIsOptional: false,
-                                onSave: isValidEmail => {
+                                onSave: (isValidEmail) => {
                                     if (isValidEmail)
                                         post(
-                                            "teamCollection/attemptLockOfCurrentBook"
+                                            "teamCollection/attemptLockOfCurrentBook",
                                         );
-                                }
+                                },
                             });
                             setBusy(false);
                         }
@@ -432,7 +433,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                     <StatusPanelCommon
                         css={css`
                             ${busy &&
-                                "cursor: progress; .checkout-button{cursor:progress;}"}
+                            "cursor: progress; .checkout-button{cursor:progress;}"}
                         `}
                         title={mainTitleUnlocked}
                         subTitle={subTitleUnlocked}
@@ -449,7 +450,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             "TeamCollection.Checkout",
                             "checkout-button",
                             "/bloom/teamCollection/Check Out.svg",
-                            checkoutHandler
+                            checkoutHandler,
                         )}
                         menu={menu}
                     />
@@ -471,7 +472,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             setBusy(false);
                             setCheckInFailed(true);
                             setCheckInProgress(0); // Should be redundant, but makes sure.
-                        }
+                        },
                     );
                 };
 
@@ -479,7 +480,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                     <StatusPanelCommon
                         css={css`
                             ${busy &&
-                                "cursor: progress; .checkin-button{cursor:progress;}"};
+                            "cursor: progress; .checkin-button{cursor:progress;}"};
                             .panel-children {
                                 margin-top: 10px; // leaves some extra space for the "What changes did you make" overlay
                             }
@@ -493,8 +494,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             checkInFailed
                                 ? subTitleCheckInFailed
                                 : checkInProgress === 0
-                                ? subTitleLockedByMe
-                                : ""
+                                  ? subTitleLockedByMe
+                                  : ""
                         }
                         icon={avatar}
                         //menu={} // eventually the "About my Avatar..." and "Forget Changes" menu gets passed in here.
@@ -508,7 +509,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                         "/bloom/teamCollection/Check In.svg",
                                         checkInHandler,
                                         checkInProgress > 0,
-                                        "primary"
+                                        "primary",
                                     )}
                                 </ThemeProvider>
                             </StyledEngineProvider>
@@ -543,11 +544,11 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                     value={message}
                                     autoFocus={true}
                                     key="message"
-                                    onChange={e => {
+                                    onChange={(e) => {
                                         setMessage(e.target.value);
                                         postString(
                                             "teamCollection/checkinMessage",
-                                            e.target.value
+                                            e.target.value,
                                         );
                                     }}
                                 />
@@ -611,7 +612,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             "TeamCollection.Reload",
                             "reload-button",
                             undefined,
-                            () => post("common/reloadCollection")
+                            () => post("common/reloadCollection"),
                         )}
                         useWarningColorForButton={state === "needsReload"} //REVIEW: why is it different?
                         menu={menu}
@@ -684,7 +685,7 @@ export const getBloomButton = (
     icon?: string,
     clickHandler?: () => void,
     disabled?: boolean,
-    color?: "primary" | "secondary" | undefined
+    color?: "primary" | "secondary" | undefined,
 ) => (
     <BloomButton
         iconBeforeText={icon ? <img src={icon} /> : <div />}

@@ -2,7 +2,7 @@ import { JoinTeamCollectionDialog } from "./JoinTeamCollectionDialog";
 import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 export default {
-    title: "Team Collection components/JoinTeamCollection"
+    title: "Team Collection components/JoinTeamCollection",
 };
 
 export const NewCollection = () => (
@@ -21,7 +21,7 @@ export const NewCollection = () => (
 );
 
 NewCollection.story = {
-    name: "new collection"
+    name: "new collection",
 };
 
 export const ExistingCollection = () => (
@@ -40,7 +40,7 @@ export const ExistingCollection = () => (
 );
 
 ExistingCollection.story = {
-    name: "existing collection"
+    name: "existing collection",
 };
 
 export const ExistingTcCollectionSameLocationAndGuid = () => (
@@ -59,7 +59,7 @@ export const ExistingTcCollectionSameLocationAndGuid = () => (
 );
 
 ExistingTcCollectionSameLocationAndGuid.story = {
-    name: "existing TC collection, same location and guid"
+    name: "existing TC collection, same location and guid",
 };
 
 export const ExistingTcCollectionDifferentLocationSameGuid = () => (
@@ -78,7 +78,7 @@ export const ExistingTcCollectionDifferentLocationSameGuid = () => (
 );
 
 ExistingTcCollectionDifferentLocationSameGuid.story = {
-    name: "existing TC collection, different location same guid"
+    name: "existing TC collection, different location same guid",
 };
 
 export const ExistingTcCollectionDifferentLocationAndGuid = () => (
@@ -97,7 +97,7 @@ export const ExistingTcCollectionDifferentLocationAndGuid = () => (
 );
 
 ExistingTcCollectionDifferentLocationAndGuid.story = {
-    name: "existing TC collection, different location and guid"
+    name: "existing TC collection, different location and guid",
 };
 
 export const ExistingCollectionBareFrame = () => (
@@ -112,12 +112,12 @@ export const ExistingCollectionBareFrame = () => (
             conflictingCollection=""
             dialogEnvironment={{
                 dialogFrameProvidedExternally: true,
-                initiallyOpen: true
+                initiallyOpen: true,
             }}
         />
     </div>
 );
 
 ExistingCollectionBareFrame.story = {
-    name: "existing collection, bare frame"
+    name: "existing collection, bare frame",
 };

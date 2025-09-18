@@ -4,7 +4,7 @@ import {
     getTheOneToolbox,
     applyToolboxStateToUpdatedPage,
     removeToolboxMarkup,
-    showOrHideTool_click
+    showOrHideTool_click,
 } from "./toolbox";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
@@ -25,7 +25,7 @@ import { theOneAudioRecorder } from "./talkingBook/audioRecording";
 export interface IToolboxFrameExports {
     addWordListChangedListener(
         listenerNameAndContext: string,
-        callback: () => void
+        callback: () => void,
     ): void;
 
     activateLongPressFor(jQuerySetOfMatchedElements): void;
@@ -47,12 +47,12 @@ export { removeToolboxMarkup, showOrHideTool_click, setActiveDragActivityTab };
 export {
     showSetupDialog,
     initializeReaderSetupDialog,
-    closeSetupDialog
+    closeSetupDialog,
 } from "./readers/readerSetup/readerSetupDialog";
 export {
     addWordListChangedListener,
     beginSaveChangedSettings,
-    makeLetterWordList
+    makeLetterWordList,
 } from "./readers/readerTools";
 export { activateLongPressFor } from "../js/bloomEditing";
 export { TalkingBookTool }; // one function is called by CSharp.

@@ -8,14 +8,14 @@ import {
     PointerSensor,
     useSensor,
     useSensors,
-    DragEndEvent
+    DragEndEvent,
 } from "@dnd-kit/core";
 import {
     arrayMove,
     SortableContext,
     sortableKeyboardCoordinates,
     useSortable,
-    rectSortingStrategy
+    rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useEffect, useRef } from "react";
 import { css } from "@emotion/react";
@@ -30,15 +30,10 @@ const SortableBookItem: React.FC<{
     link: Link;
     onRemove: (link: Link) => void;
 }> = ({ link, onRemove }) => {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition
-    } = useSortable({
-        id: link.book.id
-    });
+    const { attributes, listeners, setNodeRef, transform, transition } =
+        useSortable({
+            id: link.book.id,
+        });
 
     return (
         <div
@@ -60,7 +55,7 @@ const SortableBookItem: React.FC<{
                 onRemove={() => {
                     console.log(
                         "SortableBookItem onRemove called for:",
-                        link.book.title
+                        link.book.title,
                     );
                     onRemove(link);
                 }}
@@ -72,7 +67,7 @@ const SortableBookItem: React.FC<{
 export const BookTargetList: React.FC<BookTargetListProps> = ({
     links,
     onRemoveBook,
-    onReorderBooks
+    onReorderBooks,
 }) => {
     const linkRefs = useRef<Map<string, HTMLDivElement>>(new Map());
     const prevLinksLengthRef = useRef(links.length);
@@ -85,7 +80,7 @@ export const BookTargetList: React.FC<BookTargetListProps> = ({
                 const element = linkRefs.current.get(lastLinkId);
                 element?.scrollIntoView({
                     behavior: "smooth",
-                    block: "nearest"
+                    block: "nearest",
                 });
             }
         }
@@ -95,21 +90,23 @@ export const BookTargetList: React.FC<BookTargetListProps> = ({
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8 // Use distance instead of delay+tolerance
-            }
+                distance: 8, // Use distance instead of delay+tolerance
+            },
         }),
         useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates
-        })
+            coordinateGetter: sortableKeyboardCoordinates,
+        }),
     );
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
             const oldIndex = links.findIndex(
-                link => link.book.id === active.id
+                (link) => link.book.id === active.id,
             );
-            const newIndex = links.findIndex(link => link.book.id === over.id);
+            const newIndex = links.findIndex(
+                (link) => link.book.id === over.id,
+            );
             const newLinks = arrayMove(links, oldIndex, newIndex);
             onReorderBooks?.(newLinks);
         }
@@ -122,7 +119,7 @@ export const BookTargetList: React.FC<BookTargetListProps> = ({
             onDragEnd={handleDragEnd}
         >
             <SortableContext
-                items={links.map(link => link.book.id)}
+                items={links.map((link) => link.book.id)}
                 strategy={rectSortingStrategy}
             >
                 <div
@@ -137,10 +134,10 @@ export const BookTargetList: React.FC<BookTargetListProps> = ({
                         background-color: lightgray;
                     `}
                 >
-                    {links.map(link => (
+                    {links.map((link) => (
                         <div
                             key={link.book.id}
-                            ref={el => {
+                            ref={(el) => {
                                 if (el) {
                                     linkRefs.current.set(link.book.id, el);
                                 } else {
@@ -151,7 +148,7 @@ export const BookTargetList: React.FC<BookTargetListProps> = ({
                             <SortableBookItem
                                 key={link.book.id}
                                 link={link}
-                                onRemove={link => {
+                                onRemove={(link) => {
                                     onRemoveBook(link);
                                 }}
                             />
