@@ -2656,8 +2656,7 @@ namespace Bloom.Book
 
         private static string GetHelpLinkForFilePermissions()
         {
-            var helpUrl =
-                @"http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78";
+            var helpUrl = @"https://docs.bloomlibrary.org/windows-file-permissions";
             return GetEncodedSeeWebPageString(helpUrl);
         }
 
