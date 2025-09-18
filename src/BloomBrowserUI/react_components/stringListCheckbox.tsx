@@ -1,7 +1,7 @@
 import {
     ILocalizationProps,
     ILocalizationState,
-    LocalizableElement
+    LocalizableElement,
 } from "./l10nComponents";
 import { BloomCheckbox } from "./BloomCheckBox";
 
@@ -39,7 +39,7 @@ export class StringListCheckbox extends LocalizableElement<
         }
         if (this.props.tristateItemOffName) {
             const indexOfOffName = parts.indexOf(
-                this.props.tristateItemOffName
+                this.props.tristateItemOffName,
             );
             if (indexOfOffName > -1) {
                 parts.splice(indexOfOffName, 1);
@@ -82,7 +82,7 @@ export class StringListCheckbox extends LocalizableElement<
                 l10nKey={this.props.l10nKey}
                 alreadyLocalized={this.props.alreadyLocalized}
                 checked={checkStatus}
-                onCheckChanged={checked => {
+                onCheckChanged={(checked) => {
                     this.props.onChange(this.getNewList(checked));
                 }}
                 label={this.props.label}

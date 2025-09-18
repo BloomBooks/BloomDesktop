@@ -12,7 +12,7 @@ export const TriangleCollapse: React.FC<{
     children: React.ReactNode;
     className?: string;
     buttonColor?: string;
-}> = props => {
+}> = (props) => {
     const [open, setOpen] = React.useState(props.initiallyOpen);
 
     const handleClick = () => {

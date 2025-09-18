@@ -10,7 +10,7 @@ import {
     kDisabledTextOnPurple,
     kTextOnPurple,
     kUiFontStack,
-    lightTheme
+    lightTheme,
 } from "../../bloomMaterialUITheme";
 import { ArrowDropDown } from "@mui/icons-material";
 
@@ -25,7 +25,7 @@ export const EditTopBarControls: React.FunctionComponent = () => {
         copy: true,
         cut: true,
         paste: true,
-        undo: true
+        undo: true,
     });
     useSubscribeToWebSocketForObject<{
         enabled: {
@@ -34,20 +34,17 @@ export const EditTopBarControls: React.FunctionComponent = () => {
             paste: boolean;
             undo: boolean;
         };
-    }>("editTopBarControls", "updateEditButtons", results => {
+    }>("editTopBarControls", "updateEditButtons", (results) => {
         setButtonsEnabled(results.enabled);
     });
 
     // Start Dropdowns
-    const [contentLanguagesEnabled, setContentLanguagesEnabled] = useState(
-        false
-    );
+    const [contentLanguagesEnabled, setContentLanguagesEnabled] =
+        useState(false);
     const [contentLanguagesNumber, setContentLanguagesNumber] = useState(1);
 
-    const [
-        layoutChoicesLocalizedText,
-        setLayoutChoicesLocalizedText
-    ] = useState("");
+    const [layoutChoicesLocalizedText, setLayoutChoicesLocalizedText] =
+        useState("");
 
     function setDropdowns(data: IDropdownData): void {
         setContentLanguagesEnabled(data.contentLanguagesEnabled);
@@ -60,7 +57,7 @@ export const EditTopBarControls: React.FunctionComponent = () => {
     }, []);
     useSubscribeToWebSocketForObject<{
         message: IDropdownData;
-    }>("editTopBarControls", "updateDropdowns", results => {
+    }>("editTopBarControls", "updateDropdowns", (results) => {
         setDropdowns(results.message);
     });
 
@@ -136,7 +133,7 @@ const smallButtonCSSAttributes = `height: 18px;
 
 export const CopyButton: React.FunctionComponent<{
     enabled: boolean;
-}> = props => {
+}> = (props) => {
     const enabledIcon = imagesPrefix + "images/copy16x16.png";
     const disabledIcon = imagesPrefix + "images/copyDisabled16x16.png";
 
@@ -157,7 +154,7 @@ export const CopyButton: React.FunctionComponent<{
 
 export const CutButton: React.FunctionComponent<{
     enabled: boolean;
-}> = props => {
+}> = (props) => {
     const enabledIcon = imagesPrefix + "images/cut16x16.png";
     const disabledIcon = imagesPrefix + "images/cutDisabled16x16.png";
     return (
@@ -182,7 +179,7 @@ const largeButtonCSSAttributes = `width: 54px;
 
 export const PasteButton: React.FunctionComponent<{
     enabled: boolean;
-}> = props => {
+}> = (props) => {
     const enabledIcon = imagesPrefix + "images/paste32x32.png";
     const disabledIcon = imagesPrefix + "images/pasteDisabled32x32.png";
 
@@ -205,7 +202,7 @@ export const PasteButton: React.FunctionComponent<{
 
 export const UndoButton: React.FunctionComponent<{
     enabled: boolean;
-}> = props => {
+}> = (props) => {
     const enabledIcon = imagesPrefix + "images/undo32x32.png";
     const disabledIcon = imagesPrefix + "images/undoDisabled32x32.png";
 
@@ -240,7 +237,7 @@ export const EditingControlButton: React.FunctionComponent<{
     disabledIcon?: string;
     iconBeforeText?: boolean;
     cssAttributes?: string;
-}> = props => {
+}> = (props) => {
     return (
         <BloomTooltip
             tip={{ l10nKey: props.tooltipL10nKey }}
@@ -252,7 +249,7 @@ export const EditingControlButton: React.FunctionComponent<{
             showDisabled={!props.enabled}
             placement="right"
             slotProps={{
-                tooltip: { sx: { maxWidth: "167px", "font-size": "11px" } }
+                tooltip: { sx: { maxWidth: "167px", "font-size": "11px" } },
             }}
         >
             <BloomButton
@@ -260,7 +257,7 @@ export const EditingControlButton: React.FunctionComponent<{
                 l10nKey={props.l10nKey}
                 onClick={() => {
                     postJson("editView/topBarButtonClick", {
-                        command: props.onClickAction
+                        command: props.onClickAction,
                     });
                 }}
                 enabledImageFile={props.enabledIcon}
@@ -293,7 +290,7 @@ export const EditingControlButton: React.FunctionComponent<{
 export const ContentLanguagesDropdown: React.FunctionComponent<{
     enabled: boolean;
     number: number;
-}> = props => {
+}> = (props) => {
     let l10nKey;
     switch (props.number) {
         case 1:
@@ -320,7 +317,7 @@ export const ContentLanguagesDropdown: React.FunctionComponent<{
 
 export const LayoutChoicesDropdown: React.FunctionComponent<{
     localizedText: string;
-}> = props => {
+}> = (props) => {
     return (
         <EditingControlDropdown
             enabled={true}
@@ -339,7 +336,7 @@ export const EditingControlDropdown: React.FunctionComponent<{
     tooltipL10nKey: string;
     disabledTooltipL10nKey?: string;
     onClickAction: "contentLanguages" | "layoutChoices";
-}> = props => {
+}> = (props) => {
     return (
         <BloomTooltip
             tip={{ l10nKey: props.tooltipL10nKey }}
@@ -350,7 +347,7 @@ export const EditingControlDropdown: React.FunctionComponent<{
             }
             showDisabled={!props.enabled}
             slotProps={{
-                tooltip: { sx: { maxWidth: "167px", "font-size": "11px" } }
+                tooltip: { sx: { maxWidth: "167px", "font-size": "11px" } },
             }}
         >
             <BloomButton
@@ -358,7 +355,7 @@ export const EditingControlDropdown: React.FunctionComponent<{
                 l10nKey={props.l10nKey || ""}
                 onClick={() => {
                     postJson("editView/topBarDropdownClicked", {
-                        command: props.onClickAction
+                        command: props.onClickAction,
                     });
                 }}
                 hasText={true}

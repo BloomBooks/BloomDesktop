@@ -7,7 +7,7 @@ import * as React from "react";
 export const SignLanguageIcon: React.FunctionComponent<{
     className?: string;
     color: string;
-}> = props => {
+}> = (props) => {
     return (
         <svg
             className={props.className}

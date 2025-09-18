@@ -1,7 +1,9 @@
 import { SvgIcon, SvgIconProps } from "@mui/material";
 import * as React from "react";
 
-export const PublishTabIcon: React.FunctionComponent<SvgIconProps> = props => (
+export const PublishTabIcon: React.FunctionComponent<SvgIconProps> = (
+    props,
+) => (
     <SvgIcon
         width="34"
         height="27"

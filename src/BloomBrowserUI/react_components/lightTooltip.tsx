@@ -36,6 +36,6 @@ export const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
         // and we ARE using them with links inside. If there is a gap between the
         // thing described and the tooltip, it is hard to move the pointer to the
         // link without the tooltip going away.
-        margin: "1px !important"
-    }
+        margin: "1px !important",
+    },
 }));

@@ -18,7 +18,7 @@ export const ApiCheckbox: React.FunctionComponent<{
     forceDisabledValue?: boolean;
     onChange?: () => void;
     title?: React.ReactNode;
-}> = props => {
+}> = (props) => {
     const [checked, setChecked] = useApiBoolean(props.apiEndpoint, false);
 
     let showChecked = checked;

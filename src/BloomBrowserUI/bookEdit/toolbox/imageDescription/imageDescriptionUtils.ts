@@ -15,7 +15,7 @@ export function showImageDescriptions(bodyOfPageIframe: HTMLElement) {
         // wrap the contents (except the description) with another division with class bloom-describedImage
         // See comment in editMode.less under bloom-describedImage for why we do this.
         for (const bloomCanvas of Array.from(
-            bodyOfPageIframe.getElementsByClassName(kBloomCanvasClass)
+            bodyOfPageIframe.getElementsByClassName(kBloomCanvasClass),
         )) {
             const describedImage = document.createElement("div");
             describedImage.classList.add("bloom-describedImage");
@@ -35,7 +35,7 @@ export function hideImageDescriptions(bodyOfPageIframe: HTMLElement) {
     bodyOfPageIframe.classList.remove("bloom-showImageDescriptions");
     // unwrap the contents of each bloom-describedImage
     for (const describedImage of Array.from(
-        bodyOfPageIframe.getElementsByClassName("bloom-describedImage")
+        bodyOfPageIframe.getElementsByClassName("bloom-describedImage"),
     )) {
         for (const child of Array.from(describedImage.children)) {
             describedImage.parentElement!.appendChild(child);

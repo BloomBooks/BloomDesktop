@@ -9,5 +9,5 @@
 export enum RecordingMode {
     Unknown = "Unknown",
     Sentence = "Sentence",
-    TextBox = "TextBox"
+    TextBox = "TextBox",
 }

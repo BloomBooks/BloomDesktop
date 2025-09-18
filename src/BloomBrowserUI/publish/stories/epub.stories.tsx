@@ -4,7 +4,7 @@ import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import "../storiesApiMocks";
 
 const meta: Meta = {
-    title: "Publish/ePUB"
+    title: "Publish/ePUB",
 };
 
 export default meta;
@@ -12,7 +12,7 @@ type Story = StoryObj;
 
 export const EpubPublishScreenStory: Story = {
     name: "EPUBPublishScreen",
-    render: () => <EPUBPublishScreen />
+    render: () => <EPUBPublishScreen />,
 };
 
 export const BookMetadataDialogStory: Story = {
@@ -22,5 +22,5 @@ export const BookMetadataDialogStory: Story = {
             startOpen={true}
             onClose={() => alert("BookMetadataDialog closed with OK")}
         />
-    )
+    ),
 };

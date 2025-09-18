@@ -13,7 +13,7 @@ export async function runAsyncTest(
     done: () => void, // The done callback provided by Jasmine framework
     setupAsync: () => void | Promise<void>,
     runAsync: () => void | Promise<void>,
-    verify: () => void
+    verify: () => void,
 ) {
     // For async tests, the whole thing should be wrapped in a try/catch to ensure that done() always gets called by the end, no matter what.
     try {

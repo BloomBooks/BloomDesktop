@@ -10,7 +10,7 @@ import { BloomDialogContext } from "./BloomDialog";
 export const kErrorBoxColor = "#eb3941";
 
 // just puts a rounded rectangle around the children
-export const DialogControlGroup: React.FunctionComponent = props => (
+export const DialogControlGroup: React.FunctionComponent = (props) => (
     <div
         css={css`
             border: solid 1px grey;
@@ -34,7 +34,7 @@ export const DialogControlGroup: React.FunctionComponent = props => (
 export const DialogFolderChooserWithApi: React.FunctionComponent<{
     path: string;
     apiCommandToChooseAndSetFolder: string;
-}> = props => (
+}> = (props) => (
     <div>
         <div
             css={css`
@@ -65,7 +65,7 @@ export const DialogFolderChooserWithApi: React.FunctionComponent<{
                 variant="text"
                 onClick={() =>
                     post(
-                        props.apiCommandToChooseAndSetFolder
+                        props.apiCommandToChooseAndSetFolder,
                         // nothing to do either on success or failure, including possible timeout,
                         // or the user canceling. This is because the "result" comes back to browser-land
                         // via a websocket that sets the new result. This approach is needed because otherwise
@@ -84,23 +84,23 @@ export const DialogFolderChooser: React.FunctionComponent<{
     setPath: (path: string) => void;
     description?: string;
     forOutput?: boolean;
-}> = props => {
+}> = (props) => {
     // Since a user will have as much time as they want to deal with the dialog,
     // we can't just wait for the api call to return. Instead we get called back
     // via web socket iff they select a folder and close the dialog.
     useSubscribeToWebSocketForObject<{ success: boolean; path: string }>(
         "fileIO",
         "chooseFolder-results",
-        results => {
+        (results) => {
             if (results.success) {
                 props.setPath(results.path);
             }
-        }
+        },
     );
     const params = new URLSearchParams({
         path: props.path,
         description: props.description || "",
-        forOutput: props.forOutput ? "true" : "false"
+        forOutput: props.forOutput ? "true" : "false",
     }).toString();
     return (
         <DialogFolderChooserWithApi
@@ -113,7 +113,7 @@ export const DialogFolderChooser: React.FunctionComponent<{
 export const DialogCloseButton: React.FunctionComponent<{
     onClick: () => void;
     default?: boolean;
-}> = props => (
+}> = (props) => (
     <BloomButton
         l10nKey="Common.Close"
         hasText={true}
@@ -134,7 +134,7 @@ export const DialogOkButton: React.FunctionComponent<{
     onClick: () => void;
     enabled?: boolean;
     default?: boolean;
-}> = props => (
+}> = (props) => (
     <BloomButton
         l10nKey="Common.OK"
         hasText={true}
@@ -153,7 +153,7 @@ export const DialogCancelButton: React.FunctionComponent<{
     // even if one is passed.
     onClick_DEPRECATED?: () => void;
     default?: boolean;
-}> = props => {
+}> = (props) => {
     const context = React.useContext(BloomDialogContext);
     return (
         <BloomButton
@@ -182,7 +182,7 @@ export const DialogReportButton: React.FunctionComponent<{
     temporarilyDisableI18nWarning?: boolean; // may use this if the passed L10nKey is temporarily disabled
     shortMessage: string;
     messageGenerator: () => string;
-}> = props => (
+}> = (props) => (
     <BloomButton
         className={props.className}
         l10nKey={props.l10nKey ?? "ErrorReport.Report"}
@@ -193,7 +193,7 @@ export const DialogReportButton: React.FunctionComponent<{
         onClick={() =>
             postJson("problemReport/showDialog", {
                 shortMessage: props.shortMessage,
-                message: "DialogReportButton: " + props.messageGenerator()
+                message: "DialogReportButton: " + props.messageGenerator(),
             })
         }
         css={css`
@@ -215,7 +215,7 @@ export const DialogHelpButton: React.FunctionComponent<{
     default?: boolean;
     variant?: "text" | "contained" | "outlined" | undefined; // an explicit variant will overwrite default button variant
     temporarilyDisableI18nWarning?: boolean; // may use this if the passed L10nKey is temporarily disabled
-}> = props => (
+}> = (props) => (
     <BloomButton
         className={props.className}
         id={props.id}

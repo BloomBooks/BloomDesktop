@@ -6,7 +6,7 @@ import { IBookInfo } from "../collectionsTab/BooksOfCollection";
 import { useState } from "react";
 
 const meta: Meta = {
-    title: "CollectionBookList"
+    title: "CollectionBookList",
 };
 
 export default meta;
@@ -37,5 +37,5 @@ export const BookList: Story = {
                 <p>The number of books in this collection is {bookCount}.</p>
             </div>
         );
-    }
+    },
 };

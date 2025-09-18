@@ -1,7 +1,7 @@
 import {
     ILocalizationProps,
     ILocalizationState,
-    LocalizableElement
+    LocalizableElement,
 } from "./l10nComponents";
 import { Link as MuiLink } from "@mui/material";
 

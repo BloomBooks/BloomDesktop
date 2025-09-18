@@ -5,12 +5,12 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "../react_components/BloomDialog/BloomDialog";
 import { useEventLaunchedBloomDialog } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     DialogCancelButton,
-    DialogOkButton
+    DialogOkButton,
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { get, postJson } from "../utils/bloomApi";
 import { kBloomBlue } from "../bloomMaterialUITheme";
@@ -19,24 +19,23 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const {
         //openingEvent,
         closeDialog,
-        propsForBloomDialog
+        propsForBloomDialog,
     } = useEventLaunchedBloomDialog("CollectionSettingsDialog");
 
     const [settings, setSettings] = React.useState<object | undefined>(
-        undefined
+        undefined,
     );
 
     const [settingsString, setSettingsString] = React.useState<string>("{}");
     React.useEffect(() => {
         if (propsForBloomDialog.open)
-            get("collection/settings", result => {
+            get("collection/settings", (result) => {
                 setSettingsString(result.data);
             });
     }, [propsForBloomDialog.open]);
 
-    const [settingsToReturnLater, setSettingsToReturnLater] = React.useState(
-        ""
-    );
+    const [settingsToReturnLater, setSettingsToReturnLater] =
+        React.useState("");
     React.useEffect(() => {
         if (settingsString === "{}") {
             return; // leave settings as undefined
@@ -77,10 +76,10 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         themeOverrides={{
                             // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
                             palette: {
-                                primary: { main: kBloomBlue }
-                            }
+                                primary: { main: kBloomBlue },
+                            },
                         }}
-                        onChange={s => {
+                        onChange={(s) => {
                             setSettingsToReturnLater(s);
                         }}
                     >

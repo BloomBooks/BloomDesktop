@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!--This file is generated and then updated by an MSBuild task.  It preserves the automatically-generated guids assigned files that will be installed on user machines. So it should be held in source control.-->
-<InstallerMetadata>
-  <File Id="aboutBox.css" Guid="0015d260-83bf-4677-98c3-1510cdef8c0d" />
-  <File Id="aboutBox.htm" Guid="bb4a8e16-132d-4fb2-8472-b81f26753967" />
-  <File Id="ProgramDir.infoPages.aboutBox.css" Guid="9ea6f769-ddfa-4d93-9e75-558561c16ad4" />
-  <File Id="ProgramDir.infoPages.aboutBox.htm" Guid="ca7a4c5a-ae62-4820-91ba-145a861c902b" />
-</InstallerMetadata>

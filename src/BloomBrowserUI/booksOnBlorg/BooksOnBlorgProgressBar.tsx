@@ -20,13 +20,13 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
         "collections/getBookCountByLanguage",
         -1,
         "booksOnBlorg",
-        "reload"
+        "reload",
     );
 
     const goalLabel = useL10n(
         "Goal:",
         "BooksOnBlorg.Progress.Goal",
-        "Goal label under progress bar on Collection tab."
+        "Goal label under progress bar on Collection tab.",
     );
     const countOfBooksLabel = useL10n(
         "{0} {1} books on BloomLibrary.org",
@@ -35,14 +35,14 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
         bookCount.toString(),
         languageName.length > 12
             ? languageName.substring(0, 11) + "..."
-            : languageName
+            : languageName,
     );
 
     useEffect(() => {
-        get("settings/webGoal", g => {
+        get("settings/webGoal", (g) => {
             setWebGoal(g.data);
         });
-        get("settings/languageData", langData => {
+        get("settings/languageData", (langData) => {
             if (langData?.data) {
                 setLanguageName(langData.data.languageName);
                 setLanguageCode(langData.data.languageCode);
@@ -80,7 +80,7 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
                 setPercentage(100);
             } else {
                 setPercentage(
-                    Math.max(Math.min((bookCount / webGoal) * 100, 100), 0)
+                    Math.max(Math.min((bookCount / webGoal) * 100, 100), 0),
                 );
             }
         }

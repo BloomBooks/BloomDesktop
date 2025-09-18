@@ -42,6 +42,5 @@ Note: you can also add a file named "customBookStyles.css" in the book folder, t
 Note: Bloom/web browsers will ignore everything inside these star-slash markers, so the real content starts below:
 */
 
-BODY
-{
+body {
 }

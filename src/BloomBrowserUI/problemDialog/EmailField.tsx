@@ -9,7 +9,8 @@ import { useL10n } from "../react_components/l10nHooks";
 //Note: the "isemail" package was not compatible with geckofx 45, so I'm just going with regex
 // from https://stackoverflow.com/a/46181/723299
 // NB: should handle emails like 用户@例子.广告
-const emailPattern = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+const emailPattern =
+    /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
 export function isValidEmail(email: string): boolean {
     return emailPattern.test(email);
@@ -19,10 +20,10 @@ export const EmailField: React.FunctionComponent<{
     submitAttempts: number;
     email: string;
     onChange: (email: string) => void;
-}> = props => {
+}> = (props) => {
     const [emailValid, setEmailValid] = useState(false);
 
-    const debounced = useDebouncedCallback(value => {
+    const debounced = useDebouncedCallback((value) => {
         setEmailValid(isValidEmail(value));
     }, 100);
     const debouncedEmailCheck = debounced.callback;
@@ -36,7 +37,7 @@ export const EmailField: React.FunctionComponent<{
 
     const attentionClass = useDrawAttention(
         props.submitAttempts,
-        () => emailValid
+        () => emailValid,
     );
 
     return (
@@ -46,7 +47,7 @@ export const EmailField: React.FunctionComponent<{
             label={localizedEmail}
             rows="1"
             InputLabelProps={{
-                shrink: true
+                shrink: true,
             }}
             multiline={false}
             aria-label="email"
@@ -54,7 +55,7 @@ export const EmailField: React.FunctionComponent<{
                 (props.email.length > 0 && !emailValid) ||
                 (props.submitAttempts > 0 && !emailValid)
             }
-            onChange={event => {
+            onChange={(event) => {
                 props.onChange(event.target.value);
                 //  debouncedEmailCheck(event.target.value);
             }}

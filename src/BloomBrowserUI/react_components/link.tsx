@@ -7,7 +7,7 @@ import { LinkBaseProps } from "@mui/material/Link";
 import {
     ILocalizationProps,
     ILocalizationState,
-    LocalizableElement
+    LocalizableElement,
 } from "./l10nComponents";
 import { kBloomDisabledText } from "../utils/colorUtils";
 

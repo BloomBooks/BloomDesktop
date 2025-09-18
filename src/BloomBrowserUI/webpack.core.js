@@ -8,7 +8,7 @@ var webpack = require("webpack");
 var WebpackBuildNotifierPlugin = require("webpack-build-notifier");
 
 function NothingPlugin() {
-    this.apply = function() {};
+    this.apply = function () {};
 }
 
 module.exports = {
@@ -18,15 +18,15 @@ module.exports = {
                 test: /\.(ts|tsx)$/,
                 use: [
                     {
-                        loader: require.resolve("ts-loader")
-                    }
-                ]
+                        loader: require.resolve("ts-loader"),
+                    },
+                ],
             },
             {
                 test: /\.less$/i,
                 use: [
                     {
-                        loader: "style-loader" // creates style nodes from JS strings
+                        loader: "style-loader", // creates style nodes from JS strings
                     },
                     {
                         loader: "css-loader", // translates CSS into CommonJS,
@@ -35,37 +35,37 @@ module.exports = {
                                 filter: (url, resourcePath) => {
                                     // Don't let webpack resolve /bloom/ urls. Just leave them as is.
                                     return !url.startsWith("/bloom/");
-                                }
-                            }
-                        }
+                                },
+                            },
+                        },
                     },
                     {
-                        loader: "less-loader" // compiles Less to CSS
-                    }
-                ]
+                        loader: "less-loader", // compiles Less to CSS
+                    },
+                ],
             },
             {
                 test: /\.css$/,
-                use: ["style-loader", "css-loader"]
+                use: ["style-loader", "css-loader"],
             },
             {
                 // this allows things like background-image: url("myComponentsButton.svg") and have the resulting path look for the svg in the stylesheet's folder
                 // the last few seem to be needed for (at least) slick-carousel to build.
                 test: /\.(svg|jpg|png|ttf|eot|gif)$/,
                 use: {
-                    loader: "file-loader"
-                }
+                    loader: "file-loader",
+                },
             },
             {
                 test: /\.mp3$/,
-                type: "asset/resource"
+                type: "asset/resource",
             },
             {
                 test: /react-spring/,
                 // work-around for https://github.com/plouc/nivo/issues/1290 until it gets fixed.
-                sideEffects: true
-            }
-        ]
+                sideEffects: true,
+            },
+        ],
     },
 
     plugins: [
@@ -74,12 +74,12 @@ module.exports = {
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery",
-            "window.jQuery": "jquery"
+            "window.jQuery": "jquery",
         }),
         // don't include the notifier when building on server, which uses production
         process.env.NODE_ENV === "debug"
             ? new WebpackBuildNotifierPlugin({})
-            : new NothingPlugin()
+            : new NothingPlugin(),
     ],
     resolve: {
         extensions: [".ts", ".tsx"],
@@ -91,7 +91,7 @@ module.exports = {
         // in node_modules/@emotion/react instead of node_modules/react.
         alias: {
             react: path.resolve(__dirname, "node_modules/react"),
-            stylis: path.resolve(__dirname, "node_modules/stylis")
-        }
-    }
+            stylis: path.resolve(__dirname, "node_modules/stylis"),
+        },
+    },
 };

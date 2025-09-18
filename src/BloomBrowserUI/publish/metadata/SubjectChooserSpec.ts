@@ -9,21 +9,21 @@ describe("SubjectChooser tests", () => {
             label: "Plastic & reconstructive surgery",
             notes: "some notes",
             checked: true,
-            children: []
+            children: [],
         };
         const sub2: SubjectTreeNode = {
             value: "Y",
             label: "Children’s, Teenage & Educational",
             notes: "some notes",
             checked: true,
-            children: []
+            children: [],
         };
         const sub3: SubjectTreeNode = {
             value: "THV",
             label: "Alternative & renewable energy sources & technology",
             notes: "some notes",
             checked: true,
-            children: []
+            children: [],
         };
         list.push(sub1);
         list.push(sub2);
@@ -35,7 +35,7 @@ describe("SubjectChooser tests", () => {
             label: "Plastic & reconstructive surgery",
             notes: "some notes",
             checked: false,
-            children: []
+            children: [],
         };
 
         // SUT
@@ -55,14 +55,14 @@ describe("SubjectChooser tests", () => {
             label: "Plastic & reconstructive surgery",
             notes: "some notes",
             checked: true,
-            children: []
+            children: [],
         };
         const sub2: SubjectTreeNode = {
             value: "Y",
             label: "Children’s, Teenage & Educational",
             notes: "some notes",
             checked: true,
-            children: []
+            children: [],
         };
         list.push(sub1);
         list.push(sub2);
@@ -73,7 +73,7 @@ describe("SubjectChooser tests", () => {
             label: "Alternative & renewable energy sources & technology",
             notes: "some notes",
             checked: true,
-            children: []
+            children: [],
         };
 
         // SUT

@@ -17,7 +17,7 @@ export const DefaultSelectedBookInfo: ISelectedBookInfo = {
     deletable: false,
     collectionKind: "error", // better to see no button at all until we know which it is
     aboutBookInfoUrl: undefined,
-    isTemplate: false
+    isTemplate: false,
 };
 
 // Anything that uses this will always have the current book info. The first render will see the default
@@ -26,7 +26,7 @@ export const DefaultSelectedBookInfo: ISelectedBookInfo = {
 // yield the new information, based on this code monitoring a websocket.
 export function useMonitorBookSelection(): ISelectedBookInfo {
     const [selectedBookInfo, setSelectedBookInfo] = useState<ISelectedBookInfo>(
-        DefaultSelectedBookInfo
+        DefaultSelectedBookInfo,
     );
 
     // At this point, even a change of TC status on a book will cause Bloom to fire
@@ -36,11 +36,11 @@ export function useMonitorBookSelection(): ISelectedBookInfo {
     useSubscribeToWebSocketForObjectInMessageParam<ISelectedBookInfo>(
         "book-selection",
         "changed",
-        e => setSelectedBookInfo(e)
+        (e) => setSelectedBookInfo(e),
     );
     useEffect(() => {
-        get("app/selectedBookInfo", response =>
-            setSelectedBookInfo(response.data)
+        get("app/selectedBookInfo", (response) =>
+            setSelectedBookInfo(response.data),
         );
     }, []);
     return selectedBookInfo;

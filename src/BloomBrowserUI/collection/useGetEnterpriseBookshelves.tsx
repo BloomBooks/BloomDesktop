@@ -37,11 +37,11 @@ export function useGetEnterpriseBookshelves(): {
     const [project, setProject] = useState("");
     // First query: get the values of the two states above.
     useEffect(() => {
-        get("settings/bookShelfData", data => {
+        get("settings/bookShelfData", (data) => {
             const descriptor = data.data.subscriptionDescriptor;
             setProject(descriptor === "Default" ? "" : descriptor);
             setDefaultBookshelfUrlKey(
-                data.data.defaultBookshelfUrlKey || "none"
+                data.data.defaultBookshelfUrlKey || "none",
             );
         });
     }, []);
@@ -53,13 +53,13 @@ export function useGetEnterpriseBookshelves(): {
                   content_type: "enterpriseSubscription",
                   select: "fields.collections",
                   include: 2, // depth: we want the bookshelf collection objects as part of this query
-                  "fields.id": `${project}`
+                  "fields.id": `${project}`,
               }
-            : undefined // no project means we don't want useContentful to do a query
+            : undefined, // no project means we don't want useContentful to do a query
     );
 
     let bookshelves: IBookshelf[] = [
-        { value: "none", label: "None", tooltip: "" }
+        { value: "none", label: "None", tooltip: "" },
     ];
     if (!project) {
         // If we don't (yet) have a project, we want a completely empty list of options
@@ -74,7 +74,7 @@ export function useGetEnterpriseBookshelves(): {
 
             // note that "Drafts" in contentful seem come in here, but don't have a fields property.
             const collections: any[] = result[0].fields.collections.filter(
-                c => c.fields
+                (c) => c.fields,
             );
 
             // If all is well and we've completed the contentful query, we got an object that
@@ -98,8 +98,8 @@ export function useGetEnterpriseBookshelves(): {
                     //struggle with this, we could introduce a 3rd field just
                     //for this choosing, like "selector label".
                     label: c.fields.urlKey,
-                    tooltip: c.fields.label
-                }))
+                    tooltip: c.fields.label,
+                })),
             );
         }
     } else if (defaultBookshelfUrlKey && defaultBookshelfUrlKey !== "none") {
@@ -110,7 +110,7 @@ export function useGetEnterpriseBookshelves(): {
         bookshelves.push({
             value: defaultBookshelfUrlKey,
             label: defaultBookshelfUrlKey,
-            tooltip: ""
+            tooltip: "",
         });
     }
 
@@ -118,6 +118,6 @@ export function useGetEnterpriseBookshelves(): {
         project: project,
         defaultBookshelfUrlKey: defaultBookshelfUrlKey,
         validBookshelves: bookshelves,
-        error: error
+        error: error,
     };
 }

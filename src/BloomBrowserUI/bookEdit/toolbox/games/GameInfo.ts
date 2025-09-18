@@ -5,7 +5,7 @@ export enum GameType {
     DragImageToTarget,
     ChooseImageFromWord,
     ChooseWordFromImage,
-    CheckboxQuiz
+    CheckboxQuiz,
 }
 
 export function getGameType(activityType: string, page: HTMLElement): GameType {
@@ -48,5 +48,5 @@ const activityTypesForGames = [
 
     // these two are not currently enabled
     "drag-word-chooser-slider",
-    "drag-to-destination"
+    "drag-to-destination",
 ];

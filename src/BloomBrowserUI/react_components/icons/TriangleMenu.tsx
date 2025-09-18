@@ -9,7 +9,7 @@ interface TriangleMenuIconProps {
  * @param props Requires fillColor. Must not pass viewBox, this component sets its own viewBox.
  */
 export const TriangleMenuIcon = (
-    props: TriangleMenuIconProps & Omit<SvgIconProps, "viewBox">
+    props: TriangleMenuIconProps & Omit<SvgIconProps, "viewBox">,
 ) => {
     // NOTE: Not sure why, but SvgIcon's htmlColor prop didn't seem to help much.
     // So just explicitly ask for the fillColor

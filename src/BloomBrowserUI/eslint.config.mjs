@@ -40,22 +40,22 @@ export default [
             // and causes eslint to fail completely if we have eslintPluginPrettierRecommended enabled as above.
             // If we had much JS, it would probably benefit from linting even more than TS.
             // But as long as we don't, I think this can stand.
-            "**/*.js"
-        ]
+            "**/*.js",
+        ],
     },
     {
         files: [
             //"**/*.js", // parsing with ts rules, js files generate massive errors
             //"**/*.jsx", don't think we have any of these?
             "**/*.ts",
-            "**/*.tsx"
+            "**/*.tsx",
         ],
 
         // review: do we need these in addition to the recommended configs above?
         // seems to work without them
         plugins: {
             react: reactPlugin,
-            "react-hooks": hooksPlugin
+            "react-hooks": hooksPlugin,
         },
         languageOptions: {
             // not working: hopefully covered by tseslint.configs.recommended
@@ -64,21 +64,21 @@ export default [
                 ecmaVersion: "latest",
                 sourceType: "module",
                 ecmaFeatures: {
-                    jsx: true
-                }
+                    jsx: true,
+                },
             },
             globals: {
                 // I think this replaces the env section of the old .eslintrc.js
                 ...globals.browser,
                 ...globals.es2021,
                 ...globals.jasmine,
-                ...globals.jquery
-            }
+                ...globals.jquery,
+            },
         },
         settings: {
             react: {
-                version: "detect" // React version. "detect" automatically picks the version you have installed.
-            }
+                version: "detect", // React version. "detect" automatically picks the version you have installed.
+            },
         },
         rules: {
             ...hooksPlugin.configs.recommended.rules,
@@ -91,22 +91,22 @@ export default [
             "no-useless-escape": "off",
             "no-irregular-whitespace": [
                 "error",
-                { skipStrings: true, skipTemplates: true }
+                { skipStrings: true, skipTemplates: true },
             ],
             "no-warning-comments": [
                 1,
-                { terms: ["nocommit"], location: "anywhere" }
+                { terms: ["nocommit"], location: "anywhere" },
             ],
             // Downgraded from error to warnings
             "@typescript-eslint/no-empty-function": [
                 "warn",
-                { allow: ["arrowFunctions"] }
+                { allow: ["arrowFunctions"] },
             ],
             "@typescript-eslint/no-empty-interface": "warn",
             "@typescript-eslint/no-explicit-any": "warn",
             "@typescript-eslint/no-unused-vars": [
                 "warn",
-                { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }
+                { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
             ],
             "@typescript-eslint/no-var-requires": "warn",
             "no-case-declarations": "warn",
@@ -119,13 +119,13 @@ export default [
             "@typescript-eslint/triple-slash-reference": "off", // a lot of our legacy code still uses this
             "react/no-unescaped-entities": "off", // Complains about some special chars that sort of work, but due to the burden that enocded chars present to localizers, we'd prefer not to encode them if not necessary.
             "react/prop-types": "off", // Seems to require validation on the props parameter itself, but Typescript can already figure out the types through annotations in different places, seems unnecessary
-            "no-irregular-whitespace": "off"
+            "no-irregular-whitespace": "off",
             // If you want to temporarily reduce warnings, these four account for 100% as of Aug 2025
             // "@typescript-eslint/no-explicit-any": "off",
             // "@typescript-eslint/no-unused-vars": "off",
             // eqeqeq: "off",
             // "react-hooks/exhaustive-deps": "off"
-        }
+        },
     },
     // Add a specific override for Storybook files
     {
@@ -133,7 +133,7 @@ export default [
         rules: {
             // Disable React hooks rules for Storybook files
             "react-hooks/rules-of-hooks": "off",
-            "react-hooks/exhaustive-deps": "off"
-        }
-    }
+            "react-hooks/exhaustive-deps": "off",
+        },
+    },
 ];

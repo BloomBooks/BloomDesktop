@@ -4,7 +4,7 @@ import * as React from "react";
 import {
     ILocalizationProps,
     ILocalizationState,
-    LocalizableElement
+    LocalizableElement,
 } from "./l10nComponents";
 import Link from "@mui/material/Link";
 import BloomButton from "./bloomButton";
@@ -53,7 +53,7 @@ export class ToolBottomHelpLink extends React.Component<{ helpId: string }> {
 export const WhatsThisBlock: React.FunctionComponent<{
     // we could add this when we are using this for built-in help:   helpId: string;
     url: string;
-}> = props => {
+}> = (props) => {
     return (
         <div
             css={css`

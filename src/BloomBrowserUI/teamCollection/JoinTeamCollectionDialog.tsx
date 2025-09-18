@@ -8,17 +8,17 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "../react_components/BloomDialog/BloomDialog";
 import { useL10n } from "../react_components/l10nHooks";
 import {
     DialogCancelButton,
-    DialogReportButton
+    DialogReportButton,
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import {
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { ErrorBox, NoteBoxSansBorder } from "../react_components/boxes";
 
@@ -35,7 +35,7 @@ enum JoinCollectionState {
     // there is an existing local collection of the same name joined to another TC (different ID). Offer to report.
     "MatchesDifferentTeamCollection",
     // The JoinCollection file is lost...other necessary parts of the TC are missing.
-    "IncompleteTeamCollection"
+    "IncompleteTeamCollection",
 }
 
 // In normal use (not storybook), this is a top-level component in a ReactDialog.
@@ -54,12 +54,9 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
     joiningGuid?: string;
     localGuid?: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
-}> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+}> = (props) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     const dialogTitle = useL10n(
         'Join the Bloom Team Collection "%0"',
@@ -67,7 +64,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
         undefined,
         props.collectionName,
         undefined,
-        true // temporarilyDisableI18nWarning
+        true, // temporarilyDisableI18nWarning
     );
     const dialogState = getDialogStateFromProps();
     const l10nJoinButtonKey = getL10nKeyForJoinButton();
@@ -98,8 +95,8 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
             JoinCollectionState.MatchesExistingNonTeamCollection
             ? "TeamCollection.JoinAndMerge"
             : dialogState === JoinCollectionState.MatchesExistingTeamCollection
-            ? "TeamCollection.Open"
-            : "TeamCollection.Join";
+              ? "TeamCollection.Open"
+              : "TeamCollection.Join";
     }
 
     function getJoinButtonEnglish(): string {
@@ -107,8 +104,8 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
             JoinCollectionState.MatchesExistingNonTeamCollection
             ? "Join and Merge"
             : dialogState === JoinCollectionState.MatchesExistingTeamCollection
-            ? "Open"
-            : "Join";
+              ? "Open"
+              : "Join";
         // Leaving it as "join" for the pathological cases, though it will be disabled.
     }
 

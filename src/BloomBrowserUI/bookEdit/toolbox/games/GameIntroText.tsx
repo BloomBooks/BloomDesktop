@@ -5,7 +5,7 @@ import { GameType } from "./GameInfo";
 
 const GameIntroText: React.FunctionComponent<{
     gameType: GameType;
-}> = props => {
+}> = (props) => {
     let gameDetails = { instructionsL10nKey: "", headingL10nKey: "" };
     switch (props.gameType) {
         case GameType.DragLetterToTarget:
@@ -14,7 +14,8 @@ const GameIntroText: React.FunctionComponent<{
             gameDetails = {
                 instructionsL10nKey:
                     "EditTab.Toolbox.DragActivity.DragLetterInstructions",
-                headingL10nKey: "EditTab.Toolbox.DragActivity.DragLetterHeading"
+                headingL10nKey:
+                    "EditTab.Toolbox.DragActivity.DragLetterHeading",
             };
             break;
         case GameType.DragSortSentence:
@@ -46,7 +47,7 @@ const GameIntroText: React.FunctionComponent<{
                 instructionsL10nKey:
                     "EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions",
                 headingL10nKey:
-                    "EditTab.Toolbox.GameTool.ChooseImageFromWordHeading"
+                    "EditTab.Toolbox.GameTool.ChooseImageFromWordHeading",
             };
             break;
         case GameType.ChooseWordFromImage:
@@ -54,14 +55,14 @@ const GameIntroText: React.FunctionComponent<{
                 instructionsL10nKey:
                     "EditTab.Toolbox.GameTool.ChooseWordFromImageInstructions",
                 headingL10nKey:
-                    "EditTab.Toolbox.GameTool.ChooseWordFromImageHeading"
+                    "EditTab.Toolbox.GameTool.ChooseWordFromImageHeading",
             };
             break;
         case GameType.CheckboxQuiz:
             gameDetails = {
                 instructionsL10nKey:
                     "EditTab.Toolbox.GameTool.CheckboxQuizInstructions",
-                headingL10nKey: "EditTab.Toolbox.GameTool.CheckboxQuizHeading"
+                headingL10nKey: "EditTab.Toolbox.GameTool.CheckboxQuizHeading",
             };
             break;
     }
@@ -87,7 +88,7 @@ const GameIntroText: React.FunctionComponent<{
 export const Instructions: React.FunctionComponent<{
     l10nKey: string;
     l10nTitleKey?: string;
-}> = props => {
+}> = (props) => {
     return (
         <Div
             css={css`

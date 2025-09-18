@@ -1,6 +1,6 @@
 import {
     theOneLanguageDataInstance,
-    ResetLanguageDataInstance
+    ResetLanguageDataInstance,
 } from "./libSynphony/synphony_lib";
 import { getTheOneReaderToolsModel } from "./readerToolsModel";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
@@ -31,7 +31,7 @@ describe("Bloom Edit Controls tests", () => {
 
         settings.stages.push({
             letters: "a c e r s t y",
-            sightWords: "feline rodent"
+            sightWords: "feline rodent",
         });
         settings.stages.push({ letters: "b f o", sightWords: "one two" });
         settings.stages.push({ letters: "g i w", sightWords: "fruit nut" });
@@ -41,21 +41,21 @@ describe("Bloom Edit Controls tests", () => {
             maxWordsPerPage: "6",
             maxWordsPerBook: "90",
             maxUniqueWordsPerBook: "",
-            thingsToRemember: [""]
+            thingsToRemember: [""],
         });
         settings.levels.push({
             maxWordsPerSentence: "5",
             maxWordsPerPage: "10",
             maxWordsPerBook: "100",
             maxUniqueWordsPerBook: "",
-            thingsToRemember: [""]
+            thingsToRemember: [""],
         });
         settings.levels.push({
             maxWordsPerSentence: "7",
             maxWordsPerPage: "14",
             maxWordsPerBook: "110",
             maxUniqueWordsPerBook: "",
-            thingsToRemember: [""]
+            thingsToRemember: [""],
         });
 
         const api = new ReadersSynphonyWrapper();
@@ -78,12 +78,12 @@ describe("Bloom Edit Controls tests", () => {
             decStage: "something",
             incStage: "something",
             decLevel: "something",
-            incLevel: "something"
+            incLevel: "something",
         };
         getTheOneReaderToolsModel().setElementAttribute = (
             elementId,
             attrName,
-            val
+            val,
         ) => {
             classValues[elementId] = val;
         };
@@ -91,7 +91,7 @@ describe("Bloom Edit Controls tests", () => {
         //noinspection JSUnusedLocalSymbols
         getTheOneReaderToolsModel().getElementAttribute = (
             elementId,
-            attrName
+            attrName,
         ) => {
             const result = classValues[elementId];
             if (result) {
@@ -171,88 +171,148 @@ describe("Bloom Edit Controls tests", () => {
     it("setting stage updates stage button visibility", () => {
         getTheOneReaderToolsModel().setStageNumber(3);
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("decStage", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "decStage",
+                "class",
+            ),
         ).toBe("something");
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("incStage", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "incStage",
+                "class",
+            ),
         ).toBe("something disabledIcon");
 
         // Now at Stage 2 of 3
         getTheOneReaderToolsModel().decrementStage();
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("incStage", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "incStage",
+                "class",
+            ),
         ).toBe("something");
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("decStage", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "decStage",
+                "class",
+            ),
         ).toBe("something");
 
         // Now at Stage 1 of 3
         getTheOneReaderToolsModel().decrementStage();
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("incStage", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "incStage",
+                "class",
+            ),
         ).toBe("something");
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("decStage", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "decStage",
+                "class",
+            ),
         ).toBe("something disabledIcon");
 
         // Now at Stage 2 of 3
         getTheOneReaderToolsModel().incrementStage();
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("incStage", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "incStage",
+                "class",
+            ),
         ).toBe("something");
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("decStage", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "decStage",
+                "class",
+            ),
         ).toBe("something");
 
         // Now at Stage 3 of 3
         getTheOneReaderToolsModel().incrementStage();
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("decStage", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "decStage",
+                "class",
+            ),
         ).toBe("something");
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("incStage", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "incStage",
+                "class",
+            ),
         ).toBe("something disabledIcon");
     });
 
     it("updates level button visibility when setting level", () => {
         getTheOneReaderToolsModel().setLevelNumber(3);
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("decLevel", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "decLevel",
+                "class",
+            ),
         ).toBe("something");
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("incLevel", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "incLevel",
+                "class",
+            ),
         ).toBe("something disabledIcon");
 
         getTheOneReaderToolsModel().decrementLevel();
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("incLevel", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "incLevel",
+                "class",
+            ),
         ).toBe("something");
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("decLevel", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "decLevel",
+                "class",
+            ),
         ).toBe("something");
 
         getTheOneReaderToolsModel().decrementLevel();
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("incLevel", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "incLevel",
+                "class",
+            ),
         ).toBe("something");
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("decLevel", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "decLevel",
+                "class",
+            ),
         ).toBe("something disabledIcon");
 
         getTheOneReaderToolsModel().incrementLevel();
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("incLevel", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "incLevel",
+                "class",
+            ),
         ).toBe("something");
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("decLevel", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "decLevel",
+                "class",
+            ),
         ).toBe("something");
 
         getTheOneReaderToolsModel().incrementLevel();
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("decLevel", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "decLevel",
+                "class",
+            ),
         ).toBe("something");
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("incLevel", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "incLevel",
+                "class",
+            ),
         ).toBe("something disabledIcon");
     });
 
@@ -277,7 +337,7 @@ describe("Bloom Edit Controls tests", () => {
             .withContext("1. Set stage to 1")
             .toHaveBeenCalledWith(
                 "wordList",
-                '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>'
+                '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>',
             );
 
         (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
@@ -286,7 +346,7 @@ describe("Bloom Edit Controls tests", () => {
             .withContext("2. Sort by length")
             .toHaveBeenCalledWith(
                 "wordList",
-                '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>'
+                '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>',
             );
 
         // Note: originally this test had feline before rate,
@@ -298,7 +358,7 @@ describe("Bloom Edit Controls tests", () => {
             .withContext("3. Sort by frequency")
             .toHaveBeenCalledWith(
                 "wordList",
-                '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>'
+                '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>',
             );
 
         (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
@@ -307,7 +367,7 @@ describe("Bloom Edit Controls tests", () => {
             .withContext("4. Sort alphabetically")
             .toHaveBeenCalledWith(
                 "wordList",
-                '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>'
+                '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>',
             );
 
         (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
@@ -316,7 +376,7 @@ describe("Bloom Edit Controls tests", () => {
             .withContext("5. Set stage back to 2")
             .toHaveBeenCalledWith(
                 "wordList",
-                '<div class="word lang1InATool "> bob</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div><div class="word lang1InATool  sight-word"> two</div>'
+                '<div class="word lang1InATool "> bob</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div><div class="word lang1InATool  sight-word"> two</div>',
             );
 
         (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
@@ -325,7 +385,7 @@ describe("Bloom Edit Controls tests", () => {
             .withContext("6. Stage 2, Sort by length")
             .toHaveBeenCalledWith(
                 "wordList",
-                '<div class="word lang1InATool "> bob</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool "> sat</div><div class="word lang1InATool  sight-word"> two</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>'
+                '<div class="word lang1InATool "> bob</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool "> sat</div><div class="word lang1InATool  sight-word"> two</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>',
             );
 
         // Again, note that rate is considered to have freq=1 because it appears in moreWords, so it comes before feline (freq=0)
@@ -335,7 +395,7 @@ describe("Bloom Edit Controls tests", () => {
             .withContext("7. Stage 2, Sort by frequency")
             .toHaveBeenCalledWith(
                 "wordList",
-                '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> bob</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool  sight-word"> two</div>'
+                '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> bob</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool  sight-word"> two</div>',
             );
     });
 
@@ -348,42 +408,42 @@ describe("Bloom Edit Controls tests", () => {
         expect(
             getTheOneReaderToolsModel().getElementAttribute(
                 "sortAlphabetic",
-                "class"
-            )
+                "class",
+            ),
         ).toBe("sortItem");
         expect(
             getTheOneReaderToolsModel().getElementAttribute(
                 "sortLength",
-                "class"
-            )
+                "class",
+            ),
         ).toBe("sortItem sortIconSelected");
 
         getTheOneReaderToolsModel().sortByFrequency();
         expect(
             getTheOneReaderToolsModel().getElementAttribute(
                 "sortLength",
-                "class"
-            )
+                "class",
+            ),
         ).toBe("sortItem");
         expect(
             getTheOneReaderToolsModel().getElementAttribute(
                 "sortFrequency",
-                "class"
-            )
+                "class",
+            ),
         ).toBe("sortItem sortIconSelected");
 
         getTheOneReaderToolsModel().sortAlphabetically();
         expect(
             getTheOneReaderToolsModel().getElementAttribute(
                 "sortFrequency",
-                "class"
-            )
+                "class",
+            ),
         ).toBe("sortItem");
         expect(
             getTheOneReaderToolsModel().getElementAttribute(
                 "sortAlphabetic",
-                "class"
-            )
+                "class",
+            ),
         ).toBe("sortItem sortIconSelected");
 
         classValues.sortLength = "sortItem sortIconSelected"; // anomolous...length is also selected, though not properly current.
@@ -393,14 +453,14 @@ describe("Bloom Edit Controls tests", () => {
         expect(
             getTheOneReaderToolsModel().getElementAttribute(
                 "sortAlphabetic",
-                "class"
-            )
+                "class",
+            ),
         ).toBe("sortItem");
         expect(
             getTheOneReaderToolsModel().getElementAttribute(
                 "sortLength",
-                "class"
-            )
+                "class",
+            ),
         ).toBe("sortItem sortIconSelected");
     });
 
@@ -408,10 +468,10 @@ describe("Bloom Edit Controls tests", () => {
         getTheOneReaderToolsModel().ckEditorLoaded = true; // some things only happen once the editor is loaded; pretend it is.
         getTheOneReaderToolsModel().updateControlContents();
         expect(
-            getTheOneReaderToolsModel().updateElementContent
+            getTheOneReaderToolsModel().updateElementContent,
         ).toHaveBeenCalledWith(
             "wordList",
-            '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>'
+            '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>',
         );
     });
 
@@ -419,7 +479,10 @@ describe("Bloom Edit Controls tests", () => {
         getTheOneReaderToolsModel().updateControlContents();
         expect(stageNOfMElement.innerText).toBe("Stage 1 of 3");
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("decStage", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "decStage",
+                "class",
+            ),
         ).toBe("something disabledIcon");
     });
 
@@ -427,7 +490,10 @@ describe("Bloom Edit Controls tests", () => {
         getTheOneReaderToolsModel().updateControlContents();
         expect(levelNOfMElement.innerText).toBe("Level 1 of 3");
         expect(
-            getTheOneReaderToolsModel().getElementAttribute("decLevel", "class")
+            getTheOneReaderToolsModel().getElementAttribute(
+                "decLevel",
+                "class",
+            ),
         ).toBe("something disabledIcon");
     });
 
@@ -439,39 +505,39 @@ describe("Bloom Edit Controls tests", () => {
     it("sets level max values on init", () => {
         getTheOneReaderToolsModel().updateControlContents();
         expect(
-            getTheOneReaderToolsModel().updateElementContent
+            getTheOneReaderToolsModel().updateElementContent,
         ).toHaveBeenCalledWith("maxWordsPerPage", "6");
         expect(
-            getTheOneReaderToolsModel().updateElementContent
+            getTheOneReaderToolsModel().updateElementContent,
         ).toHaveBeenCalledWith("maxWordsPerPageBook", "6");
         expect(
-            getTheOneReaderToolsModel().updateElementContent
+            getTheOneReaderToolsModel().updateElementContent,
         ).toHaveBeenCalledWith("maxWordsPerBook", "90");
         expect(
-            getTheOneReaderToolsModel().updateElementContent
+            getTheOneReaderToolsModel().updateElementContent,
         ).toHaveBeenCalledWith("maxWordsPerSentence", "3");
         //expect(getTheOneReaderToolsModel().updateElementContent).toHaveBeenCalledWith("maxUniqueWordsPerBook", "0");
         expect(
             getTheOneReaderToolsModel().getElementAttribute(
                 "maxWordsPerBook",
-                "class"
-            )
+                "class",
+            ),
         ).toBe("");
     });
 
     it("updates max values when level changes", () => {
         getTheOneReaderToolsModel().incrementLevel();
         expect(
-            getTheOneReaderToolsModel().updateElementContent
+            getTheOneReaderToolsModel().updateElementContent,
         ).toHaveBeenCalledWith("maxWordsPerPage", "10");
         expect(
-            getTheOneReaderToolsModel().updateElementContent
+            getTheOneReaderToolsModel().updateElementContent,
         ).toHaveBeenCalledWith("maxWordsPerPageBook", "10");
         expect(
-            getTheOneReaderToolsModel().updateElementContent
+            getTheOneReaderToolsModel().updateElementContent,
         ).not.toHaveBeenCalledWith("maxWordsPerBook", "0");
         expect(
-            getTheOneReaderToolsModel().updateElementContent
+            getTheOneReaderToolsModel().updateElementContent,
         ).toHaveBeenCalledWith("maxWordsPerSentence", "5");
         //expect(getTheOneReaderToolsModel().updateElementContent).toHaveBeenCalledWith("maxUniqueWordsPerBook", "12");
         //expect(getTheOneReaderToolsModel().getElementAttribute("maxWordsPerBook", "class")).toBe("disabledLimit");

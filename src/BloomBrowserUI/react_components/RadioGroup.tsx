@@ -3,7 +3,7 @@ import {
     FormControlLabel,
     FormControl,
     RadioGroup as MuiRadioGroup,
-    Radio
+    Radio,
 } from "@mui/material";
 
 // This is a "controlled component".
@@ -28,14 +28,14 @@ export const RadioGroup: React.FunctionComponent<{
     // the current value, must match one of the keys found in `choices`.
     value: string;
     onChange: (method: string) => void;
-}> = props => {
+}> = (props) => {
     return (
         <FormControl>
             <MuiRadioGroup
                 value={props.value}
                 onChange={(event, newValue) => props.onChange(newValue)}
             >
-                {Object.keys(props.choices).map(key => (
+                {Object.keys(props.choices).map((key) => (
                     <FormControlLabel
                         key={key}
                         value={key}

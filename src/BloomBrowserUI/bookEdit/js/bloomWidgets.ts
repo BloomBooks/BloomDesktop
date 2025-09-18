@@ -13,13 +13,13 @@ import { getString } from "../../utils/bloomApi";
 
 // Initialization function, sets up all the editing functions we support for these elements.
 export function SetupWidgetEditing(container: HTMLElement): void {
-    getFeatureStatusAsync("widget").then(featureStatus => {
+    getFeatureStatusAsync("widget").then((featureStatus) => {
         const isWidgetFeatureEnabled: boolean = featureStatus?.enabled || false;
         if (isWidgetFeatureEnabled) {
             const widgets = Array.from(
-                container.getElementsByClassName("bloom-widgetContainer")
+                container.getElementsByClassName("bloom-widgetContainer"),
             );
-            widgets.forEach(w => SetupWidget(w));
+            widgets.forEach((w) => SetupWidget(w));
         }
     });
 }
@@ -32,7 +32,7 @@ function SetupWidget(w: Element): void {
             '" title="' +
             theOneLocalizationManager.getText(
                 "EditTab.Widget.ChooseWidget",
-                "Choose Widget"
+                "Choose Widget",
             ) +
             '"></button>';
         const chooseButton = wrapper.firstChild as HTMLElement;
@@ -41,7 +41,7 @@ function SetupWidget(w: Element): void {
             // The C# code displays the choose file dialog, unzips the widget into
             // an appropriate place, and returns us a relative path to it suitable
             // for the iframe src. Or an empty string, if the user canceled.
-            getString("editView/chooseWidget", widgetSrc => {
+            getString("editView/chooseWidget", (widgetSrc) => {
                 if (!widgetSrc) {
                     return; // user canceled.
                 }
@@ -60,10 +60,10 @@ function SetupWidget(w: Element): void {
     });
     w.addEventListener("mouseleave", () => {
         const buttons = Array.from(
-            w.getElementsByClassName("imageOverlayButton")
+            w.getElementsByClassName("imageOverlayButton"),
         );
         buttons.forEach((btn: HTMLElement) =>
-            btn.parentElement!.removeChild(btn)
+            btn.parentElement!.removeChild(btn),
         );
     });
 }

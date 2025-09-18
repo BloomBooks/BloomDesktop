@@ -11,7 +11,7 @@ import { useState } from "react";
 import {
     SubscriptionCodeIntegrity,
     useLocalizedTier,
-    useSubscriptionInfo
+    useSubscriptionInfo,
 } from "./useSubscriptionInfo";
 import { NoteBox, WarningBox } from "../react_components/boxes";
 
@@ -56,7 +56,7 @@ export const SubscriptionControls: React.FC = () => {
         subscriptionSummary,
         missingBrandingFiles,
         editingBlorgBook,
-        haveData
+        haveData,
     } = useSubscriptionInfo();
 
     const [status, setStatus] = useState<Status>("None");
@@ -68,15 +68,15 @@ export const SubscriptionControls: React.FC = () => {
                 subscriptionCodeIntegrity,
                 expiryDateStringAsYYYYMMDD,
                 editingBlorgBook,
-                missingBrandingFiles
-            )
+                missingBrandingFiles,
+            ),
         );
     }, [
         code,
         expiryDateStringAsYYYYMMDD,
         editingBlorgBook,
         subscriptionCodeIntegrity,
-        missingBrandingFiles
+        missingBrandingFiles,
     ]);
 
     if (!haveData) {
@@ -117,7 +117,7 @@ const StatusText: React.FC<{
     tier: string;
     status: Status;
     expiryDateStringAsYYYYMMDD: string;
-}> = props => {
+}> = (props) => {
     const localizedTier = useLocalizedTier(props.tier);
     return (
         <div>
@@ -156,8 +156,8 @@ const StatusText: React.FC<{
                                     color: "black",
                                     borderColor: "black",
                                     "&:hover": {
-                                        borderColor: "black"
-                                    }
+                                        borderColor: "black",
+                                    },
                                 }}
                             >
                                 <Label l10nKey="Settings.Subscription.CheckUpdates">
@@ -212,7 +212,7 @@ export function getSafeLocalizedDate(dateAsYYYYMMDD: string | null) {
         ? new Date(
               Number(dateParts[0]),
               Number(dateParts[1]) - 1,
-              Number(dateParts[2])
+              Number(dateParts[2]),
           ).toLocaleDateString()
         : "";
 }
@@ -223,13 +223,13 @@ function getStatus(
     subscriptionCodeIntegrity: SubscriptionCodeIntegrity,
     expiryDateStringAsYYYYMMDD: string,
     editingBlorgBook: boolean,
-    missingBrandingFiles: boolean
+    missingBrandingFiles: boolean,
 ): Status {
     let status = getStatusSansEditingBlorgBook(
         subscriptionCode,
         subscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD,
-        missingBrandingFiles
+        missingBrandingFiles,
     );
     // I'm not 100% sure this is the best way to handle EditingBlorgBook,
     // but I'm following 6.0 which treats a full, normal subscription as normal
@@ -247,7 +247,7 @@ function getStatusSansEditingBlorgBook(
     subscriptionCode: string,
     subscriptionCodeIntegrity: SubscriptionCodeIntegrity,
     expiryDateStringAsYYYYMMDD: string,
-    missingBrandingFiles: boolean
+    missingBrandingFiles: boolean,
 ): Status {
     const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
     if (subscriptionCode === "" || subscriptionCodeIntegrity === "none") {
@@ -270,7 +270,7 @@ function getStatusSansEditingBlorgBook(
     return "SubscriptionGood";
 }
 
-export const BrandingSummary: React.FC<{ summaryHtml: string }> = props => {
+export const BrandingSummary: React.FC<{ summaryHtml: string }> = (props) => {
     return (
         <div
             className="summary"
@@ -280,7 +280,7 @@ export const BrandingSummary: React.FC<{ summaryHtml: string }> = props => {
                 height: 106px;
             `}
             dangerouslySetInnerHTML={{
-                __html: props.summaryHtml
+                __html: props.summaryHtml,
             }}
         />
     );
@@ -289,18 +289,18 @@ export const BrandingSummary: React.FC<{ summaryHtml: string }> = props => {
 const Editor: React.FC<{ status: Status }> = ({ status }) => {
     const [subscriptionCode, setSubscriptionCode] = useApiStringState(
         "settings/subscriptionCode",
-        ""
+        "",
     );
 
     // Handle copy/paste operations
     const handleCopy = () => {
         postJson("common/clipboardText", {
-            text: subscriptionCode
+            text: subscriptionCode,
         });
     };
 
     const handlePaste = () => {
-        get("common/clipboardText", result => {
+        get("common/clipboardText", (result) => {
             setSubscriptionCode(result.data);
             document.dispatchEvent(new Event("subscriptionCodeChanged"));
         });
@@ -310,7 +310,7 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
         return [
             "SubscriptionIncorrect",
             "SubscriptionExpired",
-            "SubscriptionLegacy"
+            "SubscriptionLegacy",
         ].includes(status);
     };
     const shouldShowGreenCheck = () => {
@@ -322,23 +322,26 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
     React.useEffect(() => {
         try {
             const codeElt = document.getElementById(
-                "subscriptionCodeInput"
+                "subscriptionCodeInput",
             ) as HTMLInputElement;
             if (codeElt !== null && selectionPosition !== null) {
-                codeElt.selectionStart = codeElt.selectionEnd = selectionPosition;
+                codeElt.selectionStart = codeElt.selectionEnd =
+                    selectionPosition;
             }
         } catch (e) {
             console.error("Error restoring cursor position:", e);
         }
     }, [selectionPosition]);
     const userTypedOrPastedCode = (
-        event: React.ChangeEvent<HTMLInputElement>
+        event: React.ChangeEvent<HTMLInputElement>,
     ) => {
         // Store the selection position before React updates
         setSelectionPosition(
-            (document.getElementById(
-                "subscriptionCodeInput"
-            ) as HTMLInputElement)?.selectionStart
+            (
+                document.getElementById(
+                    "subscriptionCodeInput",
+                ) as HTMLInputElement
+            )?.selectionStart,
         );
 
         setSubscriptionCode(event.target.value);
@@ -375,7 +378,7 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
                     value={
                         status === "EditingBlorgBook"
                             ? getSubscriptionCodeToDisplayForEditingBlorgBook(
-                                  subscriptionCode
+                                  subscriptionCode,
                               )
                             : subscriptionCode
                     }
@@ -385,7 +388,8 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
                         margin-left: 5px;
                         padding-right: 20px; // clear of icon
                         flex-grow: 1;
-                        font-family: Consolas, monospace; // show zeros distinctly
+                        font-family:
+                            Consolas, monospace; // show zeros distinctly
                         padding: 5px;
                     `}
                 />
@@ -435,7 +439,7 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
 };
 
 function getSubscriptionCodeToDisplayForEditingBlorgBook(
-    subscriptionCode: string
+    subscriptionCode: string,
 ): string {
     let result = subscriptionCode;
     result = result.replace("-***-***", "");

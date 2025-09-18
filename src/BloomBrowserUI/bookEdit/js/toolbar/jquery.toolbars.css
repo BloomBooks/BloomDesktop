@@ -1,6 +1,5 @@
-.tool-container
-{
-    background-color: #F4F3F3;
+.tool-container {
+    background-color: #f4f3f3;
     /*[disabled]background:-webkit-gradient(linear, left top, left bottom, color-stop(14%, #d0cbcb), color-stop(100%, #e9e5e5));*/
     /*[disabled]background:-moz-linear-gradient(top, #d0cbcb 14%, #e9e5e5 100%);*/
     /*[disabled]background:-ms-linear-gradient(top, #d0cbcb 14%,#e9e5e5 100%);*/
@@ -11,50 +10,46 @@
     box-shadow: 0px 0px 2px #000;
     position: absolute;
 }
-.tool-container.tool-top, .tool-container.tool-bottom
-{
+.tool-container.tool-top,
+.tool-container.tool-bottom {
     height: 34px;
-    border-bottom: 1px solid #BEB8B8;
+    border-bottom: 1px solid #beb8b8;
     /*#B1A9A9*/
 }
-.tool-items
-{
+.tool-items {
     height: 100%;
 }
-.tool-top .tool-item, .tool-bottom .tool-item
-{
+.tool-top .tool-item,
+.tool-bottom .tool-item {
     float: left;
-    border-right: 1px solid #E2DFDF;
-    border-left: 1px solid #9F9898;
+    border-right: 1px solid #e2dfdf;
+    border-left: 1px solid #9f9898;
 }
-.tool-left .tool-item, .tool-right .tool-item
-{
+.tool-left .tool-item,
+.tool-right .tool-item {
     height: 34px;
-    border-top: 1px solid #E2DFDF;
-    border-bottom: 1px solid #9F9898;
+    border-top: 1px solid #e2dfdf;
+    border-bottom: 1px solid #9f9898;
 }
-.tool-item
-{
+.tool-item {
     height: 100%;
     display: block;
     width: 44px;
     text-align: center;
 }
-.tool-item:first-child
-{
+.tool-item:first-child {
     border-left: none;
 }
-.tool-left .tool-item:first-child, .tool-right .tool-item:first-child
-{
+.tool-left .tool-item:first-child,
+.tool-right .tool-item:first-child {
     border-top: 1px solid transparent;
 }
-.tool-item:last-child
-{
+.tool-item:last-child {
     border-right: none;
     border-bottom: none;
 }
-.tool-item.selected, .tool-item:hover
-{
+.tool-item.selected,
+.tool-item:hover {
     /*[disabled]background:#A79F9F;*/
     /*[disabled]background:-webkit-gradient(linear, left top, left bottom, color-stop(0%, #a79f9f), color-stop(93%, #e2dfdf));*/
     /*[disabled]background:-moz-linear-gradient(top, #a79f9f 0%, #e2dfdf 93%);*/
@@ -64,71 +59,64 @@
     /*[disabled]filter:progid:DXImageTransform.Microsoft.gradient( startColorstr='#a79f9f', endColorstr='#e2dfdf',GradientType=0 );*/
     box-shadow: 0px 0px 2px #000;
 }
-.tool-top .tool-item:last-child:hover, .tool-bottom .tool-item:last-child:hover
-{
+.tool-top .tool-item:last-child:hover,
+.tool-bottom .tool-item:last-child:hover {
     border-top-right-radius: 4px;
     border-bottom-right-radius: 4px;
 }
-.tool-top .tool-item:first-child:hover, .tool-bottom .tool-item:first-child:hover
-{
+.tool-top .tool-item:first-child:hover,
+.tool-bottom .tool-item:first-child:hover {
     border-top-left-radius: 4px;
     border-bottom-left-radius: 4px;
 }
-.tool-left .tool-item:last-child:hover, .tool-right .tool-item:last-child:hover
-{
+.tool-left .tool-item:last-child:hover,
+.tool-right .tool-item:last-child:hover {
     border-bottom-right-radius: 4px;
     border-bottom-left-radius: 4px;
 }
-.tool-left .tool-item:first-child:hover, .tool-right .tool-item:first-child:hover
-{
+.tool-left .tool-item:first-child:hover,
+.tool-right .tool-item:first-child:hover {
     border-top-right-radius: 4px;
     border-top-left-radius: 4px;
 }
-.tool-container .arrow
-{
+.tool-container .arrow {
     width: 0;
     height: 0;
     position: absolute;
     border-width: 7px;
     border-style: solid;
 }
-.tool-container.tool-top .arrow
-{
-    border-color: #E9E5E5 transparent transparent;
+.tool-container.tool-top .arrow {
+    border-color: #e9e5e5 transparent transparent;
     left: 50%;
     bottom: -14px;
     margin-left: -7px;
 }
-.tool-container.tool-bottom .arrow
-{
-    border-color: transparent transparent #E9E5E5;
+.tool-container.tool-bottom .arrow {
+    border-color: transparent transparent #e9e5e5;
     left: 50%;
     top: -14px;
     margin-left: -7px;
 }
-.tool-container.tool-left .arrow
-{
-    border-color: transparent transparent transparent #F4F3F3;
+.tool-container.tool-left .arrow {
+    border-color: transparent transparent transparent #f4f3f3;
     top: 50%;
     right: -14px;
     margin-top: -7px;
 }
-.tool-container.tool-right .arrow
-{
-    border-color: transparent #E9E5E5 transparent transparent;
+.tool-container.tool-right .arrow {
+    border-color: transparent #e9e5e5 transparent transparent;
     top: 50%;
     left: -14px;
     margin-top: -7px;
 }
-.demo-link
-{
-    color: #89CDE4;
+.demo-link {
+    color: #89cde4;
     text-decoration: underline;
     cursor: pointer;
     margin-left: 30px;
 }
-.demo-link:hover
-{
+.demo-link:hover {
     text-decoration: none;
     cursor: pointer;
 }

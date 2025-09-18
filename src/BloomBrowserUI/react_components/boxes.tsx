@@ -5,7 +5,7 @@ import {
     kDialogPadding,
     kBloomBlue,
     kBorderRadiusForSpecialBlocks,
-    kBloomBlue50Transparent
+    kBloomBlue50Transparent,
 } from "../bloomMaterialUITheme";
 
 import InfoIcon from "@mui/icons-material/Info";
@@ -26,7 +26,7 @@ export const BoxWithIconAndText: React.FunctionComponent<{
     backgroundColor?: string;
     icon?: JSX.Element;
     bottomRightButton?: JSX.Element;
-}> = props => {
+}> = (props) => {
     let border = css``;
     if (props.hasBorder) {
         border = css`
@@ -52,7 +52,7 @@ export const BoxWithIconAndText: React.FunctionComponent<{
             key: element.key,
             ref: element.ref,
             ...element.props,
-            ...props
+            ...props,
         });
     return (
         <Box
@@ -61,7 +61,7 @@ export const BoxWithIconAndText: React.FunctionComponent<{
                 display: flex;
                 flex-direction: column;
                 background-color: ${props.backgroundColor ||
-                    kLightBlueBackground};
+                kLightBlueBackground};
                 border-radius: ${kBorderRadiusForSpecialBlocks};
                 padding: ${kDialogPadding};
                 color: ${props.color || kBloomBlue};
@@ -112,7 +112,9 @@ export const BoxWithIconAndText: React.FunctionComponent<{
     );
 };
 
-export const NoteBoxSansBorder: React.FunctionComponent<IBoxProps> = props => {
+export const NoteBoxSansBorder: React.FunctionComponent<IBoxProps> = (
+    props,
+) => {
     return <BoxWithIconAndText {...props}>{props.children}</BoxWithIconAndText>;
 };
 
@@ -126,7 +128,7 @@ interface IBoxProps {
     >;
     bottomRightButton?: JSX.Element;
 }
-export const NoteBox: React.FunctionComponent<IBoxProps> = props => {
+export const NoteBox: React.FunctionComponent<IBoxProps> = (props) => {
     const localizedMessage = useL10n(props.l10Msg || "", props.l10nKey || null);
     return (
         <BoxWithIconAndText
@@ -140,7 +142,7 @@ export const NoteBox: React.FunctionComponent<IBoxProps> = props => {
     );
 };
 
-export const WaitBox: React.FunctionComponent<IBoxProps> = props => {
+export const WaitBox: React.FunctionComponent<IBoxProps> = (props) => {
     const localizedMessage = useL10n(props.l10Msg || "", props.l10nKey || null);
     return (
         <BoxWithIconAndText
@@ -155,7 +157,7 @@ export const WaitBox: React.FunctionComponent<IBoxProps> = props => {
     );
 };
 
-export const WarningBox: React.FunctionComponent<IBoxProps> = props => {
+export const WarningBox: React.FunctionComponent<IBoxProps> = (props) => {
     const localizedMessage = useL10n(props.l10Msg || "", props.l10nKey || null);
     return (
         <BoxWithIconAndText
@@ -170,7 +172,7 @@ export const WarningBox: React.FunctionComponent<IBoxProps> = props => {
     );
 };
 
-export const ErrorBox: React.FunctionComponent<IBoxProps> = props => {
+export const ErrorBox: React.FunctionComponent<IBoxProps> = (props) => {
     const localizedMessage = useL10n(props.l10Msg || "", props.l10nKey || null);
     return (
         <BoxWithIconAndText

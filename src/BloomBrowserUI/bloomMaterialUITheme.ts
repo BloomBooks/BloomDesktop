@@ -3,7 +3,7 @@ import "./bloomWebFonts.less";
 import {
     kBloomDisabledOpacity,
     kBloomDisabledText,
-    kBloomToolboxWhite
+    kBloomToolboxWhite,
 } from "./utils/colorUtils";
 
 export const kBloomBlue = "#1d94a4";
@@ -70,15 +70,15 @@ export const lightTheme = createTheme({
         text: { disabled: kBloomDisabledText },
         action: {
             disabled: kBloomDisabledText,
-            disabledOpacity: kBloomDisabledOpacity
-        }
+            disabledOpacity: kBloomDisabledOpacity,
+        },
     },
     typography: {
         fontSize: 12,
         fontFamily: kUiFontStack,
         h6: {
-            fontSize: "1rem"
-        }
+            fontSize: "1rem",
+        },
     },
     components: {
         MuiLink: {
@@ -87,19 +87,19 @@ export const lightTheme = createTheme({
                     props: { variant: "body1" },
                     style: {
                         variantMapping: {
-                            h6: "h1"
-                        }
-                    }
-                }
+                            h6: "h1",
+                        },
+                    },
+                },
             ],
             // This makes all MuiLinks (import { Link as MuiLink } from "@mui/material";)
             // default to our blue color. Note that it doesn't apply to plain <a> react
             // components.
             styleOverrides: {
                 root: {
-                    color: kBloomBlue
-                }
-            }
+                    color: kBloomBlue,
+                },
+            },
         },
 
         MuiTooltip: {
@@ -111,13 +111,13 @@ export const lightTheme = createTheme({
                     padding: "10px",
                     a: {
                         color: "white",
-                        textDecorationColor: "white"
-                    }
+                        textDecorationColor: "white",
+                    },
                 },
                 arrow: {
-                    color: kBloomBlueTextBackground
-                }
-            }
+                    color: kBloomBlueTextBackground,
+                },
+            },
         },
         MuiCheckbox: {
             styleOverrides: {
@@ -127,19 +127,19 @@ export const lightTheme = createTheme({
                     // In Material-UI 4.0, these just FLAT OUT DON'T WORK, despite the documentation, which I read to say that, if we didn't
                     // specify a `color` above, would then let us specify the color you get for primary and secondary. See https://github.com/mui-org/material-ui/issues/13895
                     colorPrimary: "green", //kBloomBlue,
-                    colorSecondary: "pink" //kBloomPurple
-                }
-            }
+                    colorSecondary: "pink", //kBloomPurple
+                },
+            },
         },
         MuiTableCell: {
             styleOverrides: {
                 head: {
                     backgroundColor: "#F5F5F5",
-                    fontWeight: "bold"
-                }
-            }
-        }
-    }
+                    fontWeight: "bold",
+                },
+            },
+        },
+    },
 });
 
 // Starting with the lightTheme, make any changes.
@@ -147,9 +147,9 @@ export const darkTheme = createTheme(lightTheme, {
     palette: {
         text: {
             // the only place I *know* this is currently used is the refresh button in the BloomPub publish preview panel
-            secondary: kGreyOnDarkColor
-        }
-    }
+            secondary: kGreyOnDarkColor,
+        },
+    },
 });
 
 const toolboxTextColor = "#d2d2d2";
@@ -164,11 +164,11 @@ export const toolboxTheme = createTheme({
         action: {
             //disabled: kBloomDisabledText,
             //disabledOpacity: kToolboxDisabledOpacity
-        }
+        },
     },
     typography: {
         fontSize: 11, // text is smaller in the toolbox
-        fontFamily: kUiFontStack
+        fontFamily: kUiFontStack,
     },
     components: {
         MuiLink: {
@@ -177,11 +177,11 @@ export const toolboxTheme = createTheme({
                     props: { variant: "body1" },
                     style: {
                         variantMapping: {
-                            h6: "h1"
-                        }
-                    }
-                }
-            ]
+                            h6: "h1",
+                        },
+                    },
+                },
+            ],
         },
 
         MuiTooltip: {
@@ -201,25 +201,25 @@ export const toolboxTheme = createTheme({
                     width: "165px", // width of the toolbox (which is 185px) minus a bit of padding
                     a: {
                         color: "white",
-                        textDecorationColor: "white"
-                    }
+                        textDecorationColor: "white",
+                    },
                 },
                 popper: {
-                    zIndex: 200000
+                    zIndex: 200000,
                 },
                 arrow: {
-                    color: kBloomBlueTextBackground
-                }
-            }
+                    color: kBloomBlueTextBackground,
+                },
+            },
         },
 
         MuiFormGroup: {
             styleOverrides: {
                 root: {
                     // getting the spacing I want from radio groups
-                    "&[role=radiogroup]": { gap: "5px" }
-                }
-            }
+                    "&[role=radiogroup]": { gap: "5px" },
+                },
+            },
         },
 
         MuiFormControlLabel: {
@@ -228,13 +228,13 @@ export const toolboxTheme = createTheme({
                     fontSize: "10px",
                     "&.Mui-disabled": {
                         opacity: kToolboxDisabledOpacity,
-                        color: kBloomToolboxWhite
-                    }
+                        color: kBloomToolboxWhite,
+                    },
                 },
                 root: {
-                    alignItems: "flex-start"
-                }
-            }
+                    alignItems: "flex-start",
+                },
+            },
         },
 
         MuiRadio: {
@@ -247,10 +247,10 @@ export const toolboxTheme = createTheme({
                     "&.Mui-disabled": {
                         borderColor: kBloomToolboxWhite,
                         color: kBloomToolboxWhite,
-                        opacity: kToolboxDisabledOpacity
-                    }
-                }
-            }
+                        opacity: kToolboxDisabledOpacity,
+                    },
+                },
+            },
         },
 
         MuiTypography: {
@@ -258,9 +258,9 @@ export const toolboxTheme = createTheme({
                 h2: {
                     fontSize: "11px",
 
-                    marginBottom: "5px"
-                }
-            }
+                    marginBottom: "5px",
+                },
+            },
         },
 
         MuiSwitch: {
@@ -268,15 +268,15 @@ export const toolboxTheme = createTheme({
                 root: {
                     // for some reason, without this tweak,
                     // the switch sticks out to the left over the left of its container
-                    marginLeft: "6px"
+                    marginLeft: "6px",
                 },
                 track: {
-                    backgroundColor: kBloomBlue
+                    backgroundColor: kBloomBlue,
                 },
                 thumb: {
-                    backgroundColor: kBloomToolboxWhite
-                }
-            }
+                    backgroundColor: kBloomToolboxWhite,
+                },
+            },
         },
 
         MuiButton: {
@@ -288,12 +288,12 @@ export const toolboxTheme = createTheme({
                     textTransform: "none", // Material buttons are all caps by default
                     color: toolboxTextColor,
                     "&, &:hover": {
-                        borderWidth: "2px"
+                        borderWidth: "2px",
                     },
                     // set the color of the icon in the button to red
                     "& .MuiButton-startIcon": {
-                        color: kBloomBlue
-                    }
+                        color: kBloomBlue,
+                    },
                 },
                 outlined: {
                     justifyContent: "flex-start",
@@ -303,11 +303,11 @@ export const toolboxTheme = createTheme({
                         opacity: kToolboxDisabledOpacity,
 
                         ".MuiButton-startIcon": {
-                            color: kBloomToolboxWhite
-                        }
-                    }
-                }
-            }
+                            color: kBloomToolboxWhite,
+                        },
+                    },
+                },
+            },
         },
         // Because of our dark background in the toolbox, disabled items need to be lighter
         MuiDivider: {
@@ -315,11 +315,11 @@ export const toolboxTheme = createTheme({
                 root: {
                     backgroundColor: "#d4d4d480",
                     marginTop: "5px",
-                    marginBottom: "5px"
-                }
-            }
-        }
-    }
+                    marginBottom: "5px",
+                },
+            },
+        },
+    },
 });
 
 // Just over help bubbles, but under topic dialog
@@ -341,7 +341,7 @@ const toolboxPopupZIndex = toolboxZIndex + 1; // cf @toolboxPopupZIndex in bloom
 // entirely React; currently, for example, it's not even using the toolboxTheme.
 export const toolboxMenuPopupTheme = createTheme(toolboxTheme, {
     palette: {
-        text: { primary: "rgb(0.0.0.87)" }
+        text: { primary: "rgb(0.0.0.87)" },
     },
     components: {
         MuiInput: {
@@ -356,10 +356,10 @@ export const toolboxMenuPopupTheme = createTheme(toolboxTheme, {
                     "&::after": {
                         // Normally there is a 2px border when the dropdown menu is open. I like it better without it, because
                         // the removal of the effect seems a little off because the border persists until after you select AND THEN after you click somewhere else.
-                        borderBottomWidth: "0px"
-                    }
-                }
-            }
+                        borderBottomWidth: "0px",
+                    },
+                },
+            },
         },
         // If we don't mess with popover zIndex (which currently defaults to 1300), it will be
         // behind the toolbox, and since it is absolutely positioned in the expectation that it
@@ -370,17 +370,17 @@ export const toolboxMenuPopupTheme = createTheme(toolboxTheme, {
             styleOverrides: {
                 // This targets the root of the popover
                 root: {
-                    zIndex: toolboxPopupZIndex
-                }
-            }
+                    zIndex: toolboxPopupZIndex,
+                },
+            },
         },
         MuiMenu: {
             styleOverrides: {
                 // The Menu's paper element
                 paper: {
-                    zIndex: toolboxPopupZIndex
-                }
-            }
-        }
-    }
+                    zIndex: toolboxPopupZIndex,
+                },
+            },
+        },
+    },
 });

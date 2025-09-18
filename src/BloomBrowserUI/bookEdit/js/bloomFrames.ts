@@ -35,7 +35,7 @@ export function getEditTabBundleExports(): IEditViewFrameExports {
         // to its parent, we won't see it, and the loading code will be frozen waiting for
         // a response to the alert. Hopefully the error will show up somewhere.
         throw new Error(
-            "no editTabBundle! Did editing code get compiled into the wrong bundle?"
+            "no editTabBundle! Did editing code get compiled into the wrong bundle?",
         );
     }
     return (<any>getRootWindow()).editTabBundle as IEditViewFrameExports;

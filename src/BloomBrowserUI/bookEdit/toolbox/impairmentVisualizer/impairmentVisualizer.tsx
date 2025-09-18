@@ -27,7 +27,7 @@ export class ImpairmentVisualizerControls extends React.Component<
     IState
 > {
     public readonly state: IState = {
-        kindOfColorBlindness: "redGreen"
+        kindOfColorBlindness: "redGreen",
     };
 
     // This wants to be part of our state, passed as a prop to ApiBackedCheckbox.
@@ -49,7 +49,7 @@ export class ImpairmentVisualizerControls extends React.Component<
                     <ApiBackedCheckbox
                         apiEndpoint="accessibilityCheck/cataracts"
                         l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
-                        onCheckChanged={simulate =>
+                        onCheckChanged={(simulate) =>
                             this.updateCataracts(simulate)
                         }
                         css={css`
@@ -61,7 +61,7 @@ export class ImpairmentVisualizerControls extends React.Component<
                     <ApiBackedCheckbox
                         apiEndpoint="accessibilityCheck/colorBlindness"
                         l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
-                        onCheckChanged={simulate =>
+                        onCheckChanged={(simulate) =>
                             this.updateColorBlindnessCheck(simulate)
                         }
                         css={css`
@@ -71,7 +71,7 @@ export class ImpairmentVisualizerControls extends React.Component<
                         Color Blindness
                     </ApiBackedCheckbox>
                     <RadioGroup
-                        onChange={val => this.updateColorBlindnessRadio(val)}
+                        onChange={(val) => this.updateColorBlindnessRadio(val)}
                         value={this.state.kindOfColorBlindness}
                     >
                         <Radio
@@ -112,14 +112,14 @@ export class ImpairmentVisualizerControls extends React.Component<
 
     private updateColorBlindnessRadio(mode: string) {
         postDataWithConfig("accessibilityCheck/kindOfColorBlindness", mode, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
         });
         this.setState({ kindOfColorBlindness: mode });
         // componentDidUpdate will call updateSimulations when state is stable
     }
 
     public componentDidMount() {
-        get("accessibilityCheck/kindOfColorBlindness", result => {
+        get("accessibilityCheck/kindOfColorBlindness", (result) => {
             this.setState({ kindOfColorBlindness: result.data });
         });
     }
@@ -146,16 +146,15 @@ export class ImpairmentVisualizerControls extends React.Component<
             body.classList.remove("simulateCataracts");
         }
         ImpairmentVisualizerControls.removeColorBlindnessMarkup(
-            img ? img.parentElement! : page
+            img ? img.parentElement! : page,
         );
         if (this.simulatingColorBlindness) {
             body.classList.add("simulateColorBlindness");
             // For now limit it to these images because the positioning depends
             // on the img being the first thing in its parent and the parent
             // being positioned, which we can't count on for other images.
-            const containers = page.getElementsByClassName(
-                kImageContainerClass
-            );
+            const containers =
+                page.getElementsByClassName(kImageContainerClass);
             // img instanceof HTMLImageElement does not work here, possibly because img belongs to
             // a different iframe, which has its own HTMLImageElement prototype
             if (img) {
@@ -175,7 +174,7 @@ export class ImpairmentVisualizerControls extends React.Component<
                         // Don't make a overlay for a draghandle or other UI element.
                         if (child.classList.contains("bloom-ui")) continue;
                         this.makeColorBlindnessOverlay(
-                            child as HTMLImageElement
+                            child as HTMLImageElement,
                         );
                     }
                 }
@@ -198,7 +197,7 @@ export class ImpairmentVisualizerControls extends React.Component<
     private static removeColorBlindnessMarkup(page: HTMLElement) {
         [].slice
             .call(page.getElementsByClassName("ui-cbOverlay"))
-            .map(x => x.parentElement.removeChild(x));
+            .map((x) => x.parentElement.removeChild(x));
     }
 
     private componentToHex(c) {
@@ -290,7 +289,7 @@ export class ImpairmentVisualizerControls extends React.Component<
             imgLeft,
             imgTop,
             img.clientWidth,
-            img.clientHeight
+            img.clientHeight,
         );
         // imgData is a byte array with 4 bytes for each pixel in RGBA order
         const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -329,10 +328,10 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
     public makeRootElement(): HTMLDivElement {
         return super.adaptReactElement(
             <ImpairmentVisualizerControls
-                ref={renderedElement =>
+                ref={(renderedElement) =>
                     (this.controlsElement = renderedElement)
                 }
-            />
+            />,
         );
     }
     public imageUpdated(img: HTMLImageElement | undefined): void {

@@ -14,26 +14,28 @@ interface IColorChooserProps {
 }
 
 // A reusable color chooser.
-export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props => {
+export const ColorChooser: React.FunctionComponent<IColorChooserProps> = (
+    props,
+) => {
     const [chooserVisible, setChooserVisible] = useState(
-        !!props.initiallyVisible
+        !!props.initiallyVisible,
     );
 
     return (
         <div
             className="cc-outer-wrapper"
             tabIndex={0}
-            onClick={event => {
+            onClick={(event) => {
                 if (!props.disabled) {
                     setChooserVisible(!chooserVisible);
                 }
             }}
-            onBlur={event => {
+            onBlur={(event) => {
                 if (!props.disabled) {
                     setChooserVisible(false);
                 }
             }}
-            onKeyDown={event => {
+            onKeyDown={(event) => {
                 if (event.code === "Escape" && !props.disabled) {
                     setChooserVisible(false);
                 }
@@ -60,7 +62,7 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
                 <div
                     className="cc-pulldown-wrapper"
                     style={{
-                        visibility: chooserVisible ? "visible" : "hidden"
+                        visibility: chooserVisible ? "visible" : "hidden",
                     }}
                 >
                     {CoverBackgroundPalette.map((color, i) => (
@@ -69,10 +71,11 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
                             key={i}
                             style={{ backgroundColor: color }}
                             data-color={color}
-                            onClick={event => {
-                                const newColor = event.currentTarget.getAttribute(
-                                    "data-color"
-                                );
+                            onClick={(event) => {
+                                const newColor =
+                                    event.currentTarget.getAttribute(
+                                        "data-color",
+                                    );
                                 if (props.onColorChanged && newColor) {
                                     props.onColorChanged(newColor);
                                 }
@@ -81,19 +84,19 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
                     ))}
                     <div
                         className="cc-hex-wrapper"
-                        onClick={event => event.stopPropagation()}
+                        onClick={(event) => event.stopPropagation()}
                     >
                         <div className="cc-hex-leadin">#</div>
                         <div className="cc-hex-value">
                             <ContentEditable
                                 content={props.color.substring(1)}
-                                onChange={newContent => {
+                                onChange={(newContent) => {
                                     if (props.onColorChanged) {
                                         if (!newContent)
                                             props.onColorChanged("#FFFFFF");
                                         else
                                             props.onColorChanged(
-                                                "#" + newContent.trim()
+                                                "#" + newContent.trim(),
                                             );
                                     }
                                 }}

@@ -3,7 +3,7 @@ import * as React from "react";
 import Typography from "@mui/material/Typography";
 import ColorSwatch, {
     IColorInfo,
-    getBackgroundColorCssFromColorInfo
+    getBackgroundColorCssFromColorInfo,
 } from "../../../react_components/color-picking/colorSwatch";
 import * as tinycolor from "tinycolor2";
 import { CSSProperties } from "react";
@@ -20,17 +20,17 @@ export interface IColorBarProps {
 }
 // Displays a color bar menu item with optional localizable text.
 export const ColorBar: React.FunctionComponent<IColorBarProps> = (
-    props: IColorBarProps
+    props: IColorBarProps,
 ) => {
     const defaultStyleLabel = useL10n(
         "Default for style",
-        "EditTab.DirectFormatting.labelForDefaultColor"
+        "EditTab.DirectFormatting.labelForDefaultColor",
     );
 
     const baseColor = props.colorInfo.colors; // An array of strings representing colors
 
     const backgroundColorString = getBackgroundColorCssFromColorInfo(
-        props.colorInfo
+        props.colorInfo,
     );
 
     const toolboxPanelBackground = "#2e2e2e";
@@ -62,12 +62,12 @@ export const ColorBar: React.FunctionComponent<IColorBarProps> = (
         borderColor: bloomToolboxWhite,
         borderRadius: 4,
         display: "flex",
-        justifyContent: props.isDefault ? "flex-start" : "center"
+        justifyContent: props.isDefault ? "flex-start" : "center",
     };
 
     const textStyles: CSSProperties = {
         color: textColor,
-        paddingTop: 4
+        paddingTop: 4,
     };
 
     const defaultColor = [backgroundColorString];

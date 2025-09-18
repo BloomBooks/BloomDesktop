@@ -10,7 +10,7 @@
 export function getVariationsOnClass(
     prefix: string,
     doc: Document,
-    handleResults: (variations: string[]) => void
+    handleResults: (variations: string[]) => void,
 ): void {
     const results = new Set<string>();
 
@@ -36,7 +36,7 @@ export function getVariationsOnClass(
                 } catch (e) {
                     console.warn(
                         "Could not access stylesheet rules:",
-                        sheet.href
+                        sheet.href,
                     );
                     console.warn(e);
                 }
@@ -53,7 +53,7 @@ export function getVariationsOnClass(
         doc.defaultView?.addEventListener(
             "load",
             searchStyleSheets,
-            { once: true } // remove the listener after it runs once
+            { once: true }, // remove the listener after it runs once
         );
     }
     // If the document was already complete, we'll get the results now. If not, we'll get them when the load

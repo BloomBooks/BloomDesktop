@@ -11,7 +11,7 @@ import BloomButton from "../bloomButton";
 import { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta = {
-    title: "Misc"
+    title: "Misc",
 };
 
 export default meta;
@@ -24,7 +24,7 @@ const containerDivStyles: React.CSSProperties = {
     border: "1px solid green",
     flexDirection: "column",
     display: "flex",
-    alignItems: "center"
+    alignItems: "center",
 };
 
 const moveToBottomStyles: React.CSSProperties = {
@@ -33,19 +33,19 @@ const moveToBottomStyles: React.CSSProperties = {
     justifyContent: "flex-end",
     flex: 1,
     border: "1px solid red",
-    width: 200
+    width: 200,
 };
 
 const previewControlsStyles: React.CSSProperties = {
     display: "flex",
     flexDirection: "row",
-    paddingBottom: "20px"
+    paddingBottom: "20px",
 };
 
 const pickerStyles: React.CSSProperties = {
     marginTop: "-10px",
     marginLeft: "-15px",
-    position: "absolute"
+    position: "absolute",
 };
 
 export const SmallNumberPickerStory: Story = {
@@ -85,7 +85,7 @@ export const SmallNumberPickerStory: Story = {
                 </div>
             </div>
         );
-    }
+    },
 };
 
 export const BloomAvatarsStory: Story = {
@@ -114,7 +114,7 @@ export const BloomAvatarsStory: Story = {
                 borderColor="#1d94a4"
             />
         </>
-    )
+    ),
 };
 
 export const RadioGroupStory: Story = {
@@ -123,33 +123,32 @@ export const RadioGroupStory: Story = {
         <RadioGroup
             choices={{
                 short: "Short label",
-                long:
-                    "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                long: "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin.",
             }}
             value={""}
             onChange={() => {}}
         />
-    )
+    ),
 };
 
 const selectItem1 = {
     name: "1st menu item",
-    value: "One"
+    value: "One",
 };
 
 const selectItem2 = {
     name: "2nd menu item",
-    value: "Two"
+    value: "Two",
 };
 
 const selectItem3 = {
     name: "3rd menu item",
-    value: "Three"
+    value: "Three",
 };
 
 const selectItem4 = {
     name: "4th menu item",
-    value: "Four"
+    value: "Four",
 };
 
 const selectTestData = [selectItem1, selectItem2, selectItem3, selectItem4];
@@ -175,7 +174,7 @@ const frameDivStyle: React.CSSProperties = {
     width: "642px",
     height: "452px",
     border: "1px solid green",
-    backgroundColor: "#F0F0F0" // winforms control background
+    backgroundColor: "#F0F0F0", // winforms control background
 };
 
 export const WinFormsImitatingSelectStory: Story = {
@@ -190,7 +189,7 @@ export const WinFormsImitatingSelectStory: Story = {
                 {selectTestChildren}
             </WinFormsStyleSelect>
         </div>
-    )
+    ),
 };
 
 export const BookMakingTabPaneStory: Story = {
@@ -205,5 +204,5 @@ export const BookMakingTabPaneStory: Story = {
                 work.
             </Typography>
         </div>
-    )
+    ),
 };

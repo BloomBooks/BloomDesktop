@@ -7,14 +7,14 @@ import BloomButton from "../react_components/bloomButton";
 
 export const PrivacyNotice: React.FunctionComponent<{
     onLearnMore: () => void;
-}> = props => {
+}> = (props) => {
     return (
         <div id="privacy">
             <WarningIcon color="error" />
             <Typography>
                 {useL10n(
                     "Bloom will include diagnostic information with your report. Your report will not be private.",
-                    "ReportProblemDialog.PrivacyNotice"
+                    "ReportProblemDialog.PrivacyNotice",
                 )}
             </Typography>
             <BloomButton

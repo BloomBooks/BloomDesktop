@@ -7,7 +7,7 @@ import { makeTargetForDraggable } from "../games/GameTool";
 import {
     ImagePlaceholderIcon,
     RectangleIcon,
-    WrongImagePlaceholderIcon
+    WrongImagePlaceholderIcon,
 } from "../../../react_components/icons/ImagePlaceholderIcon";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { SignLanguageIcon } from "../../../react_components/icons/SignLanguageIcon";
@@ -19,11 +19,11 @@ import { doesContainingPageHaveSameSizeMode } from "../games/gameUtilities";
 import { AudioIcon } from "../../../react_components/icons/AudioIcon";
 import {
     StyleDefnProps,
-    createStyleDefnIfUndefined
+    createStyleDefnIfUndefined,
 } from "../../StyleEditor/StyleEditor";
 import {
     getAllDraggables,
-    kDraggableIdAttribute
+    kDraggableIdAttribute,
 } from "../../js/CanvasElementManager";
 
 export type CanvasElementType =
@@ -37,7 +37,7 @@ export type CanvasElementType =
 
 const ondragstart = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
-    canvasElementType: CanvasElementType
+    canvasElementType: CanvasElementType,
 ) => {
     // Here "text/x-bloom-canvas-element" is a unique, private data type recognised
     // by ondragover and ondragdrop methods that CanvasElementManager
@@ -80,7 +80,7 @@ const ondragend = (
     userDefinedStyleName?: string,
     // If there is no existing definition for userDefinedStyleName (and that is non-empty),
     // create one with these properties. If userDefinedStyleName is falsy, this is ignored.
-    defaultStyleProps?: StyleDefnProps
+    defaultStyleProps?: StyleDefnProps,
 ) => {
     const canvasElementManager = getCanvasElementManager();
     if (!canvasElementManager) {
@@ -94,7 +94,7 @@ const ondragend = (
             ev.dataTransfer.items[i].type.startsWith("text/x-right-top-offset:")
         ) {
             rightTopOffset = ev.dataTransfer.items[i].type.substring(
-                "text/x-right-top-offset:".length
+                "text/x-right-top-offset:".length,
             );
             break;
         }
@@ -105,7 +105,7 @@ const ondragend = (
         ev.screenY,
         canvasElementType,
         userDefinedStyleName,
-        rightTopOffset
+        rightTopOffset,
     );
     if (!canvasElement) return;
     if (extraAction) {
@@ -175,20 +175,20 @@ const ondragend = (
             langs.push("en");
         }
         langsToWaitFor = langs.length;
-        langs.forEach(lang => {
+        langs.forEach((lang) => {
             theOneLocalizationManager
                 .asyncGetTextInLang(contentL10nKey!, "", lang, "")
-                .then(text => {
+                .then((text) => {
                     const editables = Array.from(
-                        canvasElement.getElementsByClassName("bloom-editable")
+                        canvasElement.getElementsByClassName("bloom-editable"),
                     );
                     const prototype = editables[0];
                     let editableInLang = editables.find(
-                        e => e.getAttribute("lang") === lang
+                        (e) => e.getAttribute("lang") === lang,
                     );
                     if (!editableInLang) {
                         editableInLang = prototype.cloneNode(
-                            true
+                            true,
                         ) as HTMLElement;
                         editableInLang.setAttribute("lang", lang);
                         // only the primary language should be visible  in the canvas element, and it should
@@ -198,20 +198,19 @@ const ondragend = (
                         // to go through that rather time-consuming process right now.
                         editableInLang.classList.remove(
                             "bloom-visibility-code-on",
-                            "bloom-content1"
+                            "bloom-content1",
                         );
                         prototype.parentElement!.appendChild(editableInLang);
                     }
-                    editableInLang.getElementsByTagName(
-                        "p"
-                    )[0].textContent = text;
+                    editableInLang.getElementsByTagName("p")[0].textContent =
+                        text;
                     langsToWaitFor--;
                 });
         });
     }
     if (hintL10nKey) {
         const tg = canvasElement.getElementsByClassName(
-            "bloom-translationGroup"
+            "bloom-translationGroup",
         )[0];
         tg.setAttribute("data-hint", hintL10nKey);
     }
@@ -228,7 +227,7 @@ const ondragend = (
                 return;
             }
             const tg = canvasElement.getElementsByClassName(
-                "bloom-translationGroup"
+                "bloom-translationGroup",
             )[0] as HTMLElement;
             canvasElementManager.addSourceAndHintBubbles(tg);
         };
@@ -256,7 +255,7 @@ export function makeTargetAndMatchSize(canvasElement: HTMLElement) {
         // (though the arrow will move back to it).
         const page = canvasElement.closest(".bloom-page") as HTMLElement;
         const anotherDraggable = getAllDraggables(page).find(
-            el => el !== canvasElement
+            (el) => el !== canvasElement,
         ) as HTMLElement;
         if (anotherDraggable) {
             // adjustTarget won't do the right thing at this point, because the new
@@ -270,7 +269,7 @@ export function makeTargetAndMatchSize(canvasElement: HTMLElement) {
             canvasElement.style.height = matchSizeOf.style.height;
             getCanvasElementManager()?.adjustContainerAspectRatio(
                 canvasElement,
-                true
+                true,
             );
         }
     }
@@ -279,7 +278,7 @@ export function makeTargetAndMatchSize(canvasElement: HTMLElement) {
 }
 
 function getDefaultDraggableWidth(
-    canvasElementType: CanvasElementType
+    canvasElementType: CanvasElementType,
 ): number {
     switch (canvasElementType) {
         case "image":
@@ -296,17 +295,13 @@ function getDefaultDraggableWidth(
 // It's good enough to be unique within the current page, and will very probably
 // be unique throughout the document, without being quite as long and ugly as a guid.
 export const setGeneratedDraggableId = (draggable: HTMLElement): string => {
-    let id = Math.random()
-        .toString(36)
-        .substring(2, 9);
+    let id = Math.random().toString(36).substring(2, 9);
     while (
         draggable.ownerDocument.querySelector(
-            `[${kDraggableIdAttribute}="${id}"]`
+            `[${kDraggableIdAttribute}="${id}"]`,
         )
     ) {
-        id = Math.random()
-            .toString(36)
-            .substring(2, 9);
+        id = Math.random().toString(36).substring(2, 9);
     }
     draggable.setAttribute(kDraggableIdAttribute, id);
     return id;
@@ -324,7 +319,7 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
     // around them. If it didn't depend on the particular icon, we could just make this depend on
     // makeTarget, but as it is, it seems better to have a separate prop.
     showOuterRectangle?: boolean;
-}> = props => {
+}> = (props) => {
     const buttonBorder = `&:after {content: "";
     border: 2px solid ${kBloomBlue};
     position: absolute;
@@ -343,8 +338,8 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
                 ${props.showOuterRectangle ? buttonBorder : ""}
             `}
             draggable={true}
-            onDragStart={ev => ondragstart(ev, props.canvasElementType)}
-            onDragEnd={ev =>
+            onDragStart={(ev) => ondragstart(ev, props.canvasElementType)}
+            onDragEnd={(ev) =>
                 ondragend(
                     ev,
                     props.canvasElementType,
@@ -353,7 +348,7 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
                     props.addClasses,
                     undefined,
                     undefined,
-                    props.extraAction
+                    props.extraAction,
                 )
             }
         >
@@ -369,7 +364,7 @@ export const CanvasElementImageItem: React.FunctionComponent<{
     color?: string;
     strokeColor?: string;
     showOuterRectangle?: boolean;
-}> = props => {
+}> = (props) => {
     return (
         <CanvasElementSvgItem
             canvasElementType={"image"}
@@ -393,7 +388,7 @@ export const CanvasElementImageItem: React.FunctionComponent<{
 
 export const CanvasElementSoundItem: React.FunctionComponent<{
     addClasses?: string;
-}> = props => {
+}> = (props) => {
     return (
         <CanvasElementSvgItem
             canvasElementType="sound"
@@ -412,7 +407,7 @@ export const CanvasElementSoundItem: React.FunctionComponent<{
 };
 export const CanvasElementRectangleItem: React.FunctionComponent<{
     addClasses?: string;
-}> = props => {
+}> = (props) => {
     return (
         <CanvasElementSvgItem
             canvasElementType="rectangle"
@@ -437,7 +432,7 @@ export const CanvasElementWrongImageItem: React.FunctionComponent<{
     makeMatchingTextBox?: boolean;
     addClasses?: string;
     extraAction?: (top: HTMLElement) => void;
-}> = props => {
+}> = (props) => {
     return (
         <CanvasElementSvgItem
             canvasElementType="image"
@@ -461,7 +456,7 @@ export const CanvasElementWrongImageItem: React.FunctionComponent<{
 
 export const CanvasElementGifItem: React.FunctionComponent<{
     addClasses?: string;
-}> = props => {
+}> = (props) => {
     return (
         <CanvasElementSvgItem
             canvasElementType={"image"}
@@ -485,7 +480,7 @@ export const CanvasElementVideoItem: React.FunctionComponent<{
     // We could easily add makeTarget?: boolean; but we don't want to allow video dragging in the finished book
     addClasses?: string;
     showOuterRectangle?: boolean;
-}> = props => {
+}> = (props) => {
     return (
         <CanvasElementSvgItem
             canvasElementType={"video"}
@@ -511,7 +506,7 @@ export const CanvasElementItem: React.FunctionComponent<{
     makeTarget?: boolean;
     addClasses?: string;
     userDefinedStyleName?: string;
-}> = props => {
+}> = (props) => {
     return (
         <img
             css={css`
@@ -521,8 +516,8 @@ export const CanvasElementItem: React.FunctionComponent<{
             `}
             src={props.src}
             draggable={true}
-            onDragStart={ev => ondragstart(ev, props.canvasElementType)}
-            onDragEnd={ev =>
+            onDragStart={(ev) => ondragstart(ev, props.canvasElementType)}
+            onDragEnd={(ev) =>
                 ondragend(
                     ev,
                     props.canvasElementType,
@@ -532,7 +527,7 @@ export const CanvasElementItem: React.FunctionComponent<{
                     undefined,
                     undefined,
                     undefined,
-                    props.userDefinedStyleName
+                    props.userDefinedStyleName,
                 )
             }
         />
@@ -550,7 +545,7 @@ const CanvasElementBaseTextItem: React.FunctionComponent<{
     hide?: boolean; // If true, we don't want this item at all.
     userDefinedStyleName?: string;
     defaultStyleProps?: StyleDefnProps;
-}> = props => {
+}> = (props) => {
     if (props.hide) {
         return null;
     }
@@ -559,8 +554,8 @@ const CanvasElementBaseTextItem: React.FunctionComponent<{
             l10nKey={props.l10nKey}
             className={props.className}
             draggable={true}
-            onDragStart={ev => ondragstart(ev, props.canvasElementType)}
-            onDragEnd={ev =>
+            onDragStart={(ev) => ondragstart(ev, props.canvasElementType)}
+            onDragEnd={(ev) =>
                 ondragend(
                     ev,
                     props.canvasElementType,
@@ -571,7 +566,7 @@ const CanvasElementBaseTextItem: React.FunctionComponent<{
                     props.hintL10nKey,
                     undefined,
                     props.userDefinedStyleName,
-                    props.defaultStyleProps
+                    props.defaultStyleProps,
                 )
             }
         ></Span>
@@ -588,7 +583,7 @@ export const CanvasElementTextItem: React.FunctionComponent<{
     hide?: boolean; // If true, we don't want this item at all.
     userDefinedStyleName?: string;
     defaultStyleProps?: StyleDefnProps;
-}> = props => {
+}> = (props) => {
     return <CanvasElementBaseTextItem {...props} canvasElementType="none" />;
 };
 
@@ -601,7 +596,7 @@ export const CanvasElementCaptionItem: React.FunctionComponent<{
     hintL10nKey?: string;
     hide?: boolean; // If true, we don't want this item at all.
     userDefinedStyleName?: string;
-}> = props => {
+}> = (props) => {
     return <CanvasElementBaseTextItem {...props} canvasElementType="caption" />;
 };
 
@@ -621,7 +616,7 @@ export const CanvasElementButtonItem: React.FunctionComponent<{
     contentL10nKey?: string;
     hintL10nKey?: string;
     userDefinedStyleName?: string;
-}> = props => {
+}> = (props) => {
     return (
         <CanvasElementTextItem
             css={buttonItemProps}
@@ -638,7 +633,7 @@ export const CanvasElementButtonItem: React.FunctionComponent<{
 export const CanvasElementItemRow: React.FunctionComponent<{
     children: React.ReactNode;
     secondRow?: boolean;
-}> = props => {
+}> = (props) => {
     return (
         <div
             css={css`
@@ -668,7 +663,7 @@ export const CanvasElementItemRegion: React.FunctionComponent<{
     className?: string;
     l10nKey?: string;
     theme?: string;
-}> = props => {
+}> = (props) => {
     const bgColor = props.theme === "blueOnTan" ? "white" : kBloomGray;
     const fgColor = props.theme === "blueOnTan" ? kBloomBlue : "white";
     return (

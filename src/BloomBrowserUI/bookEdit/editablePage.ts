@@ -9,7 +9,7 @@ import "../lib/jquery.i18n.custom"; //localize()
 import "errorHandler";
 import {
     theOneCanvasElementManager,
-    CanvasElementManager
+    CanvasElementManager,
 } from "./js/CanvasElementManager";
 import { renderDragActivityTabControl } from "./toolbox/games/DragActivityTabControl";
 
@@ -20,7 +20,7 @@ function getPageId(): string {
         // to its parent, so we won't see it, and the loading code will be frozen waiting for
         // a response to the alert. Hopefully the error will show up somewhere.
         throw new Error(
-            "Could not find the div.bloom-page; this often means editablePage.ts is being compiled into a bundle where it does not belong"
+            "Could not find the div.bloom-page; this often means editablePage.ts is being compiled into a bundle where it does not belong",
         );
     }
     return page.getAttribute("id")!;
@@ -52,7 +52,7 @@ export interface IPageFrameExports {
         html: string,
         parent?: JQuery,
         resizableArgs?,
-        draggableArgs?
+        draggableArgs?,
     ): JQuery;
     SetupElements(container: HTMLElement): void;
     attachToCkEditor(element: any): void;
@@ -85,7 +85,7 @@ import {
     SetupElements,
     attachToCkEditor,
     removeImageId,
-    changeImage
+    changeImage,
 } from "./js/bloomEditing";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 export {
@@ -104,7 +104,7 @@ export {
     changeImage,
     renderDragActivityTabControl,
     getTheOneCanvasElementManager,
-    showGamePromptDialog
+    showGamePromptDialog,
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
@@ -125,7 +125,7 @@ const styleSheets = [
     "lib/long-press/longpress.css",
     "bookEdit/toolbox/talkingBook/audioRecording.css",
     "react_components/playbackOrderControls.css",
-    "bookEdit/css/legacyQuizEditing.css"
+    "bookEdit/css/legacyQuizEditing.css",
 ];
 
 function getTheOneCanvasElementManager(): CanvasElementManager {
@@ -162,7 +162,7 @@ for (let j = 0; j < styleSheets.length; j++) {
     document.write(
         '<link rel="stylesheet" type="text/css" href="/bloom/' +
             styleSheets[j] +
-            '">'
+            '">',
     );
 }
 
@@ -183,9 +183,7 @@ window["PasteImageCredits"] = () => {
 };
 
 $(document).ready(() => {
-    $("body")
-        .find("*[data-i18n]")
-        .localize();
+    $("body").find("*[data-i18n]").localize();
     bootstrap();
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.

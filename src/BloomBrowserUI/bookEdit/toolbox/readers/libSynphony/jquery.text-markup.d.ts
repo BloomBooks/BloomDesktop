@@ -10,7 +10,7 @@ interface JQueryStatic {
     markupGraphemes(
         word: string,
         gpcForm: string[],
-        desiredGPCs?: string[]
+        desiredGPCs?: string[],
     ): string;
 }
 

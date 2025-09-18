@@ -6,7 +6,7 @@ import { lightTheme } from "../bloomMaterialUITheme";
 
 export default {
     decorators: [
-        storyFn => (
+        (storyFn) => (
             <StyledEngineProvider injectFirst>
                 <ThemeProvider theme={lightTheme}>
                     <StorybookContext.Provider value={true}>
@@ -14,8 +14,8 @@ export default {
                     </StorybookContext.Provider>
                 </ThemeProvider>
             </StyledEngineProvider>
-        )
+        ),
         // was needed by publish/stories.tsx, apparently no longer exists in storybook 8, waiting to see what breaks...
         //        withA11y
-    ]
+    ],
 };

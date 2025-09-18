@@ -12,7 +12,7 @@ interface IProps extends TabsProps {
 // and inserts some of the configurable elements in the proper places. This is a work-in-progress;
 // as we identify more common behavior we want or more things we often want to configure we can
 // improve it.
-export const BloomTabs: React.FunctionComponent<IProps> = props => {
+export const BloomTabs: React.FunctionComponent<IProps> = (props) => {
     const { color, selectedColor, labelBackgroundColor, ...tabsProps } = props;
     return (
         <Tabs

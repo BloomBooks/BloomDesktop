@@ -11,7 +11,7 @@ import {
     faCheck,
     faExclamationCircle,
     faCopy,
-    faPaste
+    faPaste,
 } from "@fortawesome/free-solid-svg-icons";
 
 fontAwesomeInitializer.add(faCheck);
