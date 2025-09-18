@@ -11,7 +11,6 @@
  */
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
-import "./jquery.mousewheel.js";
 
 (function($, window, undefined) {
     var lengthOfPreviouslyInsertedCharacter = 1; //when we convert to Typescript, this is a member variable
@@ -182,7 +181,7 @@ import "./jquery.mousewheel.js";
     var popup;
     var longpressPopupVisible = false;
 
-    $(window).mousewheel(onWheel);
+    window.addEventListener("wheel", onWheel, { passive: false });
 
     //https://stackoverflow.com/questions/10758913/unicode-string-split-by-chars/39846360#39846360
     function splitIntoGraphemes(s) {
@@ -380,10 +379,27 @@ import "./jquery.mousewheel.js";
         longpressPopupVisible = false;
         popup.detach();
     }
-    function onWheel(e, delta, deltaX, deltaY) {
+
+    // Update handler signature to accept a native WheelEvent and normalize delta.
+    function onWheel(e) {
         if ($(".long-press-popup").length == 0) return;
+        // We need preventDefault to stop the page from scrolling when the popup is open.
         e.preventDefault();
-        delta < 0 ? activateNextLetter() : activePreviousLetter();
+
+        // Normalize delta so positive means scroll down (next), negative means up (previous).
+        // WheelEvent: deltaY > 0 is down. Legacy wheelDelta: positive is up, so negate it.
+        const dy =
+            typeof e.deltaY === "number"
+                ? e.deltaY
+                : typeof e.wheelDelta === "number"
+                ? -e.wheelDelta
+                : 0;
+
+        if (dy > 0) {
+            activateNextLetter();
+        } else if (dy < 0) {
+            activePreviousLetter();
+        }
     }
     function selectCharIndex(i) {
         $(".long-press-letter.selected").removeClass("selected");
