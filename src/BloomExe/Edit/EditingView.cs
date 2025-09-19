@@ -1595,7 +1595,14 @@ namespace Bloom.Edit
 
             // Let the menu appear slightly below where the mouse is since it might be
             // hard to find exactly where the bottom left of the Dropdown button is
-            _contentLanguagesDropdown.Show(MousePosition.X, MousePosition.Y + 8);
+            // This shouldn't be necessary, but if we don't set the position or don't use BeginInvoke,
+            // the very first click on the control after starting the program does not produce a menu.
+            // Discovered after considerable experimentation and with AI suggestions.
+            var mouseX = MousePosition.X;
+            var mouseY = MousePosition.Y + 8;
+            _contentLanguagesDropdown.Left = mouseX;
+            _contentLanguagesDropdown.Top = mouseY;
+            this.BeginInvoke((Action)(() => _contentLanguagesDropdown.Show(mouseX, mouseY)));
         }
 
         public void LayoutChoicesDropdownClicked()
@@ -1641,7 +1648,14 @@ namespace Bloom.Edit
 
             // Let the menu appear slightly below where the mouse is since it might be
             // hard to find exactly where the bottom left of the Dropdown button is
-            _layoutChoicesDropdown.Show(MousePosition.X, MousePosition.Y + 8);
+            var mouseX = MousePosition.X;
+            var mouseY = MousePosition.Y + 8;
+            // This shouldn't be necessary, but if we don't set the position or don't use BeginInvoke,
+            // the very first click on the control after starting the program does not produce a menu.
+            // Discovered after considerable experimentation and with AI suggestions.
+            _layoutChoicesDropdown.Left = mouseX;
+            _layoutChoicesDropdown.Top = mouseY;
+            this.BeginInvoke((Action)(() => _layoutChoicesDropdown.Show(mouseX, mouseY)));
         }
 
         private bool IsRecentTopBarMenuClose()
