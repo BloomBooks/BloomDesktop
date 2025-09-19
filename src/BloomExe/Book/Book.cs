@@ -3772,7 +3772,9 @@ namespace Bloom.Book
         )
         {
             var fileName = sourceElt.GetAttribute(attrName);
-            if (string.IsNullOrEmpty(fileName))
+            // For some sound attrs (e.g., data-correct-sound), 'none' is a valid value of the
+            // attribute but signifies we don't want a default sound. So we don't want to copy.
+            if (string.IsNullOrEmpty(fileName) || fileName == "none")
                 return;
             var destPath = Path.Combine(FolderPath, "audio", fileName);
             if (RobustFile.Exists(destPath))
