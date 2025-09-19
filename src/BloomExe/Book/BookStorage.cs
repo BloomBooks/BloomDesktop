@@ -2654,10 +2654,12 @@ namespace Bloom.Book
             return $"{encodedSeeAlsoMsg}<br />{encodedMessageForLog}";
         }
 
+        internal static string kFileAccessPermissionHelpUrl =
+            @"https://docs.bloomlibrary.org/windows-file-permissions";
+
         private static string GetHelpLinkForFilePermissions()
         {
-            var helpUrl = @"https://docs.bloomlibrary.org/windows-file-permissions";
-            return GetEncodedSeeWebPageString(helpUrl);
+            return GetEncodedSeeWebPageString(kFileAccessPermissionHelpUrl);
         }
 
         private static string EncodeAndJoinStringsForHtml(IEnumerable<string> unencodedStrings)
