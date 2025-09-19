@@ -30,6 +30,7 @@ import {
     getTarget,
     playInitialElements,
     prepareActivity,
+    setDefaultSoundUrls,
     shuffle,
     undoPrepareActivity
 } from "bloom-player";
@@ -707,10 +708,14 @@ const getSoundOptions = (
     prefix: string,
     files: string[],
     currentId: string,
+    defaultLabel: string,
     noneLabel: string,
     chooseLabel: string
 ): { label: string; id: string; divider: boolean }[] => {
-    const soundOptions = [{ label: noneLabel, id: "none", divider: false }];
+    const soundOptions = [
+        { label: defaultLabel, id: "default", divider: false },
+        { label: noneLabel, id: "none", divider: true }
+    ];
     const idToLabel = label =>
         label
             .replace(new RegExp(`^${prefix}_`), "") // don't use substring, for own sounds prefix might not be found
@@ -748,15 +753,19 @@ export const setSoundFolder = (folder: string) => {
 export const copyAndPlaySoundAsync = async (
     newSoundId: string,
     page: HTMLElement,
-    copyBuiltIn: boolean
+    copyBuiltIn: boolean,
+    soundType?: SoundType
 ) => {
     if (copyBuiltIn) {
         await copyBuiltInSoundAsync(newSoundId);
     }
-    playSound(newSoundId, page);
+    playSound(newSoundId, page, soundType);
 };
 
 const copyBuiltInSoundAsync = async (newSoundId: string) => {
+    if (!newSoundId) {
+        return;
+    }
     const resultAudioDir = await postJson(
         "fileIO/getSpecialLocation",
         "CurrentBookAudioDirectory"
@@ -804,8 +813,8 @@ const DragActivityControls: React.FunctionComponent<{
     pageGeneration: number; // incremented when the page changes
 }> = props => {
     // The sound files for correct and wrong answers, determined by attributes of the page.
-    const [correctSoundId, setCorrectSoundId] = useState("");
-    const [wrongSoundId, setWrongSoundId] = useState("");
+    const [correctSoundId, setCorrectSoundId] = useState("default");
+    const [wrongSoundId, setWrongSoundId] = useState("default");
 
     // The core type of activity of the current page, from the data-activity attribute.
     const [activityType, setActivityType] = useState<string>("");
@@ -821,6 +830,7 @@ const DragActivityControls: React.FunctionComponent<{
     );
 
     // Menu item names for 'none' and "Choose...", options in both the correct and wrong sound menus.
+    const defaultLabel = useL10n("Default", "Common.Default", "");
     const noneLabel = useL10n("None", "EditTab.Toolbox.DragActivity.None", "");
     const chooseLabel = useL10n(
         "Choose...",
@@ -955,10 +965,14 @@ const DragActivityControls: React.FunctionComponent<{
             setShowAnswersInTargets(
                 page.getAttribute("data-show-answers-in-targets") === "true"
             );
-            setCorrectSoundId(
-                page.getAttribute("data-correct-sound") || "none"
-            );
-            setWrongSoundId(page.getAttribute("data-wrong-sound") || "none");
+            const getSoundId = (attr: string) => {
+                const id = page.getAttribute(attr);
+                // No value at all means default. We did it this way because legacy games
+                // without this attribute should play the default sound.
+                return id ?? "default";
+            };
+            setCorrectSoundId(getSoundId("data-correct-sound"));
+            setWrongSoundId(getSoundId("data-wrong-sound"));
             setActivityType(page.getAttribute("data-activity") ?? "");
         };
         getStateFromPage();
@@ -994,10 +1008,11 @@ const DragActivityControls: React.FunctionComponent<{
                 "correct",
                 correctFiles,
                 correctSoundId,
+                defaultLabel,
                 noneLabel,
                 chooseLabel
             ),
-        [correctFiles, correctSoundId, noneLabel, chooseLabel]
+        [correctFiles, correctSoundId, defaultLabel, noneLabel, chooseLabel]
     );
     const wrongSoundOptions = useMemo(
         () =>
@@ -1005,10 +1020,11 @@ const DragActivityControls: React.FunctionComponent<{
                 "wrong",
                 wrongFiles,
                 wrongSoundId,
+                defaultLabel,
                 noneLabel,
                 chooseLabel
             ),
-        [wrongFiles, wrongSoundId, noneLabel, chooseLabel]
+        [wrongFiles, wrongSoundId, defaultLabel, noneLabel, chooseLabel]
     );
 
     // const [dragObjectType, setDragObjectType] = useState("text");
@@ -1034,7 +1050,9 @@ const DragActivityControls: React.FunctionComponent<{
             // is a user-chosen one that we won't find in our sounds folder.
             return;
         }
-        const copyBuiltIn = true; // built-in sound needs to be copied to the book's audio folder
+        // built-in sound needs to be copied to the book's audio folder,
+        // unless there isn't one, or are using the default built into Bloom Player.
+        const copyBuiltIn = newSoundId !== "none" && newSoundId !== "default";
         setSound(soundType, newSoundId, copyBuiltIn);
     };
     const setSound = (
@@ -1043,28 +1061,27 @@ const DragActivityControls: React.FunctionComponent<{
         copyBuiltIn: boolean
     ) => {
         const page = getPage();
+        const setSoundAttr = (soundAttr: string, newSoundId: string) => {
+            if (newSoundId === "default") {
+                page.removeAttribute(soundAttr);
+            } else {
+                page.setAttribute(soundAttr, newSoundId);
+            }
+        };
         switch (soundType) {
             case "correct":
                 setCorrectSoundId(newSoundId);
-                if (newSoundId === "none") {
-                    page.removeAttribute("data-correct-sound");
-                } else {
-                    page.setAttribute("data-correct-sound", newSoundId);
-                }
+                setSoundAttr("data-correct-sound", newSoundId);
                 break;
             case "wrong":
                 setWrongSoundId(newSoundId);
-                if (newSoundId === "none") {
-                    page.removeAttribute("data-wrong-sound");
-                } else {
-                    page.setAttribute("data-wrong-sound", newSoundId);
-                }
+                setSoundAttr("data-wrong-sound", newSoundId);
                 break;
         }
         if (newSoundId !== "none") {
             // I think this can be fire-and-forget. But if you add something else that
             // needs the file to be there,you should await this, or add it to copyAndPlaySound.
-            copyAndPlaySoundAsync(newSoundId, page, copyBuiltIn);
+            copyAndPlaySoundAsync(newSoundId, page, copyBuiltIn, soundType);
         }
     };
 
@@ -1157,6 +1174,9 @@ const DragActivityControls: React.FunctionComponent<{
     const showImageDraggable = activityType !== "drag-letter-to-target";
     const showVideoDraggable = true;
     const showSoundDraggable = activityType !== "drag-letter-to-target";
+    const legacyGame =
+        activityType === "simple-dom-choice" ||
+        activityType === "simple-checkbox-quiz";
     return (
         <ThemeProvider theme={toolboxTheme}>
             <RequiresSubscriptionOverlayWrapper
@@ -1305,6 +1325,24 @@ const DragActivityControls: React.FunctionComponent<{
                             gameType={getGameType(activityType, getPage())}
                         />
                         <ThemeChooser pageGeneration={props.pageGeneration} />
+                        {legacyGame && (
+                            <>
+                                <SoundControls
+                                    soundType="correct"
+                                    whenTheAnswerIsSubKey="WhenCorrect"
+                                    soundOptions={correctSoundOptions}
+                                    currentSound={correctSoundId}
+                                    onSoundItemChosen={onSoundItemChosen}
+                                />
+                                <SoundControls
+                                    soundType="wrong"
+                                    whenTheAnswerIsSubKey="WhenWrong"
+                                    soundOptions={wrongSoundOptions}
+                                    currentSound={wrongSoundId}
+                                    onSoundItemChosen={onSoundItemChosen}
+                                />
+                            </>
+                        )}
                         {anyOptions && (
                             <Div
                                 css={css`
@@ -1458,6 +1496,38 @@ const playAudioCss = css`
     margin-top: 10px;
 `;
 
+const SoundControls: React.FunctionComponent<{
+    soundType: SoundType;
+    whenTheAnswerIsSubKey: string;
+    soundOptions: { label: string; id: string; divider: boolean }[];
+    currentSound: string;
+    onSoundItemChosen: (soundType: SoundType, value: string) => void;
+}> = props => {
+    return (
+        <div css={playAudioCss}>
+            <Div
+                l10nKey={
+                    "EditTab.Toolbox.DragActivity." +
+                    props.whenTheAnswerIsSubKey
+                }
+            />
+            <Div
+                css={css`
+                    margin-top: 10px;
+                `}
+                l10nKey="EditTab.Toolbox.DragActivity.PlayAudio"
+            />
+
+            {soundSelect(
+                props.soundType,
+                props.soundOptions,
+                props.currentSound,
+                props.onSoundItemChosen
+            )}
+        </div>
+    );
+};
+
 const CorrectWrongControls: React.FunctionComponent<{
     soundType: SoundType;
     instructionsL10nKey: string;
@@ -1500,27 +1570,13 @@ const CorrectWrongControls: React.FunctionComponent<{
             >
                 <Instructions l10nKey={props.instructionsL10nKey} />
             </div>
-            <div css={playAudioCss}>
-                <Div
-                    l10nKey={
-                        "EditTab.Toolbox.DragActivity." +
-                        props.whenTheAnswerIsSubKey
-                    }
-                />
-                <Div
-                    css={css`
-                        margin-top: 10px;
-                    `}
-                    l10nKey="EditTab.Toolbox.DragActivity.PlayAudio"
-                />
-
-                {soundSelect(
-                    props.soundType,
-                    props.soundOptions,
-                    props.currentSound,
-                    props.onSoundItemChosen
-                )}
-            </div>
+            <SoundControls
+                soundType={props.soundType}
+                whenTheAnswerIsSubKey={props.whenTheAnswerIsSubKey}
+                soundOptions={props.soundOptions}
+                currentSound={props.currentSound}
+                onSoundItemChosen={props.onSoundItemChosen}
+            />
         </div>
     );
 };
@@ -1657,6 +1713,10 @@ img {
 }
 }`;
 
+const defaultGameSoundsBaseUrl = "/bloom/bookEdit/toolbox/games/";
+let defaultCorrectSoundUrl = defaultGameSoundsBaseUrl + "right_answer.mp3";
+let defaultWrongSoundUrl = defaultGameSoundsBaseUrl + "wrong_answer.mp3";
+
 export function getActiveGameTab(): number {
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
     if (!toolbox) {
@@ -1761,6 +1821,9 @@ export class GameTool extends ToolboxToolReactAdaptor {
     private lastPageId = "";
 
     public newPageReady() {
+        // This really only needs to be done once, but I haven't found a good place to do that,
+        // and it's not expensive.
+        setDefaultSoundUrls(defaultCorrectSoundUrl, defaultWrongSoundUrl);
         const page = GameTool.getBloomPage();
         randomlyAssignTargetsIfNeeded(page);
 
@@ -1804,8 +1867,24 @@ export class GameTool extends ToolboxToolReactAdaptor {
         }
     }
 }
-export function playSound(newSoundId: string, page: HTMLElement) {
-    const audio = new Audio("audio/" + newSoundId);
+export function playSound(
+    newSoundId: string,
+    page: HTMLElement,
+    soundType?: SoundType
+) {
+    let url = "audio/" + newSoundId;
+    if (newSoundId === "default") {
+        if (soundType === undefined) {
+            throw new Error(
+                "If newSoundId is 'default', soundType must be provided."
+            );
+        }
+        url =
+            soundType === "correct"
+                ? defaultCorrectSoundUrl
+                : defaultWrongSoundUrl;
+    }
+    const audio = new Audio(url);
     audio.style.visibility = "hidden";
     audio.classList.add("bloom-ui"); // so it won't be saved, even if we fail to remove it otherwise
 
