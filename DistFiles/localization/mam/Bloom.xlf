@@ -1104,6 +1104,11 @@
         <target xml:lang="mam" state="final">Toklen b'inchal</target>
         <note>ID: Common.Copyright</note>
       </trans-unit>
+      <trans-unit id="Common.Default">
+        <source xml:lang="en">Default</source>
+        <target xml:lang="mam" state="needs-translation">Default</target>
+        <note>ID: Common.Default</note>
+      </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
         <source xml:lang="en">Delete</source>
         <target xml:lang="mam" state="final">Najsal</target>
