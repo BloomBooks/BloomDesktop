@@ -218,7 +218,7 @@
     <ItemGroup>
       <ReleaseFiles
         Include="..\output\release\**\*.*"
-        Exclude="**\*.xml;Bloom.vshost.exe;**\*.pdb;**\BloomTests.*;remoteDebugging;**\Moq.*;**\nunit.*.dll;**\NUnit3.*.dll;**\runtimes\**"  />
+        Exclude="**\*.xml;Bloom.vshost.exe;**\*.pdb;**\BloomTests.*;**\Moq.*;**\nunit.*.dll;**\NUnit3.*.dll;**\runtimes\**"  />
       <X64Files
         Include="..\output\release\runtimes\win-x64\**"/>
       <Arm64Files
