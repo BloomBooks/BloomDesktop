@@ -1104,9 +1104,9 @@
         <target xml:lang="fr" state="final">Droits d'auteur</target>
         <note>ID: Common.Copyright</note>
       </trans-unit>
-      <trans-unit id="Common.Default">
+      <trans-unit id="Common.Default" approved="yes">
         <source xml:lang="en">Default</source>
-        <target xml:lang="fr" state="needs-translation">Default</target>
+        <target xml:lang="fr" state="final">Défaut</target>
         <note>ID: Common.Default</note>
       </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
