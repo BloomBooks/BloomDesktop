@@ -377,6 +377,26 @@ namespace Bloom
 #if !__MonoCS__
         internal static bool NoUpdatesAvailable(UpdateInfo info)
         {
+            if (Environment.OSVersion.Version.Major < 11)
+            {
+                var version = info?.FutureReleaseEntry?.Version;
+                if (
+                    version != null
+                    && (
+                        version.Version.Major > 6
+                        || (version.Version.Major == 6 && version.Version.Minor > 2)
+                    )
+                )
+                {
+                    // Bloom 6.3 and later requires Windows 11 or later.
+                    // If we are running on Windows 10 or earlier, we cannot update to it.
+                    // So we behave as if there are no updates available.
+                    SIL.Reporting.Logger.WriteEvent(
+                        "Squirrel: Not updating because the new version requires Windows 11 or later."
+                    );
+                    return true;
+                }
+            }
             return info == null || info.ReleasesToApply.Count == 0;
         }
 #endif
