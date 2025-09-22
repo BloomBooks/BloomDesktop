@@ -4,7 +4,7 @@
 		<FileUpgradeFlags />
 		<UpgradeBackupLocation />
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-		<OutputPath>..\..\output\$(Configuration)\</OutputPath>
+		<OutputPath>..\..\output\Tests\$(Configuration)\</OutputPath>
 		<Platform Condition=" '$(Platform)' == '' ">x86</Platform>
 		<AssemblyTitle>BloomTests</AssemblyTitle>
 		<Company>SIL</Company>
@@ -16,6 +16,8 @@
 		<LangVersion>11.0</LangVersion>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<IsTestProject>true</IsTestProject>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">

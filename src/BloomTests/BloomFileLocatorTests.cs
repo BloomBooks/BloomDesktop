@@ -24,6 +24,8 @@ namespace BloomTests
         private TemporaryFolder _xMatterFolder;
         private TemporaryFolder _otherFilesForTestingFolder;
 
+        public const string kRelativePathToBrowserFolder = "../../browser";
+
         [SetUp]
         public void Setup()
         {
@@ -156,7 +158,7 @@ namespace BloomTests
         {
             var englishPath =
                 FileLocationUtilities.DirectoryOfTheApplicationExecutable.CombineForPath(
-                    "../browser/templates/xMatter/Traditional-XMatter/description-en.txt"
+                    $"{kRelativePathToBrowserFolder}/templates/xMatter/Traditional-XMatter/description-en.txt"
                 );
             var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
             Assert.AreEqual(englishPath, bestLocalizedFile);
@@ -168,7 +170,7 @@ namespace BloomTests
             LocalizationManager.SetUILanguage("gd", false);
             var englishPath =
                 FileLocationUtilities.DirectoryOfTheApplicationExecutable.CombineForPath(
-                    "../browser/templates/xMatter/Traditional-XMatter/description-en.txt"
+                    $"{kRelativePathToBrowserFolder}/templates/xMatter/Traditional-XMatter/description-en.txt"
                 );
             var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
             Assert.AreEqual(englishPath, bestLocalizedFile);
@@ -180,7 +182,7 @@ namespace BloomTests
             LocalizationManager.SetUILanguage("fr", false);
             var englishPath =
                 FileLocationUtilities.DirectoryOfTheApplicationExecutable.CombineForPath(
-                    "../browser/templates/xMatter/Traditional-XMatter/description-en.txt"
+                    $"{kRelativePathToBrowserFolder}/templates/xMatter/Traditional-XMatter/description-en.txt"
                 );
             var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
             Assert.IsTrue(bestLocalizedFile.Contains("-fr"));
