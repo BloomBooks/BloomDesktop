@@ -1698,3 +1698,8 @@ body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"]
     border-radius: 7px;
     padding: 5px;
 }
+
+// added from new basePage.less to fix extra space after last paragraph when space between paragraphs is set in style dialog
+.bloom-translationGroup > .bloom-editable > p:last-child {
+    margin-bottom: 0 !important;
+}
