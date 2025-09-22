@@ -810,6 +810,15 @@ The buffer would be absent if the marginBox had a border or the page has a backg
     );
 }
 
+// Our style system uses margin-bottom to put space bewtween pararaphs.
+// A typical rule is .Bubble-style > p {margin-bottom:1.25em!important;}
+// Adding this extra space after the last paragraph looks strange (and can mess up
+// our calculations of the needed size of the box). So we prevent it.
+// This rule needs to be more specific than the style-specific generated ones.
+.bloom-translationGroup > .bloom-editable > p:last-child {
+    margin-bottom: 0 !important;
+}
+
 // ----------------------------
 // Padding
 // We want to improve the padding for the 99% of simple books, but we don't want to break
