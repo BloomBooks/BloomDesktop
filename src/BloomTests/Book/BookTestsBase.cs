@@ -135,7 +135,7 @@ namespace BloomTests.Book
                 .Returns(Path.Combine(_testFolder.Path, "customCollectionStyles.css"));
             var basicBookPath =
                 BloomFileLocator.GetCodeBaseFolder()
-                + "/../browser/templates/template books/Basic Book/Basic Book.css";
+                + $"{BloomFileLocatorTests.kRelativePathToBrowserFolder}/templates/template books/Basic Book/Basic Book.css";
             _fileLocator.Setup(x => x.LocateFile("Basic Book.css")).Returns(basicBookPath);
             _fileLocator.Setup(x => x.LocateFileWithThrow("Basic Book.css")).Returns(basicBookPath);
 

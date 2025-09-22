@@ -142,7 +142,7 @@
     <Exec Command="dotnet build $(RootDir)/$(Solution) --configuration $(Configuration)" />
   </Target>
   <ItemGroup>
-    <TestAssemblies Include="$(RootDir)/output/$(Configuration)/BloomTests.dll"/>
+    <TestAssemblies Include="$(RootDir)/output/Tests/$(Configuration)/BloomTests.dll"/>
   </ItemGroup>
   <Target Name="Test" DependsOnTargets="Build">
     <CallTarget Targets="TestOnly"/>
@@ -150,14 +150,14 @@
   <Target Name="TestOnly" DependsOnTargets="RunNUnit"/>
   <Target Name="RunNUnit">
     <PropertyGroup>
-      <TestResultsXmlFile Condition="$(isOnTeamCity) == false">$(RootDir)/output/$(Configuration)/TestResults.xml</TestResultsXmlFile>
+      <TestResultsXmlFile Condition="$(isOnTeamCity) == false">$(RootDir)/output/Tests/$(Configuration)/TestResults.xml</TestResultsXmlFile>
       <ExtraExcludeCategories Condition="'$(teamcity_version)' != ''">SkipOnTeamCity,$(ExtraExcludeCategories)</ExtraExcludeCategories>
     </PropertyGroup>
     <NUnit3
 			Assemblies="@(TestAssemblies)"
 			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.20.1/tools"
 			ExcludeCategory="$(ExtraExcludeCategories)$(excludedCategories)"
-			WorkingDirectory="$(RootDir)/output/$(Configuration)"
+			WorkingDirectory="$(RootDir)/output/Tests/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
 			Process="$(TestProcessType)"
 			Trace="Debug"
@@ -218,7 +218,7 @@
     <ItemGroup>
       <ReleaseFiles
         Include="..\output\release\**\*.*"
-        Exclude="**\*.xml;Bloom.vshost.exe;**\*.pdb;**\BloomTests.*;**\Moq.*;**\nunit.*.dll;**\NUnit3.*.dll;**\runtimes\**"  />
+        Exclude="**\*.xml;Bloom.vshost.exe;**\*.pdb;**\runtimes\**"  />
       <X64Files
         Include="..\output\release\runtimes\win-x64\**"/>
       <Arm64Files

@@ -257,6 +257,8 @@ namespace Bloom
             var file = Assembly.GetExecutingAssembly().CodeBase.Replace("file://", string.Empty);
             if (SIL.PlatformUtilities.Platform.IsWindows)
                 file = file.TrimStart('/');
+            if (Program.RunningUnitTests)
+                file = file.Replace("/Tests/", "/");
             return Path.GetDirectoryName(file);
         }
 
