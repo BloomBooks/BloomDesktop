@@ -74,8 +74,13 @@ namespace Bloom.web
             var browserControl = _browser;
 
             browserControl.Dock = DockStyle.Fill;
-            browserControl.Location = new Point(3, 3);
-            browserControl.Size = new Size(Width - 6, Height - 6);
+            browserControl.Location = new Point(0, 0);
+            browserControl.Size = new Size(Width, Height);
+
+            // These three lines eliminate a border that was showing up in the Copy/Paste control in the Edit Tab toolbar, BL-15024
+            browserControl.BackColor = this.BackColor;
+            browserControl.Margin = new Padding(0);
+            browserControl.Padding = new Padding(0);
 
             // currently this is used only in ReactDialog. E.g., "Report a problem".
             if (UseEditContextMenu)
