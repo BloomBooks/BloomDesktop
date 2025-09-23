@@ -1653,13 +1653,20 @@ namespace Bloom.Publish
                 // but we may no longer be after we await RunJavaScriptAsync. We have to be on the same
                 // thread to dispose it, so keep track of which thread it is.
                 var threadWhereWeMadeBrowser = Thread.CurrentThread;
-                var browser = await WebView2Browser.CreateAsync();
+                // Even trying controlToInvokeOn.Invoke everywhere the browser is referenced, I couldn't get
+                // "await WebView2Browser.CreateAsync()" to produce a browser that would successfully navigate
+                // to the page for checking fonts.  The navigation would always time out and report failure,
+                // unless it crashed before the timeout and stopped the program with exit code 0x80000003.
+                // If it didn't crash, often the scan for fonts would return an empty array which looks
+                // innocuous (but possibly misleading) to the user.  When it didn't return an empty array,
+                // it returned an array full of nothing but "Times New Roman", the default browser font on
+                // Windows which is illegal to embed or distribute, and complained vociferously to the user.
+                // See BL-15292 for more details and discussion.
+                var browser = new WebView2Browser(); // NOT await WebView2Browser.CreateAsync();
                 try
                 {
                     // Logically, if any await can result in a thread switch, we might need to invoke again here.
-                    // But in practice, I haven't observed a problem. Maybe, even though the browser init code
-                    // is async, it somehow stays on the original thread? I'm not inclined to handle such a
-                    // complication unless we need to.
+                    // (But invoking again here doesn't work!?)
                     if (
                         !browser.NavigateAndWaitTillDone(
                             dom,
@@ -1682,6 +1689,7 @@ namespace Bloom.Publish
                     var rawInfo = await browser.GetObjectFromJavascriptAsync(
                         GetElementFontFamilyInfoJavascript
                     );
+                    //Debug.WriteLine($"DEBUG ReportInvalidFontsAsync: rawInfo={rawInfo}");
                     var fontFamilyInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(
                         rawInfo
                     );

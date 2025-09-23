@@ -549,9 +549,11 @@ namespace Bloom
                     return false;
                 }
             }
+            //Debug.WriteLine(
+            //    $"DEBUG: Navigation wait loop ended after {navTimer.Elapsed}: done={done}"
+            //);
 
             navTimer.Stop();
-
             if (!done)
             {
                 if (throwOnTimeout)
