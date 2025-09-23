@@ -1593,16 +1593,35 @@ namespace Bloom.Edit
             Browser.OnBrowserClick += Browser_Click;
             _editControlsReactControl.OnBrowserClick += Browser_Click;
 
+            ShowContextMenu(_contentLanguagesDropdown);
+        }
+
+        private void ShowContextMenu(ContextMenuStrip menu)
+        {
             // Let the menu appear slightly below where the mouse is since it might be
             // hard to find exactly where the bottom left of the Dropdown button is
-            // This shouldn't be necessary, but if we don't set the position or don't use BeginInvoke,
-            // the very first click on the control after starting the program does not produce a menu.
-            // Discovered after considerable experimentation and with AI suggestions.
+            // We should just be able to say menu.Show(mouseX, mouseY). But there is some sort
+            // of race condition that happens if the menu is activated by the very first click
+            // after the program is started and switched to edit mode. AI recommended using
+            // BeginInvoke to make sure the click completes (so that it won't re-hide the menu).
+            // That wasn't enough. Also setting the position of the menu before we show it
+            // seemed to help, but it still wasn't right 100% of the time. Hopefully a 10ms
+            // delay is not noticeable but enough to make it reliable.
             var mouseX = MousePosition.X;
             var mouseY = MousePosition.Y + 8;
-            _contentLanguagesDropdown.Left = mouseX;
-            _contentLanguagesDropdown.Top = mouseY;
-            this.BeginInvoke((Action)(() => _contentLanguagesDropdown.Show(mouseX, mouseY)));
+            menu.Left = mouseX;
+            menu.Top = mouseY;
+            var timer = new Timer();
+            timer.Interval = 10; // very soon, but after the click is over and done with.
+            timer.Tick += (s, a) =>
+            {
+                menu.Left = mouseX;
+                menu.Top = mouseY;
+                menu.Show(mouseX, mouseY);
+                timer.Stop();
+                timer.Dispose();
+            };
+            timer.Start();
         }
 
         public void LayoutChoicesDropdownClicked()
@@ -1646,16 +1665,7 @@ namespace Bloom.Edit
             Browser.OnBrowserClick += Browser_Click;
             _editControlsReactControl.OnBrowserClick += Browser_Click;
 
-            // Let the menu appear slightly below where the mouse is since it might be
-            // hard to find exactly where the bottom left of the Dropdown button is
-            var mouseX = MousePosition.X;
-            var mouseY = MousePosition.Y + 8;
-            // This shouldn't be necessary, but if we don't set the position or don't use BeginInvoke,
-            // the very first click on the control after starting the program does not produce a menu.
-            // Discovered after considerable experimentation and with AI suggestions.
-            _layoutChoicesDropdown.Left = mouseX;
-            _layoutChoicesDropdown.Top = mouseY;
-            this.BeginInvoke((Action)(() => _layoutChoicesDropdown.Show(mouseX, mouseY)));
+            ShowContextMenu(_layoutChoicesDropdown);
         }
 
         private bool IsRecentTopBarMenuClose()
