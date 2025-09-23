@@ -7,6 +7,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import {
     kBloomBlue,
     kOptionPanelBackgroundColor,
+    toolboxMenuPopupTheme,
     toolboxTheme
 } from "../../../bloomMaterialUITheme";
 import { Div } from "../../../react_components/l10nComponents";
@@ -1329,14 +1330,14 @@ const DragActivityControls: React.FunctionComponent<{
                             <>
                                 <SoundControls
                                     soundType="correct"
-                                    whenTheAnswerIsSubKey="WhenCorrect"
+                                    whenTheAnswerIsSubKey="CorrectSound"
                                     soundOptions={correctSoundOptions}
                                     currentSound={correctSoundId}
                                     onSoundItemChosen={onSoundItemChosen}
                                 />
                                 <SoundControls
                                     soundType="wrong"
-                                    whenTheAnswerIsSubKey="WhenWrong"
+                                    whenTheAnswerIsSubKey="WrongSound"
                                     soundOptions={wrongSoundOptions}
                                     currentSound={wrongSoundId}
                                     onSoundItemChosen={onSoundItemChosen}
@@ -1416,7 +1417,7 @@ const DragActivityControls: React.FunctionComponent<{
                     <CorrectWrongControls
                         soundType="correct"
                         instructionsL10nKey="EditTab.Toolbox.DragActivity.CorrectInstructions"
-                        whenTheAnswerIsSubKey="WhenCorrect"
+                        whenTheAnswerIsSubKey="CorrectSound"
                         classToAddToItems="drag-item-correct"
                         soundOptions={correctSoundOptions}
                         currentSound={correctSoundId}
@@ -1430,7 +1431,7 @@ const DragActivityControls: React.FunctionComponent<{
                     <CorrectWrongControls
                         soundType="wrong"
                         instructionsL10nKey="EditTab.Toolbox.DragActivity.WrongInstructions"
-                        whenTheAnswerIsSubKey="WhenWrong"
+                        whenTheAnswerIsSubKey="WrongSound"
                         classToAddToItems="drag-item-wrong"
                         soundOptions={wrongSoundOptions}
                         currentSound={wrongSoundId}
@@ -1492,7 +1493,6 @@ function textItemCss(
 const draggableWordCss = textItemCss("20px", true, "5px");
 
 const playAudioCss = css`
-    margin-left: 10px;
     margin-top: 10px;
 `;
 
@@ -1510,12 +1510,6 @@ const SoundControls: React.FunctionComponent<{
                     "EditTab.Toolbox.DragActivity." +
                     props.whenTheAnswerIsSubKey
                 }
-            />
-            <Div
-                css={css`
-                    margin-top: 10px;
-                `}
-                l10nKey="EditTab.Toolbox.DragActivity.PlayAudio"
             />
 
             {soundSelect(
@@ -1565,18 +1559,24 @@ const CorrectWrongControls: React.FunctionComponent<{
             </CanvasElementItemRegion>
             <div
                 css={css`
-                    margin: 0px 10px;
+                    margin-left: 10px;
                 `}
             >
-                <Instructions l10nKey={props.instructionsL10nKey} />
+                <div
+                    css={css`
+                        margin: 0px;
+                    `}
+                >
+                    <Instructions l10nKey={props.instructionsL10nKey} />
+                </div>
+                <SoundControls
+                    soundType={props.soundType}
+                    whenTheAnswerIsSubKey={props.whenTheAnswerIsSubKey}
+                    soundOptions={props.soundOptions}
+                    currentSound={props.currentSound}
+                    onSoundItemChosen={props.onSoundItemChosen}
+                />
             </div>
-            <SoundControls
-                soundType={props.soundType}
-                whenTheAnswerIsSubKey={props.whenTheAnswerIsSubKey}
-                soundOptions={props.soundOptions}
-                currentSound={props.currentSound}
-                onSoundItemChosen={props.onSoundItemChosen}
-            />
         </div>
     );
 };
@@ -1630,71 +1630,43 @@ export const soundSelect = (
     setValue: (soundType: SoundType, value: string) => void
 ) => {
     return (
-        <Select
-            css={css`
-                svg.MuiSvgIcon-root {
-                    color: white !important;
-                }
-                ul {
-                    background-color: ${kOptionPanelBackgroundColor} !important;
-                }
-                fieldset {
-                    border-color: rgba(255, 255, 255, 0.5) !important;
-                }
-            `}
-            size="small"
-            value={value}
-            sx={{
-                width: 170
-            }}
-            MenuProps={{ className: "sound-select-dropdown-menu" }}
-            // Something like this ought to work but doesn't; the rules don't take effect.
-            // so there are some rules in toolbox.less activated by the class above
-            // to do it.
-            // If reinstating this, note that I've used extreme colors here for testing;
-            // once it works, switch to the right ones from toolbox.less.
-            // Note that unless you get the zIndex rule to take effect, nothing else matters:
-            // the pop-up menu won't be visible at all.
-            // MenuProps={{
-            //     sx: {
-            //         "& .MuiPopover-root": {
-            //             zIndex: "18001 !important"
-            //         },
-            //         "& .MuiMenu-paper": {
-            //             zIndex: "18001 !important",
-            //             backgroundColor: "red",
-            //             color: "white"
-            //         },
-            //         "& .MuiMenu-root": {
-            //             zIndex: "18001 !important"
-            //         },
-            //         "& .MuiMenuItem-root:hover": {
-            //             backgroundColor: "blue",
-            //             color: "text.white"
-            //         },
-            //         "& .Mui-selected": {
-            //             backgroundColor: "yellow",
-            //             color: "text.white"
-            //         }
-            //     }
-            // }}
-            onChange={event => {
-                const newSoundId = event.target.value as string;
-                setValue(soundType, newSoundId);
-            }}
-            disabled={false}
-        >
-            {options.map(option => (
-                <MenuItem
-                    value={option.id}
-                    key={option.id}
-                    disabled={false}
-                    divider={option.divider}
-                >
-                    {option.label}
-                </MenuItem>
-            ))}
-        </Select>
+        <ThemeProvider theme={toolboxMenuPopupTheme}>
+            <Select
+                variant="standard"
+                css={css`
+                    svg.MuiSvgIcon-root {
+                        color: white !important;
+                    }
+                    ul {
+                        background-color: ${kOptionPanelBackgroundColor} !important;
+                    }
+                    fieldset {
+                        border-color: rgba(255, 255, 255, 0.5) !important;
+                    }
+                `}
+                size="small"
+                value={value}
+                sx={{
+                    width: 170
+                }}
+                onChange={event => {
+                    const newSoundId = event.target.value as string;
+                    setValue(soundType, newSoundId);
+                }}
+                disabled={false}
+            >
+                {options.map(option => (
+                    <MenuItem
+                        value={option.id}
+                        key={option.id}
+                        disabled={false}
+                        divider={option.divider}
+                    >
+                        <div>{option.label}</div>
+                    </MenuItem>
+                ))}
+            </Select>
+        </ThemeProvider>
     );
 };
 
