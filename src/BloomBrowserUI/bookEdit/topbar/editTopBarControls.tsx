@@ -66,7 +66,14 @@ export const EditTopBarControls: React.FunctionComponent = () => {
             <div
                 id="topBarControlsRoot"
                 css={css`
-                    background-color: ${kBloomPurple};
+                    // We originally set this to ${kBloomPurple}, but on some displays,
+                    // something caused a slightly different color to be displayed for the control
+                    // background compared to the WinForms bar it sits on.
+                    // This should improve things. Though now the buttons are probably slightly different
+                    // on that display. We could, in theory, do something similar for the buttons,
+                    // but that would probably break any hover/active/click effects.
+                    // This problem will go away when the whole top bar is react.
+                    background-color: transparent;
                     display: flex;
                     overflow-y: hidden;
                     padding-top: 4px;
