@@ -147,11 +147,6 @@
         <target xml:lang="pt-PT" state="final">Jogar</target>
         <note>ID: EditTab.Toolbox.DragActivity.Play</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.PlayAudio" approved="yes">
-        <source xml:lang="en">Play Audio</source>
-        <target xml:lang="pt-PT" state="final">Reproduzir áudio</target>
-        <note>ID: EditTab.Toolbox.DragActivity.PlayAudio</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.None" approved="yes">
         <source xml:lang="en">None</source>
         <target xml:lang="pt-PT" state="final">Nenhum</target>
@@ -202,14 +197,14 @@
         <target xml:lang="pt-PT" state="final">Tente novamente</target>
         <note>ID: EditTab.Toolbox.DragActivity.TryAgain</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.WhenCorrect" approved="yes">
-        <source xml:lang="en">When the answer is correct</source>
-        <target xml:lang="pt-PT" state="final">Quando a resposta está correta</target>
+      <trans-unit id="EditTab.Toolbox.DragActivity.CorrectSound">
+        <source xml:lang="en">Correct Sound</source>
+        <target xml:lang="pt-PT" state="needs-translation">Correct Sound</target>
         <note>ID: EditTab.Toolbox.DragActivity.WhenCorrect</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.WhenWrong" approved="yes">
-        <source xml:lang="en">When the answer is wrong</source>
-        <target xml:lang="pt-PT" state="final">Quando a resposta está errada</target>
+      <trans-unit id="EditTab.Toolbox.DragActivity.WrongSound">
+        <source xml:lang="en">Wrong Sound</source>
+        <target xml:lang="pt-PT" state="needs-translation">Wrong Sound</target>
         <note>ID: EditTab.Toolbox.DragActivity.WhenWrong</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Word" approved="yes">
