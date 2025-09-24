@@ -324,6 +324,24 @@ namespace Bloom.Collection
             );
         }
 
+        public static void EnsureSldrInitialized(bool offlineTestMode = false)
+        {
+            if (!Sldr.IsInitialized)
+            {
+                try
+                {
+                    Sldr.Initialize(offlineTestMode);
+                }
+                catch (BadImageFormatException)
+                {
+                    // Since Bloom isn't shipping an icuuc.dll, usually we just fail to find one,
+                    // which Sldr.Initialize handles gracefully.
+                    // However, if there happens to be one around somewhere in the path with the
+                    // wrong architecture, we'll just ignore it.
+                }
+            }
+        }
+
         private bool ReadOrComputeIsCustomName(XElement xml, string id)
         {
             string s = ReadString(xml, id, null);
@@ -336,8 +354,7 @@ namespace Bloom.Collection
             // Compute value since it wasn't stored.
             if (!LookupModel.AreLanguagesLoaded)
             {
-                if (!SIL.WritingSystems.Sldr.IsInitialized)
-                    SIL.WritingSystems.Sldr.Initialize(true); // needed for tests
+                EnsureSldrInitialized(true); // needed for tests
                 LookupModel.IncludeScriptMarkers = false;
                 // The previous line should have loaded the LanguageLookup object: if something changes so that
                 // it doesn't, ensure that happens anyway.

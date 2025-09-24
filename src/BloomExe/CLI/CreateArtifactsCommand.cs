@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Publish.BloomPub;
@@ -120,8 +121,7 @@ namespace Bloom.CLI
                     {
                         Bloom.Program.SetProjectContext(s_projectContext);
                         // This may be needed for bringing the book up to date.  See BH-7453, BH-7454, and BH-7455.
-                        if (!Sldr.IsInitialized)
-                            Sldr.Initialize();
+                        WritingSystem.EnsureSldrInitialized();
 
                         // Make the .bloompub and /bloomdigital outputs
                         return CreateArtifacts(options);

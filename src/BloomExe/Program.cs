@@ -984,8 +984,7 @@ namespace Bloom
 
             // Crashes if initialized twice, and there's at least once case when joining a TC
             // where we can come here twice.
-            if (!Sldr.IsInitialized)
-                Sldr.Initialize();
+            WritingSystem.EnsureSldrInitialized();
             try
             {
                 Application.Run();
