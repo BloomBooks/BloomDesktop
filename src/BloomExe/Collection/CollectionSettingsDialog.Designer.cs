@@ -66,6 +66,9 @@ namespace Bloom.Collection
 			this.teamCollectionSettingsReactControl = new Bloom.web.ReactControl();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
+			this._optimizeUpdatesLabel = new System.Windows.Forms.Label();
+			this._optimizeUpdatesSlowRadio = new System.Windows.Forms.RadioButton();
+			this._optimizeUpdatesFastRadio = new System.Windows.Forms.RadioButton();
 			this.label2 = new System.Windows.Forms.Label();
 			this._showExperimentalBookSources = new System.Windows.Forms.CheckBox();
 			this._enterpriseRequiredForTeamCollection = new System.Windows.Forms.Label();
@@ -76,8 +79,8 @@ namespace Bloom.Collection
 			this._cancelButton = new System.Windows.Forms.Button();
 			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this._settingsProtectionButtonProxy = new System.Windows.Forms.LinkLabel();
+	            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+	            this._settingsProtectionButtonProxy = new System.Windows.Forms.LinkLabel();
             this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this._bookMakingTab.SuspendLayout();
@@ -546,12 +549,15 @@ namespace Bloom.Collection
 			this.teamCollectionSettingsReactControl.Name = "teamCollectionSettingsReactControl";
 			this.teamCollectionSettingsReactControl.Size = new System.Drawing.Size(636, 446);
 			this.teamCollectionSettingsReactControl.TabIndex = 0;
-            //
-            // tabPage4
-            //
-            this.tabPage4.Controls.Add(this._automaticallyUpdate);
-            this.tabPage4.Controls.Add(this.label2);
-            this.tabPage4.Controls.Add(this._showExperimentalBookSources);
+			//
+			// tabPage4
+			//
+			this.tabPage4.Controls.Add(this._optimizeUpdatesFastRadio);
+			this.tabPage4.Controls.Add(this._optimizeUpdatesSlowRadio);
+			this.tabPage4.Controls.Add(this._optimizeUpdatesLabel);
+			this.tabPage4.Controls.Add(this._automaticallyUpdate);
+			this.tabPage4.Controls.Add(this.label2);
+			this.tabPage4.Controls.Add(this._showExperimentalBookSources);
 			this.tabPage4.Controls.Add(this._enterpriseRequiredForTeamCollection);
 			this.tabPage4.Controls.Add(this._allowTeamCollection);
 			this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage4, null);
@@ -564,8 +570,8 @@ namespace Bloom.Collection
             this.tabPage4.TabIndex = 5;
             this.tabPage4.Text = "Advanced Program Settings";
             //
-            // _automaticallyUpdate
-            //
+			// _automaticallyUpdate
+			//
 			this._automaticallyUpdate.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._automaticallyUpdate, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._automaticallyUpdate, null);
@@ -578,6 +584,49 @@ namespace Bloom.Collection
 			this._automaticallyUpdate.Text = "Automatically Update Bloom";
 			this._automaticallyUpdate.UseVisualStyleBackColor = false;
 			//
+			// _optimizeUpdatesLabel
+			//
+			this._optimizeUpdatesLabel.AutoSize = true;
+			this._optimizeUpdatesLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._optimizeUpdatesLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._optimizeUpdatesLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._optimizeUpdatesLabel, "CollectionSettingsDialog.AdvancedTab.OptimizeUpdatesLabel");
+			this._optimizeUpdatesLabel.Location = new System.Drawing.Point(27, 55);
+			this._optimizeUpdatesLabel.Name = "_optimizeUpdatesLabel";
+			this._optimizeUpdatesLabel.Size = new System.Drawing.Size(107, 15);
+			this._optimizeUpdatesLabel.TabIndex = 6;
+			this._optimizeUpdatesLabel.Text = "Optimize Updates";
+			//
+			// _optimizeUpdatesSlowRadio
+			//
+			this._optimizeUpdatesSlowRadio.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._optimizeUpdatesSlowRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._optimizeUpdatesSlowRadio, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._optimizeUpdatesSlowRadio, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._optimizeUpdatesSlowRadio, "CollectionSettingsDialog.AdvancedTab.OptimizeUpdatesSlow");
+			this._optimizeUpdatesSlowRadio.Location = new System.Drawing.Point(47, 77);
+			this._optimizeUpdatesSlowRadio.Name = "_optimizeUpdatesSlowRadio";
+			this._optimizeUpdatesSlowRadio.Size = new System.Drawing.Size(194, 23);
+			this._optimizeUpdatesSlowRadio.TabIndex = 7;
+			this._optimizeUpdatesSlowRadio.TabStop = true;
+			this._optimizeUpdatesSlowRadio.Text = "For slow or expensive internet";
+			this._optimizeUpdatesSlowRadio.UseVisualStyleBackColor = false;
+			//
+			// _optimizeUpdatesFastRadio
+			//
+			this._optimizeUpdatesFastRadio.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._optimizeUpdatesFastRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._optimizeUpdatesFastRadio, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._optimizeUpdatesFastRadio, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._optimizeUpdatesFastRadio, "CollectionSettingsDialog.AdvancedTab.OptimizeUpdatesFast");
+			this._optimizeUpdatesFastRadio.Location = new System.Drawing.Point(47, 106);
+			this._optimizeUpdatesFastRadio.Name = "_optimizeUpdatesFastRadio";
+			this._optimizeUpdatesFastRadio.Size = new System.Drawing.Size(184, 23);
+			this._optimizeUpdatesFastRadio.TabIndex = 8;
+			this._optimizeUpdatesFastRadio.TabStop = true;
+			this._optimizeUpdatesFastRadio.Text = "For fast and free internet";
+			this._optimizeUpdatesFastRadio.UseVisualStyleBackColor = false;
+			//
 			// label2
 			//
 			this.label2.AutoSize = true;
@@ -585,11 +634,11 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label2, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label2, "CollectionSettingsDialog.AdvancedTab.ExperimentalFeaturesLabel");
-			this.label2.Location = new System.Drawing.Point(23, 70);
+			this.label2.Location = new System.Drawing.Point(23, 146);
 			this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(146, 19);
-			this.label2.TabIndex = 6;
+			this.label2.TabIndex = 9;
 			this.label2.Text = "Experimental Features";
 			//
 			// _showExperimentalBookSources
@@ -599,10 +648,10 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizationComment(this._showExperimentalBookSources, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._showExperimentalBookSources, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._showExperimentalBookSources, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources");
-			this._showExperimentalBookSources.Location = new System.Drawing.Point(27, 100);
+			this._showExperimentalBookSources.Location = new System.Drawing.Point(27, 176);
 			this._showExperimentalBookSources.Name = "_showExperimentalBookSources";
 			this._showExperimentalBookSources.Size = new System.Drawing.Size(229, 23);
-			this._showExperimentalBookSources.TabIndex = 7;
+			this._showExperimentalBookSources.TabIndex = 10;
 			this._showExperimentalBookSources.Text = "Show Experimental Book Sources";
             this._showExperimentalBookSources.UseVisualStyleBackColor = false;
             this._showExperimentalBookSources.Visible = false;
@@ -614,10 +663,10 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForTeamCollection, "To use this feature, you\'ll need a Bloom Subscription.");
 			this._L10NSharpExtender.SetLocalizationComment(this._enterpriseRequiredForTeamCollection, null);
 			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForTeamCollection, "CollectionSettingsDialog.RequiresSubscription");
-			this._enterpriseRequiredForTeamCollection.Location = new System.Drawing.Point(0, 100);
+			this._enterpriseRequiredForTeamCollection.Location = new System.Drawing.Point(0, 176);
 			this._enterpriseRequiredForTeamCollection.Name = "_enterpriseRequiredForTeamCollection";
 			this._enterpriseRequiredForTeamCollection.Size = new System.Drawing.Size(23, 23);
-			this._enterpriseRequiredForTeamCollection.TabIndex = 8;
+			this._enterpriseRequiredForTeamCollection.TabIndex = 11;
 			//
 			// _allowTeamCollection
 			//
@@ -626,10 +675,10 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizationComment(this._allowTeamCollection, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._allowTeamCollection, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._allowTeamCollection, "TeamCollection.TeamCollections");
-			this._allowTeamCollection.Location = new System.Drawing.Point(27, 100);
+			this._allowTeamCollection.Location = new System.Drawing.Point(27, 176);
 			this._allowTeamCollection.Name = "_allowTeamCollection";
 			this._allowTeamCollection.Size = new System.Drawing.Size(130, 23);
-			this._allowTeamCollection.TabIndex = 9;
+			this._allowTeamCollection.TabIndex = 12;
 			this._allowTeamCollection.Text = "Team Collections";
 			this._allowTeamCollection.UseVisualStyleBackColor = false;
 			this._allowTeamCollection.CheckedChanged += new System.EventHandler(this._allowTeamCollection_CheckedChanged);
@@ -797,6 +846,9 @@ namespace Bloom.Collection
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button _cancelButton;
 		private CheckBox _automaticallyUpdate;
+		private Label _optimizeUpdatesLabel;
+		private RadioButton _optimizeUpdatesSlowRadio;
+		private RadioButton _optimizeUpdatesFastRadio;
 		private Label label2;
 		private System.Windows.Forms.CheckBox _showExperimentalBookSources;
 		private Label _enterpriseRequiredForTeamCollection;

@@ -151,9 +151,19 @@ namespace Bloom.Collection
                 SIL.PlatformUtilities.Platform.IsWindows
                 && Environment.OSVersion.Version.Major >= 10
             )
+            {
                 _automaticallyUpdate.Checked = Settings.Default.AutoUpdate;
+                var preferFullPackage = Settings.Default.DownloadFullUpdatePackage;
+                _optimizeUpdatesFastRadio.Checked = preferFullPackage;
+                _optimizeUpdatesSlowRadio.Checked = !preferFullPackage;
+            }
             else
+            {
                 _automaticallyUpdate.Hide();
+                _optimizeUpdatesLabel.Hide();
+                _optimizeUpdatesSlowRadio.Hide();
+                _optimizeUpdatesFastRadio.Hide();
+            }
 
             // Without this, PendingDefaultBookshelf stays null unless the user changes it.
             // The result is the bookshelf selection gets cleared when other collection settings are saved. See BL-10093.
@@ -405,6 +415,10 @@ namespace Bloom.Collection
 
             Settings.Default.AutoUpdate =
                 _automaticallyUpdate.Checked && Environment.OSVersion.Version.Major >= 10;
+            Settings.Default.DownloadFullUpdatePackage =
+                _optimizeUpdatesFastRadio.Checked
+                && SIL.PlatformUtilities.Platform.IsWindows
+                && Environment.OSVersion.Version.Major >= 10;
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
 

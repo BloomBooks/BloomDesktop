@@ -172,8 +172,11 @@ namespace Bloom
                 // Now we're starting stuff we don't want to overlap with other update efforts.
                 // Thus the other states all display a message and return above.
                 _status = UploadStatus.LookingForUpdates;
+                UpdateOptions options = Settings.Default.DownloadFullUpdatePackage
+                    ? new UpdateOptions { MaximumDeltasBeforeFallback = 0 }
+                    : new UpdateOptions();
 
-                _bloomUpdateManager = new UpdateManager(updateUrl);
+                _bloomUpdateManager = new UpdateManager(updateUrl, options);
                 _newVersion = await _bloomUpdateManager.CheckForUpdatesAsync();
                 if (_newVersion == null)
                 {

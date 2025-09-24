@@ -427,6 +427,19 @@ namespace Bloom.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DownloadFullUpdatePackage {
+            get {
+                return ((bool)(this["DownloadFullUpdatePackage"]));
+            }
+            set {
+                this["DownloadFullUpdatePackage"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public global::System.DateTime ForumInvitationLastShown {
             get {
                 return ((global::System.DateTime)(this["ForumInvitationLastShown"]));

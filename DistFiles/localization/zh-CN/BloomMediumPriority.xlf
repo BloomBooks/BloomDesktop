@@ -10,6 +10,21 @@
         <target xml:lang="zh-CN" state="needs-translation">Available with your Bloom Subscription</target>
         <note>ID: AvailableWithSubscription</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.OptimizeUpdatesLabel">
+        <source xml:lang="en">Optimize Updates</source>
+        <target xml:lang="zh-CN" state="needs-translation">Optimize Updates</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.OptimizeUpdatesLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.OptimizeUpdatesSlow">
+        <source xml:lang="en">For slow or expensive internet</source>
+        <target xml:lang="zh-CN" state="needs-translation">For slow or expensive internet</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.OptimizeUpdatesSlow</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.OptimizeUpdatesFast">
+        <source xml:lang="en">For fast and free internet</source>
+        <target xml:lang="zh-CN" state="needs-translation">For fast and free internet</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.OptimizeUpdatesFast</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>
