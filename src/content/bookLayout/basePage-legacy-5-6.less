@@ -1604,15 +1604,19 @@ body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"]
 /* -------------------------------------------------------
  * Rules generated from project-specific XMatter files.
  * TODO: we need to insert .bloom-fullBleed into the HTML used by bloom player and epub
+ * JohnT Sep 2025: not sure about Uzbekistan, but these rules mess up other full bleed
+ * comics, so I'm taking them out for now. Also not sure whether that TODO ever got done.
+ * But it seems definitely wrong that project-specific rules got pulled into legacy
+ * without anything to limit their scope to that project.
  * ------------------------------------------------------ */
-.bloom-fullBleed .outsideFrontCover .marginBox,
-.bloom-fullBleed .outsideBackCover .marginBox {
-    /*from Uzbekistan2023-XMatter (added .bloom-fullBleed)*/
-    top: 0;
-    left: 0 !important;
-    height: 100% !important;
-    width: 100% !important;
-}
+// .bloom-fullBleed .outsideFrontCover .marginBox,
+// .bloom-fullBleed .outsideBackCover .marginBox {
+//     /*from Uzbekistan2023-XMatter (added .bloom-fullBleed)*/
+//     top: 0;
+//     left: 0 !important;
+//     height: 100% !important;
+//     width: 100% !important;
+// }
 
 /* ------------------------------------------------------
  * Rules generated from bloom-xmatter-sharedRules.less in Bloom 5.6 (and before).
