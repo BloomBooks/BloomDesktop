@@ -136,8 +136,7 @@ namespace BloomTests.WebLibraryIntegration
 
         private string MakeBook(
             string bookName,
-            string id,
-            string uploader,
+            string bookInstanceId,
             string data,
             bool makeCorruptFile = false,
             string htmName = "one.htm"
@@ -178,95 +177,10 @@ namespace BloomTests.WebLibraryIntegration
 
             File.WriteAllText(
                 Path.Combine(f.FolderPath, "meta.json"),
-                "{\"bookInstanceId\":\""
-                    + id
-                    + _thisTestId
-                    + "\",\"uploadedBy\":\""
-                    + uploader
-                    + "\"}"
+                "{\"bookInstanceId\":\"" + bookInstanceId + _thisTestId + "\"}"
             );
 
             return f.FolderPath;
-        }
-
-        /// <summary>
-        /// Review: this is fragile and expensive. We're doing real internet traffic and creating real objects on S3 and parse-server
-        /// which (to a very small extent) costs us real money. This will be slow. Also, under S3 eventual consistency rules,
-        /// there is no guarantee that the data we just created will actually be retrievable immediately.
-        /// </summary>
-        public async Task<(
-            string bookObjectId,
-            string newBookFolder
-        )> UploadAndDownLoadNewBookAsync(
-            string bookName,
-            string id,
-            string uploader,
-            string data,
-            bool isTemplate = false
-        )
-        {
-            //  Create a book folder with meta.json that includes an uploader and id and some other files.
-            var originalBookFolder = MakeBook(bookName, id, uploader, data, true);
-            if (isTemplate)
-            {
-                var metadata = BookMetaData.FromFolder(originalBookFolder);
-                metadata.IsSuitableForMakingShells = true;
-                metadata.WriteToFolder(originalBookFolder);
-            }
-            // The files that actually get uploaded omit some of the ones in the folder.
-            // The only omitted one that messes up current unit tests is meta.bak
-            var filesToUpload = Directory
-                .GetFiles(originalBookFolder, "*.*", SearchOption.AllDirectories)
-                .Where(p =>
-                    !p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles)
-                );
-            int fileCount = filesToUpload.Count();
-            _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
-            //HashSet<string> notifications = new HashSet<string>();
-
-            var progress = new SIL.Progress.StringBuilderProgress();
-            var (bookObjectId, s3PrefixUploadedTo) = await _uploader.UploadBook_ForUnitTestAsync(
-                originalBookFolder,
-                progress
-            );
-            Assert.That(string.IsNullOrEmpty(s3PrefixUploadedTo), Is.False);
-
-            var uploadMessages = progress.Text.Split(
-                new string[] { Environment.NewLine },
-                StringSplitOptions.RemoveEmptyEntries
-            );
-
-            var expectedFileCount = fileCount + 3; // "Preparing...", "Finishing...", and "Finished"
-#if DEBUG
-            ++expectedFileCount; // and if in debug mode, then plus one for S3 key message
-#endif
-            Assert.That(
-                uploadMessages.Length,
-                Is.EqualTo(expectedFileCount),
-                "Uploaded file counts do not match"
-            );
-            Assert.That(progress.Text, Does.Contain(Path.GetFileName(filesToUpload.First())));
-
-            WaitUntilS3DataIsOnServer(s3PrefixUploadedTo, originalBookFolder);
-            var dest = _workFolderPath.CombineForPath("output");
-            Directory.CreateDirectory(dest);
-            _downloadedBooks.Clear();
-            var url =
-                BookUpload.BloomS3UrlPrefix
-                + BloomS3Client.UnitTestBucketName
-                + "/"
-                + GetParentOfS3Prefix(s3PrefixUploadedTo);
-            var newBookFolder = _downloader.HandleDownloadWithoutProgress(url, dest);
-
-            Assert.That(
-                Directory.GetFiles(newBookFolder, "*.*", SearchOption.AllDirectories).Length,
-                Is.EqualTo(fileCount)
-            );
-
-            Assert.That(_downloadedBooks.Count, Is.EqualTo(1));
-            Assert.That(_downloadedBooks[0].FolderPath, Is.EqualTo(newBookFolder));
-            // Todo: verify that metadata was transferred to parse-server
-            return (bookObjectId, newBookFolder);
         }
 
         /// <summary>
@@ -293,56 +207,9 @@ namespace BloomTests.WebLibraryIntegration
         }
 
         [Test]
-        public async Task UploadBooks_SimilarIds_DoNotOverwrite()
-        {
-            var firstPair = await UploadAndDownLoadNewBookAsync(
-                "first",
-                "book1",
-                "Jack",
-                "Jack's data"
-            );
-            var secondPair = await UploadAndDownLoadNewBookAsync(
-                "second",
-                "book1",
-                "Jill",
-                "Jill's data"
-            );
-            var thirdPair = await UploadAndDownLoadNewBookAsync(
-                "third",
-                "book2",
-                "Jack",
-                "Jack's other data"
-            );
-            try
-            {
-                // Data uploaded with the same id but a different uploader should form a distinct book; the Jill data
-                // should not overwrite the Jack data. Likewise, data uploaded with a distinct Id by the same uploader should be separate.
-                var jacksFirstData = File.ReadAllText(
-                    firstPair.newBookFolder.CombineForPath("one.htm")
-                );
-                // We use stringContaining here because upload does make some changes.
-                Assert.That(jacksFirstData, Does.Contain("Jack's data"));
-                var jillsData = File.ReadAllText(
-                    secondPair.newBookFolder.CombineForPath("one.htm")
-                );
-                Assert.That(jillsData, Does.Contain("Jill's data"));
-                var jacksSecondData = File.ReadAllText(
-                    thirdPair.newBookFolder.CombineForPath("one.htm")
-                );
-                Assert.That(jacksSecondData, Does.Contain("Jack's other data"));
-            }
-            finally
-            {
-                _bloomLibraryBookApiClient.TestOnly_DeleteBook(firstPair.bookObjectId);
-                _bloomLibraryBookApiClient.TestOnly_DeleteBook(secondPair.bookObjectId);
-                _bloomLibraryBookApiClient.TestOnly_DeleteBook(thirdPair.bookObjectId);
-            }
-        }
-
-        [Test]
         public async Task UploadBook_SameId_Replaces()
         {
-            var bookFolder = MakeBook("unittest", "myId", "me", "something");
+            var bookFolder = MakeBook("unittest", "myId", "something");
             var jsonPath = bookFolder.CombineForPath(BookInfo.MetaDataFileName);
             var json = File.ReadAllText(jsonPath);
             var jsonStart = json.Substring(0, json.Length - 1);
@@ -464,12 +331,7 @@ namespace BloomTests.WebLibraryIntegration
         {
             _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
 
-            var bookFolder = MakeBook(
-                MethodBase.GetCurrentMethod().Name,
-                "myId",
-                "me",
-                "something"
-            );
+            var bookFolder = MakeBook(MethodBase.GetCurrentMethod().Name, "myId", "something");
             var initialBookObjectId = await _uploader.UploadBook_ForUnitTestAsync(bookFolder);
             try
             {
@@ -574,7 +436,7 @@ namespace BloomTests.WebLibraryIntegration
         [Test]
         public async Task UploadBook_FillsInMetaData()
         {
-            var bookFolder = MakeBook("My incomplete book", "", "", "data");
+            var bookFolder = MakeBook("My incomplete book", "", "data");
             File.WriteAllText(
                 Path.Combine(bookFolder, "thumbnail.png"),
                 @"this should be a binary picture"
@@ -630,7 +492,7 @@ namespace BloomTests.WebLibraryIntegration
         public async Task DownloadUrl_GetsDocument_AndSettings()
         {
             var id = Guid.NewGuid().ToString();
-            var bookFolder = MakeBook("My Url Book", id, "someone", "My content");
+            var bookFolder = MakeBook("My Url Book", id, "My content");
             int fileCount = Directory.GetFiles(bookFolder).Length;
             _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
 
@@ -710,7 +572,6 @@ namespace BloomTests.WebLibraryIntegration
             var bookFolder = MakeBook(
                 "This ངའ་ཁས་འབབ needs encoding and is quite a bit too long",
                 id,
-                "someone",
                 CollectionSettingsReconstructorTests.GetTriLingualHtml(),
                 htmName: "This ངའ་ཁས་འབབ needs encoding and is quite a bit too long.htm"
             );
