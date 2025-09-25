@@ -130,10 +130,6 @@
         <note>ID: EditTab.Toolbox.DragActivity.Play</note>
         <note>Label of a button that puts the Bloom Game tool into its the mode for playing (testing) the game.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.PlayAudio">
-        <source xml:lang="en">Play Audio</source>
-        <note>ID: EditTab.Toolbox.DragActivity.PlayAudio</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.None">
         <source xml:lang="en">None</source>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
@@ -176,12 +172,12 @@
         <source xml:lang="en">Try Again</source>
         <note>ID: EditTab.Toolbox.DragActivity.TryAgain</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.WhenCorrect">
-        <source xml:lang="en">When the answer is correct</source>
+      <trans-unit id="EditTab.Toolbox.DragActivity.CorrectSound">
+        <source xml:lang="en">Correct Sound</source>
         <note>ID: EditTab.Toolbox.DragActivity.WhenCorrect</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.WhenWrong">
-        <source xml:lang="en">When the answer is wrong</source>
+      <trans-unit id="EditTab.Toolbox.DragActivity.WrongSound">
+        <source xml:lang="en">Wrong Sound</source>
         <note>ID: EditTab.Toolbox.DragActivity.WhenWrong</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Word">

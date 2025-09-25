@@ -1024,7 +1024,13 @@ export default class AudioRecording implements IAudioRecorder {
             getCanvasElementManager()?.setActiveElementToClosest(
                 newElement as HTMLElement
             );
-            if (visible) {
+            // during animation we don't want to add this, even in stuff that's not visible.
+            // It can get left behind and get wrapped in an extra paragraph (BL-15293)
+            let bloomPageHidden = false;
+            const page = newElement.closest(".bloom-page");
+            if (page && window.getComputedStyle(page).visibility === "hidden")
+                bloomPageHidden = true;
+            if (visible && !bloomPageHidden) {
                 // This is a workaround for a Chromium bug; see BL-11633. We'd like our style rules
                 // to just put the icon on the element that has kAudioCurrent. But that element
                 // has a background color, so (due to the bug) it cannot have position:relative,
