@@ -1443,8 +1443,9 @@ const DragActivityControls: React.FunctionComponent<{
                     <div>
                         <Div
                             css={css`
-                                margin-top: 5px;
-                                margin-left: 5px;
+                                // Don't use margin here. It combines in some weird way with the negative
+                                // margin used by the accordion control and results in a scrollbar.
+                                padding: 5px;
                             `}
                             l10nKey="EditTab.Toolbox.DragActivity.TestInstructions"
                         />

@@ -147,6 +147,7 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
         <div
             css={css`
                 height: 100%;
+                box-sizing: border-box;
                 // position:relative allows the overlay to cover only the children of this div.
                 // Do not set any of left, right, top, or bottom since we don't want to shift
                 // the position of this div and its children relative to our parent, just to

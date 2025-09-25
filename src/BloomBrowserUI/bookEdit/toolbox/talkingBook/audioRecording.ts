@@ -1020,7 +1020,13 @@ export default class AudioRecording implements IAudioRecorder {
                     newElement as HTMLElement,
                 );
             }
-            if (visible && !inAnimation) {
+            // during animation we don't want to add this, even in stuff that's not visible.
+            // It can get left behind and get wrapped in an extra paragraph (BL-15293)
+            let bloomPageHidden = false;
+            const page = newElement.closest(".bloom-page");
+            if (page && window.getComputedStyle(page).visibility === "hidden")
+                bloomPageHidden = true;
+            if (visible && !inAnimation && !bloomPageHidden) {
                 // Show a record icon
                 // This is a workaround for a Chromium bug; see BL-11633. We'd like our style rules
                 // to just put the icon on the element that has kAudioCurrent. But that element
@@ -1656,9 +1662,10 @@ export default class AudioRecording implements IAudioRecorder {
         if (canvasToExclude) {
             // If we are in a motion preview, we want to exclude descendents of the
             // canvas we are animating, since we prefer to play the copies in the animation.
-            this.elementsToPlayConsecutivelyStack = this.elementsToPlayConsecutivelyStack.filter(
-                e => !canvasToExclude.contains(e)
-            );
+            this.elementsToPlayConsecutivelyStack =
+                this.elementsToPlayConsecutivelyStack.filter(
+                    (e) => !canvasToExclude.contains(e),
+                );
         }
 
         const stackSize = this.elementsToPlayConsecutivelyStack.length;
@@ -4572,7 +4579,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     // Returns all elements that match CSS selector {expr} as an array.
-    // Querying can optionally be restricted to {container}’s descendants
+    // Querying can optionally be restricted to {container}ï¿½s descendants
     // If includeSelf is true, it includes both itself as well as its descendants.
     // Otherwise, it only includes descendants.
     // Also filters out imageDescriptions if we aren't supposed to be reading them.
