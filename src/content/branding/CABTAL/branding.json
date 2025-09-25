@@ -1,6 +1,12 @@
 {
     "presets": [
         {
+            "data-book": "title-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='Logo_CABTAL.svg'/>",
+            "condition": "always"
+        },
+        {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
             "content": "<img class='branding' src='Logo_CABTAL.svg'/>",
