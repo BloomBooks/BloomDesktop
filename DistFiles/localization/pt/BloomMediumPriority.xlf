@@ -566,7 +566,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
         <source xml:lang="en">This is disabled because publishing interactive activities requires a subscription.</source>
-        <target xml:lang="pt-PT" state="translated">Isto está desativado porque a publicação de atividades interativas requer uma subcrição.</target>
+        <target xml:lang="pt-PT" state="translated">Isto está desativado porque a publicação de atividades interativas requer uma assinatura.</target>
         <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Games.None">
@@ -933,9 +933,9 @@
         <target xml:lang="pt-PT" state="final">Padrão (definido por Tema)</target>
         <note>BookSettings.TopLevelTextPadding.DefaultLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.TopLevelTextPadding.1emLabel" sil:dynamic="true">
+      <trans-unit id="BookSettings.TopLevelTextPadding.1emLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1 em (font size)</source>
-        <target xml:lang="pt-PT" state="translated">1em (tamanho da fonte)</target>
+        <target xml:lang="pt-PT" state="final">1em (tamanho da fonte)</target>
         <note>BookSettings.TopLevelTextPadding.1emLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.Problematic" sil:dynamic="true" approved="yes">
@@ -1004,7 +1004,7 @@
       </trans-unit>
       <trans-unit id="EditTab.PasteHyperlink">
         <source xml:lang="en">Paste Hyperlink</source>
-        <target xml:lang="pt-PT" state="needs-translation">Paste Hyperlink</target>
+        <target xml:lang="pt-PT" state="translated">Colar o Link</target>
         <note>ID: EditTab.PasteHyperlink</note>
       </trans-unit>
       <trans-unit id="UseTalkingBookTool">
@@ -1014,7 +1014,7 @@
       </trans-unit>
       <trans-unit id="ARecording">
         <source xml:lang="en">A Recording</source>
-        <target xml:lang="pt-PT" state="needs-translation">A Recording</target>
+        <target xml:lang="pt-PT" state="translated">Uma gravação</target>
         <note>ID: ARecording</note>
       </trans-unit>
     </body>
