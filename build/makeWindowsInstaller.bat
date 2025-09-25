@@ -12,7 +12,9 @@ REM squirrel days: MSbuild /p:Label=Beta /p:channel=LocalBuilt /property:Squirre
 MSbuild /p:Label=Beta /p:channel=LocalBuilt /p:InstallerOutputFolder=../output/installer/result /p:BuildConfigurationID=xyz123 /p:WarningLevel=0 /target:Build /property:teamcity_build_checkoutDir=..\ /verbosity:detailed  /property:LargeFilesDir="C:\dev\teamcitybuilddownloads" /property:teamcity_dotnet_nunitlauncher_msbuild_task="notthere" /property:BUILD_NUMBER="6.3.1007.0" /property:Minor="1"
 
 REM this only needs doing once, really, but putting it here so devs don't forget it.
-dotnet tool install -g vpk
+REM This should match the Velopack version in BloomExe.csproj.
+REM Currently it is a prerelease version.
+dotnet tool install --global vpk --version 0.0.1350-g3ba32af
 
 REM review: do any of these properties I'm not using still apply? I'm not sure the Label does anything.
 REM squirrel: MSbuild /p:Label=Beta /p:channel=LocalBuilt /property:SquirrelReleaseFolder="../output/installer" /p:BuildConfigurationID=xyz123 /p:WarningLevel=0 /target:Installer /property:teamcity_build_checkoutDir=..\ /verbosity:detailed  /property:LargeFilesDir="C:\dev\teamcitybuilddownloads" /property:teamcity_dotnet_nunitlauncher_msbuild_task="notthere" /property:BUILD_NUMBER="*.*.999.999" /property:Minor="1"
