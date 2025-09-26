@@ -5,12 +5,12 @@
 		<UpgradeBackupLocation />
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
 		<OutputPath>..\..\output\Tests\$(Configuration)\</OutputPath>
-		<Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+		<!-- Removed x86 platform restriction to allow building for multiple architectures -->
 		<AssemblyTitle>BloomTests</AssemblyTitle>
 		<Company>SIL</Company>
 		<Product>BloomTests</Product>
 		<Copyright>© SIL International 2014-2024</Copyright>
-		<Version>6.3.0.0</Version>
+		<Version>6.3.40.0</Version>
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<LangVersion>11.0</LangVersion>
@@ -32,13 +32,12 @@
 			<_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
 		</AssemblyAttribute>
 	</ItemGroup>
+	<!-- Removed x86 platform target restrictions from configuration-specific property groups -->
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
 		<DebugType>full</DebugType>
-		<PlatformTarget>x86</PlatformTarget>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
 		<DebugType>pdbonly</DebugType>
-		<PlatformTarget>x86</PlatformTarget>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
 		<DebugType>full</DebugType>
@@ -74,7 +73,7 @@
     I believe this is unnecessary on Linux, they usually already have 4 GB virtual address space available.
     -->
 		<LargeAddressAware>true</LargeAddressAware>
-		<PlatformTarget>x86</PlatformTarget>
+		<!-- Removed x86 platform target restriction -->
 	</PropertyGroup>
 	<PropertyGroup>
 		<!-- We should delete this when we get rid of WebThumbNailList.Designer.cs. I believe we are only using binary formatter serialization in working with the ImageStream there. -->
