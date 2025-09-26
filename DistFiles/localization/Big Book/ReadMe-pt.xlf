@@ -41,7 +41,7 @@ A orientação retrato no tamanho A4 é também possível.
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="pt-PT" state="final">Esta versão inclui uma página de "Instruções para professores" que já está preenchida, em inglês. Caso queira as instruções num idioma diferente, pode excluir o inglês e digitar no seu idioma. Se você nos enviar esse texto, podemos incluí-lo numa versão futura do modelo.</target>
+        <target xml:lang="pt-PT" state="final">Esta versão inclui uma página de "Instruções para professores" que já está preenchida, em inglês. Caso queira as instruções numa língua diferente, pode excluir o inglês e digitar na sua língua. Se você nos enviar esse texto, podemos incluí-lo numa versão futura do modelo.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
       </trans-unit>
     </body>

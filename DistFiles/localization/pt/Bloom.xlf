@@ -1104,6 +1104,11 @@
         <target xml:lang="pt-PT" state="final">Direitos autorais</target>
         <note>ID: Common.Copyright</note>
       </trans-unit>
+      <trans-unit id="Common.Default">
+        <source xml:lang="en">Default</source>
+        <target xml:lang="pt-PT" state="translated">Padrão</target>
+        <note>ID: Common.Default</note>
+      </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
         <source xml:lang="en">Delete</source>
         <target xml:lang="pt-PT" state="final">Excluir</target>
@@ -6587,9 +6592,9 @@ is mostly status, which shows on the Collection Tab -->
           Readers drag images to the correct target areas on the screen.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-          Readers drag images to the correct target areas on the screen.
-          This game can be customized in many ways using the Game Tool.
+        <target xml:lang="pt-PT" state="translated">
+          Os leitores arrastam imagens para as áreas corretas na tela. 
+          Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Targets</note>
       </trans-unit>
@@ -6598,9 +6603,9 @@ is mostly status, which shows on the Collection Tab -->
           Readers match each image to the correct word.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-          Readers match each image to the correct word.
-          This game can be customized in many ways using the Game Tool.
+        <target xml:lang="pt-PT" state="translated">
+          Os leitores arrastam cada imagem para a palavra correta na tela. 
+          Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Words</note>
       </trans-unit>

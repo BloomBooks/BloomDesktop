@@ -147,11 +147,6 @@
         <target xml:lang="pt-PT" state="final">Jogar</target>
         <note>ID: EditTab.Toolbox.DragActivity.Play</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.PlayAudio" approved="yes">
-        <source xml:lang="en">Play Audio</source>
-        <target xml:lang="pt-PT" state="final">Reproduzir áudio</target>
-        <note>ID: EditTab.Toolbox.DragActivity.PlayAudio</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.None" approved="yes">
         <source xml:lang="en">None</source>
         <target xml:lang="pt-PT" state="final">Nenhum</target>
@@ -202,14 +197,14 @@
         <target xml:lang="pt-PT" state="final">Tente novamente</target>
         <note>ID: EditTab.Toolbox.DragActivity.TryAgain</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.WhenCorrect" approved="yes">
-        <source xml:lang="en">When the answer is correct</source>
-        <target xml:lang="pt-PT" state="final">Quando a resposta está correta</target>
+      <trans-unit id="EditTab.Toolbox.DragActivity.CorrectSound">
+        <source xml:lang="en">Correct Sound</source>
+        <target xml:lang="pt-PT" state="needs-translation">Correct Sound</target>
         <note>ID: EditTab.Toolbox.DragActivity.WhenCorrect</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.WhenWrong" approved="yes">
-        <source xml:lang="en">When the answer is wrong</source>
-        <target xml:lang="pt-PT" state="final">Quando a resposta está errada</target>
+      <trans-unit id="EditTab.Toolbox.DragActivity.WrongSound">
+        <source xml:lang="en">Wrong Sound</source>
+        <target xml:lang="pt-PT" state="needs-translation">Wrong Sound</target>
         <note>ID: EditTab.Toolbox.DragActivity.WhenWrong</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Word" approved="yes">
@@ -571,7 +566,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
         <source xml:lang="en">This is disabled because publishing interactive activities requires a subscription.</source>
-        <target xml:lang="pt-PT" state="translated">Isto está desativado porque a publicação de atividades interativas requer uma subcrição.</target>
+        <target xml:lang="pt-PT" state="translated">Isto está desativado porque a publicação de atividades interativas requer uma assinatura.</target>
         <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Games.None">
@@ -938,9 +933,9 @@
         <target xml:lang="pt-PT" state="final">Padrão (definido por Tema)</target>
         <note>BookSettings.TopLevelTextPadding.DefaultLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.TopLevelTextPadding.1emLabel" sil:dynamic="true">
+      <trans-unit id="BookSettings.TopLevelTextPadding.1emLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1 em (font size)</source>
-        <target xml:lang="pt-PT" state="translated">1em (tamanho da fonte)</target>
+        <target xml:lang="pt-PT" state="final">1em (tamanho da fonte)</target>
         <note>BookSettings.TopLevelTextPadding.1emLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.Problematic" sil:dynamic="true" approved="yes">
@@ -1009,7 +1004,7 @@
       </trans-unit>
       <trans-unit id="EditTab.PasteHyperlink">
         <source xml:lang="en">Paste Hyperlink</source>
-        <target xml:lang="pt-PT" state="needs-translation">Paste Hyperlink</target>
+        <target xml:lang="pt-PT" state="translated">Colar o Link</target>
         <note>ID: EditTab.PasteHyperlink</note>
       </trans-unit>
       <trans-unit id="UseTalkingBookTool">
@@ -1019,7 +1014,7 @@
       </trans-unit>
       <trans-unit id="ARecording">
         <source xml:lang="en">A Recording</source>
-        <target xml:lang="pt-PT" state="needs-translation">A Recording</target>
+        <target xml:lang="pt-PT" state="translated">Uma gravação</target>
         <note>ID: ARecording</note>
       </trans-unit>
     </body>
