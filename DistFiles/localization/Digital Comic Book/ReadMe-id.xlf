@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="comic.template.digital.title">
         <source xml:lang="en">Digital Comic Book</source>
-        <target xml:lang="id" state="needs-translation">Digital Comic Book</target>
+        <target xml:lang="id" state="translated">Komik Digital</target>
         <note>ID: comic.template.digital.title</note>
       </trans-unit>
       <trans-unit id="comic.template.subscription">
