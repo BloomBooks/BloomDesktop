@@ -2657,7 +2657,7 @@ namespace Bloom.Book
         internal static string kFileAccessPermissionHelpUrl =
             @"https://docs.bloomlibrary.org/windows-file-permissions";
 
-        private static string GetHelpLinkForFilePermissions()
+        internal static string GetHelpLinkForFilePermissions()
         {
             return GetEncodedSeeWebPageString(kFileAccessPermissionHelpUrl);
         }

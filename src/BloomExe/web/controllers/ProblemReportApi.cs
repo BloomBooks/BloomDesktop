@@ -1006,6 +1006,12 @@ namespace Bloom.web.controllers
             {
                 heading = exception.Message;
                 isHeadingPreEncoded = false;
+                // If it's a file permissions problem, we can give a link to help the user. (BL-15282)
+                if (exception is System.UnauthorizedAccessException)
+                {
+                    heading = BookStorage.GetHelpLinkForFilePermissions() + "<br>" + heading;
+                    isHeadingPreEncoded = true;
+                }
             }
 
             var book = _bookSelection?.CurrentSelection;
