@@ -344,7 +344,7 @@
       </trans-unit>
       <trans-unit id="BooksOnBlorg.Progress.Goal" sil:dynamic="true">
         <source xml:lang="en">Goal:</source>
-        <target xml:lang="id" state="needs-translation">Goal:</target>
+        <target xml:lang="id" state="translated">Sasaran:</target>
         <note>ID: BooksOnBlorg.Progress.Goal</note>
       </trans-unit>
       <trans-unit id="BooksOnBlorg.Progress.CountOfBooksLabel" sil:dynamic="true">
@@ -612,7 +612,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChooseLanguage">
         <source xml:lang="en">Choose Language</source>
-        <target xml:lang="id" state="needs-translation">Choose Language</target>
+        <target xml:lang="id" state="translated">Pilih bahasa</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChooseLanguage</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
@@ -757,7 +757,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.RenameBook">
         <source xml:lang="en">Rename Book</source>
-        <target xml:lang="id" state="needs-translation">Rename Book</target>
+        <target xml:lang="id" state="translated">Mengubah nama buku</target>
         <note>ID: CollectionTab.BookMenu.RenameBook</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem">
@@ -882,7 +882,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackOfShellBooks">
         <source xml:lang="en">Make Bloom Pack of Shell Books</source>
-        <target xml:lang="id" state="needs-translation">Make Bloom Pack of Shell Books</target>
+        <target xml:lang="id" state="translated">Membuat Paket Bloom dari Buku-buku Sumber</target>
         <note>Shell Books are books that are meant to be translated.</note>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate" approved="yes">
@@ -1017,12 +1017,12 @@
       </trans-unit>
       <trans-unit id="ColorPicker.New" sil:dynamic="true">
         <source xml:lang="en">New...</source>
-        <target xml:lang="id" state="needs-translation">New...</target>
+        <target xml:lang="id" state="translated">Baru...</target>
         <note>ID: ColorPicker.New</note>
       </trans-unit>
       <trans-unit id="Common.BookSettings">
         <source xml:lang="en">Book Settings</source>
-        <target xml:lang="id" state="needs-translation">Book Settings</target>
+        <target xml:lang="id" state="translated">Peraturan Buku</target>
         <note>ID: Common.BookSettings</note>
       </trans-unit>
       <trans-unit id="Common.Advanced">
@@ -1032,7 +1032,7 @@
       </trans-unit>
       <trans-unit id="Common.AskForHelp">
         <source xml:lang="en">Ask for help</source>
-        <target xml:lang="id" state="needs-translation">Ask for help</target>
+        <target xml:lang="id" state="translated">Minta bantuan</target>
         <note>ID: Common.AskForHelp</note>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
@@ -1066,7 +1066,7 @@
       </trans-unit>
       <trans-unit id="Common.Color">
         <source xml:lang="en">Color</source>
-        <target xml:lang="id" state="needs-translation">Color</target>
+        <target xml:lang="id" state="translated">Warna</target>
         <note>ID: Common.Color</note>
       </trans-unit>
       <trans-unit id="Common.Colors.Black">
@@ -1091,7 +1091,7 @@
       </trans-unit>
       <trans-unit id="Common.Continue">
         <source xml:lang="en">Continue</source>
-        <target xml:lang="id" state="needs-translation">Continue</target>
+        <target xml:lang="id" state="translated">Lanjut</target>
         <note>This is shown at the bottom of a dialog box and means to go ahead with some action. It is often paired with "Cancel"</note>
       </trans-unit>
       <trans-unit id="Common.Copy" approved="yes">
@@ -1106,7 +1106,7 @@
       </trans-unit>
       <trans-unit id="Common.Default">
         <source xml:lang="en">Default</source>
-        <target xml:lang="id" state="needs-translation">Default</target>
+        <target xml:lang="id" state="translated">Standar</target>
         <note>ID: Common.Default</note>
       </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
@@ -1141,7 +1141,7 @@
       </trans-unit>
       <trans-unit id="Common.FinishedAt">
         <source xml:lang="en">Finished at {0:hh:mm tt}</source>
-        <target xml:lang="id" state="needs-translation">Finished at {0:hh:mm tt}</target>
+        <target xml:lang="id" state="translated">Selesai pada {0:hh:mm tt}</target>
         <note>ID: Common.FinishedAt</note>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
