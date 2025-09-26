@@ -4,14 +4,14 @@
 		<ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
 		<UseWindowsForms>true</UseWindowsForms>
 		<UseWPF>false</UseWPF>
-		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..</SolutionDir>
 		<OutputPath>..\..\output\$(Configuration)\</OutputPath>
 		<Platform Condition=" '$(Platform)' == '' ">x86</Platform>
 		<AssemblyTitle>Bloom</AssemblyTitle>
 		<Company>SIL</Company>
-		<Product>Bloom</Product>
+		<Product>BloomLocalBuilt</Product>
 		<Copyright>© SIL International 2012-2025</Copyright>
-		<Version>6.3.0.0</Version>
+		<Version>6.3.40.0</Version>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
 		<TargetFramework>net8.0-windows</TargetFramework>
@@ -19,7 +19,7 @@
 		<PostBuildEvent>
 copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\meddle.exe" $(OutDir)
-xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
+xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		</PostBuildEvent>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -117,14 +117,6 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 	<PropertyGroup>
 		<StartupObject />
 	</PropertyGroup>
-	<PropertyGroup>
-		<PostBuildEvent>
-copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
-copy /Y "$(SolutionDir)\lib\dotnet\meddle.exe" $(OutDir)
-xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
-    </PostBuildEvent>
-		<PlatformTarget>AnyCPU</PlatformTarget>
-	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<Prefer32Bit>True</Prefer32Bit>
 	</PropertyGroup>
@@ -193,7 +185,7 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 		<FileUpdate File="$(LocalizationDir)\pt\Palaso.xlf" Regex="pt-BR" ReplacementText="pt-PT" />
 		<Message Text="Finished fixing Portuguese language tags in Palaso.xlf" Importance="high" />
 	</Target>
-	<Target Name="CopyX86SqliteForArm" AfterTargets="ReallyAfterBuild">
+	<Target Name="CopyX86SqliteForArm" AfterTargets="ReallyAfterBuild" Condition="Exists('$(OutDir)runtimes\win-x86\native\e_sqlite3.dll')">
 		<MakeDir Directories="$(OutDir)runtimes\win-arm64\native" />
 		<Copy SourceFiles="$(OutDir)runtimes\win-x86\native\e_sqlite3.dll" DestinationFiles="$(OutDir)e_sqlite3.dll" />
 		<Message Text="BL-13934 sqlite looks in the ARM64 directory, but then fails because actually we're running as an x86 process still, as of Bloom 6.2. So for now we're cheating and just putting the x86 version in." Importance="high" />
