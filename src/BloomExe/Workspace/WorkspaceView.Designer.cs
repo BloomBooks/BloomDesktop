@@ -439,7 +439,7 @@ namespace Bloom.Workspace
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "WorkspaceView.WorkspaceView");
 			this.Name = "WorkspaceView";
-			this.Size = new System.Drawing.Size(1098, 540);
+			this.Size = new System.Drawing.Size(1098, 510);
 			this.Load += new System.EventHandler(this.WorkspaceView_Load);
 			this.Resize += new System.EventHandler(this.WorkspaceView_Resize);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
