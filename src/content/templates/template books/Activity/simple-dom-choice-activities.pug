@@ -15,7 +15,7 @@ mixin correctAnswerBubble
 
 mixin chooseWordFromPicture
 	+page("Choose Word from Image").bloom-ignoreForReaderStats.bloom-interactive-page.numberedPage.game-theme-blue-on-white#3325A8B6-EA15-4FB7-9F8D-271D7B3C8D33(data-page='extra' data-feature='game' data-analyticscategories="simple-dom-choice" data-activity="simple-dom-choice" data-tool-id="game")
-		+field-withEnglishText("L1").Prompt-style.disableHighlight
+		+field-withEnglishText("L1").GameHeader-style.disableHighlight
 			| Choose the matching word
 		.imageThenChoices
 			+image
@@ -28,7 +28,7 @@ mixin chooseWordFromPicture
 
 mixin choosePictureFromWord
 	+page("Choose Image from Word").bloom-ignoreForReaderStats.bloom-interactive-page.numberedPage.game-theme-blue-on-white#fe7acd9d-c05c-449b-9f99-841d54856924(data-page='extra'  data-feature='game' data-analyticscategories="simple-dom-choice" data-activity="simple-dom-choice" data-tool-id="game")
-		+field-withEnglishText("L1").Prompt-style.disableHighlight
+		+field-withEnglishText("L1").GameHeader-style.disableHighlight
 			| Choose the matching picture
 		.wordThenChoices
 			+field("L1").bloom-ignoreOverflow.word-to-match.TextToMatch-style
