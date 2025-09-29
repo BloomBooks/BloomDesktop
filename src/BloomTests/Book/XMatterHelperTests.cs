@@ -24,7 +24,7 @@ namespace BloomTests.Book
         {
             _factoryXMatter = BloomFileLocator.GetFactoryXMatterDirectory();
             var codeBaseDir = BloomFileLocator.GetCodeBaseFolder();
-            _testXmatter = $"{codeBaseDir}/../../src/BloomTests/xMatter";
+            _testXmatter = $"{codeBaseDir}/../../../src/BloomTests/xMatter";
         }
 
         [SetUp]
