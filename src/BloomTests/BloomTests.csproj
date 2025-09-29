@@ -4,7 +4,7 @@
 		<FileUpgradeFlags />
 		<UpgradeBackupLocation />
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-		<OutputPath>..\..\output\Tests\$(Configuration)\</OutputPath>
+		<OutputPath>..\..\output\Tests\$(Configuration)\x64</OutputPath>
 		<!-- Removed x86 platform restriction to allow building for multiple architectures -->
 		<AssemblyTitle>BloomTests</AssemblyTitle>
 		<Company>SIL</Company>

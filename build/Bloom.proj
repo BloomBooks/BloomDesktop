@@ -44,10 +44,6 @@
     <ApplicationName>Bloom$(channel)</ApplicationName>
     <Configuration>Release</Configuration>
     <BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.2.3.4</BUILD_NUMBER>
-    <useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
-    <useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
-    <TestProcessType Condition="'$(useNUnit-x86)'=='true'">Separate</TestProcessType>
-    <TestProcessType Condition="'$(useNUnit-x86)'!='true'">Single</TestProcessType>
     <MSBuildCommunityTasksPath>$(RootDir)/build</MSBuildCommunityTasksPath>
     <teamcity_agent_home_dir Condition="'$(teamcity_agent_home_dir)'=='' And '$(OS)'!='Windows_NT'">/var/lib/TeamCity/agent</teamcity_agent_home_dir>
     <BuildTasksDll>$(RootDir)/packages/SIL.BuildTasks/tools/SIL.BuildTasks.dll</BuildTasksDll>
@@ -168,15 +164,42 @@
   <Target Name="BuildInternal" DependsOnTargets="SetAssemblyVersion">
     <Error Text="Set Channel to empty string for Release build" Condition="'$(channel)'=='Release'"/>
     
-    <!-- Build x64 version for each project with proper OutDir and SolutionDir overrides -->
+    <!-- Build x64 version for each project with proper OutDir and SolutionDir overrides. (We can't just build the solution,
+    because solution builds don't support the runtime parameter.) I don't think we need the output arg for x64,
+    but it feels safer to be explicit about both architectures. However, beware of breaking tests if the x64
+    build here does NOT go to the same directory as the VS build. -->
     <Exec Command='dotnet build "$(RootDir)\src\BloomExe\BloomExe.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
     <Exec Command='dotnet build "$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
+  <!--If the number of directories between output and OutDir changes, we need a corresponding
+    change in BloomFileLocatorTests.kRelativePathToBrowserFolder and XMatterHelperTests.OneTimeSetup-->
     <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\Tests\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
     
     <!-- Build ARM64 version for each project with proper OutDir and SolutionDir overrides -->
     <Exec Command='dotnet build "$(RootDir)\src\BloomExe\BloomExe.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
     <Exec Command='dotnet build "$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
     <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\Tests\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
+    
+    <!-- Copy main application DLLs to test directories so tests can find them -->
+    <CallTarget Targets="CopyAppDllsToTestDirs"/>
+  </Target>
+  
+  <!-- Copy main application DLLs to test directories -->
+  <Target Name="CopyAppDllsToTestDirs">
+    <ItemGroup>
+      <!-- x64 application files that tests need -->
+      <X64AppFiles Include="$(RootDir)\output\$(Configuration)\x64\*.dll;$(RootDir)\output\$(Configuration)\x64\*.exe;$(RootDir)\output\$(Configuration)\x64\*.pdb" 
+                   Exclude="$(RootDir)\output\$(Configuration)\x64\BloomTests.*" />
+      <!-- ARM64 application files that tests need. Review: is this useful? We don't have an Arm64 build agent to run Arm64 tests. -->
+      <Arm64AppFiles Include="$(RootDir)\output\$(Configuration)\arm64\*.dll;$(RootDir)\output\$(Configuration)\arm64\*.exe;$(RootDir)\output\$(Configuration)\arm64\*.pdb" 
+                     Exclude="$(RootDir)\output\$(Configuration)\arm64\BloomTests.*" />
+    </ItemGroup>
+    
+    <!-- Copy x64 app files to x64 test directory -->
+    <Copy SourceFiles="@(X64AppFiles)" DestinationFolder="$(RootDir)\output\Tests\$(Configuration)\x64" />
+    <!-- Copy ARM64 app files to ARM64 test directory -->
+    <Copy SourceFiles="@(Arm64AppFiles)" DestinationFolder="$(RootDir)\output\Tests\$(Configuration)\arm64" />
+    
+    <Message Text="Copied main application DLLs to test directories" Importance="high"/>
   </Target>
   <ItemGroup>
     <TestAssembliesX64 Include="$(RootDir)/output/Tests/$(Configuration)/x64/BloomTests.dll"/>
@@ -198,8 +221,6 @@
 			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.20.1/tools"
 			ExcludeCategory="$(ExtraExcludeCategories)$(excludedCategories)"
 			WorkingDirectory="$(RootDir)/output/Tests/$(Configuration)/x64"
-			Force32Bit="$(useNUnit-x86)"
-			Process="$(TestProcessType)"
 			Trace="Debug"
 			Verbose="true"
 			OutputXmlFile="$(TestResultsXmlFile)"
@@ -473,14 +494,8 @@
       DestinationBucket="$(Bucket)"
       DestinationFolder="deltas$(channel)"
       IsPublicRead="true" />
-    <!-- Upload ARM64-specific RELEASES and releases.win.json files to ARM64 folder -->
-    <!-- Note: These files are generated by the ARM64 vpk command and will have ARM64-specific content -->
-    <S3BuildPublisher
-		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(InstallerOutputFolder)/arm64/RELEASES"
-		DestinationBucket="$(Bucket)"
-		DestinationFolder="deltas$(channel)-arm64"
-		IsPublicRead="true" />
+    <!-- Upload ARM64-specific releases.win.json files to ARM64 folder. We don't need RELEASES since
+    there was never an ARM64 Squirrel installer.-->
     <S3BuildPublisher
       CredentialStoreProfileName ="$(ProfileName)"
       SourceFiles="$(InstallerOutputFolder)/arm64/releases.win.json"

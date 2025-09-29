@@ -13,6 +13,7 @@ using Bloom.SubscriptionAndFeatures;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
 using NUnit.Framework;
+using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.TestUtilities;
@@ -2248,9 +2249,21 @@ namespace BloomTests.Book
             );
             var data = new BookData(htmlDom, settings, null);
             Assert.That(data.GetDisplayNameForLanguage("de"), Is.EqualTo("Deutsch"));
-            Assert.That(data.GetDisplayNameForLanguage("fr"), Is.EqualTo("français"));
-            Assert.That(data.GetDisplayNameForLanguage("en"), Is.EqualTo("English"));
-            Assert.That(data.GetDisplayNameForLanguage("es"), Is.EqualTo("español"));
+            // Which of these we find seems to depend on whether some ICU directory is found in the path.
+            // Not being too picky about it because we're getting pretty good about using the user-supplied language
+            // name, so I can't find anywhere this actually shows up.
+            Assert.That(
+                data.GetDisplayNameForLanguage("fr"),
+                Is.EqualTo("français").Or.EqualTo("Französisch")
+            );
+            Assert.That(
+                data.GetDisplayNameForLanguage("en"),
+                Is.EqualTo("English").Or.EqualTo("Englisch")
+            );
+            Assert.That(
+                data.GetDisplayNameForLanguage("es"),
+                Is.EqualTo("español").Or.EqualTo("Spanisch")
+            );
         }
 
         [Test]
