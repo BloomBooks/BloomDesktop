@@ -1898,9 +1898,12 @@ namespace Bloom.Api
                 "book-preview/",
                 // Bogus file that webview2 has been asking for when launching the debugger
                 ".well-known/appspecific/com.chrome.devtools.json",
-                // This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
+                // Just like we skip missing files within the book folder and missing book files when we're create a preview in the if cases above,
+                // we don't want to complain about missing parts of the book now when we're saving publication files.
+                // There is also readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
                 // of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
                 EpubMaker.kEPUBExportFolder.ToLowerInvariant(),
+                BloomPubMaker.BRExportFolder.ToLowerInvariant(),
                 // bloom-player always asks for questions.json for every book.
                 // Being only for quiz pages, not every book has it, so we don't want spurious error reports.
                 BloomPubMaker.kQuestionFileName.ToLowerInvariant()

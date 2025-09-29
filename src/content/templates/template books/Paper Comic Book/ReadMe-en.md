@@ -12,7 +12,7 @@ Use this template as a starting point for comics designed for print. The size wi
 
 ## About Full Bleed {i18n="comic.template.paper.full.bleed.header"}
 
-This template tells Bloom that this book is a candidate for "[full bleed](https://dw-wp.com/resources/cartooning-quickguides/layout-quickguides/quickguides-bleeds/)" printing by a printshop. This feature is available with a Bloom subscription. If this feature is enabled, then in the Edit tab, you will see semi-opaque borders. The outer one is the "bleed"; this is the area that will probably be cut off by a printshop. The inner border is an area that _might_ be cut off, so you should avoid putting things in there that would look really bad if they were cut off. To actually get a PDF that is ready for this commercial printing, please see the "PDF Options" under the Publish Tab. {i18n="comic.template.paper.full.bleed"}
+This template tells Bloom that this book is a candidate for "[full bleed](https://dw-wp.com/resources/cartooning-quickguides/layout-quickguides/quickguides-bleeds/)" printing by a printshop. This feature is available with a Bloom subscription. If this feature is enabled, then in the Edit tab, you will see semi-opaque borders. The outer one is the "bleed"; this is the area that will probably be cut off by a printshop. The inner border is an area that *might* be cut off, so you should avoid putting things in there that would look really bad if they were cut off. To actually get a PDF that is ready for this commercial printing, please see the "PDF Options" under the Publish Tab. {i18n="comic.template.paper.full.bleed"}
 
 ## Limitations of Bloom's current comic book support
 
@@ -24,14 +24,15 @@ This template tells Bloom that this book is a candidate for "[full bleed](https:
 
 ## Tips on using the Overlay Toolbox
 
-- When the Overlay tool is open and you have already selected an image, Bloom hides the normal picture-changing buttons so that they don't get in the way of working with bubbles. If you need to change the image, first close the Toolbox so that these buttons become available again.
-- To move a bubble, click on the hand icon, or CTRL-drag anywhere in the bubble.
-- To resize a bubble, move your mouse cursor to the little resize icon, or ALT-drag anywhere in the bubble.
+- To move a bubble, click on it once, then drag anywhere in the bubble.
+- To edit the text in a bubble, click on it once a second time.
+- To resize a bubble, grab the resize handle on either side.
 - In the rare case that you need to change the curve of a bubble tail, drag the circle that is in the middle of the tail. It will become a solid color to indicate that you have left "auto mode". To return to "auto mode", double click that circle.
+
 
 ## Tips on "lettering" {i18n="comic.template.tips.lettering.header"}
 
-_"Lettering"_ is the term used for adding bubbles and text to comics. Take some time to learn what professional _letterers_ say about making good-looking comics. Bloom takes care of some of these things for you, but there are many things that require training your eye. See https://blambot.com/pages/lettering-tips. Note, you do _not_ need to only use upper case letters. It does look cool because we are used to seeing comics done this way, but you should do whatever is best for your audience. If you do choose upper case _and_ have a script that is widely supported, consider using a special comic book font. See [here](https://blambot.com/collections/all-fonts/dialogue) and [here](https://jasonthibault.com/comic-book-fonts/). {i18n="comic.template.tips.lettering"}
+*"Lettering"* is the term used for adding bubbles and text to comics. Take some time to learn what professional *letterers* say about making good-looking comics. Bloom takes care of some of these things for you, but there are many things that require training your eye. See https://blambot.com/pages/lettering-tips. Note, you do *not* need to only use upper case letters. It does look cool because we are used to seeing comics done this way, but you should do whatever is best for your audience. If you do choose upper case *and* have a script that is widely supported, consider using a special comic book font. See [here](https://blambot.com/collections/all-fonts/dialogue) and [here](https://jasonthibault.com/comic-book-fonts/). {i18n="comic.template.tips.lettering"}
 
 ## A note on White on Black Text
 

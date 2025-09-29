@@ -221,7 +221,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         "bloomPubPreview",
         url => {
             setBookUrl(url);
-            setHavePreviewForOrientation(true);
+            setHavePreviewForOrientation(url !== "stopPreview");
         }
     );
     useEffect(() => {
@@ -527,7 +527,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                             enabled={
                                 !recording &&
                                 isLicenseOK &&
-                                !isScalingActive &&
+                                !(isScalingActive && recordingVideo) &&
                                 havePreviewForOrientation
                             }
                             l10nKey="PublishTab.RecordVideo.Record"
