@@ -2,10 +2,7 @@
     "compilerOptions": {
         "target": "es2019",
 
-        // This was commonjs, we changed it for vite.config.ts's sake,
-        // but it's not clear that this is what we want for actually compiling our code.
-        // "module": "commonjs",
-        "module": "nodenext",
+        "module": "commonjs",
 
         "sourceMap": true,
         "jsx": "react-jsx",
@@ -31,6 +28,7 @@
         "node_modules",
         "typings",
         "react_components/component-tester",
-        "react_components/**/component-tests"
+        "react_components/**/component-tests",
+        "vite.config.ts"
     ]
 }

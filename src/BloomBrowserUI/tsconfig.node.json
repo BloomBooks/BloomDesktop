@@ -1,0 +1,10 @@
+// this is used by vite.config.ts. I'm not sure how it finds it?
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "types": ["node"]
+    },
+    "include": ["vite.config.ts"]
+}
