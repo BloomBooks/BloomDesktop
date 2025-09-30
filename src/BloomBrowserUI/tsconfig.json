@@ -1,7 +1,12 @@
 {
     "compilerOptions": {
         "target": "es2019",
-        "module": "commonjs",
+
+        // This was commonjs, we changed it for vite.config.ts's sake,
+        // but it's not clear that this is what we want for actually compiling our code.
+        // "module": "commonjs",
+        "module": "nodenext",
+
         "sourceMap": true,
         "jsx": "react-jsx",
         "jsxImportSource": "@emotion/react",
@@ -15,7 +20,7 @@
         "noImplicitReturns": true,
         "strictNullChecks": true,
         "outDir": "../../output/browser",
-        "resolveJsonModule": true,
+        //"resolveJsonModule": true,
         // this solved the 'foo' cannot be used as a JSX component. Its instance type 'foo' is not a valid JSX element,
         // which came in when we were at react 17 but some things are going towards 18
         "paths": {
