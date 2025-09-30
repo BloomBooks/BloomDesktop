@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
+using L10NSharp.Windows.Forms;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.Reporting;
@@ -37,8 +38,7 @@ namespace BloomTests.Book
             LocalizationManager.UseLanguageCodeFolders = true;
             var localizationDirectory =
                 FileLocationUtilities.GetDirectoryDistributedWithApplication("localization");
-            _localizationManager = LocalizationManager.Create(
-                TranslationMemory.XLiff,
+            _localizationManager = LocalizationManagerWinforms.Create(
                 "fr",
                 "Bloom",
                 "Bloom",
@@ -49,8 +49,7 @@ namespace BloomTests.Book
                 "",
                 new string[] { }
             );
-            _palasoLocalizationManager = LocalizationManager.Create(
-                TranslationMemory.XLiff,
+            _palasoLocalizationManager = LocalizationManagerWinforms.Create(
                 "fr",
                 "Palaso",
                 "Palaso",

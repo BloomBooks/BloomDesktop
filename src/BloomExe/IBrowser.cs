@@ -9,7 +9,6 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.ErrorReporter;
 using Bloom.ToPalaso;
-using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
 

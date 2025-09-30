@@ -30,7 +30,7 @@
 		{
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ScriptSettingsDialog));
-			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			this._languageNameLabel = new System.Windows.Forms.Label();
 			this._rtlLanguageCheckBox = new System.Windows.Forms.CheckBox();
 			this._tallerLinesCheckBox = new System.Windows.Forms.CheckBox();
@@ -236,7 +236,7 @@
 
 		#endregion
 
-		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
 		private System.Windows.Forms.Label _languageNameLabel;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;

@@ -38,7 +38,7 @@ namespace Bloom.CollectionChoosing
 			this._topRightPanel = new System.Windows.Forms.Panel();
 			this._toolStrip1 = new System.Windows.Forms.ToolStrip();
 			this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
-			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			this.tableLayoutPanel2.SuspendLayout();
 			this._topRightPanel.SuspendLayout();
 			this._toolStrip1.SuspendLayout();
@@ -218,7 +218,7 @@ namespace Bloom.CollectionChoosing
 		private System.Windows.Forms.Button button9;
 		private System.Windows.Forms.Button _templateButton;
 		private System.Windows.Forms.Button _browseButton;
-		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.Panel _topRightPanel;
 		private System.Windows.Forms.ToolStrip _toolStrip1;
 		private System.Windows.Forms.ToolStripDropDownButton _uiLanguageMenu;

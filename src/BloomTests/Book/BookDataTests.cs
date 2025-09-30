@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Web;
-using System.Windows.Input;
-using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
@@ -14,6 +11,7 @@ using Bloom.Edit;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 using L10NSharp;
+using L10NSharp.Windows.Forms;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.Reporting;
@@ -59,8 +57,7 @@ namespace BloomTests.Book
             LocalizationManager.UseLanguageCodeFolders = true;
             var localizationDirectory =
                 FileLocationUtilities.GetDirectoryDistributedWithApplication("localization");
-            _localizationManager = LocalizationManager.Create(
-                TranslationMemory.XLiff,
+            _localizationManager = LocalizationManagerWinforms.Create(
                 "fr",
                 "Bloom",
                 "Bloom",
@@ -68,10 +65,10 @@ namespace BloomTests.Book
                 localizationDirectory,
                 "SIL/Bloom",
                 null,
-                ""
+                "",
+                new string[] { }
             );
-            _palasoLocalizationManager = LocalizationManager.Create(
-                TranslationMemory.XLiff,
+            _palasoLocalizationManager = LocalizationManagerWinforms.Create(
                 "fr",
                 "Palaso",
                 "Palaso",
@@ -79,7 +76,8 @@ namespace BloomTests.Book
                 localizationDirectory,
                 "SIL/Palaso",
                 null,
-                ""
+                "",
+                new string[] { }
             );
         }
 

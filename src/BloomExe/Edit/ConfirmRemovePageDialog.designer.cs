@@ -34,7 +34,7 @@
 			this.pictureRecycleBin = new System.Windows.Forms.PictureBox();
 			this.cancelBtn = new System.Windows.Forms.Button();
 			this.deleteBtn = new System.Windows.Forms.Button();
-			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			this.tableLayout.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureRecycleBin)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -170,6 +170,6 @@
 		private System.Windows.Forms.PictureBox pictureRecycleBin;
 		private System.Windows.Forms.Button cancelBtn;
 		private System.Windows.Forms.Button deleteBtn;
-		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 	}
 }

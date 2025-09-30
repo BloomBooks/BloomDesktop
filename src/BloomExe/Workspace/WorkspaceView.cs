@@ -22,6 +22,7 @@ using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
+using L10NSharp.Windows.Forms;
 using Messir.Windows.Forms;
 using Newtonsoft.Json;
 using SIL.IO;
@@ -814,7 +815,7 @@ namespace Bloom.Workspace
         {
             var tag = (LanguageItem)item.Tag;
 
-            LocalizationManager.SetUILanguage(tag.LangTag, true);
+            LocalizationManagerWinforms.SetUILanguage(tag.LangTag, true);
             // TODO-WV2: Can we set the browser language in WV2?  Do we need to?
             Settings.Default.UserInterfaceLanguage = tag.LangTag;
             Settings.Default.UserInterfaceLanguageSetExplicitly = true;
