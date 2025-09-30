@@ -1,15 +1,11 @@
 import { defineConfig } from "vite";
-import path from "path";
+import * as path from "path";
 import { glob } from "glob";
-
+import react from "@vitejs/plugin-react";
 // Use dynamic imports so that if Vite/esbuild emits a CommonJS wrapper for this
 // config, Node can still load ESM‑only plugins (like @vitejs/plugin-react) via
 // native dynamic import instead of require().
 export default defineConfig(async () => {
-    const [{ default: react }] = await Promise.all([
-        import("@vitejs/plugin-react")
-    ]);
-
     // Define entry points to match webpack configuration
     const entryPoints = {
         editTabBundle: "./bookEdit/editViewFrame.ts",
@@ -58,9 +54,9 @@ export default defineConfig(async () => {
 
     return {
         plugins: [
-            // Fast Refresh injects $RefreshSig$ which can error in WebView.
-            // We disable it here for stability; HMR still works for modules.
-            react({ fastRefresh: false })
+            react({
+                reactRefreshHost: `http://localhost:${process.env.PORT || 5173}`
+            })
         ],
         server: {
             port: 5173,
