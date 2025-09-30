@@ -3,7 +3,6 @@
 // when a pragma is present. The pragma is harmless under Vite because
 // Emotion's css prop is not used here; we keep the import for css() only.
 // If needed, we can convert to the automatic runtime later.
-/** @jsx jsx **/
 import { css } from "@emotion/react";
 
 import * as React from "react";
