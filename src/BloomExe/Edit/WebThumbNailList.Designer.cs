@@ -24,7 +24,10 @@ namespace Bloom.Edit
 
         private void WebThumbnailDesigner_BackColorChanged(object sender, EventArgs e)
 		{
-			_browser.BackColor = BackColor;
+            if (_browser != null)
+            {
+                _browser.BackColor = BackColor;
+            }
 		}
 
 		#region Component Designer generated code
