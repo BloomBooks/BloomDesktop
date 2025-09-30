@@ -20,6 +20,8 @@ namespace Bloom.Book
             var widgetPath = fullWidgetPath.Replace("\\", "/");
             var widgetName = Path.GetFileNameWithoutExtension(widgetPath);
             var originalWidgetName = widgetName;
+            if (widgetName.Length > 50)
+                widgetName = widgetName.Substring(0, 50).Trim(); // keep the name from being too long (BL-15307)
             var widgetDestinationFolder = bookFolderPath + "/" + "activities" + "/" + widgetName;
             var suffix = 1;
             // If widget destination folder already exists, come up with modified name
