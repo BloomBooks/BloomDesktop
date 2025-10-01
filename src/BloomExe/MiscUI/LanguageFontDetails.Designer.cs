@@ -33,7 +33,7 @@
 			this._rightToLeftCheck = new System.Windows.Forms.CheckBox();
 			this._tallerLinesCheck = new System.Windows.Forms.CheckBox();
 			this._lineSpacingCombo = new System.Windows.Forms.ComboBox();
-			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -123,6 +123,6 @@
 		private System.Windows.Forms.CheckBox _rightToLeftCheck;
 		private System.Windows.Forms.CheckBox _tallerLinesCheck;
 		private System.Windows.Forms.ComboBox _lineSpacingCombo;
-		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 	}
 }

@@ -1,5 +1,4 @@
 using Bloom.SubscriptionAndFeatures;
-using Moq;
 using NUnit.Framework;
 
 namespace BloomTests.FeatureStatusTests
@@ -10,7 +9,7 @@ namespace BloomTests.FeatureStatusTests
         [SetUp]
         public void Setup()
         {
-            L10NSharp.LocalizationManager.SetUILanguage("en", false); // review
+            L10NSharp.LocalizationManager.SetUILanguage("en"); // review
         }
 
         [TestCase(SubscriptionTier.Basic, SubscriptionTier.Pro, FeatureName.Overlay, false)] // Basic subscription cannot access Pro tier feature

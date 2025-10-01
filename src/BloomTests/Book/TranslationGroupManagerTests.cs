@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SafeXml;
 using L10NSharp;
+using L10NSharp.Windows.Forms;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.Reporting;
@@ -34,8 +35,7 @@ namespace BloomTests.Book
                 FileLocationUtilities.GetDirectoryDistributedWithApplication(
                     "src/BloomTests/TestLocalization"
                 );
-            _localizationManager = LocalizationManager.Create(
-                TranslationMemory.XLiff,
+            _localizationManager = LocalizationManagerWinforms.Create(
                 "en",
                 "Bloom",
                 "Bloom",
@@ -43,7 +43,8 @@ namespace BloomTests.Book
                 localizationDirectory,
                 "SIL/BloomTests",
                 null,
-                ""
+                "",
+                new string[] { }
             );
         }
 

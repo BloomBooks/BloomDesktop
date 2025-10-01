@@ -2,7 +2,6 @@
 using System.Windows.Forms;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
-using L10NSharp;
 
 namespace Bloom.CollectionChoosing
 {

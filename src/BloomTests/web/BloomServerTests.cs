@@ -13,6 +13,7 @@ using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.web.controllers;
 using L10NSharp;
+using L10NSharp.Windows.Forms;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
@@ -38,8 +39,7 @@ namespace BloomTests.web
             LocalizationManager.UseLanguageCodeFolders = true;
             var localizationDirectory =
                 FileLocationUtilities.GetDirectoryDistributedWithApplication("localization");
-            _localizationManager = LocalizationManager.Create(
-                TranslationMemory.XLiff,
+            _localizationManager = LocalizationManagerWinforms.Create(
                 "fr",
                 "Bloom",
                 "Bloom",

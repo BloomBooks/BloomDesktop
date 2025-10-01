@@ -36,7 +36,7 @@
 			this._errorImage = new System.Windows.Forms.PictureBox();
 			this._backgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._startupTimer = new System.Windows.Forms.Timer(this.components);
-			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._errorImage)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -151,6 +151,6 @@
 		private System.Windows.Forms.PictureBox _errorImage;
 		private System.ComponentModel.BackgroundWorker _backgroundWorker;
 		private System.Windows.Forms.Timer _startupTimer;
-		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 	}
 }

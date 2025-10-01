@@ -30,7 +30,7 @@ namespace Bloom.Edit
 		{
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(JpegWarningDialog));
-			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			this._photographRadioButton = new System.Windows.Forms.RadioButton();
 			this._cancelRadioButton = new System.Windows.Forms.RadioButton();
 			this._okButton = new System.Windows.Forms.Button();
@@ -137,7 +137,7 @@ namespace Bloom.Edit
 
 		#endregion
 
-		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.RadioButton _photographRadioButton;
 		private System.Windows.Forms.RadioButton _cancelRadioButton;
 		private System.Windows.Forms.Button _okButton;

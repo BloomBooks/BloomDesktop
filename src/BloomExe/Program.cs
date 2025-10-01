@@ -29,7 +29,7 @@ using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using CommandLine;
 using L10NSharp;
-using Markdig.Extensions.Alerts;
+using L10NSharp.Windows.Forms;
 using Sentry;
 using SIL.IO;
 using SIL.Reporting;
@@ -616,10 +616,7 @@ namespace Bloom
                             Environment.Exit(-1);
                         }
 
-                        LocalizationManager.SetUILanguage(
-                            Settings.Default.UserInterfaceLanguage,
-                            false
-                        );
+                        LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage);
                         // TODO-WV2: Can we set the browser language for WV2?  Do we need to?
 
                         // Kick off getting all the font metadata for fonts currently installed in the system.
@@ -840,7 +837,7 @@ namespace Bloom
             {
                 //JT please review: is this needed? InstallerSupport.MakeBloomRegistryEntries(args);
                 BookDownloadSupport.EnsureDownloadFolderExists();
-                LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+                LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage);
                 var downloader = new BookDownload(ProjectContext.CreateBloomS3Client());
                 downloader.HandleBloomBookOrder(bookOrderUrl);
                 PathToBookDownloadedAtStartup = downloader.LastBookDownloadedPath;
@@ -1496,7 +1493,7 @@ namespace Bloom
                 // Ideally we would dispose this at some point, but I don't know when we safely can. Normally this should never happen,
                 // so I'm not very worried.
                 var fakeLocalDir = new TemporaryFolder("Bloom fake localization").FolderPath;
-                lm = LocalizationManager.Create(
+                lm = LocalizationManagerWinforms.Create(
                     "en",
                     "Bloom",
                     "Bloom",
@@ -1516,7 +1513,7 @@ namespace Bloom
                 // If the user has not set the interface language, try to use the system language if we can.
                 // (See http://issues.bloomlibrary.org/youtrack/issue/BL-4393.)
                 var desiredLanguage = GetDesiredUiLanguage(installedStringFileFolder);
-                lm = LocalizationManager.Create(
+                lm = LocalizationManagerWinforms.Create(
                     desiredLanguage,
                     "Bloom",
                     "Bloom",
@@ -1545,7 +1542,7 @@ namespace Bloom
                 if (uiLanguage != desiredLanguage)
                     Settings.Default.UserInterfaceLanguageSetExplicitly = true;
 
-                LocalizationManager.Create(
+                LocalizationManagerWinforms.Create(
                     uiLanguage,
                     "Palaso",
                     "Palaso", /*review: this is just bloom's version*/
@@ -1557,7 +1554,7 @@ namespace Bloom
                     new string[] { "SIL" }
                 );
 
-                LocalizationManager.Create(
+                LocalizationManagerWinforms.Create(
                     uiLanguage,
                     "BloomMediumPriority",
                     "BloomMediumPriority",
@@ -1569,7 +1566,7 @@ namespace Bloom
                     new string[] { "Bloom" }
                 );
 
-                LocalizationManager.Create(
+                LocalizationManagerWinforms.Create(
                     uiLanguage,
                     "BloomLowPriority",
                     "BloomLowPriority",

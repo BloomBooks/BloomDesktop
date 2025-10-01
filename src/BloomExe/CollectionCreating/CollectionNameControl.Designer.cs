@@ -32,7 +32,7 @@
             this._collectionNameControl = new System.Windows.Forms.TextBox();
             this._collectionInfoLabel = new SIL.Windows.Forms.Widgets.BetterLabel();
             this._nameCollectionLabel = new System.Windows.Forms.Label();
-            this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+            this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
@@ -117,6 +117,6 @@
 		protected System.Windows.Forms.TextBox _collectionNameControl;
 		private SIL.Windows.Forms.Widgets.BetterLabel _collectionInfoLabel;
 		private System.Windows.Forms.Label _nameCollectionLabel;
-        private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+        private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 	}
 }

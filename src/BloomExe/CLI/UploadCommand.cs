@@ -56,10 +56,7 @@ namespace Bloom.CLI
             {
                 using (var applicationContainer = new ApplicationContainer())
                 {
-                    LocalizationManager.SetUILanguage(
-                        Settings.Default.UserInterfaceLanguage,
-                        false
-                    );
+                    LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage);
                     var singleBookUploader = new BookUpload(
                         new BloomLibraryBookApiClient(),
                         ProjectContext.CreateBloomS3Client(),

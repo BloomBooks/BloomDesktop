@@ -41,7 +41,7 @@ namespace Bloom.Workspace
 			this._settingsLauncherHelper = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
 			this._containerPanel = new System.Windows.Forms.Panel();
 			this._toolSpecificPanel = new System.Windows.Forms.Panel();
-			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			this._tabStrip = new Messir.Windows.Forms.TabStrip();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
@@ -463,7 +463,7 @@ namespace Bloom.Workspace
 		private Messir.Windows.Forms.TabStripButton _editTab;
 		private Messir.Windows.Forms.TabStripButton _publishTab;
 		private Messir.Windows.Forms.TabStrip _tabStrip;
-		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.Timer _applicationUpdateCheckTimer;
 		private System.Windows.Forms.ToolStrip _toolStrip;
 		private System.Windows.Forms.ToolStripDropDownButton _uiLanguageMenu;

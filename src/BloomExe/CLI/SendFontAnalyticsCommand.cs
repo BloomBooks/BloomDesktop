@@ -33,10 +33,7 @@ namespace Bloom.CLI
             {
                 using (var applicationContainer = new ApplicationContainer())
                 {
-                    LocalizationManager.SetUILanguage(
-                        Settings.Default.UserInterfaceLanguage,
-                        false
-                    ); // Unclear if this line is needed or not.
+                    LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage); // Unclear if this line is needed or not.
                     Program.RunningHarvesterMode = true;
                     using (
                         _projectContext = applicationContainer.CreateProjectContext(

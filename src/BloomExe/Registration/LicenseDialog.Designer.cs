@@ -40,7 +40,7 @@ namespace Bloom.Registration
 		{
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LicenseDialog));
-			this.l10NSharpExtender1 = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this.l10NSharpExtender1 = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			this._acceptButton = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.l10NSharpExtender1)).BeginInit();
 			this.SuspendLayout();
@@ -90,6 +90,6 @@ namespace Bloom.Registration
 		#endregion
 
 		private System.Windows.Forms.Button _acceptButton;
-		private L10NSharp.UI.L10NSharpExtender l10NSharpExtender1;
+		private L10NSharp.Windows.Forms.L10NSharpExtender l10NSharpExtender1;
 	}
 }

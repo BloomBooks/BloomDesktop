@@ -47,7 +47,7 @@ namespace Bloom.Edit
             this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
             this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
             this.settingsLauncherHelper1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
-            this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+            this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
             this._splitContainer2 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
             this._topBarPanel = new System.Windows.Forms.Panel();
             this._rightToolStrip = new System.Windows.Forms.ToolStrip();
@@ -219,7 +219,7 @@ namespace Bloom.Edit
 		private System.Windows.Forms.Timer _handleMessageTimer;
 		private System.Windows.Forms.Panel _topBarPanel;
 		private SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper settingsLauncherHelper1;
-		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.ToolStrip _rightToolStrip;
         private Bloom.web.ReactControl _editControlsReactControl;
         private System.Windows.Forms.ToolStripButton _bookSettingsButton;
