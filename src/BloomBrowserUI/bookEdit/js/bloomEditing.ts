@@ -1781,7 +1781,8 @@ function SetupBookLinkGrids(container: HTMLElement) {
                         console.log("listening for ", messageContext);
 
                         const p = document.createElement("p");
-                        p.textContent = link.book.realTitle || link.book.title;
+                        p.textContent =
+                            link.book.title || link.book.folderName || "";
                         button.appendChild(p);
 
                         this.appendChild(button);
