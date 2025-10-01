@@ -90,37 +90,44 @@
       <trans-unit id="buttons.retry_close_programs">
         <source xml:lang="en">Retry\nTry again if you've closed the program(s)</source>
         <target xml:lang="es-ES" state="translated">Reintentar\nInténtalo de nuevo si ya cerraste los programas</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
         <note>ID: buttons.retry_close_programs</note>
       </trans-unit>
       <trans-unit id="buttons.continue_close_programs">
         <source xml:lang="en">Continue\nAttempt to close the program(s) automatically</source>
         <target xml:lang="es-ES" state="translated">Continuar\nIntentar cerrar los programas automáticamente</target>
         <note>ID: buttons.continue_close_programs</note>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.cancel_stop_update">
         <source xml:lang="en">Cancel\nThe update will not continue</source>
         <target xml:lang="es-ES" state="translated">Cancelar\nLa actualización no continuará</target>
         <note>ID: buttons.cancel_stop_update</note>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.repair">
         <source xml:lang="en">Repair\nErase the application and re-install version {app_version}.</source>
         <target xml:lang="es-ES" state="translated">Reparar\nEliminar la aplicación y volver a instalar la versión {app_version}.</target>
         <note>ID: buttons.repair</note>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.update">
         <source xml:lang="en">Update\nTo version {target_version}</source>
         <target xml:lang="es-ES" state="translated">Actualizar\nA la versión {target_version}</target>
         <note>ID: buttons.update</note>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.downgrade">
         <source xml:lang="en">Downgrade\nTo version {target_version}</source>
         <target xml:lang="es-ES" state="translated">Instalar versión anterior\nA la versión {target_version}</target>
         <note>ID: buttons.downgrade</note>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.cancel_backup_first">
         <source xml:lang="en">Cancel\nBackup or save your work first</source>
         <target xml:lang="es-ES" state="translated">Cancelar\nHaz una copia de seguridad o guarda tu trabajo primero</target>
         <note>ID: buttons.cancel_backup_first</note>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="dialogs.restart_required.instruction">
         <source xml:lang="en">Restart Required</source>
