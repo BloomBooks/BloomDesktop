@@ -1,4 +1,4 @@
-import * as XRegExp from "xregexp";
+import XRegExp from "xregexp";
 import AudioRecording, { kAnyRecordingApiUrl } from "./audioRecording";
 import { RecordingMode } from "./recordingMode";
 import axios, { AxiosResponse } from "axios";

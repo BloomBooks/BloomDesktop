@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { theOneLibSynphony, setLangData } from "./synphony_lib";
 import _ from "underscore";
 

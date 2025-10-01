@@ -25,7 +25,7 @@
 ///<reference path="../../../typings/jquery/jquery.d.ts"/>
 ///<reference path="../../../typings/toastr/toastr.d.ts"/>
 
-import * as $ from "jquery";
+import $ from "jquery";
 import { theOneLibSynphony } from "../readers/libSynphony/synphony_lib";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { TextFragment } from "../readers/libSynphony/bloomSynphonyExtensions";
@@ -4143,7 +4143,7 @@ export default class AudioRecording implements IAudioRecorder {
             )
             .remove();
         // unwrap any span elements that have no attributes and so change nothing
-        // This will get rid of at least some empty spans, and it reduces clutter.
+        // I don't think this prevents a bug, but it reduces clutter.
         const copyElt = element.get(0);
         for (const span of Array.from(copyElt.getElementsByTagName("span"))) {
             if (span.attributes.length === 0) {
@@ -4579,7 +4579,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     // Returns all elements that match CSS selector {expr} as an array.
-    // Querying can optionally be restricted to {container}�s descendants
+    // Querying can optionally be restricted to {container}?s descendants
     // If includeSelf is true, it includes both itself as well as its descendants.
     // Otherwise, it only includes descendants.
     // Also filters out imageDescriptions if we aren't supposed to be reading them.

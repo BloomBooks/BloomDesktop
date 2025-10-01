@@ -56,6 +56,7 @@ export default [
         plugins: {
             react: reactPlugin,
             "react-hooks": hooksPlugin,
+            //"jest-dom": jestDomPlugin
         },
         languageOptions: {
             // not working: hopefully covered by tseslint.configs.recommended

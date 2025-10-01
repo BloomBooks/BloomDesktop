@@ -3,7 +3,7 @@ import * as path from "path";
 import { glob } from "glob";
 import react from "@vitejs/plugin-react";
 // Use dynamic imports so that if Vite/esbuild emits a CommonJS wrapper for this
-// config, Node can still load ESM‑only plugins (like @vitejs/plugin-react) via
+// config, Node can still load ESM-only plugins (like @vitejs/plugin-react) via
 // native dynamic import instead of require().
 export default defineConfig(async () => {
     // Define entry points to match webpack configuration
@@ -57,6 +57,7 @@ export default defineConfig(async () => {
             react({
                 reactRefreshHost: `http://localhost:${process.env.PORT || 5173}`,
             }),
+            //pugPlugin()
         ],
         server: {
             port: 5173,
@@ -110,5 +111,44 @@ export default defineConfig(async () => {
                 "App.less": path.resolve(__dirname, "app/App.less"),
             },
         },
+        test: {
+            setupFiles: ["./vitest.setup.ts"],
+            include: ["./**/*{test,spec,Spec}.{js,ts,jsx,tsx}"],
+            // various things copilot suggested to match vite config to webpack.
+            // For now, they didn't help and some broke things.
+            environment: "jsdom",
+            globals: false,
+            // Uncomment and adjust as needed to match your test file patterns:
+            // include: ["./src/**/talkingBookSpec.ts"],
+            // deps: {
+            //     inline: [
+            //         // Add packages here that should not be externalized
+            //         "xregexp"
+            //     ]
+            // }
+            deps: {
+                inline: [
+                    "vitest-canvas-mock",
+                    //"bookEdit/toolbox/readers/libSynphony/synphony_lib.js"
+                ],
+            },
+            browser: {
+                enabled: true,
+                name: "chromium",
+                //provider: "playwright"
+            },
+            // For this config, check https://github.com/vitest-dev/vitest/issues/740
+            //threads: false,
+            environmentOptions: {
+                jsdom: {
+                    resources: "usable",
+                },
+            },
+        },
+        define: {
+            // Add global constants here if your webpack config defines any
+            // Example: __DEV__: JSON.stringify(true)
+        },
     };
+    // ...other options as needed to match your webpack config...
 });

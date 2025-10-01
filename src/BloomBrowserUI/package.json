@@ -8,13 +8,13 @@
         "test": "test"
     },
     "engines": {
-        "node": ">=22.11.0"
+        "node": ">=22.12.0"
     },
     "scripts": {
         "dev": "vite",
         "preview": "vite preview",
         "// COMMENTS: make the action a space rather than empty string so `yarn run` can list the scripts": " ",
-        "test": "karma start --browsers Chrome_allow_autoplay  --single-run",
+        "test": "vitest",
         "testWatch": "karma start --browsers Chrome_allow_autoplay",
         "check-that-node-modules-exists-in-content-dir": "cd ../content && node checkForNodeModules.js && cd ../BloomBrowserUI",
         "// 'build': 'does a nice new clean build of the output/browser folder.'": " ",
@@ -141,6 +141,7 @@
         "@storybook/addon-webpack5-compiler-swc": "1.0.2",
         "@storybook/react": "7.6.17",
         "@storybook/react-webpack5": "7.6.17",
+        "@testing-library/jest-dom": "^6.8.0",
         "@types/dom-mediacapture-record": "^1.0.1",
         "@types/jquery": "^1.0",
         "@types/markdown-it": "^14.1.2",
@@ -159,6 +160,7 @@
         "@typescript-eslint/eslint-plugin": "^8.39.0",
         "@typescript-eslint/parser": "^8.39.0",
         "@vitejs/plugin-react": "^5.0.4",
+        "@vitest/browser": "^3.2.4",
         "babel-loader": "^9.1.2",
         "cpx": "^1.5.0",
         "css-loader": "^6.7.3",
@@ -187,6 +189,7 @@
         "jasmine": "^4.5.0",
         "jasmine-core": "^4.5.0",
         "jasmine-jquery": "^2.1.1",
+        "jsdom": "^26.1.0",
         "karma": "^6.4.1",
         "karma-chrome-launcher": "^3.1.1",
         "karma-jasmine": "^5.1.0",
@@ -218,6 +221,9 @@
         "typescript-eslint": "^8.39.0",
         "url-loader": "^4.1.1",
         "vite": "^7.1.5",
+        "vi-canvas-mock": "^1.0.0",
+        "vite-plugin-pug": "^0.4.1",
+        "vitest": "^3.2.4",
         "webpack": "^5.75.0",
         "webpack-build-notifier": "^2.3.0",
         "webpack-cli": "^5.0.1",

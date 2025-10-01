@@ -5,7 +5,7 @@ import ColorSwatch, {
     IColorInfo,
     getBackgroundColorCssFromColorInfo,
 } from "../../../react_components/color-picking/colorSwatch";
-import * as tinycolor from "tinycolor2";
+import tinycolor from "tinycolor2";
 import { CSSProperties } from "react";
 import { useL10n } from "../../../react_components/l10nHooks";
 

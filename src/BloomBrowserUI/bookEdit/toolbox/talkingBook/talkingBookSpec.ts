@@ -1,3 +1,12 @@
+import {
+    describe,
+    it,
+    expect,
+    beforeAll,
+    beforeEach,
+    afterEach,
+    vi,
+} from "vitest";
 import TalkingBookTool from "./talkingBook";
 import AudioRecording, {
     theOneAudioRecorder,
@@ -13,9 +22,9 @@ import {
     StripRecordingMd5,
     setupForAudioRecordingTests,
 } from "./audioRecordingSpec";
-import * as XRegExp from "xregexp"; // Not sure why, but import * as XRegExp works better. import XRegExp causes "xregexp_1.default is undefined" error
-import { setSentenceEndingPunctuationForBloom } from "../readers/libSynphony/bloom_xregexp_categories";
+import XRegExp from "xregexp";
 import axios from "axios";
+import { setSentenceEndingPunctuationForBloom } from "../readers/libSynphony/bloom_xregexp_categories";
 
 describe("talking book tests", () => {
     beforeAll(async () => {
@@ -49,7 +58,7 @@ describe("talking book tests", () => {
 
     describe("- updateMarkup()", () => {
         it("moves highlight after focus changes", async () => {
-            spyOn(axios, "get").and.callFake((url: string) => {
+            vi.spyOn(axios, "get").mockImplementation((url: string) => {
                 if (url.includes(kAnyRecordingApiUrl)) {
                     return Promise.resolve({ data: false });
                 } else {
@@ -107,7 +116,7 @@ describe("talking book tests", () => {
         function setAudioFilesDontExist() {
             // Mark that the recording doesn't exist.
             // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
-            spyOn(axios, "get").and.callFake(() => {
+            vi.spyOn(axios, "get").mockImplementation(() => {
                 return Promise.resolve({ data: false });
             });
         }
@@ -145,7 +154,7 @@ describe("talking book tests", () => {
                 const url = "/bloom/api/audio/checkForAllRecording?" + params;
                 urlToResponse[url] = Promise.resolve({ data: true });
             });
-            spyOn(axios, "get").and.callFake((url: string) => {
+            vi.spyOn(axios, "get").mockImplementation((url: string) => {
                 const response = urlToResponse[url];
                 if (response) {
                     return response;
@@ -348,7 +357,7 @@ describe("talking book tests", () => {
                     const spans = getAudioSentenceSpans(`div${i}`);
 
                     expect(spans).toHaveLength(1);
-                    expect(spans[0]).toHaveText(
+                    expect(spans[0].textContent).toBe(
                         `Sentence ${i}.1၊ Sentence ${i}.2`,
                     );
                 }
@@ -389,7 +398,7 @@ describe("talking book tests", () => {
 
         function expectMd5(id, expectedMd5) {
             const elem = getFrameElementById("page", id);
-            expect(elem).not.toBeNull(`Could not find element "${id}"`);
+            expect(elem, `Could not find element "${id}"`).not.toBeNull();
             if (elem) {
                 const md5 = elem.getAttribute("recordingmd5");
 
@@ -399,27 +408,27 @@ describe("talking book tests", () => {
                     return;
                 }
 
-                expect(md5).toBe(
-                    expectedMd5,
+                expect(
+                    md5,
                     `recordingmd5 does not match for element: ${elem.outerHTML}`,
-                );
+                ).toBe(expectedMd5);
             }
         }
 
         function verifyCurrentHighlight(scenario: AudioMode) {
             const div = getFrameElementById("page", "div1");
             if (!div) {
-                expect(div).not.toBeNull("div1 is null");
+                expect(div, "div1 is null").not.toBeNull();
                 return;
             }
 
             const page1 = getFrameElementById("page", "page1");
             const numCurrents =
                 page1?.querySelectorAll(".ui-audioCurrent").length;
-            expect(numCurrents).toBe(
-                1,
+            expect(
+                numCurrents,
                 "Only 1 item is allowed to be the current: " + page1?.innerHTML,
-            );
+            ).toBe(1);
 
             switch (scenario) {
                 case AudioMode.PureSentence: {
@@ -458,7 +467,7 @@ describe("talking book tests", () => {
                 "player",
             ) as HTMLMediaElement | null;
             if (!player) {
-                expect(player).not.toBeNull("player is null");
+                expect(player, "player is null").not.toBeNull();
                 return;
             }
 
@@ -483,7 +492,7 @@ describe("talking book tests", () => {
             }
 
             expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
-                `http://localhost:9876/bloom/api/audio/wavFile?id=audio/${expectedSrc}.wav`,
+                `http://localhost:63315/bloom/api/audio/wavFile?id=audio/${expectedSrc}.wav`,
             );
         }
 
@@ -743,8 +752,8 @@ describe("talking book tests", () => {
             // Verify - That splits were unchanged.
             const spans = getAudioSentenceSpans("div1");
             expect(spans).toHaveLength(2); // Should preserve the phrase splits instead of converting to sentence splits
-            expect(spans[0]).toHaveAttr("recordingmd5", checksums[0]);
-            expect(spans[1]).toHaveAttr("recordingmd5", checksums[1]);
+            expect(spans[0]).toHaveAttribute("recordingmd5", checksums[0]);
+            expect(spans[1]).toHaveAttribute("recordingmd5", checksums[1]);
         });
     });
 
@@ -773,8 +782,8 @@ describe("talking book tests", () => {
             const spans = divHtml.get(0).getElementsByTagName("span");
             // The redundant one around Sentence2 should have been removed.
             expect(spans).toHaveLength(2);
-            expect(spans[0]).toHaveText("Sentence 1.");
-            expect(spans[1]).toHaveText("Sentence 2 2");
+            expect(spans[0]).toHaveTextContent("Sentence 1.");
+            expect(spans[1]).toHaveTextContent("Sentence 2 2");
         });
     });
 });
@@ -782,7 +791,7 @@ describe("talking book tests", () => {
 function getAudioSentenceSpans(divId: string): HTMLSpanElement[] {
     const element = getFrameElementById("page", divId);
 
-    expect(element).toBeTruthy(`${divId} should exist.`);
+    expect(element, `${divId} should exist.`).toBeTruthy();
 
     const htmlElement = element as HTMLElement;
     const collection = htmlElement.querySelectorAll("span.audio-sentence");
@@ -796,7 +805,7 @@ function verifyRecordButtonEnabled() {
 function setAllAudioFilesPresent() {
     // Mark that the recording exists.
     // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
-    spyOn(axios, "get").and.callFake((url: string) => {
+    vi.spyOn(axios, "get").mockImplementation((url: string) => {
         if (url.includes("/bloom/api/audio/checkForAllRecording?ids=")) {
             return Promise.resolve({ data: true });
         } else if (url.includes(kAnyRecordingApiUrl)) {

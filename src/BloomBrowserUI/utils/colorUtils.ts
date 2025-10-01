@@ -1,4 +1,4 @@
-import * as tinycolor from "tinycolor2";
+import tinycolor from "tinycolor2";
 
 // Corresponds to the colors defined in bloomUI.less
 // These can be useful for CSS-in-JS, where it's hard to get at the color definitions in the .less files

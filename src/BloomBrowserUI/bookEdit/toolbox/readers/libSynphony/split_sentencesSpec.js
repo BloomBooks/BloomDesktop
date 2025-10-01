@@ -8,7 +8,9 @@
  */
 
 //dump it in (how else to activate the jquery extensions it adds?)
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import "./synphony_lib";
+import "./bloomSynphonyExtensions";
 import _ from "underscore";
 import { theOneLibSynphony, LanguageData } from "./synphony_lib";
 

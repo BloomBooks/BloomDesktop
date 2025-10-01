@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import * as React from "react";
 import { Checkboard } from "react-color/lib/components/common";
-import * as tinycolor from "tinycolor2";
+import tinycolor from "tinycolor2";
 
 // External definition of a color swatch
 export interface IColorInfo {

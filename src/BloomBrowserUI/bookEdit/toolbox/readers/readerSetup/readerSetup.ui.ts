@@ -11,6 +11,7 @@ import {
     levelSettings,
     spanForSettingWithText,
 } from "./readerSetup.io";
+import $ from "jquery";
 import { DataWord } from "../libSynphony/bloomSynphonyExtensions";
 import axios from "axios";
 import { get, post } from "../../../../utils/bloomApi";
