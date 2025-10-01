@@ -6972,7 +6972,7 @@
       </trans-unit>
       <trans-unit id="Topics.Agriculture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Agriculture</source>
-        <target xml:lang="id" state="final">Perhatian</target>
+        <target xml:lang="id" state="final">Pertanian</target>
         <note>ID: Topics.Agriculture</note>
       </trans-unit>
       <trans-unit id="Topics.Animal Stories" sil:dynamic="true" approved="yes">
