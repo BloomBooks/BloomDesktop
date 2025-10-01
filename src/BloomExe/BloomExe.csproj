@@ -245,7 +245,7 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="BloomBooks.Velopack" Version="0.0.1350-l10n-0010-g587718e" />
+		<PackageReference Include="BloomBooks.Velopack" Version="0.0.1350-l10n-0015" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="PresentationCore" />

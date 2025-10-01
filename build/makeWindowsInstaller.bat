@@ -8,14 +8,9 @@ REM If there are existing releases in the output directory, you must make sure t
 REM of them. The major and minor numbers here are ignored.
 
 pushd .
-REM squirrel days: MSbuild /p:Label=Beta /p:channel=LocalBuilt /property:SquirrelReleaseFolder="../output/installer" /p:BuildConfigurationID=xyz123 /p:WarningLevel=0 /target:Build /property:teamcity_build_checkoutDir=..\ /verbosity:detailed  /property:LargeFilesDir="C:\dev\teamcitybuilddownloads" /property:teamcity_dotnet_nunitlauncher_msbuild_task="notthere" /property:BUILD_NUMBER="*.*.999.999" /property:Minor="1"
-dotnet msbuild /p:Label=Beta /p:channel=LocalBuilt /p:InstallerOutputFolder=../output/installer/result /p:BuildConfigurationID=xyz123 /p:WarningLevel=0 /target:Build /property:teamcity_build_checkoutDir=..\ /verbosity:detailed  /property:LargeFilesDir="C:\dev\teamcitybuilddownloads" /property:teamcity_dotnet_nunitlauncher_msbuild_task="notthere" /property:BUILD_NUMBER="6.3.1009.0" /property:Minor="1"
 
-REM The correct version of BloomBooks.Velopack.Cli is now installed automatically by the build process
-REM via the EnsureVelopackCli target, so no manual installation is needed here.
-
-REM review: do any of these properties I'm not using still apply? I'm not sure the Label does anything.
-REM squirrel: MSbuild /p:Label=Beta /p:channel=LocalBuilt /property:SquirrelReleaseFolder="../output/installer" /p:BuildConfigurationID=xyz123 /p:WarningLevel=0 /target:Installer /property:teamcity_build_checkoutDir=..\ /verbosity:detailed  /property:LargeFilesDir="C:\dev\teamcitybuilddownloads" /property:teamcity_dotnet_nunitlauncher_msbuild_task="notthere" /property:BUILD_NUMBER="*.*.999.999" /property:Minor="1"
-dotnet msbuild /p:Label=Beta /p:channel=LocalBuilt /p:InstallerOutputFolder=../output/installer/result /p:BUILD_NUMBER=6.3.1009.0 /t:Installer
+REM Build the installer (Installer depends on Build and EnsureVelopackCli)
+REM Note: BUILD_NUMBER must be 4 parts (a.b.c.d). Only the 3rd part (BuildCounter) matters for Version; the others can be 0.
+dotnet msbuild /p:channel=LocalBuilt /p:InstallerOutputFolder=../output/installer/result /p:BUILD_NUMBER=0.0.9999.0 /t:Installer /verbosity:detailed
 popd
 

@@ -215,20 +215,20 @@
   <!-- NOTE: VelopackCliVersion should match the version used in BloomExe.csproj's BloomBooks.Velopack PackageReference -->
   <Target Name="EnsureVelopackCli">
     <PropertyGroup>
-      <VelopackCliVersion>0.0.1350-l10n-0010-g0f76e67</VelopackCliVersion>
+      <VelopackCliVersion>0.0.1350-l10n-0015</VelopackCliVersion>
       <VelopackCliPackage>BloomBooks.Velopack.Cli</VelopackCliPackage>
     </PropertyGroup>
-    
+
     <Message Text="Ensuring $(VelopackCliPackage) version $(VelopackCliVersion) is installed..." Importance="high" />
-    
+
     <!-- First, uninstall any existing vpk tool to avoid conflicts -->
     <Exec Command="dotnet tool uninstall --global vpk" ContinueOnError="true" />
     <Exec Command="dotnet tool uninstall --global Velopack.Cli" ContinueOnError="true" />
     <Exec Command="dotnet tool uninstall --global $(VelopackCliPackage)" ContinueOnError="true" />
-    
+
     <!-- Install the specific version we need -->
     <Exec Command="dotnet tool install --global $(VelopackCliPackage) --version $(VelopackCliVersion)" />
-    
+
     <!-- Verify the installation -->
     <Exec Command="vpk --help" />
     <Message Text="Successfully installed $(VelopackCliPackage) version $(VelopackCliVersion)" Importance="high" />
