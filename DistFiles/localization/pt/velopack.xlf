@@ -4,27 +4,27 @@
     <body>
       <trans-unit id="templates.setup_title">
         <source xml:lang="en">{app_title} Setup {app_version}</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} Setup {app_version}</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} Configurar {app_version}</target>
       </trans-unit>
       <trans-unit id="templates.setup_title_no_version">
         <source xml:lang="en">{app_title} Setup</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} Setup</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} Configurar</target>
       </trans-unit>
       <trans-unit id="templates.update_title">
         <source xml:lang="en">{app_title} Update {app_version}</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} Update {app_version}</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} Atualizar {app_version}</target>
       </trans-unit>
       <trans-unit id="templates.update_title_no_version">
         <source xml:lang="en">{app_title} Update</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} Update</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} Atualizar</target>
       </trans-unit>
       <trans-unit id="templates.uninstall_title">
         <source xml:lang="en">{app_title} Uninstall</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} Uninstall</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} Desinstalar</target>
       </trans-unit>
       <trans-unit id="templates.error_title">
         <source xml:lang="en">{program_name} Error</source>
-        <target xml:lang="pt-PT" state="needs-translation">{program_name} Error</target>
+        <target xml:lang="pt-PT" state="translated">{program_name} Erro</target>
       </trans-unit>
       <trans-unit id="templates.install_directory_default">
         <source xml:lang="en">The install directory is '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</source>
@@ -140,23 +140,23 @@
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.default_instruction">
         <source xml:lang="en">{app_title} is already installed.</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} is already installed.</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} já está instalado.</target>
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.default_content">
         <source xml:lang="en">This application is installed on your computer. If it is not functioning correctly, you can attempt to repair it.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This application is installed on your computer. If it is not functioning correctly, you can attempt to repair it.</target>
+        <target xml:lang="pt-PT" state="translated">Este aplicativo está instalado no seu computador. Se não funciona corretamente, pode tentar repará-lo.</target>
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.update_instruction">
         <source xml:lang="en">An older version of {app_title} is installed.</source>
-        <target xml:lang="pt-PT" state="needs-translation">An older version of {app_title} is installed.</target>
+        <target xml:lang="pt-PT" state="translated">Uma versão antiga do {app_title} está instalada.</target>
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.update_content">
         <source xml:lang="en">Would you like to update from {old_version} to {new_version}?</source>
-        <target xml:lang="pt-PT" state="needs-translation">Would you like to update from {old_version} to {new_version}?</target>
+        <target xml:lang="pt-PT" state="translated">Gostaria de atualizar da {old_version} para a {new_version}?</target>
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.downgrade_instruction">
         <source xml:lang="en">A newer version of {app_title} is installed.</source>
-        <target xml:lang="pt-PT" state="needs-translation">A newer version of {app_title} is installed.</target>
+        <target xml:lang="pt-PT" state="translated">Uma nova versão do {app_title} está instalada.</target>
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.downgrade_content">
         <source xml:lang="en">You already have {old_version} installed. Would you like to downgrade this application to an older version?</source>
@@ -172,7 +172,7 @@
       </trans-unit>
       <trans-unit id="dialogs.legacy_migration_failed.header">
         <source xml:lang="en">Unable to start app</source>
-        <target xml:lang="pt-PT" state="needs-translation">Unable to start app</target>
+        <target xml:lang="pt-PT" state="translated">Não foi possível iniciar o aplicativo</target>
       </trans-unit>
       <trans-unit id="dialogs.legacy_migration_failed.content">
         <source xml:lang="en">This app installation has been corrupted and cannot be started. Please re-install the app.</source>
