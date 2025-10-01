@@ -21,6 +21,7 @@ export const LinkCard: React.FC<BookCardProps> = ({
     onRemove,
     style
 }) => {
+    const title = link.book.title || link.book.folderName;
     return (
         <Card
             onClick={onClick}
@@ -76,7 +77,7 @@ export const LinkCard: React.FC<BookCardProps> = ({
                     <DeleteIcon fontSize="small" />
                 </IconButton>
             )}
-            <BloomTooltip tip={link.book.realTitle || link.book.title}>
+            <BloomTooltip tip={link.book.folderName}>
                 <CardContent
                     css={css`
                         padding: 0;
@@ -91,7 +92,7 @@ export const LinkCard: React.FC<BookCardProps> = ({
                 >
                     <img
                         src={link.page?.thumbnail || link.book.thumbnail}
-                        alt={`${link.book.title}${
+                        alt={`${title}${
                             link.page ? ` - Page ${link.page.pageId}` : ""
                         }`}
                         css={css`
@@ -116,7 +117,7 @@ export const LinkCard: React.FC<BookCardProps> = ({
                             text-align: center;
                         `}
                     >
-                        {link.book.title}
+                        {title}
                         {link.page && ` (Page ${link.page.pageId})`}
                     </Typography>
                 </CardContent>
