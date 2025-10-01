@@ -306,8 +306,14 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
 
     const handlePaste = () => {
         get("common/clipboardText", result => {
-            setSubscriptionCode(result.data);
-            document.dispatchEvent(new Event("subscriptionCodeChanged"));
+            // We don't want trailing newlines (or other whitespace).
+            // See BL-15309 for the havoc they can cause.
+            let resultText = result.data as string;
+            if (resultText) {
+                resultText = resultText.trim();
+                setSubscriptionCode(resultText);
+                document.dispatchEvent(new Event("subscriptionCodeChanged"));
+            }
         });
     };
 
