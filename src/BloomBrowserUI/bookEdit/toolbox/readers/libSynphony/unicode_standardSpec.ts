@@ -1,4 +1,7 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll } from "vitest";
 import { theOneLibSynphony } from "./synphony_lib";
+import { LibSynphony } from "./synphony_lib.js";
+import "./bloomSynphonyExtensions";
 
 describe("Unicode Standards", function () {
     beforeEach(function () {
@@ -110,6 +113,7 @@ describe("Unicode Standards", function () {
         var result5 = " This is sentence 3.";
         var result6 = "\r\n";
 
+        console.log("the one libSynphony", theOneLibSynphony);
         var fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments.length).toBe(6);
         expect(fragments[0].text).toBe(result1);

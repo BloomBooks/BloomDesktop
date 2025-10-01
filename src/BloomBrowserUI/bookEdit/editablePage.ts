@@ -2,7 +2,7 @@
 /// <reference path="../typings/jquery.i18n.custom.d.ts" />
 /// <reference path="../lib/jquery.i18n.custom.ts" />
 
-import * as $ from "jquery";
+import $ from "jquery";
 import { bootstrap } from "./js/bloomEditing";
 import { EditableDivUtils } from "./js/editableDivUtils";
 import "../lib/jquery.i18n.custom"; //localize()

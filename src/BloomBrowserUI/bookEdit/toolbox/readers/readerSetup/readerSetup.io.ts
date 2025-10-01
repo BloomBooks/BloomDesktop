@@ -10,7 +10,7 @@ import {
     setLevelValue,
 } from "./readerSetup.ui";
 import { ReaderStage, ReaderLevel, ReaderSettings } from "../ReaderSettings";
-import "../../../../lib/jquery.onSafe.js";
+import "../../../../lib/jquery.onSafe";
 import * as _ from "underscore";
 
 interface ILevelSetting {

@@ -1,4 +1,3 @@
-import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import {
     getWithConfig,
     getWithConfigAsync,

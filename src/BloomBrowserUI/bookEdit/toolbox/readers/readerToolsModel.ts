@@ -6,7 +6,6 @@
 /// <reference path="./directoryWatcher.ts" />
 /// <reference path="../../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="readerTools.ts" />
-/// <reference path="./libSynphony/synphony_lib.d.ts" />
 import { DirectoryWatcher } from "./directoryWatcher";
 import { resizeWordList } from "./readerTools";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -266,7 +265,7 @@ export class ReaderToolsModel {
 
     // Gets the string representing which stage we're on.
     // Precondition: the stage number must be properly updated first. Synphony should be loaded too, else will return undefined.
-    private getStageLabel() {
+    public getStageLabel() {
         if (!this.synphony) {
             return undefined; // Synphony not loaded yet
         }
@@ -1607,7 +1606,7 @@ export class ReaderToolsModel {
         // should be ignored. Many will have been excluded by the word-breaking
         // algorithm; there shouldn't be punctuation characters in the word.
         const knownGraphemes = theOneLanguageDataInstance.GPCS.map(
-            (x) => x.GPC.replace(this.unicodeMn, ""), // drop diacritics
+            (x: any) => x.GPC.replace(this.unicodeMn, ""), // drop diacritics
         )
             .filter((x) => x.length > 1)
             .sort((x, y) => y.length - x.length);
