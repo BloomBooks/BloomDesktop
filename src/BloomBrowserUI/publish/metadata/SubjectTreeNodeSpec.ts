@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { SubjectTreeNode } from "./SubjectTreeNode";
 
 describe("SubjectTreeNode tests", () => {

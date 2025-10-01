@@ -1,6 +1,6 @@
 /// <reference path="./BloomSourceBubbles.tsx" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
-
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import BloomSourceBubbles from "./BloomSourceBubbles";
 
 describe("SourceBubbles", () => {

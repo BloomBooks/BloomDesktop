@@ -1,10 +1,10 @@
 "use strict";
-/// <reference path="../../typings/jasmine/jasmine.d.ts"/>
-/// <reference path="../../typings/jasmine-jquery/jasmine-jquery.d.ts"/>
-
-import "jasmine-jquery";
+import { describe, it, expect } from "vitest";
 import OverflowChecker from "../../bookEdit/OverflowChecker/OverflowChecker";
 import { removeTestRoot } from "../../utils/testHelper";
+import OverflowAncestorFixture from "./OverflowAncestorFixture.pug";
+import OverflowFixture from "./OverflowFixture.pug";
+import OverflowMarginFixture from "./OverflowMarginFixture.pug";
 
 let consoleDef = false;
 
@@ -93,7 +93,7 @@ function RunAncestorMarginTest(index: number, value: HTMLElement) {
 
 // Uses jasmine-query-1.3.1.js
 describe("Overflow Tests", () => {
-    jasmine.getFixtures().fixturesPath = "base/bookEdit/OverflowChecker";
+    //jasmine.getFixtures().fixturesPath = "base/bookEdit/OverflowChecker";
 
     // Clean up before running the test. Other test's divs can affect the font size and hence the overflow.
     beforeAll(removeTestRoot);
@@ -102,7 +102,7 @@ describe("Overflow Tests", () => {
     // That means loadFixtures() needs to be inside the it().
 
     it("Check test page for Self overflows (assumes Arial is installed)", () => {
-        loadFixtures("OverflowFixture.html");
+        document.body.innerHTML = OverflowFixture;
         expect($("#jasmine-fixtures")).toBeTruthy();
         if (window.console) {
             consoleDef = true;
@@ -112,7 +112,7 @@ describe("Overflow Tests", () => {
     });
 
     it("Check test page for Margin overflows (assumes Arial is installed)", () => {
-        loadFixtures("OverflowMarginFixture.html");
+        document.body.innerHTML = OverflowMarginFixture;
         expect($("#jasmine-fixtures")).toBeTruthy();
         if (window.console) {
             consoleDef = true;
@@ -124,7 +124,7 @@ describe("Overflow Tests", () => {
     });
 
     it("Check test page for Fixed Ancestor overflows (assumes Arial is installed)", () => {
-        loadFixtures("OverflowAncestorFixture.html");
+        document.body.innerHTML = OverflowAncestorFixture;
         expect($("#jasmine-fixtures")).toBeTruthy();
         if (window.console) {
             consoleDef = true;

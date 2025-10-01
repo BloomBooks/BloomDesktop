@@ -17,10 +17,11 @@ import { get } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../localizationManager/localizationManager";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import { kBloomCanvasClass } from "../../bookEdit/js/bloomImages";
+import jQuery from "jquery";
 import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManager";
 
-(function($) {
-    $.fn.splitPane = function() {
+(function ($) {
+    $.fn.splitPane = function () {
         var $splitPanes = this;
         $splitPanes.each(setMinHeightAndMinWidth);
         $splitPanes.append('<div class="split-pane-resize-shim">');
@@ -33,13 +34,13 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
         $splitPanes
             .children(".split-pane-divider")
             .bind("dblclick", mousedblclickHandler);
-        setTimeout(function() {
+        setTimeout(function () {
             // Doing this later because of an issue with Chrome (v23.0.1271.64) returning split-pane width = 0
             // and triggering multiple resize events when page is being opened from an <a target="_blank"> .
-            $splitPanes.each(function() {
+            $splitPanes.each(function () {
                 $(this).bind(
                     "_splitpaneparentresize",
-                    createParentresizeHandler($(this))
+                    createParentresizeHandler($(this)),
                 );
             });
             $(window).trigger("resize");
@@ -53,13 +54,10 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
      * The event will NOT propagate to grandchildren.
      */
     jQuery.event.special._splitpaneparentresize = {
-        setup: function(data, namespaces) {
+        setup: function (data, namespaces) {
             var element = this,
-                parent =
-                    $(this)
-                        .parent()
-                        .closest(".split-pane")[0] || window;
-            $(this).data(SPLITPANERESIZE_HANDLER, function(event) {
+                parent = $(this).parent().closest(".split-pane")[0] || window;
+            $(this).data(SPLITPANERESIZE_HANDLER, function (event) {
                 var target = event.target === document ? window : event.target;
                 if (target === parent) {
                     event.type = "_splitpaneparentresize";
@@ -70,20 +68,17 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
             });
             $(parent).bind("resize", $(this).data(SPLITPANERESIZE_HANDLER));
         },
-        teardown: function(namespaces) {
-            var parent =
-                $(this)
-                    .parent()
-                    .closest(".split-pane")[0] || window;
+        teardown: function (namespaces) {
+            var parent = $(this).parent().closest(".split-pane")[0] || window;
             $(parent).unbind("resize", $(this).data(SPLITPANERESIZE_HANDLER));
             $(this).removeData(SPLITPANERESIZE_HANDLER);
-        }
+        },
     };
 
     function setMinHeightAndMinWidth() {
         var $splitPane = $(this),
             $firstComponent = $splitPane.children(
-                ".split-pane-component:first"
+                ".split-pane-component:first",
             ),
             $divider = $splitPane.children(".split-pane-divider"),
             $lastComponent = $splitPane.children(".split-pane-component:last");
@@ -93,7 +88,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                 minHeight($firstComponent) +
                     minHeight($lastComponent) +
                     $divider.height() +
-                    "px"
+                    "px",
             );
         } else {
             $splitPane.css(
@@ -101,7 +96,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                 minWidth($firstComponent) +
                     minWidth($lastComponent) +
                     $divider.width() +
-                    "px"
+                    "px",
             );
         }
     }
@@ -135,7 +130,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
         moveFunction = createMousemove(
             $splitPane,
             pageXof(event),
-            pageYof(event)
+            pageYof(event),
         );
         document.addEventListener(moveEvent, moveFunction, { capture: true });
         // MUST be on the document, both for the usual reason that the mouse can move out of the element
@@ -144,13 +139,13 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
         // any descendants.
         document.addEventListener(endEvent, mouseUpHandler, {
             capture: true,
-            once: true
+            once: true,
         });
     }
 
     function mouseUpHandler(event) {
         document.removeEventListener(moveEvent, moveFunction, {
-            capture: true
+            capture: true,
         });
         $divider.removeClass("dragged touch");
         $resizeShim.hide();
@@ -165,9 +160,9 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Snap.Hint",
-                "CTRL for precision. Double click to match previous page."
+                "CTRL for precision. Double click to match previous page.",
             )
-            .done(result => {
+            .done((result) => {
                 divider.title = result;
             });
         if (isSnappableSplitter(divider)) {
@@ -194,7 +189,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                 const [snappedOffset, label, isSnapped] = snapTo(
                     currentOffset,
                     defaultLabel,
-                    divider.parentElement.offsetHeight
+                    divider.parentElement.offsetHeight,
                 );
                 let finalLabel = label;
                 if (
@@ -224,37 +219,37 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
         if (isSnappableSplitter(divider)) {
             makeSnaps(divider.parentElement, () => {
                 const prevPageSplit = snapPoints.find(
-                    x => x.id === "MatchPreviousPage"
+                    (x) => x.id === "MatchPreviousPage",
                 );
                 if (prevPageSplit) {
                     // This code is similar enough to parts of createMouseMove to be annoying,
                     // but just different enough to make it difficult to pull out the bits we need.
                     const $splitPane = $(divider.parentElement);
                     const firstComponent = $splitPane.children(
-                        ".split-pane-component:first"
+                        ".split-pane-component:first",
                     )[0];
                     const lastComponent = $splitPane.children(
-                        ".split-pane-component:last"
+                        ".split-pane-component:last",
                     )[0];
                     divider.classList.add("snapped");
 
                     divider.setAttribute(
                         "data-splitter-label",
-                        prevPageSplit.label
+                        prevPageSplit.label,
                     );
                     if (isHorizontal(divider)) {
                         setBottom(
                             firstComponent,
                             divider,
                             lastComponent,
-                            100 - prevPageSplit.snap + "%"
+                            100 - prevPageSplit.snap + "%",
                         );
                     } else {
                         setRight(
                             firstComponent,
                             divider,
                             lastComponent,
-                            100 - prevPageSplit.snap + "%"
+                            100 - prevPageSplit.snap + "%",
                         );
                     }
                     $splitPane.resize();
@@ -282,15 +277,15 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
     function createParentresizeHandler($splitPane) {
         var splitPane = $splitPane[0],
             firstComponent = $splitPane.children(
-                ".split-pane-component:first"
+                ".split-pane-component:first",
             )[0],
             divider = $splitPane.children(".split-pane-divider")[0],
             lastComponent = $splitPane.children(
-                ".split-pane-component:last"
+                ".split-pane-component:last",
             )[0];
         if ($splitPane.is(".fixed-top")) {
             var lastComponentMinHeight = minHeight(lastComponent);
-            return function(event) {
+            return function (event) {
                 var maxfirstComponentHeight =
                     splitPane.offsetHeight -
                     lastComponentMinHeight -
@@ -300,14 +295,14 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                         firstComponent,
                         divider,
                         lastComponent,
-                        maxfirstComponentHeight + "px"
+                        maxfirstComponentHeight + "px",
                     );
                 }
                 $splitPane.resize();
             };
         } else if ($splitPane.is(".fixed-bottom")) {
             var firstComponentMinHeight = minHeight(firstComponent);
-            return function(event) {
+            return function (event) {
                 var maxLastComponentHeight =
                     splitPane.offsetHeight -
                     firstComponentMinHeight -
@@ -317,7 +312,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                         firstComponent,
                         divider,
                         lastComponent,
-                        maxLastComponentHeight + "px"
+                        maxLastComponentHeight + "px",
                     );
                 }
                 $splitPane.resize();
@@ -325,7 +320,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
         } else if ($splitPane.is(".horizontal-percent")) {
             var lastComponentMinHeight = minHeight(lastComponent),
                 firstComponentMinHeight = minHeight(firstComponent);
-            return function(event) {
+            return function (event) {
                 var maxLastComponentHeight =
                     splitPane.offsetHeight -
                     firstComponentMinHeight -
@@ -337,7 +332,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                         lastComponent,
                         (maxLastComponentHeight / splitPane.offsetHeight) *
                             100 +
-                            "%"
+                            "%",
                     );
                 } else {
                     if (
@@ -352,7 +347,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                             lastComponent,
                             (lastComponentMinHeight / splitPane.offsetHeight) *
                                 100 +
-                                "%"
+                                "%",
                         );
                     }
                 }
@@ -360,7 +355,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
             };
         } else if ($splitPane.is(".fixed-left")) {
             var lastComponentMinWidth = minWidth(lastComponent);
-            return function(event) {
+            return function (event) {
                 var maxFirstComponentWidth =
                     splitPane.offsetWidth -
                     lastComponentMinWidth -
@@ -370,14 +365,14 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                         firstComponent,
                         divider,
                         lastComponent,
-                        maxFirstComponentWidth + "px"
+                        maxFirstComponentWidth + "px",
                     );
                 }
                 $splitPane.resize();
             };
         } else if ($splitPane.is(".fixed-right")) {
             var firstComponentMinWidth = minWidth(firstComponent);
-            return function(event) {
+            return function (event) {
                 var maxLastComponentWidth =
                     splitPane.offsetWidth -
                     firstComponentMinWidth -
@@ -387,7 +382,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                         firstComponent,
                         divider,
                         lastComponent,
-                        maxLastComponentWidth + "px"
+                        maxLastComponentWidth + "px",
                     );
                 }
                 $splitPane.resize();
@@ -395,7 +390,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
         } else if ($splitPane.is(".vertical-percent")) {
             var lastComponentMinWidth = minWidth(lastComponent),
                 firstComponentMinWidth = minWidth(firstComponent);
-            return function(event) {
+            return function (event) {
                 var maxLastComponentWidth =
                     splitPane.offsetWidth -
                     firstComponentMinWidth -
@@ -406,7 +401,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                         divider,
                         lastComponent,
                         (maxLastComponentWidth / splitPane.offsetWidth) * 100 +
-                            "%"
+                            "%",
                     );
                 } else {
                     if (
@@ -421,7 +416,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                             lastComponent,
                             (lastComponentMinWidth / splitPane.offsetWidth) *
                                 100 +
-                                "%"
+                                "%",
                         );
                     }
                 }
@@ -438,11 +433,11 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
         const scaledY = pageY / pageScale;
         const splitPane = $splitPane[0],
             firstComponent = $splitPane.children(
-                ".split-pane-component:first"
+                ".split-pane-component:first",
             )[0],
             divider = $splitPane.children(".split-pane-divider")[0],
             lastComponent = $splitPane.children(
-                ".split-pane-component:last"
+                ".split-pane-component:last",
             )[0];
         if ($splitPane.is(".fixed-top")) {
             const firstComponentMinHeight = minHeight(firstComponent),
@@ -451,7 +446,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                     minHeight(lastComponent) -
                     divider.offsetHeight,
                 topOffset = divider.offsetTop - scaledY;
-            return function(event) {
+            return function (event) {
                 event.preventDefault();
                 if (event.buttons === 0) {
                     // somehow we missed the mouseup event, so clean up
@@ -461,9 +456,9 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                 const top = Math.min(
                     Math.max(
                         firstComponentMinHeight,
-                        topOffset + pageYof(event) / pageScale
+                        topOffset + pageYof(event) / pageScale,
                     ),
-                    maxFirstComponentHeight
+                    maxFirstComponentHeight,
                 );
                 setTop(firstComponent, divider, lastComponent, top + "px");
                 $splitPane.resize();
@@ -475,7 +470,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                     minHeight(firstComponent) -
                     divider.offsetHeight,
                 bottomOffset = lastComponent.offsetHeight + scaledY;
-            return function(event) {
+            return function (event) {
                 event.preventDefault();
                 if (event.buttons === 0) {
                     // somehow we missed the mouseup event, so clean up
@@ -485,15 +480,15 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                 const bottom = Math.min(
                     Math.max(
                         lastComponentMinHeight,
-                        bottomOffset - pageYof(event) / pageScale
+                        bottomOffset - pageYof(event) / pageScale,
                     ),
-                    maxLastComponentHeight
+                    maxLastComponentHeight,
                 );
                 setBottom(
                     firstComponent,
                     divider,
                     lastComponent,
-                    bottom + "px"
+                    bottom + "px",
                 );
                 $splitPane.resize();
             };
@@ -506,15 +501,15 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                     divider.offsetHeight,
                 bottomOffset = lastComponent.offsetHeight + scaledY;
             makeSnaps(splitPane);
-            return function(event) {
+            return function (event) {
                 event.preventDefault();
                 preciseMode = event.ctrlKey;
                 const bottom = Math.min(
                     Math.max(
                         lastComponentMinHeight,
-                        bottomOffset - pageYof(event) / pageScale
+                        bottomOffset - pageYof(event) / pageScale,
                     ),
-                    maxLastComponentHeight
+                    maxLastComponentHeight,
                 );
                 const unsnappedOffset = (bottom / splitPaneHeight) * 100;
                 const defaultLabel =
@@ -522,7 +517,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                 const [adjustedOffset, label, isSnapped] = snapTo(
                     unsnappedOffset,
                     defaultLabel,
-                    splitPaneHeight
+                    splitPaneHeight,
                 );
                 if (isSnapped) {
                     divider.classList.add("snapped");
@@ -533,7 +528,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                     firstComponent,
                     divider,
                     lastComponent,
-                    adjustedOffset + "%"
+                    adjustedOffset + "%",
                 );
                 $splitPane.resize();
             };
@@ -544,14 +539,14 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                     minWidth(lastComponent) -
                     divider.offsetWidth,
                 leftOffset = divider.offsetLeft - scaledX;
-            return function(event) {
+            return function (event) {
                 event.preventDefault();
                 const left = Math.min(
                     Math.max(
                         firstComponentMinWidth,
-                        leftOffset + pageXof(event) / pageScale
+                        leftOffset + pageXof(event) / pageScale,
                     ),
-                    maxFirstComponentWidth
+                    maxFirstComponentWidth,
                 );
                 setLeft(firstComponent, divider, lastComponent, left + "px");
                 $splitPane.resize();
@@ -563,14 +558,14 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                     minWidth(firstComponent) -
                     divider.offsetWidth,
                 rightOffset = lastComponent.offsetWidth + scaledX;
-            return function(event) {
+            return function (event) {
                 event.preventDefault();
                 const right = Math.min(
                     Math.max(
                         lastComponentMinWidth,
-                        rightOffset - pageXof(event) / pageScale
+                        rightOffset - pageXof(event) / pageScale,
                     ),
-                    maxLastComponentWidth
+                    maxLastComponentWidth,
                 );
                 setRight(firstComponent, divider, lastComponent, right + "px");
                 $splitPane.resize();
@@ -584,15 +579,15 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                     divider.offsetWidth,
                 rightOffset = lastComponent.offsetWidth + scaledX;
             makeSnaps(splitPane);
-            return function(event) {
+            return function (event) {
                 event.preventDefault();
                 preciseMode = event.ctrlKey;
                 const right = Math.min(
                     Math.max(
                         lastComponentMinWidth,
-                        rightOffset - pageXof(event) / pageScale
+                        rightOffset - pageXof(event) / pageScale,
                     ),
-                    maxLastComponentWidth
+                    maxLastComponentWidth,
                 );
                 const unsnappedOffset = (right / splitPaneWidth) * 100;
                 const defaultLabel =
@@ -600,7 +595,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                 const [adjustedOffset, label, isSnapped] = snapTo(
                     unsnappedOffset,
                     defaultLabel,
-                    splitPaneWidth
+                    splitPaneWidth,
                 );
                 if (isSnapped) {
                     divider.classList.add("snapped");
@@ -611,7 +606,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                     firstComponent,
                     divider,
                     lastComponent,
-                    adjustedOffset + "%"
+                    adjustedOffset + "%",
                 );
                 $splitPane.resize();
             };
@@ -634,7 +629,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
             splitPane,
             firstChild,
             true,
-            false
+            false,
         );
         let snapsAwaited = 0; // increment each time we call makeSnapPoint and pass localCallback
         // Invoke callback when we have all the snap positions and labels.
@@ -652,7 +647,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                 "Fit image",
                 "",
                 -1,
-                localCallback
+                localCallback,
             );
             makeSnapPoint(
                 getImagePercent(splitPane, firstChild, true, true),
@@ -660,7 +655,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                 "Square",
                 "",
                 -1,
-                localCallback
+                localCallback,
             );
         }
 
@@ -669,7 +664,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
             splitPane,
             lastChild,
             false,
-            false
+            false,
         );
         if (lastChildSplit > 0) {
             snapsAwaited += 2;
@@ -679,7 +674,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                 "Fit image",
                 "",
                 0, // makes it before the previous 'square' if any; arbitrary whether before previous match aspect
-                localCallback
+                localCallback,
             );
             // Make the bottom panel square
             makeSnapPoint(
@@ -688,7 +683,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                 "Square",
                 "",
                 -1,
-                localCallback
+                localCallback,
             );
         }
 
@@ -705,7 +700,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
             : "vertical";
         get(
             "editView/prevPageSplit?id=" + id + "&orientation=" + orientation,
-            result => {
+            (result) => {
                 // We should get the result before significant mouse movement happens.
                 if (!result.data || result.data === "none") {
                     if (callback) callback();
@@ -721,9 +716,9 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                     "Matches previous page",
                     "🠈",
                     indexToInsertPrevPageSnap,
-                    localCallback
+                    localCallback,
                 );
-            }
+            },
         );
 
         // These general purpose ones come last, so the others win if there is overlap.
@@ -741,7 +736,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
         label = "",
         prefixSymbol = "", // this is used to hold a unicode left-arrow that we don't want translators touching
         index = -1, // where to insert, or -1 for end
-        callback // called when we have the final (possibly localized) label.
+        callback, // called when we have the final (possibly localized) label.
     ) {
         const item = { snap: snapPoint, label, id: localizationId };
         if (index >= 0) {
@@ -753,7 +748,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
         if (localizationId)
             theOneLocalizationManager
                 .asyncGetText("EditTab.Snap." + localizationId, label)
-                .done(result => {
+                .done((result) => {
                     item.label = prefixSymbol + " " + result;
                     if (callback) callback();
                 });
@@ -768,9 +763,8 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
     }
 
     function isPaneHorizontal(splitPane) {
-        const divider = splitPane.getElementsByClassName(
-            "split-pane-divider"
-        )[0];
+        const divider =
+            splitPane.getElementsByClassName("split-pane-divider")[0];
         return isHorizontal(divider);
     }
     // If child is a split-pane-component containing a split-pane-container-inner
@@ -781,7 +775,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
         splitPane,
         component,
         isForFirstChildPane,
-        isForSquareSplit
+        isForSquareSplit,
     ) {
         if (
             !component ||
@@ -802,7 +796,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
         }
         // If there is a bloom-backgroundImage, use that to get the aspect ratio we want
         const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
-            "bloom-backgroundImage"
+            "bloom-backgroundImage",
         )[0];
         if (!backgroundCanvasElement) {
             return -1;
@@ -896,7 +890,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                     labelAndNewline +
                         dividerPositionForDisplay(adjusted, true) +
                         "%",
-                    true
+                    true,
                 ];
             }
         }
@@ -956,7 +950,7 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
     function setDividerTitle(divider, amount) {
         divider.setAttribute(
             "data-splitter-label",
-            dividerPositionForDisplay(amount) + "%"
+            dividerPositionForDisplay(amount) + "%",
         );
     }
 })(jQuery);

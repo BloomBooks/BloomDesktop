@@ -1,6 +1,6 @@
 ///<reference path="./jquery.hasAttr.d.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
-import * as $ from "jquery";
+import $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
@@ -36,7 +36,6 @@ import "../../lib/jquery.qtip.js";
 import "../../lib/jquery.qtipSecondary.js";
 import "../../lib/long-press/jquery.longpress.js";
 import "jquery.hotkeys"; //makes the on(keydown work with keynames)
-import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import {
     getEditTabBundleExports,
     getToolboxBundleExports,

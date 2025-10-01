@@ -1,6 +1,6 @@
 /// <reference path="localizationManager/localizationManager.ts" />
 /// <reference path="../typings/jquery/jquery.d.ts" />
-import * as jQuery from "jquery";
+import jQuery from "jquery";
 import theOneLocalizationManager from "./localizationManager/localizationManager";
 
 interface JQuery {
@@ -18,15 +18,15 @@ interface JQuery {
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
  * @param {jQuery} $
  */
-($ => {
+(($) => {
     /**
      *
      * @param [callbackDone] Optional function to call when done.
      */
-    $.fn.localize = function(callbackDone?: any) {
+    $.fn.localize = function (callbackDone?: any) {
         // get all the localization keys not already in the dictionary
         const d = {};
-        this.each(function() {
+        this.each(function () {
             const key = this.dataset["i18n"];
             if (!theOneLocalizationManager.dictionary[key])
                 d[key] = $(this).text();
@@ -37,7 +37,7 @@ interface JQuery {
             theOneLocalizationManager.loadStrings(d, this, callbackDone);
         } else {
             // just localize
-            this.each(function() {
+            this.each(function () {
                 theOneLocalizationManager.setElementText(this);
             });
 

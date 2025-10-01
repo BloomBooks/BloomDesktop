@@ -15,17 +15,9 @@ export async function runAsyncTest(
     runAsync: () => void | Promise<void>,
     verify: () => void,
 ) {
-    // For async tests, the whole thing should be wrapped in a try/catch to ensure that done() always gets called by the end, no matter what.
-    try {
-        await setupAsync();
-        await runAsync();
-        verify();
-    } catch (error) {
-        // Note: When run asynchronously, exceptions thrown don't fail tests in the same way that synchronous exceptions do.
-        // Asynchronous ones usually just cause the test to time out).
-        // So, we explicitly catch and fail the test so that the cause is more obvious than recognizing that timeout -> probably exception thrown.
-        fail(error);
-    } finally {
-        done();
-    }
+    // vitest properly reports failures in async test without any help.
+    await setupAsync();
+    await runAsync();
+    verify();
+    done();
 }
