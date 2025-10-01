@@ -94,6 +94,19 @@ namespace Bloom.FontProcessing
                     Logger.WriteEvent(
                         $"Unexpected font settings: name=\"{fontName}\", weight=\"{fontWeight}\", style=\"{fontStyle}\""
                     );
+                    // I don't know how other weights could be produced apart from custom CSS, but font-weight=900
+                    // can come from a combination of Bold in a style setting (invoking CSS) and Bold in direct
+                    // formatting (inserting markup with <strong>...</strong>).
+                    if (string.CompareOrdinal(fontWeight, "550") < 0)
+                    {
+                        fontWeight = "400";
+                        Logger.WriteEvent($"Setting font-weight to 400 (Regular)");
+                    }
+                    else
+                    {
+                        fontWeight = "700";
+                        Logger.WriteEvent($"Setting font-weight to 700 (Bold)");
+                    }
                 }
 
                 if (fontStyle == "italic" && fontWeight == "700")
