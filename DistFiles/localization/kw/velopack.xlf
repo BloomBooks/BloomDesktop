@@ -73,30 +73,37 @@
       <trans-unit id="buttons.retry_close_programs">
         <source xml:lang="en">Retry\nTry again if you've closed the program(s)</source>
         <target xml:lang="kw" state="needs-translation">Retry\nTry again if you've closed the program(s)</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.continue_close_programs">
         <source xml:lang="en">Continue\nAttempt to close the program(s) automatically</source>
         <target xml:lang="kw" state="needs-translation">Continue\nAttempt to close the program(s) automatically</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.cancel_stop_update">
         <source xml:lang="en">Cancel\nThe update will not continue</source>
         <target xml:lang="kw" state="needs-translation">Cancel\nThe update will not continue</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.repair">
         <source xml:lang="en">Repair\nErase the application and re-install version {app_version}.</source>
         <target xml:lang="kw" state="needs-translation">Repair\nErase the application and re-install version {app_version}.</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.update">
         <source xml:lang="en">Update\nTo version {target_version}</source>
         <target xml:lang="kw" state="needs-translation">Update\nTo version {target_version}</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.downgrade">
         <source xml:lang="en">Downgrade\nTo version {target_version}</source>
         <target xml:lang="kw" state="needs-translation">Downgrade\nTo version {target_version}</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.cancel_backup_first">
         <source xml:lang="en">Cancel\nBackup or save your work first</source>
         <target xml:lang="kw" state="needs-translation">Cancel\nBackup or save your work first</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="dialogs.restart_required.instruction">
         <source xml:lang="en">Restart Required</source>
@@ -179,8 +186,8 @@
         <target xml:lang="kw" state="needs-translation">This app installation has been corrupted and cannot be started. Please re-install the app.</target>
       </trans-unit>
       <trans-unit id="dialogs.uninstall_success.content">
-        <source xml:lang="en">The application was successfully uninstalled.</source>
-        <target xml:lang="kw" state="needs-translation">The application was successfully uninstalled.</target>
+        <source xml:lang="en">{app_title} was successfully uninstalled.</source>
+        <target xml:lang="kw" state="needs-translation">{app_title} was successfully uninstalled.</target>
       </trans-unit>
     </body>
   </file>

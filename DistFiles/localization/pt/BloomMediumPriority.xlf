@@ -7,7 +7,7 @@
     <body>
       <trans-unit id="AvailableWithSubscription">
         <source xml:lang="en">Available with your Bloom Subscription</source>
-        <target xml:lang="pt-PT" state="translated">Disponível com a sua assinatura Bloom Enterprise</target>
+        <target xml:lang="pt-PT" state="translated">Disponível com a sua Assinatura Bloom</target>
         <note>ID: AvailableWithSubscription</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
@@ -36,9 +36,9 @@
         <target xml:lang="pt-PT" state="final">Adicione itens que demonstram que o aluno respondeu corretamente. Por exemplo, pode adicionar a palavra "Certo!" com um GIF de uma galinha dançando.</target>
         <note>ID: EditTab.Toolbox.DragActivity.CorrectInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ObjectsToDrag">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ObjectsToDrag" approved="yes">
         <source xml:lang="en">Objects to Drag</source>
-        <target xml:lang="pt-PT" state="translated">Objetos para Arrastar</target>
+        <target xml:lang="pt-PT" state="final">Objetos para Arrastar</target>
         <note>ID: EditTab.Toolbox.DragActivity.ObjectsToDrag</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Draggability">
@@ -92,9 +92,9 @@
         <target xml:lang="pt-PT" state="final">Instruções</target>
         <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Text">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Text" approved="yes">
         <source xml:lang="en">Text</source>
-        <target xml:lang="pt-PT" state="translated">Texto</target>
+        <target xml:lang="pt-PT" state="final">Texto</target>
         <note>ID: EditTab.Toolbox.DragActivity.Text</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Letter" approved="yes">
@@ -137,6 +137,11 @@
         <source xml:lang="en">Untick this item if it is not part of the right answer</source>
         <target xml:lang="pt-PT" state="final">Desmarque este item se não fizer parte da resposta correta</target>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2" translate="no">
+        <source xml:lang="en">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</source>
+        <target xml:lang="pt-PT" state="needs-translation">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</target>
+        <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2</note>
       </trans-unit>
       <!--trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled">
         <source xml:lang="en">Nothing that can be part of the right answer is selected</source>
@@ -199,12 +204,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CorrectSound">
         <source xml:lang="en">Correct Sound</source>
-        <target xml:lang="pt-PT" state="translated">Som correto</target>
+        <target xml:lang="pt-PT" state="translated">Áudio para "Certo"</target>
         <note>ID: EditTab.Toolbox.DragActivity.WhenCorrect</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WrongSound">
         <source xml:lang="en">Wrong Sound</source>
-        <target xml:lang="pt-PT" state="translated">Som errado</target>
+        <target xml:lang="pt-PT" state="translated">Áudio para "Errado"</target>
         <note>ID: EditTab.Toolbox.DragActivity.WhenWrong</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Word" approved="yes">
@@ -269,17 +274,17 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions">
         <source>Drag the pictures to their shadows</source>
-        <target xml:lang="pt-PT" state="translated">Arraste as imagens para as sombras correspondentes</target>
+        <target xml:lang="pt-PT" state="translated">Arraste as imagens até as sombras correspondentes</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions">
         <source>Match sounds with their words</source>
-        <target xml:lang="pt-PT" state="translated">Combine os sons com as palavras certas</target>
+        <target xml:lang="pt-PT" state="translated">Ligue os áudios com as palavras certas</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions">
         <source>Drag the correct sound to matching word</source>
-        <target xml:lang="pt-PT" state="translated">Arraste o som à palavra correspondente</target>
+        <target xml:lang="pt-PT" state="translated">Arraste o áudio até a palavra correspondente</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions">
@@ -289,7 +294,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions">
         <source>Match each image to a word</source>
-        <target xml:lang="pt-PT" state="translated">Associar cada imagem a uma palavra</target>
+        <target xml:lang="pt-PT" state="translated">Ligue cada imagem com uma palavra</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.OrderWordsInstructions">
@@ -304,7 +309,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool" approved="yes">
         <source xml:lang="en">Game Tool</source>
-        <target xml:lang="pt-PT" state="final">Ferramenta do Jogo</target>
+        <target xml:lang="pt-PT" state="final">Ferramenta de Jogos</target>
         <note>ID: EditTab.Toolbox.GameTool</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool.CheckboxQuizHeading">
@@ -319,7 +324,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool.ChooseImageFromWordHeading">
         <source xml:lang="en">Choose Image from Word</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose Image from Word</target>
+        <target xml:lang="pt-PT" state="translated">Escolha a Imagem a partir da Palavra</target>
         <note>ID: EditTab.Toolbox.GameTool.ChooseImageFromWordHeading</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions">
@@ -329,7 +334,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool.ChooseWordFromImageHeading">
         <source xml:lang="en">Choose Word from Image</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose Word from Image</target>
+        <target xml:lang="pt-PT" state="translated">Escolha a Palavra a partir da Imagem</target>
         <note>ID: EditTab.Toolbox.GameTool.ChooseWordFromImageHeading</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool.ChooseWordFromImageInstructions">
@@ -375,17 +380,17 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Insert Segment Marker</source>
-        <target xml:lang="pt-PT" state="final">Inserir o marcador do segmento</target>
+        <target xml:lang="pt-PT" state="final">Inserir um marcador de segmento</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Apply Timings File...</source>
-        <target xml:lang="pt-PT" state="final">Aplicar Arquivo de Tempo...</target>
+        <target xml:lang="pt-PT" state="final">Usar Arquivo de Sincronização...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit Timings File...</source>
-        <target xml:lang="pt-PT" state="final">Editar arquivo de tempos...</target>
+        <target xml:lang="pt-PT" state="final">Editar Arquivo de Sincronização...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Extra" sil:dynamic="true">
@@ -425,17 +430,17 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip" sil:dynamic="true">
         <source xml:lang="en">This is disabled because there is not a whole text box recording</source>
-        <target xml:lang="pt-PT" state="translated">Isso é desativado porque não há uma gravação completa da caixa de texto</target>
+        <target xml:lang="pt-PT" state="translated">Esta opção está desativada porque não há uma gravação completa da caixa de texto</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true">
         <source xml:lang="en">Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.</source>
-        <target xml:lang="pt-PT" state="final">Clique aqui para inserir um caractere "|" no texto na posição atual do cursor. Este personagem diz ao Bloom para introduzir um novo segmento para o destaque do texto durante a reprodução de áudio. Também pode apenas digitar o caractere "|" usando o seu teclado.</target>
+        <target xml:lang="pt-PT" state="translated">Clique aqui para inserir o símbolo "|" no texto na posição atual do cursor. Bloom entende com este símbolo que durante a reprodução de áudio, é para separar o segmento sendo destacado naquele lugar. Também pode simplesmente digitar o símbolo "|" usando o seu teclado.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom will hide these when you publish.</source>
-        <target xml:lang="pt-PT" state="final">Bloom irá ocultá-los quando você publicar.</target>
+        <target xml:lang="pt-PT" state="final">Bloom vai ocultar os símbolos quando for publicar.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip" sil:dynamic="true" approved="yes">
@@ -455,7 +460,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Record the whole text box in one take, or load in a recording.</source>
-        <target xml:lang="pt-PT" state="final">Grave toda a caixa de texto em uma única coleta, ou carregue em uma gravação.</target>
+        <target xml:lang="pt-PT" state="final">Grave toda a caixa de texto de uma vez, ou carregue uma gravação.</target>
         <note>EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecordingTip" sil:dynamic="true" approved="yes">
@@ -470,7 +475,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFileTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Open the timing file in a text editor. After you save your changes, click the "Apply Timings File" button.</source>
-        <target xml:lang="pt-PT" state="final">Abra o arquivo de tempo no editor de texto. Após salvar as alterações, clique no botão "Aplicar arquivo de tempo".</target>
+        <target xml:lang="pt-PT" state="final">Abra o arquivo de sincronização num editor de texto. Após salvar as alterações, clique no botão "Usar Arquivo de Sincronização".</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFileTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFileDisabledTip" sil:dynamic="true" approved="yes">
@@ -513,7 +518,67 @@
         <target xml:lang="pt-PT" state="final">Mostrar descrição da imagem</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions</note>
       </trans-unit>
-      <!-- Overlay -->
+      <!-- Canvas (was Overlay) -->
+      <trans-unit id="EditTab.Toolbox.CanvasTool.BookGrid" sil:dynamic="true" translate="no">
+        <source xml:lang="en">A grid of buttons that jump you to books in your app</source>
+        <target xml:lang="pt-PT" state="needs-translation">A grid of buttons that jump you to books in your app</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.BookGrid</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Click to set where the link takes you</source>
+        <target xml:lang="pt-PT" state="needs-translation">Click to set where the link takes you</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.ClickToSetLinkDest</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.DragInstructions" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag any of these onto a canvas:</source>
+        <target xml:lang="pt-PT" state="needs-translation">Drag any of these onto a canvas:</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.DragInstructions2</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Image Fit</source>
+        <target xml:lang="pt-PT" state="needs-translation">Image Fit</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.ImageFit</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Margin" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fit with Margin</source>
+        <target xml:lang="pt-PT" state="needs-translation">Fit with Margin</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.Margin</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fit to Edge</source>
+        <target xml:lang="pt-PT" state="needs-translation">Fit to Edge</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Fill" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fill</source>
+        <target xml:lang="pt-PT" state="needs-translation">Fill</target>
+        <note>Fill up the button with the image, leaving no margin, cropping if necessary</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Choose books...</source>
+        <target xml:lang="pt-PT" state="needs-translation">Choose books...</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.NavButtons" sil:dynamic="true" translate="no">
+        <source xml:lang="en">A button that jumps you to a page or book in your app</source>
+        <target xml:lang="pt-PT" state="needs-translation">A button that jumps you to a page or book in your app</target>
+        <note>ID: EditTab.Toolbox.OverlayTool.NavButtons</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Navigation" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Navigation</source>
+        <target xml:lang="pt-PT" state="needs-translation">Navigation</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Go Somewhere</source>
+        <target xml:lang="pt-PT" state="needs-translation">Go Somewhere</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Set Destination</source>
+        <target xml:lang="pt-PT" state="needs-translation">Set Destination</target>
+        <note>ID: EditTab.Toolbox.OverlayTool.SetDest</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true" approved="yes">
         <source xml:lang="en">drag</source>
         <target xml:lang="pt-PT" state="final">arrastar</target>
@@ -536,22 +601,22 @@
       </trans-unit>
       <trans-unit id="PublishTab.Language.Enabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Select this if you want readers to be able to choose to read the book in this language.</source>
-        <target xml:lang="pt-PT" state="final">Selecione isto se você deseja que os leitores possam escolher ler o livro neste idioma.</target>
+        <target xml:lang="pt-PT" state="final">Marque aqui para dar os leitores a opção de ler o livro nesta língua.</target>
         <note>ID: PublishTab.Language.Enabled</note>
       </trans-unit>
       <trans-unit id="PublishTab.Language.Required" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This is disabled because this language is currently shown in the book, so it is required.</source>
-        <target xml:lang="pt-PT" state="final">Isto está desativado porque este idioma está atualmente exibido no livro, então ele é obrigatório.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque esta língua está exibida no livro; é obrigatório.</target>
         <note>ID: PublishTab.Language.Required</note>
       </trans-unit>
       <trans-unit id="PublishTab.AudioLanguage.Enabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Select this if you want to include this audio.</source>
-        <target xml:lang="pt-PT" state="final">Selecione isto se você deseja incluir este áudio.</target>
+        <target xml:lang="pt-PT" state="final">Marque aqui se deseja incluir este áudio.</target>
         <note>ID: PublishTab.AudioLanguage.Enabled</note>
       </trans-unit>
       <trans-unit id="PublishTab.AudioLanguage.Disabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This is disabled because this book does not have any audio in this language.</source>
-        <target xml:lang="pt-PT" state="final">Isto está desabilitado porque este livro não tem áudio neste idioma.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque este livro não tem áudio nesta língua.</target>
         <note>ID: PublishTab.AudioLanguage.Disabled</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.None" approved="yes">
@@ -566,7 +631,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
         <source xml:lang="en">This is disabled because publishing interactive activities requires a subscription.</source>
-        <target xml:lang="pt-PT" state="translated">Isto está desativado porque a publicação de atividades interativas requer uma assinatura.</target>
+        <target xml:lang="pt-PT" state="translated">Esta opção está desativada porque a publicação de atividades interativas requer uma assinatura.</target>
         <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Games.None">
@@ -579,9 +644,9 @@
         <target xml:lang="pt-PT" state="translated">Este livro tem jogos.</target>
         <note>ID: PublishTab.Feature.Games.Present</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Comic.None" approved="yes">
-        <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
-        <target xml:lang="pt-PT" state="final">Isso está desabilitado porque este livro não tem nenhum elemento de sobreposição que se qualifique como "como quadrinhos", como balões de fala.</target>
+      <trans-unit id="PublishTab.Feature.Comic.None">
+        <source xml:lang="en">This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.</source>
+        <target xml:lang="pt-PT" state="translated">Esta opção está desabilitada porque este livro não tem nenhum elemento de sobreposição que faz se qualificar como "tipo quadrinhos/banda desenhada", como balões de fala, por exemplo.</target>
         <note>ID: PublishTab.Feature.Comic.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.Possible" approved="yes">
@@ -606,7 +671,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.NoVideos" approved="yes">
         <source xml:lang="en">This is disabled because this book does not have any videos.</source>
-        <target xml:lang="pt-PT" state="final">Isso está desabilitado porque o livro não tem áudio.</target>
+        <target xml:lang="pt-PT" state="final">Essa opção está desabilitada porque o livro não tem vídeo.</target>
         <note>ID: PublishTab.Feature.SignLanguage.NoVideos</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.Present" approved="yes">
@@ -621,17 +686,17 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.TalkingBook.NoRecordings" approved="yes">
         <source xml:lang="en">This is disabled because this book does not have any Talking Book recordings.</source>
-        <target xml:lang="pt-PT" state="final">Isso está desabilitado porque o livro não tem áudio.</target>
+        <target xml:lang="pt-PT" state="final">Essa opção está desabilitada porque o livro não tem áudio.</target>
         <note>ID: PublishTab.Feature.TalkingBook.NoRecordings</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.TalkingBook.NoLanguagesSelected" approved="yes">
         <source xml:lang="en">This is disabled because no “Talking Book Languages” are selected.</source>
-        <target xml:lang="pt-PT" state="final">Isto está desativado porque nenhum "idioma de livro áudio" está selecionado.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desativada porque nenhuma "língua de livro áudio" está selecionado.</target>
         <note>ID: PublishTab.Feature.TalkingBook.NoLanguagesSelected</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Vision.None" approved="yes">
         <source xml:lang="en">This is disabled because this book does not have any image descriptions in the primary language.</source>
-        <target xml:lang="pt-PT" state="final">Isto está desabilitado porque este livro não tem descrições de imagens no idioma primário.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque este livro não tem descrições de imagens na língua primário.</target>
         <note>ID: PublishTab.Feature.Vision.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Vision.Possible" approved="yes">
@@ -691,12 +756,12 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Documentation about this screen</source>
-        <target xml:lang="pt-PT" state="final">Documentação sobre este ecrã</target>
+        <target xml:lang="pt-PT" state="final">Documentação sobre este ecrã/tela</target>
         <note>ID: PublishTab.Upload.Help</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AboutBlorg" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About BloomLibrary.org</source>
-        <target xml:lang="pt-PT" state="final">Sobre a BloomLibrary.org</target>
+        <target xml:lang="pt-PT" state="final">Sobre BloomLibrary.org</target>
         <note>ID: PublishTab.Upload.AboutBlorg</note>
       </trans-unit>
       <trans-unit id="CollectionTab.OnBlorgBadge.ViewOnBlorg" sil:dynamic="true" approved="yes">
@@ -786,13 +851,33 @@
       </trans-unit>
       <trans-unit id="BookSettings.CoverIsImage.Description" sil:dynamic="true">
         <source xml:lang="en">Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
-        <target xml:lang="pt-PT" state="translated">Usar esta opção ativa os indicadores [Imprimir Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) na diagramação para papel. Veja [Imagens da Capa Completa](https://docs.bloomlibrary.org/full-page-cover-images) para informações sobre o ajuste do tamanho da sua imagem para caber.</target>
+        <target xml:lang="pt-PT" state="translated">Usar esta opção para ativar os indicadores de [Imprimir Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) na diagramação para impressão. Veja [Imagens de Capa Completa](https://docs.bloomlibrary.org/full-page-cover-images) para entender como ajustar o tamanho da sua imagem para caber.</target>
         <note>BookSettings.CoverIsImage.Description</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.CoverIsImage.Description.V2" sil:dynamic="true">
+        <source xml:lang="en">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</target>
+        <note>BookSettings.CoverIsImage.Description.V2</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FullBleed" sil:dynamic="true">
+        <source xml:lang="en">Use full bleed page layout</source>
+        <target xml:lang="pt-PT" state="needs-translation">Use full bleed page layout</target>
+        <note>BookSettings.FullBleed</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true">
+        <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</target>
+        <note>BookSettings.FullBleed.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Content Pages</source>
         <target xml:lang="pt-PT" state="final">Páginas de conteúdo</target>
         <note>BookSettings.ContentPagesGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PrintPublishingGroupLabel" sil:dynamic="true">
+        <source xml:lang="en">Print Publishing</source>
+        <target xml:lang="pt-PT" state="needs-translation">Print Publishing</target>
+        <note>ID: BookSettings.PrintPublishingGroupLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.NormalTextBoxLangsLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Languages to show in normal text boxes</source>
@@ -836,8 +921,13 @@
       </trans-unit>
       <trans-unit id="BookSettings.ShowTopic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show Topic</source>
-        <target xml:lang="pt-PT" state="final">Mostrar Tópico</target>
+        <target xml:lang="pt-PT" state="final">Exibir o Tema</target>
         <note>BookSettings.ShowTopic</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ShowCredits" sil:dynamic="true">
+        <source xml:lang="en">Show Credits</source>
+        <target xml:lang="pt-PT" state="translated">Mostrar os créditos</target>
+        <note>BookSettings.ShowCredits</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page Numbers</source>
@@ -848,6 +938,36 @@
         <source xml:lang="en">Show Page Numbers</source>
         <target xml:lang="pt-PT" state="final">Mostrar números de página</target>
         <note>BookSettings.ShowPageNumbers</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Automatic" sil:dynamic="true">
+        <source xml:lang="en">(Automatic)</source>
+        <target xml:lang="pt-PT" state="translated">(Automático)</target>
+        <note>BookSettings.PageNumbers.Automatic</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Left" sil:dynamic="true">
+        <source xml:lang="en">Left</source>
+        <target xml:lang="pt-PT" state="translated">Esquerdo</target>
+        <note>BookSettings.PageNumbers.TopLeft</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Center" sil:dynamic="true">
+        <source xml:lang="en">Center</source>
+        <target xml:lang="pt-PT" state="translated">Centro</target>
+        <note>BookSettings.PageNumbers.Center</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Right" sil:dynamic="true">
+        <source xml:lang="en">Right</source>
+        <target xml:lang="pt-PT" state="translated">Direito</target>
+        <note>BookSettings.PageNumbers.Right</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Hidden" sil:dynamic="true">
+        <source xml:lang="en">Hidden</source>
+        <target xml:lang="pt-PT" state="translated">Oculto</target>
+        <note>BookSettings.PageNumbers.Hidden</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumberLocationNote" sil:dynamic="true">
+        <source xml:lang="en">Note: some Page Themes may not know how to change the location of the Page Number.</source>
+        <target xml:lang="pt-PT" state="needs-translation">Note: some Page Themes may not know how to change the location of the Page Number.</target>
+        <note>BookSettings.PageNumberLocationNote</note>
       </trans-unit>
       <trans-unit id="BookSettings.FrontAndBackMatter" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Front &amp; Back Matter</source>
@@ -1006,6 +1126,11 @@
         <source xml:lang="en">Paste Hyperlink</source>
         <target xml:lang="pt-PT" state="translated">Colar o Link</target>
         <note>ID: EditTab.PasteHyperlink</note>
+      </trans-unit>
+      <trans-unit id="EditTab.SetupHyperlink" approved="yes">
+        <source xml:lang="en">Set Up Hyperlink</source>
+        <target xml:lang="pt-PT" state="final">Configurar o Link</target>
+        <note>ID: EditTab.SetupHyperlink</note>
       </trans-unit>
       <trans-unit id="UseTalkingBookTool">
         <source xml:lang="en">Use Talking Book Tool</source>

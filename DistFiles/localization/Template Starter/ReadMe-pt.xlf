@@ -16,7 +16,7 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
       </trans-unit>
       <trans-unit id="template.starter.secondusage" approved="yes">
         <source xml:lang="en">The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></source>
-        <target xml:lang="pt-PT" state="final">A segunda maneira que as pessoas podem usar modelos é como uma fonte para novas páginas, não importa como eles começaram o livro. Por exemplo, em alguns lugares, cada livro requer uma página específica como parte de um processo de aprovação do governo. Você pode criar um modelo que contenha essa página e entregue a outras pessoas em seu país. Então, quando outros traduzem um livro pré-concebido, eles podem ir ao final do livro e clicar em "Adicionar página". A página que você criou aparecerá na lista de opções. Algumas outras idéias para modelos incluem tabelas de alfabetos, glossários e instruções sobre como usar o livro em uma sala de aula. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
+        <target xml:lang="pt-PT" state="final">A segunda maneira que as pessoas podem usar modelos é como uma fonte para novas páginas, não importa como eles começaram o livro. Por exemplo, em alguns lugares, cada livro requer uma página específica como parte de um processo de aprovação do governo. Você pode criar um modelo que contenha essa página e entregar a outras pessoas em seu país. Então, quando outros traduzem um livro pré-desenhado, eles podem ir ao final do livro e clicar em "Adicionar página". A página que você criou aparecerá na lista de opções. Algumas outras idéias para modelos incluem tabelas de alfabetos, glossários e instruções sobre como usar o livro na sala de aula. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
         <note>ID: template.starter.secondusage</note>
       </trans-unit>
       <trans-unit id="template.starter.waystohelp" approved="yes">
@@ -26,7 +26,7 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
       </trans-unit>
       <trans-unit id="template.starter.labelpages" approved="yes">
         <source xml:lang="en">Label Your Pages</source>
-        <target xml:lang="pt-PT" state="final">Marca suas páginas</target>
+        <target xml:lang="pt-PT" state="final">Marque suas páginas</target>
         <note>ID: template.starter.labelpages</note>
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage" approved="yes">
