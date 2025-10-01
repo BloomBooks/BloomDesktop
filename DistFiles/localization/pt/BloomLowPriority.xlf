@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed" approved="yes">
         <source xml:lang="en">eSpeak language:</source>
-        <target xml:lang="pt-PT" state="final">Idioma do eSpeak:</target>
+        <target xml:lang="pt-PT" state="final">língua do eSpeak:</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion" approved="yes">
@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="Errors.CannotConnectToBloomServer.2" approved="yes">
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Web browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
-        <target xml:lang="pt-PT" state="final">Bloom era incapaz de começar seu próprio ouvinte HTTP que usa para comunicar com seu navegador Firefox incorporado. Se isso acontecer mesmo se você apenas ha reiniciado o computador, deve pedir que alguém investiga se você tem instalado um produto de firewall agressivo. É possível que o produto de firewall agressivo devería ser desinstalado antes de que você pode usar Bloom.</target>
+        <target xml:lang="pt-PT" state="final">Bloom foi incapaz de começar seu próprio ouvinte HTTP que usa para comunicar com seu navegador da internet. Se isso acontecer mesmo se você acabou de reiniciar o computador, deve pedir que alguém investiga se você tem um produto de firewall agressivo instalado. Pode ser necessário desenstalar o produto de firewall agressivo antes que você possa usar o Bloom.</target>
         <note>ID: Errors.CannotConnectToBloomServer.2</note>
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InZipFileMessage" approved="yes">
@@ -52,6 +52,87 @@
         <target xml:lang="pt-PT" state="final">Por favor, selecione um arquivo .bloomColletion.</target>
         <note>ID: OpenCreateCloneControl.InvalidFileTypeMessage</note>
       </trans-unit>
+      <!-- Link Target Chooser -->
+      <trans-unit id="LinkTargetChooser.Dialog.Title">
+        <source xml:lang="en">Choose Link Target</source>
+        <target xml:lang="pt-PT" state="translated">Escolher Alvo do Link</target>
+        <note>ID: LinkTargetChooser.Dialog.Title</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.BookList.Heading">
+        <source xml:lang="en">Books in this Collection</source>
+        <target xml:lang="pt-PT" state="translated">Livros nesta Coleção</target>
+        <note>ID: LinkTargetChooser.BookList.Heading</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.PageList.Heading">
+        <source xml:lang="en">Pages in the selected book</source>
+        <target xml:lang="pt-PT" state="translated">Páginas no livro selecionado</target>
+        <note>ID: LinkTargetChooser.PageList.Heading</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.SelectionError.BookNotFound">
+        <source xml:lang="en">Book not found: {0}</source>
+        <target xml:lang="pt-PT" state="translated">Livro não encontrado: {0}</target>
+        <note>ID: LinkTargetChooser.SelectionError.BookNotFound</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.SelectionError.PageNotFound">
+        <source xml:lang="en">Page {0} not found in book "{1}"</source>
+        <target xml:lang="pt-PT" state="translated">Página {0} não encontrada no livro "{1}"</target>
+        <note>ID: LinkTargetChooser.SelectionError.PageNotFound</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.PageList.SelectBookPrompt">
+        <source xml:lang="en">Select a book to see its pages</source>
+        <target xml:lang="pt-PT" state="translated">Selecione um livro para ver as páginas</target>
+        <note>ID: LinkTargetChooser.PageList.SelectBookPrompt</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.PageList.LoadingMessage">
+        <source xml:lang="en">Loading pages...</source>
+        <target xml:lang="pt-PT" state="translated">Carregando páginas...</target>
+        <note>ID: LinkTargetChooser.PageList.LoadingMessage</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.PageList.LoadFailed">
+        <source xml:lang="en">Failed to load pages</source>
+        <target xml:lang="pt-PT" state="translated">Falha ao carregar páginas</target>
+        <note>ID: LinkTargetChooser.PageList.LoadFailed</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.URLSection.Heading">
+        <source xml:lang="en">URL</source>
+        <target xml:lang="pt-PT" state="translated">URL</target>
+        <note>ID: LinkTargetChooser.URLSection.Heading</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.URLSection.InfoIcon.Tooltip">
+        <source xml:lang="en">The URL can be a website or one generated by selecting a book and/or page above</source>
+        <target xml:lang="pt-PT" state="translated">Pode inserir o URL de um site ou selecionar um livro e/ou página acima para gerar um</target>
+        <note>ID: LinkTargetChooser.URLSection.InfoIcon.Tooltip</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.URLSection.Input.Placeholder">
+        <source xml:lang="en">Paste or enter a URL</source>
+        <target xml:lang="pt-PT" state="translated">Colar ou inserir um URL</target>
+        <note>ID: LinkTargetChooser.URLSection.Input.Placeholder</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.URLSection.OptionsButton.Label">
+        <source xml:lang="en">More options</source>
+        <target xml:lang="pt-PT" state="translated">Mais opções</target>
+        <note>ID: LinkTargetChooser.URLSection.OptionsButton.Label</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.URLSection.OptionsMenu.Back.Tooltip">
+        <source xml:lang="en">Go back in link history</source>
+        <target xml:lang="pt-PT" state="translated">Voltar no histórico de links</target>
+        <note>ID: LinkTargetChooser.URLSection.OptionsMenu.Back.Tooltip</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.URLSection.OptionsMenu.Back.Label">
+        <source xml:lang="en">Back</source>
+        <target xml:lang="pt-PT" state="translated">Voltar</target>
+        <note>ID: LinkTargetChooser.URLSection.OptionsMenu.Back.Label</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.URLSection.PasteButton.Tooltip">
+        <source xml:lang="en">Paste from clipboard</source>
+        <target xml:lang="pt-PT" state="translated">Colar da área de transferência</target>
+        <note>ID: LinkTargetChooser.URLSection.PasteButton.Tooltip</note>
+      </trans-unit>
+      <trans-unit id="LinkTargetChooser.URLSection.OpenButton.Tooltip">
+        <source xml:lang="en">Open in browser</source>
+        <target xml:lang="pt-PT" state="translated">Abrir no navegador</target>
+        <note>ID: LinkTargetChooser.URLSection.OpenButton.Tooltip</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.BulkBookshelfColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bookshelf Color</source>
         <target xml:lang="pt-PT" state="final">Cor da estante</target>
@@ -59,7 +140,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo" approved="yes">
         <source xml:lang="en">Currently, Bloom does not support including audio from embedded videos in video output.</source>
-        <target xml:lang="pt-PT" state="final">Atualmente, Bloom não suporta inclusão do áudio nos vídeos de linguagem de gesto na saída de vídeo.</target>
+        <target xml:lang="pt-PT" state="final">Atualmente, Bloom não suporta incluir o áudio dos vídeos na saída de vídeo.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed" approved="yes">
@@ -89,7 +170,7 @@
       </trans-unit>
       <trans-unit id="Settings.Subscription.Community.Invitation" approved="yes">
         <source xml:lang="en">If your project is fully funded and managed by your local language community, you may qualify for a free [Bloom Community Subscription](https://bloomlibrary.org/subscriptions).</source>
-        <target xml:lang="pt-PT" state="final">Se o seu projeto for totalmente financiado e gerido por sua comunidade de idiomas local, pode se qualificar para uma [Assinatura da Comunidade do Bloom](https://bloomlibrary.org/subscriptions).</target>
+        <target xml:lang="pt-PT" state="final">Se o seu projeto for totalmente financiado e gerido por sua comunidade de línguas local, pode se qualificar para uma [Assinatura da Comunidade do Bloom](https://bloomlibrary.org/subscriptions).</target>
         <note>ID: Settings.Subscription.Community.Invitation</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.SubscriptionCodeLabel" approved="yes">
@@ -129,47 +210,47 @@
       </trans-unit>
       <!-- Tiers. These don't occur in code in their entirety, but are assembled by appending a particular
       tier to "Subscription.Tier."-->
-      <trans-unit id="Subscription.Tier.Basic">
+      <trans-unit id="Subscription.Tier.Basic" approved="yes">
         <source xml:lang="en">Basic</source>
-        <target xml:lang="pt-PT" state="needs-translation">Basic</target>
+        <target xml:lang="pt-PT" state="final">Básico</target>
         <note>ID: Subscription.Tier.Basic</note>
       </trans-unit>
       <trans-unit id="Subscription.Tier.Enterprise">
         <source xml:lang="en">Enterprise</source>
-        <target xml:lang="pt-PT" state="needs-translation">Enterprise</target>
+        <target xml:lang="pt-PT" state="translated">Empresarial</target>
         <note>ID: Subscription.Tier.Enterprise</note>
       </trans-unit>
       <trans-unit id="Subscription.Tier.LocalCommunity">
         <source xml:lang="en">Local Community</source>
-        <target xml:lang="pt-PT" state="needs-translation">Local Community</target>
+        <target xml:lang="pt-PT" state="translated">Comunidade local</target>
         <note>ID: Subscription.Tier.LocalCommunity</note>
       </trans-unit>
       <trans-unit id="Subscription.Tier.Pro">
         <source xml:lang="en">Pro</source>
-        <target xml:lang="pt-PT" state="needs-translation">Pro</target>
+        <target xml:lang="pt-PT" state="translated">Pro</target>
         <note>ID: Subscription.Tier.Pro</note>
       </trans-unit>
       <trans-unit id="Subscription.TierWithColon">
         <source xml:lang="en">Tier:</source>
-        <target xml:lang="pt-PT" state="needs-translation">Tier:</target>
+        <target xml:lang="pt-PT" state="translated">Nível:</target>
         <note>ID: Subscription.TierWithColon</note>
       </trans-unit>
       <!-- Other -->
       <trans-unit id="Subscription.OpenSettings">
         <source xml:lang="en">Subscription Settings</source>
-        <target xml:lang="pt-PT" state="needs-translation">Subscription Settings</target>
+        <target xml:lang="pt-PT" state="translated">Configuração da assinatura</target>
         <note>ID: Subscription.OpenSettings</note>
       </trans-unit>
       <!-- Features -->
       <!-- TODO connect with/normalize other places that refer to these things -->
-      <trans-unit id="Feature.Overlay">
-        <source xml:lang="en">Overlay</source>
-        <target xml:lang="pt-PT" state="needs-translation">Overlay</target>
-        <note>ID: Feature.Overlay</note>
+      <trans-unit id="Feature.Canvas">
+        <source xml:lang="en">Canvas</source>
+        <target xml:lang="pt-PT" state="translated">Tela</target>
+        <note>ID: Feature.Canvas</note>
       </trans-unit>
       <trans-unit id="Feature.Spreadsheet">
         <source xml:lang="en">Spreadsheet Import/Export</source>
-        <target xml:lang="pt-PT" state="needs-translation">Spreadsheet Import/Export</target>
+        <target xml:lang="pt-PT" state="translated">Importar/Exportar Planilha</target>
         <note>ID: Feature.Spreadsheet</note>
       </trans-unit>
       <!-- TODO: add other features -->
@@ -190,7 +271,7 @@
       </trans-unit>
       <trans-unit id="Spreadsheet.SpreadsheetLocked" approved="yes">
         <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
-        <target xml:lang="pt-PT" state="final">Bloom não pode escrever na planilha porque um outro programa está a impedir fazer isso. Você tem aberto a planilha num outro programa?</target>
+        <target xml:lang="pt-PT" state="final">Bloom não pode escrever na planilha porque um outro programa bloqueou a planilha. Está aberta em outro programa?</target>
         <note>ID: Spreadsheet.SpreadsheetLocked</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.MissingImage" approved="yes">
@@ -228,9 +309,9 @@
         <target xml:lang="pt-PT" state="final">Bloom teve problemas ao escrever arquivos nessa localização ({0}). Verifique se você tem permissão para escrever lá.</target>
         <note>ID: Spreadsheet.WriteFailed</note>
       </trans-unit>
-      <trans-unit id="Spreadsheet.CannotExportDragAndDropGamePages">
+      <trans-unit id="Spreadsheet.CannotExportDragAndDropGamePages" approved="yes">
         <source xml:lang="en">Bloom cannot export because {0} pages contain drag-and-drop games.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom cannot export because {0} pages contain drag-and-drop games.</target>
+        <target xml:lang="pt-PT" state="final">Bloom não pode exportar porque {0} páginas contêm jogos de arrastar-e-soltar.</target>
         <note>ID: Spreadsheet.CannotExportDragAndDropGamePages</note>
       </trans-unit>
       <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer" approved="yes">
@@ -269,7 +350,7 @@
       </trans-unit>
       <trans-unit id="TeamCollection.InvalidAdminEmails" approved="yes">
         <source xml:lang="en">Please enter one or more valid administrator email addresses, separated by commas or spaces.</source>
-        <target xml:lang="pt-PT" state="final">Por favor, insira um ou mais endereços de e-mail do administrador válidos, separados por vírgulas ou espaços.</target>
+        <target xml:lang="pt-PT" state="final">Por favor, insira um ou mais e-mails de administradores, separados por vírgula ou espaço.</target>
         <note>ID: TeamCollection.InvalidAdminEmails</note>
       </trans-unit>
       <trans-unit id="Common.Preparing" approved="yes">
@@ -287,15 +368,40 @@
         <target xml:lang="pt-PT" state="final">Concluído</target>
         <note>Common.Finished</note>
       </trans-unit>
-      <trans-unit id="EditTab.PasteHyperlink.Currently">
+      <trans-unit id="EditTab.PasteHyperlink.Currently" approved="yes">
         <source xml:lang="en">Currently %0</source>
-        <target xml:lang="pt-PT" state="needs-translation">Currently %0</target>
+        <target xml:lang="pt-PT" state="final">Atualmente %0</target>
         <note>ID: EditTab.PasteHyperlink.Currently</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MoveToCurrentCollection">
         <source xml:lang="en">Move into {0}</source>
-        <target xml:lang="pt-PT" state="needs-translation">Move into {0}</target>
+        <target xml:lang="pt-PT" state="translated">Mover para {0}</target>
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetupDialog.Title">
+        <source xml:lang="en">Book Grid Setup</source>
+        <target xml:lang="pt-PT" state="translated">Configuração da Grade de Livros</target>
+        <note>ID: BookGridSetupDialog.Title</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.BooksInCollection">
+        <source xml:lang="en">Books in this Collection</source>
+        <target xml:lang="pt-PT" state="translated">Livros nesta Coleção</target>
+        <note>ID: BookGridSetup.BooksInCollection</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.AddBook" approved="yes">
+        <source xml:lang="en">Add Book →</source>
+        <target xml:lang="pt-PT" state="final">Adicionar Livro →</target>
+        <note>ID: BookGridSetup.AddBook</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.AddAllBooks" approved="yes">
+        <source xml:lang="en">Add All Books →</source>
+        <target xml:lang="pt-PT" state="final">Adicionar Todos os Livros →</target>
+        <note>ID: BookGridSetup.AddAllBooks</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.LinksInGrid">
+        <source xml:lang="en">Links in Grid (%0)</source>
+        <target xml:lang="pt-PT" state="translated">Links na Grade (%0)</target>
+        <note>ID: BookGridSetup.LinksInGrid</note>
       </trans-unit>
     </body>
   </file>
