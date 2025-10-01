@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { splitIntoGraphemes } from "./textUtils";
 
 describe("split into grapheme tests", () => {

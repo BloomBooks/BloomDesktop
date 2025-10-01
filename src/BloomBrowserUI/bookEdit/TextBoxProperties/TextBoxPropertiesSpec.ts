@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from "vitest";
 /// <reference path="./TextBoxProperties.ts" />
 
 import TextBoxProperties from "./TextBoxProperties";

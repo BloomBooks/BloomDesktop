@@ -4,9 +4,7 @@ import "./adjustTimingsControl.less"; // can't use @emotion on shadow dom
 
 import * as React from "react";
 import { Fragment, useState, useEffect, useRef } from "react";
-// This strange way of importing seems to be necessary to make the WaveSurfer plugin architecture work.
 import WaveSurfer from "wavesurfer.js";
-import * as WaveSurferNamespace from "wavesurfer.js";
 
 import RegionsPlugin from "../../../node_modules/wavesurfer.js/dist/plugins/regions";
 import { adjustPausesToQuietestNearby } from "./AdjustPauses";
@@ -92,7 +90,7 @@ export const AdjustTimingsControl: React.FunctionComponent<{
             }
         `;
 
-        const ws = (WaveSurferNamespace as unknown as any).create({
+        const ws = WaveSurfer.create({
             container: "#waveform",
             plugins: [rp],
             minPxPerSec: 100,
@@ -115,7 +113,8 @@ export const AdjustTimingsControl: React.FunctionComponent<{
         ws.on("decode", () => {
             let segments: Array<{ start: number; end: number; text: string }>;
             if (props.shouldAdjustSegments) {
-                const data = ws.decodedData?.getChannelData(0);
+                // This used to work without the cast but now decodedData is showing up as private.
+                const data = (ws as any).decodedData?.getChannelData(0);
                 segments = adjustPausesToQuietestNearby(
                     props.segments,
                     data,

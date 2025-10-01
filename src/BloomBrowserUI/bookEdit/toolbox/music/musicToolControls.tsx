@@ -24,6 +24,7 @@ interface IMusicState {
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which passes an instance of MusicToolAdapter to ToolBox.registerTool();
 export class MusicToolControls extends React.Component<unknown, IMusicState> {
+    private static kDefaultVolumeFraction = 0.5;
     public readonly state: IMusicState = {
         activeRadioValue: "continueMusic",
         volume: MusicToolControls.kDefaultVolumeFraction,
@@ -41,7 +42,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
     private static musicAttrName = "data-backgroundaudio";
     private static musicVolumeAttrName =
         MusicToolControls.musicAttrName + "volume";
-    private static kDefaultVolumeFraction = 0.5;
+
     private static narrationPlayer: AudioRecording | undefined;
     private addedListenerToPlayer: boolean;
     public componentDidMount() {

@@ -10,7 +10,7 @@ import {
     theOneLibSynphony,
     ResetLanguageDataInstance,
 } from "./libSynphony/synphony_lib";
-import "./libSynphony/synphony_lib.js";
+import "./libSynphony/synphony_lib";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 import { ReaderSettings } from "./ReaderSettings";
 import { clearWordCache } from "./libSynphony/bloomSynphonyExtensions";

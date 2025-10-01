@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { EditableDivUtils } from "./editableDivUtils";
 
 describe("EditableDivUtils Tests", () => {

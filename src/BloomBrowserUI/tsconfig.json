@@ -1,15 +1,18 @@
 {
     "compilerOptions": {
-        "target": "es2019",
-
-        "module": "commonjs",
-
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
         "sourceMap": true,
+        "allowJs": true,
         "jsx": "react-jsx",
         "jsxImportSource": "@emotion/react",
+        "esModuleInterop": true,
         "types": [
             /*"@emotion/core",*/
-            "@emotion/react/types/css-prop"
+            "@emotion/react/types/css-prop",
+            "vitest/globals",
+            "@testing-library/jest-dom"
         ],
         "lib": ["dom", "es6", "scripthost", "es2019"],
         "experimentalDecorators": true,

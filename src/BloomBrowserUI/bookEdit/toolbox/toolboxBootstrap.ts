@@ -1,5 +1,5 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-import * as $ from "jquery";
+import $ from "jquery";
 import {
     getTheOneToolbox,
     applyToolboxStateToUpdatedPage,

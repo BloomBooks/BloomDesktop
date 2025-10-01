@@ -7,7 +7,7 @@ import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { get, postJson } from "../../utils/bloomApi";
 import ColorPicker from "./colorPicker";
-import * as tinycolor from "tinycolor2";
+import tinycolor from "tinycolor2";
 import { IColorInfo, normalizeColorInfoColorsAsHex } from "./colorSwatch";
 import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import {

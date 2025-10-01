@@ -1,5 +1,7 @@
+import { describe, it, expect } from "vitest";
 import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
 import { CanvasElementManager } from "./CanvasElementManager";
+import jQuery from "jquery";
 
 // A (currently very incomplete) set of tests for CanvasElementManager.
 

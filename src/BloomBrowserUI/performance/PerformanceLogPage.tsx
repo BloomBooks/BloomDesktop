@@ -10,7 +10,7 @@ import {
 } from "@nivo/scatterplot";
 import * as ReactDOM from "react-dom";
 import { Button } from "@mui/material";
-import * as filesize from "filesize";
+import filesize from "filesize";
 
 interface IMeasurement {
     action?: string;

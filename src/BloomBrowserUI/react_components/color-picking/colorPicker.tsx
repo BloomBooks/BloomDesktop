@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ColorResult, RGBColor } from "react-color";
 import BloomSketchPicker from "./bloomSketchPicker";
 import ColorSwatch, { IColorInfo } from "./colorSwatch";
-import * as tinycolor from "tinycolor2";
+import tinycolor from "tinycolor2";
 import { HexColorInput } from "./hexColorInput";
 import { useL10n } from "../l10nHooks";
 import { Typography } from "@mui/material";

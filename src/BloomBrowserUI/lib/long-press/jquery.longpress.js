@@ -11,14 +11,15 @@
  */
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
+import "./jquery.mousewheel.js";
 
-(function($, window, undefined) {
+(function ($, window, undefined) {
     var lengthOfPreviouslyInsertedCharacter = 1; //when we convert to Typescript, this is a member variable
 
     var pluginName = "longPress",
         document = window.document,
         defaults = {
-            instructions: ""
+            instructions: "",
         };
 
     // See https://issues.bloomlibrary.org/youtrack/issue/BL-8683.
@@ -111,7 +112,7 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
         "=": "≈≠≡",
         "/": "÷",
         "\u0020": narrowNoBreakSpace, // Spacebar; see comment on narrowNoBreakSpace above
-        "\u00a0": narrowNoBreakSpace // Spacebar (see BL-12191); see comment on narrowNoBreakSpace above
+        "\u00a0": narrowNoBreakSpace, // Spacebar (see BL-12191); see comment on narrowNoBreakSpace above
     });
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
     // 8  backspace
@@ -134,41 +135,10 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
     // Review: there are others we could add, function keys, num lock, scroll lock, break, forward & back slash, etc.
     //  not sure how much we gain from that...
     var ignoredKeyDownKeyCodes = [
-        8,
-        9,
-        13,
-        16,
-        17,
-        18,
-        27,
-        33,
-        34,
-        35,
-        36,
-        37,
-        38,
-        39,
-        40,
-        45,
-        46
+        8, 9, 13, 16, 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46,
     ];
     var ignoredKeyUpKeys = [
-        8,
-        9,
-        13,
-        /*16,*/ 17,
-        18,
-        27,
-        33,
-        34,
-        35,
-        36,
-        37,
-        38,
-        39,
-        40,
-        45,
-        46
+        8, 9, 13, /*16,*/ 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46,
     ];
 
     var selectedCharIndex;
@@ -198,7 +168,7 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
     //     'a': [ā, a_, ɑ]  (the underline there represents the "combining macron below" (U+0331))
     function splitCharacterSetsByGrapheme(sets) {
         var output = {};
-        Object.keys(sets).forEach(key => {
+        Object.keys(sets).forEach((key) => {
             output[key] = splitIntoGraphemes(sets[key]);
         });
         return output;
@@ -281,12 +251,12 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
     }
     function onTimer() {
         var typedChar = isTextArea()
-            ? $(activeElement)
-                  .val()
-                  .split("")[getTextAreaCaretPosition(activeElement) - 1]
-            : $(activeElement)
-                  .text()
-                  .split("")[getCaretPositionOffset(activeElement) - 1];
+            ? $(activeElement).val().split("")[
+                  getTextAreaCaretPosition(activeElement) - 1
+              ]
+            : $(activeElement).text().split("")[
+                  getCaretPositionOffset(activeElement) - 1
+              ];
 
         if (characterSets[typedChar]) {
             storeCaretPosition();
@@ -301,7 +271,7 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
         [nonBreakingHyphen]:
             "- (non-breaking hyphen / trait d'union insécable)",
         [enDash]: "– (en dash / tiret demi-cadratin)",
-        [emDash]: "— (em dash / tiret cadratin)"
+        [emDash]: "— (em dash / tiret cadratin)",
     };
     function createOneButton(replacementText, shortcutText) {
         let cssClass = "long-press-letter";
@@ -309,7 +279,7 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
 
         if (
             Object.keys(charactersRepresentedByAlternativeText).includes(
-                replacementText
+                replacementText,
             )
         ) {
             cssClass += " small-text";
@@ -318,7 +288,7 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
         }
 
         const letter = $(
-            `<li class="${cssClass}" data-value=${replacementText} data-shortcut="${shortcutText}">${buttonText}</li>`
+            `<li class="${cssClass}" data-value=${replacementText} data-shortcut="${shortcutText}">${buttonText}</li>`,
         );
         letter.mouseenter(activateLetter);
         letter.click(onPopupLetterClick);
@@ -366,7 +336,7 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
     function activateRelativeLetter(i) {
         selectCharIndex(
             ($(".long-press-letter").length + selectedCharIndex + i) %
-                $(".long-press-letter").length
+                $(".long-press-letter").length,
         );
     }
     function activateNextLetter() {
@@ -403,9 +373,7 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
     }
     function selectCharIndex(i) {
         $(".long-press-letter.selected").removeClass("selected");
-        $(".long-press-letter")
-            .eq(i)
-            .addClass("selected");
+        $(".long-press-letter").eq(i).addClass("selected");
         selectedCharIndex = i;
         updateChar();
     }
@@ -425,9 +393,8 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
         if (isTextArea()) {
             textAreaCaretPosition = getTextAreaCaretPosition(activeElement);
         } else {
-            storedOffset = EditableDivUtils.getElementSelectionIndex(
-                activeElement
-            );
+            storedOffset =
+                EditableDivUtils.getElementSelectionIndex(activeElement);
         }
     }
 
@@ -470,7 +437,7 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
                         // It's possible that we're at a boundary between two text nodes, especially since
                         // longpress likes to insert the text as an extra node, but in that case it doesn't
                         // matter which one we make the selection in.)
-                        false
+                        false,
                     );
                     // Check for a problem where something, probably CkEditor, inserts a zero-width space before the
                     // special character we just inserted.
@@ -498,7 +465,7 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
     }
 
     function setFocusDelayed() {
-        window.setTimeout(function() {
+        window.setTimeout(function () {
             if (activeElement && typeof activeElement.focus != "undefined") {
                 activeElement.focus();
             }
@@ -509,9 +476,7 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
     function replacePreviousLetterWithNewLetter(newLetter) {
         if (isTextArea()) {
             const pos = getTextAreaCaretPosition(activeElement);
-            const arVal = $(activeElement)
-                .val()
-                .split("");
+            const arVal = $(activeElement).val().split("");
             arVal[pos - 1] = newLetter;
             $(activeElement).val(arVal.join(""));
             setTextAreaCaretPosition(activeElement, pos);
@@ -531,20 +496,23 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
                     //That code has been changed, so this should not happen, but if it does, this will save
                     //some debugging time.
                     if (insertPointRange.startContainer.nodeName != "#text") {
-                        throw "longpress: aborting becuase deleteContents() would have deleted all contents of a " +
-                            insertPointRange.startContainer.nodeName;
+                        throw (
+                            "longpress: aborting becuase deleteContents() would have deleted all contents of a " +
+                            insertPointRange.startContainer.nodeName
+                        );
                     }
 
                     //remove the character they typed to open this tool
-                    const rangeToRemoveStarterCharacter = insertPointRange.cloneRange();
+                    const rangeToRemoveStarterCharacter =
+                        insertPointRange.cloneRange();
                     rangeToRemoveStarterCharacter.setStart(
                         insertPointRange.startContainer,
                         insertPointRange.startOffset -
-                            lengthOfPreviouslyInsertedCharacter
+                            lengthOfPreviouslyInsertedCharacter,
                     );
                     rangeToRemoveStarterCharacter.setEnd(
                         insertPointRange.startContainer,
-                        insertPointRange.startOffset
+                        insertPointRange.startOffset,
                     );
                     rangeToRemoveStarterCharacter.deleteContents();
 
@@ -634,25 +602,25 @@ import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
         popup = window.top.$(
             '<div id="longpress" class="long-press-popup"><ul />' +
                 this.options.instructions +
-                "</div>"
+                "</div>",
         );
         this.init();
     }
 
     LongPress.prototype = {
-        init: function() {
+        init: function () {
             $(this.element).keydown(onKeyDown);
             $(this.element).keyup(onKeyUp);
-        }
+        },
     };
 
-    $.fn[pluginName] = function(options) {
-        return this.each(function() {
+    $.fn[pluginName] = function (options) {
+        return this.each(function () {
             if (!$.data(this, "plugin_" + pluginName)) {
                 $.data(
                     this,
                     "plugin_" + pluginName,
-                    new LongPress(this, options)
+                    new LongPress(this, options),
                 );
             }
         });

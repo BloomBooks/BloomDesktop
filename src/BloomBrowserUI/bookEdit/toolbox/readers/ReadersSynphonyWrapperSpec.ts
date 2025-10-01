@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 import { ReaderStage } from "./ReaderSettings";
 

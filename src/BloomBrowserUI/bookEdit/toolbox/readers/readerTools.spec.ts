@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
     theOneLanguageDataInstance,
     ResetLanguageDataInstance,
@@ -72,7 +73,7 @@ describe("Bloom Edit Controls tests", () => {
         const setStageDone = getTheOneReaderToolsModel().setStageNumber(1);
         getTheOneReaderToolsModel().wordListLoaded = true;
 
-        spyOn(getTheOneReaderToolsModel(), "updateElementContent");
+        vi.spyOn(getTheOneReaderToolsModel(), "updateElementContent");
         // simulated values of class attribute. Currently we ignore the attrName argument, since we only modify class.
         classValues = {
             decStage: "something",
@@ -331,19 +332,19 @@ describe("Bloom Edit Controls tests", () => {
         getTheOneReaderToolsModel().ckEditorLoaded = true; // some things only happen once the editor is loaded; pretend it is.
 
         // Default is currently alphabetic
-        (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
+        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         await getTheOneReaderToolsModel().setStageNumber(1);
         expect(getTheOneReaderToolsModel().updateElementContent)
-            .withContext("1. Set stage to 1")
+            //.withContext("1. Set stage to 1")
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>',
             );
 
-        (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
+        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         getTheOneReaderToolsModel().sortByLength();
         expect(getTheOneReaderToolsModel().updateElementContent)
-            .withContext("2. Sort by length")
+            //.withContext("2. Sort by length")
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>',
@@ -352,47 +353,47 @@ describe("Bloom Edit Controls tests", () => {
         // Note: originally this test had feline before rate,
         // but rate is considered to have a freq of 1 (due to its appearance in "moreWords"), whereas feline has 0,
         // so rate is before feline
-        (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
+        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         getTheOneReaderToolsModel().sortByFrequency();
         expect(getTheOneReaderToolsModel().updateElementContent)
-            .withContext("3. Sort by frequency")
+            //.withContext("3. Sort by frequency")
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>',
             );
 
-        (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
+        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         getTheOneReaderToolsModel().sortAlphabetically();
         expect(getTheOneReaderToolsModel().updateElementContent)
-            .withContext("4. Sort alphabetically")
+            //.withContext("4. Sort alphabetically")
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>',
             );
 
-        (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
+        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         await getTheOneReaderToolsModel().setStageNumber(2);
         expect(getTheOneReaderToolsModel().updateElementContent)
-            .withContext("5. Set stage back to 2")
+            //.withContext("5. Set stage back to 2")
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> bob</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div><div class="word lang1InATool  sight-word"> two</div>',
             );
 
-        (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
+        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         getTheOneReaderToolsModel().sortByLength(); // same-length ones should be alphabetic
         expect(getTheOneReaderToolsModel().updateElementContent)
-            .withContext("6. Stage 2, Sort by length")
+            //.withContext("6. Stage 2, Sort by length")
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> bob</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool "> sat</div><div class="word lang1InATool  sight-word"> two</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>',
             );
 
         // Again, note that rate is considered to have freq=1 because it appears in moreWords, so it comes before feline (freq=0)
-        (<any>getTheOneReaderToolsModel().updateElementContent).calls.reset();
+        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         getTheOneReaderToolsModel().sortByFrequency();
         expect(getTheOneReaderToolsModel().updateElementContent)
-            .withContext("7. Stage 2, Sort by frequency")
+            //.withContext("7. Stage 2, Sort by frequency")
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> bob</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool  sight-word"> two</div>',

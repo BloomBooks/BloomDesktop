@@ -9,6 +9,7 @@
 
 import { StoryCheckResults } from "./synphony_lib";
 import _ from "underscore";
+import { describe, it, expect, afterEach, beforeEach } from "vitest";
 
 describe("NumberTests", function () {
     beforeEach(function () {

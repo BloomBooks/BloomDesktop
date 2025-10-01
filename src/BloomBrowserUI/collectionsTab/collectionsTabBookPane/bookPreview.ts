@@ -1,4 +1,4 @@
-import * as $ from "jquery";
+import $ from "jquery";
 import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
 import "errorHandler";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";

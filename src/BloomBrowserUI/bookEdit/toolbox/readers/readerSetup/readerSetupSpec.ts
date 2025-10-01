@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { processMarkdown } from "./readerSetup.ui";
 
 function checkStrong(item: ChildNode, content: string) {

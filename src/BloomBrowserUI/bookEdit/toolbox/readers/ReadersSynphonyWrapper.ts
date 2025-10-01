@@ -1,4 +1,3 @@
-/// <reference path="libSynphony/synphony_lib.d.ts" />
 /// <reference path="../../../typings/jquery/jquery.d.ts" />
 /// <reference path="ReaderSettings.ts" />
 

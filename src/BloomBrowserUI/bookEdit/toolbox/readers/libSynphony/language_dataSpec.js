@@ -6,8 +6,9 @@
  * Created Jun 4, 2014 by Hopper
  *
  */
+import { describe, it, expect, beforeEach, afterEach, beforeAll } from "vitest";
 import { theOneLibSynphony, LanguageData } from "./synphony_lib.js";
-import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
+import "./bloomSynphonyExtensions"; //add several functions to LanguageData
 
 describe("LanguageData", function () {
     beforeEach(function () {

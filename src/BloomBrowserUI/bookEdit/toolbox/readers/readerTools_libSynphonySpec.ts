@@ -5,6 +5,7 @@ import {
 } from "./libSynphony/synphony_lib";
 import * as _ from "underscore";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 describe("readerTools-libSynphony tests", () => {
     function generateTestData() {

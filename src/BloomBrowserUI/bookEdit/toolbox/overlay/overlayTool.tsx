@@ -22,7 +22,7 @@ import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import { ColorBar } from "./colorBar";
 import { IColorInfo } from "../../../react_components/color-picking/colorSwatch";
 import { IColorPickerDialogProps } from "../../../react_components/color-picking/colorPickerDialog";
-import * as tinycolor from "tinycolor2";
+import tinycolor from "tinycolor2";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
 import { kOverlayToolId } from "../toolIds";
 import {
