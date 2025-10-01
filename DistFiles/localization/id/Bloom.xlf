@@ -344,7 +344,7 @@
       </trans-unit>
       <trans-unit id="BooksOnBlorg.Progress.Goal" sil:dynamic="true">
         <source xml:lang="en">Goal:</source>
-        <target xml:lang="id" state="needs-translation">Goal:</target>
+        <target xml:lang="id" state="translated">Sasaran:</target>
         <note>ID: BooksOnBlorg.Progress.Goal</note>
       </trans-unit>
       <trans-unit id="BooksOnBlorg.Progress.CountOfBooksLabel" sil:dynamic="true">
@@ -612,7 +612,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChooseLanguage">
         <source xml:lang="en">Choose Language</source>
-        <target xml:lang="id" state="needs-translation">Choose Language</target>
+        <target xml:lang="id" state="translated">Pilih bahasa</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChooseLanguage</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
@@ -757,7 +757,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.RenameBook">
         <source xml:lang="en">Rename Book</source>
-        <target xml:lang="id" state="needs-translation">Rename Book</target>
+        <target xml:lang="id" state="translated">Mengubah nama buku</target>
         <note>ID: CollectionTab.BookMenu.RenameBook</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem">
@@ -882,7 +882,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackOfShellBooks">
         <source xml:lang="en">Make Bloom Pack of Shell Books</source>
-        <target xml:lang="id" state="needs-translation">Make Bloom Pack of Shell Books</target>
+        <target xml:lang="id" state="translated">Membuat Paket Bloom dari Buku-buku Sumber</target>
         <note>Shell Books are books that are meant to be translated.</note>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate" approved="yes">
@@ -1017,12 +1017,12 @@
       </trans-unit>
       <trans-unit id="ColorPicker.New" sil:dynamic="true">
         <source xml:lang="en">New...</source>
-        <target xml:lang="id" state="needs-translation">New...</target>
+        <target xml:lang="id" state="translated">Baru...</target>
         <note>ID: ColorPicker.New</note>
       </trans-unit>
       <trans-unit id="Common.BookSettings">
         <source xml:lang="en">Book Settings</source>
-        <target xml:lang="id" state="needs-translation">Book Settings</target>
+        <target xml:lang="id" state="translated">Peraturan Buku</target>
         <note>ID: Common.BookSettings</note>
       </trans-unit>
       <trans-unit id="Common.Advanced">
@@ -1032,7 +1032,7 @@
       </trans-unit>
       <trans-unit id="Common.AskForHelp">
         <source xml:lang="en">Ask for help</source>
-        <target xml:lang="id" state="needs-translation">Ask for help</target>
+        <target xml:lang="id" state="translated">Minta bantuan</target>
         <note>ID: Common.AskForHelp</note>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
@@ -1066,7 +1066,7 @@
       </trans-unit>
       <trans-unit id="Common.Color">
         <source xml:lang="en">Color</source>
-        <target xml:lang="id" state="needs-translation">Color</target>
+        <target xml:lang="id" state="translated">Warna</target>
         <note>ID: Common.Color</note>
       </trans-unit>
       <trans-unit id="Common.Colors.Black">
@@ -1091,7 +1091,7 @@
       </trans-unit>
       <trans-unit id="Common.Continue">
         <source xml:lang="en">Continue</source>
-        <target xml:lang="id" state="needs-translation">Continue</target>
+        <target xml:lang="id" state="translated">Lanjut</target>
         <note>This is shown at the bottom of a dialog box and means to go ahead with some action. It is often paired with "Cancel"</note>
       </trans-unit>
       <trans-unit id="Common.Copy" approved="yes">
@@ -1103,6 +1103,11 @@
         <source xml:lang="en">Copyright</source>
         <target xml:lang="id" state="final">Hak Cipta</target>
         <note>ID: Common.Copyright</note>
+      </trans-unit>
+      <trans-unit id="Common.Default">
+        <source xml:lang="en">Default</source>
+        <target xml:lang="id" state="translated">Standar</target>
+        <note>ID: Common.Default</note>
       </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
         <source xml:lang="en">Delete</source>
@@ -1136,7 +1141,7 @@
       </trans-unit>
       <trans-unit id="Common.FinishedAt">
         <source xml:lang="en">Finished at {0:hh:mm tt}</source>
-        <target xml:lang="id" state="needs-translation">Finished at {0:hh:mm tt}</target>
+        <target xml:lang="id" state="translated">Selesai pada {0:hh:mm tt}</target>
         <note>ID: Common.FinishedAt</note>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
@@ -1171,7 +1176,7 @@
       </trans-unit>
       <trans-unit id="Common.LongRunningOperation" sil:dynamic="true">
         <source xml:lang="en">This may take a while...</source>
-        <target xml:lang="id" state="needs-translation">This may take a while...</target>
+        <target xml:lang="id" state="translated">Ini mungkin akan memakan waktu...</target>
         <note>ID: Common.LongRunningOperation</note>
       </trans-unit>
       <trans-unit id="Common.Next" approved="yes">
@@ -1206,7 +1211,7 @@
       </trans-unit>
       <trans-unit id="Common.Other" sil:dynamic="true">
         <source xml:lang="en">Other</source>
-        <target xml:lang="id" state="needs-translation">Other</target>
+        <target xml:lang="id" state="translated">Yang Lain</target>
         <note>ID: Common.Other</note>
       </trans-unit>
       <trans-unit id="Common.Pause" sil:dynamic="true">
@@ -1236,22 +1241,22 @@
       </trans-unit>
       <trans-unit id="Common.Report">
         <source xml:lang="en">REPORT</source>
-        <target xml:lang="id" state="needs-translation">REPORT</target>
+        <target xml:lang="id" state="translated">LAPOR</target>
         <note>ID: Common.Report</note>
       </trans-unit>
       <trans-unit id="Common.Options" sil:dynamic="true">
         <source xml:lang="en">Options</source>
-        <target xml:lang="id" state="needs-translation">Options</target>
+        <target xml:lang="id" state="translated">Pilihan</target>
         <note>ID: Common.Options</note>
       </trans-unit>
       <trans-unit id="Common.Save">
         <source xml:lang="en">Save</source>
-        <target xml:lang="id" state="needs-translation">Save</target>
+        <target xml:lang="id" state="translated">Simpan</target>
         <note>ID: Common.Save</note>
       </trans-unit>
       <trans-unit id="Common.Seconds">
         <source xml:lang="en">%0 seconds</source>
-        <target xml:lang="id" state="needs-translation">%0 seconds</target>
+        <target xml:lang="id" state="translated">%0 detik</target>
         <note>ID: Common.Seconds</note>
       </trans-unit>
       <trans-unit id="Common.SeeWebPage">
@@ -1261,7 +1266,7 @@
       </trans-unit>
       <trans-unit id="Common.SelectAll">
         <source xml:lang="en">Select all</source>
-        <target xml:lang="id" state="needs-translation">Select all</target>
+        <target xml:lang="id" state="translated">Pilih semua</target>
         <note>ID: Common.SelectAll</note>
       </trans-unit>
       <trans-unit id="Common.Settings">
@@ -1271,12 +1276,12 @@
       </trans-unit>
       <trans-unit id="Common.Starting">
         <source xml:lang="en">Starting...</source>
-        <target xml:lang="id" state="needs-translation">Starting...</target>
+        <target xml:lang="id" state="translated">Mulai...</target>
         <note>ID: Common.Starting</note>
       </trans-unit>
       <trans-unit id="Common.Stop">
         <source xml:lang="en">Stop</source>
-        <target xml:lang="id" state="needs-translation">Stop</target>
+        <target xml:lang="id" state="translated">Hentikan</target>
         <note>ID: Common.Stop</note>
       </trans-unit>
       <trans-unit id="Common.Upload">
@@ -1301,7 +1306,7 @@
       </trans-unit>
       <trans-unit id="Common.WhatCausedThisProblem">
         <source xml:lang="en">What caused this problem?</source>
-        <target xml:lang="id" state="needs-translation">What caused this problem?</target>
+        <target xml:lang="id" state="translated">Apa yang menyebabkan masalah ini?</target>
         <note>ID: Common.WhatCausedThisProblem</note>
       </trans-unit>
       <trans-unit id="Common.Yes" approved="yes">
@@ -1316,7 +1321,7 @@
       </trans-unit>
       <trans-unit id="Copyright.CopyrightYear" sil:dynamic="true">
         <source xml:lang="en">Copyright Year</source>
-        <target xml:lang="id" state="needs-translation">Copyright Year</target>
+        <target xml:lang="id" state="translated">Tahun Hak Cipta</target>
         <note>ID: Copyright.CopyrightYear</note>
       </trans-unit>
       <trans-unit id="Copyright.FollowSILGuidelines" sil:dynamic="true">
@@ -1331,7 +1336,7 @@
       </trans-unit>
       <trans-unit id="Copyright.MissingCopyright">
         <source xml:lang="en">Needs Copyright</source>
-        <target xml:lang="id" state="needs-translation">Needs Copyright</target>
+        <target xml:lang="id" state="translated">Perlu isi Hak Cipta</target>
         <note>People will see this button on the Credits Page when they make a new book. So when translating, don't make them feel bad. Don't make them feel that they made a mistake. We just want to point out that they need to give us a copyright eventually.</note>
       </trans-unit>
       <trans-unit id="Copyright.NotATranslation" sil:dynamic="true">
@@ -1376,7 +1381,7 @@
       </trans-unit>
       <trans-unit id="Download.FromBloomLibrary">
         <source xml:lang="en">From Bloom Library</source>
-        <target xml:lang="id" state="needs-translation">From Bloom Library</target>
+        <target xml:lang="id" state="translated">Dari Bloom Library</target>
         <note>ID: Download.FromBloomLibrary</note>
       </trans-unit>
       <trans-unit id="Download.GenericNetworkProblemNotice" approved="yes">
@@ -1446,7 +1451,7 @@
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NumberOfPagesTooltip" sil:dynamic="true">
         <source xml:lang="en">Number of pages to add</source>
-        <target xml:lang="id" state="needs-translation">Number of pages to add</target>
+        <target xml:lang="id" state="translated">Berapa halaman perlu ditambah</target>
         <note>ID: EditTab.AddPageDialog.NumberOfPagesTooltip</note>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true" approved="yes">
@@ -1636,17 +1641,17 @@
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageMultiple">
         <source xml:lang="en">Duplicate Page Many Times...</source>
-        <target xml:lang="id" state="needs-translation">Duplicate Page Many Times...</target>
+        <target xml:lang="id" state="translated">Salinkan Halaman ini Berkali-kali...</target>
         <note>ID: EditTab.DuplicatePageMultiple</note>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageMultiple.Prompt">
         <source xml:lang="en">How many more of this page? (2-999)</source>
-        <target xml:lang="id" state="needs-translation">How many more of this page? (2-999)</target>
+        <target xml:lang="id" state="translated">Mau menyalinkan halaman ini berapa kali? (2-999)</target>
         <note>ID: EditTab.DuplicatePageMultiple.Prompt</note>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageMultiple.Title">
         <source xml:lang="en">Duplicate Page Many Times</source>
-        <target xml:lang="id" state="needs-translation">Duplicate Page Many Times</target>
+        <target xml:lang="id" state="translated">Salinkan Halaman ini Berkali-kali</target>
         <note>ID: EditTab.DuplicatePageMultiple.Title</note>
       </trans-unit>
       <trans-unit id="EditTab.Edit" approved="yes">
@@ -1706,7 +1711,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.BackgroundColor" sil:dynamic="true">
         <source xml:lang="en">Background color</source>
-        <target xml:lang="id" state="needs-translation">Background color</target>
+        <target xml:lang="id" state="translated">Warna Latar Belakang</target>
         <note>ID: EditTab.FormatDialog.BackgroundColor</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.BorderToolTip" sil:dynamic="true" approved="yes">
@@ -1731,7 +1736,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.BigWords-style" sil:dynamic="true">
         <source xml:lang="en">Big Words</source>
-        <target xml:lang="id" state="needs-translation">Big Words</target>
+        <target xml:lang="id" state="translated">Kata-kata Besar</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.BigWords-style</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Bubble-style" sil:dynamic="true">
@@ -1971,17 +1976,17 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.EditOriginalTitleCaption" sil:dynamic="true">
         <source xml:lang="en">Edit Original Title</source>
-        <target xml:lang="id" state="needs-translation">Edit Original Title</target>
+        <target xml:lang="id" state="translated">Mengubah Judul Asli</target>
         <note>ID: EditTab.FrontMatter.EditOriginalTitleCaption</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.EditOriginalTitleLabel" sil:dynamic="true">
         <source xml:lang="en">Original Title</source>
-        <target xml:lang="id" state="needs-translation">Original Title</target>
+        <target xml:lang="id" state="translated">Judul Asli</target>
         <note>ID: EditTab.FrontMatter.EditOriginalTitleLabel</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.EditOriginalTitlePlaceholder" sil:dynamic="true">
         <source xml:lang="en">click to edit original title</source>
-        <target xml:lang="id" state="needs-translation">click to edit original title</target>
+        <target xml:lang="id" state="translated">Klik untuk mengubah judul asli</target>
         <note>ID: EditTab.FrontMatter.EditOriginalTitlePlaceholder</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence" sil:dynamic="true">
@@ -2096,7 +2101,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Image.BackgroundImage" sil:dynamic="true">
         <source xml:lang="en">Background Image</source>
-        <target xml:lang="id" state="needs-translation">Background Image</target>
+        <target xml:lang="id" state="translated">Gambar Latar Belakang</target>
         <note>ID: EditTab.Image.BackgroundImage</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
@@ -2131,7 +2136,7 @@
       </trans-unit>
       <trans-unit id="EditTab.ImageMetadata.Corrupt.MoreInfo" sil:dynamic="true">
         <source xml:lang="en">More Information</source>
-        <target xml:lang="id" state="needs-translation">More Information</target>
+        <target xml:lang="id" state="translated">Informasi Tambahan</target>
         <note>ID: EditTab.ImageMetadata.Corrupt.MoreInfo</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
@@ -2281,12 +2286,12 @@
       </trans-unit>
       <trans-unit id="EditTab.PastePage">
         <source xml:lang="en">Paste Page</source>
-        <target xml:lang="id" state="needs-translation">Paste Page</target>
+        <target xml:lang="id" state="translated">Tempel Halaman</target>
         <note>ID: EditTab.PastePage</note>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
-        <target xml:lang="id" state="needs-translation">Saving...</target>
+        <target xml:lang="id" state="translated">Sedang disimpan...</target>
         <note>ID: EditTab.SavingNotification</note>
       </trans-unit>
       <trans-unit id="EditTab.Snap.Hint" sil:dynamic="true">
@@ -7163,12 +7168,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TopicChooser.Title" sil:dynamic="true">
         <source xml:lang="en">Choose Topic</source>
-        <target xml:lang="id" state="needs-translation">Choose Topic</target>
+        <target xml:lang="id" state="translated">Pilih Topiknya</target>
         <note>ID: TopicChooser.Title</note>
       </trans-unit>
       <trans-unit id="Topics.Agriculture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Agriculture</source>
-        <target xml:lang="id" state="final">Perhatian</target>
+        <target xml:lang="id" state="final">Pertanian</target>
         <note>ID: Topics.Agriculture</note>
       </trans-unit>
       <trans-unit id="Topics.Animal Stories" sil:dynamic="true" approved="yes">
