@@ -6643,8 +6643,8 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">
           Readers see a clue (an image, GIF, or Sign Language video) and must arrange scrambled words into a complete sentence.
         </source>
-        <target xml:lang="pt-PT" state="needs-translation">
-          Readers see a clue (an image, GIF, or Sign Language video) and must arrange scrambled words into a complete sentence.
+        <target xml:lang="pt-PT" state="translated">
+          Ao ver uma dica (uma imagem, GIF ou vídeo de língua de sinais), os leitores reorganizam as palavras para formar uma frase completa.
         </target>
         <note>ID: TemplateBooks.PageDescription.Order Words</note>
       </trans-unit>
