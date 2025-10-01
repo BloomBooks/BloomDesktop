@@ -21,7 +21,7 @@ export default defineConfig(async () => {
         pageControlsBundle:
             "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
         accessibilityCheckBundle: glob.sync(
-            "./publish/accessibilityCheck/**/*.tsx"
+            "./publish/accessibilityCheck/**/*.tsx",
         )[0], // Take first match
         subscriptionSettingsBundle: "./collection/subscriptionSettingsTab.tsx",
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
@@ -49,18 +49,18 @@ export default defineConfig(async () => {
         newCollectionLanguageChooserBundle:
             "./collection/NewCollectionLanguageChooser.tsx",
         registrationDialogBundle: "./react_components/registrationDialog.tsx",
-        editTopBarControlsBundle: "./bookEdit/topbar/editTopBarControls.tsx"
+        editTopBarControlsBundle: "./bookEdit/topbar/editTopBarControls.tsx",
     };
 
     return {
         plugins: [
             react({
-                reactRefreshHost: `http://localhost:${process.env.PORT || 5173}`
-            })
+                reactRefreshHost: `http://localhost:${process.env.PORT || 5173}`,
+            }),
         ],
         server: {
             port: 5173,
-            strictPort: true
+            strictPort: true,
         },
         build: {
             outDir: "../../output/browser",
@@ -73,14 +73,14 @@ export default defineConfig(async () => {
                     "os",
                     "path",
                     "fs",
-                    "crypto"
+                    "crypto",
                 ],
                 output: {
                     entryFileNames: "[name].js",
                     chunkFileNames: "[name].js",
-                    assetFileNames: "[name].[ext]"
-                }
-            }
+                    assetFileNames: "[name].[ext]",
+                },
+            },
         },
         resolve: {
             alias: {
@@ -89,26 +89,26 @@ export default defineConfig(async () => {
                 errorHandler: path.resolve(__dirname, "lib/errorHandler.ts"),
                 "jquery.hasAttr.js": path.resolve(
                     __dirname,
-                    "bookEdit/js/jquery.hasAttr.js"
+                    "bookEdit/js/jquery.hasAttr.js",
                 ),
                 "jquery.i18n.custom.ts": path.resolve(
                     __dirname,
-                    "lib/jquery.i18n.custom.ts"
+                    "lib/jquery.i18n.custom.ts",
                 ),
                 "jasmine-jquery": path.resolve(
                     __dirname,
-                    "typings/jasmine-jquery"
+                    "typings/jasmine-jquery",
                 ),
                 "long-press/jquery.mousewheel.js": path.resolve(
                     __dirname,
-                    "lib/long-press/jquery.mousewheel.js"
+                    "lib/long-press/jquery.mousewheel.js",
                 ),
                 "long-press/jquery.longpress.js": path.resolve(
                     __dirname,
-                    "lib/long-press/jquery.longpress.js"
+                    "lib/long-press/jquery.longpress.js",
                 ),
-                "App.less": path.resolve(__dirname, "app/App.less")
-            }
-        }
+                "App.less": path.resolve(__dirname, "app/App.less"),
+            },
+        },
     };
 });
