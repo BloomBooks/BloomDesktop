@@ -1,4 +1,4 @@
-call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
+REM call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
 REM Must be run in a DEVELOPMENT shell (e.g., start menu, type dev, choose "Developer Command Prompt for VS 2022 ")
 REM Makes a release build with some debug-friendly settings and then makes a Velopack installer,
 REM currently in ../output/installer/result
@@ -9,15 +9,13 @@ REM of them. The major and minor numbers here are ignored.
 
 pushd .
 REM squirrel days: MSbuild /p:Label=Beta /p:channel=LocalBuilt /property:SquirrelReleaseFolder="../output/installer" /p:BuildConfigurationID=xyz123 /p:WarningLevel=0 /target:Build /property:teamcity_build_checkoutDir=..\ /verbosity:detailed  /property:LargeFilesDir="C:\dev\teamcitybuilddownloads" /property:teamcity_dotnet_nunitlauncher_msbuild_task="notthere" /property:BUILD_NUMBER="*.*.999.999" /property:Minor="1"
-MSbuild /p:Label=Beta /p:channel=LocalBuilt /p:InstallerOutputFolder=../output/installer/result /p:BuildConfigurationID=xyz123 /p:WarningLevel=0 /target:Build /property:teamcity_build_checkoutDir=..\ /verbosity:detailed  /property:LargeFilesDir="C:\dev\teamcitybuilddownloads" /property:teamcity_dotnet_nunitlauncher_msbuild_task="notthere" /property:BUILD_NUMBER="6.3.1007.0" /property:Minor="1"
+dotnet msbuild /p:Label=Beta /p:channel=LocalBuilt /p:InstallerOutputFolder=../output/installer/result /p:BuildConfigurationID=xyz123 /p:WarningLevel=0 /target:Build /property:teamcity_build_checkoutDir=..\ /verbosity:detailed  /property:LargeFilesDir="C:\dev\teamcitybuilddownloads" /property:teamcity_dotnet_nunitlauncher_msbuild_task="notthere" /property:BUILD_NUMBER="6.3.1009.0" /property:Minor="1"
 
-REM this only needs doing once, really, but putting it here so devs don't forget it.
-REM This should match the Velopack version in BloomExe.csproj.
-REM Currently it is a prerelease version.
-dotnet tool install --global vpk --version 0.0.1350-g3ba32af
+REM The correct version of BloomBooks.Velopack.Cli is now installed automatically by the build process
+REM via the EnsureVelopackCli target, so no manual installation is needed here.
 
 REM review: do any of these properties I'm not using still apply? I'm not sure the Label does anything.
 REM squirrel: MSbuild /p:Label=Beta /p:channel=LocalBuilt /property:SquirrelReleaseFolder="../output/installer" /p:BuildConfigurationID=xyz123 /p:WarningLevel=0 /target:Installer /property:teamcity_build_checkoutDir=..\ /verbosity:detailed  /property:LargeFilesDir="C:\dev\teamcitybuilddownloads" /property:teamcity_dotnet_nunitlauncher_msbuild_task="notthere" /property:BUILD_NUMBER="*.*.999.999" /property:Minor="1"
-MSbuild /p:Label=Beta /p:channel=LocalBuilt /p:InstallerOutputFolder=../output/installer/result /p:BUILD_NUMBER=6.3.1007.0 /t:Installer
+dotnet msbuild /p:Label=Beta /p:channel=LocalBuilt /p:InstallerOutputFolder=../output/installer/result /p:BUILD_NUMBER=6.3.1009.0 /t:Installer
 popd
-PAUSE
+

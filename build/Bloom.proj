@@ -211,7 +211,30 @@
 			IsPublicRead="true" />
   </Target>
 
-  <Target Name="Installer" DependsOnTargets="VersionNumbers; Build">
+  <!-- Ensure the correct BloomBooks.Velopack.Cli tool is installed -->
+  <!-- NOTE: VelopackCliVersion should match the version used in BloomExe.csproj's BloomBooks.Velopack PackageReference -->
+  <Target Name="EnsureVelopackCli">
+    <PropertyGroup>
+      <VelopackCliVersion>0.0.1350-l10n-0010-g0f76e67</VelopackCliVersion>
+      <VelopackCliPackage>BloomBooks.Velopack.Cli</VelopackCliPackage>
+    </PropertyGroup>
+    
+    <Message Text="Ensuring $(VelopackCliPackage) version $(VelopackCliVersion) is installed..." Importance="high" />
+    
+    <!-- First, uninstall any existing vpk tool to avoid conflicts -->
+    <Exec Command="dotnet tool uninstall --global vpk" ContinueOnError="true" />
+    <Exec Command="dotnet tool uninstall --global Velopack.Cli" ContinueOnError="true" />
+    <Exec Command="dotnet tool uninstall --global $(VelopackCliPackage)" ContinueOnError="true" />
+    
+    <!-- Install the specific version we need -->
+    <Exec Command="dotnet tool install --global $(VelopackCliPackage) --version $(VelopackCliVersion)" />
+    
+    <!-- Verify the installation -->
+    <Exec Command="vpk --help" />
+    <Message Text="Successfully installed $(VelopackCliPackage) version $(VelopackCliVersion)" Importance="high" />
+  </Target>
+
+  <Target Name="Installer" DependsOnTargets="VersionNumbers; Build; EnsureVelopackCli">
     <CallTarget Targets="SignExesIfPossible"/>
     <!-- the name of the exe must also match the application product name. Use move rather than rename in case the destination
 		already exists from a previous build. Review: we could do this in installer\content after the following copies.-->
