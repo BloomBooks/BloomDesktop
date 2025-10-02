@@ -1104,9 +1104,9 @@
         <target xml:lang="pt-PT" state="final">Direitos autorais</target>
         <note>ID: Common.Copyright</note>
       </trans-unit>
-      <trans-unit id="Common.Default">
+      <trans-unit id="Common.Default" approved="yes">
         <source xml:lang="en">Default</source>
-        <target xml:lang="pt-PT" state="translated">Padrão</target>
+        <target xml:lang="pt-PT" state="final">Padrão</target>
         <note>ID: Common.Default</note>
       </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
@@ -1499,9 +1499,9 @@
         <target xml:lang="pt-PT" state="final">Configurações multilingues</target>
         <note>ID: EditTab.ContentLanguagesDropdown</note>
       </trans-unit>
-      <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip">
+      <trans-unit id="EditTab.ContentLanguagesDropdown.DisabledTooltip" approved="yes">
         <source xml:lang="en">This is disabled because it won't change anything on this page.</source>
-        <target xml:lang="pt-PT" state="translated">Escolha a língua para fazer este um livro bilíngue ou trilíngue</target>
+        <target xml:lang="pt-PT" state="final">Essa opção está desativada porque não vai alterar nada nesta página.</target>
         <note>ID: EditTab.ContentLanguagesDropdown.DisabledTooltip</note>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip" approved="yes">
@@ -2494,14 +2494,14 @@
         <target xml:lang="pt-PT" state="final">Duplicar</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate="no" approved="yes">
         <source xml:lang="en">Fill Background</source>
-        <target xml:lang="pt-PT" state="needs-translation">Fill Background</target>
+        <target xml:lang="pt-PT" state="final">Preencher o fundo</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FillBackground</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate="no" approved="yes">
         <source xml:lang="en">Expand image to fill space</source>
-        <target xml:lang="pt-PT" state="needs-translation">Expand image to fill space</target>
+        <target xml:lang="pt-PT" state="final">Aumentar a imagem para preencher o espaço</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FillSpace</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Format" sil:dynamic="true" approved="yes">
