@@ -1,4 +1,5 @@
 import bloomQtipUtils from "./bloomQtipUtils";
+import $ from "jquery";
 
 // For testing and debugging, functionality to replace invisible characters with symbols.
 

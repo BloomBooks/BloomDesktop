@@ -3,6 +3,7 @@
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
 import BloomField from "./BloomField";
+import $ from "jquery";
 
 function WireUp() {
     $(".bloom-editable").each(function () {

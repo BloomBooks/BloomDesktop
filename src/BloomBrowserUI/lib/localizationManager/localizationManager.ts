@@ -1,6 +1,7 @@
 /// <reference path="../misc-types.d.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
 import axios, { AxiosResponse } from "axios";
+import $ from "jquery";
 import { getBloomApiPrefix } from "../../utils/bloomApi";
 
 /**

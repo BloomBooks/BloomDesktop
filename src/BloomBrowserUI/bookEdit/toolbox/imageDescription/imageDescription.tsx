@@ -1,4 +1,5 @@
 import { css } from "@emotion/react";
+import $ from "jquery";
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -17,9 +18,10 @@ import {
     hideImageDescriptions,
     showImageDescriptions,
 } from "./imageDescriptionUtils";
-import { getCanvasElementManager } from "../overlay/canvasElementUtils";
-import { kBloomCanvasClass } from "../../js/bloomImages";
-
+import {
+    getCanvasElementManager,
+    kBloomCanvasClass,
+} from "../overlay/canvasElementUtils";
 interface IImageDescriptionState {
     enabled: boolean;
     descriptionNotNeeded: boolean;

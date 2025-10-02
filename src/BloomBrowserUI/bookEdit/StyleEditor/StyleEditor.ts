@@ -11,6 +11,7 @@
 /// <reference path="../js/collectionSettings.d.ts"/>
 /// <reference path="../OverflowChecker/OverflowChecker.ts"/>
 
+import $ from "jquery";
 import "../../node_modules/select2/dist/js/select2.js";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";

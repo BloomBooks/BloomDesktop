@@ -16,9 +16,12 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 import { get } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../localizationManager/localizationManager";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
-import { kBloomCanvasClass } from "../../bookEdit/js/bloomImages";
 import jQuery from "jquery";
+import $ from "jquery";
 import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManager";
+
+// Inline constant to avoid circular dependency with bloomImages.ts
+const kBloomCanvasClass = "bloom-canvas";
 
 (function ($) {
     $.fn.splitPane = function () {

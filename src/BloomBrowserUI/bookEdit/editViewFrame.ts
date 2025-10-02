@@ -8,6 +8,7 @@ import {
     hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
+import $ from "jquery";
 
 export interface IEditViewFrameExports {
     showDialog(dialogContents: string | JQuery, options: any): JQuery;

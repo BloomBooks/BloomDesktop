@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import $ from "jquery";
 import { Div } from "../../../react_components/l10nComponents";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 // These are for Motion:
@@ -14,13 +15,15 @@ import {
     DisableImageEditing,
     EnableImageEditing,
     getBackgroundImageFromBloomCanvas,
-    kBloomCanvasClass,
 } from "../../js/bloomImages";
 import { kMotionToolId } from "../toolIds";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
 import { getFeatureStatusAsync } from "../../../react_components/featureStatus";
 import { TransformBasedAnimator } from "bloom-player";
-import { getCanvasElementManager } from "../overlay/canvasElementUtils";
+import {
+    kBloomCanvasClass,
+    getCanvasElementManager,
+} from "../overlay/canvasElementUtils";
 import { animateStyleName } from "../../../utils/shared";
 
 // The toolbox is included in the list of tools because of this line of code

@@ -13,7 +13,11 @@ import {
     theOneCanvasElementManager,
     updateCanvasElementClass,
 } from "./CanvasElementManager";
-import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
+import {
+    kCanvasElementSelector,
+    kBloomCanvasClass,
+    kBloomCanvasSelector,
+} from "../toolbox/overlay/canvasElementUtils";
 
 import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
@@ -21,14 +25,13 @@ import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import { getCanvasElementManager } from "../toolbox/overlay/canvasElementUtils";
+import $ from "jquery";
 
 // This appears to be constant even on higher dpi screens.
 // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
 const kBrowserDpi = 96;
 export const kImageContainerClass = "bloom-imageContainer";
 export const kImageContainerSelector = `.${kImageContainerClass}`;
-export const kBloomCanvasClass = "bloom-canvas";
-export const kBloomCanvasSelector = `.${kBloomCanvasClass}`;
 
 export function cleanupImages() {
     $(".bloom-imageContainer").css("opacity", ""); //comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing

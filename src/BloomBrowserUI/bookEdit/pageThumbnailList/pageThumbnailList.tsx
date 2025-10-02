@@ -6,6 +6,7 @@
 // this bundle is one of two loaded by pageThumbnailList.pug. It is imported last,
 // so things it exports are accessible from outside the bundle using editTabBundle.
 
+import $ from "jquery";
 import { css } from "@emotion/react";
 
 import * as React from "react";

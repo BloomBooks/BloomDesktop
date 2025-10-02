@@ -6,6 +6,7 @@
 /// <reference path="./directoryWatcher.ts" />
 /// <reference path="../../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="readerTools.ts" />
+import $ from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
 import { resizeWordList } from "./readerTools";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";

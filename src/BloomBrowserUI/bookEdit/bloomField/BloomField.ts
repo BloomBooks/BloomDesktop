@@ -5,6 +5,7 @@ import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { get, post } from "../../utils/bloomApi";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { tryProcessHyperlink } from "./hyperlinks";
+import $ from "jquery";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.

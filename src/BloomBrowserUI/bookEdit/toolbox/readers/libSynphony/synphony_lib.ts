@@ -9,6 +9,7 @@ import {
     theOneWordCache,
     WordCache,
 } from "./bloomSynphonyExtensions";
+import $ from "jquery";
 
 /**
  * synphony_lib.js

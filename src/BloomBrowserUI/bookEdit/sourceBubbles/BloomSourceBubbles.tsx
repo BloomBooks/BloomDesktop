@@ -9,6 +9,7 @@
 // The actual function is injected by C#.
 /// <reference path="../js/collectionSettings.d.ts"/>
 import * as ReactDOM from "react-dom";
+import $ from "jquery";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from "../js/bloomQtipUtils";

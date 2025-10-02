@@ -2,6 +2,7 @@
 //onto the page.
 //This was an experiment that, at least so far, we have not gone forward with. It was used by the "Template Maker" template.
 //We could end up using this kind of UI someday, thus it is preserved in the code base for now.
+import $ from "jquery";
 
 function AddToolbox(container) {
     $(container)
