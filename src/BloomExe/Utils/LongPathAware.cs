@@ -116,11 +116,11 @@ namespace Bloom.Utils
             return SIL.IO.RobustFile.Exists(path);
         }
 
-        private static string GetGenericPathTooLongMessage()
+        internal static string GetGenericPathTooLongMessage()
         {
             return L10NSharp.LocalizationManager.GetString(
-                "Error.PathTooLong",
-                "Please move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by your collection being too deeply nested in many folders on your hard drive."
+                "Errors.PathTooLong",
+                "Please give your collection a shorter name or move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by one of two things: 1) the collection has a very long name, or 2) the collection is too deeply nested inside many folders on your hard drive."
             );
         }
 

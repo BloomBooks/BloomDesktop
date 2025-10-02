@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -1004,6 +1005,12 @@ namespace Bloom.web.controllers
             if (string.IsNullOrEmpty(heading) && exception != null)
             {
                 heading = exception.Message;
+                if (exception is System.IO.DirectoryNotFoundException)
+                {
+                    var path = Regex.Match(heading, "^.*'(.*)'\\.$").Groups[1].Value;
+                    if (path?.Length >= 260)
+                        heading = LongPathAware.GetGenericPathTooLongMessage();
+                }
                 isHeadingPreEncoded = false;
             }
 
