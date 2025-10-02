@@ -14,12 +14,12 @@
       </trans-unit>
       <trans-unit id="comic.template.digital.use">
         <source xml:lang="en">Use this template as a starting point for comics designed for use on screens.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Use this template as a starting point for comics designed for use on screens.</target>
+        <target xml:lang="pt-PT" state="translated">Use este modelo como ponto de partida para quadrinhos produzidos para uso digital.</target>
         <note>ID: comic.template.digital.use</note>
       </trans-unit>
       <trans-unit id="comic.template.tips.lettering.header">
         <source xml:lang="en">Tips on "lettering"</source>
-        <target xml:lang="pt-PT" state="needs-translation">Tips on "lettering"</target>
+        <target xml:lang="pt-PT" state="translated">Dicas para "letreiramento"</target>
         <note>ID: comic.template.tips.lettering.header</note>
       </trans-unit>
       <trans-unit id="comic.template.tips.lettering">
