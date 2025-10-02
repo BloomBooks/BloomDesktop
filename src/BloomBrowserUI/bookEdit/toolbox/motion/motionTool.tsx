@@ -47,9 +47,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         ) as unknown) as MotionControl;
         const initialState = this.getStateFromHtml();
         this.rootControl.setState(initialState);
-        if (initialState.haveBloomCanvasButNoBgImage) {
-            this.setupImageObserver();
-        }
+        this.setupImageObserver();
         return root as HTMLDivElement;
     }
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
@@ -88,9 +86,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             this.toggleMotionPreviewPlaying();
         }
         const newState = this.getStateFromHtml();
-        if (newState.haveBloomCanvasButNoBgImage) {
-            this.setupImageObserver();
-        }
+        this.setupImageObserver();
         this.rootControl.setState(newState);
         if (!newState.motionChecked || newState.haveBloomCanvasButNoBgImage) {
             return;
@@ -490,10 +486,36 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private observer: MutationObserver;
     private sizeObserver: ResizeObserver;
 
-    private updateChoosePictureState(): void {
-        // If they once choose a picture, there's no going back to a placeholder (on this page).
-        this.rootControl.setState({ haveBloomCanvasButNoBgImage: false });
-        this.observer.disconnect();
+    private updateMotionRectanglesState(): void {
+        let haveBgImage = false;
+        const bgImage = this.getBackgroundImage();
+        if (bgImage) {
+            const src = bgImage.getAttribute("src");
+            haveBgImage = !!src && src.toLowerCase() !== "placeholder.png";
+        }
+        const newState = this.getStateFromHtml();
+        if (haveBgImage) {
+            newState.haveBloomCanvasButNoBgImage = false;
+            newState.motionPossible = true;
+            this.rootControl.setState(newState);
+            this.makeRectsVisible();
+        } else {
+            newState.haveBloomCanvasButNoBgImage = true;
+            newState.motionPossible = false;
+            this.rootControl.setState(newState);
+            this.hideRectangles();
+        }
+    }
+
+    private hideRectangles(): void {
+        const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
+        bloomCanvasToAnimate?.removeAttribute("data-initialrect");
+        bloomCanvasToAnimate?.removeAttribute("data-finalrect");
+        const page = this.getPage();
+        if (page) {
+            this.removeElt(page.getElementById("animationStart"));
+            this.removeElt(page.getElementById("animationEnd"));
+        }
     }
 
     private resizeOldWidth = 0;
@@ -531,30 +553,31 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private setupImageObserver(): void {
-        // Arrange to update things when they DO choose an image.
+        // Arrange to update things when the user chooses or deletes an image.
         this.observer = new MutationObserver(() =>
-            this.updateChoosePictureState()
+            this.updateMotionRectanglesState()
         );
         // The specific thing we want to observe is the src attr of the img element embedded
         // in the background image of the first bloom-canvas. We want to update our UI if this changes from
         // placeholder to a 'real' image.
-        const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
-        if (bloomCanvasToAnimate) {
-            const bgImage = getBackgroundImageFromBloomCanvas(
-                bloomCanvasToAnimate
-            );
-            if (bgImage) {
-                const images = bgImage.getElementsByTagName("img");
-                // I'm not sure how images can be an empty list...possibly while the page is shutting down??
-                // But I've seen the JS error, so being defensive...we can't observe an image that doesn't exist.
-                if (images.length > 0) {
-                    this.observer.observe(images[0], {
-                        attributes: true,
-                        attributeFilter: ["src"]
-                    });
-                }
+        const bgImage = this.getBackgroundImage();
+        if (bgImage) {
+            const src = bgImage.getAttribute("src");
+            if (!src || src.toLowerCase() === "placeholder.png") {
+                this.hideRectangles();
             }
+            this.observer.observe(bgImage, {
+                attributes: true,
+                attributeFilter: ["src"]
+            });
         }
+    }
+
+    private getBackgroundImage(): HTMLElement | null {
+        const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
+        if (bloomCanvasToAnimate)
+            return getBackgroundImageFromBloomCanvas(bloomCanvasToAnimate);
+        return null;
     }
 
     // https://github.com/nefe/You-Dont-Need-jQuery says this is equivalent to $(el).height() which
