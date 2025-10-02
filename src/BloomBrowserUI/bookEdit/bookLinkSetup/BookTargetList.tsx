@@ -55,7 +55,7 @@ const SortableBookItem: React.FC<{
                 onRemove={() => {
                     console.log(
                         "SortableBookItem onRemove called for:",
-                        link.book.title,
+                        link.book.folderName || link.book.title,
                     );
                     onRemove(link);
                 }}
