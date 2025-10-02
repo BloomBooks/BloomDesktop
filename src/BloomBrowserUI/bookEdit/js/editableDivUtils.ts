@@ -1,5 +1,6 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import { get } from "../../utils/bloomApi";
+import $ from "jquery";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
