@@ -11,37 +11,23 @@ import {
     DialogCancelButton,
     DialogOkButton,
 } from "../../react_components/BloomDialog/commonDialogComponents";
-import { DialogResult } from "../../react_components/color-picking/colorPickerDialog";
-import {
-    post,
-    postJson,
-    postString,
-    useApiObject,
-    useApiStringState,
-    useWatchApiData,
-} from "../../utils/bloomApi";
+import { useWatchApiData } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
-import { useL10n } from "../../react_components/l10nHooks";
 import LinkGridSetup from "./LinkGridSetup";
 import { css } from "@emotion/react";
-import {
-    BookInfoForLinks,
-    CollectionInfoForLinkChoosing,
-    Link,
-} from "./BookLinkTypes";
+import { BookInfoForLinks, Link } from "./BookLinkTypes";
 import { IBookInfo } from "../../collectionsTab/BooksOfCollection";
 
 export const LinkGridSetupDialog: React.FunctionComponent<{
     initialLinks: Link[];
     setLinksCallback: (links: Link[]) => void;
 }> = (props) => {
-    const { showDialog, closeDialog, propsForBloomDialog } =
-        useSetupBloomDialog({
-            initiallyOpen: true,
-            dialogFrameProvidedExternally: false,
-        });
+    const { closeDialog, propsForBloomDialog } = useSetupBloomDialog({
+        initiallyOpen: true,
+        dialogFrameProvidedExternally: false,
+    });
 
-    const dialogTitle = useL10n("Link Grid Setup", "LinkGridSetup.Title");
+    const dialogTitle = "Link Grid Setup"; // useL10n("Link Grid Setup", "LinkGridSetupDialog.Title");
 
     function saveLinksAndCloseDialog() {
         props.setLinksCallback(selectedLinks);
