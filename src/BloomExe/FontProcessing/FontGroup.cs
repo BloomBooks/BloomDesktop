@@ -45,6 +45,15 @@ namespace Bloom.FontProcessing
                 else
                     Italic = path;
             }
+            else if (gtf.Style == System.Windows.FontStyles.Oblique)
+            {
+                // We don't have a separate Oblique slot, so just treat it as Italic
+                // if we don't already have an Italic.
+                if (isBoldFont(gtf) && BoldItalic == null)
+                    BoldItalic = path;
+                else if (Italic == null)
+                    Italic = path;
+            }
             else
             {
                 if (isBoldFont(gtf))
