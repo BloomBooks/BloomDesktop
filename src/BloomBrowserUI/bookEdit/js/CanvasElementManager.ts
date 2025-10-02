@@ -6573,7 +6573,15 @@ export class CanvasElementManager {
                 const canvas = bloomCanvas.getElementsByTagName(
                     "canvas"
                 )[0] as HTMLElement;
-                bloomCanvas.insertBefore(bgCanvasElement, canvas.nextSibling);
+                if (canvas) {
+                    bloomCanvas.insertBefore(
+                        bgCanvasElement,
+                        canvas.nextSibling
+                    );
+                } else {
+                    // Some old books can be in this state.  See BL-15298.
+                    bloomCanvas.appendChild(bgCanvasElement);
+                }
             }
         }
         const bgImage = getBackgroundImageFromBloomCanvas(
