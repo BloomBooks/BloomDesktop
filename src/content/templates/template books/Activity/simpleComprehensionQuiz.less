@@ -1,6 +1,17 @@
 @import (reference) "../../../../BloomBrowserUI/bloomUI.less";
 @vertical-space: 10px;
 
+// This rule does nothing for books that have never been in 6.3, since in 6.2, the only pages that
+// have the GameHeader-style class are the new games pages, which use the equivalent rule in games.less.
+// However, 6.3 migrates comprehension quiz pages and simple dom choice pages to use this class
+// instead of QuizHeader-style and Prompt-style, so this rule helps such migrated pages use the
+// right header colors when re-opened in 6.2.
+.GameHeader-style {
+    color: var(--game-header-color);
+    background-color: var(--game-header-bg-color);
+    text-align: center;
+}
+
 .bloom-page.simple-comprehension-quiz {
     color: var(--game-text-color);
     // These are usually defined under :root. But in bloom-player, any rules

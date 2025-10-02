@@ -3951,6 +3951,20 @@ namespace Bloom.Book
             // {
             //     MigrateBackFromLevel5CanvasElement();
             // }
+
+            // null-merge this; not wanted in 6.3 and later.
+            var quizzes = Dom.SafeSelectNodes("//div[@data-activity='simple-checkbox-quiz']")
+                .Cast<SafeXmlElement>()
+                .ToArray();
+            foreach (var quiz in quizzes)
+            {
+                var script = quiz.SelectSingleNode(".//script[@src='simpleComprehensionQuiz.js']");
+                if (script != null)
+                    continue;
+                script = quiz.OwnerDocument.CreateElement("script");
+                script.SetAttribute("src", "simpleComprehensionQuiz.js");
+                quiz.AppendChild(script);
+            }
         }
 
         private void MigrateClassName(string oldClassName, string newClassName)
