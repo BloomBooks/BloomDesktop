@@ -2431,7 +2431,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Drag any of these overlays onto the image:</source>
-        <target xml:lang="pt-PT" state="final">Arraste qualquer uma dessas sobreposições para a imagem:</target>
+        <target xml:lang="pt-PT" state="final">Arraste qualquer uma desses objetos para a imagem:</target>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true" approved="yes">
