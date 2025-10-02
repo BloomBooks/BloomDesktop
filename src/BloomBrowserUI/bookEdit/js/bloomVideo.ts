@@ -15,6 +15,7 @@ import { getPlayIcon } from "../img/playIcon";
 import { getPauseIcon } from "../img/pauseIcon";
 import { getReplayIcon } from "../img/replayIcon";
 import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
+import $ from "jquery";
 
 export function SetupVideoEditing(container) {
     $(container)

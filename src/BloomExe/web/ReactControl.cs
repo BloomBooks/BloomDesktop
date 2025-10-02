@@ -273,8 +273,8 @@ namespace Bloom.web
 				<head>
 					<title>ReactControl ({_javascriptBundleName})</title>
 					<meta charset = 'UTF-8' />
-					<script src = '/commonBundle.js' ></script>
-                    <script src = '/{bundleNameWithExtension}'></script>
+					<script src = '/commonBundle.js' type='module'></script>
+                    <script src = '/{bundleNameWithExtension}'  type='module'></script>
 					<script>
 						window.onload = () => {{
 							const rootDiv = document.getElementById('reactRoot');

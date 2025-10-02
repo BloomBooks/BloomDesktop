@@ -5,6 +5,7 @@ import { removeTestRoot } from "../../utils/testHelper";
 import OverflowAncestorFixture from "./OverflowAncestorFixture.pug";
 import OverflowFixture from "./OverflowFixture.pug";
 import OverflowMarginFixture from "./OverflowMarginFixture.pug";
+import $ from "jquery";
 
 let consoleDef = false;
 

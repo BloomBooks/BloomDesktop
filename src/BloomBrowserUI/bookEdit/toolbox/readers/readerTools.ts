@@ -2,6 +2,7 @@
 /// <reference path="directoryWatcher.ts" />
 /// <reference path="../../../typings/jquery.qtip.d.ts" />
 /// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
+import $ from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
 import { getTheOneReaderToolsModel } from "./readerToolsModel";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";

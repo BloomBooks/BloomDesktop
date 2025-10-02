@@ -17,11 +17,11 @@ import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 import axios from "axios";
+import { getFeatureStatusAsync } from "../react_components/featureStatus";
 import {
     kBloomCanvasClass,
     kBloomCanvasSelector,
-} from "../bookEdit/js/bloomImages";
-import { getFeatureStatusAsync } from "../react_components/featureStatus";
+} from "../bookEdit/toolbox/overlay/canvasElementUtils";
 
 interface IPageChooserDialogProps {
     forChooseLayout: boolean;

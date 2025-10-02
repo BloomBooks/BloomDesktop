@@ -1,6 +1,8 @@
 import { OverlayTool } from "../overlay/overlayTool";
-import { getCanvasElementManager } from "../overlay/canvasElementUtils";
-import { kBloomCanvasClass } from "../../js/bloomImages";
+import {
+    kBloomCanvasClass,
+    getCanvasElementManager,
+} from "../overlay/canvasElementUtils";
 
 // This file is intended to expose some image description functions that other parts of the
 // code (in both iframes) need to use, while pulling in a minimum of dependencies.
