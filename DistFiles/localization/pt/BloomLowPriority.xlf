@@ -164,7 +164,7 @@
       <!-- TODO connect with/normalize other places that refer to these things -->
       <trans-unit id="Feature.Overlay">
         <source xml:lang="en">Overlay</source>
-        <target xml:lang="pt-PT" state="needs-translation">Overlay</target>
+        <target xml:lang="pt-PT" state="translated">Sobreposição</target>
         <note>ID: Feature.Overlay</note>
       </trans-unit>
       <trans-unit id="Feature.Spreadsheet">
