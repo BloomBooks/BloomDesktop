@@ -37,8 +37,6 @@ import {
     SetupMetadataButton,
     UpdateImageTooltipVisibility,
     HandleImageError,
-    kBloomCanvasSelector,
-    kBloomCanvasClass,
     doImageCommand,
 } from "./bloomImages";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
@@ -58,6 +56,8 @@ import {
     kCanvasElementClass,
     kCanvasElementSelector,
     kHasCanvasElementClass,
+    kBloomCanvasClass,
+    kBloomCanvasSelector,
 } from "../toolbox/overlay/canvasElementUtils";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
@@ -79,6 +79,7 @@ import { getExactClientSize } from "../../utils/elementUtils";
 import { copyContentToTarget, getTarget } from "bloom-player";
 import { showRequiresSubscriptionDialogInEditView } from "../../react_components/requiresSubscription";
 import { FeatureStatus } from "../../react_components/featureStatus";
+import $ from "jquery";
 
 export interface ITextColorInfo {
     color: string;

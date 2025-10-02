@@ -1,4 +1,5 @@
 import { css } from "@emotion/react";
+import $ from "jquery";
 import {
     BloomDialog,
     DialogBottomButtons,

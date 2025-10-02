@@ -15,6 +15,7 @@ import { isLongPressEvaluating, ITool } from "../../toolbox";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 import { get } from "../../../../utils/bloomApi";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
+import $ from "jquery";
 
 export class DecodableReaderToolboxTool implements ITool {
     imageUpdated(img: HTMLImageElement | undefined): void {

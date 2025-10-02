@@ -347,6 +347,15 @@ namespace Bloom.Book
             element.IsEmpty = false; // IF it is empty, write with open and close tags.
             element.SetAttribute("type", "text/javascript");
             element.SetAttribute("src", pathToJavascript.ToLocalhost());
+            // Trying generating ESNext, which produces files that require this.
+            // I wish for a better way to know which files need it.
+            // Without this, the browser complains if the js has import or export statements.
+            // Conceivably we could load the js and look for those as strings, but it would
+            // be slow and unreliable (the words might occur in comments).
+            if (pathToJavascript.EndsWith("Bundle.js"))
+            {
+                element.SetAttribute("type", "module");
+            }
             return element;
         }
 

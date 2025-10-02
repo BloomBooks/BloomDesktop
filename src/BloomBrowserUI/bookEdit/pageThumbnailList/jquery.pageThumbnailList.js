@@ -1,4 +1,5 @@
-﻿// jquery plugin for showing a list of thumbnails in an html file that has divs for each page
+﻿import $ from "jquery";
+// jquery plugin for showing a list of thumbnails in an html file that has divs for each page
 (function ($) {
     $.widget("bloom.pagesThumbnailList", {
         options: {

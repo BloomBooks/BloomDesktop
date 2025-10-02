@@ -7,6 +7,7 @@
 /// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
 
+import $ from "jquery";
 import { get, postString } from "../../utils/bloomApi";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";

@@ -25,6 +25,7 @@ import {
 import XRegExp from "xregexp";
 import axios from "axios";
 import { setSentenceEndingPunctuationForBloom } from "../readers/libSynphony/bloom_xregexp_categories";
+import $ from "jquery";
 
 describe("talking book tests", () => {
     beforeAll(async () => {

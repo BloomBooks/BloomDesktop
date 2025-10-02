@@ -1,6 +1,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 import * as JQuery from "jquery";
+import $ from "jquery";
 
 export interface qtipInterface extends JQuery {
     qtip(options: any): JQuery;

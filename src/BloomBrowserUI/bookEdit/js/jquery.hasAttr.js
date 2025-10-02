@@ -1,3 +1,4 @@
+import $ from "jquery";
 $.fn.hasAttr = function (name) {
     var attr = $(this).attr(name);
 

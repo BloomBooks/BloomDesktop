@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 /*/// <reference path="../../lib/jquery-1.9.1.js"/>*/
 
 import StyleEditor from "./StyleEditor";
+import $ from "jquery";
 
 //this was getting html, but just setting the rules actually doesn't touch the html
 //function GetStylesAfterMakeBigger(): string {

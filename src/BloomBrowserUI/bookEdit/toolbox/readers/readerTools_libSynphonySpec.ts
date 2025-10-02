@@ -6,6 +6,7 @@ import {
 import * as _ from "underscore";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import $ from "jquery";
 
 describe("readerTools-libSynphony tests", () => {
     function generateTestData() {

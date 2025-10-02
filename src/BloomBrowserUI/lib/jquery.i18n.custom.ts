@@ -1,6 +1,6 @@
 /// <reference path="localizationManager/localizationManager.ts" />
 /// <reference path="../typings/jquery/jquery.d.ts" />
-import jQuery from "jquery";
+import $ from "jquery";
 import theOneLocalizationManager from "./localizationManager/localizationManager";
 
 interface JQuery {

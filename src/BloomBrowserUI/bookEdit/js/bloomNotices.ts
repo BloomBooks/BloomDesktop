@@ -8,6 +8,7 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 //import '../../lib/jquery.qtip.js'
 //import '../../lib/jquery.qtipSecondary.js'
 import bloomQtipUtils from "./bloomQtipUtils";
+import $ from "jquery";
 
 export default class BloomNotices {
     public static addExperimentalNotice(container: HTMLElement): void {

@@ -3,6 +3,7 @@ import "../../node_modules/select2/dist/js/select2.js";
 import { get } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import BloomHintBubbles from "../js/BloomHintBubbles";
+import $ from "jquery";
 
 declare function WebFxTabPane(
     element: HTMLElement,

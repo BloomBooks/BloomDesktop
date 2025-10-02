@@ -1,12 +1,14 @@
 // not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
 ///<reference path="../../lib/split-pane/split-pane.d.ts" />
-import { kBloomCanvasClass, SetupImage } from "./bloomImages";
+import { SetupImage } from "./bloomImages";
+import { kBloomCanvasClass } from "../toolbox/overlay/canvasElementUtils";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { post, postThatMightNavigate } from "../../utils/bloomApi";
 import { ElementQueries } from "css-element-queries";
 import { theOneCanvasElementManager } from "./CanvasElementManager";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
+import $ from "jquery";
 
 $(() => {
     $("div.split-pane").splitPane();

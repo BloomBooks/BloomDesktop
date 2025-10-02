@@ -1,4 +1,5 @@
 import { css, ThemeProvider } from "@emotion/react";
+import $ from "jquery";
 import BloomButton from "../../react_components/bloomButton";
 import { getBloomApiPrefix, post, postJson } from "../../utils/bloomApi";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";

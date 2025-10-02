@@ -13,6 +13,7 @@
  * Released under the MIT license.
  * <https://raw.github.com/paulkinzett/toolbar/master/LICENSE.txt>
  */
+import $ from "jquery";
 
 if (typeof Object.create !== "function") {
     Object.create = function (obj) {
