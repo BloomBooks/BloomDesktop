@@ -110,6 +110,7 @@ namespace Bloom.Book
         void MigrateToLevel6LegacyActivities();
         void MigrateToLevel7BloomCanvas();
         void MigrateToLevel8RemoveEnterpriseOnly();
+        void MigrateToLevel9TruncateWidgetPaths();
         void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
@@ -4067,6 +4068,56 @@ namespace Bloom.Book
                 page.RemoveClass("enterprise-only");
             }
             Dom.UpdateMetaElement("maintenanceLevel", "8");
+        }
+
+        /// <summary>
+        /// At least one user was using extremely long names for widget folders, resulting in
+        /// path lengths that were too long for Windows to handle. This migration truncates
+        /// any such folder names to 50 characters, and updates the src attribute of the iframe.
+        /// </summary>
+        public void MigrateToLevel9TruncateWidgetPaths()
+        {
+            if (GetMaintenanceLevel() >= 9)
+                return;
+            var widgetIframes = Dom.SafeSelectNodes(
+                "//div[contains(@class, 'bloom-widgetContainer')]/iframe[starts-with(@src,'activities/')]"
+            );
+            foreach (SafeXmlElement iframe in widgetIframes)
+            {
+                var rawSrc = iframe.GetAttribute("src");
+                var fullEncodedSrc = UrlPathString.CreateFromUrlEncodedString(rawSrc);
+                var fullDecodedSrc = fullEncodedSrc.NotEncoded;
+                var originalFolderName = Path.GetFileName(Path.GetDirectoryName(fullDecodedSrc));
+                var originalFileName = Path.GetFileName(fullDecodedSrc);
+                if (originalFolderName.Length <= 50)
+                    continue;
+                var truncatedFolderName = originalFolderName.Substring(0, 50).Trim();
+                var originalFolderPath = Path.Combine(FolderPath, "activities", originalFolderName);
+                var truncatedFolderPath = Path.Combine(
+                    FolderPath,
+                    "activities",
+                    truncatedFolderName
+                );
+                var suffix = 1;
+                while (Directory.Exists(truncatedFolderPath))
+                {
+                    // This is very unlikely, but if it happens, we want to avoid overwriting
+                    // the existing folder. So we just add a character and try again.
+                    truncatedFolderPath = Path.Combine(
+                        FolderPath,
+                        "activities",
+                        truncatedFolderName + suffix.ToString()
+                    );
+                    suffix++;
+                }
+                RobustIO.MoveDirectory(originalFolderPath, truncatedFolderPath);
+                var newEncodedSrc = UrlPathString.CreateFromUnencodedString(
+                    $"activities/{Path.GetFileName(truncatedFolderPath)}/{originalFileName}"
+                );
+                var newRawSrc = newEncodedSrc.UrlEncodedForHttpPath;
+                iframe.SetAttribute("src", newRawSrc);
+            }
+            Dom.UpdateMetaElement("maintenanceLevel", "9");
         }
 
         /// <summary>
