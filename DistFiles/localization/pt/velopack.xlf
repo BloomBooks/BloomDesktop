@@ -28,19 +28,19 @@
       </trans-unit>
       <trans-unit id="templates.install_directory_default">
         <source xml:lang="en">The install directory is '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</source>
-        <target xml:lang="pt-PT" state="needs-translation">The install directory is '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</target>
+        <target xml:lang="pt-PT" state="translated">O diretório de instalação é '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</target>
       </trans-unit>
       <trans-unit id="templates.install_directory_custom">
         <source xml:lang="en">The install directory is '&lt;A HREF="na"&gt;{path}&lt;/A&gt;'</source>
-        <target xml:lang="pt-PT" state="needs-translation">The install directory is '&lt;A HREF="na"&gt;{path}&lt;/A&gt;'</target>
+        <target xml:lang="pt-PT" state="translated">O diretório de instalação é '&lt;A HREF="na"&gt;{path}&lt;/A&gt;'</target>
       </trans-unit>
       <trans-unit id="progress.installing_app">
         <source xml:lang="en">Installing {app_title}...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Installing {app_title}...</target>
+        <target xml:lang="pt-PT" state="translated">Instalando {app_title}...</target>
       </trans-unit>
       <trans-unit id="progress.downloading_runtime">
         <source xml:lang="en">Downloading {runtime_name}...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Downloading {runtime_name}...</target>
+        <target xml:lang="pt-PT" state="translated">Baixando {runtime_name}...</target>
       </trans-unit>
       <trans-unit id="buttons.ok">
         <source xml:lang="en">Ok</source>
@@ -100,7 +100,7 @@
       </trans-unit>
       <trans-unit id="dialogs.restart_required.instruction">
         <source xml:lang="en">Restart Required</source>
-        <target xml:lang="pt-PT" state="needs-translation">Restart Required</target>
+        <target xml:lang="pt-PT" state="translated">É necessário reiniciar</target>
       </trans-unit>
       <trans-unit id="dialogs.restart_required.content">
         <source xml:lang="en">A restart is required before Setup can continue. Please restart your computer and try again.</source>
