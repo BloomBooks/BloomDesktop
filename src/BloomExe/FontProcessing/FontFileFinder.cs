@@ -97,18 +97,29 @@ namespace Bloom.FontProcessing
                     // I don't know how other weights could be produced apart from custom CSS, but font-weight=900
                     // can come from a combination of Bold in a style setting (invoking CSS) and Bold in direct
                     // formatting (inserting markup with <strong>...</strong>).
-                    if (string.CompareOrdinal(fontWeight, "550") < 0)
+                    // Note that font files historically ship with regular (nominally 400) or bold (nominally 700)
+                    // variants normally.  The FontGroup class does not handle other weights.  600 is the cutoff
+                    // between normal and bold in the FontGroup.isBoldFont() method.
+                    if (string.CompareOrdinal(fontWeight, "600") <= 0)
                     {
                         fontWeight = "400";
-                        Logger.WriteEvent($"Setting font-weight to 400 (Regular)");
+                        Logger.WriteEvent($"Setting font-weight for matching to 400 (Regular)");
                     }
                     else
                     {
                         fontWeight = "700";
-                        Logger.WriteEvent($"Setting font-weight to 700 (Bold)");
+                        Logger.WriteEvent($"Setting font-weight for matching to 700 (Bold)");
+                    }
+                    if (fontStyle != "italic" && fontStyle != "normal")
+                    {
+                        fontStyle = (fontStyle == "oblique") ? "italic" : "normal";
+                        Logger.WriteEvent($"Setting font-style for matching to {fontStyle}");
                     }
                 }
-
+                // We have only four slots in FontGroup, so we just do the best we can.
+                // The order of the tests is important, since we want to return the most
+                // specific match possible.  Even if the user asked for Bold Italic, we
+                // might return Normal if that's all we have.
                 if (fontStyle == "italic" && fontWeight == "700")
                 {
                     if (!string.IsNullOrEmpty(group.BoldItalic))
