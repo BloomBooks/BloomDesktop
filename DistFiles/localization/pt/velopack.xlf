@@ -104,11 +104,11 @@
       </trans-unit>
       <trans-unit id="dialogs.restart_required.content">
         <source xml:lang="en">A restart is required before Setup can continue. Please restart your computer and try again.</source>
-        <target xml:lang="pt-PT" state="needs-translation">A restart is required before Setup can continue. Please restart your computer and try again.</target>
+        <target xml:lang="pt-PT" state="translated">É necessário reiniciar antes que a instalação continue. Reinicie o computador e tente novamente.</target>
       </trans-unit>
       <trans-unit id="dialogs.update_missing_dependencies.header">
         <source xml:lang="en">{app_title} would like to update from {from_version} to {to_version}</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} would like to update from {from_version} to {to_version}</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} gostaria de atualizar de {from_version} para {to_version}</target>
       </trans-unit>
       <trans-unit id="dialogs.update_missing_dependencies.content">
         <source xml:lang="en">{app_title} {to_version} has missing dependencies which need to be installed: {dependency_list}. Would you like to continue?</source>
