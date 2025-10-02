@@ -4,55 +4,55 @@
     <body>
       <trans-unit id="templates.setup_title">
         <source xml:lang="en">{app_title} Setup {app_version}</source>
-        <target xml:lang="fr" state="needs-translation">{app_title} Setup {app_version}</target>
+        <target xml:lang="fr" state="translated">Configuration {app_title} {app_version}</target>
       </trans-unit>
       <trans-unit id="templates.setup_title_no_version">
         <source xml:lang="en">{app_title} Setup</source>
-        <target xml:lang="fr" state="needs-translation">{app_title} Setup</target>
+        <target xml:lang="fr" state="translated">Configuration {app_title}</target>
       </trans-unit>
       <trans-unit id="templates.update_title">
         <source xml:lang="en">{app_title} Update {app_version}</source>
-        <target xml:lang="fr" state="needs-translation">{app_title} Update {app_version}</target>
+        <target xml:lang="fr" state="translated">Mise à jour {app_title} {app_version}</target>
       </trans-unit>
       <trans-unit id="templates.update_title_no_version">
         <source xml:lang="en">{app_title} Update</source>
-        <target xml:lang="fr" state="needs-translation">{app_title} Update</target>
+        <target xml:lang="fr" state="translated">Mise à jour {app_title}</target>
       </trans-unit>
       <trans-unit id="templates.uninstall_title">
         <source xml:lang="en">{app_title} Uninstall</source>
-        <target xml:lang="fr" state="needs-translation">{app_title} Uninstall</target>
+        <target xml:lang="fr" state="translated">Désinstallation de {app_title}</target>
       </trans-unit>
       <trans-unit id="templates.error_title">
         <source xml:lang="en">{program_name} Error</source>
-        <target xml:lang="fr" state="needs-translation">{program_name} Error</target>
+        <target xml:lang="fr" state="translated">Erreur {program_name}</target>
       </trans-unit>
       <trans-unit id="templates.install_directory_default">
         <source xml:lang="en">The install directory is '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</source>
-        <target xml:lang="fr" state="needs-translation">The install directory is '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</target>
+        <target xml:lang="fr" state="translated">Le répertoire d'installation est '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</target>
       </trans-unit>
       <trans-unit id="templates.install_directory_custom">
         <source xml:lang="en">The install directory is '&lt;A HREF="na"&gt;{path}&lt;/A&gt;'</source>
-        <target xml:lang="fr" state="needs-translation">The install directory is '&lt;A HREF="na"&gt;{path}&lt;/A&gt;'</target>
+        <target xml:lang="fr" state="translated">Le répertoire d'installation est '&lt;A HREF="na"&gt;{path}\&lt;/A&gt;'</target>
       </trans-unit>
       <trans-unit id="progress.installing_app">
         <source xml:lang="en">Installing {app_title}...</source>
-        <target xml:lang="fr" state="needs-translation">Installing {app_title}...</target>
+        <target xml:lang="fr" state="translated">Installation de {app_title}...</target>
       </trans-unit>
       <trans-unit id="progress.downloading_runtime">
         <source xml:lang="en">Downloading {runtime_name}...</source>
-        <target xml:lang="fr" state="needs-translation">Downloading {runtime_name}...</target>
+        <target xml:lang="fr" state="translated">Téléchargement de {runtime_name}...</target>
       </trans-unit>
       <trans-unit id="buttons.ok">
         <source xml:lang="en">Ok</source>
-        <target xml:lang="fr" state="needs-translation">Ok</target>
+        <target xml:lang="fr" state="translated">Ok</target>
       </trans-unit>
       <trans-unit id="buttons.yes">
         <source xml:lang="en">Yes</source>
-        <target xml:lang="fr" state="needs-translation">Yes</target>
+        <target xml:lang="fr" state="translated">Oui</target>
       </trans-unit>
       <trans-unit id="buttons.no">
         <source xml:lang="en">No</source>
-        <target xml:lang="fr" state="needs-translation">No</target>
+        <target xml:lang="fr" state="translated">Non</target>
       </trans-unit>
       <trans-unit id="buttons.install_update">
         <source xml:lang="en">Install Update</source>
