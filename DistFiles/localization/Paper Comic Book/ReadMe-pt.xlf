@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="comic.template.tips.lettering.header">
         <source xml:lang="en">Tips on "lettering"</source>
-        <target xml:lang="pt-PT" state="needs-translation">Tips on "lettering"</target>
+        <target xml:lang="pt-PT" state="translated">Dicas para letreiramento</target>
         <note>ID: comic.template.tips.lettering.header</note>
       </trans-unit>
       <trans-unit id="comic.template.tips.lettering">
