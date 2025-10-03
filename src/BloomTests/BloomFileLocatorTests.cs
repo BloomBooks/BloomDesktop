@@ -24,7 +24,7 @@ namespace BloomTests
         private TemporaryFolder _xMatterFolder;
         private TemporaryFolder _otherFilesForTestingFolder;
 
-        public const string kRelativePathToBrowserFolder = "../../browser";
+        public const string kRelativePathToBrowserFolder = "../../../browser";
 
         [SetUp]
         public void Setup()
