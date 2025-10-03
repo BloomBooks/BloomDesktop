@@ -2236,7 +2236,7 @@
       </trans-unit>
       <trans-unit id="EditTab.NoValidImageFoundOnClipboard" approved="yes">
         <source xml:lang="en">Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else.</source>
-        <target xml:lang="pt-PT" state="final">Bloom não conseguiu interpretar o conteúdo da ãrea de transferência como uma imagem. Possivelmente foi um ficheiro danificado, ou demasiado grande. Tente copiar outra imagem.</target>
+        <target xml:lang="pt-PT" state="final">Bloom não conseguiu interpretar o conteúdo da área de transferência como uma imagem. Possivelmente foi um arquivo danificado ou muito grande. Tente copiar outra imagem.</target>
         <note>ID: EditTab.NoValidImageFoundOnClipboard</note>
       </trans-unit>
       <trans-unit id="EditTab.NoOtherLayouts" approved="yes">
@@ -2646,7 +2646,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
-        <target xml:lang="pt-PT" state="final">Livros de Movimento são livros de Bloom Reader com dois modos. Normalmente, são áudio-livros. Quando você vira o telefone no lado, a imagem preenche o ecrã. Se movimenta do retângulo 1 para enfocar no retângulo 2.</target>
+        <target xml:lang="pt-PT" state="final">Livros de Movimento são livros de Bloom Reader com dois modos. Normalmente, são áudio-livros. Ao virar o dispositivo de lado, a imagem preenche o ecrã (tela). A visualização da imagem se movimenta, fazendo zoom, do retângulo 1 até o retângulo 2.</target>
         <note>ID: EditTab.Toolbox.Motion.Intro</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Preview" sil:dynamic="true" approved="yes">
@@ -2696,7 +2696,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.InvalidMp3File" approved="yes">
         <source xml:lang="en">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</source>
-        <target xml:lang="pt-PT" state="final">O ficheiro de som selecionado "{0}" não pode ser reproduzido pelo Bloom. Por favor, escolha outro ficheiro de som.</target>
+        <target xml:lang="pt-PT" state="final">O arquivo de som selecionado "{0}" não pode ser reproduzido pelo Bloom. Por favor, escolha outro arquivo de som.</target>
         <note>ID: EditTab.Toolbox.Music.InvalidMp3File</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.InvalidMp3FileTitle" approved="yes">
@@ -3061,7 +3061,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.FileDialogVideoFiles" approved="yes">
         <source xml:lang="en">Video files</source>
-        <target xml:lang="pt-PT" state="final">Ficheiros de vídeo</target>
+        <target xml:lang="pt-PT" state="final">Arquivos de vídeo</target>
         <note>ID: EditTab.Toolbox.SignLanguage.FileDialogVideoFiles</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.ImportVideo" sil:dynamic="true" approved="yes">
@@ -3121,7 +3121,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Timeout" approved="yes">
         <source xml:lang="en">The initial processing of the video file timed out after one minute.  The raw video output will be stored.</source>
-        <target xml:lang="pt-PT" state="final">O processamento inicial do ficheiro de vídeo expirou após um minuto. O vídeo não editado será armazenada.</target>
+        <target xml:lang="pt-PT" state="final">O processamento inicial do arquivo de vídeo expirou após um minuto. A saída de vídeo bruta será armazenada.</target>
         <note>ID: EditTab.Toolbox.SignLanguage.Timeout</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Trim" sil:dynamic="true" approved="yes">
@@ -3371,7 +3371,7 @@
       </trans-unit>
       <trans-unit id="Errors.MultipleHtmlFiles" approved="yes">
         <source xml:lang="en">Bloom book folders must have only one file ending in .htm.  In the book "{0}", these are the files ending in .htm:</source>
-        <target xml:lang="pt-PT" state="final">Pastas de livros do Bloom devem ter apenas um ficheiro terminando em .htm. No livro "{0}", estes são os ficheiros terminando em .htm:</target>
+        <target xml:lang="pt-PT" state="final">Pastas de livros do Bloom devem ter apenas um arquivo terminando em .htm. No livro "{0}", estes são os arquivos terminando em .htm:</target>
         <note>ID: Errors.MultipleHtmlFiles</note>
       </trans-unit>
       <trans-unit id="Errors.NeedNewerVersion" approved="yes">
@@ -3591,12 +3591,12 @@
       </trans-unit>
       <trans-unit id="LameEncoder.DeleteFailedShort" approved="yes">
         <source xml:lang="en">Cannot replace mp3 file. Check antivirus</source>
-        <target xml:lang="pt-PT" state="final">Não é possível substituir ficheiro mp3. Verificar antivírus</target>
+        <target xml:lang="pt-PT" state="final">Não é possível substituir arquivo mp3. Verificar antivírus</target>
         <note>ID: LameEncoder.DeleteFailedShort</note>
       </trans-unit>
       <trans-unit id="LameEncoder.DeleteFailedLong" approved="yes">
         <source xml:lang="en">Bloom could not replace an mp3 file. If this continues, check your antivirus.</source>
-        <target xml:lang="pt-PT" state="final">Bloom não pude substituir um arquivo mp3. Se isto continuar, verifique seu antivírus.</target>
+        <target xml:lang="pt-PT" state="final">Bloom não conseguiu substituir um arquivo mp3. Se isto continuar, verifique seu antivírus.</target>
         <note>ID: LameEncoder.DeleteFailedLong</note>
       </trans-unit>
       <trans-unit id="LameEncoder.Progress" approved="yes">
@@ -4098,7 +4098,9 @@
         <source xml:lang="en">To Send via USB, you may need to get the right
                             cable, install phone drivers on your computer, or
                             modify settings on your phone.</source>
-        <target xml:lang="pt-PT" state="final">Para enviar via USB, pode ser necessário obter o cabo certo, instalar controladores telefónicos no seu computador, ou modificar as definições no seu telefone.</target>
+        <target xml:lang="pt-PT" state="final">Para enviar via USB, você pode precisar pegar o cabo
+                            certo instalar drivers de telefone no seu computador, ou
+                            modificar as configurações do seu telefone.</target>
         <note>ID: PublishTab.Android.USB.Hint</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.OpenMenuItem" sil:dynamic="true" approved="yes">
@@ -4423,7 +4425,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.Explanation" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This file will cause these books to be grouped under a single bookshelf in Bloom Reader. This collection's bookshelf is set to "{0}".</source>
-        <target xml:lang="pt-PT" state="final">Este ficheiro fará com que estes livros sejam agrupados numa única estante no Bloom Reader. A estante desta coleção está definida como "{0}".</target>
+        <target xml:lang="pt-PT" state="final">Este arquivo fará com que estes livros sejam agrupados numa única estante no Bloom Reader. A estante desta coleção está definida como "{0}".</target>
         <note>ID: Publish.BulkBloomPub.Explanation</note>
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.Make" sil:dynamic="true" approved="yes">
@@ -4438,12 +4440,12 @@
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.MakeBloomBundle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Compress into a single .bloombundle file</source>
-        <target xml:lang="pt-PT" state="final">Comprimir em um único ficheiro .bloombundle</target>
+        <target xml:lang="pt-PT" state="final">Comprimir em um único arquivo .bloombundle</target>
         <note>ID: Publish.BulkBloomPub.MakeBloomBundle</note>
       </trans-unit>
       <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Produce a .bloomshelf file</source>
-        <target xml:lang="pt-PT" state="final">Produzir um ficheiro .bloomshelf</target>
+        <target xml:lang="pt-PT" state="final">Produzir um arquivo .bloomshelf</target>
         <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
       </trans-unit>
       <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true" approved="yes">
@@ -4708,7 +4710,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Error.Failed" approved="yes">
         <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
-        <target xml:lang="pt-PT" state="final">Bloom não conseguiu criar o ficheiro PDF ({0}).{1}{1}Detalhes: BloomPdfMaker (linha de comando) não produziu o documento esperado.</target>
+        <target xml:lang="pt-PT" state="final">Bloom não conseguiu criar o arquvio PDF ({0}).{1}{1}Detalhes: BloomPdfMaker (linha de comando) não produziu o documento esperado.</target>
         <note>ID: PublishTab.PDF.Error.Failed</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Error.PrinterError" approved="yes">
@@ -4773,7 +4775,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed" approved="yes">
         <source xml:lang="en">This is disabled because this book is not set up to be full bleed.</source>
-        <target xml:lang="pt-PT" state="final">Isso está desabilitado porque este livro não está configurado para impressão sem margens.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque este livro não está configurado para impressão sem margens.</target>
         <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml" approved="yes">
@@ -4918,7 +4920,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AudioFile" approved="yes">
         <source xml:lang="en">Audio File</source>
-        <target xml:lang="pt-PT" state="final">Ficheiro de Áudio</target>
+        <target xml:lang="pt-PT" state="final">Arquivo de Áudio</target>
         <note>ID: PublishTab.RecordVideo.AudioFile</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.BannerDescription" approved="yes">
@@ -5008,7 +5010,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Mp3.Disabled" approved="yes">
         <source xml:lang="en">This is disabled because the book does not have audio.</source>
-        <target xml:lang="pt-PT" state="final">Isso está desabilitado porque o livro não tem áudio.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque o livro não tem áudio.</target>
         <note>ID: PublishTab.RecordVideo.Mp3.Disabled</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.OverviewHelpLink" approved="yes">
@@ -5038,7 +5040,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.RecordingInProgressSideways" approved="yes">
         <source xml:lang="en">Recording in Progress. Showing sideways in order to fit on your screen.</source>
-        <target xml:lang="pt-PT" state="final">Gravação em curso. Vista horizontal de modo a caber ecrã.</target>
+        <target xml:lang="pt-PT" state="final">Gravação em curso. A imagem está virada para caber na sua tela (ecrã).</target>
         <note>ID: PublishTab.RecordVideo.RecordingInProgressSideways</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.RecordThesePages" sil:dynamic="true" approved="yes">
@@ -5058,7 +5060,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.VideoFile" approved="yes">
         <source xml:lang="en">Video File</source>
-        <target xml:lang="pt-PT" state="final">Ficheiro de vídeo</target>
+        <target xml:lang="pt-PT" state="final">Arquivo de vídeo</target>
         <note>ID: PublishTab.RecordVideo.VideoFile</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.WillOpenProgram" approved="yes">
@@ -5406,7 +5408,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.TimeProblem" approved="yes">
         <source xml:lang="en">There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</source>
-        <target xml:lang="pt-PT" state="final">Houve um problema de carregar o seu livro. Isto é provavelmente porque seu computador está definido para usar o horário errado ou seu tempo de sistema é incorreto. Consulte http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html para saber como retificar isso.</target>
+        <target xml:lang="pt-PT" state="final">Houve um problema de carregar o seu livro. Provavelmente aconteceu porque seu computador está definido para usar o fuso horário errado ou a hora do sistema está errada. Consulte http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html para saber como corrigir isso.</target>
         <note>ID: PublishTab.Upload.TimeProblem</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadButton" approved="yes">
