@@ -799,7 +799,7 @@ div.bloom-templateMode {
 // We don't want a border on the box itself because that takes up space; a box that
 // once starts overflowing might be stuck that way because of the extra space needed
 // for the border. So we use a pseudo-element to draw the line.
-.childOverflowingThis:after {
+.childOverflowingThis:not(.bloom-ignoreOverflow):after {
     content: "";
     position: absolute;
     top: 0;

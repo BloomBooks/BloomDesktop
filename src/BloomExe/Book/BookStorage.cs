@@ -109,6 +109,8 @@ namespace Bloom.Book
         void MigrateToLevel6LegacyActivities();
         void MigrateToLevel7BloomCanvas();
         void MigrateToLevel8RemoveEnterpriseOnly();
+
+        void MigrateToLevel9GameHeader();
         void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
@@ -172,6 +174,7 @@ namespace Bloom.Book
         ///     (Previously was bloom-imageContainer, which conflicted with the use inside canvas
         ///     elements, and was inaccurate because it could contain many other things.)
         ///   Bloom 6.2  8 = Removed enterprise-only class on all pages that have it
+        ///   Bloom 6.2  9 = change old QuizHeader-style and Prompt-Style to uniform GameHeader-style
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
@@ -4077,6 +4080,34 @@ namespace Bloom.Book
                 page.RemoveClass("enterprise-only");
             }
             Dom.UpdateMetaElement("maintenanceLevel", "8");
+        }
+
+        /// <summary>
+        /// pages with class QuizHeader-style or Prompt-style change to GameHeader-style.
+        /// Review: if there is a non-standard definition for one of those styles, should we
+        /// migrate that, or at least whatever is non-standard in it, to GameHeader-style?
+        /// Thinking that is too much work.
+        /// Should we remove the definitions of QuizHeader-style and Prompt-style?
+        /// We might be glad of them if by any chance the book gets opened in 6.1?
+        /// Also just seems more trouble than it's worth.
+        /// </summary>
+        public void MigrateToLevel9GameHeader()
+        {
+            if (GetMaintenanceLevel() >= 9)
+                return;
+            var oldQuizPages = Dom.SafeSelectNodes("//div[contains(@class, 'QuizHeader-style')]");
+            foreach (SafeXmlElement page in oldQuizPages)
+            {
+                page.RemoveClass("QuizHeader-style");
+                page.AddClass("GameHeader-style");
+            }
+            var oldPromptPages = Dom.SafeSelectNodes("//div[contains(@class, 'Prompt-style')]");
+            foreach (SafeXmlElement page in oldPromptPages)
+            {
+                page.RemoveClass("Prompt-style");
+                page.AddClass("GameHeader-style");
+            }
+            Dom.UpdateMetaElement("maintenanceLevel", "9");
         }
 
         /// <summary>
