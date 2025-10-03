@@ -18,13 +18,13 @@
         <source xml:lang="en">{app_title} Update</source>
         <target xml:lang="pt-PT" state="translated">{app_title} Atualizar</target>
       </trans-unit>
-      <trans-unit id="templates.uninstall_title">
+      <trans-unit id="templates.uninstall_title" approved="yes">
         <source xml:lang="en">{app_title} Uninstall</source>
-        <target xml:lang="pt-PT" state="translated">{app_title} Desinstalar</target>
+        <target xml:lang="pt-PT" state="final">{app_title} Desinstalar</target>
       </trans-unit>
-      <trans-unit id="templates.error_title">
+      <trans-unit id="templates.error_title" approved="yes">
         <source xml:lang="en">{program_name} Error</source>
-        <target xml:lang="pt-PT" state="translated">{program_name} Erro</target>
+        <target xml:lang="pt-PT" state="final">{program_name} Erro</target>
       </trans-unit>
       <trans-unit id="templates.install_directory_default">
         <source xml:lang="en">The install directory is '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</source>
@@ -42,17 +42,17 @@
         <source xml:lang="en">Downloading {runtime_name}...</source>
         <target xml:lang="pt-PT" state="translated">Baixando {runtime_name}...</target>
       </trans-unit>
-      <trans-unit id="buttons.ok">
+      <trans-unit id="buttons.ok" approved="yes">
         <source xml:lang="en">Ok</source>
-        <target xml:lang="pt-PT" state="translated">OK</target>
+        <target xml:lang="pt-PT" state="final">OK</target>
       </trans-unit>
-      <trans-unit id="buttons.yes">
+      <trans-unit id="buttons.yes" approved="yes">
         <source xml:lang="en">Yes</source>
-        <target xml:lang="pt-PT" state="translated">Sim</target>
+        <target xml:lang="pt-PT" state="final">Sim</target>
       </trans-unit>
-      <trans-unit id="buttons.no">
+      <trans-unit id="buttons.no" approved="yes">
         <source xml:lang="en">No</source>
-        <target xml:lang="pt-PT" state="translated">Não</target>
+        <target xml:lang="pt-PT" state="final">Não</target>
       </trans-unit>
       <trans-unit id="buttons.install_update">
         <source xml:lang="en">Install Update</source>
@@ -176,11 +176,11 @@
       </trans-unit>
       <trans-unit id="dialogs.legacy_migration_failed.content">
         <source xml:lang="en">This app installation has been corrupted and cannot be started. Please re-install the app.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This app installation has been corrupted and cannot be started. Please re-install the app.</target>
+        <target xml:lang="pt-PT" state="translated">A instalação do aplicativo está corrompida e não pode ser iniciada. Por favor, reinstale o aplicativo.</target>
       </trans-unit>
       <trans-unit id="dialogs.uninstall_success.content">
         <source xml:lang="en">The application was successfully uninstalled.</source>
-        <target xml:lang="pt-PT" state="needs-translation">The application was successfully uninstalled.</target>
+        <target xml:lang="pt-PT" state="translated">O aplicativo foi desinstalado com sucesso.</target>
       </trans-unit>
     </body>
   </file>
