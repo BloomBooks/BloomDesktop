@@ -92,6 +92,15 @@ export const RegistrationDialog: React.FunctionComponent<
         hadEmailAlready: false,
     });
 
+    // Show the "I'm stuck" opt-out button after 10 seconds
+    const [showOptOut, setShowOptOut] = useState(false);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setShowOptOut(true);
+        }, 10000);
+        return () => clearTimeout(timer);
+    }, []);
+
     // Every time the dialog is opened, set MayChangeEmail and User Info fields
     useEffect(() => {
         if (!props.propsForBloomDialog.open) return;
@@ -282,17 +291,19 @@ export const RegistrationDialog: React.FunctionComponent<
             <div id="bottomButtons">
                 <DialogBottomButtons>
                     <DialogBottomLeftButtons>
-                        <BloomButton
-                            l10nKey="RegisterDialog.IAmStuckLabel"
-                            enabled={true}
-                            variant="text"
-                            onClick={tryToSave}
-                            css={css`
-                                font-size: 10px;
-                            `}
-                        >
-                            I'm stuck, I'll finish this later.
-                        </BloomButton>
+                        {showOptOut && (
+                            <BloomButton
+                                l10nKey="RegisterDialog.IAmStuckLabel"
+                                enabled={true}
+                                variant="text"
+                                onClick={tryToSave}
+                                css={css`
+                                    font-size: 10px;
+                                `}
+                            >
+                                I'm stuck, I'll finish this later.
+                            </BloomButton>
+                        )}
                     </DialogBottomLeftButtons>
                     <BloomButton
                         l10nKey="RegisterDialog.RegisterButton"
