@@ -2391,7 +2391,7 @@
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.ShowHintBubble" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show the hint bubble</source>
-        <target xml:lang="pt-PT" state="final">Mostrar a balão de ajuda</target>
+        <target xml:lang="pt-PT" state="final">Mostrar o balão de ajuda</target>
         <note>ID: EditTab.TextBoxProperties.ShowHintBubble</note>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.ShowOnEach" sil:dynamic="true" approved="yes">
@@ -2591,7 +2591,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Speech" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Speech</source>
-        <target xml:lang="pt-PT" state="final">Discurso</target>
+        <target xml:lang="pt-PT" state="final">Fala</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Speech</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Thought" sil:dynamic="true" approved="yes">
@@ -4056,7 +4056,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Comic" approved="yes">
         <source xml:lang="en">Comic</source>
-        <target xml:lang="pt-PT" state="final">Banda desenhada</target>
+        <target xml:lang="pt-PT" state="final">Banda desenhada (Quadrinhos)</target>
         <note>ID: PublishTab.Comic</note>
       </trans-unit>
       <trans-unit id="PublishTab.Common.Publishing" approved="yes">
@@ -6430,7 +6430,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Digital Comic Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Digital Comic Book</source>
-        <target xml:lang="pt-PT" state="final">Banda desenhada digital</target>
+        <target xml:lang="pt-PT" state="final">Banda desenhada (Quadrinhos) digital</target>
         <note>ID: TemplateBooks.BookName.Digital Comic Book</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Digital Comic Book Pages" sil:dynamic="true" approved="yes">
@@ -7120,7 +7120,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true">
         <source xml:lang="en">Drag Sound to Word Target</source>
-        <target xml:lang="pt-PT" state="needs-translation">Drag Sound to Word Target</target>
+        <target xml:lang="pt-PT" state="translated">Arrasta o som para a palavra alvo</target>
         <note>ID: TemplateBooks.PageLabel.Drag Sound to Word Target</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Sounds to Word Targets" sil:dynamic="true">
