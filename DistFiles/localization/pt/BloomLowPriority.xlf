@@ -131,7 +131,7 @@
       tier to "Subscription.Tier."-->
       <trans-unit id="Subscription.Tier.Basic">
         <source xml:lang="en">Basic</source>
-        <target xml:lang="pt-PT" state="needs-translation">Basic</target>
+        <target xml:lang="pt-PT" state="translated">Básico</target>
         <note>ID: Subscription.Tier.Basic</note>
       </trans-unit>
       <trans-unit id="Subscription.Tier.Enterprise">
@@ -141,12 +141,12 @@
       </trans-unit>
       <trans-unit id="Subscription.Tier.LocalCommunity">
         <source xml:lang="en">Local Community</source>
-        <target xml:lang="pt-PT" state="needs-translation">Local Community</target>
+        <target xml:lang="pt-PT" state="translated">Comunidade local</target>
         <note>ID: Subscription.Tier.LocalCommunity</note>
       </trans-unit>
       <trans-unit id="Subscription.Tier.Pro">
         <source xml:lang="en">Pro</source>
-        <target xml:lang="pt-PT" state="needs-translation">Pro</target>
+        <target xml:lang="pt-PT" state="translated">Pro</target>
         <note>ID: Subscription.Tier.Pro</note>
       </trans-unit>
       <trans-unit id="Subscription.TierWithColon">
@@ -157,7 +157,7 @@
       <!-- Other -->
       <trans-unit id="Subscription.OpenSettings">
         <source xml:lang="en">Subscription Settings</source>
-        <target xml:lang="pt-PT" state="needs-translation">Subscription Settings</target>
+        <target xml:lang="pt-PT" state="translated">Configuração da assinatura</target>
         <note>ID: Subscription.OpenSettings</note>
       </trans-unit>
       <!-- Features -->
@@ -289,12 +289,12 @@
       </trans-unit>
       <trans-unit id="EditTab.PasteHyperlink.Currently">
         <source xml:lang="en">Currently %0</source>
-        <target xml:lang="pt-PT" state="needs-translation">Currently %0</target>
+        <target xml:lang="pt-PT" state="translated">Atualmente %0</target>
         <note>ID: EditTab.PasteHyperlink.Currently</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MoveToCurrentCollection">
         <source xml:lang="en">Move into {0}</source>
-        <target xml:lang="pt-PT" state="needs-translation">Move into {0}</target>
+        <target xml:lang="pt-PT" state="translated">Mover para {0}</target>
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
       </trans-unit>
     </body>
