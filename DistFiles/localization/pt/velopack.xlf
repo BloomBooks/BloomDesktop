@@ -4,71 +4,71 @@
     <body>
       <trans-unit id="templates.setup_title">
         <source xml:lang="en">{app_title} Setup {app_version}</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} Setup {app_version}</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} Configurar {app_version}</target>
       </trans-unit>
       <trans-unit id="templates.setup_title_no_version">
         <source xml:lang="en">{app_title} Setup</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} Setup</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} Configurar</target>
       </trans-unit>
       <trans-unit id="templates.update_title">
         <source xml:lang="en">{app_title} Update {app_version}</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} Update {app_version}</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} Atualizar {app_version}</target>
       </trans-unit>
       <trans-unit id="templates.update_title_no_version">
         <source xml:lang="en">{app_title} Update</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} Update</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} Atualizar</target>
       </trans-unit>
-      <trans-unit id="templates.uninstall_title">
+      <trans-unit id="templates.uninstall_title" approved="yes">
         <source xml:lang="en">{app_title} Uninstall</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} Uninstall</target>
+        <target xml:lang="pt-PT" state="final">{app_title} Desinstalar</target>
       </trans-unit>
-      <trans-unit id="templates.error_title">
+      <trans-unit id="templates.error_title" approved="yes">
         <source xml:lang="en">{program_name} Error</source>
-        <target xml:lang="pt-PT" state="needs-translation">{program_name} Error</target>
+        <target xml:lang="pt-PT" state="final">{program_name} Erro</target>
       </trans-unit>
       <trans-unit id="templates.install_directory_default">
         <source xml:lang="en">The install directory is '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</source>
-        <target xml:lang="pt-PT" state="needs-translation">The install directory is '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</target>
+        <target xml:lang="pt-PT" state="translated">O diretório de instalação é '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</target>
       </trans-unit>
       <trans-unit id="templates.install_directory_custom">
         <source xml:lang="en">The install directory is '&lt;A HREF="na"&gt;{path}&lt;/A&gt;'</source>
-        <target xml:lang="pt-PT" state="needs-translation">The install directory is '&lt;A HREF="na"&gt;{path}&lt;/A&gt;'</target>
+        <target xml:lang="pt-PT" state="translated">O diretório de instalação é '&lt;A HREF="na"&gt;{path}&lt;/A&gt;'</target>
       </trans-unit>
       <trans-unit id="progress.installing_app">
         <source xml:lang="en">Installing {app_title}...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Installing {app_title}...</target>
+        <target xml:lang="pt-PT" state="translated">Instalando {app_title}...</target>
       </trans-unit>
       <trans-unit id="progress.downloading_runtime">
         <source xml:lang="en">Downloading {runtime_name}...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Downloading {runtime_name}...</target>
+        <target xml:lang="pt-PT" state="translated">Baixando {runtime_name}...</target>
       </trans-unit>
-      <trans-unit id="buttons.ok">
+      <trans-unit id="buttons.ok" approved="yes">
         <source xml:lang="en">Ok</source>
-        <target xml:lang="pt-PT" state="needs-translation">Ok</target>
+        <target xml:lang="pt-PT" state="final">OK</target>
       </trans-unit>
-      <trans-unit id="buttons.yes">
+      <trans-unit id="buttons.yes" approved="yes">
         <source xml:lang="en">Yes</source>
-        <target xml:lang="pt-PT" state="needs-translation">Yes</target>
+        <target xml:lang="pt-PT" state="final">Sim</target>
       </trans-unit>
-      <trans-unit id="buttons.no">
+      <trans-unit id="buttons.no" approved="yes">
         <source xml:lang="en">No</source>
-        <target xml:lang="pt-PT" state="needs-translation">No</target>
+        <target xml:lang="pt-PT" state="final">Não</target>
       </trans-unit>
       <trans-unit id="buttons.install_update">
         <source xml:lang="en">Install Update</source>
-        <target xml:lang="pt-PT" state="needs-translation">Install Update</target>
+        <target xml:lang="pt-PT" state="translated">Instalar atualização</target>
       </trans-unit>
       <trans-unit id="buttons.install_and_update">
         <source xml:lang="en">Install &amp; Update</source>
-        <target xml:lang="pt-PT" state="needs-translation">Install &amp; Update</target>
+        <target xml:lang="pt-PT" state="translated">Instalar &amp; atualização</target>
       </trans-unit>
       <trans-unit id="buttons.install">
         <source xml:lang="en">Install</source>
-        <target xml:lang="pt-PT" state="needs-translation">Install</target>
+        <target xml:lang="pt-PT" state="translated">Instalar</target>
       </trans-unit>
       <trans-unit id="buttons.hide">
         <source xml:lang="en">Hide</source>
-        <target xml:lang="pt-PT" state="needs-translation">Hide</target>
+        <target xml:lang="pt-PT" state="translated">Ocultar</target>
       </trans-unit>
       <trans-unit id="buttons.retry_close_programs">
         <source xml:lang="en">Retry\nTry again if you've closed the program(s)</source>
@@ -100,15 +100,15 @@
       </trans-unit>
       <trans-unit id="dialogs.restart_required.instruction">
         <source xml:lang="en">Restart Required</source>
-        <target xml:lang="pt-PT" state="needs-translation">Restart Required</target>
+        <target xml:lang="pt-PT" state="translated">É necessário reiniciar</target>
       </trans-unit>
       <trans-unit id="dialogs.restart_required.content">
         <source xml:lang="en">A restart is required before Setup can continue. Please restart your computer and try again.</source>
-        <target xml:lang="pt-PT" state="needs-translation">A restart is required before Setup can continue. Please restart your computer and try again.</target>
+        <target xml:lang="pt-PT" state="translated">É necessário reiniciar antes que a instalação continue. Reinicie o computador e tente novamente.</target>
       </trans-unit>
       <trans-unit id="dialogs.update_missing_dependencies.header">
         <source xml:lang="en">{app_title} would like to update from {from_version} to {to_version}</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} would like to update from {from_version} to {to_version}</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} gostaria de atualizar de {from_version} para {to_version}</target>
       </trans-unit>
       <trans-unit id="dialogs.update_missing_dependencies.content">
         <source xml:lang="en">{app_title} {to_version} has missing dependencies which need to be installed: {dependency_list}. Would you like to continue?</source>
@@ -140,23 +140,23 @@
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.default_instruction">
         <source xml:lang="en">{app_title} is already installed.</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} is already installed.</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} já está instalado.</target>
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.default_content">
         <source xml:lang="en">This application is installed on your computer. If it is not functioning correctly, you can attempt to repair it.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This application is installed on your computer. If it is not functioning correctly, you can attempt to repair it.</target>
+        <target xml:lang="pt-PT" state="translated">Este aplicativo está instalado no seu computador. Se não funciona corretamente, pode tentar repará-lo.</target>
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.update_instruction">
         <source xml:lang="en">An older version of {app_title} is installed.</source>
-        <target xml:lang="pt-PT" state="needs-translation">An older version of {app_title} is installed.</target>
+        <target xml:lang="pt-PT" state="translated">Uma versão antiga do {app_title} está instalada.</target>
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.update_content">
         <source xml:lang="en">Would you like to update from {old_version} to {new_version}?</source>
-        <target xml:lang="pt-PT" state="needs-translation">Would you like to update from {old_version} to {new_version}?</target>
+        <target xml:lang="pt-PT" state="translated">Gostaria de atualizar da {old_version} para a {new_version}?</target>
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.downgrade_instruction">
         <source xml:lang="en">A newer version of {app_title} is installed.</source>
-        <target xml:lang="pt-PT" state="needs-translation">A newer version of {app_title} is installed.</target>
+        <target xml:lang="pt-PT" state="translated">Uma nova versão do {app_title} está instalada.</target>
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.downgrade_content">
         <source xml:lang="en">You already have {old_version} installed. Would you like to downgrade this application to an older version?</source>
@@ -172,15 +172,15 @@
       </trans-unit>
       <trans-unit id="dialogs.legacy_migration_failed.header">
         <source xml:lang="en">Unable to start app</source>
-        <target xml:lang="pt-PT" state="needs-translation">Unable to start app</target>
+        <target xml:lang="pt-PT" state="translated">Não foi possível iniciar o aplicativo</target>
       </trans-unit>
       <trans-unit id="dialogs.legacy_migration_failed.content">
         <source xml:lang="en">This app installation has been corrupted and cannot be started. Please re-install the app.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This app installation has been corrupted and cannot be started. Please re-install the app.</target>
+        <target xml:lang="pt-PT" state="translated">A instalação do aplicativo está corrompida e não pode ser iniciada. Por favor, reinstale o aplicativo.</target>
       </trans-unit>
       <trans-unit id="dialogs.uninstall_success.content">
         <source xml:lang="en">The application was successfully uninstalled.</source>
-        <target xml:lang="pt-PT" state="needs-translation">The application was successfully uninstalled.</target>
+        <target xml:lang="pt-PT" state="translated">O aplicativo foi desinstalado com sucesso.</target>
       </trans-unit>
     </body>
   </file>
