@@ -3136,7 +3136,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.WhatCameraSees" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Here is what your camera sees:</source>
-        <target xml:lang="pt-PT" state="final">Isto é o que a sua câmera vê:</target>
+        <target xml:lang="pt-PT" state="final">Veja o que a sua câmera vê:</target>
         <note>ID: EditTab.Toolbox.SignLanguage.WhatCameraSees</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguageTool" sil:dynamic="true" approved="yes">
@@ -3291,7 +3291,7 @@
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
-        <target xml:lang="pt-PT" state="final">Bloom teve um problema mostrando este livro. Isto não significa que seu trabalho seja perdido, mas isso significa que algo está fora de data, está faltando ou está errado.</target>
+        <target xml:lang="pt-PT" state="final">Bloom teve um problema ao mostrar este livro. Isso não significa que o seu trabalho esteja perdido, mas significa que algo está desatualizado, está faltando ou deu errado.</target>
         <note>ID: Errors.BookProblem</note>
       </trans-unit>
       <trans-unit id="Errors.CopyImageMetadata" approved="yes">
@@ -3546,7 +3546,7 @@
       </trans-unit>
       <trans-unit id="HelpMenu.RegistrationMenuItem" approved="yes">
         <source xml:lang="en">Registration...</source>
-        <target xml:lang="pt-PT" state="final">Registo</target>
+        <target xml:lang="pt-PT" state="final">Inscrição...</target>
         <note>ID: HelpMenu.RegistrationMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.ReleaseNotesMenuItem" approved="yes">
@@ -3596,7 +3596,7 @@
       </trans-unit>
       <trans-unit id="LameEncoder.DeleteFailedLong" approved="yes">
         <source xml:lang="en">Bloom could not replace an mp3 file. If this continues, check your antivirus.</source>
-        <target xml:lang="pt-PT" state="final">Bloom não pode substituir um ficheiro mp3. Se isto continuar, verifique o antivírus.</target>
+        <target xml:lang="pt-PT" state="final">Bloom não pude substituir um arquivo mp3. Se isto continuar, verifique seu antivírus.</target>
         <note>ID: LameEncoder.DeleteFailedLong</note>
       </trans-unit>
       <trans-unit id="LameEncoder.Progress" approved="yes">
@@ -3966,7 +3966,7 @@
       </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine1" approved="yes">
         <source xml:lang="en">You are almost ready to start making books.</source>
-        <target xml:lang="pt-PT" state="final">Você está quase listo para começar a fazer livros.</target>
+        <target xml:lang="pt-PT" state="final">Você está quase pronto para começar a fazer livros.</target>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine1</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2.V2" approved="yes">
@@ -4478,7 +4478,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Epub.IncludeOnPage.Disabled" approved="yes">
         <source xml:lang="en">This is disabled because Bloom can only do this if the ePUB mode is "Flowable".</source>
-        <target xml:lang="pt-PT" state="final">Isto é desativado porque Bloom só pode fazer isso se o modo ePUB é formato "Flowable".</target>
+        <target xml:lang="pt-PT" state="final">Essa opção é desativada porque Bloom só pode fazer isso se o modo ePUB for no formato "Flowable".</target>
         <note>ID: PublishTab.Epub.IncludeOnPage.Disabled</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.BackLinkLabel" approved="yes">
