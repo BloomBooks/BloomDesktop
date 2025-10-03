@@ -581,7 +581,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None" approved="yes">
         <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
-        <target xml:lang="pt-PT" state="final">Isso está desabilitado porque este livro não tem nenhum elemento de sobreposição que se qualifique como "como quadrinhos", como balões de fala.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque este livro não tem nenhum elemento de sobreposição que faz se qualificar como "tipo quadrinhos/banda desenhada", como balões de fala, por exemplo.</target>
         <note>ID: PublishTab.Feature.Comic.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.Possible" approved="yes">
