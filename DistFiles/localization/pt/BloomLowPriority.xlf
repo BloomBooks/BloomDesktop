@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed" approved="yes">
         <source xml:lang="en">eSpeak language:</source>
-        <target xml:lang="pt-PT" state="final">Idioma do eSpeak:</target>
+        <target xml:lang="pt-PT" state="final">língua do eSpeak:</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion" approved="yes">
@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="Settings.Subscription.Community.Invitation" approved="yes">
         <source xml:lang="en">If your project is fully funded and managed by your local language community, you may qualify for a free [Bloom Community Subscription](https://bloomlibrary.org/subscriptions).</source>
-        <target xml:lang="pt-PT" state="final">Se o seu projeto for totalmente financiado e gerido por sua comunidade de idiomas local, pode se qualificar para uma [Assinatura da Comunidade do Bloom](https://bloomlibrary.org/subscriptions).</target>
+        <target xml:lang="pt-PT" state="final">Se o seu projeto for totalmente financiado e gerido por sua comunidade de línguas local, pode se qualificar para uma [Assinatura da Comunidade do Bloom](https://bloomlibrary.org/subscriptions).</target>
         <note>ID: Settings.Subscription.Community.Invitation</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.SubscriptionCodeLabel" approved="yes">
