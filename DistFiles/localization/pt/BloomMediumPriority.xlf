@@ -606,7 +606,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.NoVideos" approved="yes">
         <source xml:lang="en">This is disabled because this book does not have any videos.</source>
-        <target xml:lang="pt-PT" state="final">Isso está desabilitado porque o livro não tem áudio.</target>
+        <target xml:lang="pt-PT" state="final">Essa opção está desabilitada porque o livro não tem vídeo.</target>
         <note>ID: PublishTab.Feature.SignLanguage.NoVideos</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.Present" approved="yes">
@@ -621,7 +621,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.TalkingBook.NoRecordings" approved="yes">
         <source xml:lang="en">This is disabled because this book does not have any Talking Book recordings.</source>
-        <target xml:lang="pt-PT" state="final">Isso está desabilitado porque o livro não tem áudio.</target>
+        <target xml:lang="pt-PT" state="final">Essa opção está desabilitada porque o livro não tem áudio.</target>
         <note>ID: PublishTab.Feature.TalkingBook.NoRecordings</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.TalkingBook.NoLanguagesSelected" approved="yes">
@@ -691,7 +691,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Documentation about this screen</source>
-        <target xml:lang="pt-PT" state="final">Documentação sobre este ecrã</target>
+        <target xml:lang="pt-PT" state="final">Documentação sobre este ecrã/tela</target>
         <note>ID: PublishTab.Upload.Help</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AboutBlorg" sil:dynamic="true" approved="yes">
