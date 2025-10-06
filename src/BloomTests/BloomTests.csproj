@@ -5,12 +5,11 @@
 		<UpgradeBackupLocation />
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
 		<OutputPath>..\..\output\Tests\$(Configuration)\x64</OutputPath>
-		<!-- Removed x86 platform restriction to allow building for multiple architectures -->
 		<AssemblyTitle>BloomTests</AssemblyTitle>
 		<Company>SIL</Company>
 		<Product>BloomTests</Product>
 		<Copyright>© SIL International 2014-2024</Copyright>
-		<Version>6.3.40.0</Version>
+		<Version>6.3.0.0</Version>
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<LangVersion>11.0</LangVersion>
@@ -32,34 +31,33 @@
 			<_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
 		</AssemblyAttribute>
 	</ItemGroup>
-	<!-- Removed x86 platform target restrictions from configuration-specific property groups -->
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
 		<DebugType>full</DebugType>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
 		<DebugType>pdbonly</DebugType>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
 		<DebugType>full</DebugType>
 		<CodeAnalysisLogFile>..\..\output\Debug\BloomTests.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
 		<CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
 		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-		<CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+		<CodeAnalysisRuleSetDirectories>;C:\Program Files (x64)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
 		<CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
-		<CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+		<CodeAnalysisRuleDirectories>;C:\Program Files (x64)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
 		<CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
 		<CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
 		<DebugType>pdbonly</DebugType>
 		<CodeAnalysisLogFile>bin\Release\BloomTests.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
 		<CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
 		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-		<CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+		<CodeAnalysisRuleSetDirectories>;C:\Program Files (x64)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
 		<CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
-		<CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+		<CodeAnalysisRuleDirectories>;C:\Program Files (x64)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
 		<CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
 		<CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
 		<DebugSymbols>true</DebugSymbols>
@@ -73,7 +71,6 @@
     I believe this is unnecessary on Linux, they usually already have 4 GB virtual address space available.
     -->
 		<LargeAddressAware>true</LargeAddressAware>
-		<!-- Removed x86 platform target restriction -->
 	</PropertyGroup>
 	<PropertyGroup>
 		<!-- We should delete this when we get rid of WebThumbNailList.Designer.cs. I believe we are only using binary formatter serialization in working with the ImageStream there. -->
