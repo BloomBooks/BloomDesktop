@@ -18,6 +18,63 @@ function injectCss(cssContent, source) {
 }`;
 }
 
+// Custom plugin to fix jQuery import issues
+// I'm committing this temporarily so I can go work on other stuff, but I think it's a mistake.
+// It's a bandaid to fix a fundamental problem with how Vite is handling our dependencies and
+// transpiling. We may not need this plugin at all; if we do, it probably needs to be more general.
+function fixJqueryImportsPlugin(): Plugin {
+    return {
+        name: "fix-jquery-imports",
+        apply: "build",
+        generateBundle(options, bundle) {
+            // Post-process the audioRecording bundle to fix jQuery imports
+            Object.keys(bundle).forEach((fileName) => {
+                const chunk = bundle[fileName];
+                if (
+                    chunk.type === "chunk" &&
+                    fileName === "audioRecording.js"
+                ) {
+                    // Fix the incorrect import statement that imports $ from localizationManager
+                    const originalCode = chunk.code;
+
+                    // Check if we need to preserve theOneLocalizationManager import
+                    const needsLocalizationManager = originalCode.includes(
+                        "theOneLocalizationManager",
+                    );
+
+                    // Remove the problematic import line
+                    chunk.code = chunk.code.replace(
+                        /import\s*{\s*\$\s*as\s*\$\$1[^}]*}\s*from\s*"\.\/localizationManager\.js";\s*/g,
+                        "",
+                    );
+
+                    // If we need localizationManager, add a proper import
+                    if (
+                        needsLocalizationManager &&
+                        !chunk.code.includes('from "./localizationManager.js"')
+                    ) {
+                        chunk.code =
+                            'import { t as theOneLocalizationManager } from "./localizationManager.js";\n' +
+                            chunk.code;
+                    }
+
+                    // Clean up any duplicate jQuery imports
+                    const jqueryImportRegex =
+                        /import[^;]*from\s*"\.\/jquery\.js";\s*/g;
+                    const jqueryImports = chunk.code.match(jqueryImportRegex);
+                    if (jqueryImports && jqueryImports.length > 1) {
+                        // Remove all jQuery imports first
+                        chunk.code = chunk.code.replace(jqueryImportRegex, "");
+                        // Add a single clean jQuery import at the top
+                        chunk.code =
+                            'import $ from "./jquery.js";\n' + chunk.code;
+                    }
+                }
+            });
+        },
+    };
+}
+
 // Custom plugin to transform LESS imports to inline CSS injection (build only)
 function transformLessImportsPlugin(): Plugin {
     return {
@@ -127,6 +184,7 @@ export default defineConfig(async () => {
             react({
                 reactRefreshHost: `http://localhost:${process.env.PORT || 5173}`,
             }),
+            fixJqueryImportsPlugin(), // Fix jQuery import issues in audioRecording.js
             transformLessImportsPlugin(), // Transform LESS imports to inline CSS injection (build only)
             //pugPlugin()
             viteStaticCopy({
@@ -191,6 +249,11 @@ export default defineConfig(async () => {
                         ],
                         dest: ".",
                     },
+                    // Copy legacy commonBundle.js for backward compatibility
+                    {
+                        src: "legacy/commonBundle.js",
+                        dest: ".",
+                    },
                 ],
             }),
         ],
@@ -203,6 +266,7 @@ export default defineConfig(async () => {
             sourcemap: true, // Generate source maps for debugging
             minify: false, // Disable minification for better debugging (optional)
             cssCodeSplit: false, // Inline CSS into JS bundles like webpack
+            manifest: true, // Generate manifest.json for post-processing
             rollupOptions: {
                 input: entryPoints,
                 external: [
@@ -213,14 +277,12 @@ export default defineConfig(async () => {
                     "crypto",
                 ],
                 output: {
-                    entryFileNames: "[name].js",
+                    entryFileNames: "[name]-main.js", // Change to X-main.js format
                     chunkFileNames: "[name].js",
                     assetFileNames: "[name].[ext]",
-                    manualChunks(id: string) {
-                        if (id.includes("node_modules")) {
-                            // Put all node_modules in a common bundle
-                            return "commonBundle";
-                        }
+                    // Prevent jQuery from being incorrectly re-exported from other modules
+                    manualChunks: {
+                        jquery: ["jquery"],
                     },
                 },
             },
@@ -287,6 +349,9 @@ export default defineConfig(async () => {
                     resources: "usable",
                 },
             },
+        },
+        optimizeDeps: {
+            include: ["jquery"],
         },
         define: {
             // Add global constants here if your webpack config defines any
