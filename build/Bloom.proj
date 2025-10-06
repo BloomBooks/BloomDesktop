@@ -1,4 +1,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Import Directory.Build.props to get shared properties like VelopackVersion -->
+  <Import Project="$(MSBuildProjectDirectory)\..\Directory.Build.props" />
+
   <!-- This makes defaults for various properties unless they are set from the command line or TeamCity parameter settings.
 	Typically command line includes /p:BUILD_NUMBER=3.1.22.0 (all 4 digits required).
 	May include something like /p:channel=Alpha.
@@ -67,6 +71,10 @@
     <ProfileName>BloomLibrary</ProfileName>
     <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
     <Bucket>bloomlibrary.org</Bucket>
+  </PropertyGroup>
+  <!-- Default path to xliff/xlf localization files to pass to Velopack fork. Can be overridden via /p:LocalizationFilesDir=... -->
+  <PropertyGroup>
+    <LocalizationFilesDir Condition="'$(LocalizationFilesDir)'==''">$(RootDir)\DistFiles\localization</LocalizationFilesDir>
   </PropertyGroup>
   <Import Project="../.nuget/NuGet.targets" />
   <Target Name="RestoreBuildTasks" DependsOnTargets="CheckPrerequisites">
@@ -207,7 +215,63 @@
 			IsPublicRead="true" />
   </Target>
 
-  <Target Name="Installer" DependsOnTargets="VersionNumbers; Build">
+  <!-- Ensure the correct BloomBooks.Velopack.Cli tool is installed (install if missing, update if mismatched) -->
+  <Target Name="EnsureVelopackCli">
+    <PropertyGroup>
+      <VelopackCliNeedsInstall>true</VelopackCliNeedsInstall>
+      <VelopackCliNeedsUpdate>false</VelopackCliNeedsUpdate>
+    </PropertyGroup>
+
+    <Message Text="Ensuring BloomBooks.Velopack.Cli version $(VelopackVersion) is installed..." Importance="high" />
+
+    <!-- Detect if the exact desired version is already installed globally -->
+    <Exec Command="dotnet tool list -g" ConsoleToMSBuild="true" IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" ItemName="DotNetToolList" />
+    </Exec>
+    <CreateProperty Value="@(DotNetToolList, ' ')">
+      <Output PropertyName="DotNetToolListText" TaskParameter="Value"/>
+    </CreateProperty>
+    <PropertyGroup>
+      <VelopackCliLower>$([System.String]::Copy('BloomBooks.Velopack.Cli').ToLowerInvariant())</VelopackCliLower>
+      <VelopackVerLower>$([System.String]::Copy('$(VelopackVersion)').ToLowerInvariant())</VelopackVerLower>
+      <ToolListLower>$([System.String]::Copy('$(DotNetToolListText)').ToLowerInvariant())</ToolListLower>
+      <VelopackCliPresent Condition="$([System.String]::Copy('$(ToolListLower)').Contains('$(VelopackCliLower)'))">true</VelopackCliPresent>
+      <VelopackCliPresent Condition="'$(VelopackCliPresent)'==''">false</VelopackCliPresent>
+      <VelopackVersionMatch Condition="'$(VelopackCliPresent)'=='true' and $([System.String]::Copy('$(ToolListLower)').Contains('$(VelopackVerLower)'))">true</VelopackVersionMatch>
+      <VelopackVersionMatch Condition="'$(VelopackVersionMatch)'==''">false</VelopackVersionMatch>
+      <VelopackCliNeedsInstall Condition="'$(VelopackVersionMatch)'=='true'">false</VelopackCliNeedsInstall>
+      <VelopackCliNeedsUpdate Condition="'$(VelopackCliPresent)'=='true' and '$(VelopackVersionMatch)'=='false'">true</VelopackCliNeedsUpdate>
+    </PropertyGroup>
+
+    <Message Text="BloomBooks.Velopack.Cli $(VelopackVersion) already installed. Skipping reinstall." Importance="high" Condition="'$(VelopackCliNeedsInstall)'=='false' and '$(VelopackCliNeedsUpdate)'=='false'" />
+
+    <!-- Update to the exact version if tool present but version differs -->
+    <Message Text="Updating BloomBooks.Velopack.Cli to version $(VelopackVersion)..." Importance="high" Condition="'$(VelopackCliNeedsUpdate)'=='true'" />
+    <Exec Command="dotnet tool update --global BloomBooks.Velopack.Cli --version $(VelopackVersion)" Condition="'$(VelopackCliNeedsUpdate)'=='true'" />
+
+    <!-- Install fresh copy when needed (not an update) -->
+    <CallTarget Targets="InstallVelopackCli" Condition="'$(VelopackCliNeedsInstall)'=='true' and '$(VelopackCliNeedsUpdate)'=='false'" />
+
+    <!-- Verify the existence of the CLI -->
+    <Exec Command="vpk --version" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="VpkVersionExitCode" />
+    </Exec>
+    <Message Text="BloomBooks.Velopack.Cli is ready (version $(VelopackVersion))." Importance="high" Condition="'$(VpkVersionExitCode)'=='0'" />
+    <Error Text="Velopack CLI ('vpk') is not available after install/update. Ensure dotnet tool can access the required feed and that BloomBooks.Velopack.Cli $(VelopackVersion) is published." Condition="'$(VpkVersionExitCode)'!='0'" />
+  </Target>
+
+  <Target Name="InstallVelopackCli">
+    <!-- Since the upstream vpk package uses the same command (vpk) as our BloomBooks.Velopack.Cli package,
+         we have to make sure it is not installed. Otherwise, our installation will fail. -->
+    <Message Text="Ensuring (original upstream) vpk package is not installed" Importance="high"/>
+    <Exec Command="dotnet tool uninstall --global vpk" />
+
+    <!-- Install the specific version we need if not present. -->
+    <Message Text="Installing BloomBooks.Velopack.Cli version $(VelopackVersion)..." Importance="high" />
+    <Exec Command="dotnet tool install --global BloomBooks.Velopack.Cli --version $(VelopackVersion)" />
+  </Target>
+
+  <Target Name="Installer" DependsOnTargets="VersionNumbers; Build; EnsureVelopackCli">
     <CallTarget Targets="SignExesIfPossible"/>
     <!-- the name of the exe must also match the application product name. Use move rather than rename in case the destination
 		already exists from a previous build. Review: we could do this in installer\content after the following copies.-->
@@ -241,6 +305,7 @@
     <Copy SourceFiles="@(DistFiles)" DestinationFolder="..\output\installer\content\%(RecursiveDir)" />
     <Copy SourceFiles="@(BrowserFiles)" DestinationFolder="..\output\installer\content\browser\%(RecursiveDir)" />
     <Message Text="Running Vpk: $(Version)" Importance="high"  />
+    <Message Text="Using localization from: $(LocalizationFilesDir)" Importance="high" />
     <!-- This is the command that actually runs Velopack. It generates a complete installer as well as full and delta nupkg packages,
       a json file which Velopack uses to figure out what deltas to download, and a RELEASES file which tells old Squirrel-based
       installers how to update.
@@ -251,7 +316,7 @@
       at https://docs.velopack.io/packaging/bootstrapping#:~:text=By%20default%2C%20Velopack%20will%20accept,dotnet.
       It will help the user try to fix things if they are not.-->
     <Exec
-      Command="vpk pack --packId Bloom$(channel) --packVersion $(Version) --packDir ..\output\installer\content --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --packAuthors &quot;SIL Global&quot; " />
+      Command="vpk pack --packId Bloom$(channel) --packVersion $(Version) --packDir ..\output\installer\content --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --progressColor &quot;#d65649&quot; --localization &quot;$(LocalizationFilesDir)&quot; --packAuthors &quot;SIL Global&quot; " />
     <Copy SourceFiles="$(InstallerOutputFolder)\Bloom$(channel)-win-Setup.exe"
           DestinationFiles="$(InstallerOutputFolder)\$(InstallerFileName)"
     />

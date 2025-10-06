@@ -1,4 +1,4 @@
-call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
+REM call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
 REM Must be run in a DEVELOPMENT shell (e.g., start menu, type dev, choose "Developer Command Prompt for VS 2022 ")
 REM Makes a release build with some debug-friendly settings and then makes a Velopack installer,
 REM currently in ../output/installer/result
@@ -7,17 +7,15 @@ REM To test the update process, patch ApplicationUpdateSupport.GetUpdateUrl to t
 REM If there are existing releases in the output directory, you must make sure the BUILD_NUMBER is adjusted to something larger than any
 REM of them. The major and minor numbers here are ignored.
 
-pushd .
-REM squirrel days: MSbuild /p:Label=Beta /p:channel=LocalBuilt /property:SquirrelReleaseFolder="../output/installer" /p:BuildConfigurationID=xyz123 /p:WarningLevel=0 /target:Build /property:teamcity_build_checkoutDir=..\ /verbosity:detailed  /property:LargeFilesDir="C:\dev\teamcitybuilddownloads" /property:teamcity_dotnet_nunitlauncher_msbuild_task="notthere" /property:BUILD_NUMBER="*.*.999.999" /property:Minor="1"
-MSbuild /p:Label=Beta /p:channel=LocalBuilt /p:InstallerOutputFolder=../output/installer/result /p:BuildConfigurationID=xyz123 /p:WarningLevel=0 /target:Build /property:teamcity_build_checkoutDir=..\ /verbosity:detailed  /property:LargeFilesDir="C:\dev\teamcitybuilddownloads" /property:teamcity_dotnet_nunitlauncher_msbuild_task="notthere" /property:BUILD_NUMBER="6.3.1007.0" /property:Minor="1"
+REM Ensure we run from the directory of this script, so msbuild finds Bloom.proj
+pushd "%~dp0"
 
-REM this only needs doing once, really, but putting it here so devs don't forget it.
-REM This should match the Velopack version in BloomExe.csproj.
-REM Currently it is a prerelease version.
-dotnet tool install --global vpk --version 0.0.1350-g3ba32af
-
-REM review: do any of these properties I'm not using still apply? I'm not sure the Label does anything.
-REM squirrel: MSbuild /p:Label=Beta /p:channel=LocalBuilt /property:SquirrelReleaseFolder="../output/installer" /p:BuildConfigurationID=xyz123 /p:WarningLevel=0 /target:Installer /property:teamcity_build_checkoutDir=..\ /verbosity:detailed  /property:LargeFilesDir="C:\dev\teamcitybuilddownloads" /property:teamcity_dotnet_nunitlauncher_msbuild_task="notthere" /property:BUILD_NUMBER="*.*.999.999" /property:Minor="1"
-MSbuild /p:Label=Beta /p:channel=LocalBuilt /p:InstallerOutputFolder=../output/installer/result /p:BUILD_NUMBER=6.3.1007.0 /t:Installer
+REM Build the installer (Installer depends on Build and EnsureVelopackCli)
+REM Note: BUILD_NUMBER must be 4 parts (a.b.c.d). Only the 3rd part (BuildCounter) matters for Version; the others can be 0.
+REM Clean the output folder to avoid vpk complaining about equal/greater existing releases
+set OUTPUT_DIR=..\output\installer\result
+if exist "%OUTPUT_DIR%" rmdir /s /q "%OUTPUT_DIR%"
+mkdir "%OUTPUT_DIR%" 2>nul
+dotnet msbuild "Bloom.proj" /p:channel=LocalBuilt /p:InstallerOutputFolder="%OUTPUT_DIR%" /p:BUILD_NUMBER=0.0.9999.0 /t:Installer /verbosity:detailed
 popd
-PAUSE
+
