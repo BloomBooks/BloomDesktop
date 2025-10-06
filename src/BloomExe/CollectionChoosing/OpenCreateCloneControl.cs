@@ -11,6 +11,7 @@ using SIL.i18n;
 using System.Linq;
 using Bloom.Workspace;
 using SIL.IO;
+using Bloom.Utils;
 
 namespace Bloom.CollectionChoosing
 {
@@ -190,13 +191,27 @@ namespace Bloom.CollectionChoosing
 
         private void CreateNewCollection_LinkClicked(object sender, EventArgs e)
         {
-            var desiredOrExistingSettingsFilePath = _createNewCollectionAndReturnPath(
-                this.ParentForm
-            );
-            if (desiredOrExistingSettingsFilePath == null)
-                return;
-            var settings = new CollectionSettings(desiredOrExistingSettingsFilePath);
-            SelectCollectionAndClose(settings.SettingsFilePath);
+            try
+            {
+                var desiredOrExistingSettingsFilePath = _createNewCollectionAndReturnPath(
+                    this.ParentForm
+                );
+                if (desiredOrExistingSettingsFilePath == null)
+                    return;
+                var settings = new CollectionSettings(desiredOrExistingSettingsFilePath);
+                SelectCollectionAndClose(settings.SettingsFilePath);
+            }
+            catch (Exception ex)
+            {
+                if (LongPathAware.ShouldConvertToPathTooLongException(ex, out string path))
+                {
+                    throw new Utils.PathTooLongException(path);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         public void SelectCollectionAndClose(string path)
