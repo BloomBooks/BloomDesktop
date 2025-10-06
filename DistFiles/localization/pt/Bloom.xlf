@@ -3981,7 +3981,7 @@
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InDropboxMessage" approved="yes">
         <source xml:lang="en">Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.</source>
-        <target xml:lang="pt-PT" state="final">Bloom detecto que esta coleção está localizada na sua pasta Dropbox. Isso pode causar problemas como Dropbox às vezes não permite que Bloom acesse seus próprios arquivos. Se você tiver problemas, nós recomendamos que você mova sua coleção a outro lugar ou desabilite o Dropbox enquanto estiver usando o Bloom.</target>
+        <target xml:lang="pt-PT" state="final">Bloom detectou que esta coleção está localizada na sua pasta Dropbox. Isso pode causar problemas como Dropbox às vezes não permite que Bloom acesse seus próprios arquivos. Se você tiver problemas, nós recomendamos que você mova sua coleção a outro lugar ou desabilite o Dropbox enquanto estiver usando o Bloom.</target>
         <note>ID: OpenCreateCloneControl.InDropboxMessage</note>
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage" approved="yes">
