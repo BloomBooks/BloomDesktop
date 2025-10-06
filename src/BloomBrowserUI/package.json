@@ -18,7 +18,7 @@
         "testWatch": "karma start --browsers Chrome_allow_autoplay",
         "check-that-node-modules-exists-in-content-dir": "cd ../content && node checkForNodeModules.js && cd ../BloomBrowserUI",
         "// 'build': 'does a nice new clean build of the output/browser folder.'": " ",
-        "build": "vite build",
+        "build": "vite build && node scripts/post-build.js",
         "build:pug": "gulp pug",
         "build-short": "gulp build-short && npm run build:content",
         "build-prod": "gulp build-prod  && npm run build:content",
