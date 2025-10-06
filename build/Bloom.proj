@@ -249,9 +249,8 @@
     <Message Text="Updating BloomBooks.Velopack.Cli to version $(VelopackVersion)..." Importance="high" Condition="'$(VelopackCliNeedsUpdate)'=='true'" />
     <Exec Command="dotnet tool update --global BloomBooks.Velopack.Cli --version $(VelopackVersion)" Condition="'$(VelopackCliNeedsUpdate)'=='true'" />
 
-    <!-- Install the specific version we need if not present. -->
-    <Message Text="Installing BloomBooks.Velopack.Cli version $(VelopackVersion)..." Importance="high" Condition="'$(VelopackCliNeedsInstall)'=='true' and '$(VelopackCliNeedsUpdate)'=='false'" />
-    <Exec Command="dotnet tool install --global BloomBooks.Velopack.Cli --version $(VelopackVersion)" Condition="'$(VelopackCliNeedsInstall)'=='true' and '$(VelopackCliNeedsUpdate)'=='false'" />
+    <!-- Install fresh copy when needed (not an update) -->
+    <CallTarget Targets="InstallVelopackCli" Condition="'$(VelopackCliNeedsInstall)'=='true' and '$(VelopackCliNeedsUpdate)'=='false'" />
 
     <!-- Verify the existence of the CLI -->
     <Exec Command="vpk --version" IgnoreExitCode="true">
@@ -259,6 +258,17 @@
     </Exec>
     <Message Text="BloomBooks.Velopack.Cli is ready (version $(VelopackVersion))." Importance="high" Condition="'$(VpkVersionExitCode)'=='0'" />
     <Error Text="Velopack CLI ('vpk') is not available after install/update. Ensure dotnet tool can access the required feed and that BloomBooks.Velopack.Cli $(VelopackVersion) is published." Condition="'$(VpkVersionExitCode)'!='0'" />
+  </Target>
+
+  <Target Name="InstallVelopackCli">
+    <!-- Since the upstream vpk package uses the same command (vpk) as our BloomBooks.Velopack.Cli package,
+         we have to make sure it is not installed. Otherwise, our installation will fail. -->
+    <Message Text="Ensuring (original upstream) vpk package is not installed" Importance="high"/>
+    <Exec Command="dotnet tool uninstall --global vpk" />
+
+    <!-- Install the specific version we need if not present. -->
+    <Message Text="Installing BloomBooks.Velopack.Cli version $(VelopackVersion)..." Importance="high" />
+    <Exec Command="dotnet tool install --global BloomBooks.Velopack.Cli --version $(VelopackVersion)" />
   </Target>
 
   <Target Name="Installer" DependsOnTargets="VersionNumbers; Build; EnsureVelopackCli">
