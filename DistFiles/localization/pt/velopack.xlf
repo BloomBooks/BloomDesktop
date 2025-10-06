@@ -76,7 +76,7 @@
       </trans-unit>
       <trans-unit id="buttons.continue_close_programs">
         <source xml:lang="en">Continue\nAttempt to close the program(s) automatically</source>
-        <target xml:lang="pt-PT" state="needs-translation">Continue\nAttempt to close the program(s) automatically</target>
+        <target xml:lang="pt-PT" state="translated">Continuar\ntentativa de fechar o(s) programa(s) automaticamente</target>
       </trans-unit>
       <trans-unit id="buttons.cancel_stop_update">
         <source xml:lang="en">Cancel\nThe update will not continue</source>
@@ -120,11 +120,11 @@
       </trans-unit>
       <trans-unit id="dialogs.setup_missing_dependencies.content">
         <source xml:lang="en">{app_title} requires the following packages to be installed: {dependency_list}. Would you like to continue?</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} requires the following packages to be installed: {dependency_list}. Would you like to continue?</target>
+        <target xml:lang="pt-PT" state="translated">O {app_title} requer que os seguintes pacotes sejam instalados: {dependency_list}. Você gostaria de continuar?</target>
       </trans-unit>
       <trans-unit id="dialogs.uninstall_complete_with_errors.instruction">
         <source xml:lang="en">{app_title} uninstall has completed with errors.</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} uninstall has completed with errors.</target>
+        <target xml:lang="pt-PT" state="translated">A desinstalação {app_title} foi concluída com erros.</target>
       </trans-unit>
       <trans-unit id="dialogs.uninstall_complete_with_errors.content">
         <source xml:lang="en">There may be left-over files or directories on your system. You can attempt to remove these manually or re-install the application and try again.</source>
