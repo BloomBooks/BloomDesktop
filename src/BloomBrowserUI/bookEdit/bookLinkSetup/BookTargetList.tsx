@@ -64,6 +64,7 @@ const SortableBookItem: React.FC<{
                     );
                     onRemove(link);
                 }}
+                displayRealTitle={true}
             />
         </div>
     );
