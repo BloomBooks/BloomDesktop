@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -1003,6 +1004,12 @@ namespace Bloom.web.controllers
             }
             if (string.IsNullOrEmpty(heading) && exception != null)
             {
+                // Some exceptions are caused by overly long paths, but don't throw the
+                // proper System.IO.PathTooLongException.  (BL-15304)
+                if (LongPathAware.ShouldConvertToPathTooLongException(exception, out var path))
+                {
+                    exception = new Utils.PathTooLongException(path);
+                }
                 heading = exception.Message;
                 isHeadingPreEncoded = false;
             }

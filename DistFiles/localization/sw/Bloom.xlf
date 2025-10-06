@@ -1105,6 +1105,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Haki Miliki</target>
         <note>ID: Common.Copyright</note>
       </trans-unit>
+      <trans-unit id="Common.Default">
+        <source xml:lang="en">Default</source>
+        <target xml:lang="sw" state="needs-translation">Default</target>
+        <note>ID: Common.Default</note>
+      </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
         <source xml:lang="en">Delete</source>
         <target xml:lang="sw" state="final">Futa</target>
