@@ -536,12 +536,12 @@
       </trans-unit>
       <trans-unit id="PublishTab.Language.Enabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Select this if you want readers to be able to choose to read the book in this language.</source>
-        <target xml:lang="pt-PT" state="final">Selecione isto se você deseja que os leitores possam escolher ler o livro neste idioma.</target>
+        <target xml:lang="pt-PT" state="final">Marque aqui para dar os leitores a opção de ler o livro nesta língua.</target>
         <note>ID: PublishTab.Language.Enabled</note>
       </trans-unit>
       <trans-unit id="PublishTab.Language.Required" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This is disabled because this language is currently shown in the book, so it is required.</source>
-        <target xml:lang="pt-PT" state="final">Isto está desativado porque este idioma está atualmente exibido no livro, então ele é obrigatório.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque esta língua está exibida no livro; é obrigatório.</target>
         <note>ID: PublishTab.Language.Required</note>
       </trans-unit>
       <trans-unit id="PublishTab.AudioLanguage.Enabled" sil:dynamic="true" approved="yes">
@@ -551,7 +551,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.AudioLanguage.Disabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This is disabled because this book does not have any audio in this language.</source>
-        <target xml:lang="pt-PT" state="final">Isto está desabilitado porque este livro não tem áudio neste idioma.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque este livro não tem áudio nesta língua.</target>
         <note>ID: PublishTab.AudioLanguage.Disabled</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.None" approved="yes">
@@ -581,7 +581,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None" approved="yes">
         <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
-        <target xml:lang="pt-PT" state="final">Isso está desabilitado porque este livro não tem nenhum elemento de sobreposição que se qualifique como "como quadrinhos", como balões de fala.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque este livro não tem nenhum elemento de sobreposição que faz se qualificar como "tipo quadrinhos/banda desenhada", como balões de fala, por exemplo.</target>
         <note>ID: PublishTab.Feature.Comic.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.Possible" approved="yes">
@@ -606,7 +606,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.NoVideos" approved="yes">
         <source xml:lang="en">This is disabled because this book does not have any videos.</source>
-        <target xml:lang="pt-PT" state="final">Isso está desabilitado porque o livro não tem áudio.</target>
+        <target xml:lang="pt-PT" state="final">Essa opção está desabilitada porque o livro não tem vídeo.</target>
         <note>ID: PublishTab.Feature.SignLanguage.NoVideos</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.Present" approved="yes">
@@ -621,17 +621,17 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.TalkingBook.NoRecordings" approved="yes">
         <source xml:lang="en">This is disabled because this book does not have any Talking Book recordings.</source>
-        <target xml:lang="pt-PT" state="final">Isso está desabilitado porque o livro não tem áudio.</target>
+        <target xml:lang="pt-PT" state="final">Essa opção está desabilitada porque o livro não tem áudio.</target>
         <note>ID: PublishTab.Feature.TalkingBook.NoRecordings</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.TalkingBook.NoLanguagesSelected" approved="yes">
         <source xml:lang="en">This is disabled because no “Talking Book Languages” are selected.</source>
-        <target xml:lang="pt-PT" state="final">Isto está desativado porque nenhum "idioma de livro áudio" está selecionado.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desativada porque nenhuma "língua de livro áudio" está selecionado.</target>
         <note>ID: PublishTab.Feature.TalkingBook.NoLanguagesSelected</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Vision.None" approved="yes">
         <source xml:lang="en">This is disabled because this book does not have any image descriptions in the primary language.</source>
-        <target xml:lang="pt-PT" state="final">Isto está desabilitado porque este livro não tem descrições de imagens no idioma primário.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque este livro não tem descrições de imagens na língua primário.</target>
         <note>ID: PublishTab.Feature.Vision.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Vision.Possible" approved="yes">
@@ -691,7 +691,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Documentation about this screen</source>
-        <target xml:lang="pt-PT" state="final">Documentação sobre este ecrã</target>
+        <target xml:lang="pt-PT" state="final">Documentação sobre este ecrã/tela</target>
         <note>ID: PublishTab.Upload.Help</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AboutBlorg" sil:dynamic="true" approved="yes">

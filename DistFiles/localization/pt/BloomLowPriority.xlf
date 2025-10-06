@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed" approved="yes">
         <source xml:lang="en">eSpeak language:</source>
-        <target xml:lang="pt-PT" state="final">Idioma do eSpeak:</target>
+        <target xml:lang="pt-PT" state="final">língua do eSpeak:</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion" approved="yes">
@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="Errors.CannotConnectToBloomServer.2" approved="yes">
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Web browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
-        <target xml:lang="pt-PT" state="final">Bloom era incapaz de começar seu próprio ouvinte HTTP que usa para comunicar com seu navegador Firefox incorporado. Se isso acontecer mesmo se você apenas ha reiniciado o computador, deve pedir que alguém investiga se você tem instalado um produto de firewall agressivo. É possível que o produto de firewall agressivo devería ser desinstalado antes de que você pode usar Bloom.</target>
+        <target xml:lang="pt-PT" state="final">Bloom foi incapaz de começar seu próprio ouvinte HTTP que usa para comunicar com seu navegador da internet. Se isso acontecer mesmo se você acabou de reiniciar o computador, deve pedir que alguém investiga se você tem um produto de firewall agressivo instalado. Pode ser necessário desenstalar o produto de firewall agressivo antes que você possa usar o Bloom.</target>
         <note>ID: Errors.CannotConnectToBloomServer.2</note>
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InZipFileMessage" approved="yes">
@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="Settings.Subscription.Community.Invitation" approved="yes">
         <source xml:lang="en">If your project is fully funded and managed by your local language community, you may qualify for a free [Bloom Community Subscription](https://bloomlibrary.org/subscriptions).</source>
-        <target xml:lang="pt-PT" state="final">Se o seu projeto for totalmente financiado e gerido por sua comunidade de idiomas local, pode se qualificar para uma [Assinatura da Comunidade do Bloom](https://bloomlibrary.org/subscriptions).</target>
+        <target xml:lang="pt-PT" state="final">Se o seu projeto for totalmente financiado e gerido por sua comunidade de línguas local, pode se qualificar para uma [Assinatura da Comunidade do Bloom](https://bloomlibrary.org/subscriptions).</target>
         <note>ID: Settings.Subscription.Community.Invitation</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.SubscriptionCodeLabel" approved="yes">
@@ -131,7 +131,7 @@
       tier to "Subscription.Tier."-->
       <trans-unit id="Subscription.Tier.Basic">
         <source xml:lang="en">Basic</source>
-        <target xml:lang="pt-PT" state="needs-translation">Basic</target>
+        <target xml:lang="pt-PT" state="translated">Básico</target>
         <note>ID: Subscription.Tier.Basic</note>
       </trans-unit>
       <trans-unit id="Subscription.Tier.Enterprise">
@@ -141,12 +141,12 @@
       </trans-unit>
       <trans-unit id="Subscription.Tier.LocalCommunity">
         <source xml:lang="en">Local Community</source>
-        <target xml:lang="pt-PT" state="needs-translation">Local Community</target>
+        <target xml:lang="pt-PT" state="translated">Comunidade local</target>
         <note>ID: Subscription.Tier.LocalCommunity</note>
       </trans-unit>
       <trans-unit id="Subscription.Tier.Pro">
         <source xml:lang="en">Pro</source>
-        <target xml:lang="pt-PT" state="needs-translation">Pro</target>
+        <target xml:lang="pt-PT" state="translated">Pro</target>
         <note>ID: Subscription.Tier.Pro</note>
       </trans-unit>
       <trans-unit id="Subscription.TierWithColon">
@@ -157,14 +157,14 @@
       <!-- Other -->
       <trans-unit id="Subscription.OpenSettings">
         <source xml:lang="en">Subscription Settings</source>
-        <target xml:lang="pt-PT" state="needs-translation">Subscription Settings</target>
+        <target xml:lang="pt-PT" state="translated">Configuração da assinatura</target>
         <note>ID: Subscription.OpenSettings</note>
       </trans-unit>
       <!-- Features -->
       <!-- TODO connect with/normalize other places that refer to these things -->
       <trans-unit id="Feature.Overlay">
         <source xml:lang="en">Overlay</source>
-        <target xml:lang="pt-PT" state="needs-translation">Overlay</target>
+        <target xml:lang="pt-PT" state="translated">Sobreposição</target>
         <note>ID: Feature.Overlay</note>
       </trans-unit>
       <trans-unit id="Feature.Spreadsheet">
@@ -190,7 +190,7 @@
       </trans-unit>
       <trans-unit id="Spreadsheet.SpreadsheetLocked" approved="yes">
         <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
-        <target xml:lang="pt-PT" state="final">Bloom não pode escrever na planilha porque um outro programa está a impedir fazer isso. Você tem aberto a planilha num outro programa?</target>
+        <target xml:lang="pt-PT" state="final">Bloom não pode escrever na planilha porque um outro programa bloqueou a planilha. Está aberta em outro programa?</target>
         <note>ID: Spreadsheet.SpreadsheetLocked</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.MissingImage" approved="yes">
@@ -289,12 +289,12 @@
       </trans-unit>
       <trans-unit id="EditTab.PasteHyperlink.Currently">
         <source xml:lang="en">Currently %0</source>
-        <target xml:lang="pt-PT" state="needs-translation">Currently %0</target>
+        <target xml:lang="pt-PT" state="translated">Atualmente %0</target>
         <note>ID: EditTab.PasteHyperlink.Currently</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MoveToCurrentCollection">
         <source xml:lang="en">Move into {0}</source>
-        <target xml:lang="pt-PT" state="needs-translation">Move into {0}</target>
+        <target xml:lang="pt-PT" state="translated">Mover para {0}</target>
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
       </trans-unit>
     </body>
