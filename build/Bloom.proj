@@ -61,8 +61,6 @@
     <RestartBuild Condition="!Exists('$(BuildTasksDll)') Or !Exists('$(BuildTasksAwsDll)')">true</RestartBuild>
     <RestartBuild Condition="Exists('$(BuildTasksDll)') And Exists('$(BuildTasksAwsDll)')">false</RestartBuild>
     <OkIfSigningFails>false</OkIfSigningFails>
-    <!-- Default CLI command name; can be overridden externally if needed -->
-    <VpkCommand Condition="'$(VpkCommand)'==''">vpk</VpkCommand>
   </PropertyGroup>
   <UsingTask TaskName="StampAssemblies" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
   <UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
@@ -315,7 +313,7 @@
       at https://docs.velopack.io/packaging/bootstrapping#:~:text=By%20default%2C%20Velopack%20will%20accept,dotnet.
       It will help the user try to fix things if they are not.-->
     <Exec
-      Command="$(VpkCommand) pack --packId Bloom$(channel) --packVersion $(Version) --packDir ..\output\installer\content --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --localization &quot;$(LocalizationFilesDir)&quot; --packAuthors &quot;SIL Global&quot; " />
+      Command="$(VpkCommand) pack --packId Bloom$(channel) --packVersion $(Version) --packDir ..\output\installer\content --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --progressColor &quote;#d65649&quote;--localization &quot;$(LocalizationFilesDir)&quot; --packAuthors &quot;SIL Global&quot; " />
     <Copy SourceFiles="$(InstallerOutputFolder)\Bloom$(channel)-win-Setup.exe"
           DestinationFiles="$(InstallerOutputFolder)\$(InstallerFileName)"
     />
