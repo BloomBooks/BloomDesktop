@@ -22,8 +22,9 @@ import { MuiTextField } from "./muiTextField";
 import { get, getBoolean, postJson } from "../utils/bloomApi";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
-import { isValidEmail } from "../problemDialog/EmailField";
+import { isValidEmail } from "../utils/emailUtils";
 import { useIsTeamCollection } from "../teamCollection/teamCollectionApi";
+import { AttentionTextField } from "./AttentionTextField";
 
 interface IRegistrationDialogProps {
     registrationIsOptional?: boolean;
@@ -82,7 +83,6 @@ export const RegistrationDialog: React.FunctionComponent<
         externallySetRegistrationDialogProps?.emailRequiredForTeamCollection ??
         inTeamCollection;
 
-    const [formIsFilled, setFormIsFilled] = useState(false);
     const [info, setInfo] = useState({
         firstName: "",
         surname: "",
@@ -91,6 +91,8 @@ export const RegistrationDialog: React.FunctionComponent<
         usingFor: "",
         hadEmailAlready: false,
     });
+
+    const [submitAttempts, setSubmitAttempts] = useState(0);
 
     // Show the "I'm stuck" opt-out button after 10 seconds
     const [showOptOut, setShowOptOut] = useState(false);
@@ -115,19 +117,28 @@ export const RegistrationDialog: React.FunctionComponent<
         });
     }, [props.propsForBloomDialog.open]);
 
-    useEffect(() => {
-        if (!info) setFormIsFilled(false);
-
-        const emailIsProvided = !!info.email?.trim();
-        setFormIsFilled(
-            !!info.firstName?.trim() &&
-                !!info.surname?.trim() &&
-                (!emailRequiredForTeamCollection || emailIsProvided) &&
-                (isValidEmail(info.email) || !emailIsProvided) &&
-                !!info.organization?.trim() &&
-                !!info.usingFor?.trim(),
+    const isFirstNameValid = (v) => !!v?.trim();
+    const isSurnameValid = (v) => !!v?.trim();
+    const isOrganizationValid = (v) => !!v?.trim();
+    const isUsingForValid = (v) => !!v?.trim();
+    const isEmailValid = (v) => {
+        const emailIsProvided = !!v?.trim();
+        return (
+            (!emailRequiredForTeamCollection || emailIsProvided) &&
+            (isValidEmail(v) || !emailIsProvided)
         );
-    }, [info, emailRequiredForTeamCollection]);
+    };
+
+    function isFormFilled() {
+        if (!info) return false;
+        return (
+            isFirstNameValid(info.firstName) &&
+            isSurnameValid(info.surname) &&
+            isOrganizationValid(info.organization) &&
+            isUsingForValid(info.usingFor) &&
+            isEmailValid(info.email)
+        );
+    }
 
     // lets the registration text expand if the buttons are wider than DialogMiddle's initial width
     // seems to be dependent on the translations loading faster than this rewrites the width, though it does finish expanding when we start typing in a field
@@ -186,7 +197,11 @@ export const RegistrationDialog: React.FunctionComponent<
             />
             <DialogMiddle
                 css={css`
-                    min-width: 400px;
+                    width: 400px;
+
+                    // Make room for the attention fields to jiggle without overflowing
+                    margin-right: -11px;
+                    padding-right: 11px;
 
                     h1 {
                         font-size: 14px;
@@ -198,7 +213,8 @@ export const RegistrationDialog: React.FunctionComponent<
 
                     .row {
                         display: flex;
-                        column-gap: 26px;
+                        // We'll use margins on the children instead of gap so the attention field can jiggle into it
+                        column-gap: 0px;
                     }
 
                     .MuiInputLabel-root {
@@ -225,54 +241,89 @@ export const RegistrationDialog: React.FunctionComponent<
                     </div>
                 ) : null}
                 <div className="row">
-                    <MuiTextField
-                        {...textFieldProps}
-                        autoFocus={true}
-                        label="First Name"
-                        l10nKey="RegisterDialog.FirstName"
-                        value={info.firstName}
-                        onClick={undefined}
-                        onChange={(e) =>
-                            setInfo({ ...info, firstName: e.target.value })
-                        }
-                    />
-                    <MuiTextField
-                        {...textFieldProps}
-                        label="Surname"
-                        l10nKey="RegisterDialog.Surname"
-                        value={info.surname}
-                        onClick={undefined}
-                        onChange={(e) =>
-                            setInfo({ ...info, surname: e.target.value })
-                        }
-                    />
+                    {/* wrap the attention fields so they can jiggle within messing up the layout */}
+                    <div
+                        css={css`
+                            width: 50%;
+                            // Using margin instead of flex gap so the attention field can jiggle into it
+                            margin-right: 26px;
+                        `}
+                    >
+                        <AttentionTextField
+                            {...textFieldProps}
+                            autoFocus={true}
+                            label="First Name"
+                            l10nKey="RegisterDialog.FirstName"
+                            value={info.firstName}
+                            onClick={undefined}
+                            onChange={(v) => setInfo({ ...info, firstName: v })}
+                            submitAttempts={submitAttempts}
+                            isValid={isFirstNameValid}
+                        />
+                    </div>
+                    <div
+                        css={css`
+                            width: 50%;
+                        `}
+                    >
+                        <AttentionTextField
+                            {...textFieldProps}
+                            label="Surname"
+                            l10nKey="RegisterDialog.Surname"
+                            value={info.surname}
+                            onClick={undefined}
+                            onChange={(v) => setInfo({ ...info, surname: v })}
+                            submitAttempts={submitAttempts}
+                            isValid={isSurnameValid}
+                        />
+                    </div>
                 </div>
                 <div className="row">
-                    <MuiTextField
-                        {...textFieldProps}
-                        label={
-                            mayChangeEmail
-                                ? "Email Address"
-                                : "Check in to change email"
-                        }
-                        l10nKey={mayChangeEmail ? "RegisterDialog.Email" : ""}
-                        value={info.email}
-                        disabled={!mayChangeEmail}
-                        onClick={undefined}
-                        onChange={(e) =>
-                            setInfo({ ...info, email: e.target.value })
-                        }
-                    />
-                    <MuiTextField
-                        {...textFieldProps}
-                        label="Organization"
-                        l10nKey="RegisterDialog.Organization"
-                        value={info.organization}
-                        onClick={undefined}
-                        onChange={(e) =>
-                            setInfo({ ...info, organization: e.target.value })
-                        }
-                    />
+                    <div
+                        css={css`
+                            width: 50%;
+                            // Using margin instead of flex gap so the attention field can jiggle into it
+                            margin-right: 26px;
+                        `}
+                    >
+                        <AttentionTextField
+                            {...textFieldProps}
+                            label={
+                                mayChangeEmail
+                                    ? "Email Address"
+                                    : "Check in to change email"
+                            }
+                            l10nKey={
+                                mayChangeEmail ? "RegisterDialog.Email" : ""
+                            }
+                            value={info.email}
+                            disabled={!mayChangeEmail}
+                            onClick={undefined}
+                            onChange={(value) =>
+                                setInfo({ ...info, email: value || "" })
+                            }
+                            isValid={isEmailValid}
+                            submitAttempts={submitAttempts}
+                        />
+                    </div>
+                    <div
+                        css={css`
+                            width: 50%;
+                        `}
+                    >
+                        <AttentionTextField
+                            {...textFieldProps}
+                            label="Organization"
+                            l10nKey="RegisterDialog.Organization"
+                            value={info.organization}
+                            onClick={undefined}
+                            onChange={(v) =>
+                                setInfo({ ...info, organization: v })
+                            }
+                            submitAttempts={submitAttempts}
+                            isValid={isOrganizationValid}
+                        />
+                    </div>
                 </div>
                 <MuiTextField
                     {...textFieldProps}
@@ -296,7 +347,14 @@ export const RegistrationDialog: React.FunctionComponent<
                                 l10nKey="RegisterDialog.IAmStuckLabel"
                                 enabled={true}
                                 variant="text"
-                                onClick={tryToSave}
+                                onClick={() => {
+                                    // Save even if form is not complete/valid
+                                    // if email is invalid, clear it. No point in keeping an invalid email
+                                    if (!isEmailValid(info.email)) {
+                                        info.email = "";
+                                    }
+                                    tryToSave();
+                                }}
                                 css={css`
                                     font-size: 10px;
                                 `}
@@ -307,8 +365,15 @@ export const RegistrationDialog: React.FunctionComponent<
                     </DialogBottomLeftButtons>
                     <BloomButton
                         l10nKey="RegisterDialog.RegisterButton"
-                        enabled={formIsFilled}
-                        onClick={tryToSave}
+                        enabled={true}
+                        onClick={() => {
+                            // Validate and save if valid
+                            if (!isFormFilled()) {
+                                setSubmitAttempts(submitAttempts + 1);
+                            } else {
+                                tryToSave();
+                            }
+                        }}
                     >
                         Register
                     </BloomButton>
