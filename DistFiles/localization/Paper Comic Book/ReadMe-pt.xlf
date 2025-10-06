@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="comic.template.paper.title">
         <source xml:lang="en">Paper Comic Book</source>
-        <target xml:lang="pt-PT" state="translated">Livro de quadrinhos em papel</target>
+        <target xml:lang="pt-PT" state="translated">Livro de quadrinhos (banda desenhada) para imprimir</target>
         <note>ID: comic.template.paper.title</note>
       </trans-unit>
       <trans-unit id="comic.template.subscription">
