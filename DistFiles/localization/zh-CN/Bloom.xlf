@@ -1104,6 +1104,11 @@
         <target xml:lang="zh-CN" state="final">版权</target>
         <note>ID: Common.Copyright</note>
       </trans-unit>
+      <trans-unit id="Common.Default">
+        <source xml:lang="en">Default</source>
+        <target xml:lang="zh-CN" state="needs-translation">Default</target>
+        <note>ID: Common.Default</note>
+      </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
         <source xml:lang="en">Delete</source>
         <target xml:lang="zh-CN" state="final">删除</target>
