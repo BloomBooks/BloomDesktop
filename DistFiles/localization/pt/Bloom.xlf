@@ -404,7 +404,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
-        <target xml:lang="pt-PT" state="final">Isto melhorará a saída impressa para a maioria dos idiomas. Se a sua língua é uma das poucas que precisa da "Andika", você pode selecioná-la novamente em configurações: Elaboração de Livros.</target>
+        <target xml:lang="pt-PT" state="final">Isto melhorará a saída impressa para a maioria das línguas. Se a sua língua é uma das poucas que precisa da "Andika", pode selecioná-la novamente em configurações: Elaboração de Livros.</target>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
       </trans-unit>
       <!-- <trans-unit id="CollectionSettingsDialog.BloomLibraryBookshelf"> -->
@@ -3111,7 +3111,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.SelectSignLanguageBox" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To use this tool, select a sign language box on the page.</source>
-        <target xml:lang="pt-PT" state="final">Para usar esta ferramenta, selecione uma caixa de linguagem de sinais na página.</target>
+        <target xml:lang="pt-PT" state="final">Para usar esta ferramenta, selecione uma caixa de língua de sinais na página.</target>
         <note>ID: EditTab.Toolbox.SignLanguage.SelectSignLanguageBox</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.StartRecording" sil:dynamic="true" approved="yes">
@@ -3921,7 +3921,7 @@
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
-        <target xml:lang="pt-PT" state="final">Dê a localização da língua</target>
+        <target xml:lang="pt-PT" state="final">Digite a localização da língua</target>
         <note>ID: NewCollectionWizard.LocationPage</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage.Country" approved="yes">
@@ -4255,7 +4255,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.TextLanguages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Languages</source>
-        <target xml:lang="pt-PT" state="final">Línguas de texto</target>
+        <target xml:lang="pt-PT" state="final">Línguas do texto</target>
         <note>ID: PublishTab.Android.TextLanguages</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.BookSent" sil:dynamic="true" approved="yes">
@@ -5243,7 +5243,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Languages" approved="yes">
         <source xml:lang="en">Upload Text</source>
-        <target xml:lang="pt-PT" state="final">Línguas</target>
+        <target xml:lang="pt-PT" state="final">Línguas para carregar</target>
         <note>ID: PublishTab.Upload.Languages</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.AccountAlreadyExists" approved="yes">
@@ -5630,7 +5630,7 @@
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.LetterHelp1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</source>
-        <target xml:lang="pt-PT" state="final">Separe cada letra ou combinação de letras com um espaço. Por exemplo, aqui está o que poderíamos usar para o idioma inglês:</target>
+        <target xml:lang="pt-PT" state="final">Separe cada letra ou combinação de letras com um espaço. Por exemplo, este o que poderíamos usar para a língua inglesa:</target>
         <note>ID: ReaderSetup.Letters.LetterHelp1</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.LetterHelp2" sil:dynamic="true" approved="yes">
@@ -5820,7 +5820,7 @@
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
-        <target xml:lang="pt-PT" state="final">Bloom já conhece quais caracteres sempre marcam o fim de frases nos idiomas do mundo. Para adicionar outros, digite aqui escapes de caracteres Unicode. Por exemplo para escritas de idiomas tailandesas, digite \U0020 para indicar a Bloom que espaços normais são usados para quebrar as sentenças.</target>
+        <target xml:lang="pt-PT" state="final">Bloom já conhece quais caracteres sempre marcam o fim de frases nas línguas do mundo. Para adicionar outros, digite aqui escapes de caracteres Unicode. Por exemplo, para a escrita de línguas tailandesas, digite \U0020 para indicar a Bloom que espaços normais são usados para quebrar as frases.</target>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true" approved="yes">
@@ -5835,7 +5835,7 @@
       </trans-unit>
       <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true" approved="yes">
         <source xml:lang="en">set up the alphabet for this language.</source>
-        <target xml:lang="pt-PT" state="final">Configurar o alfabeto para este idioma.</target>
+        <target xml:lang="pt-PT" state="final">Configurar o alfabeto para esta língua.</target>
         <note>ID: ReaderSetup.SetupAlphabet</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true" approved="yes">
@@ -5920,7 +5920,7 @@
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph" approved="yes">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this Bloom Pack, who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
-        <target xml:lang="pt-PT" state="final">Além disso, este Bloom Pack levará suas últimas configurações de livros descodificáveis e nivelados para o idioma "{0}". Qualquer pessoa que abre este Bloom Pack, que em seguida abre uma coleção "{0}", terá suas configurações atuais dos livros descodificáveis e nivelados substituídas pelas configurações neste Bloom Pack. Eles também receberam o conjunto atual de palavras para uso em livros decodificáveis.</target>
+        <target xml:lang="pt-PT" state="final">Além disso, este Bloom Pack levará suas últimas configurações de livros descodificáveis e nivelados para a língua "{0}". Qualquer pessoa que abre este Bloom Pack e em seguida abre uma coleção "{0}", terá suas configurações atuais dos livros descodificáveis e nivelados substituídas pelas configurações deste Bloom Pack. Eles também receberão o conjunto atual de palavras para uso em livros decodificáveis.</target>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.HelpButtonLabel" approved="yes">
@@ -6512,7 +6512,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page with one language above the image and another below it.</source>
-        <target xml:lang="pt-PT" state="final">Uma página com um idioma acima da imagem e outra abaixo dela.</target>
+        <target xml:lang="pt-PT" state="final">Uma página com uma língua acima da imagem e outra em baixo dela.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true" approved="yes">
