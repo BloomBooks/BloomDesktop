@@ -6,12 +6,12 @@
 		<UseWPF>false</UseWPF>
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..</SolutionDir>
 		<OutputPath>..\..\output\$(Configuration)\x64</OutputPath>
-		<Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+		<Platform Condition=" '$(Platform)' == '' ">x64</Platform>
 		<AssemblyTitle>Bloom</AssemblyTitle>
 		<Company>SIL</Company>
-		<Product>BloomLocalBuilt</Product>
+		<Product>Bloom</Product>
 		<Copyright>© SIL International 2012-2025</Copyright>
-		<Version>6.3.40.0</Version>
+		<Version>6.3.0.0</Version>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
 		<TargetFramework>net8.0-windows</TargetFramework>
@@ -66,7 +66,7 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		<Optimize>false</Optimize>
 		<DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
 		<DebugType>full</DebugType>
 		<CodeAnalysisLogFile>..\..\output\Debug\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
@@ -78,7 +78,7 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		<CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
 		<CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
 		<DebugType>pdbonly</DebugType>
 		<CodeAnalysisLogFile>..\..\output\Release\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
@@ -134,8 +134,8 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 	<ItemGroup>
 		<None Remove="**/*.orig" />
 	</ItemGroup>
-	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x86'">
-		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x86\*.dll" />
+	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
+		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
 		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
@@ -161,7 +161,7 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		<Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" />
 		<Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
 		<Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
-		<Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
+		<Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" />
 		<Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
 		<Message Text="CopySomeFiles target completed." Importance="high" />
 	</Target>
@@ -184,11 +184,6 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 	<Target Name="FixPortuguese" AfterTargets="ReallyAfterBuild">
 		<FileUpdate File="$(LocalizationDir)\pt\Palaso.xlf" Regex="pt-BR" ReplacementText="pt-PT" />
 		<Message Text="Finished fixing Portuguese language tags in Palaso.xlf" Importance="high" />
-	</Target>
-	<Target Name="CopyX86SqliteForArm" AfterTargets="ReallyAfterBuild" Condition="Exists('$(OutDir)runtimes\win-x86\native\e_sqlite3.dll')">
-		<MakeDir Directories="$(OutDir)runtimes\win-arm64\native" />
-		<Copy SourceFiles="$(OutDir)runtimes\win-x86\native\e_sqlite3.dll" DestinationFiles="$(OutDir)e_sqlite3.dll" />
-		<Message Text="BL-13934 sqlite looks in the ARM64 directory, but then fails because actually we're running as an x86 process still, as of Bloom 6.2. So for now we're cheating and just putting the x86 version in." Importance="high" />
 	</Target>
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.0.0" />
