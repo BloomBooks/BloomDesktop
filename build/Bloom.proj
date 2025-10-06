@@ -178,28 +178,6 @@
     <Exec Command='dotnet build "$(RootDir)\src\BloomExe\BloomExe.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
     <Exec Command='dotnet build "$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
     <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\Tests\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
-    
-    <!-- Copy main application DLLs to test directories so tests can find them -->
-    <CallTarget Targets="CopyAppDllsToTestDirs"/>
-  </Target>
-  
-  <!-- Copy main application DLLs to test directories -->
-  <Target Name="CopyAppDllsToTestDirs">
-    <ItemGroup>
-      <!-- x64 application files that tests need -->
-      <X64AppFiles Include="$(RootDir)\output\$(Configuration)\x64\*.dll;$(RootDir)\output\$(Configuration)\x64\*.exe;$(RootDir)\output\$(Configuration)\x64\*.pdb" 
-                   Exclude="$(RootDir)\output\$(Configuration)\x64\BloomTests.*" />
-      <!-- ARM64 application files that tests need. Review: is this useful? We don't have an Arm64 build agent to run Arm64 tests. -->
-      <Arm64AppFiles Include="$(RootDir)\output\$(Configuration)\arm64\*.dll;$(RootDir)\output\$(Configuration)\arm64\*.exe;$(RootDir)\output\$(Configuration)\arm64\*.pdb" 
-                     Exclude="$(RootDir)\output\$(Configuration)\arm64\BloomTests.*" />
-    </ItemGroup>
-    
-    <!-- Copy x64 app files to x64 test directory -->
-    <Copy SourceFiles="@(X64AppFiles)" DestinationFolder="$(RootDir)\output\Tests\$(Configuration)\x64" />
-    <!-- Copy ARM64 app files to ARM64 test directory -->
-    <Copy SourceFiles="@(Arm64AppFiles)" DestinationFolder="$(RootDir)\output\Tests\$(Configuration)\arm64" />
-    
-    <Message Text="Copied main application DLLs to test directories" Importance="high"/>
   </Target>
   <ItemGroup>
     <TestAssembliesX64 Include="$(RootDir)/output/Tests/$(Configuration)/x64/BloomTests.dll"/>
@@ -433,14 +411,15 @@
     <!-- The way the web site generates the list of old installers requires that they be the only files in the
 		destination folder. For now I'm keeping them out of the actual installers folder that the web site uses.-->
     <!--Note: S3BuildPublisher needs AWSSDK.dll it its own folder, so TeamCity should do that. Do it youself if you want to build locally-->
-    <!-- Upload x64 installer to current location (unchanged) -->
+    <!-- Upload x64 installer. It would be more consistent for the destinationFolder to add -x64, but we need to keep using
+    the same location as before we had multiple architectures, so that older x64 (and even x86) builds can find the delta info.-->
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(InstallerOutputFolder)/$(InstallerFileNameX64)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="installers$(channel)"
 		IsPublicRead="true" />
-    <!-- Upload ARM64 installer to new ARM64-specific folder -->
+    <!-- Upload ARM64 installer -->
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(InstallerOutputFolder)/$(InstallerFileNameArm64)"
@@ -455,7 +434,7 @@
     We could omit it for any new channels.
     The releases.win.json file is used by the new Velopack-based update managers to find out what the latest version is and how to upgrade to it.
     -->
-    <!-- Upload x64 packages to current location (unchanged) -->
+    <!-- Upload x64 packages (again, to the pre-multi-installer location) -->
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(InstallerOutputFolder)/x64/$(VelopackDeltaPkgX64)"
@@ -468,7 +447,7 @@
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
-    <!-- Upload ARM64 packages to new ARM64-specific folder -->
+    <!-- Upload ARM64 packages -->
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(InstallerOutputFolder)/arm64/$(VelopackDeltaPkgArm64)"
