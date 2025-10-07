@@ -1403,24 +1403,43 @@ namespace Bloom
                         dlg.SetDesktopLocation(50, 50);
                     }
 
-                    if (dlg.ShowDialog(formToClose) != DialogResult.OK)
+                    try
                     {
-                        // If there is a form to close, it means the collection chooser is not the only thing open,
-                        // and we don't want to exit the application. Otherwise, we are in initial startup and
-                        // closing the chooser should exit the application.
-                        if (formToClose == null)
-                            Application.Exit();
-                        return false;
-                    }
+                        if (dlg.ShowDialog(formToClose) != DialogResult.OK)
+                        {
+                            // If there is a form to close, it means the collection chooser is not the only thing open,
+                            // and we don't want to exit the application. Otherwise, we are in initial startup and
+                            // closing the chooser should exit the application.
+                            if (formToClose == null)
+                                Application.Exit();
+                            return false;
+                        }
 
-                    if (formToClose != null)
+                        if (formToClose != null)
+                        {
+                            formToClose.UserWantsToOpenADifferentProject = true;
+                            formToClose.Close();
+                        }
+
+                        if (OpenCollection(dlg.SelectedPath))
+                            return true;
+                    }
+                    catch (Exception error)
                     {
-                        formToClose.UserWantsToOpenADifferentProject = true;
-                        formToClose.Close();
+                        if (
+                            LongPathAware.ShouldConvertToPathTooLongException(
+                                error,
+                                out string path
+                            )
+                        )
+                        {
+                            throw new Utils.PathTooLongException(path);
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
-
-                    if (OpenCollection(dlg.SelectedPath))
-                        return true;
                 }
             }
         }

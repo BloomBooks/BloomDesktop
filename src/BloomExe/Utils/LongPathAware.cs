@@ -1,7 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using SIL.Reporting;
 
 namespace Bloom.Utils
@@ -119,9 +119,24 @@ namespace Bloom.Utils
         private static string GetGenericPathTooLongMessage()
         {
             return L10NSharp.LocalizationManager.GetString(
-                "Error.PathTooLong",
-                "Please move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by your collection being too deeply nested in many folders on your hard drive."
+                "Errors.PathTooLong",
+                "Please give your collection a shorter name or move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by one of two things: 1) the collection has a very long name, or 2) the collection is too deeply nested inside many folders on your hard drive."
             );
+        }
+
+        public static bool ShouldConvertToPathTooLongException(Exception exception, out string path)
+        {
+            path = null;
+            if (exception == null || exception is System.IO.PathTooLongException)
+                return false;
+            // There may be other exceptions that we should convert, but this is what we've seen. (BL-15304)
+            if (exception is System.IO.DirectoryNotFoundException)
+            {
+                path = Regex.Match(exception.Message, "^.*'(.*)'\\.$").Groups[1].Value;
+                if (path?.Length >= 260)
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>
