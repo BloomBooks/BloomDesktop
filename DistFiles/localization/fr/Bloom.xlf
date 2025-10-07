@@ -3284,9 +3284,9 @@
         <target xml:lang="fr" state="final">Nous sommes désolés, mais votre version de Windows n'est plus prise en charge par Microsoft. Pour cette version de Bloom il vous faut Windows 10 ou après. Par conséquent, il faudra installer Bloom version 5.4. Bloom va maintenant ouvrir une page web où vous pourrez télécharger Bloom 5.4.</target>
         <note>ID: ErrorReport.Pre10WindowsNotSupported</note>
       </trans-unit>
-      <trans-unit id="Errors.PathTooLong" approved="yes">
-        <source xml:lang="en">Please move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by your collection being too deeply nested in many folders on your hard drive.</source>
-        <target xml:lang="fr" state="final">Veuillez déplacer votre collection plus près de la racine de votre disque dur et réessayez. Un fichier avec lequel Bloom travaillait avait un chemin trop long. Cela est généralement dû au fait que votre collection est trop imbriquée dans de nombreux dossiers sur votre disque dur.</target>
+      <trans-unit id="Errors.PathTooLong">
+        <source xml:lang="en">Please give your collection a shorter name or move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by one of two things: 1) the collection has a very long name, or 2) the collection is too deeply nested inside many folders on your hard drive.</source>
+        <target xml:lang="fr" state="translated">Veuillez déplacer votre collection plus près de la racine de votre disque dur et réessayez. Un fichier avec lequel Bloom travaillait avait un chemin trop long. Cela est généralement dû au fait que votre collection est trop imbriquée dans de nombreux dossiers sur votre disque dur.</target>
         <note>ID: Errors.PathTooLong</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
