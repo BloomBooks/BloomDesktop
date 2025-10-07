@@ -3286,9 +3286,9 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Lo sentimos, pero su versión de Windows ya no recibe soporte de Microsoft. Esta versión de Bloom requiere Windows 10 o superior. Como resultado, tendrá que instalar Bloom versión 5.4. Bloom ahora abrirá una página web donde podrá descargar Bloom 5.4.</target>
         <note>ID: ErrorReport.Pre10WindowsNotSupported</note>
       </trans-unit>
-      <trans-unit id="Errors.PathTooLong" approved="yes">
-        <source xml:lang="en">Please move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by your collection being too deeply nested in many folders on your hard drive.</source>
-        <target xml:lang="es-ES" state="final">Por favor, mueva su colección más cerca a la raíz de su disco duro e inténtelo de nuevo. Uno de los archivos que Bloom estaba utilizando tenía una ruta de acceso demasiada larga. Esto se debe normalmente a que su colección está anidada muy profundamente en varias carpetas de su disco duro.</target>
+      <trans-unit id="Errors.PathTooLong">
+        <source xml:lang="en">Please give your collection a shorter name or move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by one of two things: 1) the collection has a very long name, or 2) the collection is too deeply nested inside many folders on your hard drive.</source>
+        <target xml:lang="es-ES" state="translated">Por favor, mueva su colección más cerca a la raíz de su disco duro e inténtelo de nuevo. Uno de los archivos que Bloom estaba utilizando tenía una ruta de acceso demasiada larga. Esto se debe normalmente a que su colección está anidada muy profundamente en varias carpetas de su disco duro.</target>
         <note>ID: Errors.PathTooLong</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
