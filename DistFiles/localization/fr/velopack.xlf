@@ -73,30 +73,37 @@
       <trans-unit id="buttons.retry_close_programs" approved="yes">
         <source xml:lang="en">Retry\nTry again if you've closed the program(s)</source>
         <target xml:lang="fr" state="final">Réessayez\nRéessayez si vous avez fermé le(s) programme(s)</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.continue_close_programs" approved="yes">
         <source xml:lang="en">Continue\nAttempt to close the program(s) automatically</source>
         <target xml:lang="fr" state="final">Poursuivre\nTentative de fermeture automatique du ou des programme(s)</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.cancel_stop_update" approved="yes">
         <source xml:lang="en">Cancel\nThe update will not continue</source>
         <target xml:lang="fr" state="final">Annuler\nLa mise à jour ne va pas continuer</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.repair" approved="yes">
         <source xml:lang="en">Repair\nErase the application and re-install version {app_version}.</source>
         <target xml:lang="fr" state="final">Réparez\nEffacez l'application et réinstallez la version {app_version}.</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.update" approved="yes">
         <source xml:lang="en">Update\nTo version {target_version}</source>
         <target xml:lang="fr" state="final">Mettre à jour\nVers la version {target_version}</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.downgrade" approved="yes">
         <source xml:lang="en">Downgrade\nTo version {target_version}</source>
         <target xml:lang="fr" state="final">Rétrograder\nVers la version {target_version}</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.cancel_backup_first" approved="yes">
         <source xml:lang="en">Cancel\nBackup or save your work first</source>
         <target xml:lang="fr" state="final">Annulez\nSauvegardez ou enregistrez d'abord votre travail</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="dialogs.restart_required.instruction" approved="yes">
         <source xml:lang="en">Restart Required</source>
