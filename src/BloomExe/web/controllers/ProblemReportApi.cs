@@ -826,7 +826,8 @@ namespace Bloom.web.controllers
 
             // We have a better UI for this problem
             // Note that this will trigger whether it's a plain 'ol System.IO.PathTooLongException, or our own enhanced subclass, Bloom.Utiles.PathTooLongException
-            if (exception is System.IO.PathTooLongException)
+            // For "fatal" errors, we let it go through to the normal processing for fatal errors.  (BL-15304)
+            if (exception is System.IO.PathTooLongException && levelOfProblem != "fatal")
             {
                 Utils.LongPathAware.ReportLongPath((System.IO.PathTooLongException)exception);
                 return;
