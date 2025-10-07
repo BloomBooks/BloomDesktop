@@ -3284,9 +3284,9 @@
         <target xml:lang="pt-PT" state="final">Lamentamos, mas sua versão do Windows não é mais suportada pela Microsoft. Esta versão do Bloom requer o Windows 10 ou superior. Como resultado, precisará instalar Bloom versão 5.4. O Bloom agora abrirá uma página da ‘web’ onde pode baixar Bloom 5.4.</target>
         <note>ID: ErrorReport.Pre10WindowsNotSupported</note>
       </trans-unit>
-      <trans-unit id="Errors.PathTooLong" approved="yes">
-        <source xml:lang="en">Please move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by your collection being too deeply nested in many folders on your hard drive.</source>
-        <target xml:lang="pt-PT" state="final">Por favor, muda a sua coleção para mais perto da raiz do seu disco rígido e tente novamente. Um arquivo Bloom funcionava com um caminho que era muito longo. Isso é geralmente causado por sua coleção estar profundamente aninhada em muitas pastas no seu disco duro.</target>
+      <trans-unit id="Errors.PathTooLong">
+        <source xml:lang="en">Please give your collection a shorter name or move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by one of two things: 1) the collection has a very long name, or 2) the collection is too deeply nested inside many folders on your hard drive.</source>
+        <target xml:lang="pt-PT" state="translated">Por favor, muda a sua coleção para mais perto da raiz do seu disco rígido e tente novamente. Um arquivo Bloom funcionava com um caminho que era muito longo. Isso é geralmente causado por sua coleção estar profundamente aninhada em muitas pastas no seu disco duro.</target>
         <note>ID: Errors.PathTooLong</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
@@ -4250,7 +4250,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.TalkingBookLanguages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Talking Book Languages</source>
-        <target xml:lang="pt-PT" state="final">Línguas de áudio-livros</target>
+        <target xml:lang="pt-PT" state="final">Línguas dos Áudio-Livros</target>
         <note>ID: PublishTab.Android.TalkingBookLanguages</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.TextLanguages" sil:dynamic="true" approved="yes">
@@ -5820,7 +5820,7 @@
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
-        <target xml:lang="pt-PT" state="final">Bloom já conhece quais caracteres sempre marcam o fim de frases nas línguas do mundo. Para adicionar outros, digite aqui escapes de caracteres Unicode. Por exemplo, para a escrita de línguas tailandesas, digite \U0020 para indicar a Bloom que espaços normais são usados para quebrar as frases.</target>
+        <target xml:lang="pt-PT" state="final">Bloom já conhece os caracteres que sempre marcam o fim de frases nas línguas do mundo. Para adicionar outros, digite aqui os caracteres de Unicode de escape. Por exemplo, para a escrita de línguas tailandesas, digite \U0020 para indicar a Bloom que espaços normais são usados para separar as frases.</target>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true" approved="yes">
