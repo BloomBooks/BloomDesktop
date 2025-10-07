@@ -3285,8 +3285,8 @@
         <note>ID: ErrorReport.Pre10WindowsNotSupported</note>
       </trans-unit>
       <trans-unit id="Errors.PathTooLong">
-        <source xml:lang="en">Please move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by your collection being too deeply nested in many folders on your hard drive.</source>
-        <target xml:lang="tl" state="needs-translation">Please move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by your collection being too deeply nested in many folders on your hard drive.</target>
+        <source xml:lang="en">Please give your collection a shorter name or move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by one of two things: 1) the collection has a very long name, or 2) the collection is too deeply nested inside many folders on your hard drive.</source>
+        <target xml:lang="tl" state="needs-translation">Please give your collection a shorter name or move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by one of two things: 1) the collection has a very long name, or 2) the collection is too deeply nested inside many folders on your hard drive.</target>
         <note>ID: Errors.PathTooLong</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem">
