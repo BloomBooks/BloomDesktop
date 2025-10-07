@@ -4,8 +4,8 @@
 		<ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
 		<UseWindowsForms>true</UseWindowsForms>
 		<UseWPF>false</UseWPF>
-		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..</SolutionDir>
-		<OutputPath>..\..\output\$(Configuration)\x64</OutputPath>
+		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+		<OutputPath>..\..\output\$(Configuration)\</OutputPath>
 		<Platform Condition=" '$(Platform)' == '' ">x64</Platform>
 		<AssemblyTitle>Bloom</AssemblyTitle>
 		<Company>SIL</Company>
@@ -17,13 +17,13 @@
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<LangVersion>11.0</LangVersion>
 		<PostBuildEvent>
-copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\meddle.exe" $(OutDir)
 xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		</PostBuildEvent>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<Platforms>x64;ARM64</Platforms>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
@@ -117,11 +117,17 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 	<PropertyGroup>
 		<StartupObject />
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<Prefer32Bit>True</Prefer32Bit>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<Prefer32Bit>True</Prefer32Bit>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+		<PlatformTarget>ARM64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+		<PlatformTarget>ARM64</PlatformTarget>
 	</PropertyGroup>
 	<ItemGroup>
 		<SourceFiles Include="..\..\lib\dotnet\*.config" />
@@ -137,8 +143,16 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
 		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
 	</ItemGroup>
+	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='ARM64'">
+		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-arm64\*.dll" />
+	</ItemGroup>
+
+	<!-- Platform-specific ffmpeg binaries -->
 	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
-		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
+		<FfmpegFiles Include="$(SolutionDir)lib\win-x64\ffmpeg.exe" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='ARM64'">
+		<FfmpegFiles Include="$(SolutionDir)lib\win-arm64\ffmpeg.exe" />
 	</ItemGroup>
 
 	<PropertyGroup>
@@ -161,9 +175,17 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		<Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" />
 		<Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
 		<Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
-		<Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" />
+		<Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)' == 'Debug'" />
 		<Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
 		<Message Text="CopySomeFiles target completed." Importance="high" />
+	</Target>
+
+	<Target Name="CopyPlatformSpecificFiles" AfterTargets="CopySomeFiles">
+		<Copy SourceFiles="@(FfmpegFiles)" DestinationFolder="$(OutDir)" />
+		<Message Text="Copying platform-specific ffmpeg for $(Platform)" Importance="high" />
+
+		<Error Text="Platform-specific ffmpeg not found for $(Platform) - expected at @(FfmpegFiles)"
+		       Condition="'$(Platform)'=='ARM64' AND !Exists('@(FfmpegFiles)')" />
 	</Target>
 	<Target Name="ReallyAfterBuild" AfterTargets="CopySomeFiles">
 		<Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
@@ -184,6 +206,18 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 	<Target Name="FixPortuguese" AfterTargets="ReallyAfterBuild">
 		<FileUpdate File="$(LocalizationDir)\pt\Palaso.xlf" Regex="pt-BR" ReplacementText="pt-PT" />
 		<Message Text="Finished fixing Portuguese language tags in Palaso.xlf" Importance="high" />
+	</Target>
+
+	<!-- Proper ARM64 SQLite support for true ARM64 builds -->
+	<Target Name="CopyArm64Sqlite" AfterTargets="ReallyAfterBuild" Condition="'$(Platform)'=='ARM64'">
+		<ItemGroup>
+			<Arm64SqliteFiles Include="$(OutDir)runtimes\win-arm64\native\e_sqlite3.dll" />
+		</ItemGroup>
+		<Copy SourceFiles="@(Arm64SqliteFiles)" DestinationFiles="$(OutDir)e_sqlite3.dll" />
+		<Message Text="Copying ARM64 native SQLite library for true ARM64 build" Importance="high" />
+
+		<Error Text="ARM64 SQLite library not found at $(OutDir)runtimes\win-arm64\native\e_sqlite3.dll - ARM64 build requires native ARM64 SQLite support"
+		       Condition="!Exists('$(OutDir)runtimes\win-arm64\native\e_sqlite3.dll')" />
 	</Target>
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.0.0" />
@@ -256,9 +290,6 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		</Reference>
 		<Reference Include="Splat">
 			<HintPath>..\..\lib\dotnet\Splat.dll</HintPath>
-		</Reference>
-		<Reference Include="TidyManaged">
-			<HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 	<ItemGroup>
