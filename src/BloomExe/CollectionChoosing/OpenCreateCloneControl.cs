@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
+using Bloom.Utils;
 using Bloom.Workspace;
 using SIL.i18n;
 using SIL.IO;
@@ -184,13 +185,27 @@ namespace Bloom.CollectionChoosing
 
         private void CreateNewCollection_LinkClicked(object sender, EventArgs e)
         {
-            var desiredOrExistingSettingsFilePath = _createNewCollectionAndReturnPath(
-                this.ParentForm
-            );
-            if (desiredOrExistingSettingsFilePath == null)
-                return;
-            var settings = new CollectionSettings(desiredOrExistingSettingsFilePath);
-            SelectCollectionAndClose(settings.SettingsFilePath);
+            try
+            {
+                var desiredOrExistingSettingsFilePath = _createNewCollectionAndReturnPath(
+                    this.ParentForm
+                );
+                if (desiredOrExistingSettingsFilePath == null)
+                    return;
+                var settings = new CollectionSettings(desiredOrExistingSettingsFilePath);
+                SelectCollectionAndClose(settings.SettingsFilePath);
+            }
+            catch (Exception ex)
+            {
+                if (LongPathAware.ShouldConvertToPathTooLongException(ex, out string path))
+                {
+                    throw new Utils.PathTooLongException(path);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         public void SelectCollectionAndClose(string path)
