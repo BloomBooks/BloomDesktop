@@ -24,6 +24,7 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<Platforms>x64;ARM64</Platforms>
+		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
@@ -208,16 +209,20 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		<Message Text="Finished fixing Portuguese language tags in Palaso.xlf" Importance="high" />
 	</Target>
 
-	<!-- Proper ARM64 SQLite support for true ARM64 builds -->
+	<!-- ARM64 SQLite support - fail fast if dependency not properly restored -->
 	<Target Name="CopyArm64Sqlite" AfterTargets="ReallyAfterBuild" Condition="'$(Platform)'=='ARM64'">
-		<ItemGroup>
-			<Arm64SqliteFiles Include="$(OutDir)runtimes\win-arm64\native\e_sqlite3.dll" />
-		</ItemGroup>
-		<Copy SourceFiles="@(Arm64SqliteFiles)" DestinationFiles="$(OutDir)e_sqlite3.dll" />
-		<Message Text="Copying ARM64 native SQLite library for true ARM64 build" Importance="high" />
-
-		<Error Text="ARM64 SQLite library not found at $(OutDir)runtimes\win-arm64\native\e_sqlite3.dll - ARM64 build requires native ARM64 SQLite support"
-		       Condition="!Exists('$(OutDir)runtimes\win-arm64\native\e_sqlite3.dll')" />
+		<PropertyGroup>
+			<Arm64SqliteSource>$(OutDir)runtimes\win-arm64\native\e_sqlite3.dll</Arm64SqliteSource>
+			<Arm64SqliteTarget>$(OutDir)e_sqlite3.dll</Arm64SqliteTarget>
+		</PropertyGroup>
+		
+		<!-- Fail immediately if ARM64 SQLite library is not where NuGet should have placed it -->
+		<Error Text="ARM64 SQLite library not found at expected location: $(Arm64SqliteSource). Check that RuntimeIdentifiers includes 'win-arm64' and NuGet restore completed successfully."
+		       Condition="!Exists('$(Arm64SqliteSource)')" />
+		
+		<!-- Copy ARM64 SQLite library to main output directory -->
+		<Copy SourceFiles="$(Arm64SqliteSource)" DestinationFiles="$(Arm64SqliteTarget)" />
+		<Message Text="Copied ARM64 SQLite library: $(Arm64SqliteSource) -> $(Arm64SqliteTarget)" Importance="high" />
 	</Target>
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.0.0" />
