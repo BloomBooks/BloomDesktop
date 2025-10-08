@@ -82,7 +82,7 @@
       </trans-unit>
       <trans-unit id="buttons.cancel_stop_update">
         <source xml:lang="en">Cancel\nThe update will not continue</source>
-        <target xml:lang="pt-PT" state="needs-translation">Cancel\nThe update will not continue</target>
+        <target xml:lang="pt-PT" state="translated">Cancelar\nA atualização não continuará</target>
         <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.repair">
