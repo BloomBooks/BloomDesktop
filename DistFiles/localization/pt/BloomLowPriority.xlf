@@ -151,7 +151,7 @@
       </trans-unit>
       <trans-unit id="Subscription.TierWithColon">
         <source xml:lang="en">Tier:</source>
-        <target xml:lang="pt-PT" state="needs-translation">Tier:</target>
+        <target xml:lang="pt-PT" state="translated">Nível:</target>
         <note>ID: Subscription.TierWithColon</note>
       </trans-unit>
       <!-- Other -->
@@ -230,7 +230,7 @@
       </trans-unit>
       <trans-unit id="Spreadsheet.CannotExportDragAndDropGamePages">
         <source xml:lang="en">Bloom cannot export because {0} pages contain drag-and-drop games.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom cannot export because {0} pages contain drag-and-drop games.</target>
+        <target xml:lang="pt-PT" state="translated">Bloom não pode exportar porque {0} páginas contêm jogos de arrastar e soltar.</target>
         <note>ID: Spreadsheet.CannotExportDragAndDropGamePages</note>
       </trans-unit>
       <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer" approved="yes">
