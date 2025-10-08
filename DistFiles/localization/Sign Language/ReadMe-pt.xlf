@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="sign.language.template.docs">
         <source xml:lang="en">To learn more about making sign language books, please consult <g id="genid-2" ctype="x-html-a" html:href="https://docs.bloomlibrary.org/sign-language-books">Bloom Docs</g>.</source>
-        <target xml:lang="pt-PT" state="needs-translation">To learn more about making sign language books, please consult <g id="genid-2" ctype="x-html-a" html:href="https://docs.bloomlibrary.org/sign-language-books">Bloom Docs</g>.</target>
+        <target xml:lang="pt-PT" state="translated">Para saber mais sobre a criação de livros de línguas de sinais, consulte <g id="genid-2" ctype="x-html-a" html:href="https://docs.bloomlibrary.org/sign-language-books">Documentação Bloom</g>.</target>
         <note>ID: sign.language.template.docs</note>
       </trans-unit>
     </body>
