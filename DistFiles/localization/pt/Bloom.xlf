@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage" approved="yes">
         <source xml:lang="en">Some text is missing a recording for an image description on page {0}</source>
-        <target xml:lang="pt-PT" state="final">Algum texto está faltando na gravação de uma descrição dE imagem na página {0}</target>
+        <target xml:lang="pt-PT" state="final">Há texto que falta a gravação para a descrição de imagem na página {0}</target>
         <note>ID: AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage</note>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AudioForAllText.MissingOnPage" approved="yes">
         <source xml:lang="en">Some text is missing a recording on page {0}</source>
-        <target xml:lang="pt-PT" state="final">Algum texto está faltando uma gravação na página {0}</target>
+        <target xml:lang="pt-PT" state="final">Um texto não tem uma gravação na página {0}</target>
         <note>ID: AccessibilityCheck.AudioForAllText.MissingOnPage</note>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true" approved="yes">
@@ -114,7 +114,7 @@
       </trans-unit>
       <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No essential information by color</source>
-        <target xml:lang="pt-PT" state="final">Nenhuma informação essencial por cor</target>
+        <target xml:lang="pt-PT" state="final">Nenhuma informação essencial indicado pela cor</target>
         <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.WindowTitle" approved="yes">
@@ -3286,7 +3286,7 @@
       </trans-unit>
       <trans-unit id="Errors.PathTooLong">
         <source xml:lang="en">Please give your collection a shorter name or move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by one of two things: 1) the collection has a very long name, or 2) the collection is too deeply nested inside many folders on your hard drive.</source>
-        <target xml:lang="pt-PT" state="translated">Por favor, muda a sua coleção para mais perto da raiz do seu disco rígido e tente novamente. Um arquivo Bloom funcionava com um caminho que era muito longo. Isso é geralmente causado por sua coleção estar profundamente aninhada em muitas pastas no seu disco duro.</target>
+        <target xml:lang="pt-PT" state="translated">Por favor, dê um nome mais curto à sua coleção ou mude a sua coleção para mais perto da raiz do seu disco rígido e tente novamente. Bloom tentou usar um arquivo com um caminho que era muito longo. Isso é geralmente causado por uma dessas duas coisas: 1) a coleção tem um nome muito grande, ou 2) a coleção está profundamente aninhada em muitas pastas no seu disco rígido.</target>
         <note>ID: Errors.PathTooLong</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
@@ -6595,7 +6595,7 @@ is mostly status, which shows on the Collection Tab -->
           This game can be customized in many ways using the Game Tool.
         </source>
         <target xml:lang="pt-PT" state="translated">
-          Os leitores arrastam imagens para as áreas corretas na tela. 
+          Os leitores arrastam imagens até as áreas corretas na tela. 
           Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Targets</note>
@@ -6606,7 +6606,7 @@ is mostly status, which shows on the Collection Tab -->
           This game can be customized in many ways using the Game Tool.
         </source>
         <target xml:lang="pt-PT" state="translated">
-          Os leitores arrastam cada imagem para a palavra correta na tela. 
+          Os leitores arrastam cada imagem até a palavra correta na tela. 
           Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Words</note>
@@ -6628,7 +6628,8 @@ is mostly status, which shows on the Collection Tab -->
           This game can be customized in many ways using the Game Tool.
         </source>
         <target xml:lang="pt-PT" state="translated">
-          Os leitores associam diversas gravações de som às palavras corretas.
+          Os leitores arrastam as gravações de som até as palavras corretas.
+          Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Sounds to Words</note>
       </trans-unit>
@@ -6637,7 +6638,7 @@ is mostly status, which shows on the Collection Tab -->
           Readers see an image and drag one of several words to match. This game can be customized in many ways using the Game Tool.
         </source>
         <target xml:lang="pt-PT" state="translated">
-          Apresentados com uma imagem e várias palavras, os leitores arrastam a palavra correta para a imagem. Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
+          Apresentados com uma imagem e várias palavras, os leitores escolham a palavra correta e arrastam até a imagem. Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Match Word with Image</note>
       </trans-unit>
@@ -6646,7 +6647,7 @@ is mostly status, which shows on the Collection Tab -->
           Readers see a clue (an image, GIF, or Sign Language video) and must arrange scrambled words into a complete sentence.
         </source>
         <target xml:lang="pt-PT" state="translated">
-          Ao ver uma dica (uma imagem, GIF ou vídeo de língua de sinais), os leitores reorganizam as palavras para formar uma frase completa.
+          Os leitores observam uma dica (uma imagem, GIF ou vídeo de língua de sinais), e organizam as palavras para formar uma frase.
         </target>
         <note>ID: TemplateBooks.PageDescription.Order Words</note>
       </trans-unit>
@@ -7112,7 +7113,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Images to Targets" sil:dynamic="true">
         <source xml:lang="en">Drag Images to Targets</source>
-        <target xml:lang="pt-PT" state="translated">Arraste as Imagens para os Alvos</target>
+        <target xml:lang="pt-PT" state="translated">Arraste as Imagens até os Alvos</target>
         <note>ID: TemplateBooks.PageLabel.Drag Images to Targets</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Images to Words" sil:dynamic="true">
