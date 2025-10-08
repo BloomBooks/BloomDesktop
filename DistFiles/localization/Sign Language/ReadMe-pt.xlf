@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="sign.language.template.title">
         <source xml:lang="en">About the Sign Language Template</source>
-        <target xml:lang="pt-PT" state="needs-translation">About the Sign Language Template</target>
+        <target xml:lang="pt-PT" state="translated">Sobre o modelo para língua de sinais</target>
         <note>ID: sign.language.template.title</note>
       </trans-unit>
       <trans-unit id="sign.language.template.provides">
