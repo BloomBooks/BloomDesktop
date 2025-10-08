@@ -3241,7 +3241,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make an e-book that can play audio recordings while highlighting text.</source>
-        <target xml:lang="pt-PT" state="final">Fazer um e-livro que pode reproduzir gravações ao destacar frases.</target>
+        <target xml:lang="pt-PT" state="final">Crie um e-livro que toca gravações e destaca as frases.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
       </trans-unit>
       <trans-unit id="EditTab.Trilingual" approved="yes">
