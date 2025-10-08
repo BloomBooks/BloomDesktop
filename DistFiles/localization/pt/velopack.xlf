@@ -87,12 +87,12 @@
       </trans-unit>
       <trans-unit id="buttons.repair">
         <source xml:lang="en">Repair\nErase the application and re-install version {app_version}.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Repair\nErase the application and re-install version {app_version}.</target>
+        <target xml:lang="pt-PT" state="translated">Reparar\nExcluir o aplicativo e reinstalar a versão {app_version}.</target>
         <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.update">
         <source xml:lang="en">Update\nTo version {target_version}</source>
-        <target xml:lang="pt-PT" state="needs-translation">Update\nTo version {target_version}</target>
+        <target xml:lang="pt-PT" state="translated">Atualizar\nPara a versão {target_version}</target>
         <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.downgrade">
@@ -102,7 +102,7 @@
       </trans-unit>
       <trans-unit id="buttons.cancel_backup_first">
         <source xml:lang="en">Cancel\nBackup or save your work first</source>
-        <target xml:lang="pt-PT" state="needs-translation">Cancel\nBackup or save your work first</target>
+        <target xml:lang="pt-PT" state="translated">Cancelar\nFazer um backup ou salvar seu trabalho primeiro</target>
         <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="dialogs.restart_required.instruction">
@@ -139,7 +139,7 @@
       </trans-unit>
       <trans-unit id="dialogs.uninstall_complete_with_errors.footer">
         <source xml:lang="en">Log file: '&lt;A HREF="na"&gt;{log_path}&lt;/A&gt;'</source>
-        <target xml:lang="pt-PT" state="needs-translation">Log file: '&lt;A HREF="na"&gt;{log_path}&lt;/A&gt;'</target>
+        <target xml:lang="pt-PT" state="translated">Arquivo de log: '&lt;A HREF="na"&gt;{log_path}&lt;/A&gt;'</target>
       </trans-unit>
       <trans-unit id="dialogs.processes_locking_folder.content">
         <source xml:lang="en">There are programs ({process_names}) preventing the {app_title} update from proceeding.\n\nYou can press Continue to have this updater attempt to close them automatically, or if you've closed them yourself press Retry for the updater to check again.</source>
@@ -171,7 +171,7 @@
       </trans-unit>
       <trans-unit id="dialogs.elevation_prompt.content">
         <source xml:lang="en">{app_title} would like to update to version {new_version}, but requires elevated permissions to do so. Would you like to proceed?</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} would like to update to version {new_version}, but requires elevated permissions to do so. Would you like to proceed?</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} gostaria de atualizar para a versão {new_version}, mas requer permissões elevadas para fazê-lo. Gostaria de continuar?</target>
       </trans-unit>
       <trans-unit id="dialogs.install_hook_failed.content">
         <source xml:lang="en">Installation has completed, but the application install hook failed. It may not have installed correctly.</source>
