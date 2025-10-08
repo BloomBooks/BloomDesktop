@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo" approved="yes">
         <source xml:lang="en">Currently, Bloom does not support including audio from embedded videos in video output.</source>
-        <target xml:lang="pt-PT" state="final">Atualmente, Bloom não suporta inclusão do áudio nos vídeos de linguagem de gesto na saída de vídeo.</target>
+        <target xml:lang="pt-PT" state="final">Atualmente, Bloom não suporta incluir o áudio dos vídeos na saída de vídeo.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed" approved="yes">
@@ -169,7 +169,7 @@
       </trans-unit>
       <trans-unit id="Feature.Spreadsheet">
         <source xml:lang="en">Spreadsheet Import/Export</source>
-        <target xml:lang="pt-PT" state="needs-translation">Spreadsheet Import/Export</target>
+        <target xml:lang="pt-PT" state="translated">Importar/Exportar Planilha</target>
         <note>ID: Feature.Spreadsheet</note>
       </trans-unit>
       <!-- TODO: add other features -->
