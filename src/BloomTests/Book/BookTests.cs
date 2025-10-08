@@ -1864,7 +1864,7 @@ namespace BloomTests.Book
                 // Verify files were copied
                 var newActivitiesFolderPath = Path.Combine(book.FolderPath, "activities");
                 var expectedNewActivityName =
-                    "my Wid%et" + (simulateWidgetWithSameNameExists ? "2" : "");
+                    "my Wid%et" + (simulateWidgetWithSameNameExists ? "1" : "");
                 var newWidgetPath = Path.Combine(newActivitiesFolderPath, expectedNewActivityName);
                 var newIndexFilePath = Path.Combine(newWidgetPath, "index.htm");
                 Assert.That(
@@ -1897,7 +1897,7 @@ namespace BloomTests.Book
                     newWidgetContainer.GetElementsByTagName("iframe")[0] as SafeXmlElement;
                 var src = newWidgetIframe.GetAttribute("src");
                 var expectedNewActivityFolderEncoded =
-                    "my%20Wid%25et" + (simulateWidgetWithSameNameExists ? "2" : "");
+                    "my%20Wid%25et" + (simulateWidgetWithSameNameExists ? "1" : "");
                 Assert.That(
                     src,
                     Is.EqualTo($@"activities/{expectedNewActivityFolderEncoded}/index.htm")
