@@ -324,7 +324,7 @@
       </trans-unit>
       <trans-unit id="BookMetadata.signLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
-        <target xml:lang="pt-PT" state="final">Linguagem de sinais</target>
+        <target xml:lang="pt-PT" state="final">Língua de sinais</target>
         <note>ID: BookMetadata.signLanguage</note>
       </trans-unit>
       <trans-unit id="BookMetadata.subjects" approved="yes">
@@ -3521,7 +3521,7 @@
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem" approved="yes">
         <source xml:lang="en">Help...</source>
-        <target xml:lang="pt-PT" state="final">Documentação</target>
+        <target xml:lang="pt-PT" state="final">Ajuda...</target>
         <note>ID: HelpMenu.DocumentationMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.OnlineHelpMenuItem" approved="yes">
@@ -3571,7 +3571,7 @@
       </trans-unit>
       <trans-unit id="HelpMenu.WebSiteMenuItem" approved="yes">
         <source xml:lang="en">BloomLibrary.org</source>
-        <target xml:lang="pt-PT" state="final">Sitio Web</target>
+        <target xml:lang="pt-PT" state="final">BloomLibrary.org</target>
         <note>ID: HelpMenu.WebSiteMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.trainingVideos" approved="yes">
@@ -4280,7 +4280,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.LookingForDevice" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Looking for an Android device connected by USB cable and set up for file transfer (MTP)...</source>
-        <target xml:lang="pt-PT" state="final">Procurando um dispositivo Android conectado ao cabo USB e configurado para MTP...</target>
+        <target xml:lang="pt-PT" state="final">Procurando um dispositivo Android conectado por cabo USB e configurado para transferência de arquivos MTP...</target>
         <note>ID: PublishTab.Android.Usb.Progress.LookingForDevice</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.LookingForExisting" sil:dynamic="true" approved="yes">
@@ -4320,7 +4320,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.UnableToConnect" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Unable to connect to any Android device.</source>
-        <target xml:lang="pt-PT" state="final">Impossível conectar a nenhum dispositivo Android que tenha Bloom Reader.</target>
+        <target xml:lang="pt-PT" state="final">Não foi possível conectar a qualquer dispositivo Android.</target>
         <note>ID: PublishTab.Android.Usb.Progress.UnableToConnect</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Start" sil:dynamic="true" approved="yes">
@@ -5178,7 +5178,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
-        <target xml:lang="pt-PT" state="final">BloomLibrary.org já tem uma versão anterior de seu livro. Se você carregá-lo novamente, ele será substituído com sua versão atual.</target>
+        <target xml:lang="pt-PT" state="final">BloomLibrary.org já tem uma versão anterior de seu livro. Se você carregá-lo novamente, a versão anterior será substituída com sua versão atual.</target>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.EnterpriseShelfRequiredTooltip" approved="yes">
@@ -5253,7 +5253,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount" approved="yes">
         <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address.  Would you like to sign in instead?</source>
-        <target xml:lang="pt-PT" state="final">Não pode ser registrado com esse endereço, porque já temos uma conta com esse endereço. Em vez disso, gostaria de fazer o login?</target>
+        <target xml:lang="pt-PT" state="final">Não pode se inscrever com esse e-mail porque já existe uma conta com esse e-mail. Gostaria de fazer o login?</target>
         <note>ID: PublishTab.Upload.Login.AlreadyHaveAccount</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.LoginConnectFailed" approved="yes">
@@ -5353,7 +5353,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
-        <target xml:lang="pt-PT" state="final">Linguagem de sinais</target>
+        <target xml:lang="pt-PT" state="final">Língua de sinais</target>
         <note>ID: PublishTab.Upload.SignLanguage</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignIn" approved="yes">
@@ -5680,7 +5680,7 @@
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Average per **Sentence** in **Book**</source>
-        <target xml:lang="pt-PT" state="final">Médio por frase no livro</target>
+        <target xml:lang="pt-PT" state="final">Médio por **frase** no **livro**</target>
         <note>ID: ReaderSetup.MaxAverageWords</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true" approved="yes">
