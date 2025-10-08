@@ -6857,12 +6857,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Choose Image from Word" sil:dynamic="true">
         <source xml:lang="en">Choose Image from Word</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose Image from Word</target>
+        <target xml:lang="pt-PT" state="translated">Escolha a Imagem a partir da Palavra</target>
         <note>ID: TemplateBooks.PageLabel.Choose Image from Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Choose Word from Image" sil:dynamic="true">
         <source xml:lang="en">Choose Word from Image</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose Word from Image</target>
+        <target xml:lang="pt-PT" state="translated">Escolha a Palavra a partir da Imagem</target>
         <note>ID: TemplateBooks.PageLabel.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Choose Picture from Word" sil:dynamic="true" approved="yes">
@@ -7122,17 +7122,17 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true">
         <source xml:lang="en">Drag Sound to Word Target</source>
-        <target xml:lang="pt-PT" state="translated">Arrasta o som para a palavra alvo</target>
+        <target xml:lang="pt-PT" state="translated">Arrasta o som até a palavra alvo</target>
         <note>ID: TemplateBooks.PageLabel.Drag Sound to Word Target</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Sounds to Word Targets" sil:dynamic="true">
         <source xml:lang="en">Drag Sounds to Word Targets</source>
-        <target xml:lang="pt-PT" state="needs-translation">Drag Sounds to Word Targets</target>
+        <target xml:lang="pt-PT" state="translated">Arrastar os Sons até as Palavras</target>
         <note>ID: TemplateBooks.PageLabel.Drag Sounds to Word Targets</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Match Word with Image" sil:dynamic="true">
         <source xml:lang="en">Match Word with Image</source>
-        <target xml:lang="pt-PT" state="needs-translation">Match Word with Image</target>
+        <target xml:lang="pt-PT" state="translated">Liga a Palavra com a Imagem</target>
         <note>ID: TemplateBooks.PageLabel.Match Word with Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Order Words" sil:dynamic="true">
