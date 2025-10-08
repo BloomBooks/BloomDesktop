@@ -109,8 +109,8 @@ namespace Bloom.Book
         void MigrateToLevel6LegacyActivities();
         void MigrateToLevel7BloomCanvas();
         void MigrateToLevel8RemoveEnterpriseOnly();
-
-        void MigrateToLevel9GameHeader();
+        void MigrateToLevel9TruncateWidgetPaths();
+        void MigrateToLevel10GameHeader();
         void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
@@ -174,7 +174,8 @@ namespace Bloom.Book
         ///     (Previously was bloom-imageContainer, which conflicted with the use inside canvas
         ///     elements, and was inaccurate because it could contain many other things.)
         ///   Bloom 6.2  8 = Removed enterprise-only class on all pages that have it
-        ///   Bloom 6.2  9 = change old QuizHeader-style and Prompt-Style to uniform GameHeader-style
+        ///   Bloom 6.2  9 = Truncate long widget paths to 50 characters
+        ///   Bloom 6.3 10 = change old QuizHeader-style and Prompt-Style to uniform GameHeader-style
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
@@ -4083,6 +4084,56 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// At least one user was using extremely long names for widget folders, resulting in
+        /// path lengths that were too long for Windows to handle. This migration truncates
+        /// any such folder names to 50 characters, and updates the src attribute of the iframe.
+        /// </summary>
+        public void MigrateToLevel9TruncateWidgetPaths()
+        {
+            if (GetMaintenanceLevel() >= 9)
+                return;
+            var widgetIframes = Dom.SafeSelectNodes(
+                "//div[contains(@class, 'bloom-widgetContainer')]/iframe[starts-with(@src,'activities/')]"
+            );
+            foreach (SafeXmlElement iframe in widgetIframes)
+            {
+                var rawSrc = iframe.GetAttribute("src");
+                var fullEncodedSrc = UrlPathString.CreateFromUrlEncodedString(rawSrc);
+                var fullDecodedSrc = fullEncodedSrc.NotEncoded;
+                var originalFolderName = Path.GetFileName(Path.GetDirectoryName(fullDecodedSrc));
+                var originalFileName = Path.GetFileName(fullDecodedSrc);
+                if (originalFolderName.Length <= 50)
+                    continue;
+                var truncatedFolderName = originalFolderName.Substring(0, 50).Trim();
+                var originalFolderPath = Path.Combine(FolderPath, "activities", originalFolderName);
+                var truncatedFolderPath = Path.Combine(
+                    FolderPath,
+                    "activities",
+                    truncatedFolderName
+                );
+                var suffix = 1;
+                while (Directory.Exists(truncatedFolderPath))
+                {
+                    // This is very unlikely, but if it happens, we want to avoid overwriting
+                    // the existing folder. So we just add a character and try again.
+                    truncatedFolderPath = Path.Combine(
+                        FolderPath,
+                        "activities",
+                        truncatedFolderName + suffix.ToString()
+                    );
+                    suffix++;
+                }
+                RobustIO.MoveDirectory(originalFolderPath, truncatedFolderPath);
+                var newEncodedSrc = UrlPathString.CreateFromUnencodedString(
+                    $"activities/{Path.GetFileName(truncatedFolderPath)}/{originalFileName}"
+                );
+                var newRawSrc = newEncodedSrc.UrlEncodedForHttpPath;
+                iframe.SetAttribute("src", newRawSrc);
+            }
+            Dom.UpdateMetaElement("maintenanceLevel", "9");
+        }
+
+        /// <summary>
         /// pages with class QuizHeader-style or Prompt-style change to GameHeader-style.
         /// Review: if there is a non-standard definition for one of those styles, should we
         /// migrate that, or at least whatever is non-standard in it, to GameHeader-style?
@@ -4091,9 +4142,9 @@ namespace Bloom.Book
         /// We might be glad of them if by any chance the book gets opened in 6.1?
         /// Also just seems more trouble than it's worth.
         /// </summary>
-        public void MigrateToLevel9GameHeader()
+        public void MigrateToLevel10GameHeader()
         {
-            if (GetMaintenanceLevel() >= 9)
+            if (GetMaintenanceLevel() >= 10)
                 return;
             var oldQuizPages = Dom.SafeSelectNodes("//div[contains(@class, 'QuizHeader-style')]");
             foreach (SafeXmlElement page in oldQuizPages)
@@ -4107,7 +4158,7 @@ namespace Bloom.Book
                 page.RemoveClass("Prompt-style");
                 page.AddClass("GameHeader-style");
             }
-            Dom.UpdateMetaElement("maintenanceLevel", "9");
+            Dom.UpdateMetaElement("maintenanceLevel", "10");
         }
 
         /// <summary>
