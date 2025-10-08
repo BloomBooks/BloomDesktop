@@ -5,7 +5,6 @@ import {
     DialogContent,
     DialogTitle,
     Link,
-    TextField,
     Typography,
 } from "@mui/material";
 import { post, postJson, useApiStringState } from "../utils/bloomApi";
@@ -17,8 +16,8 @@ import { useState, useEffect, useRef } from "react";
 import { HowMuchGroup } from "./HowMuchGroup";
 import { PrivacyNotice } from "./PrivacyNotice";
 import { makeTheme, kindParams } from "./theme";
-import { EmailField, isValidEmail } from "./EmailField";
-import { useDrawAttention } from "../react_components/UseDrawAttention";
+import { AttentionTextField } from "../react_components/AttentionTextField";
+import { isValidEmail } from "../utils/emailUtils";
 import { PrivacyScreen } from "./PrivacyScreen";
 import { useL10n } from "../react_components/l10nHooks";
 import { ProblemKind } from "./ProblemDialog";
@@ -66,11 +65,6 @@ export const ReportDialog: React.FunctionComponent<{
     const readyToSubmit = (email: string, userInput: string): boolean => {
         return isValidEmail(email) && userInput.trim().length !== 0;
     };
-
-    const whatWereYouDoingAttentionClass = useDrawAttention(
-        submitAttempts,
-        () => whatDoing.trim().length > 0,
-    );
 
     const submitButton = useRef(null);
     useCtrlEnterToSubmit(() => {
@@ -128,11 +122,6 @@ export const ReportDialog: React.FunctionComponent<{
     const englishTitle = kindParams[props.kind.toString()].title;
     const titleKey = kindParams[props.kind.toString()].l10nKey;
     const localizedDlgTitle = useL10n(englishTitle, titleKey);
-    const localizedWhatDoingLabel = useL10n(
-        "What were you doing?",
-        "ReportProblemDialog.WhatDoing",
-        "This is the label for the text field where the user enters what they were doing at the time of the problem.",
-    );
     const localizedPleaseHelpUs = useL10n(
         "Please help us reproduce this problem on our computers.",
         "ReportProblemDialog.PleaseHelpUs",
@@ -301,36 +290,28 @@ export const ReportDialog: React.FunctionComponent<{
                                             </Typography>
                                             <div id="row2">
                                                 <div className="column1">
-                                                    <TextField
+                                                    <AttentionTextField
                                                         // can't use id for css because that goes down to a child element
                                                         className={
-                                                            "what_were_you_doing " +
-                                                            whatWereYouDoingAttentionClass
+                                                            "what_were_you_doing "
                                                         }
                                                         autoFocus={true}
-                                                        variant="outlined"
-                                                        label={
-                                                            localizedWhatDoingLabel
-                                                        }
+                                                        label="What were you doing?"
+                                                        l10nKey="ReportProblemDialog.WhatDoing"
+                                                        l10nComment="This is the label for the text field where the user enters what they were doing at the time of the problem."
                                                         rows="3"
-                                                        InputLabelProps={{
-                                                            shrink: true,
-                                                        }}
                                                         multiline={true}
                                                         aria-label="What were you doing?"
-                                                        onChange={(event) => {
-                                                            setWhatDoing(
-                                                                event.target
-                                                                    .value,
-                                                            );
-                                                        }}
-                                                        error={
-                                                            submitAttempts >
-                                                                0 &&
-                                                            whatDoing.trim()
-                                                                .length === 0
+                                                        onChange={(v) =>
+                                                            setWhatDoing(v)
+                                                        }
+                                                        isValid={(v) =>
+                                                            !!v.trim()
                                                         }
                                                         value={whatDoing}
+                                                        submitAttempts={
+                                                            submitAttempts
+                                                        }
                                                     />
                                                     <HowMuchGroup
                                                         onHowMuchChange={(
@@ -338,14 +319,21 @@ export const ReportDialog: React.FunctionComponent<{
                                                         ) => setHowMuch(value)}
                                                     />
 
-                                                    <EmailField
-                                                        email={email}
+                                                    <AttentionTextField
+                                                        label="Email"
+                                                        l10nKey="ReportProblemDialog.Email"
+                                                        value={email}
+                                                        isValid={isValidEmail}
                                                         onChange={(v) =>
                                                             setEmail(v)
                                                         }
                                                         submitAttempts={
                                                             submitAttempts
                                                         }
+                                                        className="email"
+                                                        aria-label="email"
+                                                        rows="1"
+                                                        multiline={false}
                                                     />
                                                 </div>
                                                 <div className="column2">
