@@ -319,7 +319,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool.ChooseImageFromWordHeading">
         <source xml:lang="en">Choose Image from Word</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose Image from Word</target>
+        <target xml:lang="pt-PT" state="translated">Escolha a Imagem a partir da Palavra</target>
         <note>ID: EditTab.Toolbox.GameTool.ChooseImageFromWordHeading</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions">
@@ -329,7 +329,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool.ChooseWordFromImageHeading">
         <source xml:lang="en">Choose Word from Image</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose Word from Image</target>
+        <target xml:lang="pt-PT" state="translated">Escolha a Palavra a partir da Imagem</target>
         <note>ID: EditTab.Toolbox.GameTool.ChooseWordFromImageHeading</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool.ChooseWordFromImageInstructions">
