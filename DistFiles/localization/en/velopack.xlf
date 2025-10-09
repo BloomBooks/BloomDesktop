@@ -142,8 +142,8 @@
         <source xml:lang="en">This app installation has been corrupted and cannot be started. Please re-install the app.</source>
       </trans-unit>
       <trans-unit id="dialogs.uninstall_success.content">
-        <source xml:lang="en">The application was successfully uninstalled.</source>
+          <source xml:lang="en">{app_title} was successfully uninstalled.</source>
       </trans-unit>
-    </body>
+      </body>
   </file>
 </xliff>

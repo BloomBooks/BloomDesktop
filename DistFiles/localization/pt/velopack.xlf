@@ -186,8 +186,8 @@
         <target xml:lang="pt">Esta instalação da aplicação está corrompida e não pode ser iniciada. Reinstale a aplicação.</target>
       </trans-unit>
       <trans-unit id="dialogs.uninstall_success.content">
-        <source xml:lang="en">The application was successfully uninstalled.</source>
-        <target xml:lang="pt">A aplicação foi desinstalada com sucesso.</target>
+        <source xml:lang="en">{app_title} was successfully uninstalled.</source>
+        <target xml:lang="pt">{app_title} foi desinstalado com sucesso.</target>
       </trans-unit>
     </body>
   </file>
