@@ -274,12 +274,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions">
         <source>Match sounds with their words</source>
-        <target xml:lang="pt-PT" state="translated">Combine os sons com as palavras certas</target>
+        <target xml:lang="pt-PT" state="translated">Ligue os sons com as palavras certas</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions">
         <source>Drag the correct sound to matching word</source>
-        <target xml:lang="pt-PT" state="translated">Arraste o som à palavra correspondente</target>
+        <target xml:lang="pt-PT" state="translated">Arraste o áudio até a palavra correspondente</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragWordToImageInstructions">
@@ -289,7 +289,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions">
         <source>Match each image to a word</source>
-        <target xml:lang="pt-PT" state="translated">Associar cada imagem a uma palavra</target>
+        <target xml:lang="pt-PT" state="translated">Ligue cada imagem com uma palavra</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.MatchImageToWordInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.OrderWordsInstructions">
