@@ -335,12 +335,12 @@ namespace Bloom.Book
             return _dom.SelectSingleNodeHonoringDefaultNS(xpath) as SafeXmlElement;
         }
 
-        public void AddJavascriptFile(string pathToJavascript)
+        public void AddJavascriptFile(string pathToJavascript, bool module = false)
         {
-            Head.AppendChild(MakeJavascriptElement(pathToJavascript));
+            Head.AppendChild(MakeJavascriptElement(pathToJavascript, module));
         }
 
-        private SafeXmlElement MakeJavascriptElement(string pathToJavascript)
+        private SafeXmlElement MakeJavascriptElement(string pathToJavascript, bool module = false)
         {
             var element = Head.AppendChild(_dom.CreateElement("script")) as SafeXmlElement;
 
@@ -352,7 +352,7 @@ namespace Bloom.Book
             // Without this, the browser complains if the js has import or export statements.
             // Conceivably we could load the js and look for those as strings, but it would
             // be slow and unreliable (the words might occur in comments).
-            if (pathToJavascript.EndsWith("Bundle.js"))
+            if (module || pathToJavascript.EndsWith("Bundle.js"))
             {
                 element.SetAttribute("type", "module");
             }

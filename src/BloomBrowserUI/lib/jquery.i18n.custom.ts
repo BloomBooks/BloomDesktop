@@ -1,6 +1,6 @@
 /// <reference path="localizationManager/localizationManager.ts" />
 /// <reference path="../typings/jquery/jquery.d.ts" />
-import $ from "jquery";
+import jQuery from "jquery";
 import theOneLocalizationManager from "./localizationManager/localizationManager";
 
 interface JQuery {
@@ -45,3 +45,5 @@ interface JQuery {
         }
     };
 })(jQuery);
+
+// (No explicit export needed; this file is kept via package.json sideEffects allow-list.)

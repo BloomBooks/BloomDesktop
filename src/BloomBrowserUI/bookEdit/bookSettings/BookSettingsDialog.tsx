@@ -3,6 +3,7 @@ import { ListItem, Slider, Typography } from "@mui/material";
 import {
     ConfigrPane,
     ConfigrGroup,
+    ConfigrSubgroup,
     ConfigrCustomStringInput,
     ConfigrCustomObjectInput,
     ConfigrBoolean,
@@ -404,11 +405,9 @@ export const BookSettingsDialog: React.FunctionComponent<{
                             setSettingsToReturnLater(s);
                             //setSettings(s);
                         }}
-                        initiallySelectedTopLevelPageIndex={
-                            props.initiallySelectedGroupIndex
-                        }
+                        selectedGroupIndex={props.initiallySelectedGroupIndex}
                     >
-                        <ConfigrGroup label={coverLabel}>
+                        <ConfigrGroup label={coverLabel} level={1}>
                             {appearanceDisabled && (
                                 <NoteBox>
                                     <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
@@ -417,9 +416,9 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     </Div>
                                 </NoteBox>
                             )}
-                            <ConfigrGroup
+                            <ConfigrSubgroup
                                 label={whatToShowOnCoverLabel}
-                                //path={`appearance`}
+                                path={`appearance`}
                             >
                                 <div>
                                     <ConfigrBoolean
@@ -487,7 +486,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                             </ConfigrGroup>
                             <ConfigrGroup
                                 label={"All Cover Pages"}
-                                //path={`appearance`}
+                                path={`appearance`}
                             >
                                 <ConfigrCustomStringInput
                                     label={coverBackgroundColorLabel}
@@ -500,7 +499,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                             </ConfigrGroup>
                             {/*
 
-                            <ConfigrGroup
+                            <ConfigrSubgroup
                                 label={
                                     frontAndBackMatterLabel +
                                     "  (Not implemented yet)"
@@ -516,9 +515,9 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     ]}
                                     description={frontAndBackMatterDescription}
                                 />
-                            </ConfigrGroup> */}
+                            </ConfigrSubgroup> */}
                         </ConfigrGroup>
-                        <ConfigrGroup label={contentPagesLabel}>
+                        <ConfigrGroup label={contentPagesLabel} level={1}>
                             {
                                 // This group of four possible messages...sometimes none of them shows, so there are five options...
                                 // is very similar to the one in BookInfoIndicator.tsx. If you change one, you may need to change the other.
@@ -599,7 +598,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         />
                                     </NoteBox>
                                 )}
-                            <ConfigrGroup label="" /*path={`appearance`}*/>
+                            <ConfigrSubgroup label="" path={`appearance`}>
                                 {/* Wrapping these two in a div prevents Config-R from sticking a divider between them */}
                                 <div>
                                     <ConfigrSelect
@@ -636,10 +635,10 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `pageNumber-show`,
                                     )}
                                 />
-                            </ConfigrGroup>
-                            <ConfigrGroup
+                            </ConfigrSubgroup>
+                            <ConfigrSubgroup
                                 label={languagesToShowNormalSubgroupLabel}
-                                //path={`appearance`}
+                                path={`appearance`}
                             >
                                 <FieldVisibilityGroup
                                     field="autoTextBox"
@@ -652,10 +651,10 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     disabled={false}
                                     getAdditionalProps={getAdditionalProps}
                                 />
-                            </ConfigrGroup>
-                            <ConfigrGroup
+                            </ConfigrSubgroup>
+                            <ConfigrSubgroup
                                 label={advancedLayoutLabel}
-                                //path={`appearance`}
+                                path={`appearance`}
                             >
                                 <ConfigrSelect
                                     label={textPaddingLabel}
@@ -695,16 +694,16 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `page-gutter`,
                                     )}
                                 />
-                            </ConfigrGroup>
+                            </ConfigrSubgroup>
                         </ConfigrGroup>
-                        <ConfigrGroup label={bloomPubLabel}>
+                        <ConfigrGroup label={bloomPubLabel} level={1}>
                             {/* note that this is used for bloomPUB and ePUB, but we don't have separate settings so we're putting them in bloomPUB and leaving it to c# code to use it for ePUB as well. */}
                             <BloomResolutionSlider
                                 label={resolutionLabel}
                                 path={`publish.bloomPUB.imageSettings`}
                             />
                         </ConfigrGroup>
-                        <ConfigrGroup label="Fonts">
+                        <ConfigrGroup label="Fonts" level={1}>
                             <NoteBox>
                                 <div>
                                     <P l10nKey="BookSettings.Fonts.Problematic">

@@ -1,3 +1,6 @@
+// Added explicit jQuery import for Vite/ESM so the IIFE receives the correct instance.
+import jQuery from 'jquery';
+const jqAlias = jQuery; // alias for clarity; IIFE parameter name is $
 /*
  * jQuery EasyTabs plugin 2.3.3
  *
