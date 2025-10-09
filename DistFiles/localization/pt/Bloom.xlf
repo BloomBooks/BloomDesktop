@@ -6147,7 +6147,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="Subscription.RequiredTierForFeatureSentence" approved="yes">
         <source xml:lang="en">This feature requires a Bloom subscription tier of at least "{0}".</source>
-        <target xml:lang="pt-PT" state="final">Este recurso requer um nível de inscrição Bloom de pelo menos{0}".</target>
+        <target xml:lang="pt-PT" state="final">Este recurso requer uma assinatura Bloom do nível de pelo menos "{0}".</target>
         <note>ID: Subscription.RequiredTierForFeatureSentence</note>
       </trans-unit>
       <trans-unit id="Subscription.FeatureIsIncludedSentence" approved="yes">
