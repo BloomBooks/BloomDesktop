@@ -24,6 +24,7 @@ export const LinkCard: React.FC<BookCardProps> = ({
     displayRealTitle,
 }) => {
     const title = displayRealTitle ? link.book.title : link.book.folderName;
+    const tooltip = displayRealTitle ? link.book.folderName : link.book.title;
     return (
         <Card
             onClick={onClick}
@@ -81,7 +82,7 @@ export const LinkCard: React.FC<BookCardProps> = ({
             )}
             <BloomTooltip
                 // If we are displaying the title, add a tooltip with the foldername
-                tip={displayRealTitle ? link.book.folderName : undefined}
+                tip={tooltip}
             >
                 <CardContent
                     css={css`
