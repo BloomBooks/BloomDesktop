@@ -173,7 +173,12 @@ namespace Bloom
                 // Thus the other states all display a message and return above.
                 _status = UploadStatus.LookingForUpdates;
 
-                _bloomUpdateManager = new UpdateManager(updateUrl);
+                var options = new UpdateOptions
+                {
+                    // this number is arbitrary. We just want to speed up alpha (and maybe beta?) channel updates.
+                    MaximumDeltasBeforeFallback = 2,
+                };
+                _bloomUpdateManager = new UpdateManager(updateUrl, options);
                 _newVersion = await _bloomUpdateManager.CheckForUpdatesAsync();
                 if (_newVersion == null)
                 {
