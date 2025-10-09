@@ -872,7 +872,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.GetABetterBloom" approved="yes">
         <source xml:lang="en">Click to get a better Bloom!</source>
-        <target xml:lang="pt-PT" state="final">Clique aqui para obter um Bloom melhorado!</target>
+        <target xml:lang="pt-PT" state="final">Clique aqui para obter um Bloom melhor!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations" approved="yes">
@@ -3346,7 +3346,7 @@
       </trans-unit>
       <trans-unit id="Errors.DownloadLatestVersion" approved="yes">
         <source xml:lang="en">Upgrade to the latest Bloom (requires Internet connection)</source>
-        <target xml:lang="pt-PT" state="final">Atualize a versão mais recente do Bloom (requer ligação ao Internet)</target>
+        <target xml:lang="pt-PT" state="final">Atualize para a versão mais recente do Bloom (requer conexão com a Internet)</target>
         <note>ID: Errors.DownloadLatestVersion</note>
       </trans-unit>
       <trans-unit id="Errors.ErrorSelecting" approved="yes">
@@ -5077,7 +5077,7 @@
           This will open a window and play the selected pages. Bloom will record it to match the “Format” option in the upper right of this screen. Don't disturb this window while the recording is in progress!
         </source>
         <target xml:lang="pt-PT" state="final">
-          Isto abrirá uma janela e mostrará as páginas selecionadas. Bloom irá registá-lo para coincidir com a opção "Formato" no canto superior direito desta tela!
+          Escolhe esta opção para abrir uma janela e mostrar as páginas selecionadas. Bloom vai gravar de acordo com a opção de "Formato" no canto superior direito desta tela. Não mexe com esta janela enquanto a gravação está acontecendo!
         </target>
         <note>ID: PublishTab.RecordVideo.WillOpenRecordingWindow</note>
       </trans-unit>
@@ -6531,7 +6531,7 @@ is mostly status, which shows on the Collection Tab -->
           Best for advanced users.
         </source>
         <target xml:lang="pt-PT" state="final">
-          Comece com uma página em branco e crie seu próprio jogo do zero usando a Ferramenta de Jogo.
+          Comece com uma página em branco e crie seu próprio jogo do zero usando a Ferramenta de Jogos.
           Melhor para usuários avançados.
         </target>
         <note>ID: TemplateBooks.PageDescription.Custom Game</note>
@@ -6558,12 +6558,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</source>
-        <target xml:lang="pt-PT" state="final">Os leitores veem uma palavra e três imagens. Eles escolhem a imagem que corresponde à palavra. A ordem da imagem muda a cada vez que o jogo é jogado.</target>
+        <target xml:lang="pt-PT" state="final">Os leitores visualizam uma palavra e três imagens. Devem escolher a imagem que corresponde à palavra. A ordem das imagens muda cada vez que joga.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Image from Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Readers see one image and three words. They pick the word that matches the picture. The word order changes each time the game is played.</source>
-        <target xml:lang="pt-PT" state="final">Os leitores veem uma palavra e três imagens. Eles escolhem a imagem que corresponde à palavra. A ordem da imagem muda a cada vez que o jogo é jogado.</target>
+        <target xml:lang="pt-PT" state="final">Os leitores visualizam uma palavra e três imagens. Devem escolher a imagem que corresponde à palavra. A ordem das palavras muda cada vez que joga.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true" approved="yes">
@@ -6584,8 +6584,8 @@ is mostly status, which shows on the Collection Tab -->
         </source>
         <target xml:lang="pt-PT" state="final">
           ℹ️ Este jogo requer imagens com fundos transparentes.
-          Os leitores arrastam imagens para combinar as suas formas de sombra.
-          Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogo.
+          Os leitores arrastam imagens até suas sombras correspondentes.
+          Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Shadows</note>
       </trans-unit>
