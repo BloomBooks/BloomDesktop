@@ -269,12 +269,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions">
         <source>Drag the pictures to their shadows</source>
-        <target xml:lang="pt-PT" state="translated">Arraste as imagens para as sombras correspondentes</target>
+        <target xml:lang="pt-PT" state="translated">Arraste as imagens até as sombras correspondentes</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions">
         <source>Match sounds with their words</source>
-        <target xml:lang="pt-PT" state="translated">Ligue os sons com as palavras certas</target>
+        <target xml:lang="pt-PT" state="translated">Ligue os áudios com as palavras certas</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragSoundToWordTargetInstructions">
@@ -304,7 +304,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool" approved="yes">
         <source xml:lang="en">Game Tool</source>
-        <target xml:lang="pt-PT" state="final">Ferramenta do Jogo</target>
+        <target xml:lang="pt-PT" state="final">Ferramenta de Jogos</target>
         <note>ID: EditTab.Toolbox.GameTool</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool.CheckboxQuizHeading">
