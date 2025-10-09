@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="playground.template.title">
         <source xml:lang="en">Playground</source>
-        <target xml:lang="pt-PT" state="needs-translation">Playground</target>
+        <target xml:lang="pt-PT" state="translated">Parquinho</target>
         <note>ID: playground.template.title</note>
       </trans-unit>
       <trans-unit id="playground.template.use">
