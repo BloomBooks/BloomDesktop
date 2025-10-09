@@ -5,6 +5,7 @@
 * http://github.com/KevinSheedy/jquery.alphanum
 * John Thomson added trimNotification and preventLeadingNumeric
 *********************************************************************/
+import jQuery from "jquery";
 (function( $ ){
 
     // API ///////////////////////////////////////////////////////////////////

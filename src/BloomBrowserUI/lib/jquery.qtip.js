@@ -22,6 +22,7 @@ import { EditableDivUtils } from "../bookEdit/js/editableDivUtils.ts";
 
 /* Cache window, document, undefined */
 // prettier-ignore
+import jQuery from "jquery";
 (function( window, document, undefined ) {
 
 // Uses AMD or browser globals to create a jQuery plugin.
@@ -1734,14 +1735,16 @@ $.each(PLUGINS.fn, function(name, func) {
  * This snippet is taken directly from jQuery UI source code found here:
  *     http://code.jquery.com/ui/jquery-ui-git.js
  */
-if(!$.ui) {
-    $['cleanData'+replaceSuffix] = $.cleanData;
+// JohnT added check that it hasn't already been done; doing repeatedly leads to stack overflow.
+var oldCleanDataName = 'cleanData'+replaceSuffix;
+if(!$.ui && !$[oldCleanDataName]) {
+    $[oldCleanDataName] = $.cleanData;
     $.cleanData = function( elems ) {
         for(var i = 0, elem; (elem = elems[i]) !== undefined; i++) {
             try { $( elem ).triggerHandler('removeqtip'); }
             catch( e ) {}
         }
-        $['cleanData'+replaceSuffix]( elems );
+        $[oldCleanDataName]( elems );
     };
 }
 

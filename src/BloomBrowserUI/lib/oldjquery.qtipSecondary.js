@@ -1,3 +1,5 @@
+// Added explicit jQuery import for Vite/ESM bundling
+import jQuery from 'jquery';
 /*
 * qTip2 - Pretty powerful tooltips
 * http://craigsworks.com/projects/qtipSecondary2/

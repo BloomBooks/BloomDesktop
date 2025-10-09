@@ -7,6 +7,7 @@
  *
  */
 
+import jQuery from "jquery";
 import $ from "jquery";
 import * as _ from "underscore";
 import { theOneLibSynphony, LibSynphony } from "./synphony_lib";

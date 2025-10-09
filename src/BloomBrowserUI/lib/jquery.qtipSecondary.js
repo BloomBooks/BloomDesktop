@@ -10,6 +10,7 @@
  * Plugins: svg ajax tips modal viewport imagemap ie6
  * Styles: basic css3
  */
+import jQuery from "jquery";
 
 /*jslint browser: true, onevar: true, undef: true, nomen: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: true */
 /*global window: false, jQuery: false, console: false, define: false */
@@ -1723,14 +1724,17 @@ $.each(PLUGINS.fn, function(name, func) {
  * This snippet is taken directly from jQuery UI source code found here:
  *     http://code.jquery.com/ui/jquery-ui-git.js
  */
-if(!$.ui) {
-    $['cleanData'+replaceSuffix] = $.cleanData;
+// JohnT added check that it hasn't already been done; doing repeatedly (or just both here
+// and in jquery.qtip)leads to stack overflow.
+var oldCleanDataName = 'cleanData'+replaceSuffix;
+if(!$.ui && !$[oldCleanDataName]) {
+    $[oldCleanDataName] = $.cleanData;
     $.cleanData = function( elems ) {
         for(var i = 0, elem; (elem = elems[i]) !== undefined; i++) {
             try { $( elem ).triggerHandler('removeqtip'); }
             catch( e ) {}
         }
-        $['cleanData'+replaceSuffix]( elems );
+        $[oldCleanDataName]( elems );
     };
 }
 

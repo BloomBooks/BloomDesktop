@@ -3608,10 +3608,10 @@
   resolved "https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.50.2.tgz#40ecd1357526fe328c7af704a283ee8533ca7ad6"
   integrity sha512-APwKy6YUhvZaEoHyM+9xqmTpviEI+9eL7LoCH+aLcvWYHJ663qG5zx7WzWZY+a9qkg5JtzcMyJ9z0WtQBMDmgA==
 
-"@sillsdev/config-r@^1.0.0-alpha.15":
-  version "1.0.0-alpha.17"
-  resolved "https://registry.yarnpkg.com/@sillsdev/config-r/-/config-r-1.0.0-alpha.17.tgz#351aeab35f84997c4db60992f47fda42fc4c5020"
-  integrity sha512-beLAT8OiqILQou06aSBQnT4OPgizX0zZMu4RHkUnhU4wdzwj2+8l4HsEpWAGJU3ZLa+PYFiqVVhZ8eFFQIFnJQ==
+"@sillsdev/config-r@1.0.0-alpha.15":
+  version "1.0.0-alpha.15"
+  resolved "https://registry.yarnpkg.com/@sillsdev/config-r/-/config-r-1.0.0-alpha.15.tgz#0979c316e50e6d7edbe699e30235c3160cbf18b0"
+  integrity sha512-blKYURgkxTr7kdjR13+7JDwnyqolMtfKaTKAVRuEiyLxbNNUiHDIXazc7A9k/tNBPNpItAT21tu4E+3RZB9gXQ==
   dependencies:
     "@textea/json-viewer" "^2.13.1"
     formik "^2.2.9"
@@ -10611,11 +10611,6 @@ jest-worker@^27.4.5:
     "@types/node" "*"
     merge-stream "^2.0.0"
     supports-color "^8.0.0"
-
-jquery.hotkeys@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/jquery.hotkeys/-/jquery.hotkeys-0.1.0.tgz#a88f636494fe75de41e4b753a059e5a523b83273"
-  integrity sha1-qI9jZJT+dd5B5LdToFnlpSO4MnM=
 
 jquery.nicescroll@^3.7.6:
   version "3.7.6"
