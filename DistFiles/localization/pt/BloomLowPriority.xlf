@@ -136,7 +136,7 @@
       </trans-unit>
       <trans-unit id="Subscription.Tier.Enterprise">
         <source xml:lang="en">Enterprise</source>
-        <target xml:lang="pt-PT" state="needs-translation">Enterprise</target>
+        <target xml:lang="pt-PT" state="translated">Empresarial</target>
         <note>ID: Subscription.Tier.Enterprise</note>
       </trans-unit>
       <trans-unit id="Subscription.Tier.LocalCommunity">
