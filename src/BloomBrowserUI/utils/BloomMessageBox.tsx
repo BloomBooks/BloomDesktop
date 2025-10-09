@@ -65,7 +65,7 @@ export const BloomMessageBox: React.FunctionComponent<{
         }
     };
 
-    const rightButtons = props.rightButtonDefinitions.map((button) => (
+    const rightButtons = (props.rightButtonDefinitions ?? []).map((button) => (
         <BloomButton
             className={button.default ? "initialFocus" : ""}
             key={button.id}

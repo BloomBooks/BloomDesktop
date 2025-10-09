@@ -1,7 +1,5 @@
-/* eslint-disable no-redeclare */
 /* eslint-disable @typescript-eslint/no-this-alias */
 /* eslint-disable no-var */
-/* eslint-disable no-undef */
 /*!
 
 Split Pane v0.4.0
@@ -10,6 +8,10 @@ Copyright (c) 2014 Simon Hagström
 
 Released under the MIT license
 https://raw.github.com/shagstrom/split-pane/master/LICENSE
+Modified to add snap points with names localized by our localization manager, mainly by John Thomson.
+Very much modified, mainly by Claude Sonnet 4, first to simply export a splitPane function instead
+of trying to add it to jQuery's prototype, then to be typescript.
+The typedefs could definitely be better done; what we have is just what Claude could infer.
 
 */
 
@@ -17,69 +19,83 @@ import { get } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../localizationManager/localizationManager";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import jQuery from "jquery";
-import $ from "jquery";
-import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManager";
 
 // Inline constant to avoid circular dependency with bloomImages.ts
 const kBloomCanvasClass = "bloom-canvas";
 
-(function ($) {
-    $.fn.splitPane = function () {
-        var $splitPanes = this;
-        $splitPanes.each(setMinHeightAndMinWidth);
-        $splitPanes.append('<div class="split-pane-resize-shim">');
-        $splitPanes
-            .children(".split-pane-divider")
-            .bind("mousedown touchstart", mousedownHandler);
-        $splitPanes
-            .children(".split-pane-divider")
-            .bind("mouseenter", mouseenterHandler);
-        $splitPanes
-            .children(".split-pane-divider")
-            .bind("dblclick", mousedblclickHandler);
-        setTimeout(function () {
-            // Doing this later because of an issue with Chrome (v23.0.1271.64) returning split-pane width = 0
-            // and triggering multiple resize events when page is being opened from an <a target="_blank"> .
-            $splitPanes.each(function () {
-                $(this).bind(
-                    "_splitpaneparentresize",
-                    createParentresizeHandler($(this)),
-                );
-            });
-            $(window).trigger("resize");
-        }, 100);
-    };
+var SPLITPANERESIZE_HANDLER = "_splitpaneparentresizeHandler";
 
-    var SPLITPANERESIZE_HANDLER = "_splitpaneparentresizeHandler";
-
-    /**
-     * A special event that will "capture" a resize event from the parent split-pane or window.
-     * The event will NOT propagate to grandchildren.
-     */
-    jQuery.event.special._splitpaneparentresize = {
-        setup: function (data, namespaces) {
-            var element = this,
-                parent = $(this).parent().closest(".split-pane")[0] || window;
-            $(this).data(SPLITPANERESIZE_HANDLER, function (event) {
-                var target = event.target === document ? window : event.target;
-                if (target === parent) {
-                    event.type = "_splitpaneparentresize";
-                    jQuery.event.dispatch.apply(element, arguments);
-                } else {
-                    event.stopPropagation();
-                }
-            });
-            $(parent).bind("resize", $(this).data(SPLITPANERESIZE_HANDLER));
-        },
-        teardown: function (namespaces) {
-            var parent = $(this).parent().closest(".split-pane")[0] || window;
-            $(parent).unbind("resize", $(this).data(SPLITPANERESIZE_HANDLER));
-            $(this).removeData(SPLITPANERESIZE_HANDLER);
-        },
+// Extend jQuery's event types to allow our custom event
+interface JQueryEventSpecial {
+    _splitpaneparentresize: {
+        setup: (data: unknown, namespaces: unknown) => void;
+        teardown: (namespaces: unknown) => void;
     };
+}
+
+interface JQueryEventStatic {
+    special: JQueryEventSpecial;
+    dispatch: (event: Event) => void;
+}
+
+declare global {
+    interface JQueryStatic {
+        event: JQueryEventStatic;
+    }
+}
+
+/**
+ * A special event that will "capture" a resize event from the parent split-pane or window.
+ * The event will NOT propagate to grandchildren.
+ */
+jQuery.event.special._splitpaneparentresize = {
+    setup: function (_data: unknown, _namespaces: unknown) {
+        var element = this,
+            parent = jQuery(this).parent().closest(".split-pane")[0] || window;
+        jQuery(this).data(SPLITPANERESIZE_HANDLER, function (event: Event) {
+            var target = event.target === document ? window : event.target;
+            if (target === parent) {
+                (event as Event & { type: string }).type = "_splitpaneparentresize";
+                jQuery.event.dispatch.apply(element, [event]);
+            } else {
+                event.stopPropagation();
+            }
+        });
+        jQuery(parent).bind("resize", jQuery(this).data(SPLITPANERESIZE_HANDLER));
+    },
+    teardown: function (_namespaces: unknown) {
+        var parent = jQuery(this).parent().closest(".split-pane")[0] || window;
+        jQuery(parent).unbind("resize", jQuery(this).data(SPLITPANERESIZE_HANDLER));
+        jQuery(this).removeData(SPLITPANERESIZE_HANDLER);
+    },
+};
+
+export function splitPane($splitPanes: JQuery): void {
+    $splitPanes.each(setMinHeightAndMinWidth);
+    $splitPanes.append('<div class="split-pane-resize-shim">');
+    $splitPanes
+        .children(".split-pane-divider")
+        .bind("mousedown touchstart", mousedownHandler);
+    $splitPanes
+        .children(".split-pane-divider")
+        .bind("mouseenter", mouseenterHandler);
+    $splitPanes
+        .children(".split-pane-divider")
+        .bind("dblclick", mousedblclickHandler);
+    setTimeout(function () {
+        // Doing this later because of an issue with Chrome (v23.0.1271.64) returning split-pane width = 0
+        // and triggering multiple resize events when page is being opened from an <a target="_blank"> .
+        $splitPanes.each(function () {
+            const handler = createParentresizeHandler(jQuery(this));
+            if (handler) {
+                jQuery(this).bind("_splitpaneparentresize", handler);
+            }
+        });
+        jQuery(window).trigger("resize");
+    }, 100);
 
     function setMinHeightAndMinWidth() {
-        var $splitPane = $(this),
+        var $splitPane = jQuery(this),
             $firstComponent = $splitPane.children(
                 ".split-pane-component:first",
             ),
@@ -105,14 +121,14 @@ const kBloomCanvasClass = "bloom-canvas";
     }
 
     // mousedownHandler variables that need to be accessible to mousemoveHandler or mouseUpHandler
-    let moveFunction = null;
-    let moveEvent;
-    let $divider;
-    let $resizeShim;
+    let moveFunction: EventListener | null = null;
+    let moveEvent: string;
+    let $divider: JQuery;
+    let $resizeShim: JQuery;
 
     function mousedownHandler(event) {
         event.preventDefault();
-        $divider = $(this);
+        $divider = jQuery(this);
         var isTouchEvent = event.type.match(/^touch/),
             endEvent = isTouchEvent ? "touchend" : "mouseup",
             $splitPane = $divider.parent();
@@ -130,12 +146,15 @@ const kBloomCanvasClass = "bloom-canvas";
         } else {
             document.body.classList.add("origami-drag-vertical");
         }
-        moveFunction = createMousemove(
+        const mouseMoveFunc = createMousemove(
             $splitPane,
             pageXof(event),
             pageYof(event),
         );
-        document.addEventListener(moveEvent, moveFunction, { capture: true });
+        if (mouseMoveFunc) {
+            moveFunction = mouseMoveFunc as EventListener;
+            document.addEventListener(moveEvent, moveFunction, { capture: true });
+        }
         // MUST be on the document, both for the usual reason that the mouse can move out of the element
         // where the mouse down happened, and also because there is another capturing document-level mouseup
         // handler in CanvasElementManager that uses stopPropagation to prevent the event from reaching
@@ -146,24 +165,28 @@ const kBloomCanvasClass = "bloom-canvas";
         });
     }
 
-    function mouseUpHandler(event) {
-        document.removeEventListener(moveEvent, moveFunction, {
-            capture: true,
-        });
+    function mouseUpHandler(_event: Event) {
+        if (moveFunction) {
+            document.removeEventListener(moveEvent, moveFunction, {
+                capture: true,
+            });
+        }
         $divider.removeClass("dragged touch");
         $resizeShim.hide();
         document.body.classList.remove("origami-drag");
     }
 
-    function mouseenterHandler(event) {
-        if (event.buttons != 0) {
+    function mouseenterHandler(event: Event) {
+        const mouseEvent = event as MouseEvent;
+        if (mouseEvent.buttons !== 0) {
             return; // typically drag in progress
         }
-        const divider = event.currentTarget;
+        const divider = event.currentTarget as HTMLElement;
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Snap.Hint",
                 "CTRL for precision. Double click to match previous page.",
+                "",
             )
             .done((result) => {
                 divider.title = result;
@@ -192,7 +215,7 @@ const kBloomCanvasClass = "bloom-canvas";
                 const [snappedOffset, label, isSnapped] = snapTo(
                     currentOffset,
                     defaultLabel,
-                    divider.parentElement.offsetHeight,
+                    divider.parentElement?.offsetHeight || 0,
                 );
                 let finalLabel = label;
                 if (
@@ -227,7 +250,7 @@ const kBloomCanvasClass = "bloom-canvas";
                 if (prevPageSplit) {
                     // This code is similar enough to parts of createMouseMove to be annoying,
                     // but just different enough to make it difficult to pull out the bits we need.
-                    const $splitPane = $(divider.parentElement);
+                    const $splitPane = jQuery(divider.parentElement);
                     const firstComponent = $splitPane.children(
                         ".split-pane-component:first",
                     )[0];
@@ -274,7 +297,7 @@ const kBloomCanvasClass = "bloom-canvas";
     // and displays measurements more precisely.
     let preciseMode = false;
 
-    function createParentresizeHandler($splitPane) {
+    function createParentresizeHandler($splitPane: JQuery): ((event: Event) => void) | undefined {
         var splitPane = $splitPane[0],
             firstComponent = $splitPane.children(
                 ".split-pane-component:first",
@@ -285,7 +308,7 @@ const kBloomCanvasClass = "bloom-canvas";
             )[0];
         if ($splitPane.is(".fixed-top")) {
             var lastComponentMinHeight = minHeight(lastComponent);
-            return function (event) {
+            return function (_event: Event) {
                 var maxfirstComponentHeight =
                     splitPane.offsetHeight -
                     lastComponentMinHeight -
@@ -302,7 +325,7 @@ const kBloomCanvasClass = "bloom-canvas";
             };
         } else if ($splitPane.is(".fixed-bottom")) {
             var firstComponentMinHeight = minHeight(firstComponent);
-            return function (event) {
+            return function (_event: Event) {
                 var maxLastComponentHeight =
                     splitPane.offsetHeight -
                     firstComponentMinHeight -
@@ -320,7 +343,7 @@ const kBloomCanvasClass = "bloom-canvas";
         } else if ($splitPane.is(".horizontal-percent")) {
             var lastComponentMinHeight = minHeight(lastComponent),
                 firstComponentMinHeight = minHeight(firstComponent);
-            return function (event) {
+            return function (_event: Event) {
                 var maxLastComponentHeight =
                     splitPane.offsetHeight -
                     firstComponentMinHeight -
@@ -355,7 +378,7 @@ const kBloomCanvasClass = "bloom-canvas";
             };
         } else if ($splitPane.is(".fixed-left")) {
             var lastComponentMinWidth = minWidth(lastComponent);
-            return function (event) {
+            return function (_event: Event) {
                 var maxFirstComponentWidth =
                     splitPane.offsetWidth -
                     lastComponentMinWidth -
@@ -372,7 +395,7 @@ const kBloomCanvasClass = "bloom-canvas";
             };
         } else if ($splitPane.is(".fixed-right")) {
             var firstComponentMinWidth = minWidth(firstComponent);
-            return function (event) {
+            return function (_event: Event) {
                 var maxLastComponentWidth =
                     splitPane.offsetWidth -
                     firstComponentMinWidth -
@@ -390,7 +413,7 @@ const kBloomCanvasClass = "bloom-canvas";
         } else if ($splitPane.is(".vertical-percent")) {
             var lastComponentMinWidth = minWidth(lastComponent),
                 firstComponentMinWidth = minWidth(firstComponent);
-            return function (event) {
+            return function (_event: Event) {
                 var maxLastComponentWidth =
                     splitPane.offsetWidth -
                     firstComponentMinWidth -
@@ -423,9 +446,10 @@ const kBloomCanvasClass = "bloom-canvas";
                 $splitPane.resize();
             };
         }
+        return undefined;
     }
 
-    function createMousemove($splitPane, pageX, pageY) {
+    function createMousemove($splitPane: JQuery, pageX: number, pageY: number): ((event: MouseEvent) => void) | undefined {
         const pageScale =
             $splitPane[0].getBoundingClientRect().width /
             $splitPane[0].offsetWidth;
@@ -611,6 +635,7 @@ const kBloomCanvasClass = "bloom-canvas";
                 $splitPane.resize();
             };
         }
+        return undefined;
     }
 
     // Make the snap points that should be used for the specified pane.
@@ -622,7 +647,7 @@ const kBloomCanvasClass = "bloom-canvas";
     // to for a snap wins over any others that may also be in range.
     // Current order is aspect ratio, previous page, square, fixed fractions.
     // Callback is called (asynchronously) when we have finished making the snaps.
-    function makeSnaps(splitPane, callback) {
+    function makeSnaps(splitPane, callback?: () => void) {
         snapPoints = [];
         const firstChild = splitPane.firstElementChild;
         const firstChildSplit = getImagePercent(
@@ -635,7 +660,7 @@ const kBloomCanvasClass = "bloom-canvas";
         // Invoke callback when we have all the snap positions and labels.
         const localCallback = () => {
             snapsAwaited--;
-            if (snapsAwaited == 0) {
+            if (snapsAwaited === 0 && callback) {
                 callback();
             }
         };
@@ -731,14 +756,14 @@ const kBloomCanvasClass = "bloom-canvas";
     }
 
     function makeSnapPoint(
-        snapPoint,
-        localizationId = null,
+        snapPoint: number,
+        localizationId: string | undefined = undefined,
         label = "",
         prefixSymbol = "", // this is used to hold a unicode left-arrow that we don't want translators touching
         index = -1, // where to insert, or -1 for end
-        callback, // called when we have the final (possibly localized) label.
+        callback?: () => void, // called when we have the final (possibly localized) label.
     ) {
-        const item = { snap: snapPoint, label, id: localizationId };
+        const item = { snap: snapPoint, label, id: localizationId || "" };
         if (index >= 0) {
             snapPoints.splice(index, 0, item);
         } else {
@@ -747,7 +772,7 @@ const kBloomCanvasClass = "bloom-canvas";
 
         if (localizationId)
             theOneLocalizationManager
-                .asyncGetText("EditTab.Snap." + localizationId, label)
+                .asyncGetText("EditTab.Snap." + localizationId, label, undefined)
                 .done((result) => {
                     item.label = prefixSymbol + " " + result;
                     if (callback) callback();
@@ -910,11 +935,11 @@ const kBloomCanvasClass = "bloom-canvas";
     }
 
     function minHeight(element) {
-        return parseInt($(element).css("min-height")) || 0;
+        return parseInt(jQuery(element).css("min-height")) || 0;
     }
 
     function minWidth(element) {
-        return parseInt($(element).css("min-width")) || 0;
+        return parseInt(jQuery(element).css("min-width")) || 0;
     }
 
     function setTop(firstComponent, divider, lastComponent, top) {
@@ -940,17 +965,17 @@ const kBloomCanvasClass = "bloom-canvas";
         divider.style.right = right;
         lastComponent.style.width = right;
     }
-    function dividerPositionForDisplay(amount, snapped) {
+    function dividerPositionForDisplay(amount, snapped = false) {
         // for displaying to the user, invert percentage (so higher  up the page is a lower number).
         // Leave one decimal place in precise mode or for a snap result, none otherwise
         if (preciseMode || snapped) return Math.round(10 * (100 - amount)) / 10;
         return Math.round(100 - amount);
     }
 
-    function setDividerTitle(divider, amount) {
+    function _setDividerTitle(divider: HTMLElement, amount: number) {
         divider.setAttribute(
             "data-splitter-label",
             dividerPositionForDisplay(amount) + "%",
         );
     }
-})(jQuery);
+}

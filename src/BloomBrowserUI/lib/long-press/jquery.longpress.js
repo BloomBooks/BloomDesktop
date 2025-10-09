@@ -9,6 +9,7 @@
  *  Modified August 2015 to add instructions at the bottom
  *  Modified September 2015 to set focus before selection in restoreCaretPosition()
  */
+import jQuery from "jquery";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
 import "./jquery.mousewheel.js";

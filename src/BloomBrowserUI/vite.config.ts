@@ -18,63 +18,6 @@ function injectCss(cssContent, source) {
 }`;
 }
 
-// Custom plugin to fix jQuery import issues
-// I'm committing this temporarily so I can go work on other stuff, but I think it's a mistake.
-// It's a bandaid to fix a fundamental problem with how Vite is handling our dependencies and
-// transpiling. We may not need this plugin at all; if we do, it probably needs to be more general.
-function fixJqueryImportsPlugin(): Plugin {
-    return {
-        name: "fix-jquery-imports",
-        apply: "build",
-        generateBundle(options, bundle) {
-            // Post-process the audioRecording bundle to fix jQuery imports
-            Object.keys(bundle).forEach((fileName) => {
-                const chunk = bundle[fileName];
-                if (
-                    chunk.type === "chunk" &&
-                    fileName === "audioRecording.js"
-                ) {
-                    // Fix the incorrect import statement that imports $ from localizationManager
-                    const originalCode = chunk.code;
-
-                    // Check if we need to preserve theOneLocalizationManager import
-                    const needsLocalizationManager = originalCode.includes(
-                        "theOneLocalizationManager",
-                    );
-
-                    // Remove the problematic import line
-                    chunk.code = chunk.code.replace(
-                        /import\s*{\s*\$\s*as\s*\$\$1[^}]*}\s*from\s*"\.\/localizationManager\.js";\s*/g,
-                        "",
-                    );
-
-                    // If we need localizationManager, add a proper import
-                    if (
-                        needsLocalizationManager &&
-                        !chunk.code.includes('from "./localizationManager.js"')
-                    ) {
-                        chunk.code =
-                            'import { t as theOneLocalizationManager } from "./localizationManager.js";\n' +
-                            chunk.code;
-                    }
-
-                    // Clean up any duplicate jQuery imports
-                    const jqueryImportRegex =
-                        /import[^;]*from\s*"\.\/jquery\.js";\s*/g;
-                    const jqueryImports = chunk.code.match(jqueryImportRegex);
-                    if (jqueryImports && jqueryImports.length > 1) {
-                        // Remove all jQuery imports first
-                        chunk.code = chunk.code.replace(jqueryImportRegex, "");
-                        // Add a single clean jQuery import at the top
-                        chunk.code =
-                            'import $ from "./jquery.js";\n' + chunk.code;
-                    }
-                }
-            });
-        },
-    };
-}
-
 // Custom plugin to transform LESS imports to inline CSS injection (build only)
 function transformLessImportsPlugin(): Plugin {
     return {
@@ -86,8 +29,8 @@ function transformLessImportsPlugin(): Plugin {
                 return null;
             }
 
-            // Look for LESS import statements
-            const lessImportRegex = /import\s+['"](\.\/[^'"]*\.less)['"]/g;
+            // Look for LESS import statements in relative paths
+            const lessImportRegex = /import\s+['"](\.\/[^'"\n]*\.less)['"]/g;
             const matches = [...code.matchAll(lessImportRegex)];
 
             if (matches.length === 0) {
@@ -97,15 +40,12 @@ function transformLessImportsPlugin(): Plugin {
             let transformedCode = code;
             const injectedCss: string[] = [];
 
-            // Replace each LESS import with inline CSS import and injection
             matches.forEach((match, index) => {
                 const lessPath = match[1];
                 const variableName = `cssContent_${index}`;
 
-                // Replace the import statement
                 const originalImport = match[0];
                 const newImport = `import ${variableName} from '${lessPath}?inline';`;
-
                 transformedCode = transformedCode.replace(
                     originalImport,
                     newImport,
@@ -113,7 +53,6 @@ function transformLessImportsPlugin(): Plugin {
                 injectedCss.push(`injectCss(${variableName}, '${lessPath}');`);
             });
 
-            // Add the CSS injector function and immediate injection at the top of the file
             const injectorFunction = createCssInjector();
             const immediateInjection = `
 // Auto-inject CSS immediately when module loads
@@ -122,10 +61,7 @@ ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 
             transformedCode = `${injectorFunction}\n${immediateInjection}\n${transformedCode}`;
 
-            return {
-                code: transformedCode,
-                map: null, // You could generate a source map here if needed
-            };
+            return { code: transformedCode, map: null };
         },
     };
 }
@@ -135,14 +71,10 @@ ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 export default defineConfig(async () => {
     // Define entry points to match webpack configuration
     const entryPoints = {
-        editTabBundle: "./bookEdit/editViewFrame.ts",
         readerSetupBundle:
             "./bookEdit/toolbox/readers/readerSetup/readerSetup.ts",
-        editablePageBundle: "./bookEdit/editablePage.ts",
         bookPreviewBundle:
             "./collectionsTab/collectionsTabBookPane/bookPreview.ts",
-        toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
-        spreadsheetBundle: "./spreadsheet/spreadsheetBundleRoot.ts",
         pageThumbnailListBundle:
             "./bookEdit/pageThumbnailList/pageThumbnailList.tsx",
         pageControlsBundle:
@@ -184,7 +116,6 @@ export default defineConfig(async () => {
             react({
                 reactRefreshHost: `http://localhost:${process.env.PORT || 5173}`,
             }),
-            fixJqueryImportsPlugin(), // Fix jQuery import issues in audioRecording.js
             transformLessImportsPlugin(), // Transform LESS imports to inline CSS injection (build only)
             //pugPlugin()
             viteStaticCopy({
@@ -226,7 +157,7 @@ export default defineConfig(async () => {
                         dest: "bookLayout",
                     },
                     {
-                        src: "lib/**/*.{js,css,html,svg,png,jpg,gif,woff,woff2,ttf,eot}",
+                        src: "lib/**",
                         dest: "lib",
                     },
                     {
@@ -283,6 +214,9 @@ export default defineConfig(async () => {
                     // Prevent jQuery from being incorrectly re-exported from other modules
                     manualChunks: {
                         jquery: ["jquery"],
+                        localizationManager: [
+                            "lib/localizationManager/localizationManager",
+                        ],
                     },
                 },
             },
@@ -352,6 +286,7 @@ export default defineConfig(async () => {
         },
         optimizeDeps: {
             include: ["jquery"],
+            exclude: ["lib/localizationManager/localizationManager"],
         },
         define: {
             // Add global constants here if your webpack config defines any

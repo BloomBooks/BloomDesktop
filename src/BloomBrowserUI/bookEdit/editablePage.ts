@@ -1,11 +1,14 @@
 /// <reference path="../typings/bundledFromTSC.d.ts" />
 /// <reference path="../typings/jquery.i18n.custom.d.ts" />
-/// <reference path="../lib/jquery.i18n.custom.ts" />
+// This is the root script for the editable page iframe, which gets transpiled into editablePageBundle.js.
+
+// Note that code in this bundle depends on ckeditor.js also being loaded.
+// Currently that is done using a regular script tag in the HTML, not via an import here.
 
 import $ from "jquery";
 import { bootstrap } from "./js/bloomEditing";
 import { EditableDivUtils } from "./js/editableDivUtils";
-import "../lib/jquery.i18n.custom"; //localize()
+import "../lib/jquery.i18n.custom"; // side-effect: adds .localize() to $.fn (kept via sideEffects allow-list)
 import "errorHandler";
 import {
     theOneCanvasElementManager,
@@ -159,11 +162,18 @@ export function ckeditorUndo() {
 }
 
 for (let j = 0; j < styleSheets.length; j++) {
-    document.write(
-        '<link rel="stylesheet" type="text/css" href="/bloom/' +
-            styleSheets[j] +
-            '">',
-    );
+    // This doesn't work any more because we are now loading this code as a module,
+    // which means it is loaded after the document is parsed.
+    // document.write(
+    //     '<link rel="stylesheet" type="text/css" href="/bloom/' +
+    //         styleSheets[j] +
+    //         '">',
+    // );
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.type = "text/css";
+    link.href = "/bloom/" + styleSheets[j];
+    document.head.appendChild(link);
 }
 
 // TODO: move script stuff out of book.AddJavaScriptForEditing() and into here:
@@ -199,3 +209,59 @@ $(document).ready(() => {
 export function SayHello() {
     alert("hello from editable page frame.");
 }
+
+// Legacy global exposure: mimic old webpack window["editablePageBundle"] contract used by other iframes / C#
+// NOTE: Keep this as a minimal curated surface: only expose functions intentionally callable cross-frame.
+interface EditablePageBundleApi {
+    requestPageContent: typeof requestPageContent;
+    getBodyContentForSavePage: typeof getBodyContentForSavePage;
+    userStylesheetContent: typeof userStylesheetContent;
+    pageUnloading: typeof pageUnloading;
+    copySelection: typeof copySelection;
+    cutSelection: typeof cutSelection;
+    pasteClipboard: typeof pasteClipboard;
+    topBarButtonClick: typeof topBarButtonClick;
+    makeElement: typeof makeElement;
+    SetupElements: typeof SetupElements;
+    attachToCkEditor: typeof attachToCkEditor;
+    removeImageId: typeof removeImageId;
+    changeImage: typeof changeImage;
+    origamiCanUndo: typeof origamiCanUndo;
+    origamiUndo: typeof origamiUndo;
+    getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
+    ckeditorCanUndo: typeof ckeditorCanUndo;
+    ckeditorUndo: typeof ckeditorUndo;
+    SayHello: typeof SayHello;
+    renderDragActivityTabControl: typeof renderDragActivityTabControl;
+    showGamePromptDialog: typeof showGamePromptDialog;
+}
+
+declare global {
+    interface Window {
+        editablePageBundle: EditablePageBundleApi;
+    }
+}
+
+window.editablePageBundle = {
+    requestPageContent,
+    getBodyContentForSavePage,
+    userStylesheetContent,
+    pageUnloading,
+    copySelection,
+    cutSelection,
+    pasteClipboard,
+    topBarButtonClick,
+    makeElement,
+    SetupElements,
+    attachToCkEditor,
+    removeImageId,
+    changeImage,
+    origamiCanUndo,
+    origamiUndo,
+    getTheOneCanvasElementManager,
+    ckeditorCanUndo,
+    ckeditorUndo,
+    SayHello,
+    renderDragActivityTabControl,
+    showGamePromptDialog,
+};

@@ -9,9 +9,10 @@ import { ElementQueries } from "css-element-queries";
 import { theOneCanvasElementManager } from "./CanvasElementManager";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import $ from "jquery";
+import { splitPane } from "../../lib/split-pane/split-pane";
 
 $(() => {
-    $("div.split-pane").splitPane();
+    splitPane($("div.split-pane"));
 });
 
 export function setupOrigami() {
@@ -197,7 +198,7 @@ function performSplit(
             getSplitPaneComponentWithNewContent(newContentPosition),
         );
     }
-    newSplitPane.splitPane();
+    splitPane(newSplitPane);
     adjustModifiedChild(innerElement.get(0) as HTMLElement);
     theOneCanvasElementManager.setupSplitterEventHandling();
 }
