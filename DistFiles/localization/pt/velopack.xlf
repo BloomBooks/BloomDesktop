@@ -97,7 +97,7 @@
       </trans-unit>
       <trans-unit id="buttons.downgrade">
         <source xml:lang="en">Downgrade\nTo version {target_version}</source>
-        <target xml:lang="pt-PT" state="needs-translation">Downgrade\nTo version {target_version}</target>
+        <target xml:lang="pt-PT" state="translated">Reverter\npara versão {target_version}</target>
         <note>Note: you must preserve the '\n' after the first word.</note>
       </trans-unit>
       <trans-unit id="buttons.cancel_backup_first">
@@ -119,11 +119,11 @@
       </trans-unit>
       <trans-unit id="dialogs.update_missing_dependencies.content">
         <source xml:lang="en">{app_title} {to_version} has missing dependencies which need to be installed: {dependency_list}. Would you like to continue?</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} {to_version} has missing dependencies which need to be installed: {dependency_list}. Would you like to continue?</target>
+        <target xml:lang="pt-PT" state="translated">O {app_title} {to_version} tem dependências que precisam ser instaladas: {dependency_list}. Gostaria de continuar?</target>
       </trans-unit>
       <trans-unit id="dialogs.setup_missing_dependencies.header">
         <source xml:lang="en">{app_title} has missing system dependencies.</source>
-        <target xml:lang="pt-PT" state="needs-translation">{app_title} has missing system dependencies.</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} tem dependências do sistema faltando.</target>
       </trans-unit>
       <trans-unit id="dialogs.setup_missing_dependencies.content">
         <source xml:lang="en">{app_title} requires the following packages to be installed: {dependency_list}. Would you like to continue?</source>
@@ -167,7 +167,7 @@
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.downgrade_content">
         <source xml:lang="en">You already have {old_version} installed. Would you like to downgrade this application to an older version?</source>
-        <target xml:lang="pt-PT" state="needs-translation">You already have {old_version} installed. Would you like to downgrade this application to an older version?</target>
+        <target xml:lang="pt-PT" state="translated">A {old_version} já está instalada. Gostaria de reverter para uma versão mais antiga desta aplicação?</target>
       </trans-unit>
       <trans-unit id="dialogs.elevation_prompt.content">
         <source xml:lang="en">{app_title} would like to update to version {new_version}, but requires elevated permissions to do so. Would you like to proceed?</source>
