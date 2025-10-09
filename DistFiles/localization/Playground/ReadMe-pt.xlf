@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="playground.template.use">
         <source xml:lang="en">Use this source book to explore all the features Bloom offers with a subscription. It's a great way to try out advanced tools and layout options before upgrading.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Use this source book to explore all the features Bloom offers with a subscription. It's a great way to try out advanced tools and layout options before upgrading.</target>
+        <target xml:lang="pt-PT" state="translated">Use este livro de fonte para explorar todos os recursos que Bloom oferece com uma assinatura. É uma ótima maneira de testar ferramentas e opções de layout avançadas antes de subir de nível de assinatura (fazer upgrade).</target>
         <note>ID: playground.template.use</note>
       </trans-unit>
       <trans-unit id="playground.template.warning">
