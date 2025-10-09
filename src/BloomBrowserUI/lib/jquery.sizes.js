@@ -6,6 +6,7 @@
  * All rights reserved.
  */
 /*global jQuery*/
+import jQuery from "jquery";
 (function ($) {
     var num = function (value) {
             return parseInt(value, 10) || 0;

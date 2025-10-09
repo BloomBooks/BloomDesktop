@@ -75,6 +75,7 @@ import { CanvasSnapProvider } from "../../js/CanvasSnapProvider";
 import { CanvasGuideProvider } from "../../js/CanvasGuideProvider";
 import { kIdForDragActivityTabControl } from "./DragActivityTabControl";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
+import $ from "jquery";
 
 // This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,

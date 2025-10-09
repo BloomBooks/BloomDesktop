@@ -91,7 +91,10 @@ namespace Bloom.Edit
                 return; // already have it
             var script = doc.CreateElement("script");
             script.SetAttribute("src", src);
-            script.SetAttribute("type", "text/javascript");
+            script.SetAttribute(
+                "type",
+                src.ToLowerInvariant().EndsWith(".bundle.js") ? "module" : "text/javascript"
+            );
             head.AppendChild(script);
         }
 

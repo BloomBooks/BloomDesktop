@@ -31,3 +31,20 @@ export function getMd5(input: string): string {
 // there is immediate-execute code there which calls it. But it doesn't happen for this bundle unless
 // I do it explicitly, so here we go. (One of the extensions added is the implementation of stringToSentences.)
 addBloomSynphonyExtensions();
+
+// Legacy global exposure: mimic old webpack window["spreadsheetBundle"] contract
+interface SpreadsheetBundleApi {
+    split: typeof split;
+    getMd5: typeof getMd5;
+}
+
+declare global {
+    interface Window {
+        spreadsheetBundle: SpreadsheetBundleApi;
+    }
+}
+
+window.spreadsheetBundle = {
+    split,
+    getMd5,
+};
