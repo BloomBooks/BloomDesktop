@@ -26,7 +26,7 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
       </trans-unit>
       <trans-unit id="template.starter.labelpages" approved="yes">
         <source xml:lang="en">Label Your Pages</source>
-        <target xml:lang="pt-PT" state="final">Marca suas páginas</target>
+        <target xml:lang="pt-PT" state="final">Marque suas páginas</target>
         <note>ID: template.starter.labelpages</note>
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage" approved="yes">
