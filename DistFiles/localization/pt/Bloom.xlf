@@ -244,7 +244,7 @@
       </trans-unit>
       <trans-unit id="BookMetadata.a11yFeatures" approved="yes">
         <source xml:lang="en">Accessibility features</source>
-        <target xml:lang="pt-PT" state="final">Funções de acessibilidade</target>
+        <target xml:lang="pt-PT" state="final">Recursos de acessibilidade</target>
         <note>ID: BookMetadata.a11yFeatures</note>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevel" approved="yes">
@@ -349,7 +349,7 @@
       </trans-unit>
       <trans-unit id="BooksOnBlorg.Progress.CountOfBooksLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">{0} {1} books on BloomLibrary.org</source>
-        <target xml:lang="pt-PT" state="final">{0} {1} livros na BloomLibrary.org</target>
+        <target xml:lang="pt-PT" state="final">{0} {1} livros em BloomLibrary.org</target>
         <note>ID: BooksOnBlorg.Progress.CountOfBooksLabel</note>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook" approved="yes">
@@ -384,7 +384,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ExperimentalFeatures" approved="yes">
         <source xml:lang="en">Experimental Features</source>
-        <target xml:lang="pt-PT" state="final">Funções experimentais</target>
+        <target xml:lang="pt-PT" state="final">Recursos experimentais</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ExperimentalFeatures</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources" approved="yes">
@@ -962,7 +962,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate" approved="yes">
         <source xml:lang="en">Help us translate Bloom (web)</source>
-        <target xml:lang="pt-PT" state="final">Ajude-nos a traduzir Bloom (web)</target>
+        <target xml:lang="pt-PT" state="final">Ajude-nos a traduzir Bloom (link)</target>
         <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip" approved="yes">
@@ -1261,7 +1261,7 @@
       </trans-unit>
       <trans-unit id="Common.SeeWebPage" approved="yes">
         <source xml:lang="en">See {0}.</source>
-        <target xml:lang="pt-PT" state="final">Consulte {0}.</target>
+        <target xml:lang="pt-PT" state="final">Veja {0}.</target>
         <note>ID: Common.SeeWebPage</note>
       </trans-unit>
       <trans-unit id="Common.SelectAll" approved="yes">
@@ -1326,7 +1326,7 @@
       </trans-unit>
       <trans-unit id="Copyright.FollowSILGuidelines" sil:dynamic="true" approved="yes">
         <source xml:lang="en">SIL has corporate guidelines around what kinds of materials may be copyrighted by SIL. Please check [this page] in order to ensure that this book qualifies.</source>
-        <target xml:lang="pt-PT" state="final">Antes de publicar como SIL, certifique-se de que você segue [diretrizes corporativas do SIL].</target>
+        <target xml:lang="pt-PT" state="final">A SIL tem orientações corporativas sobre quais tipos de materiais podem usar os direitos autorais da SIL. Por favor, verifique [esta página] para garantir que este livro cumpre os requisitos.</target>
         <note>ID: Copyright.FollowSILGuidelines</note>
       </trans-unit>
       <trans-unit id="Copyright.IllustratorOrPhotographer" sil:dynamic="true" approved="yes">
@@ -1401,7 +1401,7 @@
       </trans-unit>
       <trans-unit id="Download.TimeoutProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
-        <target xml:lang="pt-PT" state="final">Houve um problema ao baixar o livro: algo demorou demais. Tente novamente, ou escreva para issues@BloomLibrary.org, caso não consiga fazer o download de sua localização.</target>
+        <target xml:lang="pt-PT" state="final">Houve um problema ao baixar o livro: algo demorou muito tempo. Pode tentar novamente depois, ou escrever para issues@bloomlibrary.org caso não consiga fazer o download da sua localização.</target>
         <note>ID: Download.TimeoutProblemNotice</note>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.AddPageButton" sil:dynamic="true" approved="yes">
@@ -3281,7 +3281,7 @@
       </trans-unit>
       <trans-unit id="ErrorReport.Pre10WindowsNotSupported" approved="yes">
         <source xml:lang="en">We are sorry, but your version of Windows is no longer supported by Microsoft. This version of Bloom requires Windows 10 or greater. As a result, you will need to install Bloom version 5.4. Bloom will now open a web page where you can download Bloom 5.4.</source>
-        <target xml:lang="pt-PT" state="final">Lamentamos, mas sua versão do Windows não é mais suportada pela Microsoft. Esta versão do Bloom requer o Windows 10 ou superior. Como resultado, precisará instalar Bloom versão 5.4. O Bloom agora abrirá uma página da ‘web’ onde pode baixar Bloom 5.4.</target>
+        <target xml:lang="pt-PT" state="final">Lamentamos, mas sua versão do Windows não é mais suportada pela Microsoft. Esta versão de Bloom requer o Windows 10 ou superior. Como resultado, precisará instalar Bloom versão 5.4. Bloom abrirá um site na internet onde pode baixar Bloom 5.4 agora.</target>
         <note>ID: ErrorReport.Pre10WindowsNotSupported</note>
       </trans-unit>
       <trans-unit id="Errors.PathTooLong">
@@ -3346,7 +3346,7 @@
       </trans-unit>
       <trans-unit id="Errors.DownloadLatestVersion" approved="yes">
         <source xml:lang="en">Upgrade to the latest Bloom (requires Internet connection)</source>
-        <target xml:lang="pt-PT" state="final">Atualize para a versão mais recente do Bloom (requer conexão com a Internet)</target>
+        <target xml:lang="pt-PT" state="final">Atualize para a versão mais recente do Bloom (requer conexão à Internet)</target>
         <note>ID: Errors.DownloadLatestVersion</note>
       </trans-unit>
       <trans-unit id="Errors.ErrorSelecting" approved="yes">
@@ -3361,7 +3361,7 @@
       </trans-unit>
       <trans-unit id="Errors.FeatureRequiresNewerVersionPlural" approved="yes">
         <source xml:lang="en">This book requires Bloom {0} or greater because it uses the following features:</source>
-        <target xml:lang="pt-PT" state="final">Este livro requer Bloom {0} ou mais recente porque ele usa as seguintes características:</target>
+        <target xml:lang="pt-PT" state="final">Este livro requer Bloom {0} ou mais recente porque ele usa os seguintes recursos:</target>
         <note>ID: Errors.FeatureRequiresNewerVersionPlural</note>
       </trans-unit>
       <trans-unit id="Errors.FeatureRequiresNewerVersionSingular" approved="yes">
@@ -3376,7 +3376,7 @@
       </trans-unit>
       <trans-unit id="Errors.NeedNewerVersion" approved="yes">
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}</source>
-        <target xml:lang="pt-PT" state="final">{0} requer uma versão mais recente de Bloom. Baixe a versão mais recente de Bloom de {1}.</target>
+        <target xml:lang="pt-PT" state="final">{0} requer uma versão mais recente de Bloom. Baixe a versão mais recente de Bloom de {1}</target>
         <note>ID: Errors.NeedNewerVersion</note>
       </trans-unit>
       <trans-unit id="Errors.NewVersionNeededHeader" approved="yes">
@@ -3441,17 +3441,17 @@
       </trans-unit>
       <trans-unit id="FontInformationPane.FontUnknown" approved="yes">
         <source xml:lang="en">Bloom cannot determine what rules govern the use of this font. Please read the license and make sure it allows embedding in ebooks and the web. Before publishing to bloomlibrary.org, you will probably have to make a special request to the Bloom team to investigate this font so that we can make sure we won't get in trouble for hosting it.</source>
-        <target xml:lang="pt-PT" state="final">Bloom não pode determinar as regras do uso desta fonte. Por favor leia a licença e tenha certeza de que permite a incorporação em livros electronicos e na web. Antes de publicar no bloomlibrary.org, provavelmente terá que fazer um pedido especial à equipe Bloom para investigar esta fonte, para que possamos garantir que não teremos problemas para hospedar ela.</target>
+        <target xml:lang="pt-PT" state="final">Bloom não pode determinar as regras de uso desta fonte. Por favor leia a licença e tenha certeza de que permite a incorporação em livros electronicos e na internet. Antes de publicar no bloomlibrary.org, provavelmente terá que fazer um pedido especial à equipe Bloom para investigar esta fonte, para que possamos garantir que não teremos problemas em usa-la.</target>
         <note>ID: FontInformationPane.FontUnknown</note>
       </trans-unit>
       <trans-unit id="FontInformationPane.FontFormatUnsuitable" approved="yes">
         <source xml:lang="en">This font is in a file format that Bloom cannot use for ebooks. Please use a different font.</source>
-        <target xml:lang="pt-PT" state="final">Esta fonte está num formato de arquivo que Bloom não pode usar para livros eletrónicos. Por favor, use uma fonte diferente.</target>
+        <target xml:lang="pt-PT" state="final">Esta fonte está num formato de arquivo que Bloom não pode usar para e-books (livros eletrónicos). Por favor, use uma fonte diferente.</target>
         <note>ID: FontInformationPane.FontFormatUnsuitable</note>
       </trans-unit>
       <trans-unit id="FontInformationPane.FontUnsuitable" approved="yes">
         <source xml:lang="en">The metadata inside this font tells us that it may not be embedded for free in ebooks and the web. Please use a different font.</source>
-        <target xml:lang="pt-PT" state="final">Os metadados dentro desta fonte dizem-nos que ela pode não ser incorporada gratuitamente em e-books (livros eletrónicos) e no internet. Por favor, use uma fonte diferente.</target>
+        <target xml:lang="pt-PT" state="final">Os metadados desta fonte indicam que a fonte não pode ser incorporada gratuitamente em e-books (livros eletrónicos) e na internet. Por favor, use uma fonte diferente.</target>
         <note>ID: FontInformationPane.FontUnsuitable</note>
       </trans-unit>
       <trans-unit id="FontInformationPane.Styles" approved="yes">
@@ -3476,7 +3476,7 @@
       </trans-unit>
       <trans-unit id="ForumInvitationDialog.LearnAboutNewFeatures" approved="yes">
         <source xml:lang="en">learn about new features</source>
-        <target xml:lang="pt-PT" state="final">saber mais sobre novas funções</target>
+        <target xml:lang="pt-PT" state="final">saber mais sobre novos recursos</target>
         <note>ID: ForumInvitationDialog.LearnAboutNewFeatures</note>
       </trans-unit>
       <trans-unit id="ForumInvitationDialog.RequestAndVote" approved="yes">
@@ -3526,7 +3526,7 @@
       </trans-unit>
       <trans-unit id="HelpMenu.OnlineHelpMenuItem" approved="yes">
         <source xml:lang="en">More Help (Web)</source>
-        <target xml:lang="pt-PT" state="final">Mais ajuda (Web)</target>
+        <target xml:lang="pt-PT" state="final">Mais ajuda (link)</target>
         <note>ID: HelpMenu.OnlineHelpMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.Help Menu" approved="yes">
@@ -3541,7 +3541,7 @@
       </trans-unit>
       <trans-unit id="HelpMenu.MakeASuggestionMenuItem" approved="yes">
         <source xml:lang="en">Request a Feature</source>
-        <target xml:lang="pt-PT" state="final">Fazer uma sugestão</target>
+        <target xml:lang="pt-PT" state="final">Solicitar um Recurso</target>
         <note>ID: HelpMenu.MakeASuggestionMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.RegistrationMenuItem" approved="yes">
@@ -3556,7 +3556,7 @@
       </trans-unit>
       <trans-unit id="HelpMenu.ReleaseNotesWebMenuItem" approved="yes">
         <source xml:lang="en">Release Notes (Web)</source>
-        <target xml:lang="pt-PT" state="final">Notas de versão (Web)</target>
+        <target xml:lang="pt-PT" state="final">Notas de versão (link)</target>
         <note>ID: HelpMenu.ReleaseNotesWebMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.ReportAProblemToolStripMenuItem" approved="yes">
@@ -4155,7 +4155,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.Features" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Features</source>
-        <target xml:lang="pt-PT" state="final">Funcionalidades</target>
+        <target xml:lang="pt-PT" state="final">Recursos</target>
         <note>ID: PublishTab.Android.Features</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.UnlicensedLanguages" sil:dynamic="true" approved="yes">
@@ -4410,7 +4410,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.BloomPUB.BannerDescription.v2" approved="yes">
         <source xml:lang="en">BloomPUBs are a kind of eBook. Your book will look exactly like it does here in Bloom. It will have all the same features. This makes BloomPUBs better than ePUBs.</source>
-        <target xml:lang="pt-PT" state="final">BloomPUBs são uma espécie de livro electrónico. O seu livro se parecerá exatamente como aqui no Bloom. Isso terá todas as mesmas funcionalidades. Isso faz BloomPUBs melhores do que ePUBs.</target>
+        <target xml:lang="pt-PT" state="final">BloomPUBs são um tipo de e-book (livro electrónico). O seu livro vai aparecer exatamente como aqui no Bloom e terá todas as mesmas características. Isso faz BloomPUBs melhores do que ePUBs.</target>
         <note>ID: PublishTab.BloomPUB.BannerDescription</note>
       </trans-unit>
       <trans-unit id="PublishTab.BloomPUB.BannerTitle" approved="yes">
@@ -4455,7 +4455,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm" approved="yes">
         <source xml:lang="en">Web</source>
-        <target xml:lang="pt-PT" state="final">Carregar</target>
+        <target xml:lang="pt-PT" state="final">Compartilhar online</target>
         <note>ID: PublishTab.ButtonThatShowsUploadForm</note>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true" approved="yes">
@@ -4620,7 +4620,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.EpubRadio-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
-        <target xml:lang="pt-PT" state="final">Fazer um ePUB (livro eletrónico) deste livro, permitindo que seja ser lido em vários dispositivos de leitura eletrónica.</target>
+        <target xml:lang="pt-PT" state="final">Converte este livro num ePUB (livro electrónico) que pode ser lido em vários dispositivos eletrónicos.</target>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.FeatureRequiresHigherTier" approved="yes">
@@ -5208,17 +5208,17 @@
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.Format" approved="yes">
         <source xml:lang="en">Bloom cannot publish ebooks with this font's format ({0}).</source>
-        <target xml:lang="pt-PT" state="final">Bloom não pode publicar livros eletrónicos com o formato desta fonte ({0}).</target>
+        <target xml:lang="pt-PT" state="final">Bloom não pode publicar livros eletrónicos com este formato de fonte ({0}).</target>
         <note>ID: PublishTab.FontProblem.Format</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.License" approved="yes">
         <source xml:lang="en">The metadata inside this font tells us that it may not be embedded for free in ebooks and the web.</source>
-        <target xml:lang="pt-PT" state="final">Os metadados dentro desta fonte dizem-nos que ela não pode ser incorporada gratuitamente em e-books (livros eletrónicos) e no internet. Por favor, use uma fonte diferente.</target>
+        <target xml:lang="pt-PT" state="final">Os metadados desta fonte indicam que a fonte não pode ser incorporada gratuitamente em e-books (livros eletrónicos) e na internet. Por favor, use uma fonte diferente.</target>
         <note>ID: PublishTab.FontProblem.License</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.Microsoft" approved="yes">
         <source xml:lang="en">This is a font supplied by Microsoft for use on your computer alone. Microsoft does not allow its fonts to be used freely on the web or distributed in eBooks. Please use a different font.</source>
-        <target xml:lang="pt-PT" state="final">Esta é uma fonte fornecida pela Microsoft para uso apenas no seu computador. A Microsoft não permite o uso livre de suas fontes na internet ou em eBooks. Use outra fonte.</target>
+        <target xml:lang="pt-PT" state="final">Esta é uma fonte fornecida pela Microsoft para uso apenas no seu computador. A Microsoft não permite o uso livre das suas fontes na internet ou em e-books. Por favor, use uma outra fonte.</target>
         <note>ID: PublishTab.FontProblem.Microsoft</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem.Result" approved="yes">
@@ -6055,7 +6055,7 @@
       </trans-unit>
       <trans-unit id="ReportProblemDialog.PrivacyInfo" approved="yes">
         <source xml:lang="en">Your report will go into our issue tracking system and will be visible via the web. If you have something private to say, please email to '{0}'.</source>
-        <target xml:lang="pt-PT" state="final">Seu relatório irá para o nosso sistema de rastreamento de problemas e será visível através da web. Se você tem algo privado para dizer, por favor mande um email para '{0}'.</target>
+        <target xml:lang="pt-PT" state="final">Seu relatório irá para o nosso sistema de rastreamento de problemas e será visível na internet. Se tiver algo particular para comunicar, por favor mande um e-mail para '{0}'.</target>
         <note>ID: ReportProblemDialog.PrivacyInfo</note>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.PrivacyNotice" approved="yes">
@@ -6553,7 +6553,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
-        <target xml:lang="pt-PT" state="final">Uma página interativa com uma pergunta e algumas respostas. Funciona na web e no Bloom Reader. Quando usado com Bloom Reader, o painel do projeto pode mostrar valores agregados de compreensão.</target>
+        <target xml:lang="pt-PT" state="final">Uma página interativa com uma pergunta e algumas respostas. Funciona online e no Bloom Reader. Quando usado com Bloom Reader, o seu painel de projeto pode mostrar as notas de compreensão agregadas.</target>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true" approved="yes">
@@ -7300,7 +7300,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="Webview.MissingOrTooOld" approved="yes">
         <source xml:lang="en">Bloom depends on Microsoft WebView2 Evergreen, at least version {0}. We will now send you to a webpage that will help you add this to your computer.</source>
-        <target xml:lang="pt-PT" state="final">Bloom depende do Microsoft WebView2 Evergreen, pelo menos da versão {0}. Agora vamos te enviar para uma página da web que vai te ajudar a adicionar isso ao seu computador.</target>
+        <target xml:lang="pt-PT" state="final">Bloom depende do Microsoft WebView2 Evergreen, pelo menos da versão {0}. Agora vamos te enviar a um site que vai te ajudar a baixar isso no seu computador.</target>
         <note>ID: Webview.MissingOrTooOld</note>
       </trans-unit>
       <trans-unit id="Webview.CurrentVersion" approved="yes">
