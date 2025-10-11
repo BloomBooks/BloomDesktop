@@ -7233,7 +7233,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="Topics.NoTopic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No Topic</source>
-        <target xml:lang="pt-PT" state="final">Nenhum tópico</target>
+        <target xml:lang="pt-PT" state="final">Sem tema</target>
         <note>ID: Topics.NoTopic</note>
       </trans-unit>
       <trans-unit id="Topics.Non Fiction" sil:dynamic="true" approved="yes">
@@ -7263,7 +7263,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="Topics.Traditional Story" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional Story</source>
-        <target xml:lang="pt-PT" state="final">História tradicional</target>
+        <target xml:lang="pt-PT" state="final">Conto tradicional</target>
         <note>ID: Topics.Traditional Story</note>
       </trans-unit>
       <trans-unit id="Warning" approved="yes">
