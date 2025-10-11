@@ -269,7 +269,7 @@
       </trans-unit>
       <trans-unit id="TeamCollection.InvalidAdminEmails" approved="yes">
         <source xml:lang="en">Please enter one or more valid administrator email addresses, separated by commas or spaces.</source>
-        <target xml:lang="pt-PT" state="final">Por favor, insira um ou mais endereços de e-mail do administrador válidos, separados por vírgulas ou espaços.</target>
+        <target xml:lang="pt-PT" state="final">Por favor, insira um ou mais e-mails de administradores, separados por vírgula ou espaço.</target>
         <note>ID: TeamCollection.InvalidAdminEmails</note>
       </trans-unit>
       <trans-unit id="Common.Preparing" approved="yes">
