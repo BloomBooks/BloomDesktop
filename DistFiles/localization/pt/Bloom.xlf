@@ -389,7 +389,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources" approved="yes">
         <source xml:lang="en">Show Experimental Book Sources</source>
-        <target xml:lang="pt-PT" state="final">Mostrar fontes experimentais de livro</target>
+        <target xml:lang="pt-PT" state="final">Mostrar fontes de livro experimentais</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport" approved="yes">
@@ -642,7 +642,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label" approved="yes">
         <source xml:lang="en">Language 3 (e.g. Regional Language)   (Optional)</source>
-        <target xml:lang="pt-PT" state="final">Língua 3 (por exemplo, língua regional) (opcional)</target>
+        <target xml:lang="pt-PT" state="final">Língua 3 (ex: língua regional) (opcional)</target>
         <note>ID: CollectionSettingsDialog.LanguageTab._language3Label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional" approved="yes">
@@ -992,7 +992,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateInstalled" approved="yes">
         <source xml:lang="en">Update for {0} is ready</source>
-        <target xml:lang="pt-PT" state="final">Atualização para {0} está pronto.</target>
+        <target xml:lang="pt-PT" state="final">Atualização para {0} está pronto</target>
         <note>ID: CollectionTab.UpdateInstalled</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateNow" approved="yes">
@@ -1007,7 +1007,7 @@
       </trans-unit>
       <trans-unit id="CollectionTab.Updating" approved="yes">
         <source xml:lang="en">Downloading update to {0} ({1}K)</source>
-        <target xml:lang="pt-PT" state="final">Baixando atualização para {0} ({1}kb).</target>
+        <target xml:lang="pt-PT" state="final">Baixando atualização para {0} ({1}K)</target>
         <note>ID: CollectionTab.Updating</note>
       </trans-unit>
       <trans-unit id="ColorPicker.PercentTransparent" sil:dynamic="true" approved="yes">
@@ -1371,7 +1371,7 @@
       </trans-unit>
       <trans-unit id="Download.CopyFailed" approved="yes">
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please report the problem to the us.</source>
-        <target xml:lang="pt-PT" state="final">Bloom baixou o livro, mas teve problemas em torná-lo disponível no Bloom. Por favor, reinicie o seu computador e tente novamente. Se você receber essa mensagem novamente, por favor, clique no botão 'Detalhes' e relate o problema para os desenvolvedores do programa.</target>
+        <target xml:lang="pt-PT" state="final">Bloom baixou o livro, mas teve problemas em torná-lo disponível no Bloom. Por favor, reinicie o seu computador e tente novamente. Se você receber essa mensagem novamente, por favor, reporte o problema.</target>
         <note>ID: Download.CopyFailed</note>
       </trans-unit>
       <trans-unit id="Download.DownloadingDialogTitle" approved="yes">
@@ -1386,7 +1386,7 @@
       </trans-unit>
       <trans-unit id="Download.GenericNetworkProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
-        <target xml:lang="pt-PT" state="final">Houve um problema ao baixar o seu livro.</target>
+        <target xml:lang="pt-PT" state="final">Houve um problema ao baixar o livro. Pode tentar novamente depois ou escrever para issues@bloomlibrary.org caso não consiga fazer o download da sua localização.</target>
         <note>ID: Download.GenericNetworkProblemNotice</note>
       </trans-unit>
       <trans-unit id="Download.OldVersion" approved="yes">
@@ -1481,12 +1481,12 @@
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle" approved="yes">
         <source xml:lang="en">Really Remove Page?</source>
-        <target xml:lang="pt-PT" state="final">Realmente excluir a página?</target>
+        <target xml:lang="pt-PT" state="final">Tem certeza que quer remover a página?</target>
         <note>ID: EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle</note>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog.DeleteButton" approved="yes">
         <source xml:lang="en">&amp;Remove</source>
-        <target xml:lang="pt-PT" state="final">&amp;Deletar</target>
+        <target xml:lang="pt-PT" state="final">&amp;Remover</target>
         <note>ID: EditTab.ConfirmRemovePageDialog.DeleteButton</note>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel" approved="yes">
@@ -1586,7 +1586,7 @@
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton" approved="yes">
         <source xml:lang="en">Remove Page</source>
-        <target xml:lang="pt-PT" state="final">Remover\n página</target>
+        <target xml:lang="pt-PT" state="final">Remover a página</target>
         <note>ID: EditTab.DeletePageButton</note>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton.ToolTip" sil:dynamic="true" approved="yes">
@@ -1626,7 +1626,7 @@
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton" approved="yes">
         <source xml:lang="en">Duplicate Page</source>
-        <target xml:lang="pt-PT" state="final">Duplicar\n página</target>
+        <target xml:lang="pt-PT" state="final">Duplicar a Página</target>
         <note>ID: EditTab.DuplicatePageButton</note>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton.ToolTip" sil:dynamic="true" approved="yes">
@@ -2146,7 +2146,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
-        <target xml:lang="pt-PT" state="final">Editar créditos de imagens créditos, direitos autorais, e licença</target>
+        <target xml:lang="pt-PT" state="final">Editar a atribuição de imagens, direitos autorais, &amp; licença</target>
         <note>ID: EditTab.Image.EditMetadata</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadataOverlay" sil:dynamic="true" approved="yes">
@@ -2756,7 +2756,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage" approved="yes">
         <source xml:lang="en">The following is a generated report of the decodable stages for {0}.  You can make any changes you want to this file, but Bloom will not notice your changes.  It is just a report.</source>
-        <target xml:lang="pt-PT" state="final">O seguinte é um relatório gerado das etapas descodificáveis por {0}. Você pode fazer as alterações desejadas para esse arquivo, mas Bloom não vai notar as alterações. É apenas um relatório.</target>
+        <target xml:lang="pt-PT" state="final">O seguinte é um relatório gerado das etapas descodificáveis para {0}. Pode fazer alterações  nesse arquivo, mas Bloom não vai notar as alterações. É apenas um relatório.</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords" approved="yes">
@@ -3351,7 +3351,7 @@
       </trans-unit>
       <trans-unit id="Errors.ErrorSelecting" approved="yes">
         <source xml:lang="en">There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please report the problem to us.</source>
-        <target xml:lang="pt-PT" state="final">Houve um problema, selecionando o livro. Reiniciando Bloom pode corrigir o problema. Se não, por favor clique no botão 'Detalhes' e relatar o problema para os programadores de Bloom.</target>
+        <target xml:lang="pt-PT" state="final">Houve um problema na seleção do livro. Reiniciando Bloom pode corrigir o problema. Se não, por favor reporte o problema.</target>
         <note>ID: Errors.ErrorSelecting</note>
       </trans-unit>
       <trans-unit id="Errors.ErrorUpdating" approved="yes">
@@ -3361,12 +3361,12 @@
       </trans-unit>
       <trans-unit id="Errors.FeatureRequiresNewerVersionPlural" approved="yes">
         <source xml:lang="en">This book requires Bloom {0} or greater because it uses the following features:</source>
-        <target xml:lang="pt-PT" state="final">Este livro requer Bloom {0} ou mais recente porque ele usa os seguintes recursos:</target>
+        <target xml:lang="pt-PT" state="final">Este livro requer Bloom {0} ou mais recente porque usa os seguintes recursos:</target>
         <note>ID: Errors.FeatureRequiresNewerVersionPlural</note>
       </trans-unit>
       <trans-unit id="Errors.FeatureRequiresNewerVersionSingular" approved="yes">
         <source xml:lang="en">This book requires Bloom {0} or greater because it uses the feature "{1}".</source>
-        <target xml:lang="pt-PT" state="final">Este livro requer Bloom {0} ou mais recente porque ele usa as seguintes características "{1}".</target>
+        <target xml:lang="pt-PT" state="final">Este livro requer Bloom {0} ou mais recente porque usa o recurso "{1}".</target>
         <note>ID: Errors.FeatureRequiresNewerVersionSingular</note>
       </trans-unit>
       <trans-unit id="Errors.MultipleHtmlFiles" approved="yes">
@@ -3501,7 +3501,7 @@
       </trans-unit>
       <trans-unit id="HelpMenu.AskAQuestionMenuItem" approved="yes">
         <source xml:lang="en">Ask a Question</source>
-        <target xml:lang="pt-PT" state="final">Pergunte (web)</target>
+        <target xml:lang="pt-PT" state="final">Faça uma pergunta</target>
         <note>ID: HelpMenu.AskAQuestionMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem" approved="yes">
@@ -3516,7 +3516,7 @@
       </trans-unit>
       <trans-unit id="HelpMenu.CreditsMenuItem" approved="yes">
         <source xml:lang="en">About Bloom...</source>
-        <target xml:lang="pt-PT" state="final">Sobre Bloom</target>
+        <target xml:lang="pt-PT" state="final">Sobre Bloom...</target>
         <note>ID: HelpMenu.CreditsMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem" approved="yes">
@@ -5178,7 +5178,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
-        <target xml:lang="pt-PT" state="final">BloomLibrary.org já tem uma versão anterior de seu livro. Se você carregá-lo novamente, a versão anterior será substituída com sua versão atual.</target>
+        <target xml:lang="pt-PT" state="final">BloomLibrary.org já tem uma versão anterior de seu livro. Se você carregá-lo novamente, a versão anterior será substituída com a versão atual.</target>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.EnterpriseShelfRequiredTooltip" approved="yes">
