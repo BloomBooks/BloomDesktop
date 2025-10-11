@@ -7,7 +7,7 @@
     <body>
       <trans-unit id="AvailableWithSubscription">
         <source xml:lang="en">Available with your Bloom Subscription</source>
-        <target xml:lang="pt-PT" state="translated">Disponível com a sua assinatura Bloom Enterprise</target>
+        <target xml:lang="pt-PT" state="translated">Disponível com a sua Assinatura Bloom</target>
         <note>ID: AvailableWithSubscription</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
@@ -566,7 +566,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.RequiresSubscription">
         <source xml:lang="en">This is disabled because publishing interactive activities requires a subscription.</source>
-        <target xml:lang="pt-PT" state="translated">Isto está desativado porque a publicação de atividades interativas requer uma assinatura.</target>
+        <target xml:lang="pt-PT" state="translated">Esta opção está desativada porque a publicação de atividades interativas requer uma assinatura.</target>
         <note>ID: PublishTab.Feature.Activities.RequiresSubscription</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Games.None">
@@ -786,7 +786,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.CoverIsImage.Description" sil:dynamic="true">
         <source xml:lang="en">Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
-        <target xml:lang="pt-PT" state="translated">Usar esta opção ativa os indicadores [Imprimir Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) na diagramação para papel. Veja [Imagens da Capa Completa](https://docs.bloomlibrary.org/full-page-cover-images) para informações sobre o ajuste do tamanho da sua imagem para caber.</target>
+        <target xml:lang="pt-PT" state="translated">Usar esta opção para ativar os indicadores de [Imprimir Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) na diagramação para impressão. Veja [Imagens de Capa Completa](https://docs.bloomlibrary.org/full-page-cover-images) para entender como ajustar o tamanho da sua imagem para caber.</target>
         <note>BookSettings.CoverIsImage.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true" approved="yes">
