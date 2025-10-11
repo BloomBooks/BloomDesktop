@@ -3161,7 +3161,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoMic" approved="yes">
         <source xml:lang="en">This computer appears to have no sound recording device available. You will need one to record audio for a talking book.</source>
-        <target xml:lang="pt-PT" state="final">Este computador parece não ter nenhum dispositivo de gravação de som disponível. Vai precisar de um gravador para gravar áudio para um áudio livro.</target>
+        <target xml:lang="pt-PT" state="final">Parece que este computador não tem nenhum dispositivo de gravação de som disponível. Vai precisar de um microfone para gravar áudio para um áudio livro.</target>
         <note>ID: EditTab.Toolbox.TalkingBook.NoMic</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.PleaseHoldMessage" approved="yes">
