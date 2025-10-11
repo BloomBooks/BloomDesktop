@@ -143,7 +143,7 @@
       </trans-unit>
       <trans-unit id="dialogs.processes_locking_folder.content">
         <source xml:lang="en">There are programs ({process_names}) preventing the {app_title} update from proceeding.\n\nYou can press Continue to have this updater attempt to close them automatically, or if you've closed them yourself press Retry for the updater to check again.</source>
-        <target xml:lang="pt-PT" state="needs-translation">There are programs ({process_names}) preventing the {app_title} update from proceeding.\n\nYou can press Continue to have this updater attempt to close them automatically, or if you've closed them yourself press Retry for the updater to check again.</target>
+        <target xml:lang="pt-PT" state="translated">Existem programas ({process_names}) impedindo a atualização do {app_title} de prosseguir.\n\nEscolha "Continuar" para que o atualizador tente fechá-los automaticamente, ou se você já fechou os programas, pode escolher "Repetir" para que o atualizador verifique novamente.</target>
       </trans-unit>
       <trans-unit id="dialogs.overwrite_repair.default_instruction">
         <source xml:lang="en">{app_title} is already installed.</source>
@@ -175,7 +175,7 @@
       </trans-unit>
       <trans-unit id="dialogs.install_hook_failed.content">
         <source xml:lang="en">Installation has completed, but the application install hook failed. It may not have installed correctly.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Installation has completed, but the application install hook failed. It may not have installed correctly.</target>
+        <target xml:lang="pt-PT" state="translated">A instalação foi concluída, mas o "hook" de instalação do aplicativo falhou. Possivelmente não instalou corretamente.</target>
       </trans-unit>
       <trans-unit id="dialogs.legacy_migration_failed.header">
         <source xml:lang="en">Unable to start app</source>
