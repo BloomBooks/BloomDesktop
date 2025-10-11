@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage" approved="yes">
         <source xml:lang="en">Some text is missing a recording for an image description on page {0}</source>
-        <target xml:lang="pt-PT" state="final">Há texto que falta a gravação para a descrição de imagem na página {0}</target>
+        <target xml:lang="pt-PT" state="final">Um texto não tem uma gravação para a descrição de imagem na página {0}</target>
         <note>ID: AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage</note>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AudioForAllText.MissingOnPage" approved="yes">
@@ -2161,7 +2161,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This sound will play when the item is touched.</source>
-        <target xml:lang="pt-PT" state="final">Este som tocará quando o item for tocado.</target>
+        <target xml:lang="pt-PT" state="final">Este áudio tocará quando o item for tocado.</target>
         <note>ID: EditTab.Image.PlayWhenTouched</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true" approved="yes">
@@ -2701,7 +2701,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.InvalidMp3FileTitle" approved="yes">
         <source xml:lang="en">Choose Another Sound File</source>
-        <target xml:lang="pt-PT" state="final">Escolha outro ficheiro de som</target>
+        <target xml:lang="pt-PT" state="final">Escolha outro arquivo de som</target>
         <note>ID: EditTab.Toolbox.Music.InvalidMp3FileTitle</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true" approved="yes">
@@ -3836,7 +3836,7 @@
       </trans-unit>
       <trans-unit id="LoginDialog.Email" approved="yes">
         <source xml:lang="en">Email Address</source>
-        <target xml:lang="pt-PT" state="final">Endereço de correio electrónico</target>
+        <target xml:lang="pt-PT" state="final">Endereço de e-mail</target>
         <note>ID: LoginDialog.Email</note>
       </trans-unit>
       <trans-unit id="LoginDialog.ForgotPassword" approved="yes">
@@ -5278,7 +5278,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.Need Email" approved="yes">
         <source xml:lang="en">Email Needed</source>
-        <target xml:lang="pt-PT" state="final">Endereço de correo electrónico é necessário</target>
+        <target xml:lang="pt-PT" state="final">E-mail é obrigatório</target>
         <note>ID: PublishTab.Upload.Login.Need Email</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.NoRecordOfUser" approved="yes">
@@ -5298,7 +5298,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.PleaseProvideEmail" approved="yes">
         <source xml:lang="en">Please enter a valid email address. We will send an email to this address so you can reset your password.</source>
-        <target xml:lang="pt-PT" state="final">Por favor, coloque um endereço de e-mail válido. Enviaremos um e-mail para este endereço, assim você pode redefinir sua senha.</target>
+        <target xml:lang="pt-PT" state="final">Por favor, coloque um endereço de e-mail válido. Enviaremos uma mensagem para este e-mail para poder redefinir sua senha.</target>
         <note>ID: PublishTab.Upload.Login.PleaseProvideEmail</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.ResetConnectFailed" approved="yes">
@@ -5950,7 +5950,7 @@
       </trans-unit>
       <trans-unit id="RegisterDialog.Email" approved="yes">
         <source xml:lang="en">Email Address</source>
-        <target xml:lang="pt-PT" state="final">Endereço de correio electrónico</target>
+        <target xml:lang="pt-PT" state="final">Endereço de e-mail</target>
         <note>ID: RegisterDialog.Email</note>
       </trans-unit>
       <trans-unit id="RegisterDialog.FirstName" approved="yes">
@@ -5960,7 +5960,7 @@
       </trans-unit>
       <trans-unit id="RegisterDialog.Heading" approved="yes">
         <source xml:lang="en">Please take a minute to register {0}</source>
-        <target xml:lang="pt-PT" state="final">Por favor, tome um minuto para registrar {0}</target>
+        <target xml:lang="pt-PT" state="final">Por favor, reserve um minuto para registrar {0}</target>
         <note>ID: RegisterDialog.Heading</note>
       </trans-unit>
       <trans-unit id="RegisterDialog.HowAreYouUsing" approved="yes">
@@ -6617,7 +6617,7 @@ is mostly status, which shows on the Collection Tab -->
           This game can be customized in many ways using the Game Tool.
         </source>
         <target xml:lang="pt-PT" state="translated">
-          Os leitores ouvem várias gravações de som e escolhem a que corresponde a uma palavra.
+          Os leitores ouvem vários áudios e escolhem o que corresponde a uma palavra.
           Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Sound to Word</note>
@@ -6628,7 +6628,7 @@ is mostly status, which shows on the Collection Tab -->
           This game can be customized in many ways using the Game Tool.
         </source>
         <target xml:lang="pt-PT" state="translated">
-          Os leitores arrastam as gravações de som até as palavras corretas.
+          Os leitores arrastam os áudios até as palavras corretas.
           Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Sounds to Words</note>
@@ -7123,12 +7123,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true">
         <source xml:lang="en">Drag Sound to Word Target</source>
-        <target xml:lang="pt-PT" state="translated">Arrasta o som até a palavra alvo</target>
+        <target xml:lang="pt-PT" state="translated">Arrasta o áudio até a palavra certa</target>
         <note>ID: TemplateBooks.PageLabel.Drag Sound to Word Target</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Sounds to Word Targets" sil:dynamic="true">
         <source xml:lang="en">Drag Sounds to Word Targets</source>
-        <target xml:lang="pt-PT" state="translated">Arrastar os Sons até as Palavras</target>
+        <target xml:lang="pt-PT" state="translated">Arrasta os Áudios até as Palavras</target>
         <note>ID: TemplateBooks.PageLabel.Drag Sounds to Word Targets</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Match Word with Image" sil:dynamic="true">
