@@ -4450,7 +4450,7 @@
       </trans-unit>
       <trans-unit id="Publish.RemovingDisallowedPages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Removing one or more pages which require a higher subscription tier</source>
-        <target xml:lang="pt-PT" state="final">Remover uma ou mais páginas que requerem um nível de assinatura superior</target>
+        <target xml:lang="pt-PT" state="final">Removendo uma ou mais páginas que requerem um nível de assinatura superior</target>
         <note>ID: Publish.RemovingDisallowedPages</note>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm" approved="yes">
@@ -4650,7 +4650,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Options" approved="yes">
         <source xml:lang="en">PDF Options</source>
-        <target xml:lang="pt-PT" state="final">Opções</target>
+        <target xml:lang="pt-PT" state="final">Opções de PDF</target>
         <note>ID: PublishTab.Options</note>
       </trans-unit>
       <trans-unit id="PublishTab.Options_ToolTip_" approved="yes">
@@ -4770,7 +4770,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.FullBleed" approved="yes">
         <source xml:lang="en">Full Bleed</source>
-        <target xml:lang="pt-PT" state="final">Sem margens</target>
+        <target xml:lang="pt-PT" state="final">Sangria total (Sem margens)</target>
         <note>ID: PublishTab.PdfMaker.FullBleed</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed" approved="yes">
@@ -4865,7 +4865,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.PdfPrint.PrintshopOptions" approved="yes">
         <source xml:lang="en">Prepare for Printshop</source>
-        <target xml:lang="pt-PT" state="final">Preparar para impressão</target>
+        <target xml:lang="pt-PT" state="final">Preparar para Gráfica</target>
         <note>ID: PublishTab.PdfPrint.PrintshopOptions</note>
       </trans-unit>
       <trans-unit id="PublishTab.PrintButton" approved="yes">
@@ -5830,7 +5830,7 @@
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpLeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Leveled Reader Tool</source>
-        <target xml:lang="pt-PT" state="final">Configurar a Ferramenta de Livro Nivelado</target>
+        <target xml:lang="pt-PT" state="final">Configurar a Ferramenta de Livros Nivelados</target>
         <note>ID: ReaderSetup.SetUpLeveledReaderTool</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true" approved="yes">
@@ -5885,7 +5885,7 @@
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</source>
-        <target xml:lang="pt-PT" state="final">Para ajudá-lo a fazer os livros descodificáveis, Bloom pode sugerir palavras que cabem na etapa atual. Há duas maneiras para adicionar palavras a Bloom:</target>
+        <target xml:lang="pt-PT" state="final">Para ajudá-lo a fazer os livros descodificáveis, Bloom pode sugerir palavras que cabem na etapa atual. Há duas maneiras de adicionar palavras a Bloom:</target>
         <note>ID: ReaderSetup.Words.Intro</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.PlaceTextFiles" sil:dynamic="true" approved="yes">
@@ -5920,7 +5920,7 @@
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph" approved="yes">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this Bloom Pack, who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
-        <target xml:lang="pt-PT" state="final">Além disso, este Bloom Pack levará suas últimas configurações de livros descodificáveis e nivelados para a língua "{0}". Qualquer pessoa que abre este Bloom Pack e em seguida abre uma coleção "{0}", terá suas configurações atuais dos livros descodificáveis e nivelados substituídas pelas configurações deste Bloom Pack. Eles também receberão o conjunto atual de palavras para uso em livros decodificáveis.</target>
+        <target xml:lang="pt-PT" state="final">Além disso, este Bloom Pack levará suas últimas configurações de livros descodificáveis e nivelados para a língua "{0}". O usuário que abre este Bloom Pack e em seguida abre uma coleção "{0}", terá suas configurações atuais dos livros descodificáveis e nivelados substituídas pelas configurações deste Bloom Pack. Também o usuário vai receber o conjunto de palavras atual para uso nos livros decodificáveis.</target>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.HelpButtonLabel" approved="yes">
