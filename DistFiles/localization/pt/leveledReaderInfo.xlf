@@ -102,12 +102,12 @@ Contra os rigores da vida.
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.discussion" approved="yes">
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
-        <target xml:lang="pt-PT" state="final">Os livros podem lidar com muitos tópicos. Ao desenvolver livros para novos leitores, escolha tópicos que sejam familiares. Os leitores vão querer ler e ler mais se eles lerem algo que eles acham interessante e familiar. Para leitores mais avançados, as informações desconhecidas para o leitor podem ser incluídas.</target>
+        <target xml:lang="pt-PT" state="final">Os livros podem lidar com muitos assuntos. Ao desenvolver livros para novos leitores, escolha temas que sejam conhecidos. Os leitores vão querer ler e vão estar dispostos a ler mais se o assunto seja algo que eles acham interessante e conhecido. Para leitores mais avançados, pode incluir assuntos e informação com que o leitor não está familiarizado.</target>
         <note>ID: leveled.reader.topic.choice.discussion</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.</source>
-        <target xml:lang="pt-PT" state="final">Para os <g id="genid-9" ctype="x-html-strong"> Leitores novos</g> o livro deve ser concreto, ele deve se concentrar em uma idéia ou tópico, e deve ser familiar e fácil de entender.</target>
+        <target xml:lang="pt-PT" state="final">Para o <g id="genid-9" ctype="x-html-strong"> Recém-Alfabetizado</g> o livro deve ser concreto, fácil de entender, focado numa só ideia ou assunto, e que seja um assunto conhecido.</target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.early.reader" approved="yes">
@@ -117,7 +117,7 @@ Contra os rigores da vida.
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.</source>
-        <target xml:lang="pt-PT" state="final">Para os <g id="genid-11" ctype="x-html-strong"> leitores fluentes</g>, os conceitos não precisam ser familiares e podem ser mais variados e abstratos.</target>
+        <target xml:lang="pt-PT" state="final">Para os <g id="genid-11" ctype="x-html-strong"> leitores fluentes</g>, os conceitos não precisam ser conhecidos e podem ser mais variados e abstratos.</target>
         <note>ID: leveled.reader.topic.choice.fluent.reader</note>
       </trans-unit>
     </body>
