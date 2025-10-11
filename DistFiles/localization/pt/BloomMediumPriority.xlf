@@ -836,7 +836,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.ShowTopic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show Topic</source>
-        <target xml:lang="pt-PT" state="final">Mostrar Tópico</target>
+        <target xml:lang="pt-PT" state="final">Exibir o Tema</target>
         <note>BookSettings.ShowTopic</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers" sil:dynamic="true" approved="yes">
