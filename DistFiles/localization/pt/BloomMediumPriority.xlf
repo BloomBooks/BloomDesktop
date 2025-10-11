@@ -199,12 +199,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CorrectSound">
         <source xml:lang="en">Correct Sound</source>
-        <target xml:lang="pt-PT" state="translated">Som correto</target>
+        <target xml:lang="pt-PT" state="translated">Áudio para "Certo"</target>
         <note>ID: EditTab.Toolbox.DragActivity.WhenCorrect</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WrongSound">
         <source xml:lang="en">Wrong Sound</source>
-        <target xml:lang="pt-PT" state="translated">Som errado</target>
+        <target xml:lang="pt-PT" state="translated">Áudio para "Errado"</target>
         <note>ID: EditTab.Toolbox.DragActivity.WhenWrong</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Word" approved="yes">
