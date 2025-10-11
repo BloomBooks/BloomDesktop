@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="leveled.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
-        <target xml:lang="pt-PT" state="final">Um <g id="genid-1" ctype="x-html-strong">Livro nivelado</g> é um livro que é escrito especificamente para um aluno que está em um determinado nível de desenvolvimento de leitura. Os níveis definem limites de comprimentos de palavras, comprimento de frases, etc. Eles também determinam a formatação apropriada, vocabulário, suporte de ilustração, e tópico.</target>
+        <target xml:lang="pt-PT" state="final">Um <g id="genid-1" ctype="x-html-strong">Livro nivelado</g> é um livro que é escrito especificamente para um aluno que está em um determinado nível de desenvolvimento de leitura. Os níveis definem limites de comprimento de palavras, comprimento de frases, etc. Também determinam a formatação apropriada, vocabulário, apoio de ilustrações, e assunto.</target>
         <note>ID: leveled.definition</note>
       </trans-unit>
       <trans-unit id="leveled.levels" approved="yes">
