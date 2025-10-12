@@ -432,7 +432,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack" approved="yes">
         <source xml:lang="en">Front/Back Matter Pack</source>
-        <target xml:lang="pt-PT" state="final">Pacote de matéria de Frente/Verso</target>
+        <target xml:lang="pt-PT" state="final">Pacote de elementos Pre- e Pós-Textuais</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device" sil:dynamic="true" approved="yes">
