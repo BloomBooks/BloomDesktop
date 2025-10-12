@@ -135,7 +135,7 @@
       </trans-unit>
       <trans-unit id="dialogs.uninstall_complete_with_errors.content">
         <source xml:lang="en">There may be left-over files or directories on your system. You can attempt to remove these manually or re-install the application and try again.</source>
-        <target xml:lang="pt-PT" state="needs-translation">There may be left-over files or directories on your system. You can attempt to remove these manually or re-install the application and try again.</target>
+        <target xml:lang="pt-PT" state="translated">Pode ser que ainda ficaram arquivos ou diretórios restantes no seu sistema. Pode tentar removê-los manualmente ou reinstalar o aplicativo e tentar de novo.</target>
       </trans-unit>
       <trans-unit id="dialogs.uninstall_complete_with_errors.footer">
         <source xml:lang="en">Log file: '&lt;A HREF="na"&gt;{log_path}&lt;/A&gt;'</source>
