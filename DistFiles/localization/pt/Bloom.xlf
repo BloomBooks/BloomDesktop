@@ -432,7 +432,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack" approved="yes">
         <source xml:lang="en">Front/Back Matter Pack</source>
-        <target xml:lang="pt-PT" state="final">Pacote de elementos Pre- e Pós-Textuais</target>
+        <target xml:lang="pt-PT" state="final">Pacote de elementos Pré- e Pós-Textuais</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device" sil:dynamic="true" approved="yes">
@@ -1461,7 +1461,7 @@
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
-        <target xml:lang="pt-PT" state="final">Se você precisa de um lugar para colocar mais informações sobre o livro, você pode usar esta página, que é o interior da contracapa.</target>
+        <target xml:lang="pt-PT" state="final">Se precisar de um lugar para colocar mais informações sobre o livro, pode usar esta página, (o interior da contracapa).</target>
         <note>ID: EditTab.BackMatter.InsideBackCoverTextPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.OutsideBackCoverTextPrompt" sil:dynamic="true" approved="yes">
@@ -2001,7 +2001,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">International Standard Book Number. Leave blank if you don't have one of these.</source>
-        <target xml:lang="pt-PT" state="final">Número internacional normalizado de livros. Deixe em branco se você não tem um desses.</target>
+        <target xml:lang="pt-PT" state="final">Padrão Internacional de Numeração de Livro (ISBN). Deixe em branco se não tiver.</target>
         <note>ID: EditTab.FrontMatter.ISBNPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ImageCreditMissing" approved="yes">
@@ -2011,7 +2011,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
-        <target xml:lang="pt-PT" state="final">Se você precisa de um lugar para colocar mais informações sobre o livro, você pode usar esta página, que é o interior da capa frontal.</target>
+        <target xml:lang="pt-PT" state="final">Se precisar de um lugar para colocar mais informações sobre o livro, pode usar esta página (o interior da capa).</target>
         <note>ID: EditTab.FrontMatter.InsideFrontCoverTextPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ListSeparator" approved="yes">
@@ -2041,12 +2041,12 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence" approved="yes">
         <source xml:lang="en">This book is an adaptation of the original, {0}.</source>
-        <target xml:lang="pt-PT" state="final">Adaptado do original, {0}.</target>
+        <target xml:lang="pt-PT" state="final">Este livro é uma adaptação do original, {0}.</target>
         <note>ID: EditTab.FrontMatter.OriginalCopyrightSentence</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalHadNoCopyrightSentence" approved="yes">
         <source xml:lang="en">This book is an adaptation of the original without a copyright notice.</source>
-        <target xml:lang="pt-PT" state="final">Adaptado do original sem um aviso de direitos autorais.</target>
+        <target xml:lang="pt-PT" state="final">Este livro é uma adaptação do original que estava sem registro de direitos autorais.</target>
         <note>ID: EditTab.FrontMatter.OriginalHadNoCopyrightSentence</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalLicenseSentence" approved="yes">
@@ -2066,7 +2066,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
-        <target xml:lang="pt-PT" state="final">Desenhos de linha simples tem melhor visual. Em vez de usar esta página, você também pode fazer seu próprio arquivo de thumbnail.png e configurá-lo para somente leitura para que Bloom não escreve sobre ele.</target>
+        <target xml:lang="pt-PT" state="final">Desenhos de linhas simples ficam melhores. Em vez de usar esta página, também pode criar seu próprio thumbnail.png (miniatura) e marcar a opção de Somente Leitura (Read-only) para que Bloom no escreve sobre a miniatura.</target>
         <note>ID: EditTab.FrontMatter.SimpleLineDrawings</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.SingleImageCredit" approved="yes">
@@ -2081,7 +2081,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
-        <target xml:lang="pt-PT" state="final">Reconhecimentos para versão traduzida, em {lang}</target>
+        <target xml:lang="pt-PT" state="final">Reconhecimentos para a versão traduzida, em {lang}</target>
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.HowToUseHyperlink" approved="yes">
@@ -2256,7 +2256,7 @@
       </trans-unit>
       <trans-unit id="EditTab.PageList.CantMoveXMatter" approved="yes">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
-        <target xml:lang="pt-PT" state="final">Essa mudança não é permitida. Páginas de matéria de frente e matéria de trás devem permanecer onde estão.</target>
+        <target xml:lang="pt-PT" state="final">Essa mudança não é permitida. Páginas de elementos pré-textuais e pós-textuais devem permanecer onde estão.</target>
         <note>ID: EditTab.PageList.CantMoveXMatter</note>
       </trans-unit>
       <trans-unit id="EditTab.PageList.Heading" approved="yes">
@@ -3416,17 +3416,17 @@
       </trans-unit>
       <trans-unit id="Errors.XMatterNotFound" approved="yes">
         <source xml:lang="en">This Collection called for Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The collection has been changed to use the default Front/Back Matter pages.</source>
-        <target xml:lang="pt-PT" state="final">Este livro requer um pacote de Matéria de Frente/Trás chamado '{0}', mas Bloom não conseguiu encontrá-lo neste computador. Pode instalar um Bloom Pack que irá dar-lhe '{0}', ou seleccionar outro pacote de Matéria de Frente/Trás em Configurações: Elaboração de Livros.</target>
+        <target xml:lang="pt-PT" state="final">Essa Coleção pede um pacote de Elementos Pré- e Pós-Textuais chamado '{0}', mas esta versão de Bloom não o tem, e Bloom não conseguiu encontrá-lo neste computador. A coleção foi alterada para usar as páginas pré- e pós-textuais padrão.</target>
         <note>ID: Errors.XMatterNotFound</note>
       </trans-unit>
       <trans-unit id="Errors.XMatterProblemLabel" approved="yes">
         <source xml:lang="en">Front/Back Matter Problem</source>
-        <target xml:lang="pt-PT" state="final">Problema de Matéria de Frente/Trás</target>
+        <target xml:lang="pt-PT" state="final">Problema de elementos Pré- e Pós-Textuais</target>
         <note>ID: Errors.XMatterProblemLabel</note>
       </trans-unit>
       <trans-unit id="Errors.XMatterSpecifiedByBookNotFound" approved="yes">
         <source xml:lang="en">This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</source>
-        <target xml:lang="pt-PT" state="final">Este livro requer um pacote de Matéria de Frente/Trás chamado '{0}', mas Bloom não conseguiu encontrá-lo neste computador. Pode instalar um Bloom Pack que irá dar-lhe '{0}', ou seleccionar outro pacote de Matéria de Frente/Trás em Configurações: Elaboração de Livros.</target>
+        <target xml:lang="pt-PT" state="final">Este livro pede um pacote de Elementos Pré- e Pós-Textuais chamado '{0}', mas esta versão de Bloom não o tem, e Bloom não conseguiu encontrá-lo neste computador. O livro foi alterado para usar as páginas pré- e pós-textuais nas Configurações da Coleção.</target>
         <note>ID: Errors.XMatterSpecifiedByBookNotFound</note>
       </trans-unit>
       <trans-unit id="Errors.ZoneAlarm" approved="yes">
@@ -5153,7 +5153,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.BannerTitle" approved="yes">
         <source xml:lang="en">Publish to Web</source>
-        <target xml:lang="pt-PT" state="final">Publicar na Web</target>
+        <target xml:lang="pt-PT" state="final">Publicar na internet</target>
         <note>ID: PublishTab.Upload.BannerTitle</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Cancelled" approved="yes">
@@ -6953,7 +6953,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.FrontBackMatter" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Front/Back Matter</source>
-        <target xml:lang="pt-PT" state="final">Matéria de Frente/Trás</target>
+        <target xml:lang="pt-PT" state="final">Elementos Pré- e Pós-Textuais</target>
         <note>ID: TemplateBooks.PageLabel.FrontBackMatter</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image For Thumbnail" sil:dynamic="true" approved="yes">
