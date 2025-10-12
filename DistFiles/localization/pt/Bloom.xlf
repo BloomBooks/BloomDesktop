@@ -1966,12 +1966,12 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to Edit Copyright &amp; License</source>
-        <target xml:lang="pt-PT" state="final">Clique para editar o direito de autor e licença</target>
+        <target xml:lang="pt-PT" state="final">Clique para editar Direitos Autorais &amp; Licença</target>
         <note>ID: EditTab.FrontMatter.CopyrightPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.</source>
-        <target xml:lang="pt-PT" state="final">Reconhecer o tradutor, em {lang}</target>
+        <target xml:lang="pt-PT" state="final">Reconhecimentos para esta versão, em {lang}. Por exemplo, dar crédito ao tradutor para essa versão.</target>
         <note>ID: EditTab.FrontMatter.CreditTranslator</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.EditOriginalTitleCaption" sil:dynamic="true" approved="yes">
@@ -1991,12 +1991,12 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book is an adaptation of the original, {0}, {1}. Licensed under {2}.</source>
-        <target xml:lang="pt-PT" state="final">Adaptado do original, {0}, {1}. Licenciado sob {2}.</target>
+        <target xml:lang="pt-PT" state="final">Este livro é uma adaptação do original, {0}, {1}. Licenciado sob {2}.</target>
         <note>ID: EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
-        <target xml:lang="pt-PT" state="final">Use isto para reconhecer qualquer agência de financiamento.</target>
+        <target xml:lang="pt-PT" state="final">Use este espaço para reconhecer qualquer agência de financiamento.</target>
         <note>ID: EditTab.FrontMatter.FundingAgenciesPrompt</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true" approved="yes">
