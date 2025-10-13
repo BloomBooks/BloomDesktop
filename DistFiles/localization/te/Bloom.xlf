@@ -5347,7 +5347,7 @@
         <note>ID: PublishTab.Upload.Missing.Title</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.OldVersion" approved="yes">
-        <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
+        <source xml:lang="en">Sorry, this version of Bloom Editor is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
         <target xml:lang="te" state="final">క్షమించండి, బ్లూమ్ డెస్క్టాప్ యొక్క ఈ వెర్షన్ బ్లూమ్ library.org ప్రస్తుత వెర్షన్ అనుకూలత లేదు.ఒక కొత్త వెర్షన్కు దయచేసి అప్గ్రేడ్ చేయండి</target>
         <note>ID: PublishTab.Upload.OldVersion</note>
       </trans-unit>
