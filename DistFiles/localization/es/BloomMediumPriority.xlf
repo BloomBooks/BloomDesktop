@@ -199,12 +199,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CorrectSound">
         <source xml:lang="en">Correct Sound</source>
-        <target xml:lang="es-ES" state="needs-translation">Correct Sound</target>
+        <target xml:lang="es-ES" state="translated">Sonido correcto</target>
         <note>ID: EditTab.Toolbox.DragActivity.WhenCorrect</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WrongSound">
         <source xml:lang="en">Wrong Sound</source>
-        <target xml:lang="es-ES" state="needs-translation">Wrong Sound</target>
+        <target xml:lang="es-ES" state="translated">Sonido incorrecto</target>
         <note>ID: EditTab.Toolbox.DragActivity.WhenWrong</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Word">
@@ -249,7 +249,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.white-and-orange-on-blue">
         <source xml:lang="en">White and orange on blue</source>
-        <target xml:lang="es-ES" state="needs-translation">White and orange on blue</target>
+        <target xml:lang="es-ES" state="translated">Blanco y anaranjado en azul</target>
         <note>ID: EditTab.Toolbox.Games.Themes.white-and-orange-on-blue</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.red-on-white">
