@@ -186,8 +186,8 @@
         <target xml:lang="fuc" state="needs-translation">This app installation has been corrupted and cannot be started. Please re-install the app.</target>
       </trans-unit>
       <trans-unit id="dialogs.uninstall_success.content">
-        <source xml:lang="en">The application was successfully uninstalled.</source>
-        <target xml:lang="fuc" state="needs-translation">The application was successfully uninstalled.</target>
+        <source xml:lang="en">{app_title} was successfully uninstalled.</source>
+        <target xml:lang="fuc" state="needs-translation">{app_title} was successfully uninstalled.</target>
       </trans-unit>
     </body>
   </file>
