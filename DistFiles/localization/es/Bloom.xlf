@@ -1107,7 +1107,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="Common.Default">
         <source xml:lang="en">Default</source>
-        <target xml:lang="es-ES" state="needs-translation">Default</target>
+        <target xml:lang="es-ES" state="translated">Por defecto</target>
         <note>ID: Common.Default</note>
       </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
@@ -6888,7 +6888,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comprehension Quiz" sil:dynamic="true">
         <source xml:lang="en">Comprehension Quiz</source>
-        <target xml:lang="es-ES" state="needs-translation">Comprehension Quiz</target>
+        <target xml:lang="es-ES" state="translated">Prueba de comprensión</target>
         <note>ID: TemplateBooks.PageLabel.Comprehension Quiz</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comic Full Page with Footer" sil:dynamic="true" approved="yes">
