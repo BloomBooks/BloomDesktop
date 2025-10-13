@@ -289,7 +289,7 @@
       </trans-unit>
       <trans-unit id="EditTab.PasteHyperlink.Currently">
         <source xml:lang="en">Currently %0</source>
-        <target xml:lang="es-ES" state="needs-translation">Currently %0</target>
+        <target xml:lang="es-ES" state="translated">Actualmente %0</target>
         <note>ID: EditTab.PasteHyperlink.Currently</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MoveToCurrentCollection">
