@@ -325,16 +325,16 @@ export const RegistrationDialog: React.FunctionComponent<
                         />
                     </div>
                 </div>
-                <MuiTextField
+                <AttentionTextField
                     {...textFieldProps}
                     label="How are you using {0}?"
                     l10nKey="RegisterDialog.HowAreYouUsing"
                     l10nParam0="Bloom"
                     value={info.usingFor}
                     onClick={undefined}
-                    onChange={(e) =>
-                        setInfo({ ...info, usingFor: e.target.value })
-                    }
+                    onChange={(v) => setInfo({ ...info, usingFor: v })}
+                    submitAttempts={submitAttempts}
+                    isValid={isUsingForValid}
                     multiline={true}
                     rows="3"
                 />
