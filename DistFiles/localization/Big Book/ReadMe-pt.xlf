@@ -34,7 +34,7 @@ A orientação retrato no tamanho A4 é também possível.
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="pt-PT" state="final">Se você estiver usando uma tela pequena, pode ser difícil ler a página de créditos. Tente usar CTRL+roda da rato/mouse para ampliar a página para que você possa editá-lo.</target>
+        <target xml:lang="pt-PT" state="final">Se você estiver usando uma tela pequena, pode ser difícil ler a página de créditos. Tente usar Ctrl+roda do rato/mouse para ampliar a página para poder editá-lo.</target>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
