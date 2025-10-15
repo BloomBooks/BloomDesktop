@@ -57,7 +57,7 @@ export const AttentionTextField: React.FunctionComponent<
             <MuiTextField
                 className={(className ? className + " " : "") + attentionClass}
                 error={
-                    (value.length > 0 && !isValueValid) ||
+                    (value && value.length > 0 && !isValueValid) ||
                     (submitAttempts > 0 && !isValueValid)
                 }
                 onChange={(event) => {
