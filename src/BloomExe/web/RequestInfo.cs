@@ -86,7 +86,7 @@ namespace Bloom.Api
             WriteOutput(Encoding.UTF8.GetBytes(s), _actualContext.Response);
         }
 
-        private void WriteOutput(byte[] buffer, HttpListenerResponse response)
+        private void WriteOutput(byte[] buffer, IHttpListenerResponse response)
         {
             response.ContentLength64 += buffer.Length;
             // This is particularly useful in allowing the bloom-player used in the BloomPUB preview
@@ -104,6 +104,13 @@ namespace Bloom.Api
             catch (HttpListenerException e)
             {
                 ReportHttpListenerProblem(e);
+            }
+            catch (IOException e)
+            {
+                // EmbedIO may throw IOException when the connection is closed prematurely
+                Logger.WriteEvent(
+                    "Could not write requested data: connection closed. " + e.Message
+                );
             }
             HaveOutput = true;
         }

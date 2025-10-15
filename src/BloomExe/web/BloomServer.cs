@@ -28,6 +28,9 @@ using Bloom.SafeXml;
 using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
+using EmbedIO;
+using EmbedIO.Routing;
+using EmbedIO.WebApi;
 using L10NSharp;
 using SIL.Code;
 using SIL.IO;
@@ -81,14 +84,14 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// Listens for requests"
+        /// EmbedIO web server that listens for requests
         /// </summary>
-        private HttpListener _listener;
+        private WebServer _webServer;
 
         /// <summary>
-        /// Requests that come into the _listener are placed in the _queue so they can be processed
+        /// Requests that come into the server are placed in the _queue so they can be processed
         /// </summary>
-        private readonly Queue<HttpListenerContext> _queue;
+        private readonly ConcurrentQueue<IHttpContext> _queue;
 
         // tasks that should be postponed until no server actions are happening.
 
@@ -186,7 +189,7 @@ namespace Bloom.Api
             BloomFileLocator fileLocator = null
         )
         {
-            _queue = new Queue<HttpListenerContext>();
+            _queue = new ConcurrentQueue<IHttpContext>();
             _stop = new ManualResetEvent(false);
             _ready = new ManualResetEvent(false);
             _listenerThread = new Thread(EnqueueIncomingRequests);
@@ -1192,7 +1195,7 @@ namespace Bloom.Api
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        protected bool IsRecursiveRequestContext(HttpListenerContext context)
+        protected bool IsRecursiveRequestContext(IHttpContext context)
         {
             return context.Request.QueryString["generateThumbnailIfNecessary"] == "true";
         }
@@ -1287,7 +1290,7 @@ namespace Bloom.Api
         /// </summary>
         public virtual void EnsureListening()
         {
-            if (_listener?.IsListening != true)
+            if (_webServer == null || _webServer.State != WebServerState.Listening)
                 StartListening();
         }
 
@@ -1344,12 +1347,10 @@ namespace Bloom.Api
                 Logger.WriteMinorEvent(
                     "Attempting to start http listener on " + ServerUrlEndingInSlash
                 );
-                _listener = new HttpListener
-                {
-                    AuthenticationSchemes = AuthenticationSchemes.Anonymous
-                };
-                _listener.Prefixes.Add(ServerUrlEndingInSlash);
-                _listener.Start();
+                _webServer = new WebServer(
+                    o => o.WithUrlPrefix(ServerUrlEndingInSlash).WithMode(HttpListenerMode.EmbedIO)
+                ).WithModule(new BloomServerModule("/", this));
+                _webServer.Start();
                 return true;
             }
             catch (HttpListenerException error)
@@ -1385,10 +1386,9 @@ namespace Bloom.Api
                 );
             try
             {
-                if (_listener != null)
+                if (_webServer != null)
                 {
-                    //_listener.Stop();  this will always throw if we failed to start, so skip it and go to the close:
-                    _listener.Close();
+                    _webServer.Dispose();
                 }
             }
             catch (Exception)
@@ -1397,9 +1397,28 @@ namespace Bloom.Api
             }
             finally
             {
-                _listener = null;
+                _webServer = null;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Called by BloomServerModule to handle incoming requests
+        /// </summary>
+        public async Task HandleRequestAsync(IHttpContext context)
+        {
+            // Use a TaskCompletionSource to bridge between EmbedIO's async model and our queue-based threading model
+            var tcs = new TaskCompletionSource<bool>();
+
+            // Store the TCS with the context so we can signal completion later
+            context.Items["CompletionSource"] = tcs;
+
+            // Add request to queue
+            _queue.Enqueue(context);
+            _ready.Set();
+
+            // Wait for processing to complete
+            await tcs.Task;
         }
 
         public static bool ServerIsListening { get; internal set; }
@@ -1498,11 +1517,12 @@ namespace Bloom.Api
         #endregion
 
         /// <summary>
-        /// The _listenerThread runs this method, and exits when the _stop event is raised
+        /// The _listenerThread runs this method, and exits when the _stop event is raised.
+        /// With EmbedIO, this just monitors for dead worker threads.
         /// </summary>
         private void EnqueueIncomingRequests()
         {
-            while (_listener.IsListening)
+            while (!_stop.WaitOne(1000))
             {
                 // We've found that sometimes one of our worker threads just dies. One way to force it to happen is to
                 // uncomment the block of code that converts requests for .map files into 404s.
@@ -1527,36 +1547,29 @@ namespace Bloom.Api
                     _workers.TryRemove(kvp.Key, out Thread _);
                     // Seems like just making one would be enough, but preliminary testing still found the number
                     // declining slowly.
-                    while (_workers.Count < MinWorkerThreads)
-                        SpinUpAWorker();
+                    lock (_queue)
+                    {
+                        while (_workers.Count < MinWorkerThreads)
+                            SpinUpAWorker();
+                    }
                 }
-
-                var context = _listener.BeginGetContext(QueueRequest, null);
-
-                if (0 == WaitHandle.WaitAny(new[] { _stop, context.AsyncWaitHandle }))
-                    return;
             }
         }
 
         /// <summary>
-        /// This method is called in the _listenerThread when we obtain an HTTP request from
-        /// the _listener, and queues it for processing by a worker.
+        /// No longer needed with EmbedIO - requests are queued directly by HandleRequestAsync.
+        /// This method is kept for backward compatibility but does nothing.
         /// </summary>
         /// <param name="ar"></param>
         private void QueueRequest(IAsyncResult ar)
         {
-            // this can happen when shutting down
-            // BL-2207 indicates it may be possible for the thread to be alive and the listener closed,
-            // although the only way I know it gets closed happens after joining with that thread.
-            // Still, one more check seems worthwhile...if we're far enough along in shutting down
-            // to have closed the listener we certainly can't respond to any more requests.
-            if (!_listenerThread.IsAlive || !_listener.IsListening)
-                return;
+            // No longer used with EmbedIO
+        }
 
+        private void CheckForBlockedWorkers()
+        {
             lock (_queue)
             {
-                _queue.Enqueue(_listener.EndGetContext(ar));
-
                 // Deal with a situation where all the workers are blocked,
                 // but there is a request in the queue that would unblock the current workers
                 // but that request can't run because it's stuck in queue
@@ -1588,20 +1601,18 @@ namespace Bloom.Api
             // _ready in the wait array) if a request is ready, and 1 when _stop is signaled, breaking us out of the loop.
             while (WaitHandle.WaitAny(wait) == 0)
             {
-                HttpListenerContext context;
-                bool isRecursiveRequestContext; // needs to be declared outside the lock but initialized afte we have the context.
+                IHttpContext context;
+                bool isRecursiveRequestContext;
+
+                // Try to dequeue a request
+                if (!_queue.TryDequeue(out context))
+                {
+                    _ready.Reset();
+                    continue;
+                }
+
                 lock (_queue)
                 {
-                    if (_queue.Count > 0)
-                    {
-                        context = _queue.Dequeue();
-                    }
-                    else
-                    {
-                        _ready.Reset();
-                        continue;
-                    }
-
                     isRecursiveRequestContext = IsRecursiveRequestContext(context);
                     if (isRecursiveRequestContext)
                     {
@@ -1618,8 +1629,15 @@ namespace Bloom.Api
                 }
 
                 var rawurl = "unknown";
+                TaskCompletionSource<bool> tcs = null;
                 try
                 {
+                    // Get the TaskCompletionSource if it exists
+                    if (context.Items.TryGetValue("CompletionSource", out var tcsObj))
+                    {
+                        tcs = tcsObj as TaskCompletionSource<bool>;
+                    }
+
                     rawurl = context.Request.RawUrl;
 
                     // Enhance: the DAISY ACE accessibility report points at images in the epub, correctly and raw, like "tiger.png"
@@ -1636,9 +1654,8 @@ namespace Bloom.Api
                     )
                     {
                         var r = new RequestInfo(new BloomHttpListenerContext(context));
-
                         r.WriteError(404);
-
+                        tcs?.SetResult(true);
                         return;
                     }
                     // Uncommenting this is a way to cause lots of worker threads to die when an inspector is opened.
@@ -1657,6 +1674,9 @@ namespace Bloom.Api
                         Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 
                     MakeReply(new RequestInfo(new BloomHttpListenerContext(context)));
+
+                    // Signal completion
+                    tcs?.SetResult(true);
                 }
                 catch (HttpListenerException e)
                 {
@@ -1666,6 +1686,7 @@ namespace Bloom.Api
                             + e.Message
                     );
                     Logger.WriteEvent("At BloomServer: ListenerCallback(): url=" + rawurl);
+                    tcs?.SetException(e);
                 }
                 catch (Exception error)
                 {
@@ -1700,6 +1721,7 @@ namespace Bloom.Api
                         Debug.Fail("(Debug Only) " + error.Message);
 #endif
                     }
+                    tcs?.SetException(error);
                 }
                 finally
                 {
@@ -2155,7 +2177,7 @@ namespace Bloom.Api
                 try
                 {
                     ServerIsListening = false;
-                    if (_listener != null)
+                    if (_webServer != null)
                     {
                         //prompted by the mysterious BL 273, Crash while closing down the imageserver
                         Guard.AgainstNull(_listenerThread, "_listenerThread");
@@ -2198,19 +2220,9 @@ namespace Bloom.Api
                             }
                         }
 
-                        // stop listening for incoming http requests
-                        Debug.Assert(_listener.IsListening);
-                        if (_listener.IsListening)
-                        {
-                            //In BL-3290, a user quitely failed here each time he exited Bloom, with a Cannot access a disposed object.
-                            //according to http://stackoverflow.com/questions/11164919/why-httplistener-start-method-dispose-stuff-on-exception,
-                            //it's actually just responding to being closed, not disposed.
-                            //I don't know *why* for that user the listener was already stopped.
-                            _listener.Stop();
-                        }
-                        //if we keep getting that exception, we could move the Close() into the previous block
-                        _listener.Close();
-                        _listener = null;
+                        // stop the EmbedIO web server
+                        _webServer.Dispose();
+                        _webServer = null;
                     }
                     if (_cache != null)
                     {
