@@ -287,9 +287,9 @@
         <target xml:lang="pt-PT" state="final">Concluído</target>
         <note>Common.Finished</note>
       </trans-unit>
-      <trans-unit id="EditTab.PasteHyperlink.Currently">
+      <trans-unit id="EditTab.PasteHyperlink.Currently" approved="yes">
         <source xml:lang="en">Currently %0</source>
-        <target xml:lang="pt-PT" state="translated">Atualmente %0</target>
+        <target xml:lang="pt-PT" state="final">Atualmente %0</target>
         <note>ID: EditTab.PasteHyperlink.Currently</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MoveToCurrentCollection">
