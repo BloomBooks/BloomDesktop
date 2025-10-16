@@ -163,6 +163,9 @@ namespace Bloom.web
                                 // Register the API middleware (Phase 2.2)
                                 app.UseMiddleware<KestrelApiMiddleware>();
 
+                                // Register CSS processing middleware (Phase 3.2)
+                                app.UseMiddleware<KestrelCssProcessingMiddleware>();
+
                                 // Register static file middleware (Phase 6)
                                 app.UseMiddleware<KestrelStaticFileMiddleware>();
 

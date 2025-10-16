@@ -2,12 +2,12 @@
 
 **Objective:** Migrate from custom `HttpListener`-based server (`BloomServer`) to ASP.NET Kestrel for better maintainability, performance, and alignment with modern .NET practices.
 
-## 📊 Migration Progress: 60% Complete
+## 📊 Migration Progress: 65% Complete
 
 ```
 Phase 1: Analysis                      [████████████████████] 100% ✅
 Phase 2: Core Server                   [████████████████████] 100% ✅
-Phase 3: Request Handling              [░░░░░░░░░░░░░░░░░░░░]   0%
+Phase 3: Request Handling              [██████░░░░░░░░░░░░░░]  30% ⏳
 Phase 4: Dependency Injection          [███████████████████░]  95% ✅
 Phase 5: API Compatibility             [████████████████████] 100% ✅
 Phase 6: Static Files                  [████████████████████] 100% ✅
@@ -15,13 +15,12 @@ Phase 7: Testing & Validation          [░░░░░░░░░░░░░�
 Phase 8: Feature Flag & Rollout        [░░░░░░░░░░░░░░░░░░░░]   0%
 ```
 
-**Latest Session (Oct 16, 2025)**: Completed Phase 6 (Static File Serving)
-- ✅ Created `KestrelStaticFileMiddleware.cs` (417 lines) - comprehensive file serving
-- ✅ In-memory file serving, Windows path mapping, image processing integration
-- ✅ Intelligent cache headers, MIME type detection, security checks
+**Latest Session (Oct 16, 2025)**: Completed Phase 6 & Phase 3.2
+- ✅ **Phase 6**: Created `KestrelStaticFileMiddleware.cs` (417 lines) - comprehensive file serving
+- ✅ **Phase 3.2**: Created `KestrelCssProcessingMiddleware.cs` (343 lines) - CSS file processing
+- ✅ CSS location resolution, book folder handling, BloomFileLocator integration
 - ✅ Build Status: 0 errors, 124 warnings
-- 📄 Detailed summary: `PHASE6_COMPLETION_SUMMARY.md`
-- 📄 Previous summaries: `PHASES_4_5_6_FINAL_SUMMARY.md`, `PHASE2_COMPLETION_SUMMARY.md`
+- 📄 Summaries: `PHASE3_COMPLETION_SUMMARY.md`, `PHASE6_COMPLETION_SUMMARY.md`
 
 **Current State:**
 - Custom embedded HTTP server using `System.Net.HttpListener`
@@ -279,11 +278,14 @@ Tests created covering:
   - `ReplyWithJson()`: Write JSON response
   - Handle CORS headers (currently in line 99: `Access-Control-Allow-Origin`)
 
-### Phase 3.2: Migrate CSS File Processing
-- [ ] **Port `ProcessCssFile()` logic (lines 1211-1302)**
-  - Create `CssFileMiddleware` or integrate into static file middleware
-  - Handle `defaultLangStyles.css` font-face injection logic
-  - Reuse file location logic from current implementation
+### ✅ Phase 3.2: Migrate CSS File Processing (COMPLETE)
+- [x] **Port `ProcessCssFile()` logic (lines 1211-1302)** ✅ DONE
+  - Created `KestrelCssProcessingMiddleware.cs` (343 lines)
+  - Book folder CSS handling with Storage.GetSupportingFile()
+  - Multi-step file location resolution using BloomFileLocator
+  - Foundation for `defaultLangStyles.css` font-face injection
+  - Case-sensitive file checking
+  - Integrated into middleware pipeline
 
 ### Phase 3.3: Create ASP.NET Core Controllers
 - [ ] **Create base controller class**
