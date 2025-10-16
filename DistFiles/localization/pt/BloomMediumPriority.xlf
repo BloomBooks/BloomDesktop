@@ -375,7 +375,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Insert Segment Marker</source>
-        <target xml:lang="pt-PT" state="final">Inserir o marcador do segmento</target>
+        <target xml:lang="pt-PT" state="final">Inserir um marcador de segmento</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile" sil:dynamic="true" approved="yes">
@@ -430,12 +430,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.</source>
-        <target xml:lang="pt-PT" state="final">Clique aqui para inserir um caractere "|" no texto na posição atual do cursor. Este personagem diz ao Bloom para introduzir um novo segmento para o destaque do texto durante a reprodução de áudio. Também pode apenas digitar o caractere "|" usando o seu teclado.</target>
+        <target xml:lang="pt-PT" state="final">Clique aqui para inserir o símbolo "|" no texto na posição atual do cursor. Bloom entende com este símbolo que durante a reprodução de áudio, é para separar o segmento sendo destacado naquele lugar. Também pode simplesmente digitar o símbolo "|" usando o seu teclado.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom will hide these when you publish.</source>
-        <target xml:lang="pt-PT" state="final">Bloom irá ocultá-los quando você publicar.</target>
+        <target xml:lang="pt-PT" state="final">Bloom vai ocultar os símbolos quando for publicar.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip" sil:dynamic="true" approved="yes">
@@ -455,7 +455,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Record the whole text box in one take, or load in a recording.</source>
-        <target xml:lang="pt-PT" state="final">Grave toda a caixa de texto em uma única coleta, ou carregue em uma gravação.</target>
+        <target xml:lang="pt-PT" state="final">Grave toda a caixa de texto de uma vez, ou carregue uma gravação.</target>
         <note>EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecordingTip" sil:dynamic="true" approved="yes">
@@ -546,7 +546,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.AudioLanguage.Enabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Select this if you want to include this audio.</source>
-        <target xml:lang="pt-PT" state="final">Selecione isto se você deseja incluir este áudio.</target>
+        <target xml:lang="pt-PT" state="final">Marque aqui se deseja incluir este áudio.</target>
         <note>ID: PublishTab.AudioLanguage.Enabled</note>
       </trans-unit>
       <trans-unit id="PublishTab.AudioLanguage.Disabled" sil:dynamic="true" approved="yes">
@@ -696,7 +696,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AboutBlorg" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About BloomLibrary.org</source>
-        <target xml:lang="pt-PT" state="final">Sobre a BloomLibrary.org</target>
+        <target xml:lang="pt-PT" state="final">Sobre BloomLibrary.org</target>
         <note>ID: PublishTab.Upload.AboutBlorg</note>
       </trans-unit>
       <trans-unit id="CollectionTab.OnBlorgBadge.ViewOnBlorg" sil:dynamic="true" approved="yes">
