@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using Microsoft.AspNetCore.Http;
+using SIL.IO;
 
 namespace Bloom.Api
 {
@@ -115,13 +116,13 @@ namespace Bloom.Api
 
             try
             {
-                if (!File.Exists(path))
+                if (!RobustFile.Exists(path))
                 {
                     WriteError(404);
                     return;
                 }
 
-                var fileBytes = File.ReadAllBytes(path);
+                var fileBytes = RobustFile.ReadAllBytes(path);
                 var contentType = GetContentType(path);
                 _context.Response.ContentType = contentType;
                 _context.Response.Body.Write(fileBytes, 0, fileBytes.Length);
@@ -150,16 +151,16 @@ namespace Bloom.Api
 
             try
             {
-                if (!File.Exists(path))
+                if (!RobustFile.Exists(path))
                 {
                     WriteError(404);
                     return;
                 }
 
-                var fileBytes = File.ReadAllBytes(path);
+                var fileBytes = RobustFile.ReadAllBytes(path);
                 var contentType = GetContentType(path);
                 _context.Response.ContentType = contentType;
-                _context.Response.Headers.Add("Cache-Control", "max-age=2592000"); // 30 days
+                _context.Response.Headers["Cache-Control"] = "max-age=2592000"; // 30 days
                 _context.Response.Body.Write(fileBytes, 0, fileBytes.Length);
                 _haveOutput = true;
             }
@@ -192,7 +193,7 @@ namespace Bloom.Api
                 throw new InvalidOperationException("Output already written");
 
             _context.Response.StatusCode = permanent ? 301 : 302;
-            _context.Response.Headers.Add("Location", url);
+            _context.Response.Headers["Location"] = url;
             _haveOutput = true;
         }
 

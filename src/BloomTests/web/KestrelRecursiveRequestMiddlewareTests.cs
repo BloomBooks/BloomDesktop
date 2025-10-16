@@ -34,26 +34,36 @@ namespace BloomTests.web
         public void IsRecursiveRequestContext_WithGenerateThumbnailTrue_ReturnsTrue()
         {
             // Arrange
-            _httpContext.Request.QueryString = new QueryString("?generateThumbnailIfNecessary=true");
+            _httpContext.Request.QueryString = new QueryString(
+                "?generateThumbnailIfNecessary=true"
+            );
 
             // Act
             bool result = KestrelRecursiveRequestMiddleware.IsRecursiveRequestContext(_httpContext);
 
             // Assert
-            Assert.IsTrue(result, "Should detect recursive request when generateThumbnailIfNecessary=true");
+            Assert.IsTrue(
+                result,
+                "Should detect recursive request when generateThumbnailIfNecessary=true"
+            );
         }
 
         [Test]
         public void IsRecursiveRequestContext_WithGenerateThumbnailFalse_ReturnsFalse()
         {
             // Arrange
-            _httpContext.Request.QueryString = new QueryString("?generateThumbnailIfNecessary=false");
+            _httpContext.Request.QueryString = new QueryString(
+                "?generateThumbnailIfNecessary=false"
+            );
 
             // Act
             bool result = KestrelRecursiveRequestMiddleware.IsRecursiveRequestContext(_httpContext);
 
             // Assert
-            Assert.IsFalse(result, "Should not detect recursive request when generateThumbnailIfNecessary=false");
+            Assert.IsFalse(
+                result,
+                "Should not detect recursive request when generateThumbnailIfNecessary=false"
+            );
         }
 
         [Test]
@@ -66,7 +76,10 @@ namespace BloomTests.web
             bool result = KestrelRecursiveRequestMiddleware.IsRecursiveRequestContext(_httpContext);
 
             // Assert
-            Assert.IsFalse(result, "Should not detect recursive request when generateThumbnailIfNecessary parameter is missing");
+            Assert.IsFalse(
+                result,
+                "Should not detect recursive request when generateThumbnailIfNecessary parameter is missing"
+            );
         }
 
         [Test]
@@ -100,15 +113,23 @@ namespace BloomTests.web
             await middleware.InvokeAsync(_httpContext);
 
             // Assert
-            Assert.IsTrue(nextCalled, "Next middleware should be called for non-recursive requests");
-            Assert.IsFalse(_httpContext.Items.ContainsKey("IsRecursiveRequest"), "Should not mark non-recursive request");
+            Assert.IsTrue(
+                nextCalled,
+                "Next middleware should be called for non-recursive requests"
+            );
+            Assert.IsFalse(
+                _httpContext.Items.ContainsKey("IsRecursiveRequest"),
+                "Should not mark non-recursive request"
+            );
         }
 
         [Test]
         public async Task InvokeAsync_RecursiveRequest_MarksContextAndPassesToNext()
         {
             // Arrange
-            _httpContext.Request.QueryString = new QueryString("?generateThumbnailIfNecessary=true");
+            _httpContext.Request.QueryString = new QueryString(
+                "?generateThumbnailIfNecessary=true"
+            );
             bool nextCalled = false;
             RequestDelegate next = (ctx) =>
             {
@@ -124,22 +145,36 @@ namespace BloomTests.web
 
             // Assert
             Assert.IsTrue(nextCalled, "Next middleware should be called for recursive requests");
-            Assert.IsTrue(_httpContext.Items.ContainsKey("IsRecursiveRequest"), "Should mark recursive request in context");
-            Assert.AreEqual(true, _httpContext.Items["IsRecursiveRequest"], "IsRecursiveRequest should be set to true");
-            Assert.AreEqual(initialRecursiveCount, KestrelRecursiveRequestMiddleware.RecursiveRequestCount, "Recursive count should be reset after completion");
+            Assert.IsTrue(
+                _httpContext.Items.ContainsKey("IsRecursiveRequest"),
+                "Should mark recursive request in context"
+            );
+            Assert.AreEqual(
+                true,
+                _httpContext.Items["IsRecursiveRequest"],
+                "IsRecursiveRequest should be set to true"
+            );
+            Assert.AreEqual(
+                initialRecursiveCount,
+                KestrelRecursiveRequestMiddleware.RecursiveRequestCount,
+                "Recursive count should be reset after completion"
+            );
         }
 
         [Test]
         public async Task InvokeAsync_RecursiveRequest_IncrementsAndDecrementsCounters()
         {
             // Arrange
-            _httpContext.Request.QueryString = new QueryString("?generateThumbnailIfNecessary=true");
+            _httpContext.Request.QueryString = new QueryString(
+                "?generateThumbnailIfNecessary=true"
+            );
             int recursiveCountDuringExecution = 0;
             int busyCountDuringExecution = 0;
 
             RequestDelegate next = (ctx) =>
             {
-                recursiveCountDuringExecution = KestrelRecursiveRequestMiddleware.RecursiveRequestCount;
+                recursiveCountDuringExecution =
+                    KestrelRecursiveRequestMiddleware.RecursiveRequestCount;
                 busyCountDuringExecution = KestrelRecursiveRequestMiddleware.BusyRequestCount;
                 return Task.CompletedTask;
             };
@@ -152,10 +187,26 @@ namespace BloomTests.web
             await middleware.InvokeAsync(_httpContext);
 
             // Assert
-            Assert.AreEqual(initialRecursiveCount + 1, recursiveCountDuringExecution, "Recursive count should increment during execution");
-            Assert.AreEqual(initialBusyCount + 1, busyCountDuringExecution, "Busy count should increment during execution");
-            Assert.AreEqual(initialRecursiveCount, KestrelRecursiveRequestMiddleware.RecursiveRequestCount, "Recursive count should be restored after completion");
-            Assert.AreEqual(initialBusyCount, KestrelRecursiveRequestMiddleware.BusyRequestCount, "Busy count should be restored after completion");
+            Assert.AreEqual(
+                initialRecursiveCount + 1,
+                recursiveCountDuringExecution,
+                "Recursive count should increment during execution"
+            );
+            Assert.AreEqual(
+                initialBusyCount + 1,
+                busyCountDuringExecution,
+                "Busy count should increment during execution"
+            );
+            Assert.AreEqual(
+                initialRecursiveCount,
+                KestrelRecursiveRequestMiddleware.RecursiveRequestCount,
+                "Recursive count should be restored after completion"
+            );
+            Assert.AreEqual(
+                initialBusyCount,
+                KestrelRecursiveRequestMiddleware.BusyRequestCount,
+                "Busy count should be restored after completion"
+            );
         }
 
         [Test]
@@ -168,7 +219,8 @@ namespace BloomTests.web
 
             RequestDelegate next = (ctx) =>
             {
-                recursiveCountDuringExecution = KestrelRecursiveRequestMiddleware.RecursiveRequestCount;
+                recursiveCountDuringExecution =
+                    KestrelRecursiveRequestMiddleware.RecursiveRequestCount;
                 busyCountDuringExecution = KestrelRecursiveRequestMiddleware.BusyRequestCount;
                 return Task.CompletedTask;
             };
@@ -181,17 +233,35 @@ namespace BloomTests.web
             await middleware.InvokeAsync(_httpContext);
 
             // Assert
-            Assert.AreEqual(initialRecursiveCount, recursiveCountDuringExecution, "Recursive count should not change for non-recursive requests");
-            Assert.AreEqual(initialBusyCount + 1, busyCountDuringExecution, "Busy count should increment during execution");
-            Assert.AreEqual(initialRecursiveCount, KestrelRecursiveRequestMiddleware.RecursiveRequestCount, "Recursive count should remain unchanged");
-            Assert.AreEqual(initialBusyCount, KestrelRecursiveRequestMiddleware.BusyRequestCount, "Busy count should be restored after completion");
+            Assert.AreEqual(
+                initialRecursiveCount,
+                recursiveCountDuringExecution,
+                "Recursive count should not change for non-recursive requests"
+            );
+            Assert.AreEqual(
+                initialBusyCount + 1,
+                busyCountDuringExecution,
+                "Busy count should increment during execution"
+            );
+            Assert.AreEqual(
+                initialRecursiveCount,
+                KestrelRecursiveRequestMiddleware.RecursiveRequestCount,
+                "Recursive count should remain unchanged"
+            );
+            Assert.AreEqual(
+                initialBusyCount,
+                KestrelRecursiveRequestMiddleware.BusyRequestCount,
+                "Busy count should be restored after completion"
+            );
         }
 
         [Test]
         public async Task InvokeAsync_ExceptionInNext_ProperlyDecrementsCounters()
         {
             // Arrange
-            _httpContext.Request.QueryString = new QueryString("?generateThumbnailIfNecessary=true");
+            _httpContext.Request.QueryString = new QueryString(
+                "?generateThumbnailIfNecessary=true"
+            );
             RequestDelegate next = (ctx) => throw new InvalidOperationException("Test exception");
 
             var middleware = new KestrelRecursiveRequestMiddleware(next, _mockLogger.Object);
@@ -199,12 +269,21 @@ namespace BloomTests.web
             int initialBusyCount = KestrelRecursiveRequestMiddleware.BusyRequestCount;
 
             // Act & Assert
-            var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await middleware.InvokeAsync(_httpContext));
+            var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await middleware.InvokeAsync(_httpContext)
+            );
 
             Assert.AreEqual("Test exception", ex.Message);
-            Assert.AreEqual(initialRecursiveCount, KestrelRecursiveRequestMiddleware.RecursiveRequestCount, "Recursive count should be restored even after exception");
-            Assert.AreEqual(initialBusyCount, KestrelRecursiveRequestMiddleware.BusyRequestCount, "Busy count should be restored even after exception");
+            Assert.AreEqual(
+                initialRecursiveCount,
+                KestrelRecursiveRequestMiddleware.RecursiveRequestCount,
+                "Recursive count should be restored even after exception"
+            );
+            Assert.AreEqual(
+                initialBusyCount,
+                KestrelRecursiveRequestMiddleware.BusyRequestCount,
+                "Busy count should be restored even after exception"
+            );
         }
     }
 }

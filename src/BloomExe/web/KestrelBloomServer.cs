@@ -126,10 +126,21 @@ namespace Bloom.web
                 var hostBuilder = Host.CreateDefaultBuilder()
                     .ConfigureServices(services =>
                     {
-                        services.AddSingleton(_bookSelection);
-                        services.AddSingleton(_cache);
-                        services.AddSingleton(_fileLocator);
-                        services.AddSingleton(_apiHandler);
+                        // Phase 4.1: Register core Bloom services using extension methods
+                        services.AddBloomApplicationServices();
+                        services.AddBloomLogging();
+                        services.AddBloomMiddlewareServices();
+
+                        // Override with instance-specific services if provided to constructor
+                        // This maintains backward compatibility with tests that inject specific instances
+                        if (_bookSelection != null)
+                            services.AddSingleton(_bookSelection);
+                        if (_cache != null)
+                            services.AddSingleton(_cache);
+                        if (_fileLocator != null)
+                            services.AddSingleton(_fileLocator);
+                        if (_apiHandler != null)
+                            services.AddSingleton(_apiHandler);
                     })
                     .ConfigureWebHostDefaults(webBuilder =>
                     {
@@ -137,11 +148,23 @@ namespace Bloom.web
                             .UseKestrel(options => options.Listen(IPAddress.Loopback, portForHttp))
                             .Configure(app =>
                             {
+                                // Register API handlers with BloomApiHandler (Phase 4.1)
+                                var apiHandler =
+                                    app.ApplicationServices.GetRequiredService<BloomApiHandler>();
+                                ServiceCollectionExtensions.RegisterApiHandlers(
+                                    app.ApplicationServices,
+                                    apiHandler,
+                                    isApplicationLevel: true
+                                );
+
                                 // Register recursive request tracking middleware (Phase 2.3)
                                 app.UseKestrelRecursiveRequestMiddleware();
 
                                 // Register the API middleware (Phase 2.2)
                                 app.UseMiddleware<KestrelApiMiddleware>();
+
+                                // Register static file middleware (Phase 6)
+                                app.UseMiddleware<KestrelStaticFileMiddleware>();
 
                                 app.UseRouting();
                                 app.UseEndpoints(endpoints =>

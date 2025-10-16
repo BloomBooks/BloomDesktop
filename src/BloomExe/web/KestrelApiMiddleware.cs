@@ -52,8 +52,9 @@ namespace Bloom.Api
                 {
                     _logger.LogDebug($"Processing API request: {path}");
 
-                    // Remove the "/bloom/api/" prefix to get the local path
-                    var localPath = path.Substring("/bloom/api/".Length);
+                    // Remove the "/bloom/" prefix to get the local path (keep "api/" for BloomApiHandler)
+                    // BloomApiHandler.ProcessRequestAsync expects paths like "api/pagetemplatethumbnail"
+                    var localPath = path.Substring("/bloom/".Length);
 
                     // Create a request info adapter
                     var requestInfo = new KestrelRequestInfo(context);

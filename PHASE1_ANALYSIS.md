@@ -26,7 +26,7 @@ Completed comprehensive analysis of the existing `BloomServer` implementation an
    - Used for page thumbnails and editing
    - Static dictionary with GUIDs and markers
    - Cleaned up via idle tasks
-   
+
 2. **Image Processing**
    - `RuntimeImageProcessor` for caching/resizing
    - Thumbnail generation with recursive requests
