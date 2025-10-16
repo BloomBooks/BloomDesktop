@@ -139,6 +139,9 @@ namespace Bloom.Api
                             .UseKestrel(options => options.Listen(IPAddress.Loopback, portForHttp))
                             .Configure(app =>
                             {
+                                // Register the API middleware (Phase 2.2)
+                                app.UseMiddleware<KestrelApiMiddleware>();
+
                                 app.UseRouting();
                                 app.UseEndpoints(endpoints =>
                                 {
@@ -154,8 +157,8 @@ namespace Bloom.Api
                                         await context.Response.WriteAsync("OK");
                                     });
 
-                                    // Placeholder for future /bloom/api/* routing
-                                    // Will be implemented in Phase 2.2
+                                    // Additional middleware and endpoints for future phases
+                                    // Phase 2.2+: in-memory pages, images, CSS processing
                                 });
                             });
                     });
