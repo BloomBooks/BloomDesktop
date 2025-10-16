@@ -241,6 +241,9 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 		<PackageReference Include="System.Runtime" Version="4.3.0" />
 		<PackageReference Include="TagLibSharp" Version="2.3.0" />
+		<!-- ASP.NET Core Kestrel packages for new server implementation -->
+		<PackageReference Include="Microsoft.AspNetCore.App" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="PolySharp" Version="1.13.2">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
