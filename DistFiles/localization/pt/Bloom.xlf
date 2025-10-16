@@ -5053,9 +5053,9 @@
         <target xml:lang="pt-PT" state="final">Vire páginas sem narração após:</target>
         <note>ID: PublishTab.RecordVideo.TurnPageAfter</note>
       </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.ScreenTooSmall" approved="yes">
+      <trans-unit id="PublishTab.RecordVideo.ScreenTooSmall">
         <source xml:lang="en">Ideally, this video target should be {0}. However that is larger than your screen, so Bloom will produce a video that is {1}.</source>
-        <target xml:lang="pt-PT" state="final">Idealmente, este vídeo alvo deve ser {0}. No entanto, ele é maior do que a sua tela, então Bloom irá produzir um vídeo que é {1}.</target>
+        <target xml:lang="pt-PT" state="translated">Embora o ideal seja produzir este vídeo em {0}, isto seria maior do que a sua tela, então Bloom irá produzir um vídeo que é {1}.</target>
         <note>ID: PublishTab.RecordVideo.ScreenTooSmall</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.VideoFile" approved="yes">
