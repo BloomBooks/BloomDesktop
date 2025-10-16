@@ -3,6 +3,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SafeXml;
+using BloomTests;
 using Moq;
 using NUnit.Framework;
 using SIL.IO;
@@ -12,7 +13,7 @@ namespace BloomTests.web
     [TestFixture]
     public class ReadersApiTests
     {
-        private BloomServer _server;
+        private IApiTestServer _server;
         private BookSelection _bookSelection;
 
         [SetUp]
@@ -20,7 +21,7 @@ namespace BloomTests.web
         {
             _bookSelection = new BookSelection();
             _bookSelection.SelectBook(new Bloom.Book.Book());
-            _server = new BloomServer(_bookSelection);
+            _server = ApiTestServerFactory.Create(_bookSelection);
             _server.SetCollectionSettingsDuringInitialization(new CollectionSettings());
 
             var controller = new ReadersApi(_bookSelection, null);

@@ -246,10 +246,16 @@ namespace Bloom.Collection
             }
             else
             {
-                if (!Directory.Exists(parentDirectoryPath))
+                if (
+                    !string.IsNullOrEmpty(parentDirectoryPath)
+                    && !Directory.Exists(parentDirectoryPath)
+                )
                     Directory.CreateDirectory(parentDirectoryPath);
 
-                if (!Directory.Exists(collectionDirectory))
+                if (
+                    !string.IsNullOrEmpty(collectionDirectory)
+                    && !Directory.Exists(collectionDirectory)
+                )
                     Directory.CreateDirectory(collectionDirectory);
 
                 DoDefenderFolderProtectionCheck();

@@ -748,8 +748,8 @@ namespace BloomTests.web
                 server.MakeReply(transaction);
 
                 Assert.AreEqual(
-                    transaction.ReplyContents.Trim(),
-                    "/* This is the one in DistFiles */"
+                    "/* This is the one in DistFiles */",
+                    transaction.ReplyContents.Trim()
                 );
             }
         }

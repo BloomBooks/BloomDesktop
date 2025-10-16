@@ -11,6 +11,7 @@ using System.Web;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Utils;
+using Bloom.web;
 using Newtonsoft.Json;
 
 namespace Bloom.Api
@@ -298,7 +299,10 @@ namespace Bloom.Api
         {
             Exception handlerException = null;
 
-            BloomServer._theOneInstance.RegisterThreadBlocking();
+            // Register thread blocking with whichever server implementation is active
+            (
+                BloomServer._theOneInstance as IBloomServer ?? KestrelBloomServer._theOneInstance
+            )?.RegisterThreadBlocking();
 
             // This will block until the UI thread is done invoking this.
             await (Task)
@@ -319,7 +323,9 @@ namespace Bloom.Api
                     request
                 );
 
-            BloomServer._theOneInstance.RegisterThreadUnblocked();
+            (
+                BloomServer._theOneInstance as IBloomServer ?? KestrelBloomServer._theOneInstance
+            )?.RegisterThreadUnblocked();
 
             if (handlerException != null)
             {

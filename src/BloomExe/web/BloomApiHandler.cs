@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.web;
 
 namespace Bloom.Api
 {
@@ -318,7 +319,10 @@ namespace Bloom.Api
                 try
                 {
                     // Try to acquire lock
-                    BloomServer._theOneInstance.RegisterThreadBlocking();
+                    (
+                        BloomServer._theOneInstance as IBloomServer
+                        ?? KestrelBloomServer._theOneInstance
+                    )?.RegisterThreadBlocking();
                     try
                     {
                         // Blocks until it either succeeds (lockAcquired will then always be true) or throws (lockAcquired will stay false)
@@ -326,7 +330,10 @@ namespace Bloom.Api
                     }
                     finally
                     {
-                        BloomServer._theOneInstance.RegisterThreadUnblocked();
+                        (
+                            BloomServer._theOneInstance as IBloomServer
+                            ?? KestrelBloomServer._theOneInstance
+                        )?.RegisterThreadUnblocked();
                     }
 
                     // Lock has been acquired.

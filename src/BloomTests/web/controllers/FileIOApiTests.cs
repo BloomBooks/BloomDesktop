@@ -2,6 +2,7 @@
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.web.controllers;
+using BloomTests;
 using NUnit.Framework;
 using SIL.TestUtilities;
 
@@ -10,7 +11,7 @@ namespace BloomTests.web.controllers
     [TestFixture]
     class FileIOApiTests
     {
-        private BloomServer _server;
+        private IApiTestServer _server;
         private TemporaryFolder _testFolder;
 
         private string GetTestFolderName() => "FileIOApiTests";
@@ -20,7 +21,7 @@ namespace BloomTests.web.controllers
         {
             var bookSelection = new BookSelection();
             bookSelection.SelectBook(new Bloom.Book.Book());
-            _server = new BloomServer(bookSelection);
+            _server = ApiTestServerFactory.Create(bookSelection);
 
             var controller = new FileIOApi(bookSelection, new BloomWebSocketServer());
             controller.RegisterWithApiHandler(_server.ApiHandler);
@@ -40,6 +41,13 @@ namespace BloomTests.web.controllers
                 _testFolder.Dispose();
                 _testFolder = null;
             }
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            _server?.Dispose();
+            _server = null;
         }
 
         private (string sourcePath, string destDirPath) SetupCopyFileTests(

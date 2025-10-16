@@ -6,6 +6,7 @@ using Bloom;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.web.controllers;
+using BloomTests;
 using Moq;
 using NUnit.Framework;
 using SIL.Text;
@@ -15,14 +16,14 @@ namespace BloomTests.web.controllers
     [TestFixture]
     class ProblemReportApiTests
     {
-        private BloomServer _server;
+        private IApiTestServer _server;
 
         /// <summary>
         /// Sets up the Bloom server and registers the Problem Report API handler to it
         /// </summary>
         private void SetupApiHandler(BookSelection bookSelection)
         {
-            _server = new BloomServer(bookSelection);
+            _server = ApiTestServerFactory.Create(bookSelection);
             var controller = new ProblemReportApi(bookSelection);
             controller.RegisterWithApiHandler(_server.ApiHandler);
         }

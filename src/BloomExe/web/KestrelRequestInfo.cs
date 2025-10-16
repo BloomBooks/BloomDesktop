@@ -4,12 +4,19 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web;
+using Bloom.Book;
+using Bloom.web;
+using Bloom.web.controllers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Newtonsoft.Json.Linq;
 using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.Api
 {
@@ -20,18 +27,26 @@ namespace Bloom.Api
     /// This adapter wraps HttpContext to provide the IRequestInfo interface,
     /// allowing existing BloomApiHandler code to work with Kestrel without modification.
     /// </summary>
-    public class KestrelRequestInfo : IRequestInfo
+    public class KestrelRequestInfo : IRequestInfo, IDisposable
     {
         private readonly HttpContext _context;
+        private readonly HttpRequest _request;
+        private readonly HttpResponse _response;
+        private static readonly Uri s_dummyBaseUri = new Uri("http://localhost/");
         private NameValueCollection _queryStringList;
         private NameValueCollection _postData;
         private NameValueCollection _postDataJson;
         private string _responseContentType;
-        private bool _haveOutput = false;
+        private bool _haveOutput;
+        private string _stringContent;
+        private byte[] _rawPostData;
+        private string _doNotCacheFolder;
 
         public KestrelRequestInfo(HttpContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _request = context.Request;
+            _response = context.Response;
         }
 
         #region IRequestInfo Properties
@@ -40,11 +55,9 @@ namespace Bloom.Api
         {
             get
             {
-                var path = _context.Request.Path.Value;
-                var queryStart = path.IndexOf("?", StringComparison.Ordinal);
-                var urlToDecode = queryStart == -1 ? path : path.Substring(0, queryStart);
-
-                // Handle URL decoding (same as original RequestInfo to avoid + sign issues)
+                var rawUrl = RawUrl;
+                var queryStart = rawUrl.IndexOf("?", StringComparison.Ordinal);
+                var urlToDecode = queryStart == -1 ? rawUrl : rawUrl.Substring(0, queryStart);
                 var pathWithoutLiteralPlusSigns = urlToDecode.Replace("+", "%2B");
                 return HttpUtility.UrlDecode(pathWithoutLiteralPlusSigns);
             }
@@ -52,7 +65,7 @@ namespace Bloom.Api
 
         public string RequestContentType
         {
-            get { return _context.Request.ContentType; }
+            get { return _request.ContentType; }
         }
 
         public string ResponseContentType
@@ -61,7 +74,7 @@ namespace Bloom.Api
             set
             {
                 _responseContentType = value;
-                _context.Response.ContentType = value;
+                _response.ContentType = value;
             }
         }
 
@@ -69,8 +82,10 @@ namespace Bloom.Api
         {
             get
             {
-                var path = _context.Request.Path.Value;
-                var queryString = _context.Request.QueryString.Value;
+                var path = _request.Path.HasValue ? _request.Path.Value : string.Empty;
+                var queryString = _request.QueryString.HasValue
+                    ? _request.QueryString.Value
+                    : string.Empty;
                 return path + queryString;
             }
         }
@@ -84,7 +99,7 @@ namespace Bloom.Api
         {
             get
             {
-                return _context.Request.Method.ToUpperInvariant() switch
+                return _request.Method.ToUpperInvariant() switch
                 {
                     "GET" => HttpMethods.Get,
                     "POST" => HttpMethods.Post,
@@ -105,8 +120,34 @@ namespace Bloom.Api
             if (_haveOutput)
                 throw new InvalidOperationException("Output already written");
 
+            WriteOutput(Encoding.UTF8.GetBytes(s));
+        }
+
+        private void WriteOutput(byte[] buffer)
+        {
+            var response = _response;
+            response.ContentLength = (response.ContentLength ?? 0) + buffer.Length;
+            response.Headers["Access-Control-Allow-Origin"] = "*";
+            response.Headers["Access-Control-Allow-Headers"] = "*";
+
+            try
+            {
+                response.Body.Write(buffer, 0, buffer.Length);
+                response.Body.Flush();
+            }
+            catch (IOException e)
+            {
+                ReportHttpProblem(e);
+            }
             _haveOutput = true;
-            _context.Response.Body.Write(Encoding.UTF8.GetBytes(s));
+        }
+
+        private static void ReportHttpProblem(Exception e)
+        {
+            Logger.WriteEvent(
+                "Could not write requested data to client: " + e.Message + e.StackTrace
+            );
+            Debug.WriteLine(e.Message);
         }
 
         public void ReplyWithFileContent(string path, string originalPath = null)
@@ -118,14 +159,57 @@ namespace Bloom.Api
             {
                 if (!RobustFile.Exists(path))
                 {
-                    WriteError(404);
+                    Logger.WriteError("Server could not find " + path, new FileNotFoundException());
+                    WriteError(404, "Server could not find " + path);
                     return;
                 }
 
-                var fileBytes = RobustFile.ReadAllBytes(path);
-                var contentType = GetContentType(path);
-                _context.Response.ContentType = contentType;
-                _context.Response.Body.Write(fileBytes, 0, fileBytes.Length);
+                using (var fs = RobustFile.OpenRead(path))
+                {
+                    _response.ContentType = BloomServer.GetContentType(Path.GetExtension(path));
+                    _response.Headers["PathOnDisk"] = HttpUtility.UrlEncode(path);
+                    _response.Headers["Access-Control-Allow-Origin"] = "*";
+
+                    if (
+                        path.EndsWith(".mp4", StringComparison.InvariantCultureIgnoreCase)
+                        || path.EndsWith(".webm", StringComparison.InvariantCultureIgnoreCase)
+                    )
+                    {
+                        _response.Headers["Accept-Ranges"] = "bytes";
+                    }
+
+                    string cacheControl = ShouldCache(path, originalPath)
+                        ? "max-age=600000"
+                        : "no-store";
+                    _response.Headers["Cache-Control"] = cacheControl;
+
+                    if (IsHeadRequest())
+                    {
+                        var lastModified = RobustFile.GetLastWriteTimeUtc(path).ToString("R");
+                        _response.Headers["Last-Modified"] = lastModified;
+                        _response.ContentLength = fs.Length;
+                    }
+                    else if (fs.Length < 2 * 1024 * 1024)
+                    {
+                        var buffer = new byte[fs.Length];
+                        fs.Read(buffer, 0, buffer.Length);
+                        _response.ContentLength = buffer.Length;
+                        _response.Body.Write(buffer, 0, buffer.Length);
+                        _response.Body.Flush();
+                    }
+                    else
+                    {
+                        _response.ContentLength = fs.Length;
+                        var buffer = new byte[1024 * 512];
+                        int read;
+                        while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            _response.Body.Write(buffer, 0, read);
+                        }
+                        _response.Body.Flush();
+                    }
+                }
+
                 _haveOutput = true;
             }
             catch (Exception ex)
@@ -139,35 +223,36 @@ namespace Bloom.Api
             if (_haveOutput)
                 throw new InvalidOperationException("Output already written");
 
-            _context.Response.ContentType = responseType;
-            input.CopyTo(_context.Response.Body);
+            _response.ContentType = responseType;
+            var buffer = new byte[2 * 1024 * 1024];
+            var length = input.Read(buffer, 0, buffer.Length);
+
+            _response.ContentLength = length;
+            _response.Headers["Access-Control-Allow-Origin"] = "*";
+
+            if (IsHeadRequest())
+            {
+                var lastModified = DateTime.Now.ToString("R");
+                _response.Headers["Last-Modified"] = lastModified;
+            }
+            else
+            {
+                _response.Body.Write(buffer, 0, length);
+                _response.Body.Flush();
+            }
+
             _haveOutput = true;
         }
 
         public void ReplyWithImage(string path, string originalPath = null)
         {
-            if (_haveOutput)
-                throw new InvalidOperationException("Output already written");
-
-            try
+            if (!string.IsNullOrEmpty(path))
             {
-                if (!RobustFile.Exists(path))
-                {
-                    WriteError(404);
-                    return;
-                }
-
-                var fileBytes = RobustFile.ReadAllBytes(path);
-                var contentType = GetContentType(path);
-                _context.Response.ContentType = contentType;
-                _context.Response.Headers["Cache-Control"] = "max-age=2592000"; // 30 days
-                _context.Response.Body.Write(fileBytes, 0, fileBytes.Length);
-                _haveOutput = true;
+                var pos = path.LastIndexOf('.');
+                if (pos > 0)
+                    _response.ContentType = BloomServer.GetContentType(path.Substring(pos));
             }
-            catch (Exception ex)
-            {
-                WriteError(500, ex.Message);
-            }
+            ReplyWithFileContent(path, originalPath);
         }
 
         public void WriteError(int errorCode)
@@ -177,14 +262,27 @@ namespace Bloom.Api
 
         public void WriteError(int errorCode, string errorDescription)
         {
-            _context.Response.StatusCode = errorCode;
-            _haveOutput = true;
+            _response.StatusCode = errorCode;
+            var sanitized = errorDescription != null ? SanitizeForAscii(errorDescription) : null;
+            var feature = _context.Features.Get<IHttpResponseFeature>();
+            if (feature != null && sanitized != null)
+            {
+                feature.ReasonPhrase = sanitized;
+            }
 
             if (!string.IsNullOrEmpty(errorDescription))
             {
                 var errorBytes = Encoding.UTF8.GetBytes(errorDescription);
-                _context.Response.Body.Write(errorBytes, 0, errorBytes.Length);
+                _response.Body.Write(errorBytes, 0, errorBytes.Length);
+                _response.Body.Flush();
             }
+
+            if (LocalPathWithoutQuery.ToLowerInvariant().EndsWith(".json"))
+            {
+                _response.ContentType = "application/json";
+            }
+
+            _haveOutput = true;
         }
 
         public void WriteRedirect(string url, bool permanent)
@@ -192,8 +290,10 @@ namespace Bloom.Api
             if (_haveOutput)
                 throw new InvalidOperationException("Output already written");
 
-            _context.Response.StatusCode = permanent ? 301 : 302;
-            _context.Response.Headers["Location"] = url;
+            _response.StatusCode = permanent ? 301 : 302;
+            var encodedUrl = EncodeRedirectUrl(url);
+            _response.Headers["Location"] = encodedUrl;
+            _response.Headers["Access-Control-Allow-Origin"] = "*";
             _haveOutput = true;
         }
 
@@ -201,39 +301,36 @@ namespace Bloom.Api
         {
             if (_queryStringList == null)
             {
-                _queryStringList = new NameValueCollection();
-                foreach (var key in _context.Request.Query.Keys)
-                {
-                    var values = _context.Request.Query[key];
-                    foreach (var value in values)
-                    {
-                        _queryStringList.Add(key, value);
-                    }
-                }
+                var rawQuery = _request.QueryString.HasValue
+                    ? _request.QueryString.Value
+                    : string.Empty;
+                _queryStringList = HttpUtility.ParseQueryString(rawQuery ?? string.Empty);
             }
             return _queryStringList;
         }
 
         public NameValueCollection GetPostDataWhenFormEncoded()
         {
+            Debug.Assert(
+                RequestContentType != null
+                    && RequestContentType.StartsWith("application/x-www-form-urlencoded")
+            );
             if (_postData == null)
             {
-                _postData = new NameValueCollection();
+                if (!RequestHasEntityBody())
+                    return null;
 
-                if (
-                    _context.Request.ContentType?.Contains("application/x-www-form-urlencoded")
-                    == true
-                )
+                _postData = new NameValueCollection();
+                var pairs = GetStringContent().Split('&');
+                foreach (var pair in pairs)
                 {
-                    _context.Request.Form.TryGetValue(string.Empty, out var dummy);
-                    foreach (var key in _context.Request.Form.Keys)
-                    {
-                        var values = _context.Request.Form[key];
-                        foreach (var value in values)
-                        {
-                            _postData.Add(key, value);
-                        }
-                    }
+                    if (string.IsNullOrEmpty(pair))
+                        continue;
+                    var kvp = pair.Split('=');
+                    if (kvp.Length == 1)
+                        _postData.Add(UnescapeString(kvp[0]), string.Empty);
+                    else
+                        _postData.Add(UnescapeString(kvp[0]), UnescapeString(kvp[1]));
                 }
             }
             return _postData;
@@ -241,107 +338,223 @@ namespace Bloom.Api
 
         public NameValueCollection GetPostDataWhenSimpleJsonEncoded()
         {
-            // For Phase 2.2, this is a placeholder
-            // Full implementation would parse JSON from POST body
             if (_postDataJson == null)
             {
+                Debug.Assert(
+                    RequestContentType != null && RequestContentType.StartsWith("application/json")
+                );
+
+                if (!RequestHasEntityBody())
+                    return null;
+
                 _postDataJson = new NameValueCollection();
+                var json = GetPostJson();
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    var jsonParsed = JObject.Parse(json);
+                    foreach (var pair in jsonParsed)
+                    {
+                        _postDataJson.Add(pair.Key, pair.Value?.ToString());
+                    }
+                }
             }
             return _postDataJson;
         }
 
         public string GetPostJson()
         {
-            // Read JSON from POST body
-            using (
-                var reader = new StreamReader(
-                    _context.Request.Body,
-                    Encoding.UTF8,
-                    true,
-                    1024,
-                    true
-                )
-            )
-            {
-                return reader.ReadToEnd();
-            }
+            Debug.Assert(
+                RequestContentType != null
+                    && RequestContentType.ToLowerInvariant().Contains("application/json"),
+                "Expected content-type application/json"
+            );
+            return GetPostStringInner();
         }
 
         public string GetPostString(bool unescape = true)
         {
-            using (
-                var reader = new StreamReader(
-                    _context.Request.Body,
-                    Encoding.UTF8,
-                    true,
-                    1024,
-                    true
-                )
-            )
-            {
-                var content = reader.ReadToEnd();
-                if (unescape)
-                {
-                    content = HttpUtility.UrlDecode(content);
-                }
-                return content;
-            }
+            Debug.Assert(
+                RequestContentType != null
+                    && RequestContentType.ToLowerInvariant().Contains("text/plain"),
+                "Expected content-type text/plain"
+            );
+            return GetPostStringInner(unescape);
         }
 
         public void ExternalLinkSucceeded()
         {
-            // Placeholder for Phase 2.2
-            // Would record analytics about external links
+            _response.StatusCode = 200;
+            _haveOutput = true;
         }
 
         public string DoNotCacheFolder
         {
-            set
-            {
-                // Placeholder for Phase 2.2
-                // Would configure caching behavior
-            }
+            set { _doNotCacheFolder = value?.Replace('\\', '/'); }
         }
 
         public byte[] GetRawPostData()
         {
-            using (var ms = new MemoryStream())
+            if (_rawPostData == null)
             {
-                _context.Request.Body.CopyTo(ms);
-                return ms.ToArray();
+                if (!RequestHasEntityBody())
+                    return null;
+
+                EnableBuffering();
+                _request.Body.Position = 0;
+                using (var ms = new MemoryStream())
+                {
+                    _request.Body.CopyTo(ms);
+                    _rawPostData = ms.ToArray();
+                }
+                _request.Body.Position = 0;
             }
+            return _rawPostData;
         }
 
         public Stream GetRawPostStream()
         {
-            return _context.Request.Body;
+            var data = GetRawPostData();
+            if (data == null)
+                return null;
+            return new MemoryStream(data, writable: false);
         }
 
         #endregion
 
         #region Private Helpers
 
-        private string GetContentType(string filePath)
+        private bool IsHeadRequest()
         {
-            var ext = Path.GetExtension(filePath).ToLowerInvariant();
-            return ext switch
+            return string.Equals(_request.Method, "HEAD", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool RequestHasEntityBody()
+        {
+            if ((_request.ContentLength ?? 0) > 0)
+                return true;
+
+            EnableBuffering();
+            return _request.Body.Length > 0;
+        }
+
+        private void EnableBuffering()
+        {
+            if (!_request.Body.CanSeek)
             {
-                ".html" => "text/html",
-                ".htm" => "text/html",
-                ".css" => "text/css",
-                ".js" => "application/javascript",
-                ".json" => "application/json",
-                ".jpg" => "image/jpeg",
-                ".jpeg" => "image/jpeg",
-                ".png" => "image/png",
-                ".gif" => "image/gif",
-                ".svg" => "image/svg+xml",
-                ".ico" => "image/x-icon",
-                ".pdf" => "application/pdf",
-                ".txt" => "text/plain",
-                ".xml" => "application/xml",
-                _ => "application/octet-stream",
-            };
+                _request.EnableBuffering();
+            }
+        }
+
+        private string GetStringContent()
+        {
+            if (_stringContent == null)
+            {
+                if (!RequestHasEntityBody())
+                    return string.Empty;
+
+                EnableBuffering();
+                _request.Body.Position = 0;
+                using (
+                    var reader = new StreamReader(_request.Body, Encoding.UTF8, true, 1024, true)
+                )
+                {
+                    _stringContent = reader.ReadToEnd();
+                }
+                _request.Body.Position = 0;
+            }
+            return _stringContent;
+        }
+
+        private string GetPostStringInner(bool unescape = true)
+        {
+            if (!RequestHasEntityBody())
+                return string.Empty;
+
+            var stringContent = GetStringContent();
+            if (unescape)
+                return UnescapeString(stringContent);
+            return stringContent;
+        }
+
+        private static string UnescapeString(string value)
+        {
+            return Uri.UnescapeDataString(value.Replace('+', ' '));
+        }
+
+        readonly HashSet<string> _cacheableExtensions = new HashSet<string>(
+            new[] { ".js", ".css", ".jpg", ".jpeg", ".svg", ".png", ".woff2" }
+        );
+
+        private bool ShouldCache(string path, string originalPath)
+        {
+            bool bypassCache = false;
+#if DEBUG
+            bypassCache = true;
+#endif
+            if (bypassCache)
+                return false;
+
+            if (path.EndsWith(ProblemReportApi.ScreenshotName))
+                return false;
+            if (string.IsNullOrEmpty(_doNotCacheFolder))
+                return false;
+
+            var folderToCheck = (originalPath ?? path).Replace('\\', '/');
+            if (folderToCheck.StartsWith(_doNotCacheFolder))
+                return false;
+            if (
+                folderToCheck.StartsWith(
+                    Bloom.Publish.Epub.EpubMaker.EpubExportRootFolder.Replace('\\', '/')
+                )
+            )
+                return false;
+            if (folderToCheck.Contains(PublishApi.kStagingFolder))
+                return false;
+            if (BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(Path.GetFileName(path)))
+                return false;
+            if (RawUrl.StartsWith("/book-preview/"))
+                return false;
+            if (RawUrl.EndsWith("no-cache=true"))
+                return false;
+
+            return _cacheableExtensions.Contains(Path.GetExtension(path));
+        }
+
+        private static string EncodeRedirectUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+                return url;
+
+            if (Uri.TryCreate(url, UriKind.Absolute, out var absolute))
+                return absolute.AbsoluteUri;
+
+            if (Uri.TryCreate(s_dummyBaseUri, url, out var combined))
+            {
+                if (url.StartsWith("?", StringComparison.Ordinal))
+                    return combined.Query + combined.Fragment;
+                if (url.StartsWith("#", StringComparison.Ordinal))
+                    return combined.Fragment;
+
+                var pathAndQuery = combined.PathAndQuery;
+                if (!url.StartsWith("/", StringComparison.Ordinal))
+                    pathAndQuery = pathAndQuery.TrimStart('/');
+                return string.Concat(pathAndQuery, combined.Fragment);
+            }
+
+            return Uri.EscapeDataString(url);
+        }
+
+        private string SanitizeForAscii(string errorDescription)
+        {
+            var builder = new StringBuilder();
+            foreach (var ch in errorDescription)
+            {
+                if ((ushort)ch < 32 && ch != '\t' || (ushort)ch >= 127)
+                    builder.Append("?");
+                else
+                    builder.Append(ch);
+            }
+            return builder.ToString();
         }
 
         #endregion
@@ -350,11 +563,11 @@ namespace Bloom.Api
 
         public void Dispose()
         {
-            // HttpContext is managed by ASP.NET Core, so we don't dispose it
-            // But we can clear our state
             _queryStringList = null;
             _postData = null;
             _postDataJson = null;
+            _stringContent = null;
+            _rawPostData = null;
         }
 
         #endregion

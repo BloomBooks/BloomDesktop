@@ -43,6 +43,7 @@ namespace Bloom.Api
     {
         void RegisterThreadBlocking();
         void RegisterThreadUnblocked();
+        void EnsureListening();
 
         // ENHANCE: Add other methods as needed
     }

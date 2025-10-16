@@ -19,6 +19,7 @@ using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Newtonsoft.Json.Linq;
 using SIL.Extensions;
@@ -721,7 +722,10 @@ namespace Bloom.web.controllers
                             dlg.Height = height;
 
                             // ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
-                            BloomServer._theOneInstance.RegisterThreadBlocking();
+                            (
+                                BloomServer._theOneInstance as IBloomServer
+                                ?? KestrelBloomServer._theOneInstance
+                            )?.RegisterThreadBlocking();
                             try
                             {
                                 // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
@@ -729,7 +733,10 @@ namespace Bloom.web.controllers
                             }
                             finally
                             {
-                                BloomServer._theOneInstance.RegisterThreadUnblocked();
+                                (
+                                    BloomServer._theOneInstance as IBloomServer
+                                    ?? KestrelBloomServer._theOneInstance
+                                )?.RegisterThreadUnblocked();
                                 _additionalPathsToInclude = null;
                             }
                         }
@@ -878,7 +885,7 @@ namespace Bloom.web.controllers
                 );
             });
 
-            if (BloomServer._theOneInstance == null)
+            if (BloomServer._theOneInstance == null && KestrelBloomServer._theOneInstance == null)
             {
                 // We got an error really early, before we can use HTML dialogs. Report using the old dialog.
                 // Hopefully we're still on the one main thread.

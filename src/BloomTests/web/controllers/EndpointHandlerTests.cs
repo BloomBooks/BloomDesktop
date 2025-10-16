@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using Bloom.Api;
 using Bloom.Book;
+using BloomTests;
 using NUnit.Framework;
 
 namespace BloomTests.web
@@ -9,7 +10,7 @@ namespace BloomTests.web
     public class EndpointHandlerTests
     {
         public static readonly object _portMonitor = new object();
-        private BloomServer _server;
+        private IApiTestServer _server;
 
         [SetUp]
         public void Setup()
@@ -17,7 +18,7 @@ namespace BloomTests.web
             // as long as we're only using one, fixed port number, we need to prevent unit test runner
             // from running these tests in parallel.
             Monitor.Enter(_portMonitor);
-            _server = new BloomServer(new BookSelection());
+            _server = ApiTestServerFactory.Create(new BookSelection());
         }
 
         [TearDown]

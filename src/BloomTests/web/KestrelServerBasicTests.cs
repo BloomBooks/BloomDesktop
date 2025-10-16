@@ -2,6 +2,7 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -114,9 +115,18 @@ namespace BloomTests.web
             _server.EnsureListening();
 
             // Verify
-            Assert.AreEqual(8089, KestrelBloomServer.portForHttp);
+            var assignedPort = KestrelBloomServer.portForHttp;
+            Assert.GreaterOrEqual(assignedPort, 8089);
+            Assert.AreEqual(
+                1,
+                assignedPort % 2,
+                "Expected fallback ports to preserve odd-number pattern."
+            );
             Assert.IsTrue(KestrelBloomServer.ServerIsListening);
-            StringAssert.Contains("8089", KestrelBloomServer.ServerUrl);
+            StringAssert.Contains(
+                assignedPort.ToString(CultureInfo.InvariantCulture),
+                KestrelBloomServer.ServerUrl
+            );
         }
 
         [Test]
@@ -185,7 +195,12 @@ namespace BloomTests.web
 
             // Verify
             Assert.AreNotEqual(0, portAfter);
-            Assert.AreEqual(8089, portAfter);
+            Assert.GreaterOrEqual(portAfter, 8089);
+            Assert.AreEqual(
+                1,
+                portAfter % 2,
+                "Expected fallback ports to preserve odd-number pattern."
+            );
         }
 
         #endregion

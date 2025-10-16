@@ -11,6 +11,7 @@ using Bloom.Collection;
 using Bloom.TeamCollection;
 using Bloom.web;
 using BloomTemp;
+using BloomTests;
 using BloomTests.DataBuilders;
 using Moq;
 using Newtonsoft.Json;
@@ -234,12 +235,12 @@ namespace BloomTests.TeamCollection
     public class TeamCollectionApiServerTests
     {
         // FYI: If the tests are run in parallel, you might want some locking, but it doesn't seem needed right now.
-        private BloomServer _server;
+        private IApiTestServer _server;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            _server = new BloomServer(new BookSelection());
+            _server = ApiTestServerFactory.Create(new BookSelection());
         }
 
         [SetUp]

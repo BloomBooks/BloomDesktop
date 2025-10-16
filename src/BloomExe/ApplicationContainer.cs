@@ -8,6 +8,7 @@ using Bloom.Book;
 using Bloom.CollectionChoosing;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
+using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
 
@@ -52,11 +53,20 @@ namespace Bloom
 
             var bookRenameEvent = new BookRenamedEvent();
             builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
-            builder.Register<BookSelection>(c => new BookSelection()).SingleInstance();
+            var bookSelection = new BookSelection();
+            builder.Register(c => bookSelection).SingleInstance();
+
+            // Create BloomApiHandler at application level
+            var apiHandler = new BloomApiHandler(bookSelection);
+            builder.Register(c => apiHandler).SingleInstance();
+
+            // Use KestrelBloomServer (ASP.NET Core) instead of legacy HttpListener-based BloomServer
             builder
-                .Register<BloomServer>(c => new BloomServer(
+                .Register<IBloomServer>(c => new KestrelBloomServer(
                     new RuntimeImageProcessor(bookRenameEvent),
-                    c.Resolve<BookSelection>()
+                    bookSelection,
+                    fileLocator: null, // Will be set later via Program.OptimizedFileLocator
+                    apiHandler: apiHandler
                 ))
                 .SingleInstance();
 
@@ -84,10 +94,10 @@ namespace Bloom
             // handlers could all be registered here (and created by the ApplicationContainer). It's likely
             // that a lot more could already be moved, but so far we just did enough for the handful of dialogs
             // that need to work independent of a project.
-            var server = _container.Resolve<BloomServer>();
-            _container.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
-            _container.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(server.ApiHandler);
-            server.ApiHandler.RecordApplicationLevelHandlers();
+            var server = _container.Resolve<IBloomServer>();
+            _container.Resolve<CommonApi>().RegisterWithApiHandler(apiHandler);
+            _container.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(apiHandler);
+            apiHandler.RecordApplicationLevelHandlers();
         }
 
         private void OnApplicationExit(object sender, EventArgs e)
@@ -108,7 +118,7 @@ namespace Bloom
 
         internal ProblemReportApi ProblemReportApi => _container.Resolve<ProblemReportApi>();
 
-        public BloomServer BloomServer => _container.Resolve<BloomServer>();
+        public IBloomServer BloomServer => _container.Resolve<IBloomServer>();
 
         public void Dispose()
         {

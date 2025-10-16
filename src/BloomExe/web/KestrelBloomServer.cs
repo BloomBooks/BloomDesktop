@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -19,6 +20,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -53,6 +55,27 @@ namespace Bloom.web
         private readonly BookSelection _bookSelection;
         private readonly BloomFileLocator _fileLocator;
         private readonly BloomApiHandler _apiHandler;
+        public BloomApiHandler ApiHandler
+        {
+            get
+            {
+                if (_apiHandler != null)
+                    return _apiHandler;
+
+                if (_host != null)
+                {
+                    var resolvedHandler = _host.Services.GetService<BloomApiHandler>();
+                    if (resolvedHandler != null)
+                        return resolvedHandler;
+                }
+
+                throw new InvalidOperationException(
+                    "BloomApiHandler is not available. Provide one via the constructor before accessing it."
+                );
+            }
+        }
+
+        public CollectionSettings CurrentCollectionSettings { get; private set; }
 
         #endregion
 
@@ -76,6 +99,12 @@ namespace Bloom.web
             _fileLocator = fileLocator;
             _apiHandler = apiHandler;
             _theOneInstance = this;
+        }
+
+        public void SetCollectionSettingsDuringInitialization(CollectionSettings collectionSettings)
+        {
+            CurrentCollectionSettings = collectionSettings;
+            ApiHandler.SetCollectionSettingsDuringInitialization(collectionSettings);
         }
 
         #endregion
@@ -145,36 +174,35 @@ namespace Bloom.web
                     .ConfigureWebHostDefaults(webBuilder =>
                     {
                         webBuilder
-                            .UseKestrel(options => options.Listen(IPAddress.Loopback, portForHttp))
+                            .ConfigureServices(services =>
+                            {
+                                // Add routing services for endpoint routing to work
+                                services.AddRouting();
+                            })
+                            .ConfigureKestrel(serverOptions =>
+                            {
+                                // Existing IRequestInfo implementations perform synchronous writes.
+                                // AllowSynchronousIO keeps that behavior working while we migrate APIs.
+                                serverOptions.AllowSynchronousIO = true;
+                                serverOptions.ListenLocalhost(portForHttp);
+                            })
                             .Configure(app =>
                             {
-                                // Register API handlers with BloomApiHandler (Phase 4.1)
                                 var apiHandler =
                                     app.ApplicationServices.GetRequiredService<BloomApiHandler>();
-                                
-                                // Clear existing handlers to avoid duplicate registrations
-                                // (important for tests that create multiple server instances)
-                                apiHandler.ClearEndpointHandlers();
-                                
                                 ServiceCollectionExtensions.RegisterApiHandlers(
                                     app.ApplicationServices,
                                     apiHandler,
                                     isApplicationLevel: true
                                 );
 
-                                // Register recursive request tracking middleware (Phase 2.3)
+                                app.UseRouting();
+
                                 app.UseKestrelRecursiveRequestMiddleware();
-
-                                // Register the API middleware (Phase 2.2)
                                 app.UseMiddleware<KestrelApiMiddleware>();
-
-                                // Register CSS processing middleware (Phase 3.2)
                                 app.UseMiddleware<KestrelCssProcessingMiddleware>();
-
-                                // Register static file middleware (Phase 6)
                                 app.UseMiddleware<KestrelStaticFileMiddleware>();
 
-                                app.UseRouting();
                                 app.UseEndpoints(endpoints =>
                                 {
                                     endpoints.MapGet(
@@ -196,9 +224,6 @@ namespace Bloom.web
                                             await context.Response.WriteAsync("OK");
                                         }
                                     );
-
-                                    // Additional middleware and endpoints for future phases
-                                    // Phase 2.2+: in-memory pages, images, CSS processing
                                 });
                             });
                     });
@@ -209,9 +234,23 @@ namespace Bloom.web
                 // Wait up to 5 seconds for the server to start
                 if (startTask.Wait(TimeSpan.FromSeconds(5)))
                 {
-                    // Give the server a moment to be fully ready to accept connections
-                    Thread.Sleep(100);
-                    return true;
+                    // Check if the task completed successfully (no exceptions)
+                    if (startTask.IsCompletedSuccessfully)
+                    {
+                        // Give the server a moment to be fully ready to accept connections
+                        Thread.Sleep(100);
+                        return true;
+                    }
+                    else
+                    {
+                        // StartAsync completed but with an error
+                        Debug.WriteLine(
+                            $"[ERROR] StartAsync failed: {startTask.Exception?.GetBaseException()?.Message}"
+                        );
+                        _host?.Dispose();
+                        _host = null;
+                        return false;
+                    }
                 }
 
                 // Timeout waiting for server to start
@@ -250,14 +289,34 @@ namespace Bloom.web
                     )
                     {
                         var task = client.GetAsync($"{ServerUrl}/testconnection");
-                        task.Wait(TimeSpan.FromSeconds(3));
-                        
-                        if (task.IsCompleted && task.Result.IsSuccessStatusCode)
+                        var completed = task.Wait(TimeSpan.FromSeconds(3));
+                        Debug.WriteLine(
+                            $"[VERIFY] Attempt {i + 1}: completed={completed}, status={task.Status}"
+                        );
+
+                        if (!completed)
                         {
+                            lastException = new TimeoutException(
+                                "HTTP request did not complete in allotted time"
+                            );
+                        }
+                        else if (task.IsFaulted)
+                        {
+                            lastException =
+                                task.Exception?.GetBaseException()
+                                ?? new Exception("HTTP request faulted");
+                        }
+                        else if (task.Result.IsSuccessStatusCode)
+                        {
+                            Debug.WriteLine("[VERIFY] Server responded successfully.");
                             return; // Success!
                         }
-                        
-                        lastException = new Exception("Server returned non-success status code");
+                        else
+                        {
+                            lastException = new Exception(
+                                $"Server returned status code {(int)task.Result.StatusCode}"
+                            );
+                        }
                     }
                 }
                 catch (Exception e)
