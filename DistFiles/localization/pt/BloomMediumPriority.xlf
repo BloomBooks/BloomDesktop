@@ -36,9 +36,9 @@
         <target xml:lang="pt-PT" state="final">Adicione itens que demonstram que o aluno respondeu corretamente. Por exemplo, pode adicionar a palavra "Certo!" com um GIF de uma galinha dançando.</target>
         <note>ID: EditTab.Toolbox.DragActivity.CorrectInstructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.ObjectsToDrag">
+      <trans-unit id="EditTab.Toolbox.DragActivity.ObjectsToDrag" approved="yes">
         <source xml:lang="en">Objects to Drag</source>
-        <target xml:lang="pt-PT" state="translated">Objetos para Arrastar</target>
+        <target xml:lang="pt-PT" state="final">Objetos para Arrastar</target>
         <note>ID: EditTab.Toolbox.DragActivity.ObjectsToDrag</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Draggability">
@@ -92,9 +92,9 @@
         <target xml:lang="pt-PT" state="final">Instruções</target>
         <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Text">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Text" approved="yes">
         <source xml:lang="en">Text</source>
-        <target xml:lang="pt-PT" state="translated">Texto</target>
+        <target xml:lang="pt-PT" state="final">Texto</target>
         <note>ID: EditTab.Toolbox.DragActivity.Text</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Letter" approved="yes">
@@ -428,9 +428,9 @@
         <target xml:lang="pt-PT" state="translated">Isso é desativado porque não há uma gravação completa da caixa de texto</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true">
         <source xml:lang="en">Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.</source>
-        <target xml:lang="pt-PT" state="final">Clique aqui para inserir o símbolo "|" no texto na posição atual do cursor. Bloom entende com este símbolo que durante a reprodução de áudio, é para separar o segmento sendo destacado naquele lugar. Também pode simplesmente digitar o símbolo "|" usando o seu teclado.</target>
+        <target xml:lang="pt-PT" state="translated">Clique aqui para inserir o símbolo "|" no texto na posição atual do cursor. Bloom entende com este símbolo que durante a reprodução de áudio, é para separar o segmento sendo destacado naquele lugar. Também pode simplesmente digitar o símbolo "|" usando o seu teclado.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition" sil:dynamic="true" approved="yes">
