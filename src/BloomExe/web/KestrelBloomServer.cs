@@ -9,16 +9,12 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
-
 using DesktopAnalytics;
-
 using L10NSharp;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -26,11 +22,10 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 
-namespace Bloom.Api
+namespace Bloom.web
 {
     /// <summary>
     /// ASP.NET Kestrel-based implementation of the Bloom local HTTP server.
@@ -41,7 +36,8 @@ namespace Bloom.Api
         #region Static Properties
 
         public static int portForHttp;
-        public static string ServerUrl => "http://localhost:" + portForHttp.ToString(CultureInfo.InvariantCulture);
+        public static string ServerUrl =>
+            "http://localhost:" + portForHttp.ToString(CultureInfo.InvariantCulture);
         public static string ServerUrlEndingInSlash => ServerUrl + "/";
         public static string ServerUrlWithBloomPrefixEndingInSlash => ServerUrl + "/bloom/";
         public static bool ServerIsListening { get; internal set; }
@@ -72,7 +68,8 @@ namespace Bloom.Api
             RuntimeImageProcessor cache,
             BookSelection bookSelection,
             BloomFileLocator fileLocator,
-            BloomApiHandler apiHandler = null)
+            BloomApiHandler apiHandler = null
+        )
         {
             _cache = cache;
             _bookSelection = bookSelection;
@@ -107,7 +104,8 @@ namespace Bloom.Api
             if (!success)
             {
                 CheckForZoneAlarm();
-                var message = $"Could not start the Bloom server. Attempted {kNumberOfPortsToTry} ports.";
+                var message =
+                    $"Could not start the Bloom server. Attempted {kNumberOfPortsToTry} ports.";
                 ErrorReport.NotifyUserOfProblem(message);
                 throw new Exception(message);
             }
@@ -139,23 +137,34 @@ namespace Bloom.Api
                             .UseKestrel(options => options.Listen(IPAddress.Loopback, portForHttp))
                             .Configure(app =>
                             {
+                                // Register recursive request tracking middleware (Phase 2.3)
+                                app.UseKestrelRecursiveRequestMiddleware();
+
                                 // Register the API middleware (Phase 2.2)
                                 app.UseMiddleware<KestrelApiMiddleware>();
 
                                 app.UseRouting();
                                 app.UseEndpoints(endpoints =>
                                 {
-                                    endpoints.MapGet("/", async context =>
-                                    {
-                                        context.Response.ContentType = "text/html";
-                                        await context.Response.WriteAsync("<html><body><h1>Bloom Server</h1></body></html>");
-                                    });
+                                    endpoints.MapGet(
+                                        "/",
+                                        async context =>
+                                        {
+                                            context.Response.ContentType = "text/html";
+                                            await context.Response.WriteAsync(
+                                                "<html><body><h1>Bloom Server</h1></body></html>"
+                                            );
+                                        }
+                                    );
 
-                                    endpoints.MapGet("/testconnection", async context =>
-                                    {
-                                        context.Response.ContentType = "text/plain";
-                                        await context.Response.WriteAsync("OK");
-                                    });
+                                    endpoints.MapGet(
+                                        "/testconnection",
+                                        async context =>
+                                        {
+                                            context.Response.ContentType = "text/plain";
+                                            await context.Response.WriteAsync("OK");
+                                        }
+                                    );
 
                                     // Additional middleware and endpoints for future phases
                                     // Phase 2.2+: in-memory pages, images, CSS processing
@@ -193,7 +202,12 @@ namespace Bloom.Api
         {
             try
             {
-                using (var client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(2) })
+                using (
+                    var client = new System.Net.Http.HttpClient
+                    {
+                        Timeout = TimeSpan.FromSeconds(2),
+                    }
+                )
                 {
                     var result = client.GetAsync($"{ServerUrl}/testconnection").Result;
                     if (!result.IsSuccessStatusCode)
@@ -271,12 +285,15 @@ namespace Bloom.Api
             try
             {
                 // Check if ZoneAlarm is running
-                var zoneAlarmProcess = System.Diagnostics.Process.GetProcessesByName("ZoneAlarm").FirstOrDefault();
+                var zoneAlarmProcess = System
+                    .Diagnostics.Process.GetProcessesByName("ZoneAlarm")
+                    .FirstOrDefault();
                 if (zoneAlarmProcess != null)
                 {
                     ErrorReport.NotifyUserOfProblem(
-                        "The ZoneAlarm firewall may be blocking the Bloom server. " +
-                        "Please check ZoneAlarm settings or try disabling it temporarily.");
+                        "The ZoneAlarm firewall may be blocking the Bloom server. "
+                            + "Please check ZoneAlarm settings or try disabling it temporarily."
+                    );
                 }
             }
             catch

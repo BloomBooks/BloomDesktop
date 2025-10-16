@@ -16,8 +16,8 @@ using Moq;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.Reporting;
+using ApiHttpMethods = Bloom.Api.HttpMethods; // Disambiguate from ASP.NET Core
 using TemporaryFolder = SIL.TestUtilities.TemporaryFolder;
-using ApiHttpMethods = Bloom.Api.HttpMethods;  // Disambiguate from ASP.NET Core
 
 namespace BloomTests.web
 {
@@ -144,8 +144,16 @@ namespace BloomTests.web
             // Setup
             var context = CreateMockHttpContext("/some-other-path", "GET");
             var nextCalled = false;
-            RequestDelegate next = (ctx) => { nextCalled = true; return Task.CompletedTask; };
-            var middleware = new KestrelApiMiddleware(next, _mockLogger.Object, _mockApiHandler.Object);
+            RequestDelegate next = (ctx) =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            };
+            var middleware = new KestrelApiMiddleware(
+                next,
+                _mockLogger.Object,
+                _mockApiHandler.Object
+            );
 
             // Execute
             await middleware.InvokeAsync(context);
@@ -160,8 +168,12 @@ namespace BloomTests.web
             // Setup - Test that API requests are routed to the handler
             var context = CreateMockHttpContext("/bloom/api/test", "GET");
             var nextCalled = false;
-            RequestDelegate next = (ctx) => { nextCalled = true; return Task.CompletedTask; };
-            
+            RequestDelegate next = (ctx) =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            };
+
             // Use a real BloomApiHandler for this test
             var realApiHandler = new BloomApiHandler(_bookSelection);
             var middleware = new KestrelApiMiddleware(next, _mockLogger.Object, realApiHandler);
@@ -170,10 +182,17 @@ namespace BloomTests.web
             await middleware.InvokeAsync(context);
 
             // Verify - Next should not be called since this is an API request
-            Assert.IsFalse(nextCalled, "Next middleware should not have been called for API request");
-            
+            Assert.IsFalse(
+                nextCalled,
+                "Next middleware should not have been called for API request"
+            );
+
             // The response should be 404 since no handlers are registered, which means the middleware worked
-            Assert.AreEqual(404, context.Response.StatusCode, "Should return 404 for unhandled API requests");
+            Assert.AreEqual(
+                404,
+                context.Response.StatusCode,
+                "Should return 404 for unhandled API requests"
+            );
         }
 
         [Test]
@@ -182,8 +201,12 @@ namespace BloomTests.web
             // Setup - Test error handling when handler is null
             var context = CreateMockHttpContext("/bloom/api/test", "GET");
             var nextCalled = false;
-            RequestDelegate next = (ctx) => { nextCalled = true; return Task.CompletedTask; };
-            
+            RequestDelegate next = (ctx) =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            };
+
             // Use null handler to trigger exception
             var middleware = new KestrelApiMiddleware(next, _mockLogger.Object, null);
 
@@ -201,8 +224,12 @@ namespace BloomTests.web
             // Setup - Test that the API path is extracted correctly
             var context = CreateMockHttpContext("/bloom/api/some/deep/path", "GET");
             var nextCalled = false;
-            RequestDelegate next = (ctx) => { nextCalled = true; return Task.CompletedTask; };
-            
+            RequestDelegate next = (ctx) =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            };
+
             var realApiHandler = new BloomApiHandler(_bookSelection);
             var middleware = new KestrelApiMiddleware(next, _mockLogger.Object, realApiHandler);
 
@@ -210,7 +237,10 @@ namespace BloomTests.web
             await middleware.InvokeAsync(context);
 
             // Verify - Should process as API request
-            Assert.IsFalse(nextCalled, "Next middleware should not have been called for API request");
+            Assert.IsFalse(
+                nextCalled,
+                "Next middleware should not have been called for API request"
+            );
         }
 
         #endregion
@@ -220,7 +250,7 @@ namespace BloomTests.web
         private HttpContext CreateMockHttpContext(string path, string method)
         {
             var context = new DefaultHttpContext();
-            
+
             // Parse path and query
             var parts = path.Split('?');
             var pathPart = parts[0];
@@ -228,7 +258,7 @@ namespace BloomTests.web
 
             context.Request.Path = pathPart;
             context.Request.Method = method;
-            
+
             if (!string.IsNullOrEmpty(queryPart))
             {
                 context.Request.QueryString = new QueryString("?" + queryPart);

@@ -11,6 +11,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
+using Bloom.web;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
 using Moq;
@@ -102,7 +103,12 @@ namespace BloomTests.web
         {
             // Setup
             var mockApiHandler = new Mock<BloomApiHandler>();
-            _server = new KestrelBloomServer(_imageProcessor, _bookSelection, _fileLocator, mockApiHandler.Object);
+            _server = new KestrelBloomServer(
+                _imageProcessor,
+                _bookSelection,
+                _fileLocator,
+                mockApiHandler.Object
+            );
 
             // Execute
             _server.EnsureListening();
@@ -118,7 +124,12 @@ namespace BloomTests.web
         {
             // Setup
             var mockApiHandler = new Mock<BloomApiHandler>();
-            _server = new KestrelBloomServer(_imageProcessor, _bookSelection, _fileLocator, mockApiHandler.Object);
+            _server = new KestrelBloomServer(
+                _imageProcessor,
+                _bookSelection,
+                _fileLocator,
+                mockApiHandler.Object
+            );
 
             // Execute
             _server.EnsureListening();
@@ -278,9 +289,16 @@ namespace BloomTests.web
             try
             {
                 // Execute
-                using (var client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(5) })
+                using (
+                    var client = new System.Net.Http.HttpClient
+                    {
+                        Timeout = TimeSpan.FromSeconds(5),
+                    }
+                )
                 {
-                    string html = client.GetStringAsync(KestrelBloomServer.ServerUrlEndingInSlash).Result;
+                    string html = client
+                        .GetStringAsync(KestrelBloomServer.ServerUrlEndingInSlash)
+                        .Result;
 
                     // Verify
                     Assert.That(html, Does.Contain("Bloom Server") | Does.Contain("reactRoot"));

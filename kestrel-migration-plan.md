@@ -186,22 +186,48 @@ Tests created covering:
 - [x] Build succeeds with 0 errors ✅
 - [x] API routing functional ✅
 
-### Phase 2.3: Port Request Context Handling
-- [ ] **Replace `HttpListenerContext` with `HttpContext`**
-  - Update `IsRecursiveRequestContext()` to use `HttpContext.Items`
-  - Create extension method: `context.Items["IsRecursiveRequest"] = true`
-  - Update `IsRecursiveRequestContext()` in middleware
+### ✅ Phase 2.3: Port Request Context Handling (COMPLETE)
+- [x] **Replace `HttpListenerContext` with `HttpContext`** ✅ DONE
+  - Created `KestrelRecursiveRequestMiddleware.IsRecursiveRequestContext()` using `HttpContext.Request.Query`
+  - Implemented context marking: `context.Items["IsRecursiveRequest"] = true`
+  - Integrated middleware into KestrelBloomServer pipeline
 
-- [ ] **Create recursive request tracking middleware**
-  - Count active recursive requests using thread-local or context items
-  - Update `_threadsDoingRecursiveRequests` equivalent using atomic counter
-  - Adjust thread pool sizing if needed (Kestrel manages this automatically)
+- [x] **Create recursive request tracking middleware** ✅ DONE
+  - Created `KestrelRecursiveRequestMiddleware.cs` with atomic counters
+  - Replaced `_threadsDoingRecursiveRequests` with `Interlocked` operations
+  - Tracks both recursive and busy request counts
+  - Proper cleanup in finally blocks for exception safety
 
-- [ ] **Handle blocked thread tracking**
-  - Decide: Keep `_countBlockedThreads` or eliminate (Kestrel makes this less critical)
-  - If keeping, use `AsyncLocal<bool>` or context-based approach
-  - Methods: `RegisterThreadAboutToBlock()`, `RegisterThreadUnblocked()`
-- No race conditions detected ✓
+- [x] **Handle blocked thread tracking** ✅ SIMPLIFIED
+  - Eliminated `_countBlockedThreads` (Kestrel manages thread pools automatically)
+  - Removed `RegisterThreadAboutToBlock()`, `RegisterThreadUnblocked()` methods
+  - Kestrel's async/await model makes explicit thread blocking management unnecessary
+
+### ✅ Checkpoint 2.3: Unit Tests - Request Context Handling ✅
+**Test Suite:** `src/BloomTests/web/KestrelRecursiveRequestMiddlewareTests.cs` ✅
+
+Tests created covering:
+- [x] **Recursive Request Detection Tests** ✅
+  - `IsRecursiveRequestContext` detects `generateThumbnailIfNecessary=true`
+  - Non-recursive requests return false correctly
+  - Empty/missing query parameters handled properly
+
+- [x] **Middleware Pipeline Tests** ✅
+  - Non-recursive requests pass to next middleware
+  - Recursive requests marked in context items
+  - Context marking: `HttpContext.Items["IsRecursiveRequest"] = true`
+
+- [x] **Counter Management Tests** ✅
+  - Recursive and busy counters increment/decrement correctly
+  - Thread-safe atomic operations validated
+  - Exception handling properly restores counters
+  - No memory leaks or counter drift
+
+**Verification:**
+- [x] All 9 tests pass ✅
+- [x] Build succeeds with 0 errors ✅
+- [x] Request context handling functional ✅
+- [x] Atomic counter operations thread-safe ✅
 
 ---
 

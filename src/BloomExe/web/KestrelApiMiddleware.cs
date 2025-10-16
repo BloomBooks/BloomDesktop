@@ -13,7 +13,7 @@ namespace Bloom.Api
     /// <summary>
     /// ASP.NET Core middleware for handling /bloom/api/* requests.
     /// Phase 2.2 Implementation: Minimal API routing that delegates to BloomApiHandler.
-    /// 
+    ///
     /// This middleware:
     /// 1. Intercepts requests to /bloom/api/*
     /// 2. Creates RequestInfo adapter for the HTTP context
@@ -29,7 +29,8 @@ namespace Bloom.Api
         public KestrelApiMiddleware(
             RequestDelegate next,
             ILogger<KestrelApiMiddleware> logger,
-            BloomApiHandler apiHandler)
+            BloomApiHandler apiHandler
+        )
         {
             _next = next;
             _logger = logger;

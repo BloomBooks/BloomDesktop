@@ -30,7 +30,6 @@ using SIL.Xml;
 using SIL.CommandLineProcessing;
 #endif
 
-
 namespace Bloom.Publish.Epub
 {
     /// <summary>

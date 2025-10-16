@@ -452,8 +452,8 @@ namespace Bloom.Book
                     }
                 }
 
-                _bookDom.RawDom
-                    .SelectSingleNode("//body")
+                _bookDom
+                    .RawDom.SelectSingleNode("//body")
                     .InsertAfter(newPageDiv, divBeforeNextFrontMatterPage);
                 divBeforeNextFrontMatterPage = newPageDiv;
 

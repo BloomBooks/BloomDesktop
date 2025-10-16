@@ -15,7 +15,7 @@ namespace Bloom.Api
     /// <summary>
     /// Adapter that implements IRequestInfo for Kestrel/ASP.NET Core HttpContext.
     /// Phase 2.2 Implementation: Minimal implementation for API request handling.
-    /// 
+    ///
     /// This adapter wraps HttpContext to provide the IRequestInfo interface,
     /// allowing existing BloomApiHandler code to work with Kestrel without modification.
     /// </summary>
@@ -42,7 +42,7 @@ namespace Bloom.Api
                 var path = _context.Request.Path.Value;
                 var queryStart = path.IndexOf("?", StringComparison.Ordinal);
                 var urlToDecode = queryStart == -1 ? path : path.Substring(0, queryStart);
-                
+
                 // Handle URL decoding (same as original RequestInfo to avoid + sign issues)
                 var pathWithoutLiteralPlusSigns = urlToDecode.Replace("+", "%2B");
                 return HttpUtility.UrlDecode(pathWithoutLiteralPlusSigns);
@@ -57,7 +57,8 @@ namespace Bloom.Api
         public string ResponseContentType
         {
             get { return _responseContentType; }
-            set { 
+            set
+            {
                 _responseContentType = value;
                 _context.Response.ContentType = value;
             }
@@ -65,8 +66,8 @@ namespace Bloom.Api
 
         public string RawUrl
         {
-            get 
-            { 
+            get
+            {
                 var path = _context.Request.Path.Value;
                 var queryString = _context.Request.QueryString.Value;
                 return path + queryString;
@@ -89,7 +90,7 @@ namespace Bloom.Api
                     "PUT" => HttpMethods.Put,
                     "DELETE" => HttpMethods.Delete,
                     "OPTIONS" => HttpMethods.Options,
-                    _ => HttpMethods.Get
+                    _ => HttpMethods.Get,
                 };
             }
         }
@@ -217,8 +218,11 @@ namespace Bloom.Api
             if (_postData == null)
             {
                 _postData = new NameValueCollection();
-                
-                if (_context.Request.ContentType?.Contains("application/x-www-form-urlencoded") == true)
+
+                if (
+                    _context.Request.ContentType?.Contains("application/x-www-form-urlencoded")
+                    == true
+                )
                 {
                     _context.Request.Form.TryGetValue(string.Empty, out var dummy);
                     foreach (var key in _context.Request.Form.Keys)
@@ -248,7 +252,15 @@ namespace Bloom.Api
         public string GetPostJson()
         {
             // Read JSON from POST body
-            using (var reader = new StreamReader(_context.Request.Body, Encoding.UTF8, true, 1024, true))
+            using (
+                var reader = new StreamReader(
+                    _context.Request.Body,
+                    Encoding.UTF8,
+                    true,
+                    1024,
+                    true
+                )
+            )
             {
                 return reader.ReadToEnd();
             }
@@ -256,7 +268,15 @@ namespace Bloom.Api
 
         public string GetPostString(bool unescape = true)
         {
-            using (var reader = new StreamReader(_context.Request.Body, Encoding.UTF8, true, 1024, true))
+            using (
+                var reader = new StreamReader(
+                    _context.Request.Body,
+                    Encoding.UTF8,
+                    true,
+                    1024,
+                    true
+                )
+            )
             {
                 var content = reader.ReadToEnd();
                 if (unescape)
@@ -275,8 +295,8 @@ namespace Bloom.Api
 
         public string DoNotCacheFolder
         {
-            set 
-            { 
+            set
+            {
                 // Placeholder for Phase 2.2
                 // Would configure caching behavior
             }
@@ -319,7 +339,7 @@ namespace Bloom.Api
                 ".pdf" => "application/pdf",
                 ".txt" => "text/plain",
                 ".xml" => "application/xml",
-                _ => "application/octet-stream"
+                _ => "application/octet-stream",
             };
         }
 
