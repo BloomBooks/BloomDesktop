@@ -4395,7 +4395,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnly-description" approved="yes">
         <source xml:lang="en">The inside pages, re-arranged so that when folded, you get a booklet ready to staple.</source>
-        <target xml:lang="pt-PT" state="final">As páginas internas são arranjados para que, quando dobrado, um livrinho esteja pronto para agrafar.</target>
+        <target xml:lang="pt-PT" state="final">As páginas internas são arranjados para que, quando dobradas, formam um livrinho pronto para agrafar/grampear.</target>
         <note>ID: PublishTab.BodyOnly-description</note>
       </trans-unit>
       <trans-unit id="PublishTab.bloomPUBButton" approved="yes">
@@ -4405,7 +4405,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.bloomPUBButton-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make a BloomPUB for Bloom Reader or Reading App Builder.</source>
-        <target xml:lang="pt-PT" state="final">Faça um BloomPUB para Leitor de Flores ou Construtor de Apps.</target>
+        <target xml:lang="pt-PT" state="final">Faça um BloomPUB para Bloom Reader ou Reading App Builder.</target>
         <note>ID: PublishTab.bloomPUBButton-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.BloomPUB.BannerDescription.v2" approved="yes">
@@ -5358,7 +5358,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignIn" approved="yes">
         <source xml:lang="en">Sign in or sign up to BloomLibrary.org</source>
-        <target xml:lang="pt-PT" state="final">Entrar / Registrar na BloomLibrary.org</target>
+        <target xml:lang="pt-PT" state="final">Entrar / Cadestrar-se no BloomLibrary.org</target>
         <note>ID: PublishTab.Upload.SignIn</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignOut" approved="yes">
@@ -5398,7 +5398,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary" approved="yes">
         <source xml:lang="en">Your Book on BloomLibrary.org</source>
-        <target xml:lang="pt-PT" state="final">Seu Livro na BloomLibrary.org</target>
+        <target xml:lang="pt-PT" state="final">Seu Livro no BloomLibrary.org</target>
         <note>ID: PublishTab.Upload.YourBookOnBloomLibrary</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess" approved="yes">
