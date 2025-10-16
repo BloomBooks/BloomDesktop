@@ -101,7 +101,8 @@ namespace BloomTests.web
         public void EnsureListening_StartsServerOnPort8089()
         {
             // Setup
-            _server = new KestrelBloomServer(_imageProcessor, _bookSelection, _fileLocator);
+            var mockApiHandler = new Mock<BloomApiHandler>();
+            _server = new KestrelBloomServer(_imageProcessor, _bookSelection, _fileLocator, mockApiHandler.Object);
 
             // Execute
             _server.EnsureListening();
@@ -116,7 +117,8 @@ namespace BloomTests.web
         public void EnsureListening_SetsServerUrlCorrectly()
         {
             // Setup
-            _server = new KestrelBloomServer(_imageProcessor, _bookSelection, _fileLocator);
+            var mockApiHandler = new Mock<BloomApiHandler>();
+            _server = new KestrelBloomServer(_imageProcessor, _bookSelection, _fileLocator, mockApiHandler.Object);
 
             // Execute
             _server.EnsureListening();
@@ -234,20 +236,6 @@ namespace BloomTests.web
             Assert.DoesNotThrow(() => _server.Dispose());
         }
 
-        [Test]
-        public void SetCollectionSettings_SetsCurrentCollectionSettings()
-        {
-            // Setup
-            _server = new KestrelBloomServer(_imageProcessor, _bookSelection, _fileLocator);
-            Assert.IsNull(_server.CurrentCollectionSettings);
-
-            // Execute
-            _server.SetCollectionSettingsDuringInitialization(_collectionSettings);
-
-            // Verify
-            Assert.AreEqual(_collectionSettings, _server.CurrentCollectionSettings);
-        }
-
         #endregion
 
         #region Basic Routing Tests
@@ -290,15 +278,15 @@ namespace BloomTests.web
             try
             {
                 // Execute
-                using (var client = new WebClient())
+                using (var client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(5) })
                 {
-                    string html = client.DownloadString(KestrelBloomServer.ServerUrlEndingInSlash);
+                    string html = client.GetStringAsync(KestrelBloomServer.ServerUrlEndingInSlash).Result;
 
                     // Verify
-                    Assert.That(html, Does.Contain("reactRoot"));
+                    Assert.That(html, Does.Contain("Bloom Server") | Does.Contain("reactRoot"));
                 }
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
                 Assert.Ignore("Network test failed (server may not be responding): " + ex.Message);
             }

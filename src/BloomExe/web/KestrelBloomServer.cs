@@ -72,7 +72,7 @@ namespace Bloom.Api
             RuntimeImageProcessor cache,
             BookSelection bookSelection,
             BloomFileLocator fileLocator,
-            BloomApiHandler apiHandler)
+            BloomApiHandler apiHandler = null)
         {
             _cache = cache;
             _bookSelection = bookSelection;
