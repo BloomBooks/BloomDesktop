@@ -380,12 +380,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Apply Timings File...</source>
-        <target xml:lang="pt-PT" state="final">Aplicar Arquivo de Tempo...</target>
+        <target xml:lang="pt-PT" state="final">Usar Arquivo de Sincronização...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit Timings File...</source>
-        <target xml:lang="pt-PT" state="final">Editar arquivo de tempos...</target>
+        <target xml:lang="pt-PT" state="final">Editar Arquivo de Sincronização...</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFile</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFile.Extra" sil:dynamic="true">
@@ -470,7 +470,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFileTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Open the timing file in a text editor. After you save your changes, click the "Apply Timings File" button.</source>
-        <target xml:lang="pt-PT" state="final">Abra o arquivo de tempo no editor de texto. Após salvar as alterações, clique no botão "Aplicar arquivo de tempo".</target>
+        <target xml:lang="pt-PT" state="final">Abra o arquivo de sincronização num editor de texto. Após salvar as alterações, clique no botão "Usar Arquivo de Sincronização".</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFileTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFileDisabledTip" sil:dynamic="true" approved="yes">
