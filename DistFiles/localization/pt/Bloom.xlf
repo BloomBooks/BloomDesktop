@@ -3191,7 +3191,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Clear</source>
-        <target xml:lang="pt-PT" state="final">Desocupar</target>
+        <target xml:lang="pt-PT" state="final">Limpar</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true" approved="yes">
