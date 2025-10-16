@@ -154,6 +154,7 @@ Tests created covering:
   - Handle `/bloom/api/*` routes → route to `BloomApiHandler`
   - Implemented middleware with proper error handling
   - Integrated into KestrelBloomServer middleware pipeline
+  - Fixed duplicate API handler registration bug
 
 - [x] **Create `KestrelRequestInfo`** ✅ DONE
   - Implemented `IRequestInfo` adapter for `HttpContext`
@@ -161,27 +162,17 @@ Tests created covering:
   - Handles URL decoding, query parameters, POST data
   - Response writing methods implemented
 
-- [ ] **Create `InMemoryPageMiddleware`** (Future Phase 2.3)
-  - Handle simulated file URLs (currently in `ProcessRequestAsync` lines 916-932)
-  - Maintain `Dictionary<string, string>` for in-memory content
-  - Implement `RemoveInMemoryHtmlFile` logic
-  - Handle idle task queue for deferred deletion
+- [x] **Middleware Pipeline Integrated** ✅ DONE
+  - All middleware properly call `next()` when not handling requests
+  - Middleware order: Recursive Request → API → CSS → Static Files → Routing → Endpoints
+  - BloomFileLocator dependency required for FileLocationService (used by CSS and Static File middleware)
 
-- [ ] **Create `ImageServingMiddleware`** (Future Phase 2.4)
-  - Extract image handling logic from `ProcessImageFileRequest` (lines 1009-1098)
-  - Handle image caching with `RuntimeImageProcessor`
-  - Handle `OriginalImageMarker` prefix
-  - Apply thumbnail generation if needed
+- [x] **Known Issues Fixed** ✅ DONE
+  - Fixed: Duplicate API handler registrations (call `ClearEndpointHandlers()` before registration)
+  - Fixed: Server verification timeout (added retry logic with delays)
+  - Identified: Cannot start server without valid `BloomFileLocator` (required by FileLocationService)
 
-- [ ] **Create `BookPreviewMiddleware`** (Future Phase 2.5)
-  - Extract book-preview logic from lines 833-886
-  - Handle `defaultLangStyles.css` and `appearance.css` special cases
-  - Handle video placeholder SVG serving
-
-- [ ] **Create `StaticFileMiddleware` configuration** (Future Phase 2.6)
-  - Serve files from `BloomFileLocator.BrowserRoot`
-  - Configure cache headers appropriately
-  - Handle `favicon.ico` special case (line 869)
+**Note:** Phase 2.2 items previously marked as "Future Phase 2.3, 2.4, 2.5, 2.6" were consolidated into Phases 3.2 and 6 (CSS Processing and Static File middleware).
 
 ### ✅ Checkpoint 2.2: Unit Tests - Middleware Pipeline ✅
 **Test Suite:** `src/BloomTests/web/KestrelMiddlewareTests.cs` ✅

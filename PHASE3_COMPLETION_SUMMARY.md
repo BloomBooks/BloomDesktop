@@ -153,8 +153,8 @@ dotnet build src/BloomExe/BloomExe.csproj
 ## Next Steps (Recommended)
 
 ### Option A: Complete Phase 3 (Remaining Tasks)
-**Phase 3.1**: Already complete (`KestrelRequestInfo` created in Phase 2.2)  
-**Phase 3.2**: ✅ Complete (this work)  
+**Phase 3.1**: Already complete (`KestrelRequestInfo` created in Phase 2.2)
+**Phase 3.2**: ✅ Complete (this work)
 **Phase 3.3**: Create ASP.NET Core Controllers (optional - defer to Phase 5.2)
 
 **Recommendation**: Phase 3 is essentially complete. The `KestrelRequestInfo` adapter works with existing handlers, and CSS processing is now handled. Phase 3.3 (Controllers) is optional and can be deferred.

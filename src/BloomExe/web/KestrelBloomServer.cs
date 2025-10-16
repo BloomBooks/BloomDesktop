@@ -151,6 +151,11 @@ namespace Bloom.web
                                 // Register API handlers with BloomApiHandler (Phase 4.1)
                                 var apiHandler =
                                     app.ApplicationServices.GetRequiredService<BloomApiHandler>();
+                                
+                                // Clear existing handlers to avoid duplicate registrations
+                                // (important for tests that create multiple server instances)
+                                apiHandler.ClearEndpointHandlers();
+                                
                                 ServiceCollectionExtensions.RegisterApiHandlers(
                                     app.ApplicationServices,
                                     apiHandler,
@@ -204,6 +209,8 @@ namespace Bloom.web
                 // Wait up to 5 seconds for the server to start
                 if (startTask.Wait(TimeSpan.FromSeconds(5)))
                 {
+                    // Give the server a moment to be fully ready to accept connections
+                    Thread.Sleep(100);
                     return true;
                 }
 
@@ -223,27 +230,51 @@ namespace Bloom.web
 
         /// <summary>
         /// Verifies that the server is now listening by making a test connection.
+        /// Retries a few times to account for startup delays.
         /// </summary>
         private void VerifyWeAreNowListening()
         {
-            try
+            const int maxRetries = 5;
+            const int retryDelayMs = 200;
+            Exception lastException = null;
+
+            for (int i = 0; i < maxRetries; i++)
             {
-                using (
-                    var client = new System.Net.Http.HttpClient
-                    {
-                        Timeout = TimeSpan.FromSeconds(2),
-                    }
-                )
+                try
                 {
-                    var result = client.GetAsync($"{ServerUrl}/testconnection").Result;
-                    if (!result.IsSuccessStatusCode)
-                        throw new Exception("Server returned non-success status code");
+                    using (
+                        var client = new System.Net.Http.HttpClient
+                        {
+                            Timeout = TimeSpan.FromSeconds(2),
+                        }
+                    )
+                    {
+                        var task = client.GetAsync($"{ServerUrl}/testconnection");
+                        task.Wait(TimeSpan.FromSeconds(3));
+                        
+                        if (task.IsCompleted && task.Result.IsSuccessStatusCode)
+                        {
+                            return; // Success!
+                        }
+                        
+                        lastException = new Exception("Server returned non-success status code");
+                    }
+                }
+                catch (Exception e)
+                {
+                    lastException = e;
+                }
+
+                if (i < maxRetries - 1)
+                {
+                    Thread.Sleep(retryDelayMs);
                 }
             }
-            catch (Exception e)
-            {
-                throw new Exception($"Failed to verify server is listening on {ServerUrl}", e);
-            }
+
+            throw new Exception(
+                $"Failed to verify server is listening on {ServerUrl} after {maxRetries} attempts",
+                lastException
+            );
         }
 
         /// <summary>

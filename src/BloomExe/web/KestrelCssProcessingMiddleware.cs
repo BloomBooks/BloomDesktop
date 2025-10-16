@@ -308,10 +308,7 @@ namespace Bloom.web
 
                     var actualFiles = Directory.GetFiles(directory, fileName);
                     return actualFiles.Length > 0
-                        && actualFiles[0].EndsWith(
-                            fileName,
-                            StringComparison.Ordinal
-                        ); // Case-sensitive
+                        && actualFiles[0].EndsWith(fileName, StringComparison.Ordinal); // Case-sensitive
                 }
 
                 return true;

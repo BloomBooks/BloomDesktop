@@ -101,13 +101,13 @@ namespace BloomTests.web
         [Test]
         public void EnsureListening_StartsServerOnPort8089()
         {
-            // Setup
-            var mockApiHandler = new Mock<BloomApiHandler>();
+            // Setup - Use real BloomApiHandler instead of mock (it needs BookSelection)
+            var apiHandler = new BloomApiHandler(_bookSelection);
             _server = new KestrelBloomServer(
                 _imageProcessor,
                 _bookSelection,
                 _fileLocator,
-                mockApiHandler.Object
+                apiHandler
             );
 
             // Execute
@@ -122,13 +122,13 @@ namespace BloomTests.web
         [Test]
         public void EnsureListening_SetsServerUrlCorrectly()
         {
-            // Setup
-            var mockApiHandler = new Mock<BloomApiHandler>();
+            // Setup - Use real BloomApiHandler instead of mock (it needs BookSelection)
+            var apiHandler = new BloomApiHandler(_bookSelection);
             _server = new KestrelBloomServer(
                 _imageProcessor,
                 _bookSelection,
                 _fileLocator,
-                mockApiHandler.Object
+                apiHandler
             );
 
             // Execute
