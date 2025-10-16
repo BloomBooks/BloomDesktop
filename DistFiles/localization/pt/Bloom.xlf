@@ -4074,19 +4074,19 @@
         <target xml:lang="pt-PT" state="final">Acessível aos Deficientes Visuais no %0</target>
         <note>ID: PublishTab.AccessibleVisually</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomPUB.MakeRABAppHelpLink" approved="yes">
+      <trans-unit id="PublishTab.Android.BloomPUB.MakeRABAppHelpLink">
         <source xml:lang="en">Making BloomPUB Apps with Reading App Builder</source>
-        <target xml:lang="pt-PT" state="final">Fazendo aplicativos de BloomPUB com o aplicativo Reading App Builder</target>
+        <target xml:lang="pt-PT" state="translated">Como fazer aplicativos de BloomPUB com o aplicativo Reading App Builder</target>
         <note>ID: PublishTab.Android.BloomPUB.MakeRABAppHelpLink</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomPUB.ViewingWithBRHelpLink" approved="yes">
         <source xml:lang="en">Viewing BloomPUBs on Bloom Reader (Android)</source>
-        <target xml:lang="pt-PT" state="final">Ver BloomPUBs no aplicativo Bloom Reader (Android)</target>
+        <target xml:lang="pt-PT" state="final">Como visualizar BloomPUBs no aplicativo Bloom Reader (Android)</target>
         <note>ID: PublishTab.Android.BloomPUB.ViewingWithBRHelpLink</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink" approved="yes">
+      <trans-unit id="PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink">
         <source xml:lang="en">Viewing BloomPUBs on Windows</source>
-        <target xml:lang="pt-PT" state="final">Vendo BloomPUBs no Windows</target>
+        <target xml:lang="pt-PT" state="translated">Como visualizar BloomPUBs no Windows</target>
         <note>ID: PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true" approved="yes">
@@ -4145,7 +4145,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseWifi" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Share over Wi-Fi</source>
-        <target xml:lang="pt-PT" state="final">Servir via rede Wi-Fi</target>
+        <target xml:lang="pt-PT" state="final">Compartilhar via Wi-Fi</target>
         <note>ID: PublishTab.Android.ChooseWifi</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true" approved="yes">
