@@ -78,8 +78,22 @@ div.ui-accordion {
     padding-right: 0;
 }
 div.ui-accordion-content {
+    // Defeat some jquery-ui defaults
     padding-left: 3px !important;
     padding-right: 0 !important;
+}
+// The reader tools need the values above instead.
+// I would like to reset them like below, but there is some really complicated
+// stuff going on with the placement of the ReaderToolSwitch which I
+// haven't figured out and don't want to spend more time on.
+// Eventually this will all be replaced with React components anyway.
+div.ui-accordion-content:not([data-toolid="leveledReaderTool"]):not(
+        [data-toolid="decodableReaderTool"]
+    ) {
+    // Defeat some jquery-ui defaults
+    padding: 0 !important;
+    margin: 0 !important;
+    top: 0 !important;
 }
 
 .h1 {
@@ -136,11 +150,16 @@ div.toolbox-checkbox-label {
     width: 100%;
     display: flex;
     gap: 12px;
-    padding-right: 12px;
+    padding-right: calc(12px - @toolboxContentPaddingThin);
 }
 
 .toolbox-checkbox-label-text {
     flex-grow: 1;
+}
+
+.toolbox-settings-content {
+    padding: @toolboxContentPadding @toolboxContentPaddingThin;
+    height: @toolboxContentHeight;
 }
 
 div.checkbox-and-label {
@@ -243,6 +262,7 @@ div.checkbox-and-label {
     &.ui-state-hover,
     &.ui-state-active {
         background-color: @bloom-blue !important;
+        border-color: @bloom-blue !important;
     }
     z-index: 1005; // higher than disablingOverlay in Talking Book tool
 }

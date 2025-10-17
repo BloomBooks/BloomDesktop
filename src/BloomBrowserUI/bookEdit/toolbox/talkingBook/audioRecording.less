@@ -108,9 +108,8 @@ div.ui-audioCurrent p {
 .ui-audioBody {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    padding-left: 15px;
-    padding-right: 15px;
+    height: @toolboxContentHeight;
+    padding: @toolboxContentPadding;
 
     .ui-audioJqueryStuff {
         *,
@@ -349,6 +348,10 @@ div.ui-audioCurrent p {
     .help-link {
         z-index: @disablingOverlayZindex + 1;
         margin-top: auto; //push to the bottom
+        text-decoration: none;
+        &:hover {
+            text-decoration: underline;
+        }
     }
 }
 

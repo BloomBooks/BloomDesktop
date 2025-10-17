@@ -1,13 +1,16 @@
 @import "../../../bloomUI.less";
 @textColor: @bloom-buff; // #0C8597;
 @toolboxBackgroundColor: @bloom-panelBackground;
-@motionBodyPadding: 15px;
 @buttonColumnWidth: 40px;
 @previewSettingsMargin: 15px;
 
 .ui-motionBody {
-    padding-left: @motionBodyPadding;
-    padding-right: @motionBodyPadding;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding: @toolboxContentPadding;
+    height: @toolboxContentHeight;
 
     *,
     a {

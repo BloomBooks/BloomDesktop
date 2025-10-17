@@ -46,6 +46,7 @@ import { deselectVideoContainers } from "../../js/videoUtils";
 import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
 import { ToolBox } from "../toolbox";
 import { hideColorPickerDialog } from "../../editViewFrame";
+import { kToolboxContentPadding } from "../../../bloomMaterialUITheme";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -714,19 +715,23 @@ const OverlayToolControls: React.FunctionComponent = () => {
                     // want a single message like "This tool is not available on this page type" or something more specific
                     // like the one here.
                     OverlayTool.isCurrentPageABloomGame() ? (
-                        <Typography
+                        <div
                             css={css`
-                                // "!important" is needed to keep .MuiTypography-root from overriding
-                                margin: 15px 15px 0 15px !important;
-                                text-align: center;
+                                padding: ${kToolboxContentPadding};
                             `}
                         >
-                            <span>
-                                The Overlay Tool cannot currently be used on
-                                Bloom Games pages. Some of the functions are
-                                duplicated in the Games Tool.
-                            </span>
-                        </Typography>
+                            <Typography
+                                css={css`
+                                    text-align: center;
+                                `}
+                            >
+                                <span>
+                                    The Overlay Tool cannot currently be used on
+                                    Bloom Games pages. Some of the functions are
+                                    duplicated in the Games Tool.
+                                </span>
+                            </Typography>
+                        </div>
                     ) : (
                         <div
                             css={css`

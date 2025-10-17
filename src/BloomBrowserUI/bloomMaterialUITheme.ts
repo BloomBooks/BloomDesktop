@@ -326,6 +326,8 @@ export const toolboxTheme = createTheme({
 const toolboxZIndex = 18000; // cf @toolboxZIndex in bloomUI.less
 const toolboxPopupZIndex = toolboxZIndex + 1; // cf @toolboxPopupZIndex in bloomUI.less
 
+export const kToolboxContentPadding = "15px"; // cf @toolboxContentPadding in bloomUI.less
+
 // This theme is primarily designed to wrap around a Select in the toolbox.
 // Since the popup background is white, we need to make the text darker.
 // The chosen color is one Mui uses a lot, and we've already copied it in a few places.
