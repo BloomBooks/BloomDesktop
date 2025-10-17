@@ -1,0 +1,24 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+
+        "module": "ESNext",
+        "target": "ES2020",
+        "moduleResolution": "Node",
+        "jsx": "react-jsx",
+        "jsxImportSource": "@emotion/react",
+        "types": ["vite/client"],
+        "noEmit": true
+    },
+    "include": [
+        "./component-harness/**/*.ts",
+        "./component-harness/**/*.tsx",
+        "../**/*.spec.ts",
+        "../**/*.spec.tsx",
+        "./vite.config.ts",
+        "component-harness.tsx",
+        "setTestComponent.ts"
+    ],
+    "exclude": ["./node_modules"]
+}

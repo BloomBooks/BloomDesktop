@@ -194,3 +194,5 @@ src/content/.yarn/*
 .vite/vitest/results.json
 
 .github/copilot-instructions.md
+
+src/BloomBrowserUI/react_components/component-tester/test-results/
