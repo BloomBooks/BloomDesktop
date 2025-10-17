@@ -3226,7 +3226,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Speak</source>
-        <target xml:lang="pt-PT" state="final">Fale</target>
+        <target xml:lang="pt-PT" state="final">Falar</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakLabel</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitError" approved="yes">
