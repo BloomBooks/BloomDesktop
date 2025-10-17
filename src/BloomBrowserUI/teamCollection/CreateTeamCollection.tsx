@@ -31,7 +31,7 @@ import { ErrorBox } from "../react_components/boxes";
 import {
     RegistrationDialogLauncher,
     showRegistrationDialog,
-} from "../react_components/registrationDialog";
+} from "../react_components/registration/registrationDialog";
 
 // Contents of a dialog launched from TeamCollectionSettingsPanel Create Team Collection button.
 

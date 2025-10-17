@@ -40,7 +40,7 @@ import {
     showMakeReaderTemplateBloomPackDialog,
 } from "../react_components/makeReaderTemplateBloomPackDialog";
 import { AboutDialogLauncher } from "../react_components/aboutDialog";
-import { RegistrationDialogLauncher } from "../react_components/registrationDialog";
+import { RegistrationDialogLauncher } from "../react_components/registration/registrationDialog";
 
 const kResizerSize = 10;
 

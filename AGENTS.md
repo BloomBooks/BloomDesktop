@@ -4,6 +4,9 @@ The front-end uses yarn 1.22.22. Never ever use npm.
 # Code Style
 
 - Always use arrow functions and function components in React
+- do not destructure props
+- do not define a props data type unless it is huge
+- example: export const SomeComponent: React.FunctionComponent<{initiallySelectedGroupIndex: number;> = (props) => {...}
 
 - Avoid removing existing comments.
 - Avoid adding a comment like "// add this line".

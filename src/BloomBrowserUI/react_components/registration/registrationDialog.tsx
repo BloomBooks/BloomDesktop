@@ -6,25 +6,25 @@ import {
     DialogMiddle,
     DialogTitle,
     IBloomDialogProps,
-} from "./BloomDialog/BloomDialog";
+} from "../BloomDialog/BloomDialog";
 import {
     IBloomDialogEnvironmentParams,
     useEventLaunchedBloomDialog,
     useSetupBloomDialog,
-} from "./BloomDialog/BloomDialogPlumbing";
-import { DialogCancelButton } from "./BloomDialog/commonDialogComponents";
-import { useL10n } from "./l10nHooks";
-import BloomButton from "./bloomButton";
+} from "../BloomDialog/BloomDialogPlumbing";
+import { DialogCancelButton } from "../BloomDialog/commonDialogComponents";
+import { useL10n } from "../l10nHooks";
+import BloomButton from "../bloomButton";
 import { useEffect, useRef, useState } from "react";
-import { H1 } from "./l10nComponents";
+import { H1 } from "../l10nComponents";
 import { TextFieldProps } from "@mui/material";
-import { MuiTextField } from "./muiTextField";
-import { get, getBoolean, postJson } from "../utils/bloomApi";
-import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
-import { WireUpForWinforms } from "../utils/WireUpWinform";
-import { isValidEmail } from "../utils/emailUtils";
-import { useIsTeamCollection } from "../teamCollection/teamCollectionApi";
-import { AttentionTextField } from "./AttentionTextField";
+import { MuiTextField } from "../muiTextField";
+import { get, getBoolean, postJson } from "../../utils/bloomApi";
+import { ShowEditViewDialog } from "../../bookEdit/editViewFrame";
+import { WireUpForWinforms } from "../../utils/WireUpWinform";
+import { isValidEmail } from "../../utils/emailUtils";
+import { useIsTeamCollection } from "../../teamCollection/teamCollectionApi";
+import { AttentionTextField } from "../AttentionTextField";
 
 interface IRegistrationDialogProps {
     registrationIsOptional?: boolean;

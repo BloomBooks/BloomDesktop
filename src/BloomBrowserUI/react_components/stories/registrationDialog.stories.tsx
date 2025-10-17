@@ -2,7 +2,7 @@ import { Meta, StoryObj } from "@storybook/react";
 import {
     RegistrationDialogLauncher,
     showRegistrationDialog,
-} from "../registrationDialog";
+} from "../registration/registrationDialog";
 import { StorybookDialogWrapper } from "../BloomDialog/BloomDialogPlumbing";
 
 const meta: Meta = {
