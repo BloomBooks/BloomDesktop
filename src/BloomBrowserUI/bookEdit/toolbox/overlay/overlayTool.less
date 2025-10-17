@@ -1,6 +1,6 @@
 @import "../../../bloomUI.less";
 
-@SideMargin: 6px;
+@SideMargin: 9px;
 @ControlVerticalSpacing: 10px;
 
 .ui-accordion h3[data-toolId="overlayTool"] {
@@ -19,9 +19,11 @@
     flex-direction: column;
     // fill available toolbox space, part of pushing help to the bottom.
     // If the content won't fit, it gets a scroll bar.
-    height: 100%;
+    height: calc(100% - @toolboxContentPadding);
 
     color: @bloom-toolboxWhite;
+
+    padding-bottom: @toolboxContentPadding;
 }
 
 #overlayToolControlShapeChooserRegion {
@@ -207,7 +209,7 @@
 }
 
 #overlayToolControlFooterRegion {
-    padding-left: 6px;
+    padding-left: @SideMargin;
     margin-bottom: 3px;
     margin-top: 10px;
 }

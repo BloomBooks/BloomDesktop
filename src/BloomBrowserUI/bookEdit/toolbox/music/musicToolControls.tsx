@@ -119,7 +119,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
             >
                 <div className="musicBody">
                     <Div
-                        className="musicHelp"
+                        className="musicInstructions"
                         l10nKey="EditTab.Toolbox.Music.Overview"
                     >
                         You can set up background music to play with this page

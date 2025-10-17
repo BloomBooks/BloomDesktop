@@ -39,10 +39,13 @@
         width: calc(100% - 9px);
         margin-left: 7px;
     }
+
+    padding: @toolboxContentPadding;
+
     // All the layers down to .signLanguageFrame have to be 100%
     // to allow it to stretch and put Help at the bottom
     // (and divide spare space between the three main blocks)
-    height: 100%;
+    height: @toolboxContentHeight;
 }
 
 @videoButtonSize: 40px;
@@ -140,11 +143,6 @@
 .countdownNumber,
 .recordingLabel {
     color: @bloom-red;
-}
-
-.signLanguageFrame {
-    margin-left: 20px;
-    margin-right: 20px;
 }
 
 .signLanguageFrame {
