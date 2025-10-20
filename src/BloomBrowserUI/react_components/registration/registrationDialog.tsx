@@ -131,7 +131,6 @@ export const RegistrationDialog: React.FunctionComponent<
                 mayChangeEmail={mayChangeEmail}
                 emailRequiredForTeamCollection={emailRequiredForTeamCollection}
                 onSubmit={saveInfo}
-                onOptOut={saveInfo}
             />
         </BloomDialog>
     );

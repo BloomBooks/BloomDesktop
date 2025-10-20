@@ -11,7 +11,6 @@ export async function setupRegistrationComponent(
         "RegistrationContents",
         {
             onSubmit: (updated) => console.log("Submitted:", updated),
-            onOptOut: (updated) => console.log("Opted out:", updated),
             ...props,
         },
     );

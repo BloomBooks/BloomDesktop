@@ -62,7 +62,6 @@ export interface IRegistrationContentsProps {
     mayChangeEmail?: boolean; // default true
     emailRequiredForTeamCollection?: boolean; // default false
     onSubmit?: (updatedInfo: RegistrationInfo) => void;
-    onOptOut?: (updatedInfo: RegistrationInfo) => void;
 }
 
 export const RegistrationContents: React.FunctionComponent<
@@ -123,7 +122,7 @@ export const RegistrationContents: React.FunctionComponent<
         )
             ? info
             : { ...info, email: "" };
-        props.onOptOut?.(sanitizedInfo);
+        props.onSubmit?.(sanitizedInfo);
     };
 
     return (

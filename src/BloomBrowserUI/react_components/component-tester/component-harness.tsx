@@ -111,7 +111,6 @@ if (testElement) {
             emailRequiredForTeamCollection={false}
             mayChangeEmail={true}
             onSubmit={(info) => console.log("Submitted:", info)}
-            onOptOut={(info) => console.log("Opted out:", info)}
         />
     );
 }
