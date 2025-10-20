@@ -1,11 +1,8 @@
-To test, cd to /src/BloomBrowserUI/react_components/component-tester and run:
+See src/BloomBrowserUI/react_components/component-tester/README.md
 
-```bash
-yarn dev
-```
-
-In another terminal, run:
+To run only these tests, run:
 
 ```bash
 yarn test registration
 ```
+

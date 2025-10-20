@@ -1,18 +1,12 @@
 /**
- * Helper for testing React components with Playwright.
+ * This is needed because the playwright test is running in a different process than the browser that we
+ * are rendering the component in. And if we try to use the actual component in the test, then that imports
+ * react and then thinks we have a window but we don't (this is just nodejs), etc.
  *
- * Pass component props with full type checking.
+ * So, we have this helper that uses playwright to manipulate the browser page to tell it what component to render
+ * and with what props.
  *
- * Usage:
- * ```typescript
- * import type { MyComponentProps } from "../../myComponent";
- *
- * await setTestComponent<MyComponentProps>(page, "MyComponent", {
- *     someProp: "value",
- *     onSomeEvent: () => {},
- *     // ... TypeScript will check all props!
- * });
- * ```
+ * See registration/e2e/setup.ts for an example of how to wrap this for a specific component with type checking.
  */
 
 import { Page } from "@playwright/test";
@@ -24,7 +18,7 @@ import { Page } from "@playwright/test";
  * @param componentName - Name of the component to render (must match a key in component-harness.tsx component map)
  * @param props - Component props with full TypeScript type checking
  */
-export async function setTestComponent<TProps = any>(
+export async function setTestComponent<TProps>(
     page: Page,
     componentName: string,
     props: TProps,

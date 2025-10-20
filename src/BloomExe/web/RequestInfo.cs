@@ -436,7 +436,7 @@ namespace Bloom.Api
                 _actualContext.Request.ContentType.ToLowerInvariant().Contains("application/json"),
                 "The backend expected this post to have content-type application/json. With Axios.Post, this happens if you just give an object as the data. Or you can add the parameter {header: {'Content-Type': 'application/json'}} to the post call."
             );
-            return GetPostStringInner();
+            return GetPostStringInner(unescape: false); // RFC 8259 says that we should preserve the exact JSON payload (no URI-style decoding)
         }
 
         public string GetPostString(bool unescape = true)
