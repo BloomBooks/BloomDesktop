@@ -4,11 +4,11 @@
  */
 
 import { expect, test } from "@playwright/test";
-import { setTestComponent } from "../../component-tester/setTestComponent";
-import type { RegistrationContentsProps } from "../registrationContents";
+import type { IRegistrationContentsProps } from "../registrationContents";
+import { setupRegistrationComponent } from "./setup";
 
-const defaultProps: RegistrationContentsProps = {
-    info: {
+const defaultProps: IRegistrationContentsProps = {
+    initialInfo: {
         firstName: "John",
         surname: "Doe",
         email: "john.doe@example.com",
@@ -16,7 +16,6 @@ const defaultProps: RegistrationContentsProps = {
         usingFor: "Creating literacy materials",
         hadEmailAlready: false,
     },
-    onInfoChange: () => {},
     mayChangeEmail: true,
     emailRequiredForTeamCollection: false,
     onSubmit: (updated) => console.log("Submitted:", updated),
@@ -25,11 +24,7 @@ const defaultProps: RegistrationContentsProps = {
 
 test.describe("Registration Dialog - Initial Rendering & Layout", () => {
     test("Dialog renders correctly with all elements", async ({ page }) => {
-        await setTestComponent<RegistrationContentsProps>(
-            page,
-            "RegistrationContents",
-            defaultProps,
-        );
+        await setupRegistrationComponent(page, defaultProps);
 
         // Verify heading
         await expect(
@@ -62,14 +57,10 @@ test.describe("Registration Dialog - Initial Rendering & Layout", () => {
     });
 
     test("Email Required mode displays correctly", async ({ page }) => {
-        await setTestComponent<RegistrationContentsProps>(
-            page,
-            "RegistrationContents",
-            {
-                ...defaultProps,
-                emailRequiredForTeamCollection: true,
-            },
-        );
+        await setupRegistrationComponent(page, {
+            ...defaultProps,
+            emailRequiredForTeamCollection: true,
+        });
 
         // Verify team collection warning message is displayed
         await expect(
@@ -83,8 +74,8 @@ test.describe("Registration Dialog - Initial Rendering & Layout", () => {
     });
 
     test('"I\'m stuck" button appears after 10 seconds', async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
-            initialInfo: defaultProps.info,
+        await setupRegistrationComponent(page, {
+            initialInfo: defaultProps.initialInfo,
         });
 
         // Verify "I'm stuck" button is NOT visible initially

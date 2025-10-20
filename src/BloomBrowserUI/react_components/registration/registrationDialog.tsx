@@ -103,10 +103,6 @@ export const RegistrationDialog: React.FunctionComponent<
         [onSaveFunc, closeDialog],
     );
 
-    const updateInfo = useCallback((changes: Partial<RegistrationInfo>) => {
-        setInfo((previous) => ({ ...previous, ...changes }));
-    }, []);
-
     return (
         <BloomDialog
             {...props.propsForBloomDialog}
@@ -131,8 +127,7 @@ export const RegistrationDialog: React.FunctionComponent<
                 preventCloseButton={true}
             />
             <RegistrationContents
-                info={info}
-                onInfoChange={updateInfo}
+                initialInfo={info}
                 mayChangeEmail={mayChangeEmail}
                 emailRequiredForTeamCollection={emailRequiredForTeamCollection}
                 onSubmit={saveInfo}

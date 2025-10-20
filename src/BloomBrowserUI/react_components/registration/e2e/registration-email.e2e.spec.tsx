@@ -4,8 +4,8 @@
  */
 
 import { expect, test } from "@playwright/test";
-import { setTestComponent } from "../../component-tester/setTestComponent";
 import type { RegistrationInfo } from "../registrationContents";
+import { setupRegistrationComponent } from "./setup";
 
 const emptyInfo: RegistrationInfo = {
     firstName: "",
@@ -27,9 +27,13 @@ const validInfo: RegistrationInfo = {
 
 test.describe("Registration Dialog - Email Field - Initial Load", () => {
     test("Email field loads empty without errors", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        // OLD
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
+
+        // NEW
+        await setupRegistrationComponent(page, { initialInfo: emptyInfo });
 
         const emailField = page.getByRole("textbox", {
             name: "Email Address",
@@ -42,7 +46,7 @@ test.describe("Registration Dialog - Email Field - Initial Load", () => {
     test("Email field loads with pre-populated valid email", async ({
         page,
     }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: {
                 ...validInfo,
                 email: "john.doe@example.com",
@@ -60,7 +64,7 @@ test.describe("Registration Dialog - Email Field - Initial Load", () => {
     test("Email field shows error on load with invalid pre-populated email", async ({
         page,
     }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: {
                 ...validInfo,
                 email: "invalid-email",
@@ -79,7 +83,7 @@ test.describe("Registration Dialog - Email Field - Initial Load", () => {
 
 test.describe("Registration Dialog - Email Field - Valid Formats", () => {
     test("Accepts standard email format", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -91,7 +95,7 @@ test.describe("Registration Dialog - Email Field - Valid Formats", () => {
     });
 
     test("Accepts email with plus sign (for aliases)", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -103,7 +107,7 @@ test.describe("Registration Dialog - Email Field - Valid Formats", () => {
     });
 
     test("Accepts email with subdomain", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -115,7 +119,7 @@ test.describe("Registration Dialog - Email Field - Valid Formats", () => {
     });
 
     test("Accepts email with dots in username", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -127,7 +131,7 @@ test.describe("Registration Dialog - Email Field - Valid Formats", () => {
     });
 
     test("Accepts email with numbers", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -139,7 +143,7 @@ test.describe("Registration Dialog - Email Field - Valid Formats", () => {
     });
 
     test("Accepts email with hyphens", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -151,7 +155,7 @@ test.describe("Registration Dialog - Email Field - Valid Formats", () => {
     });
 
     test("Accepts email with underscores", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -165,7 +169,7 @@ test.describe("Registration Dialog - Email Field - Valid Formats", () => {
 
 test.describe("Registration Dialog - Email Field - Invalid Formats", () => {
     test("Shows error for email without @ symbol", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -180,7 +184,7 @@ test.describe("Registration Dialog - Email Field - Invalid Formats", () => {
     });
 
     test("Shows error for email missing domain", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -195,7 +199,7 @@ test.describe("Registration Dialog - Email Field - Invalid Formats", () => {
     });
 
     test("Shows error for email missing username", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -210,7 +214,7 @@ test.describe("Registration Dialog - Email Field - Invalid Formats", () => {
     });
 
     test("Shows error for email with spaces", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -225,7 +229,7 @@ test.describe("Registration Dialog - Email Field - Invalid Formats", () => {
     });
 
     test("Shows error for email with double @", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -240,7 +244,7 @@ test.describe("Registration Dialog - Email Field - Invalid Formats", () => {
     });
 
     test("Shows error for email missing TLD", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -259,7 +263,7 @@ test.describe("Registration Dialog - Email Field - Typing Behavior", () => {
     test("Error clears when typing valid email after invalid", async ({
         page,
     }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -280,7 +284,7 @@ test.describe("Registration Dialog - Email Field - Typing Behavior", () => {
     });
 
     test("Can clear email field", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: {
                 ...validInfo,
                 email: "test@example.com",
@@ -298,7 +302,7 @@ test.describe("Registration Dialog - Email Field - Typing Behavior", () => {
     });
 
     test("Can modify existing email", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: {
                 ...validInfo,
                 email: "old@example.com",
@@ -317,7 +321,7 @@ test.describe("Registration Dialog - Email Field - Typing Behavior", () => {
 
 test.describe("Registration Dialog - Email Field - Optional vs Required", () => {
     test("Email is optional in normal mode", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: validInfo,
             emailRequiredForTeamCollection: false,
         });
@@ -338,7 +342,7 @@ test.describe("Registration Dialog - Email Field - Optional vs Required", () => 
     test("Empty email shows error when required for team collection", async ({
         page,
     }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: validInfo,
             emailRequiredForTeamCollection: true,
         });
@@ -359,7 +363,7 @@ test.describe("Registration Dialog - Email Field - Optional vs Required", () => 
     test("Valid email accepted when required for team collection", async ({
         page,
     }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: validInfo,
             emailRequiredForTeamCollection: true,
         });
@@ -380,7 +384,7 @@ test.describe("Registration Dialog - Email Field - Optional vs Required", () => 
 
 test.describe("Registration Dialog - Email Field - Edge Cases", () => {
     test("Handles very long email addresses", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -394,7 +398,7 @@ test.describe("Registration Dialog - Email Field - Edge Cases", () => {
     });
 
     test("Handles email with just whitespace", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -410,7 +414,7 @@ test.describe("Registration Dialog - Email Field - Edge Cases", () => {
     });
 
     test("Trims whitespace from email before validation", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 

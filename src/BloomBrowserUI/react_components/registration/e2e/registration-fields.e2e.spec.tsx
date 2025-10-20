@@ -4,9 +4,8 @@
  */
 
 import { expect, test } from "@playwright/test";
-import { setTestComponent } from "../../component-tester/setTestComponent";
 import type { RegistrationInfo } from "../registrationContents";
-import { StatefulRegistrationContents } from "./testHelpers";
+import { setupRegistrationComponent } from "./setup";
 
 const emptyInfo: RegistrationInfo = {
     firstName: "",
@@ -19,7 +18,7 @@ const emptyInfo: RegistrationInfo = {
 
 test.describe("Registration Dialog - Field Validation - First Name", () => {
     test("First Name accepts valid input", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -39,7 +38,7 @@ test.describe("Registration Dialog - Field Validation - First Name", () => {
     });
 
     test("First Name shows error when empty", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -56,7 +55,7 @@ test.describe("Registration Dialog - Field Validation - First Name", () => {
 
 test.describe("Registration Dialog - Field Validation - Surname", () => {
     test("Surname accepts valid input", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -70,7 +69,7 @@ test.describe("Registration Dialog - Field Validation - Surname", () => {
     });
 
     test("Surname shows error when empty", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -87,7 +86,7 @@ test.describe("Registration Dialog - Field Validation - Surname", () => {
 
 test.describe("Registration Dialog - Field Validation - Organization", () => {
     test("Organization accepts valid input", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -101,7 +100,7 @@ test.describe("Registration Dialog - Field Validation - Organization", () => {
     });
 
     test("Organization shows error when empty", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -118,7 +117,7 @@ test.describe("Registration Dialog - Field Validation - Organization", () => {
 
 test.describe("Registration Dialog - Field Validation - How are you using Bloom", () => {
     test("Accepts multiline text", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -133,7 +132,7 @@ test.describe("Registration Dialog - Field Validation - How are you using Bloom"
     });
 
     test("Shows error when empty", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -152,7 +151,7 @@ test.describe("Registration Dialog - Field Validation - How are you using Bloom"
 
 test.describe("Registration Dialog - Edge Cases", () => {
     test("Very long text doesn't break layout", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -169,7 +168,7 @@ test.describe("Registration Dialog - Edge Cases", () => {
     });
 
     test("Whitespace-only is invalid", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -186,7 +185,7 @@ test.describe("Registration Dialog - Edge Cases", () => {
 
 test.describe("Registration Dialog - Accessibility", () => {
     test("All fields have proper labels", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 

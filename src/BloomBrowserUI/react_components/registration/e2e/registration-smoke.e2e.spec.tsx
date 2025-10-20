@@ -11,8 +11,7 @@
  */
 
 import { expect, test } from "@playwright/test";
-import { setTestComponent } from "../../component-tester/setTestComponent";
-import type { RegistrationContentsProps } from "../registrationContents";
+import { setupRegistrationComponent } from "./setup";
 
 test.describe("registration contents", () => {
     test("renders the registration form", async ({ page }) => {
@@ -30,25 +29,18 @@ test.describe("registration contents", () => {
     });
 
     test("renders with test component helper", async ({ page }) => {
-        await setTestComponent<RegistrationContentsProps>(
-            page,
-            "RegistrationContents",
-            {
-                info: {
-                    firstName: "",
-                    surname: "",
-                    email: "",
-                    organization: "",
-                    usingFor: "",
-                    hadEmailAlready: false,
-                },
-                onInfoChange: () => {},
-                mayChangeEmail: true,
-                emailRequiredForTeamCollection: false,
-                onSubmit: (updated) => console.log("Submitted:", updated),
-                onOptOut: (updated) => console.log("Opted out:", updated),
+        await setupRegistrationComponent(page, {
+            initialInfo: {
+                firstName: "",
+                surname: "",
+                email: "",
+                organization: "",
+                usingFor: "",
+                hadEmailAlready: false,
             },
-        );
+            mayChangeEmail: true,
+            emailRequiredForTeamCollection: false,
+        });
 
         // Verify it renders correctly
         await expect(

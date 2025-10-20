@@ -57,21 +57,37 @@ export const isRegistrationInfoComplete = (
     );
 };
 
-export interface RegistrationContentsProps {
-    info: RegistrationInfo;
-    onInfoChange: (changes: Partial<RegistrationInfo>) => void;
-    mayChangeEmail: boolean;
-    emailRequiredForTeamCollection: boolean;
-    onSubmit: (updatedInfo: RegistrationInfo) => void;
-    onOptOut: (updatedInfo: RegistrationInfo) => void;
+export interface IRegistrationContentsProps {
+    initialInfo: RegistrationInfo;
+    mayChangeEmail?: boolean; // default true
+    emailRequiredForTeamCollection?: boolean; // default false
+    onSubmit?: (updatedInfo: RegistrationInfo) => void;
+    onOptOut?: (updatedInfo: RegistrationInfo) => void;
 }
 
 export const RegistrationContents: React.FunctionComponent<
-    RegistrationContentsProps
+    IRegistrationContentsProps
 > = (props) => {
     const mustRegisterTextRef = React.useRef<HTMLDivElement>(null);
     const bottomButtonsRef = React.useRef<HTMLDivElement>(null);
     const [submitAttempts, setSubmitAttempts] = React.useState(0);
+    const [info, setInfo] = React.useState<RegistrationInfo>(props.initialInfo);
+
+    const mayChangeEmail = props.mayChangeEmail ?? true;
+    const emailRequiredForTeamCollection =
+        props.emailRequiredForTeamCollection ?? false;
+
+    // Update local state when initialInfo changes
+    React.useEffect(() => {
+        setInfo(props.initialInfo);
+    }, [props.initialInfo]);
+
+    const updateInfo = React.useCallback(
+        (changes: Partial<RegistrationInfo>) => {
+            setInfo((previous) => ({ ...previous, ...changes }));
+        },
+        [],
+    );
 
     // Show the "I'm stuck" opt-out button after 10 seconds
     // Reset the timer whenever the user types anything
@@ -82,7 +98,7 @@ export const RegistrationContents: React.FunctionComponent<
             setShowOptOut(true);
         }, 10000);
         return () => clearTimeout(timer);
-    }, [props.info]);
+    }, [info]);
 
     React.useEffect(() => {
         if (mustRegisterTextRef.current && bottomButtonsRef.current) {
@@ -92,30 +108,22 @@ export const RegistrationContents: React.FunctionComponent<
     });
 
     const handleSubmit = () => {
-        if (
-            !isRegistrationInfoComplete(
-                props.info,
-                props.emailRequiredForTeamCollection,
-            )
-        ) {
+        if (!isRegistrationInfoComplete(info, emailRequiredForTeamCollection)) {
             setSubmitAttempts((previous) => previous + 1);
             return;
         }
         setSubmitAttempts(0);
-        props.onSubmit(props.info);
+        props.onSubmit?.(info);
     };
 
     const handleOptOutClick = () => {
         const sanitizedInfo = isEmailFieldValid(
-            props.info.email,
-            props.emailRequiredForTeamCollection,
+            info.email,
+            emailRequiredForTeamCollection,
         )
-            ? props.info
-            : { ...props.info, email: "" };
-        if (sanitizedInfo !== props.info) {
-            props.onInfoChange({ email: sanitizedInfo.email });
-        }
-        props.onOptOut(sanitizedInfo);
+            ? info
+            : { ...info, email: "" };
+        props.onOptOut?.(sanitizedInfo);
     };
 
     return (
@@ -159,7 +167,7 @@ export const RegistrationContents: React.FunctionComponent<
                 >
                     Please take a minute to register {0}.
                 </H1>
-                {props.emailRequiredForTeamCollection ? (
+                {emailRequiredForTeamCollection ? (
                     <div id="mustRegisterText" ref={mustRegisterTextRef}>
                         You will need to register this copy of Bloom with an
                         email address before participating in a Team Collection
@@ -179,9 +187,9 @@ export const RegistrationContents: React.FunctionComponent<
                             fullWidth={true}
                             label="First Name"
                             l10nKey="RegisterDialog.FirstName"
-                            value={props.info.firstName}
+                            value={info.firstName}
                             onChange={(value) =>
-                                props.onInfoChange({ firstName: value })
+                                updateInfo({ firstName: value })
                             }
                             submitAttempts={submitAttempts}
                             isValid={isFirstNameValid}
@@ -197,10 +205,8 @@ export const RegistrationContents: React.FunctionComponent<
                             fullWidth={true}
                             label="Surname"
                             l10nKey="RegisterDialog.Surname"
-                            value={props.info.surname}
-                            onChange={(value) =>
-                                props.onInfoChange({ surname: value })
-                            }
+                            value={info.surname}
+                            onChange={(value) => updateInfo({ surname: value })}
                             submitAttempts={submitAttempts}
                             isValid={isSurnameValid}
                         />
@@ -218,24 +224,22 @@ export const RegistrationContents: React.FunctionComponent<
                             margin="normal"
                             fullWidth={true}
                             label={
-                                props.mayChangeEmail
+                                mayChangeEmail
                                     ? "Email Address"
                                     : "Check in to change email"
                             }
                             l10nKey={
-                                props.mayChangeEmail
-                                    ? "RegisterDialog.Email"
-                                    : ""
+                                mayChangeEmail ? "RegisterDialog.Email" : ""
                             }
-                            value={props.info.email}
-                            disabled={!props.mayChangeEmail}
+                            value={info.email}
+                            disabled={!mayChangeEmail}
                             onChange={(value) =>
-                                props.onInfoChange({ email: value || "" })
+                                updateInfo({ email: value || "" })
                             }
                             isValid={(value) =>
                                 isEmailFieldValid(
                                     value,
-                                    props.emailRequiredForTeamCollection,
+                                    emailRequiredForTeamCollection,
                                 )
                             }
                             submitAttempts={submitAttempts}
@@ -251,9 +255,9 @@ export const RegistrationContents: React.FunctionComponent<
                             fullWidth={true}
                             label="Organization"
                             l10nKey="RegisterDialog.Organization"
-                            value={props.info.organization}
+                            value={info.organization}
                             onChange={(value) =>
-                                props.onInfoChange({ organization: value })
+                                updateInfo({ organization: value })
                             }
                             submitAttempts={submitAttempts}
                             isValid={isOrganizationValid}
@@ -266,10 +270,8 @@ export const RegistrationContents: React.FunctionComponent<
                     label="How are you using {0}?"
                     l10nKey="RegisterDialog.HowAreYouUsing"
                     l10nParam0="Bloom"
-                    value={props.info.usingFor}
-                    onChange={(value) =>
-                        props.onInfoChange({ usingFor: value })
-                    }
+                    value={info.usingFor}
+                    onChange={(value) => updateInfo({ usingFor: value })}
                     submitAttempts={submitAttempts}
                     isValid={isUsingForValid}
                     multiline={true}

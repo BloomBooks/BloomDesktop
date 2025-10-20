@@ -4,8 +4,8 @@
  */
 
 import { expect, test } from "@playwright/test";
-import { setTestComponent } from "../../component-tester/setTestComponent";
 import type { RegistrationInfo } from "../registrationContents";
+import { setupRegistrationComponent } from "./setup";
 
 const emptyInfo: RegistrationInfo = {
     firstName: "",
@@ -18,7 +18,7 @@ const emptyInfo: RegistrationInfo = {
 
 test.describe("Registration Dialog - Form Submission", () => {
     test("Dialog does not close with invalid data", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -46,7 +46,7 @@ test.describe("Registration Dialog - Form Submission", () => {
     });
 
     test("All fields show errors when all are invalid", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -82,7 +82,7 @@ test.describe("Registration Dialog - Form Submission", () => {
 
 test.describe("Registration Dialog - Field Focus & Tab Order", () => {
     test("First Name has initial focus", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: {
                 firstName: "John",
                 surname: "Doe",
@@ -104,7 +104,7 @@ test.describe("Registration Dialog - Field Focus & Tab Order", () => {
     });
 
     test("Tab moves through fields in correct order", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
@@ -145,7 +145,7 @@ test.describe("Registration Dialog - Field Focus & Tab Order", () => {
 
 test.describe("Registration Dialog - Data Pre-population", () => {
     test("Pre-populated fields show no errors", async ({ page }) => {
-        await setTestComponent(page, "StatefulRegistrationContents", {
+        await setupRegistrationComponent(page, {
             initialInfo: {
                 firstName: "John",
                 surname: "Doe",

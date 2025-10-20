@@ -19,7 +19,6 @@ import {
     RegistrationContents,
     createEmptyRegistrationInfo,
 } from "../registration/registrationContents";
-import { StatefulRegistrationContents } from "../registration/e2e/testHelpers";
 import { bypassLocalization } from "../../lib/localizationManager/localizationManager";
 
 // Mock jQuery for localization system
@@ -84,7 +83,6 @@ bypassLocalization(true);
 // Add components here as needed for manual testing
 const componentMap: Record<string, React.ComponentType<any>> = {
     RegistrationContents,
-    StatefulRegistrationContents,
 };
 
 // Check if test element was injected
@@ -105,10 +103,10 @@ if (testElement) {
     }
     componentToRender = React.createElement(Component, testElement.props);
 } else {
-    // Default mode for manual testing: render StatefulRegistrationContents
+    // Default mode for manual testing: render RegistrationContents
     // This provides a working example when you just run `yarn dev`
     componentToRender = (
-        <StatefulRegistrationContents
+        <RegistrationContents
             initialInfo={createEmptyRegistrationInfo()}
             emailRequiredForTeamCollection={false}
             mayChangeEmail={true}
