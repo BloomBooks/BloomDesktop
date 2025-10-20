@@ -13,7 +13,6 @@ import {
     DialogBottomLeftButtons,
     DialogTitle,
 } from "../react_components/BloomDialog/BloomDialog";
-import { get } from "../utils/bloomApi";
 import { showRegistrationDialog } from "../react_components/registration/registrationDialog";
 
 // Dialog shown (when props.open is true) in response to the "About my Avatar..." menu item
@@ -88,9 +87,7 @@ export const AvatarDialog: React.FunctionComponent<{
                         temporarilyDisableI18nWarning={true}
                         onClick={() => {
                             props.close();
-                            showRegistrationDialog({
-                                registrationIsOptional: false,
-                            });
+                            showRegistrationDialog({});
                         }}
                         hasText={true}
                     >

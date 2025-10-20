@@ -22,7 +22,6 @@ import {
 } from "./registrationContents";
 
 interface IRegistrationDialogProps {
-    registrationIsOptional?: boolean;
     emailRequiredForTeamCollection?: boolean;
     onSave?: (isValidEmail: boolean) => void;
 }
@@ -35,7 +34,7 @@ export const RegistrationDialogLauncher: React.FunctionComponent<
     // eslint needed useSetup and useEvent to be in the same order on every render
     const useSetup = useSetupBloomDialog(props.dialogEnvironment);
     const useEventLaunched = useEventLaunchedBloomDialog("RegistrationDialog");
-    const { openingEvent, showDialog, closeDialog, propsForBloomDialog } =
+    const { showDialog, closeDialog, propsForBloomDialog } =
         // use the environment in useSetup if env.dialogFrameExternal (WinForms) exists, else tell useEvent the dialog's name for showDialog()
         props.dialogEnvironment?.dialogFrameProvidedExternally
             ? // for WinForms Wrapped things (eg Join Team Collection) env = dialogFrame:true, Open:true (initially Open inside of frame)
@@ -50,12 +49,6 @@ export const RegistrationDialogLauncher: React.FunctionComponent<
             closeDialog={closeDialog}
             showDialog={showDialog}
             propsForBloomDialog={propsForBloomDialog}
-            // openingEvent only exists when using the Get Help... menu from Collections and Publish
-            // props are used from WinForms (Join, the On Opening Program Registration) and Edit Tab
-            registrationIsOptional={
-                openingEvent?.registrationIsOptional ??
-                props.registrationIsOptional
-            }
         />
     ) : null;
 };
@@ -70,10 +63,6 @@ export const RegistrationDialog: React.FunctionComponent<
     const closeDialogFunc = props.closeDialog;
     const onSaveFunc = props.onSave;
     const [mayChangeEmail, setMayChangeEmail] = useState(true);
-    const registrationIsOptional =
-        props.registrationIsOptional ??
-        externallySetRegistrationDialogProps?.registrationIsOptional ??
-        true;
     // externalProp - emailRequired only needs to be used when creating a team collection
     const inTeamCollection = useIsTeamCollection();
     const emailRequiredForTeamCollection =
@@ -83,14 +72,6 @@ export const RegistrationDialog: React.FunctionComponent<
     const [info, setInfo] = useState<RegistrationInfo>(
         createEmptyRegistrationInfo,
     );
-    // Show the "I'm stuck" opt-out button after 10 seconds
-    const [showOptOut, setShowOptOut] = useState(false);
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setShowOptOut(true);
-        }, 10000);
-        return () => clearTimeout(timer);
-    }, []);
 
     // Every time the dialog is opened, set MayChangeEmail and User Info fields
     useEffect(() => {
@@ -130,12 +111,11 @@ export const RegistrationDialog: React.FunctionComponent<
         <BloomDialog
             {...props.propsForBloomDialog}
             onCancel={(reason) => {
-                // If registration is not optional, don't close if they try to escape or click out
+                // Registration is required, so don't close if they try to escape or click out
                 if (
-                    registrationIsOptional ||
-                    (reason !== "escapeKeyDown" &&
-                        reason !== "backdropClick" &&
-                        reason !== "titleCloseClick")
+                    reason !== "escapeKeyDown" &&
+                    reason !== "backdropClick" &&
+                    reason !== "titleCloseClick"
                 ) {
                     closeDialog();
                 }
@@ -155,8 +135,6 @@ export const RegistrationDialog: React.FunctionComponent<
                 onInfoChange={updateInfo}
                 mayChangeEmail={mayChangeEmail}
                 emailRequiredForTeamCollection={emailRequiredForTeamCollection}
-                registrationIsOptional={registrationIsOptional}
-                showOptOut={showOptOut}
                 onSubmit={saveInfo}
                 onOptOut={saveInfo}
             />
@@ -168,14 +146,8 @@ let show: () => void = () => {};
 
 let externallySetRegistrationDialogProps: IRegistrationDialogProps | undefined;
 
-export function showRegistrationDialogForEditTab(
-    registrationIsOptional?: boolean,
-) {
-    ShowEditViewDialog(
-        <RegistrationDialogLauncher
-            registrationIsOptional={registrationIsOptional}
-        />,
-    );
+export function showRegistrationDialogForEditTab() {
+    ShowEditViewDialog(<RegistrationDialogLauncher />);
     show();
 }
 

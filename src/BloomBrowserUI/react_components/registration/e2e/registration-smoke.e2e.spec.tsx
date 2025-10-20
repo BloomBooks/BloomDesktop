@@ -45,8 +45,6 @@ test.describe("registration contents", () => {
                 onInfoChange: () => {},
                 mayChangeEmail: true,
                 emailRequiredForTeamCollection: false,
-                registrationIsOptional: true,
-                showOptOut: true,
                 onSubmit: (updated) => console.log("Submitted:", updated),
                 onOptOut: (updated) => console.log("Opted out:", updated),
             },

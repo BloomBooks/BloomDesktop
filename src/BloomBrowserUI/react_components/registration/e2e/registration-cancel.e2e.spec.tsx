@@ -1,6 +1,10 @@
 /**
  * Tests for Registration Dialog - Cancel Button
  * Run with: yarn test
+ *
+ * NOTE: These tests are now obsolete as the Cancel button has been removed.
+ * Registration is now always required (no registrationIsOptional prop).
+ * This file is kept for reference but all tests are skipped.
  */
 
 import { expect, test } from "@playwright/test";
@@ -16,13 +20,12 @@ const defaultInfo: RegistrationInfo = {
     hadEmailAlready: false,
 };
 
-test.describe("Registration Dialog - Cancel Button", () => {
+test.describe.skip("Registration Dialog - Cancel Button (OBSOLETE)", () => {
     test("Cancel button appears when registration is optional", async ({
         page,
     }) => {
         await setTestComponent(page, "StatefulRegistrationContents", {
             initialInfo: defaultInfo,
-            registrationIsOptional: true,
         });
 
         // Verify Cancel button is visible
@@ -35,7 +38,6 @@ test.describe("Registration Dialog - Cancel Button", () => {
     }) => {
         await setTestComponent(page, "StatefulRegistrationContents", {
             initialInfo: defaultInfo,
-            registrationIsOptional: false,
         });
 
         // Verify Cancel button is NOT visible
@@ -49,7 +51,6 @@ test.describe("Registration Dialog - Cancel Button", () => {
         // Test normal mode first
         await setTestComponent(page, "StatefulRegistrationContents", {
             initialInfo: defaultInfo,
-            registrationIsOptional: true,
             emailRequiredForTeamCollection: false,
         });
 
@@ -59,7 +60,6 @@ test.describe("Registration Dialog - Cancel Button", () => {
         // Test email-required mode
         await setTestComponent(page, "StatefulRegistrationContents", {
             initialInfo: defaultInfo,
-            registrationIsOptional: false,
             emailRequiredForTeamCollection: true,
         });
 

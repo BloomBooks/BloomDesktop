@@ -111,7 +111,6 @@ if (testElement) {
         <StatefulRegistrationContents
             initialInfo={createEmptyRegistrationInfo()}
             emailRequiredForTeamCollection={false}
-            registrationIsOptional={true}
             mayChangeEmail={true}
             onSubmit={(info) => console.log("Submitted:", info)}
             onOptOut={(info) => console.log("Opted out:", info)}

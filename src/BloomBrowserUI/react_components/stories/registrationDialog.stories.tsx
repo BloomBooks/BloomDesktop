@@ -17,7 +17,6 @@ export const NormalStory: Story = {
     name: "Normal Dialog",
     render: () => {
         showRegistrationDialog({
-            registrationIsOptional: true,
             emailRequiredForTeamCollection: false,
         });
         return (
@@ -32,7 +31,6 @@ export const EmailRequiredStory: Story = {
     name: "Email required",
     render: () => {
         showRegistrationDialog({
-            registrationIsOptional: false,
             emailRequiredForTeamCollection: true,
         });
         return (

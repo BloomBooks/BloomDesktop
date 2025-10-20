@@ -416,7 +416,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                             );
                         else {
                             showRegistrationDialog({
-                                registrationIsOptional: false,
                                 onSave: (isValidEmail) => {
                                     if (isValidEmail)
                                         post(

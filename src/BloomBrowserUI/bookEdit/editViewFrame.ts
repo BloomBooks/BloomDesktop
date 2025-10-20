@@ -35,7 +35,6 @@ export interface IEditViewFrameExports {
     showRequiresSubscriptionDialog(featureName: string): void;
     showRegistrationDialogInEditTab(
         mayChangeEmail?: boolean,
-        registrationIsOptional?: boolean,
         emailRequiredForTeamCollection?: boolean,
     ): void;
 }
@@ -267,10 +266,8 @@ export function showRequiresSubscriptionDialog(featureName: string): void {
     showRequiresSubscriptionDialogInEditView(featureName);
 }
 
-export function showRegistrationDialogInEditTab(
-    registrationIsOptional?: boolean,
-) {
-    showRegistrationDialogForEditTab(registrationIsOptional);
+export function showRegistrationDialogInEditTab() {
+    showRegistrationDialogForEditTab();
 }
 
 // Adjusts the zoom scaling element created in C# SetupPageZoom; keep in sync with that code.

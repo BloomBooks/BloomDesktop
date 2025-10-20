@@ -316,12 +316,9 @@ test.describe("Registration Dialog - Email Field - Typing Behavior", () => {
 });
 
 test.describe("Registration Dialog - Email Field - Optional vs Required", () => {
-    test("Email is optional in normal mode (registrationIsOptional=true)", async ({
-        page,
-    }) => {
+    test("Email is optional in normal mode", async ({ page }) => {
         await setTestComponent(page, "StatefulRegistrationContents", {
             initialInfo: validInfo,
-            registrationIsOptional: true,
             emailRequiredForTeamCollection: false,
         });
 

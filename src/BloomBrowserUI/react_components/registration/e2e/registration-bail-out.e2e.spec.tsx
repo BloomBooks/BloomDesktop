@@ -19,8 +19,6 @@ const defaultProps: RegistrationContentsProps = {
     onInfoChange: () => {},
     mayChangeEmail: true,
     emailRequiredForTeamCollection: false,
-    registrationIsOptional: true,
-    showOptOut: true,
     onSubmit: (updated) => console.log("Submitted:", updated),
     onOptOut: (updated) => console.log("Opted out:", updated),
 };
@@ -70,7 +68,6 @@ test.describe("Registration Dialog - Initial Rendering & Layout", () => {
             {
                 ...defaultProps,
                 emailRequiredForTeamCollection: true,
-                registrationIsOptional: false,
             },
         );
 
@@ -85,13 +82,9 @@ test.describe("Registration Dialog - Initial Rendering & Layout", () => {
         ).toBeVisible();
     });
 
-    test('"I\'m stuck" button appears after 10 seconds when registration is optional', async ({
-        page,
-    }) => {
+    test('"I\'m stuck" button appears after 10 seconds', async ({ page }) => {
         await setTestComponent(page, "StatefulRegistrationContents", {
             initialInfo: defaultProps.info,
-            registrationIsOptional: true,
-            // Don't pass showOptOut - let the component manage it with the 10-second timer
         });
 
         // Verify "I'm stuck" button is NOT visible initially

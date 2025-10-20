@@ -5,7 +5,6 @@ import {
     DialogBottomLeftButtons,
     DialogMiddle,
 } from "../BloomDialog/BloomDialog";
-import { DialogCancelButton } from "../BloomDialog/commonDialogComponents";
 import { H1 } from "../l10nComponents";
 import { AttentionTextField } from "../AttentionTextField";
 import BloomButton from "../bloomButton";
@@ -63,8 +62,6 @@ export interface RegistrationContentsProps {
     onInfoChange: (changes: Partial<RegistrationInfo>) => void;
     mayChangeEmail: boolean;
     emailRequiredForTeamCollection: boolean;
-    registrationIsOptional: boolean;
-    showOptOut: boolean;
     onSubmit: (updatedInfo: RegistrationInfo) => void;
     onOptOut: (updatedInfo: RegistrationInfo) => void;
 }
@@ -75,6 +72,17 @@ export const RegistrationContents: React.FunctionComponent<
     const mustRegisterTextRef = React.useRef<HTMLDivElement>(null);
     const bottomButtonsRef = React.useRef<HTMLDivElement>(null);
     const [submitAttempts, setSubmitAttempts] = React.useState(0);
+
+    // Show the "I'm stuck" opt-out button after 10 seconds
+    // Reset the timer whenever the user types anything
+    const [showOptOut, setShowOptOut] = React.useState(false);
+    React.useEffect(() => {
+        setShowOptOut(false);
+        const timer = setTimeout(() => {
+            setShowOptOut(true);
+        }, 10000);
+        return () => clearTimeout(timer);
+    }, [props.info]);
 
     React.useEffect(() => {
         if (mustRegisterTextRef.current && bottomButtonsRef.current) {
@@ -271,7 +279,7 @@ export const RegistrationContents: React.FunctionComponent<
             <div id="bottomButtons" ref={bottomButtonsRef}>
                 <DialogBottomButtons>
                     <DialogBottomLeftButtons>
-                        {props.showOptOut && (
+                        {showOptOut && (
                             <BloomButton
                                 l10nKey="RegisterDialog.IAmStuckLabel"
                                 enabled={true}
@@ -279,6 +287,15 @@ export const RegistrationContents: React.FunctionComponent<
                                 onClick={handleOptOutClick}
                                 css={css`
                                     font-size: 10px;
+                                    animation: fadeIn 1s ease-in;
+                                    @keyframes fadeIn {
+                                        from {
+                                            opacity: 0;
+                                        }
+                                        to {
+                                            opacity: 1;
+                                        }
+                                    }
                                 `}
                             >
                                 I'm stuck, I'll finish this later.
@@ -292,7 +309,6 @@ export const RegistrationContents: React.FunctionComponent<
                     >
                         Register
                     </BloomButton>
-                    {props.registrationIsOptional && <DialogCancelButton />}
                 </DialogBottomButtons>
             </div>
         </>
