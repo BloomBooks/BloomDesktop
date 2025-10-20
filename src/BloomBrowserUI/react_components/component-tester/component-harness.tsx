@@ -19,6 +19,7 @@ import {
     RegistrationContents,
     createEmptyRegistrationInfo,
 } from "../registration/registrationContents";
+import { StatefulRegistrationContents } from "../registration/e2e/testHelpers";
 import { bypassLocalization } from "../../lib/localizationManager/localizationManager";
 
 // Mock jQuery for localization system
@@ -83,6 +84,7 @@ bypassLocalization(true);
 // Add components here as needed for manual testing
 const componentMap: Record<string, React.ComponentType<any>> = {
     RegistrationContents,
+    StatefulRegistrationContents,
 };
 
 // Check if test element was injected
@@ -103,30 +105,18 @@ if (testElement) {
     }
     componentToRender = React.createElement(Component, testElement.props);
 } else {
-    // Default mode for manual testing: render RegistrationContents with a wrapper that manages state
+    // Default mode for manual testing: render StatefulRegistrationContents
     // This provides a working example when you just run `yarn dev`
-    const RegistrationTestWrapper: React.FunctionComponent = () => {
-        const [info, setInfo] = React.useState(createEmptyRegistrationInfo());
-
-        const handleInfoChange = React.useCallback((changes: any) => {
-            setInfo((prev) => ({ ...prev, ...changes }));
-        }, []);
-
-        return (
-            <RegistrationContents
-                info={info}
-                onInfoChange={handleInfoChange}
-                mayChangeEmail={true}
-                emailRequiredForTeamCollection={false}
-                registrationIsOptional={true}
-                showOptOut={true}
-                onSubmit={(updated) => console.log("Submitted:", updated)}
-                onOptOut={(updated) => console.log("Opted out:", updated)}
-            />
-        );
-    };
-
-    componentToRender = <RegistrationTestWrapper />;
+    componentToRender = (
+        <StatefulRegistrationContents
+            initialInfo={createEmptyRegistrationInfo()}
+            emailRequiredForTeamCollection={false}
+            registrationIsOptional={true}
+            mayChangeEmail={true}
+            onSubmit={(info) => console.log("Submitted:", info)}
+            onOptOut={(info) => console.log("Opted out:", info)}
+        />
+    );
 }
 
 // Render the component

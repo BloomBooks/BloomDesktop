@@ -7,11 +7,5 @@ yarn dev
 In another terminal, run:
 
 ```bash
-yarn test
-```
-
-To run only the tests in this directory (/src/BloomBrowserUI/react_components/registration/e2e):
-
-```bash
-yarn test registration/e2e
+yarn test registration
 ```
