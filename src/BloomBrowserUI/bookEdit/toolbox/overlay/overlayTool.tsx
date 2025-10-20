@@ -687,10 +687,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
     };
 
     return (
-        <div id="overlayToolControls">
-            <RequiresSubscriptionOverlayWrapper
-                featureName={kOverlayToolId as string}
-            >
+        <RequiresSubscriptionOverlayWrapper
+            featureName={kOverlayToolId as string}
+        >
+            <div id="overlayToolControls">
                 {
                     // Using most kinds of comic bubbles is problematic in various ways in Bloom games, so we don't allow it.
                     // We may eventually want to allow some controls to be used, but for now we just disable the whole thing.
@@ -811,8 +811,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
                         </div>
                     )
                 }
-            </RequiresSubscriptionOverlayWrapper>
-        </div>
+            </div>
+        </RequiresSubscriptionOverlayWrapper>
     );
 };
 export default OverlayToolControls;
