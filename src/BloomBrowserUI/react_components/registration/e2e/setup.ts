@@ -8,10 +8,8 @@ export async function setupRegistrationComponent(
 ) {
     await setTestComponent<IRegistrationContentsProps>(
         page,
+        "../registration/registrationContents",
         "RegistrationContents",
-        {
-            onSubmit: (updated) => console.log("Submitted:", updated),
-            ...props,
-        },
+        props,
     );
 }

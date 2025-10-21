@@ -5,7 +5,7 @@
  * - Sets up jQuery mocks for the localization system
  * - Enables localization bypass for testing
  * - Renders components based on __TEST_ELEMENT__ injection (for automated tests)
- * - Provides a component map for manual testing
+ * - Dynamically loads components defined via Playwright or manual configuration
  *
  * To run: `yarn dev` from the component-tester folder
  * Then open http://127.0.0.1:5173/ in your browser
@@ -15,10 +15,11 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 // import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 // import { lightTheme } from "../../../../bloomMaterialUITheme";
+import { ComponentRenderRequest } from "./componentTypes";
 import {
-    RegistrationContents,
-    createEmptyRegistrationInfo,
-} from "../registration/registrationContents";
+    getComponentRequestByName,
+    listComponentNames,
+} from "./component-registry";
 import { bypassLocalization } from "../../lib/localizationManager/localizationManager";
 
 // Mock jQuery for localization system
@@ -68,58 +69,161 @@ import { bypassLocalization } from "../../lib/localizationManager/localizationMa
     },
 };
 
+const manualConfigModules = import.meta.glob<ManualConfigModule>(
+    "./manualConfig.ts",
+    {
+        eager: true,
+    },
+);
+
+type ManualConfigModule = {
+    manualComponent?: ComponentRenderRequest<any>;
+};
+
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
     throw new Error("Root element was not found.");
 }
 
-// Check if test config was injected
-const testConfig = (window as any).__TEST_CONFIG__ as undefined;
-
 bypassLocalization(true);
 
-// Component map for testing
-// Add components here as needed for manual testing
-const componentMap: Record<string, React.ComponentType<any>> = {
-    RegistrationContents,
-};
-
-// Check if test element was injected
-const testElement = (window as any).__TEST_ELEMENT__ as
-    | { type: string; props: any }
+const testRequest = (window as any).__TEST_ELEMENT__ as
+    | ComponentRenderRequest<any>
     | undefined;
 
-let componentToRender: React.ReactElement;
+const urlParams = new URLSearchParams(window.location.search);
+const requestedComponentName = urlParams.get("component");
 
-if (testElement) {
-    // Test mode: render the injected element with its props
-    const Component = componentMap[testElement.type];
-    if (!Component) {
-        throw new Error(
-            `Component "${testElement.type}" not found in component map. ` +
-                `Available components: ${Object.keys(componentMap).join(", ")}`,
-        );
+let pendingRequest: ComponentRenderRequest<any> | undefined = testRequest;
+let pendingError: string | undefined;
+
+if (!pendingRequest && requestedComponentName) {
+    pendingRequest = getComponentRequestByName(requestedComponentName);
+    if (!pendingRequest) {
+        pendingError = `Component "${requestedComponentName}" was not found in the registry.`;
     }
-    componentToRender = React.createElement(Component, testElement.props);
+}
+
+const manualRequest = manualConfigModules["./manualConfig.ts"]?.manualComponent;
+
+if (!pendingRequest && !pendingError && manualRequest) {
+    pendingRequest = manualRequest;
+}
+
+if (pendingError) {
+    renderInstructions(pendingError);
+} else if (!pendingRequest) {
+    renderInstructions();
 } else {
-    // Default mode for manual testing: render RegistrationContents
-    // This provides a working example when you just run `yarn dev`
-    componentToRender = (
-        <RegistrationContents
-            initialInfo={createEmptyRegistrationInfo()}
-            emailRequiredForTeamCollection={false}
-            mayChangeEmail={true}
-            onSubmit={(info) => console.log("Submitted:", info)}
-        />
+    ReactDOM.render(<div>Loading component…</div>, rootElement);
+    void renderRequest(pendingRequest);
+}
+
+function renderInstructions(message?: string) {
+    const componentNames = listComponentNames();
+
+    ReactDOM.render(
+        <div style={{ fontFamily: "sans-serif" }}>
+            <h1>Bloom React Component Tester</h1>
+            {message ? <p>{message}</p> : null}
+            {
+                "Normally, this system is used to run playwright tests for individual components. You can also manually play with these registered components:"
+            }
+            {componentNames.length > 0 ? (
+                <>
+                    <ul>
+                        {componentNames.map((name) => (
+                            <li key={name}>
+                                <a
+                                    href={`/?component=${encodeURIComponent(name)}`}
+                                >
+                                    {name}
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            ) : null}
+        </div>,
+        rootElement,
     );
 }
 
-// Render the component
-ReactDOM.render(
-    // <StyledEngineProvider injectFirst>
-    //     <ThemeProvider theme={lightTheme}>{componentToRender}</ThemeProvider>
-    // </StyledEngineProvider>,
-    <>{componentToRender}</>,
-    rootElement,
-);
+async function renderRequest(request: ComponentRenderRequest<any>) {
+    try {
+        const Component = await loadComponent(request.descriptor);
+        const element = React.createElement(Component, request.props ?? {});
+
+        ReactDOM.render(
+            // <StyledEngineProvider injectFirst>
+            //     <ThemeProvider theme={lightTheme}>{element}</ThemeProvider>
+            // </StyledEngineProvider>,
+            <>{element}</>,
+            rootElement,
+        );
+    } catch (error) {
+        console.error("Component tester failed to render", error);
+        renderError(error);
+    }
+}
+
+async function loadComponent(descriptor: {
+    modulePath: string;
+    exportName?: string;
+}): Promise<React.ComponentType<any>> {
+    let moduleExports: Record<string, unknown>;
+    try {
+        // Use Vite's glob import for static analysis
+        // Include all sibling component folders
+        const modules = import.meta.glob<Record<string, unknown>>(
+            "../**/*.{tsx,ts}",
+            { eager: false },
+        );
+
+        // The modulePath should be relative to component-tester, e.g., "../registration/registrationContents"
+        const moduleKey = descriptor.modulePath + ".tsx";
+        const moduleKeyTs = descriptor.modulePath + ".ts";
+
+        const moduleLoader = modules[moduleKey] || modules[moduleKeyTs];
+
+        if (!moduleLoader) {
+            throw new Error(
+                `Module not found: ${descriptor.modulePath}\nAvailable modules: ${Object.keys(modules).slice(0, 10).join(", ")}...`,
+            );
+        }
+
+        moduleExports = await moduleLoader();
+    } catch (error) {
+        const message =
+            error instanceof Error ? error.message : JSON.stringify(error);
+        throw new Error(
+            `Failed to load module "${descriptor.modulePath}": ${message}`,
+        );
+    }
+    const exportKey = descriptor.exportName ?? "default";
+    const candidate = moduleExports[exportKey];
+
+    if (typeof candidate !== "function") {
+        throw new Error(
+            `Export "${exportKey}" was not found or is not a component in module "${descriptor.modulePath}".`,
+        );
+    }
+
+    return candidate as React.ComponentType<any>;
+}
+
+function renderError(error: unknown) {
+    const message =
+        error instanceof Error
+            ? (error.stack ?? error.message)
+            : JSON.stringify(error, null, 2);
+
+    ReactDOM.render(
+        <div>
+            <h1>Component Tester Error</h1>
+            <pre>{message}</pre>
+        </div>,
+        rootElement,
+    );
+}

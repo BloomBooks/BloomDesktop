@@ -17,6 +17,7 @@
         "../**/*.spec.ts",
         "../**/*.spec.tsx",
         "./vite.config.ts",
+        "*.ts",
         "component-harness.tsx",
         "setTestComponent.ts"
     ],

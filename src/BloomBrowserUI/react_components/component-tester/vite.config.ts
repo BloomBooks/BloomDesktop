@@ -37,8 +37,15 @@ export default defineConfig({
             name: "serve-component-harness",
             configureServer(server) {
                 server.middlewares.use((req, res, next) => {
-                    if (req.url === "/" || req.url === "/index.html") {
-                        req.url = "/component-harness.html";
+                    if (
+                        req.url?.startsWith("/?") ||
+                        req.url === "/" ||
+                        req.url === "/index.html"
+                    ) {
+                        const query = req.url.includes("?")
+                            ? req.url.substring(req.url.indexOf("?"))
+                            : "";
+                        req.url = "/component-harness.html" + query;
                     }
                     next();
                 });
@@ -55,8 +62,21 @@ export default defineConfig({
 
                     // GET endpoints
                     if (req.method === "GET") {
-                        if (req.url.startsWith("/bloom/api/common/channel")) {
+                        // Match with or without double slash (bloomApi adds trailing slash)
+                        if (
+                            req.url.startsWith("/bloom/api/common/channel") ||
+                            req.url.startsWith("/bloom/api//common/channel")
+                        ) {
                             respondWithJson(res, "developer");
+                            return;
+                        }
+                        // Mock localization data to prevent 404 errors in console
+                        if (
+                            req.url.startsWith("/bloom/api/i18n/") ||
+                            req.url.startsWith("/bloom/api//i18n/")
+                        ) {
+                            // Return empty localization data
+                            respondWithJson(res, {});
                             return;
                         }
                     }
@@ -94,6 +114,9 @@ export default defineConfig({
         port: 5173,
         open: false,
         strictPort: true,
+        fs: {
+            allow: ["..", "../.."],
+        },
     },
     preview: {
         host: "127.0.0.1",

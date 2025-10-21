@@ -15,7 +15,7 @@ import { setupRegistrationComponent } from "./setup";
 
 test.describe("registration contents", () => {
     test("renders the registration form", async ({ page }) => {
-        await page.goto("/");
+        await page.goto("/?component=RegistrationContents");
         await expect(
             page.getByRole("textbox", { name: "First Name" }),
         ).toBeVisible();

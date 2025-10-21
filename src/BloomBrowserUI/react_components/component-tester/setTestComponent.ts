@@ -10,29 +10,39 @@
  */
 
 import { Page } from "@playwright/test";
+import { ComponentRenderRequest } from "./componentTypes";
 
 /**
  * Sets the React component to render in the test harness with full type checking.
  *
  * @param page - The Playwright page object
- * @param componentName - Name of the component to render (must match a key in component-harness.tsx component map)
- * @param props - Component props with full TypeScript type checking
+ * @param modulePath - The path to the module that exports the component
+ * @param exportName - The named export of the component (optional, defaults to default export)
+ * @param props - Component props (must be JSON-serializable)
  */
 export async function setTestComponent<TProps>(
     page: Page,
-    componentName: string,
+    modulePath: string,
+    exportName: string | undefined,
     props: TProps,
 ): Promise<void> {
-    // Inject test configuration before the page loads
-    await page.addInitScript((config) => {
-        (window as any).__TEST_CONFIG__ = config;
-    });
-
     // Serialize the component and props
-    const elementJson = JSON.stringify({
-        type: componentName,
-        props: props,
-    });
+    const renderRequest: ComponentRenderRequest<TProps> = {
+        descriptor: {
+            modulePath,
+            exportName,
+        },
+        props,
+    };
+
+    let elementJson: string;
+    try {
+        elementJson = JSON.stringify(renderRequest);
+    } catch (error) {
+        throw new Error(
+            `setTestComponent props must be JSON-serializable. ${String(error)}`,
+        );
+    }
 
     // Inject the element data before the page loads
     await page.addInitScript((json) => {
