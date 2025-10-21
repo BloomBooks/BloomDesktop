@@ -16,136 +16,80 @@ const emptyInfo: RegistrationInfo = {
     hadEmailAlready: false,
 };
 
-test.describe("Registration Dialog - Field Validation - First Name", () => {
-    test("First Name accepts valid input", async ({ page }) => {
+test.describe("Registration Dialog - Field Validation - Required Fields", () => {
+    test("All required fields accept valid input", async ({ page }) => {
         await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
-        const field = page.getByRole("textbox", { name: "First Name" });
-
-        // Test simple name
-        await field.fill("Alice");
-        await expect(field).toHaveValue("Alice");
-
-        // Test name with space
-        await field.fill("Mary Jane");
-        await expect(field).toHaveValue("Mary Jane");
-
-        // Test name with special characters
-        await field.fill("O'Brien-Smith");
-        await expect(field).toHaveValue("O'Brien-Smith");
-    });
-
-    test("First Name shows error when empty", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
+        // Test First Name
+        const firstNameField = page.getByRole("textbox", {
+            name: "First Name",
         });
+        await firstNameField.fill("Alice");
+        await expect(firstNameField).toHaveValue("Alice");
+        await firstNameField.fill("Mary Jane");
+        await expect(firstNameField).toHaveValue("Mary Jane");
+        await firstNameField.fill("O'Brien-Smith");
+        await expect(firstNameField).toHaveValue("O'Brien-Smith");
 
-        const field = page.getByRole("textbox", { name: "First Name" });
-        await field.clear();
+        // Test Surname
+        const surnameField = page.getByRole("textbox", { name: "Surname" });
+        await surnameField.fill("Smith");
+        await expect(surnameField).toHaveValue("Smith");
+        await surnameField.fill("Müller-O'Connor");
+        await expect(surnameField).toHaveValue("Müller-O'Connor");
 
-        const registerButton = page.getByRole("button", { name: "Register" });
-        await registerButton.click();
-
-        await page.waitForTimeout(500);
-        await expect(field).toHaveAttribute("aria-invalid", "true");
-    });
-});
-
-test.describe("Registration Dialog - Field Validation - Surname", () => {
-    test("Surname accepts valid input", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
+        // Test Organization
+        const organizationField = page.getByRole("textbox", {
+            name: "Organization",
         });
+        await organizationField.fill("SIL International");
+        await expect(organizationField).toHaveValue("SIL International");
+        await organizationField.fill("SIL International (East Asia)");
+        await expect(organizationField).toHaveValue(
+            "SIL International (East Asia)",
+        );
 
-        const field = page.getByRole("textbox", { name: "Surname" });
-
-        await field.fill("Smith");
-        await expect(field).toHaveValue("Smith");
-
-        await field.fill("Müller-O'Connor");
-        await expect(field).toHaveValue("Müller-O'Connor");
-    });
-
-    test("Surname shows error when empty", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const field = page.getByRole("textbox", { name: "Surname" });
-        await field.clear();
-
-        const registerButton = page.getByRole("button", { name: "Register" });
-        await registerButton.click();
-
-        await page.waitForTimeout(500);
-        await expect(field).toHaveAttribute("aria-invalid", "true");
-    });
-});
-
-test.describe("Registration Dialog - Field Validation - Organization", () => {
-    test("Organization accepts valid input", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const field = page.getByRole("textbox", { name: "Organization" });
-
-        await field.fill("SIL International");
-        await expect(field).toHaveValue("SIL International");
-
-        await field.fill("SIL International (East Asia)");
-        await expect(field).toHaveValue("SIL International (East Asia)");
-    });
-
-    test("Organization shows error when empty", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const field = page.getByRole("textbox", { name: "Organization" });
-        await field.clear();
-
-        const registerButton = page.getByRole("button", { name: "Register" });
-        await registerButton.click();
-
-        await page.waitForTimeout(500);
-        await expect(field).toHaveAttribute("aria-invalid", "true");
-    });
-});
-
-test.describe("Registration Dialog - Field Validation - How are you using Bloom", () => {
-    test("Accepts multiline text", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const field = page.getByRole("textbox", {
+        // Test How are you using Bloom (accepts multiline)
+        const usingForField = page.getByRole("textbox", {
             name: /How are you using|What will you|What are you/i,
         });
-
         const multilineText =
             "Creating materials\nFor literacy\nIn multiple languages";
-        await field.fill(multilineText);
-        await expect(field).toHaveValue(multilineText);
+        await usingForField.fill(multilineText);
+        await expect(usingForField).toHaveValue(multilineText);
     });
 
-    test("Shows error when empty", async ({ page }) => {
+    test("All required fields show error when empty", async ({ page }) => {
         await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
-        const field = page.getByRole("textbox", {
+        const firstNameField = page.getByRole("textbox", {
+            name: "First Name",
+        });
+        const surnameField = page.getByRole("textbox", { name: "Surname" });
+        const organizationField = page.getByRole("textbox", {
+            name: "Organization",
+        });
+        const usingForField = page.getByRole("textbox", {
             name: /How are you using|What will you|What are you/i,
         });
-        await field.clear();
+
+        await firstNameField.clear();
+        await surnameField.clear();
+        await organizationField.clear();
+        await usingForField.clear();
 
         const registerButton = page.getByRole("button", { name: "Register" });
         await registerButton.click();
 
         await page.waitForTimeout(500);
-        await expect(field).toHaveAttribute("aria-invalid", "true");
+        await expect(firstNameField).toHaveAttribute("aria-invalid", "true");
+        await expect(surnameField).toHaveAttribute("aria-invalid", "true");
+        await expect(organizationField).toHaveAttribute("aria-invalid", "true");
+        await expect(usingForField).toHaveAttribute("aria-invalid", "true");
     });
 });
 

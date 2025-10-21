@@ -17,40 +17,14 @@ const emptyInfo: RegistrationInfo = {
 };
 
 test.describe("Registration Dialog - Form Submission", () => {
-    test("Dialog does not close with invalid data", async ({ page }) => {
+    test("Dialog does not close with invalid data and shows all field errors", async ({
+        page,
+    }) => {
         await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
         // Clear all required fields to ensure they're empty
-        await page.getByRole("textbox", { name: "First Name" }).clear();
-        await page.getByRole("textbox", { name: "Surname" }).clear();
-        await page.getByRole("textbox", { name: "Organization" }).clear();
-        await page
-            .getByRole("textbox", {
-                name: /How are you using|What will you|What are you/i,
-            })
-            .clear();
-
-        const registerButton = page.getByRole("button", { name: "Register" });
-        await registerButton.click();
-
-        // Wait a second
-        await page.waitForTimeout(1000);
-
-        // Verify the form is still visible (not closed)
-        await expect(registerButton).toBeVisible();
-        await expect(
-            page.getByRole("textbox", { name: "First Name" }),
-        ).toBeVisible();
-    });
-
-    test("All fields show errors when all are invalid", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        // Clear all required fields
         const firstNameField = page.getByRole("textbox", {
             name: "First Name",
         });
@@ -67,10 +41,14 @@ test.describe("Registration Dialog - Form Submission", () => {
         await organizationField.clear();
         await usingForField.clear();
 
-        // Click Register
-        await page.getByRole("button", { name: "Register" }).click();
+        const registerButton = page.getByRole("button", { name: "Register" });
+        await registerButton.click();
 
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(1000);
+
+        // Verify the form is still visible (not closed)
+        await expect(registerButton).toBeVisible();
+        await expect(firstNameField).toBeVisible();
 
         // Verify all 4 required fields show errors
         await expect(firstNameField).toHaveAttribute("aria-invalid", "true");

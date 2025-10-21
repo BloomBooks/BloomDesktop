@@ -27,12 +27,6 @@ const validInfo: RegistrationInfo = {
 
 test.describe("Registration Dialog - Email Field - Initial Load", () => {
     test("Email field loads empty without errors", async ({ page }) => {
-        // OLD
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        // NEW
         await setupRegistrationComponent(page, { initialInfo: emptyInfo });
 
         const emailField = page.getByRole("textbox", {
@@ -82,180 +76,69 @@ test.describe("Registration Dialog - Email Field - Initial Load", () => {
 });
 
 test.describe("Registration Dialog - Email Field - Valid Formats", () => {
-    test("Accepts standard email format", async ({ page }) => {
+    test("Accepts various valid email formats", async ({ page }) => {
         await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
         const field = page.getByRole("textbox", { name: "Email Address" });
 
-        await field.fill("user@domain.com");
-        await expect(field).toHaveValue("user@domain.com");
-        await expect(field).not.toHaveAttribute("aria-invalid", "true");
-    });
+        const validEmails = [
+            "user@domain.com", // standard format
+            "user+test@domain.com", // plus sign (for aliases)
+            "user@mail.example.com", // subdomain
+            "first.last@domain.com", // dots in username
+            "user123@domain456.com", // numbers
+            "user-name@my-domain.com", // hyphens
+            "user_name@domain.com", // underscores
+        ];
 
-    test("Accepts email with plus sign (for aliases)", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
+        for (const email of validEmails) {
+            // Fill with invalid email first to ensure UI responds to valid input
+            await field.fill("invalid");
+            await page.keyboard.press("Tab");
+            await page.waitForTimeout(200);
 
-        const field = page.getByRole("textbox", { name: "Email Address" });
-
-        await field.fill("user+test@domain.com");
-        await expect(field).toHaveValue("user+test@domain.com");
-        await expect(field).not.toHaveAttribute("aria-invalid", "true");
-    });
-
-    test("Accepts email with subdomain", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const field = page.getByRole("textbox", { name: "Email Address" });
-
-        await field.fill("user@mail.example.com");
-        await expect(field).toHaveValue("user@mail.example.com");
-        await expect(field).not.toHaveAttribute("aria-invalid", "true");
-    });
-
-    test("Accepts email with dots in username", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const field = page.getByRole("textbox", { name: "Email Address" });
-
-        await field.fill("first.last@domain.com");
-        await expect(field).toHaveValue("first.last@domain.com");
-        await expect(field).not.toHaveAttribute("aria-invalid", "true");
-    });
-
-    test("Accepts email with numbers", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const field = page.getByRole("textbox", { name: "Email Address" });
-
-        await field.fill("user123@domain456.com");
-        await expect(field).toHaveValue("user123@domain456.com");
-        await expect(field).not.toHaveAttribute("aria-invalid", "true");
-    });
-
-    test("Accepts email with hyphens", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const field = page.getByRole("textbox", { name: "Email Address" });
-
-        await field.fill("user-name@my-domain.com");
-        await expect(field).toHaveValue("user-name@my-domain.com");
-        await expect(field).not.toHaveAttribute("aria-invalid", "true");
-    });
-
-    test("Accepts email with underscores", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const field = page.getByRole("textbox", { name: "Email Address" });
-
-        await field.fill("user_name@domain.com");
-        await expect(field).toHaveValue("user_name@domain.com");
-        await expect(field).not.toHaveAttribute("aria-invalid", "true");
+            // Now fill with valid email
+            await field.fill(email);
+            await page.keyboard.press("Tab");
+            await page.waitForTimeout(200);
+            await expect(field).toHaveValue(email);
+            await expect(field).not.toHaveAttribute("aria-invalid", "true");
+        }
     });
 });
 
 test.describe("Registration Dialog - Email Field - Invalid Formats", () => {
-    test("Shows error for email without @ symbol", async ({ page }) => {
+    test("Shows errors for various invalid email formats", async ({ page }) => {
         await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
         const field = page.getByRole("textbox", { name: "Email Address" });
-        const registerButton = page.getByRole("button", { name: "Register" });
 
-        await field.fill("notanemail");
-        await expect(field).toHaveValue("notanemail");
-        await registerButton.click();
-        await page.waitForTimeout(500);
-        await expect(field).toHaveAttribute("aria-invalid", "true");
-    });
+        const invalidEmails = [
+            "notanemail", // without @ symbol
+            "user@", // missing domain
+            "@domain.com", // missing username
+            "user name@domain.com", // with spaces
+            "user@@domain.com", // double @
+            "user@domain", // missing TLD
+        ];
 
-    test("Shows error for email missing domain", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
+        for (const email of invalidEmails) {
+            // Fill with valid email first to ensure UI responds to invalid input
+            await field.fill("valid@example.com");
+            await page.keyboard.press("Tab");
+            await page.waitForTimeout(200);
 
-        const field = page.getByRole("textbox", { name: "Email Address" });
-        const registerButton = page.getByRole("button", { name: "Register" });
-
-        await field.fill("user@");
-        await expect(field).toHaveValue("user@");
-        await registerButton.click();
-        await page.waitForTimeout(500);
-        await expect(field).toHaveAttribute("aria-invalid", "true");
-    });
-
-    test("Shows error for email missing username", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const field = page.getByRole("textbox", { name: "Email Address" });
-        const registerButton = page.getByRole("button", { name: "Register" });
-
-        await field.fill("@domain.com");
-        await expect(field).toHaveValue("@domain.com");
-        await registerButton.click();
-        await page.waitForTimeout(500);
-        await expect(field).toHaveAttribute("aria-invalid", "true");
-    });
-
-    test("Shows error for email with spaces", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const field = page.getByRole("textbox", { name: "Email Address" });
-        const registerButton = page.getByRole("button", { name: "Register" });
-
-        await field.fill("user name@domain.com");
-        await expect(field).toHaveValue("user name@domain.com");
-        await registerButton.click();
-        await page.waitForTimeout(500);
-        await expect(field).toHaveAttribute("aria-invalid", "true");
-    });
-
-    test("Shows error for email with double @", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const field = page.getByRole("textbox", { name: "Email Address" });
-        const registerButton = page.getByRole("button", { name: "Register" });
-
-        await field.fill("user@@domain.com");
-        await expect(field).toHaveValue("user@@domain.com");
-        await registerButton.click();
-        await page.waitForTimeout(500);
-        await expect(field).toHaveAttribute("aria-invalid", "true");
-    });
-
-    test("Shows error for email missing TLD", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const field = page.getByRole("textbox", { name: "Email Address" });
-        const registerButton = page.getByRole("button", { name: "Register" });
-
-        await field.fill("user@domain");
-        await expect(field).toHaveValue("user@domain");
-        await registerButton.click();
-        await page.waitForTimeout(500);
-        await expect(field).toHaveAttribute("aria-invalid", "true");
+            // Now fill with invalid email
+            await field.fill(email);
+            await page.keyboard.press("Tab");
+            await page.waitForTimeout(200);
+            await expect(field).toHaveValue(email);
+            await expect(field).toHaveAttribute("aria-invalid", "true");
+        }
     });
 });
 
