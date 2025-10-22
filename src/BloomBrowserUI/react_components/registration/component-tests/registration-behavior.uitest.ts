@@ -65,10 +65,7 @@ test.describe("Registration Dialog - Field Focus & Tab Order", () => {
             },
         });
 
-        // Wait for component to render and focus
-        await page.waitForTimeout(1000);
-
-        // Get the focused element
+        // Wait for the field to receive focus
         const firstNameField = await field.firstName.getElement();
         await expect(firstNameField).toBeFocused();
     });
@@ -77,8 +74,6 @@ test.describe("Registration Dialog - Field Focus & Tab Order", () => {
         await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
-
-        await page.waitForTimeout(500);
 
         // Start at First Name (should be focused)
         const firstNameField = await field.firstName.getElement();

@@ -73,7 +73,6 @@ test.describe("Registration Dialog - Field Validation - Required Fields", () => 
 
         await clickRegisterButton(page);
 
-        await page.waitForTimeout(500);
         expect(await field.firstName.markedInvalid).toBe(true);
         expect(await field.surname.markedInvalid).toBe(true);
         expect(await field.organization.markedInvalid).toBe(true);
@@ -107,7 +106,6 @@ test.describe("Registration Dialog - Edge Cases", () => {
 
         await clickRegisterButton(page);
 
-        await page.waitForTimeout(500);
         expect(await field.firstName.markedInvalid).toBe(true);
     });
 });

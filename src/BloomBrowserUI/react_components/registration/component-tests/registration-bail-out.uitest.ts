@@ -37,11 +37,10 @@ test.describe("Registration Dialog - Initial Rendering & Layout", () => {
         const optOutButton = getOptOutButton(page);
         await expect(optOutButton).not.toBeVisible();
 
-        // Wait for the button to appear using the helper
-        await page.waitForTimeout(
-            kInactivitySecondsBeforeShowingOptOut * 1000 + 1000,
-        );
-        await expect(optOutButton).toBeVisible();
+        // Wait for the button to appear (feature: shows after 10 seconds of inactivity)
+        await expect(optOutButton).toBeVisible({
+            timeout: (kInactivitySecondsBeforeShowingOptOut + 2) * 1000,
+        });
     });
 
     test("Opt-out button submits form with valid data", async ({ page }) => {

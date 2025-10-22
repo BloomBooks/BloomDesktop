@@ -136,13 +136,12 @@ export async function fillRegistrationForm(
 }
 
 export async function waitForAndClickOptOutButton(page: Page) {
-    await page.waitForTimeout(
-        kInactivitySecondsBeforeShowingOptOut * 1000 + 1000,
-    );
+    // Wait for opt-out button to appear (feature: shows after 10 seconds of inactivity)
     const optOutButton = getOptOutButton(page);
-    await expect(optOutButton).toBeVisible();
+    await expect(optOutButton).toBeVisible({
+        timeout: (kInactivitySecondsBeforeShowingOptOut + 2) * 1000,
+    });
     await optOutButton.click();
-    await page.waitForTimeout(500);
 }
 
 export async function getMarkedInvalid(
