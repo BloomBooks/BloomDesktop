@@ -8,9 +8,11 @@ import type { Page } from "@playwright/test";
 import {
     kInactivitySecondsBeforeShowingOptOut,
     type IRegistrationContentsProps,
-    type RegistrationInfo,
 } from "../registrationTypes";
-import { setupRegistrationComponent } from "./setup";
+import {
+    setupRegistrationComponent,
+    waitForAndClickOptOutButton,
+} from "./common";
 
 const defaultProps: IRegistrationContentsProps = {
     initialInfo: {
@@ -25,18 +27,6 @@ const defaultProps: IRegistrationContentsProps = {
     emailRequiredForTeamCollection: false,
     onSubmit: (updated) => console.log("Submitted:", updated),
 };
-
-async function waitForAndClickOptOutButton(page: Page) {
-    await page.waitForTimeout(
-        kInactivitySecondsBeforeShowingOptOut * 1000 + 1000,
-    );
-    const optOutButton = page.getByRole("button", {
-        name: /stuck.*later/i,
-    });
-    await expect(optOutButton).toBeVisible();
-    await optOutButton.click();
-    await page.waitForTimeout(500);
-}
 
 test.describe("Registration Dialog - Initial Rendering & Layout", () => {
     test("Dialog renders correctly with all elements", async ({ page }) => {
@@ -96,67 +86,53 @@ test.describe("Registration Dialog - Initial Rendering & Layout", () => {
     });
 
     test("Opt-out button submits form with valid data", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
+        const receiver = await setupRegistrationComponent(page, {
             initialInfo: defaultProps.initialInfo,
-            onSubmit: (data) => {
-                submittedData = data;
-            },
         });
 
         await waitForAndClickOptOutButton(page);
 
         // Should submit current data
+        const submittedData = await receiver();
         expect(submittedData).toBeDefined();
-        expect(submittedData!.firstName).toBe("John");
-        expect(submittedData!.email).toBe("john.doe@example.com");
+        expect(submittedData.firstName).toBe("John");
+        expect(submittedData.email).toBe("john.doe@example.com");
     });
 
     test("Opt-out button clears invalid email before submitting", async ({
         page,
     }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
+        const receiver = await setupRegistrationComponent(page, {
             initialInfo: {
                 ...defaultProps.initialInfo,
                 email: "invalid-email",
-            },
-            onSubmit: (data) => {
-                submittedData = data;
             },
         });
 
         await waitForAndClickOptOutButton(page);
 
         // Should clear the invalid email
-        expect(submittedData!.email).toBe("");
-        expect(submittedData!.firstName).toBe("John");
+        const submittedData = await receiver();
+        expect(submittedData.email).toBe("");
+        expect(submittedData.firstName).toBe("John");
     });
 
     test("Opt-out button preserves valid email", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
+        const receiver = await setupRegistrationComponent(page, {
             initialInfo: defaultProps.initialInfo,
-            onSubmit: (data) => {
-                submittedData = data;
-            },
         });
 
         await waitForAndClickOptOutButton(page);
 
         // Should keep the valid email
-        expect(submittedData!.email).toBe("john.doe@example.com");
+        const submittedData = await receiver();
+        expect(submittedData.email).toBe("john.doe@example.com");
     });
 
     test("Opt-out button works even with empty required fields", async ({
         page,
     }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
+        const receiver = await setupRegistrationComponent(page, {
             initialInfo: {
                 firstName: "",
                 surname: "",
@@ -165,15 +141,13 @@ test.describe("Registration Dialog - Initial Rendering & Layout", () => {
                 usingFor: "",
                 hadEmailAlready: false,
             },
-            onSubmit: (data) => {
-                submittedData = data;
-            },
         });
 
         await waitForAndClickOptOutButton(page);
 
         // Should submit even with empty fields
+        const submittedData = await receiver();
         expect(submittedData).toBeDefined();
-        expect(submittedData!.firstName).toBe("");
+        expect(submittedData.firstName).toBe("");
     });
 });

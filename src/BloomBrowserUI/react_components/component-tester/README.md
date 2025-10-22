@@ -35,6 +35,8 @@ To add a new component to the test harness:
    - `defaultProps`: default props for testing
 3. Add *.e2e.spec.ts files.
 
+**For testing components that get or submit data via APIs**, the methods provided by apiInterceptors.ts.
+
 To launch a component:
 - `yarn manual` - lists all available components and opens the dev server
 - `yarn manual ComponentName` - starts dev server and opens that specific component

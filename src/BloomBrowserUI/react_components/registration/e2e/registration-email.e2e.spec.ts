@@ -5,7 +5,7 @@
 
 import { expect, test } from "@playwright/test";
 import type { RegistrationInfo } from "../registrationContents";
-import { setupRegistrationComponent } from "./setup";
+import { setupRegistrationComponent, clickRegisterButton } from "./common";
 
 const emptyInfo: RegistrationInfo = {
     firstName: "",
@@ -147,11 +147,10 @@ test.describe("Registration Dialog - Email Field - Typing Behavior", () => {
         });
 
         const field = page.getByRole("textbox", { name: "Email Address" });
-        const registerButton = page.getByRole("button", { name: "Register" });
 
         // Enter invalid email and trigger validation
         await field.fill("invalid");
-        await registerButton.click();
+        await clickRegisterButton(page);
         await expect(field).toHaveAttribute("aria-invalid", "true");
 
         // Now type a valid email
@@ -208,8 +207,7 @@ test.describe("Registration Dialog - Email Field - Optional vs Required", () => 
         });
         await emailField.clear();
 
-        const registerButton = page.getByRole("button", { name: "Register" });
-        await registerButton.click();
+        await clickRegisterButton(page);
 
         // Email should NOT show error when it's optional
         await expect(emailField).not.toHaveAttribute("aria-invalid", "true");
@@ -228,8 +226,7 @@ test.describe("Registration Dialog - Email Field - Optional vs Required", () => 
         });
         await emailField.clear();
 
-        const registerButton = page.getByRole("button", { name: "Register" });
-        await registerButton.click();
+        await clickRegisterButton(page);
 
         // Email should show error when required
         await expect(emailField).toHaveAttribute("aria-invalid", "true");
@@ -248,8 +245,7 @@ test.describe("Registration Dialog - Email Field - Optional vs Required", () => 
         });
         await emailField.fill("required@example.com");
 
-        const registerButton = page.getByRole("button", { name: "Register" });
-        await registerButton.click();
+        await clickRegisterButton(page);
 
         // Valid email should not show error even when required
         await expect(emailField).not.toHaveAttribute("aria-invalid", "true");
@@ -277,10 +273,9 @@ test.describe("Registration Dialog - Email Field - Edge Cases", () => {
         });
 
         const field = page.getByRole("textbox", { name: "Email Address" });
-        const registerButton = page.getByRole("button", { name: "Register" });
 
         await field.fill("   ");
-        await registerButton.click();
+        await clickRegisterButton(page);
 
         // Whitespace-only should be treated as empty (valid in optional mode)
         await expect(field).not.toHaveAttribute("aria-invalid", "true");
@@ -302,7 +297,7 @@ test.describe("Registration Dialog - Email Field - Edge Cases", () => {
 
 test.describe("Registration Dialog - Email Case Sensitivity", () => {
     test("Preserves email capitalization on submit", async ({ page }) => {
-        const finisher = await setupRegistrationComponent(page, {
+        const receiver = await setupRegistrationComponent(page, {
             initialInfo: validInfo,
         });
 
@@ -310,7 +305,8 @@ test.describe("Registration Dialog - Email Case Sensitivity", () => {
             .getByRole("textbox", { name: "Email Address" })
             .fill("John.Doe@Example.COM");
 
-        const data = await finisher.submit();
+        await clickRegisterButton(page);
+        const data = await receiver();
 
         // Email should be preserved as-is (not lowercased)
         expect(data.email).toBe("John.Doe@Example.COM");

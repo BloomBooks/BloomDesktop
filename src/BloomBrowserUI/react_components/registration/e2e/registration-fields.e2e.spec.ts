@@ -5,8 +5,11 @@
 
 import { expect, test } from "@playwright/test";
 import type { RegistrationInfo } from "../registrationTypes";
-import { setupRegistrationComponent } from "./setup";
-import { receivePost } from "../../component-tester/apiInterceptors";
+import {
+    setupRegistrationComponent,
+    clickRegisterButton,
+    fillRegistrationForm,
+} from "./common";
 
 const emptyInfo: RegistrationInfo = {
     firstName: "",
@@ -83,8 +86,7 @@ test.describe("Registration Dialog - Field Validation - Required Fields", () => 
         await organizationField.clear();
         await usingForField.clear();
 
-        const registerButton = page.getByRole("button", { name: "Register" });
-        await registerButton.click();
+        await clickRegisterButton(page);
 
         await page.waitForTimeout(500);
         await expect(firstNameField).toHaveAttribute("aria-invalid", "true");
@@ -120,8 +122,7 @@ test.describe("Registration Dialog - Edge Cases", () => {
         const field = page.getByRole("textbox", { name: "First Name" });
         await field.fill("   ");
 
-        const registerButton = page.getByRole("button", { name: "Register" });
-        await registerButton.click();
+        await clickRegisterButton(page);
 
         await page.waitForTimeout(500);
         await expect(field).toHaveAttribute("aria-invalid", "true");
@@ -159,34 +160,23 @@ test.describe("Registration Dialog - Field Trimming", () => {
     test("Trims leading and trailing whitespace from all fields on submit", async ({
         page,
     }) => {
-        const getSubmittedData = receivePost<RegistrationInfo>(
-            page,
-            "**/bloom/api/registration/userInfo",
-        );
-
-        await setupRegistrationComponent(page, {
+        const receiver = await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
         });
 
         // Fill fields with leading/trailing whitespace
-        await page
-            .getByRole("textbox", { name: "First Name" })
-            .fill("  John  ");
-        await page.getByRole("textbox", { name: "Surname" }).fill("  Doe  ");
-        await page
-            .getByRole("textbox", { name: "Email Address" })
-            .fill("  john@example.com  ");
-        await page
-            .getByRole("textbox", { name: "Organization" })
-            .fill("  SIL  ");
-        await page
-            .getByRole("textbox", { name: /How are you using/i })
-            .fill("  Testing  ");
+        await fillRegistrationForm(page, {
+            firstName: "  John  ",
+            surname: "  Doe  ",
+            email: "  john@example.com  ",
+            organization: "  SIL  ",
+            usingFor: "  Testing  ",
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
+        await clickRegisterButton(page);
 
         // Wait for and verify submitted data is trimmed
-        const submittedData = await getSubmittedData();
+        const submittedData = await receiver();
         expect(submittedData.firstName).toBe("John");
         expect(submittedData.surname).toBe("Doe");
         expect(submittedData.email).toBe("john@example.com");
@@ -195,69 +185,46 @@ test.describe("Registration Dialog - Field Trimming", () => {
     });
 
     test("Preserves internal spaces in fields", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
-            initialInfo: {
-                ...emptyInfo,
-                email: "test@example.com",
-            },
-            onSubmit: (data) => {
-                submittedData = data;
-            },
+        const receiver = await setupRegistrationComponent(page, {
+            initialInfo: emptyInfo,
         });
 
-        await page
-            .getByRole("textbox", { name: "First Name" })
-            .fill("Mary Jane");
-        await page
-            .getByRole("textbox", { name: "Surname" })
-            .fill("Van Der Berg");
-        await page
-            .getByRole("textbox", { name: "Organization" })
-            .fill("SIL International");
-        await page
-            .getByRole("textbox", { name: /How are you using/i })
-            .fill("Creating materials");
+        await fillRegistrationForm(page, {
+            firstName: "Mary Jane",
+            surname: "Van Der Berg",
+            email: "test@example.com",
+            organization: "SIL International",
+            usingFor: "Creating materials",
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
-        expect(submittedData!.firstName).toBe("Mary Jane");
-        expect(submittedData!.surname).toBe("Van Der Berg");
-        expect(submittedData!.organization).toBe("SIL International");
+        expect(submittedData.firstName).toBe("Mary Jane");
+        expect(submittedData.surname).toBe("Van Der Berg");
+        expect(submittedData.organization).toBe("SIL International");
     });
 
     test("Trims multiline field while preserving internal newlines", async ({
         page,
     }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
-            initialInfo: {
-                ...emptyInfo,
-                firstName: "John",
-                surname: "Doe",
-                email: "test@example.com",
-                organization: "SIL",
-            },
-            onSubmit: (data) => {
-                submittedData = data;
-            },
+        const receiver = await setupRegistrationComponent(page, {
+            initialInfo: emptyInfo,
         });
 
-        // Add leading/trailing whitespace and newlines
-        await page
-            .getByRole("textbox", { name: /How are you using/i })
-            .fill("  \nCreating materials\nFor literacy\n  ");
+        await fillRegistrationForm(page, {
+            firstName: "John",
+            surname: "Doe",
+            email: "test@example.com",
+            organization: "SIL",
+            usingFor: "  \nCreating materials\nFor literacy\n  ",
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
         // Should trim outer whitespace but keep internal newlines
-        expect(submittedData!.usingFor).toBe(
-            "Creating materials\nFor literacy",
-        );
+        expect(submittedData.usingFor).toBe("Creating materials\nFor literacy");
     });
 });
 
@@ -311,117 +278,91 @@ test.describe("Registration Dialog - Newlines in Single-Line Fields", () => {
 
 test.describe("Registration Dialog - Special Characters", () => {
     test("Accepts emoji in name fields", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
-            initialInfo: {
-                ...emptyInfo,
-                email: "test@example.com",
-                organization: "SIL",
-                usingFor: "Testing",
-            },
-            onSubmit: (data) => {
-                submittedData = data;
-            },
+        const receiver = await setupRegistrationComponent(page, {
+            initialInfo: emptyInfo,
         });
 
-        await page.getByRole("textbox", { name: "First Name" }).fill("😊 John");
-        await page.getByRole("textbox", { name: "Surname" }).fill("Doe 👍");
+        await fillRegistrationForm(page, {
+            firstName: "😊 John",
+            surname: "Doe 👍",
+            email: "test@example.com",
+            organization: "SIL",
+            usingFor: "Testing",
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
-        expect(submittedData!.firstName).toBe("😊 John");
-        expect(submittedData!.surname).toBe("Doe 👍");
+        expect(submittedData.firstName).toBe("😊 John");
+        expect(submittedData.surname).toBe("Doe 👍");
     });
 
     test("Accepts non-Latin scripts in all fields", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
+        const receiver = await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
-            onSubmit: (data) => {
-                submittedData = data;
-            },
         });
 
         // Chinese
-        await page.getByRole("textbox", { name: "First Name" }).fill("李");
-        await page.getByRole("textbox", { name: "Surname" }).fill("明");
         // Cyrillic
-        await page
-            .getByRole("textbox", { name: "Organization" })
-            .fill("Организация");
         // Email still needs to be valid
-        await page
-            .getByRole("textbox", { name: "Email Address" })
-            .fill("test@example.com");
         // Arabic
-        await page
-            .getByRole("textbox", { name: /How are you using/i })
-            .fill("اختبار");
+        await fillRegistrationForm(page, {
+            firstName: "李",
+            surname: "明",
+            email: "test@example.com",
+            organization: "Организация",
+            usingFor: "اختبار",
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
-        expect(submittedData!.firstName).toBe("李");
-        expect(submittedData!.surname).toBe("明");
-        expect(submittedData!.organization).toBe("Организация");
-        expect(submittedData!.usingFor).toBe("اختبار");
+        expect(submittedData.firstName).toBe("李");
+        expect(submittedData.surname).toBe("明");
+        expect(submittedData.organization).toBe("Организация");
+        expect(submittedData.usingFor).toBe("اختبار");
     });
 
     test("Handles tab characters in text", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
-            initialInfo: {
-                ...emptyInfo,
-                surname: "Doe",
-                email: "test@example.com",
-                organization: "SIL",
-                usingFor: "Testing",
-            },
-            onSubmit: (data) => {
-                submittedData = data;
-            },
+        const receiver = await setupRegistrationComponent(page, {
+            initialInfo: emptyInfo,
         });
 
-        // Tab character might be converted or stripped by browser
-        await page.getByRole("textbox", { name: "First Name" }).fill("John\t");
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await fillRegistrationForm(page, {
+            firstName: "John\t",
+            surname: "Doe",
+            email: "test@example.com",
+            organization: "SIL",
+            usingFor: "Testing",
+        });
+
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
         // Verify it doesn't break submission
         expect(submittedData).toBeDefined();
-        expect(submittedData!.firstName).toBeTruthy();
+        expect(submittedData.firstName).toBeTruthy();
     });
 
     test("HTML/script tags are treated as plain text", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
-            initialInfo: {
-                ...emptyInfo,
-                surname: "Doe",
-                email: "test@example.com",
-                organization: "SIL",
-                usingFor: "Testing",
-            },
-            onSubmit: (data) => {
-                submittedData = data;
-            },
+        const receiver = await setupRegistrationComponent(page, {
+            initialInfo: emptyInfo,
         });
 
         const maliciousInput = "<script>alert('xss')</script>";
-        await page
-            .getByRole("textbox", { name: "First Name" })
-            .fill(maliciousInput);
+        await fillRegistrationForm(page, {
+            firstName: maliciousInput,
+            surname: "Doe",
+            email: "test@example.com",
+            organization: "SIL",
+            usingFor: "Testing",
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
         // Should be stored as plain text, not executed
-        expect(submittedData!.firstName).toBe(maliciousInput);
+        expect(submittedData.firstName).toBe(maliciousInput);
 
         // Verify no script was executed (page should still be functional)
         await expect(
@@ -432,225 +373,161 @@ test.describe("Registration Dialog - Special Characters", () => {
 
 test.describe("Registration Dialog - JSON Escaping", () => {
     test("Handles backslashes in text fields", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
+        const receiver = await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
-            onSubmit: (data) => {
-                submittedData = data;
-            },
         });
 
         const textWithBackslashes = "C:\\Users\\John\\Documents";
-        await page
-            .getByRole("textbox", { name: "First Name" })
-            .fill(textWithBackslashes);
-        await page.getByRole("textbox", { name: "Surname" }).fill("Doe");
-        await page
-            .getByRole("textbox", { name: "Email Address" })
-            .fill("test@example.com");
-        await page.getByRole("textbox", { name: "Organization" }).fill("SIL");
-        await page
-            .getByRole("textbox", { name: /How are you using/i })
-            .fill("Testing");
+        await fillRegistrationForm(page, {
+            firstName: textWithBackslashes,
+            surname: "Doe",
+            email: "test@example.com",
+            organization: "SIL",
+            usingFor: "Testing",
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
         // Backslashes should be preserved
-        expect(submittedData!.firstName).toBe(textWithBackslashes);
+        expect(submittedData.firstName).toBe(textWithBackslashes);
     });
 
     test("Handles double quotes in text fields", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
+        const receiver = await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
-            onSubmit: (data) => {
-                submittedData = data;
-            },
         });
 
         const textWithQuotes = 'John "Johnny" Doe';
-        await page.getByRole("textbox", { name: "First Name" }).fill("Test");
-        await page.getByRole("textbox", { name: "Surname" }).fill("User");
-        await page
-            .getByRole("textbox", { name: "Email Address" })
-            .fill("test@example.com");
-        await page
-            .getByRole("textbox", { name: "Organization" })
-            .fill(textWithQuotes);
-        await page
-            .getByRole("textbox", { name: /How are you using/i })
-            .fill("Testing");
+        await fillRegistrationForm(page, {
+            firstName: "Test",
+            surname: "User",
+            email: "test@example.com",
+            organization: textWithQuotes,
+            usingFor: "Testing",
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
         // Double quotes should be preserved
-        expect(submittedData!.organization).toBe(textWithQuotes);
+        expect(submittedData.organization).toBe(textWithQuotes);
     });
 
     test("Handles single quotes and apostrophes", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
+        const receiver = await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
-            onSubmit: (data) => {
-                submittedData = data;
-            },
         });
 
-        await page.getByRole("textbox", { name: "First Name" }).fill("O'Brien");
-        await page.getByRole("textbox", { name: "Surname" }).fill("D'Angelo");
-        await page
-            .getByRole("textbox", { name: "Email Address" })
-            .fill("test@example.com");
-        await page.getByRole("textbox", { name: "Organization" }).fill("SIL");
-        await page
-            .getByRole("textbox", { name: /How are you using/i })
-            .fill("Testing 'special' characters");
+        await fillRegistrationForm(page, {
+            firstName: "O'Brien",
+            surname: "D'Angelo",
+            email: "test@example.com",
+            organization: "SIL",
+            usingFor: "Testing 'special' characters",
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
-        expect(submittedData!.firstName).toBe("O'Brien");
-        expect(submittedData!.surname).toBe("D'Angelo");
-        expect(submittedData!.usingFor).toBe("Testing 'special' characters");
+        expect(submittedData.firstName).toBe("O'Brien");
+        expect(submittedData.surname).toBe("D'Angelo");
+        expect(submittedData.usingFor).toBe("Testing 'special' characters");
     });
 
     test("Handles combination of special JSON characters", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
+        const receiver = await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
-            onSubmit: (data) => {
-                submittedData = data;
-            },
         });
 
         const complexText = "Path: \"C:\\Program Files\\Test\"\nWith: 'quotes'";
-        await page.getByRole("textbox", { name: "First Name" }).fill("John");
-        await page.getByRole("textbox", { name: "Surname" }).fill("Doe");
-        await page
-            .getByRole("textbox", { name: "Email Address" })
-            .fill("test@example.com");
-        await page.getByRole("textbox", { name: "Organization" }).fill("SIL");
-        await page
-            .getByRole("textbox", { name: /How are you using/i })
-            .fill(complexText);
+        await fillRegistrationForm(page, {
+            firstName: "John",
+            surname: "Doe",
+            email: "test@example.com",
+            organization: "SIL",
+            usingFor: complexText,
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
         // All special characters should be preserved
-        expect(submittedData!.usingFor).toBe(complexText);
+        expect(submittedData.usingFor).toBe(complexText);
     });
 
     test("Handles null bytes and control characters", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
+        const receiver = await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
-            onSubmit: (data) => {
-                submittedData = data;
-            },
         });
 
         // Control characters: carriage return, tab, form feed
         const controlChars = "Line1\r\nLine2\tTabbed\fFormFeed";
-        await page.getByRole("textbox", { name: "First Name" }).fill("John");
-        await page.getByRole("textbox", { name: "Surname" }).fill("Doe");
-        await page
-            .getByRole("textbox", { name: "Email Address" })
-            .fill("test@example.com");
-        await page.getByRole("textbox", { name: "Organization" }).fill("SIL");
-        await page
-            .getByRole("textbox", { name: /How are you using/i })
-            .fill(controlChars);
+        await fillRegistrationForm(page, {
+            firstName: "John",
+            surname: "Doe",
+            email: "test@example.com",
+            organization: "SIL",
+            usingFor: controlChars,
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
         // Control characters should be handled (may be normalized)
         expect(submittedData).toBeDefined();
-        expect(submittedData!.usingFor).toBeTruthy();
+        expect(submittedData.usingFor).toBeTruthy();
     });
 });
 
 test.describe("Registration Dialog - Multiline Field Edge Cases", () => {
     test("Handles excessive newlines in Using For field", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
-            initialInfo: {
-                ...emptyInfo,
-                firstName: "John",
-                surname: "Doe",
-                email: "test@example.com",
-                organization: "SIL",
-            },
-            onSubmit: (data) => {
-                submittedData = data;
-            },
+        const receiver = await setupRegistrationComponent(page, {
+            initialInfo: emptyInfo,
         });
 
         // Many consecutive newlines
         const excessiveNewlines = "Line 1\n\n\n\n\n\n\n\nLine 2";
-        await page
-            .getByRole("textbox", { name: /How are you using/i })
-            .fill(excessiveNewlines);
+        await fillRegistrationForm(page, {
+            firstName: "John",
+            surname: "Doe",
+            email: "test@example.com",
+            organization: "SIL",
+            usingFor: excessiveNewlines,
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
         // Should preserve all newlines as entered
-        expect(submittedData!.usingFor).toBe(excessiveNewlines);
+        expect(submittedData.usingFor).toBe(excessiveNewlines);
     });
 
     test("Handles very long single line in multiline field", async ({
         page,
     }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
-            initialInfo: {
-                ...emptyInfo,
-                firstName: "John",
-                surname: "Doe",
-                email: "test@example.com",
-                organization: "SIL",
-            },
-            onSubmit: (data) => {
-                submittedData = data;
-            },
+        const receiver = await setupRegistrationComponent(page, {
+            initialInfo: emptyInfo,
         });
 
         const longLine = "A".repeat(500);
-        await page
-            .getByRole("textbox", { name: /How are you using/i })
-            .fill(longLine);
+        await fillRegistrationForm(page, {
+            firstName: "John",
+            surname: "Doe",
+            email: "test@example.com",
+            organization: "SIL",
+            usingFor: longLine,
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
-        expect(submittedData!.usingFor).toBe(longLine);
+        expect(submittedData.usingFor).toBe(longLine);
     });
 
     test("Handles many short lines in multiline field", async ({ page }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
-            initialInfo: {
-                ...emptyInfo,
-                firstName: "John",
-                surname: "Doe",
-                email: "test@example.com",
-                organization: "SIL",
-            },
-            onSubmit: (data) => {
-                submittedData = data;
-            },
+        const receiver = await setupRegistrationComponent(page, {
+            initialInfo: emptyInfo,
         });
 
         const manyLines = Array(50)
@@ -658,44 +535,41 @@ test.describe("Registration Dialog - Multiline Field Edge Cases", () => {
             .map((line, i) => `${line} ${i}`)
             .join("\n");
 
-        await page
-            .getByRole("textbox", { name: /How are you using/i })
-            .fill(manyLines);
+        await fillRegistrationForm(page, {
+            firstName: "John",
+            surname: "Doe",
+            email: "test@example.com",
+            organization: "SIL",
+            usingFor: manyLines,
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
-        expect(submittedData!.usingFor).toBe(manyLines);
+        expect(submittedData.usingFor).toBe(manyLines);
     });
 
     test("Handles mixed tabs and spaces in multiline field", async ({
         page,
     }) => {
-        let submittedData: RegistrationInfo | undefined = undefined;
-
-        await setupRegistrationComponent(page, {
-            initialInfo: {
-                ...emptyInfo,
-                firstName: "John",
-                surname: "Doe",
-                email: "test@example.com",
-                organization: "SIL",
-            },
-            onSubmit: (data) => {
-                submittedData = data;
-            },
+        const receiver = await setupRegistrationComponent(page, {
+            initialInfo: emptyInfo,
         });
 
         const mixedWhitespace = "Line 1\n\tIndented line\n    Also indented";
-        await page
-            .getByRole("textbox", { name: /How are you using/i })
-            .fill(mixedWhitespace);
+        await fillRegistrationForm(page, {
+            firstName: "John",
+            surname: "Doe",
+            email: "test@example.com",
+            organization: "SIL",
+            usingFor: mixedWhitespace,
+        });
 
-        await page.getByRole("button", { name: "Register" }).click();
-        await page.waitForTimeout(500);
+        await clickRegisterButton(page);
+        const submittedData = await receiver();
 
         // Should preserve formatting
-        expect(submittedData!.usingFor).toBeTruthy();
-        expect(submittedData!.usingFor.includes("\t")).toBe(true);
+        expect(submittedData.usingFor).toBeTruthy();
+        expect(submittedData.usingFor.includes("\t")).toBe(true);
     });
 });

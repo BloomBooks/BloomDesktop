@@ -5,7 +5,7 @@
 
 import { expect, test } from "@playwright/test";
 import type { RegistrationInfo } from "../registrationTypes";
-import { setupRegistrationComponent } from "./setup";
+import { setupRegistrationComponent, clickRegisterButton } from "./common";
 
 const emptyInfo: RegistrationInfo = {
     firstName: "",
@@ -41,12 +41,12 @@ test.describe("Registration Dialog - Form Submission", () => {
         await organizationField.clear();
         await usingForField.clear();
 
-        const registerButton = page.getByRole("button", { name: "Register" });
-        await registerButton.click();
+        await clickRegisterButton(page);
 
         await page.waitForTimeout(1000);
 
         // Verify the form is still visible (not closed)
+        const registerButton = page.getByRole("button", { name: "Register" });
         await expect(registerButton).toBeVisible();
         await expect(firstNameField).toBeVisible();
 
