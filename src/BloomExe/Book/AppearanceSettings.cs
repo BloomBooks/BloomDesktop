@@ -43,6 +43,8 @@ public class AppearanceSettings
     public static string kDoShowValueForDisplay = "doShow-css-will-ignore-this-and-use-default"; // by using an illegal value, we just get a no-op rule, which is what we want
     public static string kHideValueForDisplay = "none";
     public static string kOverrideGroupsArrayKey = "groupsToOverrideFromParent"; // e.g. "coverFields, xmatter"
+    public static string kUnset = "unset";
+    public static string kDeliberatelyInvalid = "deliberately-invalid";
     private static AppearanceMigrator _appearanceMigrator;
 
     // A representation of the content of Appearance.json
@@ -120,6 +122,8 @@ public class AppearanceSettings
         // such that coverIsImage cannot be true unless fullBleed is also true.
         //new BooleanPropertyDef("fullBleed", "fullBleed", false), // If true, book is full bleed.
 
+        // Does not correspond to a css variable. We will set the relevant page number css variables based on this setting.
+        new StringPropertyDef(kPageNumberPositionVar, null, PageNumberPosition.Automatic),
         new CssStringVariableDef("cover-background-color", "colors"),
         // User can turn the visibility of these fields on and off in the dialog.
         new CssDisplayVariableDef("cover-title-L1-show", "coverFields", true),
@@ -127,7 +131,7 @@ public class AppearanceSettings
         new CssDisplayVariableDef("cover-title-L3-show", "coverFields", false),
         new CssDisplayVariableDef("cover-topic-show", "coverFields", true),
         new CssDisplayVariableDef("cover-languageName-show", "coverFields", true),
-        new CssDisplayVariableDef("pageNumber-show", "page-number", true),
+        new CssDisplayVariableDef(kPageNumberShowVar, "page-number", true),
         // Deliberately does not have a default. This (or a default of empty string) allows the actual default to be set by the
         // current (or default theme), since nothing about this variable will be written to the part of appearance.css
         // that is controlled by these.
@@ -160,6 +164,8 @@ public class AppearanceSettings
         new CssStringVariableDef("pageNumber-font-size", "page-number"),
         new CssStringVariableDef("pageNumber-left-margin", "page-number"),
         new CssStringVariableDef("pageNumber-right-margin", "page-number"),
+        new CssStringVariableDef(kPageNumberLeftMarginOverrideVar, null, kUnset),
+        new CssStringVariableDef(kPageNumberRightMarginOverrideVar, null, kUnset),
         new CssStringVariableDef("pageNumber-top", "page-number"),
     };
 
@@ -707,6 +713,18 @@ public class AppearanceSettings
             ? (System.Collections.Generic.List<object>)props[kOverrideGroupsArrayKey]
             : null;
 
+        // pageNumber-show is set by SetPageNumberProperties.
+        // This multiplicand is used in CSS calculations to allow the bottom margin to be adjusted to leave room for a
+        // page number when present.
+        bool show;
+        if (
+            props.ContainsKey(kPageNumberShowVar)
+            && bool.TryParse(props[kPageNumberShowVar].ToString(), out show)
+        )
+        {
+            cssBuilder.AppendLine($"\t--pageNumber-show-multiplicand: {(show ? 1 : 0)};");
+        }
+
         foreach (var property in props)
         {
             if (property.Key == kOverrideGroupsArrayKey)
@@ -774,25 +792,12 @@ public class AppearanceSettings
             }
         }
 
-        // This is a special case (for now) where we emit a special property designed to be used when setting the bottom margin.
-        // Search our less/css for --pageNumber-show-multiplicand to see how it is used.
-        // If we end up with other boolean properties that the user can set a more general solution will probably be needed.
-        // One idea is to preprocess the theme css, replacing things like `.bloomPage[pageNumber-show] {... }` with `bloom-page {....}` when true.
-        // The other idea is to add attributes like `pageNumber-show` or `pageNumber-show-true` to all the bloom-page divs.
-        bool show;
-        if (
-            props.ContainsKey("pageNumber-show")
-            && bool.TryParse(props["pageNumber-show"].ToString(), out show)
-        )
-        {
-            cssBuilder.AppendLine($"\t--pageNumber-show-multiplicand: {(show ? 1 : 0)};");
-        }
         cssBuilder.AppendLine("}");
         return cssBuilder.ToString();
     }
 
     /// <summary>
-    /// Save both the css and the json version of the settings to the book folder.
+    /// Save the json version of the settings to the book folder.
     /// </summary>
     public void WriteToFolder(string folder)
     {
@@ -862,6 +867,7 @@ public class AppearanceSettings
         }
 
         // Add in all the user's settings
+        SetPageNumberProperties(Properties[kPageNumberPositionVar].ToString());
         cssBuilder.AppendLine("/* From this book's appearance settings */");
         cssBuilder.AppendLine(GetCssOwnPropsDeclaration(null));
         if (brandingJson != null)
@@ -1047,6 +1053,94 @@ public class AppearanceSettings
     public void SetPropertyString(string key, string value)
     {
         Properties[key] = value;
+    }
+
+    // should stay in sync with PageNumberPosition in BookSettingsDialog.ts
+    public static class PageNumberPosition
+    {
+        public const string Automatic = "automatic";
+        public const string Left = "left";
+        public const string Center = "center";
+        public const string Right = "right";
+        public const string Hidden = "hidden";
+    }
+
+    private const string kPageNumberLeftMarginOverrideVar = "pageNumber-left-margin-override";
+    private const string kPageNumberRightMarginOverrideVar = "pageNumber-right-margin-override";
+    public const string kPageNumberShowVar = "pageNumber-show";
+    public const string kPageNumberPositionVar = "pageNumber-position";
+
+    /// <summary>
+    /// Sets the appropriate page number CSS properties based on the specified position.
+    /// Should not be called on a pageNumberPosition which has been unintentionally set by default, e.g. on a branding
+    /// json which shouldn't set it
+    /// (Brandings should set use pageNumber-left-margin, pageNumber-right-margin, and pageNumber-always-left-margin to
+    /// control page number placement, and leave the overrides for Appearance Settings)
+    /// </summary>
+    /// <param name="pageNumberPosition">The position where page numbers should appear</param>
+    private void SetPageNumberProperties(string pageNumberPosition)
+    {
+        switch (pageNumberPosition)
+        {
+            case PageNumberPosition.Automatic:
+                // if a book had pageNumber-show=false in 6.2, the migrations should have given it pageNumber-position=hidden
+                SetProperty(new KeyValuePair<string, object>(kPageNumberShowVar, true));
+                SetProperty(
+                    new KeyValuePair<string, object>(kPageNumberLeftMarginOverrideVar, kUnset)
+                );
+                SetProperty(
+                    new KeyValuePair<string, object>(kPageNumberRightMarginOverrideVar, kUnset)
+                );
+                break;
+            case PageNumberPosition.Left:
+                SetProperty(new KeyValuePair<string, object>(kPageNumberShowVar, true));
+                SetProperty(
+                    new KeyValuePair<string, object>(
+                        kPageNumberLeftMarginOverrideVar,
+                        "var(--page-margin-left)"
+                    )
+                );
+                SetProperty(
+                    new KeyValuePair<string, object>(
+                        kPageNumberRightMarginOverrideVar,
+                        kDeliberatelyInvalid
+                    )
+                );
+                break;
+            case PageNumberPosition.Center:
+                SetProperty(new KeyValuePair<string, object>(kPageNumberShowVar, true));
+                SetProperty(
+                    new KeyValuePair<string, object>(kPageNumberLeftMarginOverrideVar, "50%")
+                );
+                SetProperty(
+                    new KeyValuePair<string, object>(kPageNumberRightMarginOverrideVar, "50%")
+                );
+                break;
+            case PageNumberPosition.Right:
+                SetProperty(new KeyValuePair<string, object>(kPageNumberShowVar, true));
+                SetProperty(
+                    new KeyValuePair<string, object>(
+                        kPageNumberRightMarginOverrideVar,
+                        "var(--page-margin-right)"
+                    )
+                );
+                SetProperty(
+                    new KeyValuePair<string, object>(
+                        kPageNumberLeftMarginOverrideVar,
+                        kDeliberatelyInvalid
+                    )
+                );
+                break;
+            case PageNumberPosition.Hidden:
+                SetProperty(new KeyValuePair<string, object>(kPageNumberShowVar, false));
+                SetProperty(
+                    new KeyValuePair<string, object>(kPageNumberLeftMarginOverrideVar, kUnset)
+                );
+                SetProperty(
+                    new KeyValuePair<string, object>(kPageNumberRightMarginOverrideVar, kUnset)
+                );
+                break;
+        }
     }
 }
 
