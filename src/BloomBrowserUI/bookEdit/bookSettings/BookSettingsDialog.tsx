@@ -78,6 +78,14 @@ interface IOverrideInformation {
     xmatterName: string;
 }
 
+enum PageNumberPosition {
+    Automatic = "automatic",
+    Left = "left",
+    Center = "center",
+    Right = "right",
+    Hidden = "hidden",
+}
+
 export const BookSettingsDialog: React.FunctionComponent<{
     initiallySelectedGroupIndex?: number;
 }> = (props) => {
@@ -175,9 +183,9 @@ export const BookSettingsDialog: React.FunctionComponent<{
         "Page Numbers",
         "BookSettings.PageNumbers",
     );
-    const showPageNumbersLabel = useL10n(
-        "Show Page Numbers",
-        "BookSettings.ShowPageNumbers",
+    const pageNumberLocationNote = useL10n(
+        "Note: some Page Themes may not know how to change the location of the Page Number.",
+        "BookSettings.PageNumberLocationNote",
     );
     const frontAndBackMatterDescription = useL10n(
         "Normally, books use the front & back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one.",
@@ -617,12 +625,39 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         </NoteBox>
                                     )}
                                 </div>
-                                <ConfigrBoolean
-                                    label={showPageNumbersLabel}
+                                <ConfigrSelect
+                                    label={pageNumbersLabel}
                                     disabled={appearanceDisabled}
-                                    {...getAdditionalProps<boolean>(
-                                        `pageNumber-show`,
+                                    {...getAdditionalProps<string>(
+                                        `pageNumber-position`,
                                     )}
+                                    options={[
+                                        {
+                                            label: "(Automatic)",
+                                            value: PageNumberPosition.Automatic,
+                                        },
+                                        {
+                                            label: "Left",
+                                            value: PageNumberPosition.Left,
+                                        },
+                                        {
+                                            label: "Center",
+                                            value: PageNumberPosition.Center,
+                                        },
+                                        {
+                                            label: "Right",
+                                            value: PageNumberPosition.Right,
+                                        },
+                                        {
+                                            label: "--",
+                                            value: "--",
+                                        },
+                                        {
+                                            label: "Hidden",
+                                            value: PageNumberPosition.Hidden,
+                                        },
+                                    ]}
+                                    description={pageNumberLocationNote}
                                 />
                             </ConfigrSubgroup>
                             <ConfigrSubgroup

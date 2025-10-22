@@ -760,6 +760,11 @@
       <trans-unit id="BookSettings.ShowPageNumbers" sil:dynamic="true">
         <source xml:lang="en">Show Page Numbers</source>
         <note>BookSettings.ShowPageNumbers</note>
+        <note>Obsolete as of 6.3</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumberLocationNote" sil:dynamic="true">
+        <source xml:lang="en">Note: some Page Themes may not know how to change the location of the Page Number.</source>
+        <note>BookSettings.PageNumberLocationNote</note>
       </trans-unit>
       <trans-unit id="BookSettings.FrontAndBackMatter" sil:dynamic="true">
         <source xml:lang="en">Front &amp; Back Matter</source>
