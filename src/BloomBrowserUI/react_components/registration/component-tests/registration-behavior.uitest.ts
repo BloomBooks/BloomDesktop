@@ -8,7 +8,6 @@ import type { RegistrationInfo } from "../registrationTypes";
 import {
     setupRegistrationComponent,
     clickRegisterButton,
-    getMarkedInvalid,
     field,
 } from "./common";
 
@@ -44,12 +43,12 @@ test.describe("Registration Dialog - register button behavior", () => {
         await clickRegisterButton(page);
 
         // what are the required fields? Make sure each shows error state
-        expect(await getMarkedInvalid(page, field.firstName)).toBe(true);
-        expect(await getMarkedInvalid(page, field.surname)).toBe(true);
+        expect(await field.firstName.markedInvalid).toBe(true);
+        expect(await field.surname.markedInvalid).toBe(true);
         // Email is optional by default, so it should NOT be marked as invalid when empty
-        expect(await getMarkedInvalid(page, field.email)).toBe(false);
-        expect(await getMarkedInvalid(page, field.organization)).toBe(true);
-        expect(await getMarkedInvalid(page, field.usingFor)).toBe(true);
+        expect(await field.email.markedInvalid).toBe(false);
+        expect(await field.organization.markedInvalid).toBe(true);
+        expect(await field.usingFor.markedInvalid).toBe(true);
     });
 });
 
@@ -70,9 +69,7 @@ test.describe("Registration Dialog - Field Focus & Tab Order", () => {
         await page.waitForTimeout(1000);
 
         // Get the focused element
-        const firstNameField = page.getByRole("textbox", {
-            name: field.firstName,
-        });
+        const firstNameField = await field.firstName.getElement();
         await expect(firstNameField).toBeFocused();
     });
 
@@ -84,34 +81,28 @@ test.describe("Registration Dialog - Field Focus & Tab Order", () => {
         await page.waitForTimeout(500);
 
         // Start at First Name (should be focused)
-        const firstNameField = page.getByRole("textbox", {
-            name: field.firstName,
-        });
+        const firstNameField = await field.firstName.getElement();
         await firstNameField.focus();
         await expect(firstNameField).toBeFocused();
 
         // Press Tab -> Surname
         await page.keyboard.press("Tab");
-        const surnameField = page.getByRole("textbox", { name: field.surname });
+        const surnameField = await field.surname.getElement();
         await expect(surnameField).toBeFocused();
 
         // Press Tab -> Email
         await page.keyboard.press("Tab");
-        const emailField = page.getByRole("textbox", { name: field.email });
+        const emailField = await field.email.getElement();
         await expect(emailField).toBeFocused();
 
         // Press Tab -> Organization
         await page.keyboard.press("Tab");
-        const organizationField = page.getByRole("textbox", {
-            name: field.organization,
-        });
+        const organizationField = await field.organization.getElement();
         await expect(organizationField).toBeFocused();
 
         // Press Tab -> How are you using
         await page.keyboard.press("Tab");
-        const usingForField = page.getByRole("textbox", {
-            name: field.usingFor,
-        });
+        const usingForField = await field.usingFor.getElement();
         await expect(usingForField).toBeFocused();
     });
 });
@@ -130,32 +121,26 @@ test.describe("Registration Dialog - Data Pre-population", () => {
         });
 
         // Check that fields have pre-populated values
-        const firstNameField = page.getByRole("textbox", {
-            name: field.firstName,
-        });
+        const firstNameField = await field.firstName.getElement();
         await expect(firstNameField).toHaveValue("John");
 
-        const surnameField = page.getByRole("textbox", { name: field.surname });
+        const surnameField = await field.surname.getElement();
         await expect(surnameField).toHaveValue("Doe");
 
-        const emailField = page.getByRole("textbox", { name: field.email });
+        const emailField = await field.email.getElement();
         await expect(emailField).toHaveValue("john@example.com");
 
-        const organizationField = page.getByRole("textbox", {
-            name: field.organization,
-        });
+        const organizationField = await field.organization.getElement();
         await expect(organizationField).toHaveValue("SIL International");
 
-        const usingForField = page.getByRole("textbox", {
-            name: field.usingFor,
-        });
+        const usingForField = await field.usingFor.getElement();
         await expect(usingForField).toHaveValue("Creating literacy materials");
 
         // Verify no fields show error states initially
-        expect(await getMarkedInvalid(page, field.firstName)).toBe(false);
-        expect(await getMarkedInvalid(page, field.surname)).toBe(false);
-        expect(await getMarkedInvalid(page, field.email)).toBe(false);
-        expect(await getMarkedInvalid(page, field.organization)).toBe(false);
-        expect(await getMarkedInvalid(page, field.usingFor)).toBe(false);
+        expect(await field.firstName.markedInvalid).toBe(false);
+        expect(await field.surname.markedInvalid).toBe(false);
+        expect(await field.email.markedInvalid).toBe(false);
+        expect(await field.organization.markedInvalid).toBe(false);
+        expect(await field.usingFor.markedInvalid).toBe(false);
     });
 });

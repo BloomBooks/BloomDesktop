@@ -4,7 +4,6 @@
  */
 
 import { expect, test } from "@playwright/test";
-import type { Page } from "@playwright/test";
 import {
     kInactivitySecondsBeforeShowingOptOut,
     type IRegistrationContentsProps,
@@ -12,6 +11,7 @@ import {
 import {
     setupRegistrationComponent,
     waitForAndClickOptOutButton,
+    getOptOutButton,
 } from "./common";
 
 const defaultProps: IRegistrationContentsProps = {
@@ -34,13 +34,13 @@ test.describe("Registration Dialog - Initial Rendering & Layout", () => {
         });
 
         // Verify "I'm stuck" button is NOT visible initially
-        const optOutButton = page.getByRole("button", {
-            name: /stuck.*later/i,
-        });
+        const optOutButton = getOptOutButton(page);
         await expect(optOutButton).not.toBeVisible();
 
-        // Wait 11 seconds and verify it appears
-        await page.waitForTimeout(11000);
+        // Wait for the button to appear using the helper
+        await page.waitForTimeout(
+            kInactivitySecondsBeforeShowingOptOut * 1000 + 1000,
+        );
         await expect(optOutButton).toBeVisible();
     });
 

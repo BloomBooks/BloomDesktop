@@ -9,8 +9,8 @@ import {
     setupRegistrationComponent,
     clickRegisterButton,
     fillRegistrationForm,
-    getMarkedInvalid,
     field,
+    getRegisterButton,
 } from "./common";
 
 const emptyInfo: RegistrationInfo = {
@@ -29,9 +29,7 @@ test.describe("Registration Dialog - Field Validation - Required Fields", () => 
         });
 
         // Test First Name
-        const firstNameField = page.getByRole("textbox", {
-            name: field.firstName,
-        });
+        const firstNameField = await field.firstName.getElement();
         await firstNameField.fill("Alice");
         await expect(firstNameField).toHaveValue("Alice");
         await firstNameField.fill("Mary Jane");
@@ -40,16 +38,14 @@ test.describe("Registration Dialog - Field Validation - Required Fields", () => 
         await expect(firstNameField).toHaveValue("O'Brien-Smith");
 
         // Test Surname
-        const surnameField = page.getByRole("textbox", { name: field.surname });
+        const surnameField = await field.surname.getElement();
         await surnameField.fill("Smith");
         await expect(surnameField).toHaveValue("Smith");
         await surnameField.fill("Müller-O'Connor");
         await expect(surnameField).toHaveValue("Müller-O'Connor");
 
         // Test Organization
-        const organizationField = page.getByRole("textbox", {
-            name: field.organization,
-        });
+        const organizationField = await field.organization.getElement();
         await organizationField.fill("SIL International");
         await expect(organizationField).toHaveValue("SIL International");
         await organizationField.fill("SIL International (East Asia)");
@@ -58,9 +54,7 @@ test.describe("Registration Dialog - Field Validation - Required Fields", () => 
         );
 
         // Test How are you using Bloom (accepts multiline)
-        const usingForField = page.getByRole("textbox", {
-            name: field.usingFor,
-        });
+        const usingForField = await field.usingFor.getElement();
         const multilineText =
             "Creating materials\nFor literacy\nIn multiple languages";
         await usingForField.fill(multilineText);
@@ -72,29 +66,18 @@ test.describe("Registration Dialog - Field Validation - Required Fields", () => 
             initialInfo: emptyInfo,
         });
 
-        const firstNameField = page.getByRole("textbox", {
-            name: field.firstName,
-        });
-        const surnameField = page.getByRole("textbox", { name: field.surname });
-        const organizationField = page.getByRole("textbox", {
-            name: field.organization,
-        });
-        const usingForField = page.getByRole("textbox", {
-            name: field.usingFor,
-        });
-
-        await firstNameField.clear();
-        await surnameField.clear();
-        await organizationField.clear();
-        await usingForField.clear();
+        await field.firstName.clear();
+        await field.surname.clear();
+        await field.organization.clear();
+        await field.usingFor.clear();
 
         await clickRegisterButton(page);
 
         await page.waitForTimeout(500);
-        expect(await getMarkedInvalid(page, field.firstName)).toBe(true);
-        expect(await getMarkedInvalid(page, field.surname)).toBe(true);
-        expect(await getMarkedInvalid(page, field.organization)).toBe(true);
-        expect(await getMarkedInvalid(page, field.usingFor)).toBe(true);
+        expect(await field.firstName.markedInvalid).toBe(true);
+        expect(await field.surname.markedInvalid).toBe(true);
+        expect(await field.organization.markedInvalid).toBe(true);
+        expect(await field.usingFor.markedInvalid).toBe(true);
     });
 });
 
@@ -105,15 +88,13 @@ test.describe("Registration Dialog - Edge Cases", () => {
         });
 
         const longText = "A".repeat(200);
-        const field2 = page.getByRole("textbox", { name: field.firstName });
+        const field2 = await field.firstName.getElement();
 
         await field2.fill(longText);
         await expect(field2).toHaveValue(longText);
 
         // Verify form is still visible
-        await expect(
-            page.getByRole("button", { name: "Register" }),
-        ).toBeVisible();
+        await expect(getRegisterButton(page)).toBeVisible();
     });
 
     test("Whitespace-only is invalid", async ({ page }) => {
@@ -121,13 +102,13 @@ test.describe("Registration Dialog - Edge Cases", () => {
             initialInfo: emptyInfo,
         });
 
-        const field2 = page.getByRole("textbox", { name: field.firstName });
+        const field2 = await field.firstName.getElement();
         await field2.fill("   ");
 
         await clickRegisterButton(page);
 
         await page.waitForTimeout(500);
-        expect(await getMarkedInvalid(page, field.firstName)).toBe(true);
+        expect(await field.firstName.markedInvalid).toBe(true);
     });
 });
 
@@ -138,23 +119,11 @@ test.describe("Registration Dialog - Accessibility", () => {
         });
 
         // All fields should be accessible by their labels
-        await expect(
-            page.getByRole("textbox", { name: field.firstName }),
-        ).toBeVisible();
-        await expect(
-            page.getByRole("textbox", { name: field.surname }),
-        ).toBeVisible();
-        await expect(
-            page.getByRole("textbox", { name: field.email }),
-        ).toBeVisible();
-        await expect(
-            page.getByRole("textbox", { name: field.organization }),
-        ).toBeVisible();
-        await expect(
-            page.getByRole("textbox", {
-                name: field.usingFor,
-            }),
-        ).toBeVisible();
+        await expect(await field.firstName.getElement()).toBeVisible();
+        await expect(await field.surname.getElement()).toBeVisible();
+        await expect(await field.email.getElement()).toBeVisible();
+        await expect(await field.organization.getElement()).toBeVisible();
+        await expect(await field.usingFor.getElement()).toBeVisible();
     });
 });
 
@@ -241,12 +210,11 @@ test.describe("Registration Dialog - Newlines in Single-Line Fields", () => {
             },
         });
 
-        const fieldInput = page.getByRole("textbox", { name: field.firstName });
         // Simulate paste with newlines
-        await fieldInput.fill("John\nDoe");
+        await field.firstName.fill("John\nDoe");
 
         // Material-UI TextField should convert newlines to spaces or strip them
-        const value = await fieldInput.inputValue();
+        const value = await field.firstName.getValue();
         // Either the newline is converted to space or stripped - either is acceptable
         expect(value).not.toContain("\n");
     });
@@ -256,10 +224,9 @@ test.describe("Registration Dialog - Newlines in Single-Line Fields", () => {
             initialInfo: emptyInfo,
         });
 
-        const fieldInput = page.getByRole("textbox", { name: field.email });
-        await fieldInput.fill("john@\nexample.com");
+        await field.email.fill("john@\nexample.com");
 
-        const value = await fieldInput.inputValue();
+        const value = await field.email.getValue();
         expect(value).not.toContain("\n");
     });
 
@@ -270,12 +237,9 @@ test.describe("Registration Dialog - Newlines in Single-Line Fields", () => {
             initialInfo: emptyInfo,
         });
 
-        const fieldInput = page.getByRole("textbox", {
-            name: field.organization,
-        });
-        await fieldInput.fill("SIL\nInternational");
+        await field.organization.fill("SIL\nInternational");
 
-        const value = await fieldInput.inputValue();
+        const value = await field.organization.getValue();
         expect(value).not.toContain("\n");
     });
 });
@@ -369,9 +333,7 @@ test.describe("Registration Dialog - Special Characters", () => {
         expect(submittedData.firstName).toBe(maliciousInput);
 
         // Verify no script was executed (page should still be functional)
-        await expect(
-            page.getByRole("button", { name: "Register" }),
-        ).toBeVisible();
+        await expect(getRegisterButton(page)).toBeVisible();
     });
 });
 
