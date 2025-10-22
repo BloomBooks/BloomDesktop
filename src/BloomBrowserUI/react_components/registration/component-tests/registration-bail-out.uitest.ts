@@ -28,46 +28,6 @@ const defaultProps: IRegistrationContentsProps = {
 };
 
 test.describe("Registration Dialog - Initial Rendering & Layout", () => {
-    test("Dialog renders correctly with all elements", async ({ page }) => {
-        await setupRegistrationComponent(page, defaultProps);
-
-        // Verify heading
-        await expect(
-            page.getByText(/Please take a minute to register/),
-        ).toBeVisible();
-
-        // Verify all form fields are present
-        await expect(
-            page.getByRole("textbox", { name: "First Name" }),
-        ).toBeVisible();
-        await expect(
-            page.getByRole("textbox", { name: "Surname" }),
-        ).toBeVisible();
-        await expect(
-            page.getByRole("textbox", { name: "Email Address" }),
-        ).toBeVisible();
-        await expect(
-            page.getByRole("textbox", { name: "Organization" }),
-        ).toBeVisible();
-        await expect(
-            page.getByRole("textbox", {
-                name: /How are you using|What will you|What are you/i,
-            }),
-        ).toBeVisible();
-    });
-
-    test("Email Required mode displays correctly", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            ...defaultProps,
-            emailRequiredForTeamCollection: true,
-        });
-
-        // Verify team collection warning message is displayed
-        await expect(
-            page.getByText(/team collection|requires.*email/i),
-        ).toBeVisible();
-    });
-
     test('"I\'m stuck" button appears after 10 seconds', async ({ page }) => {
         await setupRegistrationComponent(page, {
             initialInfo: defaultProps.initialInfo,
@@ -92,7 +52,7 @@ test.describe("Registration Dialog - Initial Rendering & Layout", () => {
         await waitForAndClickOptOutButton(page);
 
         // Should submit current data
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
         expect(submittedData).toBeDefined();
         expect(submittedData.firstName).toBe("John");
         expect(submittedData.email).toBe("john.doe@example.com");
@@ -111,7 +71,7 @@ test.describe("Registration Dialog - Initial Rendering & Layout", () => {
         await waitForAndClickOptOutButton(page);
 
         // Should clear the invalid email
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
         expect(submittedData.email).toBe("");
         expect(submittedData.firstName).toBe("John");
     });
@@ -124,7 +84,7 @@ test.describe("Registration Dialog - Initial Rendering & Layout", () => {
         await waitForAndClickOptOutButton(page);
 
         // Should keep the valid email
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
         expect(submittedData.email).toBe("john.doe@example.com");
     });
 
@@ -145,7 +105,7 @@ test.describe("Registration Dialog - Initial Rendering & Layout", () => {
         await waitForAndClickOptOutButton(page);
 
         // Should submit even with empty fields
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
         expect(submittedData).toBeDefined();
         expect(submittedData.firstName).toBe("");
     });

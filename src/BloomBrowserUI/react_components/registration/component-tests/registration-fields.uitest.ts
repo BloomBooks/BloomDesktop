@@ -9,6 +9,8 @@ import {
     setupRegistrationComponent,
     clickRegisterButton,
     fillRegistrationForm,
+    getMarkedInvalid,
+    field,
 } from "./common";
 
 const emptyInfo: RegistrationInfo = {
@@ -28,7 +30,7 @@ test.describe("Registration Dialog - Field Validation - Required Fields", () => 
 
         // Test First Name
         const firstNameField = page.getByRole("textbox", {
-            name: "First Name",
+            name: field.firstName,
         });
         await firstNameField.fill("Alice");
         await expect(firstNameField).toHaveValue("Alice");
@@ -38,7 +40,7 @@ test.describe("Registration Dialog - Field Validation - Required Fields", () => 
         await expect(firstNameField).toHaveValue("O'Brien-Smith");
 
         // Test Surname
-        const surnameField = page.getByRole("textbox", { name: "Surname" });
+        const surnameField = page.getByRole("textbox", { name: field.surname });
         await surnameField.fill("Smith");
         await expect(surnameField).toHaveValue("Smith");
         await surnameField.fill("Müller-O'Connor");
@@ -46,7 +48,7 @@ test.describe("Registration Dialog - Field Validation - Required Fields", () => 
 
         // Test Organization
         const organizationField = page.getByRole("textbox", {
-            name: "Organization",
+            name: field.organization,
         });
         await organizationField.fill("SIL International");
         await expect(organizationField).toHaveValue("SIL International");
@@ -57,7 +59,7 @@ test.describe("Registration Dialog - Field Validation - Required Fields", () => 
 
         // Test How are you using Bloom (accepts multiline)
         const usingForField = page.getByRole("textbox", {
-            name: /How are you using|What will you|What are you/i,
+            name: field.usingFor,
         });
         const multilineText =
             "Creating materials\nFor literacy\nIn multiple languages";
@@ -71,14 +73,14 @@ test.describe("Registration Dialog - Field Validation - Required Fields", () => 
         });
 
         const firstNameField = page.getByRole("textbox", {
-            name: "First Name",
+            name: field.firstName,
         });
-        const surnameField = page.getByRole("textbox", { name: "Surname" });
+        const surnameField = page.getByRole("textbox", { name: field.surname });
         const organizationField = page.getByRole("textbox", {
-            name: "Organization",
+            name: field.organization,
         });
         const usingForField = page.getByRole("textbox", {
-            name: /How are you using|What will you|What are you/i,
+            name: field.usingFor,
         });
 
         await firstNameField.clear();
@@ -89,10 +91,10 @@ test.describe("Registration Dialog - Field Validation - Required Fields", () => 
         await clickRegisterButton(page);
 
         await page.waitForTimeout(500);
-        await expect(firstNameField).toHaveAttribute("aria-invalid", "true");
-        await expect(surnameField).toHaveAttribute("aria-invalid", "true");
-        await expect(organizationField).toHaveAttribute("aria-invalid", "true");
-        await expect(usingForField).toHaveAttribute("aria-invalid", "true");
+        expect(await getMarkedInvalid(page, field.firstName)).toBe(true);
+        expect(await getMarkedInvalid(page, field.surname)).toBe(true);
+        expect(await getMarkedInvalid(page, field.organization)).toBe(true);
+        expect(await getMarkedInvalid(page, field.usingFor)).toBe(true);
     });
 });
 
@@ -103,10 +105,10 @@ test.describe("Registration Dialog - Edge Cases", () => {
         });
 
         const longText = "A".repeat(200);
-        const field = page.getByRole("textbox", { name: "First Name" });
+        const field2 = page.getByRole("textbox", { name: field.firstName });
 
-        await field.fill(longText);
-        await expect(field).toHaveValue(longText);
+        await field2.fill(longText);
+        await expect(field2).toHaveValue(longText);
 
         // Verify form is still visible
         await expect(
@@ -119,13 +121,13 @@ test.describe("Registration Dialog - Edge Cases", () => {
             initialInfo: emptyInfo,
         });
 
-        const field = page.getByRole("textbox", { name: "First Name" });
-        await field.fill("   ");
+        const field2 = page.getByRole("textbox", { name: field.firstName });
+        await field2.fill("   ");
 
         await clickRegisterButton(page);
 
         await page.waitForTimeout(500);
-        await expect(field).toHaveAttribute("aria-invalid", "true");
+        expect(await getMarkedInvalid(page, field.firstName)).toBe(true);
     });
 });
 
@@ -137,20 +139,20 @@ test.describe("Registration Dialog - Accessibility", () => {
 
         // All fields should be accessible by their labels
         await expect(
-            page.getByRole("textbox", { name: "First Name" }),
+            page.getByRole("textbox", { name: field.firstName }),
         ).toBeVisible();
         await expect(
-            page.getByRole("textbox", { name: "Surname" }),
+            page.getByRole("textbox", { name: field.surname }),
         ).toBeVisible();
         await expect(
-            page.getByRole("textbox", { name: "Email Address" }),
+            page.getByRole("textbox", { name: field.email }),
         ).toBeVisible();
         await expect(
-            page.getByRole("textbox", { name: "Organization" }),
+            page.getByRole("textbox", { name: field.organization }),
         ).toBeVisible();
         await expect(
             page.getByRole("textbox", {
-                name: /How are you using|What will you|What are you/i,
+                name: field.usingFor,
             }),
         ).toBeVisible();
     });
@@ -176,7 +178,7 @@ test.describe("Registration Dialog - Field Trimming", () => {
         await clickRegisterButton(page);
 
         // Wait for and verify submitted data is trimmed
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
         expect(submittedData.firstName).toBe("John");
         expect(submittedData.surname).toBe("Doe");
         expect(submittedData.email).toBe("john@example.com");
@@ -198,7 +200,7 @@ test.describe("Registration Dialog - Field Trimming", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         expect(submittedData.firstName).toBe("Mary Jane");
         expect(submittedData.surname).toBe("Van Der Berg");
@@ -221,7 +223,7 @@ test.describe("Registration Dialog - Field Trimming", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         // Should trim outer whitespace but keep internal newlines
         expect(submittedData.usingFor).toBe("Creating materials\nFor literacy");
@@ -239,12 +241,12 @@ test.describe("Registration Dialog - Newlines in Single-Line Fields", () => {
             },
         });
 
-        const field = page.getByRole("textbox", { name: "First Name" });
+        const fieldInput = page.getByRole("textbox", { name: field.firstName });
         // Simulate paste with newlines
-        await field.fill("John\nDoe");
+        await fieldInput.fill("John\nDoe");
 
         // Material-UI TextField should convert newlines to spaces or strip them
-        const value = await field.inputValue();
+        const value = await fieldInput.inputValue();
         // Either the newline is converted to space or stripped - either is acceptable
         expect(value).not.toContain("\n");
     });
@@ -254,10 +256,10 @@ test.describe("Registration Dialog - Newlines in Single-Line Fields", () => {
             initialInfo: emptyInfo,
         });
 
-        const field = page.getByRole("textbox", { name: "Email Address" });
-        await field.fill("john@\nexample.com");
+        const fieldInput = page.getByRole("textbox", { name: field.email });
+        await fieldInput.fill("john@\nexample.com");
 
-        const value = await field.inputValue();
+        const value = await fieldInput.inputValue();
         expect(value).not.toContain("\n");
     });
 
@@ -268,10 +270,12 @@ test.describe("Registration Dialog - Newlines in Single-Line Fields", () => {
             initialInfo: emptyInfo,
         });
 
-        const field = page.getByRole("textbox", { name: "Organization" });
-        await field.fill("SIL\nInternational");
+        const fieldInput = page.getByRole("textbox", {
+            name: field.organization,
+        });
+        await fieldInput.fill("SIL\nInternational");
 
-        const value = await field.inputValue();
+        const value = await fieldInput.inputValue();
         expect(value).not.toContain("\n");
     });
 });
@@ -291,7 +295,7 @@ test.describe("Registration Dialog - Special Characters", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         expect(submittedData.firstName).toBe("😊 John");
         expect(submittedData.surname).toBe("Doe 👍");
@@ -315,7 +319,7 @@ test.describe("Registration Dialog - Special Characters", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         expect(submittedData.firstName).toBe("李");
         expect(submittedData.surname).toBe("明");
@@ -337,7 +341,7 @@ test.describe("Registration Dialog - Special Characters", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         // Verify it doesn't break submission
         expect(submittedData).toBeDefined();
@@ -359,7 +363,7 @@ test.describe("Registration Dialog - Special Characters", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         // Should be stored as plain text, not executed
         expect(submittedData.firstName).toBe(maliciousInput);
@@ -387,7 +391,7 @@ test.describe("Registration Dialog - JSON Escaping", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         // Backslashes should be preserved
         expect(submittedData.firstName).toBe(textWithBackslashes);
@@ -408,7 +412,7 @@ test.describe("Registration Dialog - JSON Escaping", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         // Double quotes should be preserved
         expect(submittedData.organization).toBe(textWithQuotes);
@@ -428,7 +432,7 @@ test.describe("Registration Dialog - JSON Escaping", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         expect(submittedData.firstName).toBe("O'Brien");
         expect(submittedData.surname).toBe("D'Angelo");
@@ -450,7 +454,7 @@ test.describe("Registration Dialog - JSON Escaping", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         // All special characters should be preserved
         expect(submittedData.usingFor).toBe(complexText);
@@ -472,7 +476,7 @@ test.describe("Registration Dialog - JSON Escaping", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         // Control characters should be handled (may be normalized)
         expect(submittedData).toBeDefined();
@@ -497,7 +501,7 @@ test.describe("Registration Dialog - Multiline Field Edge Cases", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         // Should preserve all newlines as entered
         expect(submittedData.usingFor).toBe(excessiveNewlines);
@@ -520,7 +524,7 @@ test.describe("Registration Dialog - Multiline Field Edge Cases", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         expect(submittedData.usingFor).toBe(longLine);
     });
@@ -544,7 +548,7 @@ test.describe("Registration Dialog - Multiline Field Edge Cases", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         expect(submittedData.usingFor).toBe(manyLines);
     });
@@ -566,7 +570,7 @@ test.describe("Registration Dialog - Multiline Field Edge Cases", () => {
         });
 
         await clickRegisterButton(page);
-        const submittedData = await receiver();
+        const submittedData = await receiver.getData();
 
         // Should preserve formatting
         expect(submittedData.usingFor).toBeTruthy();

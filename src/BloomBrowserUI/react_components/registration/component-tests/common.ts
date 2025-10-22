@@ -5,14 +5,26 @@ import {
     kInactivitySecondsBeforeShowingOptOut,
     RegistrationInfo,
 } from "../registrationContents";
-import { preparePostReceiver } from "../../component-tester/apiInterceptors";
+import {
+    preparePostReceiver,
+    PostReceiver,
+} from "../../component-tester/apiInterceptors";
 
-// returns a receiver function that you can await to get the posted registration info
-// if onSubmit is not provided in props
+// Field name constants for registration form
+export const field = {
+    firstName: "First Name",
+    surname: "Surname",
+    email: "Email Address",
+    organization: "Organization",
+    usingFor: /How are you using|What will you|What are you/i,
+};
+
+// returns a receiver object that you can use to check if the post was called
+// and await to get the posted registration info
 export async function setupRegistrationComponent(
     page: Page,
     props: IRegistrationContentsProps,
-) {
+): Promise<PostReceiver<RegistrationInfo>> {
     const receiver = preparePostReceiver<RegistrationInfo>(
         page,
         "**/bloom/api/registration/userInfo",
@@ -25,7 +37,7 @@ export async function setupRegistrationComponent(
         props,
     );
 
-    return receiver!;
+    return receiver;
 }
 
 export async function clickRegisterButton(page: Page) {
@@ -43,15 +55,15 @@ export async function fillRegistrationForm(
     },
 ) {
     await page
-        .getByRole("textbox", { name: "First Name" })
+        .getByRole("textbox", { name: field.firstName })
         .fill(info.firstName);
-    await page.getByRole("textbox", { name: "Surname" }).fill(info.surname);
-    await page.getByRole("textbox", { name: "Email Address" }).fill(info.email);
+    await page.getByRole("textbox", { name: field.surname }).fill(info.surname);
+    await page.getByRole("textbox", { name: field.email }).fill(info.email);
     await page
-        .getByRole("textbox", { name: "Organization" })
+        .getByRole("textbox", { name: field.organization })
         .fill(info.organization);
     await page
-        .getByRole("textbox", { name: /How are you using/i })
+        .getByRole("textbox", { name: field.usingFor })
         .fill(info.usingFor);
 }
 
@@ -65,4 +77,13 @@ export async function waitForAndClickOptOutButton(page: Page) {
     await expect(optOutButton).toBeVisible();
     await optOutButton.click();
     await page.waitForTimeout(500);
+}
+
+export async function getMarkedInvalid(
+    page: Page,
+    fieldName: string | RegExp,
+): Promise<boolean> {
+    const field = page.getByRole("textbox", { name: fieldName });
+    const ariaInvalid = await field.getAttribute("aria-invalid");
+    return ariaInvalid === "true";
 }

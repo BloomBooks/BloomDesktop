@@ -12,14 +12,11 @@
         "noEmit": true
     },
     "include": [
-        "./component-harness/**/*.ts",
-        "./component-harness/**/*.tsx",
-        "../**/*.spec.ts",
-        "../**/*.spec.tsx",
-        "./vite.config.ts",
-        "*.ts",
-        "component-harness.tsx",
-        "setTestComponent.ts"
+        "./*.ts",
+        "./*.tsx",
+        "../**/component-tests/**/*.ts",
+        "../**/component-tests/**/*.tsx",
+        "./vite.config.ts"
     ],
     "exclude": ["./node_modules"]
 }
