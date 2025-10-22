@@ -6,26 +6,47 @@
 import { Page, Route } from "@playwright/test";
 
 /**
+ * Object returned by preparePostReceiver with methods to interact with the intercepted POST request
+ */
+export interface PostReceiver<T> {
+    /**
+     * Wait for and return the captured POST data
+     */
+    getData: () => Promise<T>;
+
+    /**
+     * Check if the POST request was called (non-blocking)
+     */
+    wasCalled: () => boolean;
+}
+
+/**
  * Intercepts POST requests to a given URL pattern and captures the request body.
- * Returns a function that waits for and returns the captured data.
+ * Returns an object with methods to check if the request was made and get the data.
  *
  * Example Usage:
  * ```typescript
  * const receiver = preparePostReceiver<RegistrationInfo>("/bloom/api/registration/userInfo");
  * await page.click('button[name="Register"]');
- * const result = await receiver();
+ * const result = await receiver.getData();
  * expect(result.email).toBe("foo@example.com");
+ *
+ * // Or to check if it wasn't called:
+ * await page.click('button[name="Register"]');
+ * await page.waitForTimeout(500);
+ * expect(receiver.wasCalled()).toBe(false);
  * ```
  *
  * @param page - The Playwright page object
  * @param urlPattern - URL or pattern to intercept (e.g., "/bloom/api/registration/userInfo" or "**\/api/save")
- * @returns A function that waits for the request and returns the parsed POST data
+ * @returns An object with getData() and wasCalled() methods
  */
 export function preparePostReceiver<T>(
     page: Page,
     urlPattern: string,
-): () => Promise<T> {
+): PostReceiver<T> {
     let capturedData: T | undefined;
+    let wasRequestMade = false;
     let resolvePromise: ((value: T) => void) | undefined;
     let rejectPromise: ((reason: any) => void) | undefined;
 
@@ -39,6 +60,7 @@ export function preparePostReceiver<T>(
         try {
             const postData = route.request().postDataJSON() as T;
             capturedData = postData;
+            wasRequestMade = true;
 
             await route.fulfill({
                 status: 200,
@@ -59,14 +81,17 @@ export function preparePostReceiver<T>(
         }
     });
 
-    // Return a function that waits for the captured data
-    return async () => {
-        // If already captured, return immediately
-        if (capturedData !== undefined) {
-            return capturedData;
-        }
-        // Otherwise wait for it
-        return await waitPromise;
+    // Return an object with both getData and wasCalled methods
+    return {
+        getData: async () => {
+            // If already captured, return immediately
+            if (capturedData !== undefined) {
+                return capturedData;
+            }
+            // Otherwise wait for it
+            return await waitPromise;
+        },
+        wasCalled: () => wasRequestMade,
     };
 }
 

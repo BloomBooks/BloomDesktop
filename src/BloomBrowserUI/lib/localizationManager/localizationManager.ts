@@ -53,6 +53,14 @@ export class LocalizationManager {
     }
 
     /**
+     * Check if localization bypass is currently enabled.
+     * @returns {boolean} True if bypass is enabled, false otherwise
+     */
+    public isBypassEnabled(): boolean {
+        return this.bypassEnabled;
+    }
+
+    /**
      * Retrieves localized strings from the server
      * Used in Bloom 2.1
      * The strings are localized in the UI language

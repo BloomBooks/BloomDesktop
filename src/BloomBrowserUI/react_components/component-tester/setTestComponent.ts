@@ -11,6 +11,9 @@
 
 import { Page } from "@playwright/test";
 import { ComponentRenderRequest } from "./componentTypes";
+import { bypassLocalization } from "../../lib/localizationManager/localizationManager";
+
+bypassLocalization(true);
 
 /**
  * Sets the React component to render in the test harness with full type checking.
