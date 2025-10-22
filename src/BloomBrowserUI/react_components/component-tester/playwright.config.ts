@@ -49,13 +49,40 @@ if (originalResolveFilename) {
             return preferredPlaywrightPath;
         }
 
-        return originalResolveFilename(request, parent, isMain, options);
+        // Playwright's JSX transform tries to import playwright/jsx-runtime,
+        // but we're using @emotion/react for JSX. Redirect to react/jsx-runtime instead.
+        if (
+            request === "playwright/jsx-runtime" ||
+            request.includes("playwright/jsx-runtime") ||
+            request.includes("playwright\\jsx-runtime")
+        ) {
+            return require.resolve("react/jsx-runtime", { paths: [__dirname] });
+        }
+
+        try {
+            return originalResolveFilename(request, parent, isMain, options);
+        } catch (error) {
+            // If the original resolution fails and it's looking for a module,
+            // try resolving from our node_modules
+            if (
+                error instanceof Error &&
+                error.message.includes("Cannot find module")
+            ) {
+                try {
+                    return require.resolve(request, { paths: [__dirname] });
+                } catch {
+                    // If that also fails, throw the original error
+                    throw error;
+                }
+            }
+            throw error;
+        }
     };
 }
 
 const config: PlaywrightTestConfig = {
     testDir: "..",
-    testMatch: "**/*.e2e.spec*.*",
+    testMatch: "**/*.uitest.*",
     timeout: 30000,
     expect: {
         timeout: 5000,

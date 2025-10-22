@@ -1,4 +1,4 @@
-import { Page } from "playwright/test";
+import { Page, expect } from "@playwright/test";
 import { setTestComponent } from "../../component-tester/setTestComponent";
 import {
     IRegistrationContentsProps,

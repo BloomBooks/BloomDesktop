@@ -52,17 +52,22 @@ module.exports = merge(core, {
 
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
         appBundle: "./app/App.tsx",
-        testBundle: globule.find([
-            "./bookEdit/**/*Spec.ts",
-            "./bookEdit/**/*Spec.js",
-            "./lib/**/*Spec.ts",
-            "./lib/**/*Spec.js",
-            "./publish/**/*Spec.ts",
-            "./publish/**/*Spec.js",
-            "./react_components/**/*Spec.ts",
-            "./react_components/**/*.spec.ts",
-            "./utils/**/*Spec.ts",
-        ]),
+        testBundle: globule.find(
+            [
+                "./bookEdit/**/*Spec.ts",
+                "./bookEdit/**/*Spec.js",
+                "./lib/**/*Spec.ts",
+                "./lib/**/*Spec.js",
+                "./publish/**/*Spec.ts",
+                "./publish/**/*Spec.js",
+                "./react_components/**/*Spec.ts",
+                "./react_components/**/*.spec.ts",
+                "./utils/**/*Spec.ts",
+            ],
+            {
+                ignore: ["**/component-tests/**", "**/component-tester/**"],
+            },
+        ),
 
         // These work with c# ReactControl:
         problemReportBundle: "./problemDialog/ProblemDialog.tsx",
@@ -163,6 +168,8 @@ module.exports = merge(core, {
                     /-min/,
                     /qtip/,
                     /xregexp-all-min.js/,
+                    /[\\/]component-tester[\\/]/,
+                    /[\\/]component-tests[\\/]/,
                 ],
                 use: [
                     {

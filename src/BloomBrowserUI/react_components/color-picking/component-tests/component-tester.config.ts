@@ -1,5 +1,5 @@
-import type { IBloomComponentConfig } from "../component-tester/componentTypes";
-import type { IClickableColorSwatch } from "./colorSwatch";
+import type { IBloomComponentConfig } from "../../component-tester/componentTypes";
+import type { IClickableColorSwatch } from "../colorSwatch";
 
 const config: IBloomComponentConfig<IClickableColorSwatch> = {
     defaultProps: {

@@ -16,6 +16,10 @@ module.exports = {
         rules: [
             {
                 test: /\.(ts|tsx)$/,
+                exclude: [
+                    /[\\/]component-tester[\\/]/,
+                    /[\\/]component-tests[\\/]/,
+                ],
                 use: [
                     {
                         loader: require.resolve("ts-loader"),
@@ -75,6 +79,10 @@ module.exports = {
             $: "jquery",
             jQuery: "jquery",
             "window.jQuery": "jquery",
+        }),
+        // Ignore component-tester stuff
+        new webpack.IgnorePlugin({
+            resourceRegExp: /[\\/](component-tester|component-tests)[\\/]/,
         }),
         // don't include the notifier when building on server, which uses production
         process.env.NODE_ENV === "debug"

@@ -22,5 +22,10 @@
             "react": ["./node_modules/@types/react"]
         }
     },
-    "exclude": ["node_modules", "typings"]
+    "exclude": [
+        "node_modules",
+        "typings",
+        "react_components/component-tester",
+        "react_components/**/component-tests"
+    ]
 }

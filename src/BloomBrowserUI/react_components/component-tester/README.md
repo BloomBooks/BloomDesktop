@@ -2,6 +2,28 @@ These Playwright-driven ui tests are not currently run as part of CI or other sc
 presumably we can alter playwright.config.ts to work with that system. For now, this is just useful for developer
 testing.
 
+### Setting up component testing
+
+Components are automatically discovered from `component-tester.config.ts` files in component folders.
+
+To set up a component for ui testing:
+1. The component must have its own folder under react_components, "react_components/<component-name>"
+2. Add a "react_components/<component-name>/component-tests" folder
+3. Create a "react_components/<component-name>/component-tests/component-tester.config.ts" file. See "src/BloomBrowserUI/react_components/registration/component-tests/component-tester.config.ts" for an example.
+4. Create a common.ts file where you can store common methods used by tests of this component. The most important thing is to provide a function that wraps `setTestComponent()`. See C:/dev/b63.worktrees/registration/src/BloomBrowserUI/react_components/registration/component-tests/common.ts for an example.
+5. Create playwright tests named "*.uitest.ts";
+
+## Complications
+
+### Imports
+`vite dev` has to be able to handle your component. Eventually that will not be a big deal, but for now, it may mean that you have to extract out the core of it with few imports. For the RegistrationDialog, we had to extract out the core behavior and test that.
+
+### API calls
+These are fine, see `apiInterceptors.ts`
+
+### L10n components
+These are fine. This system tells the bloom l10n system to just return English.
+
 ## Running react_components tests
 
 ```bash
@@ -23,26 +45,8 @@ yarn manual # will list all the components
 yarn manual StarChart # open to a specific component
 ```
 
-### Working with components
-
-Components are automatically discovered from `bloom-component.config.ts` files in component folders.
-
-To add a new component to the test harness:
-1. Create `bloom-component.config.ts` in your component's folder (or `e2e` subfolder)
-2. Export a default config object that implements `IBloomComponentConfig` with:
-   - `modulePath`: relative path to your component module
-   - `exportName`: the exported component name
-   - `defaultProps`: default props for testing
-3. Add *.e2e.spec.ts files.
-
-**For testing components that get or submit data via APIs**, the methods provided by apiInterceptors.ts.
-
-To launch a component:
-- `yarn manual` - lists all available components and opens the dev server
-- `yarn manual ComponentName` - starts dev server and opens that specific component
-- Or use URLs directly: `http://127.0.0.1:5173/?component=ComponentName`
-
-To customize props for manual testing, edit the `defaultProps` in your component's `bloom-component.config.ts` file.
+## APIs
+For testing components that get or submit data via APIs, use the methods provided by `apiInterceptors.ts`.
 
 ### What's Mocked
 
