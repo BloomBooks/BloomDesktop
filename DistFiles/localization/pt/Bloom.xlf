@@ -7141,9 +7141,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="translated">Ordenar as palavras</target>
         <note>ID: TemplateBooks.PageLabel.Order Words</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Custom Game" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Custom Game" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Custom Game</source>
-        <target xml:lang="pt-PT" state="translated">Jogo Personalizado</target>
+        <target xml:lang="pt-PT" state="final">Jogo Personalizado</target>
         <note>ID: TemplateBooks.PageLabel.Custom Game</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog" approved="yes">
