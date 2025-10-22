@@ -129,9 +129,9 @@
       </trans-unit>
       <!-- Tiers. These don't occur in code in their entirety, but are assembled by appending a particular
       tier to "Subscription.Tier."-->
-      <trans-unit id="Subscription.Tier.Basic">
+      <trans-unit id="Subscription.Tier.Basic" approved="yes">
         <source xml:lang="en">Basic</source>
-        <target xml:lang="pt-PT" state="translated">Básico</target>
+        <target xml:lang="pt-PT" state="final">Básico</target>
         <note>ID: Subscription.Tier.Basic</note>
       </trans-unit>
       <trans-unit id="Subscription.Tier.Enterprise">
