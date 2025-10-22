@@ -3,15 +3,9 @@ import {
     DialogTitle,
     IBloomDialogProps,
 } from "../BloomDialog/BloomDialog";
-import {
-    IBloomDialogEnvironmentParams,
-    useEventLaunchedBloomDialog,
-    useSetupBloomDialog,
-} from "../BloomDialog/BloomDialogPlumbing";
 import { useL10n } from "../l10nHooks";
 import { useEffect, useState } from "react";
 import { get, getBoolean } from "../../utils/bloomApi";
-import { ShowEditViewDialog } from "../../bookEdit/editViewFrame";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { useIsTeamCollection } from "../../teamCollection/teamCollectionApi";
 import {
@@ -19,37 +13,19 @@ import {
     RegistrationInfo,
     createEmptyRegistrationInfo,
 } from "./registrationContents";
+import {
+    IRegistrationDialogProps,
+    RegistrationDialogLauncher,
+    showRegistrationDialog,
+    showRegistrationDialogForEditTab,
+} from "./registrationDialogLauncher";
 
-interface IRegistrationDialogProps {
-    emailRequiredForTeamCollection?: boolean;
-    onSave?: (isValidEmail: boolean) => void;
-}
-
-export const RegistrationDialogLauncher: React.FunctionComponent<
-    IRegistrationDialogProps & {
-        dialogEnvironment?: IBloomDialogEnvironmentParams;
-    }
-> = (props) => {
-    // eslint needed useSetup and useEvent to be in the same order on every render
-    const useSetup = useSetupBloomDialog(props.dialogEnvironment);
-    const useEventLaunched = useEventLaunchedBloomDialog("RegistrationDialog");
-    const { showDialog, closeDialog, propsForBloomDialog } =
-        // use the environment in useSetup if env.dialogFrameExternal (WinForms) exists, else tell useEvent the dialog's name for showDialog()
-        props.dialogEnvironment?.dialogFrameProvidedExternally
-            ? // for WinForms Wrapped things (eg Join Team Collection) env = dialogFrame:true, Open:true (initially Open inside of frame)
-              useSetup
-            : // for React (all other times) env = undef -> propsForBlDialog = dialogFrame:false, Open:false (will open when show() is called)
-              useEventLaunched;
-
-    show = showDialog;
-
-    return propsForBloomDialog.open ? (
-        <RegistrationDialog
-            closeDialog={closeDialog}
-            showDialog={showDialog}
-            propsForBloomDialog={propsForBloomDialog}
-        />
-    ) : null;
+// Re-export everything that external code needs
+export type { IRegistrationDialogProps };
+export {
+    RegistrationDialogLauncher,
+    showRegistrationDialog,
+    showRegistrationDialogForEditTab,
 };
 
 export const RegistrationDialog: React.FunctionComponent<
@@ -63,8 +39,7 @@ export const RegistrationDialog: React.FunctionComponent<
     // externalProp - emailRequired only needs to be used when creating a team collection
     const inTeamCollection = useIsTeamCollection();
     const emailRequiredForTeamCollection =
-        externallySetRegistrationDialogProps?.emailRequiredForTeamCollection ??
-        inTeamCollection;
+        props.emailRequiredForTeamCollection ?? inTeamCollection;
 
     const [info, setInfo] = useState<RegistrationInfo>(
         createEmptyRegistrationInfo,
@@ -72,7 +47,10 @@ export const RegistrationDialog: React.FunctionComponent<
 
     // Every time the dialog is opened, set MayChangeEmail and User Info fields
     useEffect(() => {
-        if (!props.propsForBloomDialog.open) return;
+        if (!props.propsForBloomDialog.open) {
+            return;
+        }
+
         getBoolean("teamCollection/mayChangeRegistrationEmail", (mayChange) => {
             setMayChangeEmail(mayChange);
         });
@@ -117,20 +95,5 @@ export const RegistrationDialog: React.FunctionComponent<
     );
 };
 
-let show: () => void = () => {};
-
-let externallySetRegistrationDialogProps: IRegistrationDialogProps | undefined;
-
-export function showRegistrationDialogForEditTab() {
-    ShowEditViewDialog(<RegistrationDialogLauncher />);
-    show();
-}
-
-export function showRegistrationDialog(
-    registrationDialogProps: IRegistrationDialogProps,
-) {
-    externallySetRegistrationDialogProps = registrationDialogProps;
-    show();
-}
-
+// Wire up for WinForms - this must be in the webpack entry point file
 WireUpForWinforms(RegistrationDialogLauncher);
