@@ -416,8 +416,7 @@ namespace BloomTests.Book
   ""cover-title-L2-show"": false,
   ""cover-title-L3-show"": true,
   ""cover-topic-show"": true,
-  ""cover-languageName-show"": true,
-  ""pageNumber-show"": true
+  ""cover-languageName-show"": true
 }"
             );
             settings._areSettingsConsistentWithFiles = true; // needs to be set to allow the default theme to be used
@@ -468,8 +467,7 @@ namespace BloomTests.Book
   ""cover-title-L2-show"": true,
   ""cover-title-L3-show"": false,
   ""cover-topic-show"": true,
-  ""cover-languageName-show"": true,
-  ""pageNumber-show"": true
+  ""cover-languageName-show"": true
 }"
             );
 

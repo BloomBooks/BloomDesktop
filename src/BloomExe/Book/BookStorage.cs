@@ -111,6 +111,7 @@ namespace Bloom.Book
         void MigrateToLevel8RemoveEnterpriseOnly();
         void MigrateToLevel9TruncateWidgetPaths();
         void MigrateToLevel10GameHeader();
+        void MigrateToLevel11PageNumberPosition();
         void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
@@ -4159,6 +4160,39 @@ namespace Bloom.Book
                 page.AddClass("GameHeader-style");
             }
             Dom.UpdateMetaElement("maintenanceLevel", "10");
+        }
+
+        /// <summary>
+        /// In 6.2, set pageNumber-show to false if the user wanted to hide the page numbers via
+        /// Appearance Settings. In 6.3, we introduce page number position appearance settings
+        /// which then automatically set pageNumber-show as appropriate. So for any books that
+        /// had pageNumber-show false in 6.2, we want to set pageNumber-position to Hidden
+        /// (otherwise it will default to Automatic which is visible)
+        /// </summary>
+        public void MigrateToLevel11PageNumberPosition()
+        {
+            if (GetMaintenanceLevel() >= 11)
+                return;
+
+            var path = Path.Combine(FolderPath, "appearance.json");
+            if (!RobustFile.Exists(path))
+                return; // or throw??
+            var json =
+                JsonConvert.DeserializeObject<ExpandoObject>(RobustFile.ReadAllText(path))
+                as IDictionary<string, object>;
+            if (
+                json.ContainsKey(AppearanceSettings.kPageNumberShowVar)
+                && json[AppearanceSettings.kPageNumberShowVar].Equals(false)
+            )
+            {
+                json[AppearanceSettings.kPageNumberPositionVar] = AppearanceSettings
+                    .PageNumberPosition
+                    .Hidden;
+                BookInfo.AppearanceSettings.UpdateFromJson(JsonConvert.SerializeObject(json));
+                BookInfo.AppearanceSettings.WriteToFolder(FolderPath);
+                BookInfo.AppearanceSettings.WriteCssToFolder(FolderPath);
+            }
+            Dom.UpdateMetaElement("maintenanceLevel", "11");
         }
 
         /// <summary>

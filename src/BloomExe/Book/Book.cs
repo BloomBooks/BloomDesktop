@@ -1789,6 +1789,7 @@ namespace Bloom.Book
             Storage.MigrateToLevel8RemoveEnterpriseOnly();
             Storage.MigrateToLevel9TruncateWidgetPaths();
             Storage.MigrateToLevel10GameHeader();
+            Storage.MigrateToLevel11PageNumberPosition();
 
             Storage.DoBackMigrations();
 
