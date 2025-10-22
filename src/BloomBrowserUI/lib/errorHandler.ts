@@ -78,6 +78,7 @@ export function reportPreliminaryError(
 // Using our own api to report the errors also makes us independent of GeckoFx's
 // way of dealing with unhandled exceptions, and helps us distinguish thrown
 // from unhandled ones, which some Gecko45 reporting doesn't.
+if (typeof window !== "undefined") {
 window.onerror = (msg, url, line, col, error) => {
     const message = msg.toString();
     if (
@@ -110,6 +111,7 @@ window.onerror = (msg, url, line, col, error) => {
     });
     return true; // suppress normal handling.
 };
+}
 
 // Saving this as it MIGHT be useful if we decide to have another go at catching
 // unhandled promise rejections.
