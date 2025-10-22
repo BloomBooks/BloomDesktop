@@ -244,7 +244,9 @@ export const RegistrationContents: React.FunctionComponent<
                                     : "Check in to change email"
                             }
                             l10nKey={
-                                mayChangeEmail ? "RegisterDialog.Email" : ""
+                                mayChangeEmail
+                                    ? "RegisterDialog.Email"
+                                    : "RegisterDialog.CheckInToChangeEmail"
                             }
                             value={info.email}
                             disabled={!mayChangeEmail}

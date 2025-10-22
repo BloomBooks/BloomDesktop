@@ -5221,6 +5221,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Email Address</source>
         <note>ID: RegisterDialog.Email</note>
       </trans-unit>
+      <trans-unit id="RegisterDialog.CheckInToChangeEmail">
+        <source xml:lang="en">Check in to change email</source>
+        <note>ID: RegisterDialog.CheckInToChangeEmail</note>
+        <note>Shown when the user must register elsewhere before changing the email field.</note>
+      </trans-unit>
       <trans-unit id="RegisterDialog.FirstName">
         <source xml:lang="en">First Name</source>
         <note>ID: RegisterDialog.FirstName</note>
