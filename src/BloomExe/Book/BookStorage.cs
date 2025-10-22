@@ -111,6 +111,7 @@ namespace Bloom.Book
         void MigrateToLevel8RemoveEnterpriseOnly();
         void MigrateToLevel9TruncateWidgetPaths();
         void MigrateToLevel10GameHeader();
+        void MigrateToLevel11PageNumberPosition();
         void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
@@ -176,12 +177,13 @@ namespace Bloom.Book
         ///   Bloom 6.2  8 = Removed enterprise-only class on all pages that have it
         ///   Bloom 6.2  9 = Truncate long widget paths to 50 characters
         ///   Bloom 6.3 10 = change old QuizHeader-style and Prompt-Style to uniform GameHeader-style
+        ///   Bloom 6.3 11 = change appearance settings page number control to use page number position system
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 8;
+        public const int kMaintenanceLevel = 11;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -4159,6 +4161,39 @@ namespace Bloom.Book
                 page.AddClass("GameHeader-style");
             }
             Dom.UpdateMetaElement("maintenanceLevel", "10");
+        }
+
+        /// <summary>
+        /// In 6.2, set pageNumber-show to false if the user wanted to hide the page numbers via
+        /// Appearance Settings. In 6.3, we introduce page number position appearance settings
+        /// which then automatically set pageNumber-show as appropriate. So for any books that
+        /// had pageNumber-show false in 6.2, we want to set pageNumber-position to Hidden
+        /// (otherwise it will default to Automatic which is visible)
+        /// </summary>
+        public void MigrateToLevel11PageNumberPosition()
+        {
+            if (GetMaintenanceLevel() >= 11)
+                return;
+
+            var path = Path.Combine(FolderPath, "appearance.json");
+            if (!RobustFile.Exists(path))
+                return; // or throw??
+            var json =
+                JsonConvert.DeserializeObject<ExpandoObject>(RobustFile.ReadAllText(path))
+                as IDictionary<string, object>;
+            if (
+                json.ContainsKey(AppearanceSettings.kPageNumberShowVar)
+                && json[AppearanceSettings.kPageNumberShowVar].Equals(false)
+            )
+            {
+                json[AppearanceSettings.kPageNumberPositionVar] = AppearanceSettings
+                    .PageNumberPosition
+                    .Hidden;
+                BookInfo.AppearanceSettings.UpdateFromJson(JsonConvert.SerializeObject(json));
+                BookInfo.AppearanceSettings.WriteToFolder(FolderPath);
+                BookInfo.AppearanceSettings.WriteCssToFolder(FolderPath);
+            }
+            Dom.UpdateMetaElement("maintenanceLevel", "11");
         }
 
         /// <summary>
