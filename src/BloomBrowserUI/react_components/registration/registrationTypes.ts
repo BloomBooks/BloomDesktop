@@ -18,5 +18,5 @@ export interface IRegistrationContentsProps {
     initialInfo: RegistrationInfo;
     mayChangeEmail?: boolean;
     emailRequiredForTeamCollection?: boolean;
-    onSubmit?: (updatedInfo: RegistrationInfo) => void;
+    onClose?: () => void;
 }

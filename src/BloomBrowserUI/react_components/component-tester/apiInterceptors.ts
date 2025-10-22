@@ -1,7 +1,6 @@
 /**
  * Utilities for intercepting API calls in Playwright tests.
- * This allows tests to capture what data was sent to endpoints without
- * needing to pass callback props to components.
+ * This allows tests to capture results that would be sent to backend APIs.
  */
 
 import { Page, Route } from "@playwright/test";
@@ -10,9 +9,9 @@ import { Page, Route } from "@playwright/test";
  * Intercepts POST requests to a given URL pattern and captures the request body.
  * Returns a function that waits for and returns the captured data.
  *
- * Usage:
+ * Example Usage:
  * ```typescript
- * const receiver = receivePost<RegistrationInfo>("/bloom/api/registration/userInfo");
+ * const receiver = preparePostReceiver<RegistrationInfo>("/bloom/api/registration/userInfo");
  * await page.click('button[name="Register"]');
  * const result = await receiver();
  * expect(result.email).toBe("foo@example.com");

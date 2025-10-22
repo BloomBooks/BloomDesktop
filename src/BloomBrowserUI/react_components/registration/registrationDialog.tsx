@@ -9,11 +9,10 @@ import {
     useSetupBloomDialog,
 } from "../BloomDialog/BloomDialogPlumbing";
 import { useL10n } from "../l10nHooks";
-import { useCallback, useEffect, useState } from "react";
-import { get, getBoolean, postJson } from "../../utils/bloomApi";
+import { useEffect, useState } from "react";
+import { get, getBoolean } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../../bookEdit/editViewFrame";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
-import { isValidEmail } from "../../utils/emailUtils";
 import { useIsTeamCollection } from "../../teamCollection/teamCollectionApi";
 import {
     RegistrationContents,
@@ -60,8 +59,6 @@ export const RegistrationDialog: React.FunctionComponent<
         propsForBloomDialog: IBloomDialogProps;
     }
 > = (props) => {
-    const closeDialogFunc = props.closeDialog;
-    const onSaveFunc = props.onSave;
     const [mayChangeEmail, setMayChangeEmail] = useState(true);
     // externalProp - emailRequired only needs to be used when creating a team collection
     const inTeamCollection = useIsTeamCollection();
@@ -87,22 +84,6 @@ export const RegistrationDialog: React.FunctionComponent<
         });
     }, [props.propsForBloomDialog.open]);
 
-    const closeDialog = useCallback(() => {
-        closeDialogFunc();
-    }, [closeDialogFunc]);
-
-    const saveInfo = useCallback(
-        (nextInfo: RegistrationInfo) => {
-            postJson("registration/userInfo", nextInfo, () => {
-                const onSave =
-                    onSaveFunc ?? externallySetRegistrationDialogProps?.onSave;
-                onSave?.(isValidEmail(nextInfo.email));
-                closeDialog();
-            });
-        },
-        [onSaveFunc, closeDialog],
-    );
-
     return (
         <BloomDialog
             {...props.propsForBloomDialog}
@@ -113,7 +94,7 @@ export const RegistrationDialog: React.FunctionComponent<
                     reason !== "backdropClick" &&
                     reason !== "titleCloseClick"
                 ) {
-                    closeDialog();
+                    props.closeDialog();
                 }
             }}
         >
@@ -130,7 +111,7 @@ export const RegistrationDialog: React.FunctionComponent<
                 initialInfo={info}
                 mayChangeEmail={mayChangeEmail}
                 emailRequiredForTeamCollection={emailRequiredForTeamCollection}
-                onSubmit={saveInfo}
+                onClose={props.closeDialog}
             />
         </BloomDialog>
     );

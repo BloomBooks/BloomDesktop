@@ -25,7 +25,6 @@ const defaultProps: IRegistrationContentsProps = {
     },
     mayChangeEmail: true,
     emailRequiredForTeamCollection: false,
-    onSubmit: (updated) => console.log("Submitted:", updated),
 };
 
 test.describe("Registration Dialog - Initial Rendering & Layout", () => {

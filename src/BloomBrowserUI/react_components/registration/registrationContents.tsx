@@ -120,7 +120,7 @@ export const RegistrationContents: React.FunctionComponent<
         postJson("registration/userInfo", trimmedInfo);
 
         // Also call the callback if provided (for backward compatibility during migration)
-        props.onSubmit?.(trimmedInfo);
+        props.onClose?.();
     };
 
     const handleOptOutClick = () => {
@@ -136,7 +136,7 @@ export const RegistrationContents: React.FunctionComponent<
         postJson("registration/userInfo", sanitizedInfo);
 
         // Also call the callback if provided (for backward compatibility during migration)
-        props.onSubmit?.(sanitizedInfo);
+        props.onClose?.();
     };
 
     return (
