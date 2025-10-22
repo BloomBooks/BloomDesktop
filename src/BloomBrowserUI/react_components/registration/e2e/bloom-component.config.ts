@@ -1,5 +1,5 @@
 import type { IBloomComponentConfig } from "../../component-tester/componentTypes";
-import type { IRegistrationContentsProps } from "../registrationContents";
+import type { IRegistrationContentsProps } from "../registrationTypes";
 
 const config: IBloomComponentConfig<IRegistrationContentsProps> = {
     defaultProps: {

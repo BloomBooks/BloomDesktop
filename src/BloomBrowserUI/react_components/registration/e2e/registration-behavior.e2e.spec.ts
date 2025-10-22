@@ -4,7 +4,7 @@
  */
 
 import { expect, test } from "@playwright/test";
-import type { RegistrationInfo } from "../registrationContents";
+import type { RegistrationInfo } from "../registrationTypes";
 import { setupRegistrationComponent } from "./setup";
 
 const emptyInfo: RegistrationInfo = {

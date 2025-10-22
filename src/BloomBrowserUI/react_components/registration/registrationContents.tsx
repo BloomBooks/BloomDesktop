@@ -9,15 +9,15 @@ import { H1 } from "../l10nComponents";
 import { AttentionTextField } from "../AttentionTextField";
 import BloomButton from "../bloomButton";
 import { isValidEmail } from "../../utils/emailUtils";
+import { postJson } from "../../utils/bloomApi";
+import {
+    kInactivitySecondsBeforeShowingOptOut,
+    type RegistrationInfo,
+    type IRegistrationContentsProps,
+} from "./registrationTypes";
 
-export interface RegistrationInfo {
-    firstName: string;
-    surname: string;
-    email: string;
-    organization: string;
-    usingFor: string;
-    hadEmailAlready: boolean;
-}
+export { kInactivitySecondsBeforeShowingOptOut };
+export type { RegistrationInfo, IRegistrationContentsProps };
 
 export const createEmptyRegistrationInfo = (): RegistrationInfo => ({
     firstName: "",
@@ -26,6 +26,15 @@ export const createEmptyRegistrationInfo = (): RegistrationInfo => ({
     organization: "",
     usingFor: "",
     hadEmailAlready: false,
+});
+
+const trimRegistrationInfo = (info: RegistrationInfo): RegistrationInfo => ({
+    ...info,
+    firstName: info.firstName.trim(),
+    surname: info.surname.trim(),
+    email: info.email.trim(),
+    organization: info.organization.trim(),
+    usingFor: info.usingFor.trim(),
 });
 
 export const isFirstNameValid = (value: string): boolean => !!value?.trim();
@@ -56,13 +65,6 @@ export const isRegistrationInfoComplete = (
         isEmailFieldValid(info.email, emailRequired)
     );
 };
-
-export interface IRegistrationContentsProps {
-    initialInfo: RegistrationInfo;
-    mayChangeEmail?: boolean; // default true
-    emailRequiredForTeamCollection?: boolean; // default false
-    onSubmit?: (updatedInfo: RegistrationInfo) => void;
-}
 
 export const RegistrationContents: React.FunctionComponent<
     IRegistrationContentsProps
@@ -95,7 +97,7 @@ export const RegistrationContents: React.FunctionComponent<
         setShowOptOut(false);
         const timer = setTimeout(() => {
             setShowOptOut(true);
-        }, 10000);
+        }, kInactivitySecondsBeforeShowingOptOut * 1000);
         return () => clearTimeout(timer);
     }, [info]);
 
@@ -112,16 +114,28 @@ export const RegistrationContents: React.FunctionComponent<
             return;
         }
         setSubmitAttempts(0);
-        props.onSubmit?.(info);
+        const trimmedInfo = trimRegistrationInfo(info);
+
+        // Call the API to save registration info
+        postJson("registration/userInfo", trimmedInfo);
+
+        // Also call the callback if provided (for backward compatibility during migration)
+        props.onSubmit?.(trimmedInfo);
     };
 
     const handleOptOutClick = () => {
+        const trimmedInfo = trimRegistrationInfo(info);
         const sanitizedInfo = isEmailFieldValid(
-            info.email,
+            trimmedInfo.email,
             emailRequiredForTeamCollection,
         )
-            ? info
-            : { ...info, email: "" };
+            ? trimmedInfo
+            : { ...trimmedInfo, email: "" };
+
+        // Call the API to save registration info
+        postJson("registration/userInfo", sanitizedInfo);
+
+        // Also call the callback if provided (for backward compatibility during migration)
         props.onSubmit?.(sanitizedInfo);
     };
 

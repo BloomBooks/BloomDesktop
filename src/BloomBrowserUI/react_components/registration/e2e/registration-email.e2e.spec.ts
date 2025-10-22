@@ -97,12 +97,10 @@ test.describe("Registration Dialog - Email Field - Valid Formats", () => {
             // Fill with invalid email first to ensure UI responds to valid input
             await field.fill("invalid");
             await page.keyboard.press("Tab");
-            await page.waitForTimeout(200);
 
             // Now fill with valid email
             await field.fill(email);
             await page.keyboard.press("Tab");
-            await page.waitForTimeout(200);
             await expect(field).toHaveValue(email);
             await expect(field).not.toHaveAttribute("aria-invalid", "true");
         }
@@ -130,12 +128,10 @@ test.describe("Registration Dialog - Email Field - Invalid Formats", () => {
             // Fill with valid email first to ensure UI responds to invalid input
             await field.fill("valid@example.com");
             await page.keyboard.press("Tab");
-            await page.waitForTimeout(200);
 
             // Now fill with invalid email
             await field.fill(email);
             await page.keyboard.press("Tab");
-            await page.waitForTimeout(200);
             await expect(field).toHaveValue(email);
             await expect(field).toHaveAttribute("aria-invalid", "true");
         }
@@ -156,13 +152,11 @@ test.describe("Registration Dialog - Email Field - Typing Behavior", () => {
         // Enter invalid email and trigger validation
         await field.fill("invalid");
         await registerButton.click();
-        await page.waitForTimeout(500);
         await expect(field).toHaveAttribute("aria-invalid", "true");
 
         // Now type a valid email
         await field.fill("valid@email.com");
-        await page.waitForTimeout(500);
-        // Error should clear
+        // Error should clear immediately on valid input
         await expect(field).not.toHaveAttribute("aria-invalid", "true");
     });
 
@@ -217,7 +211,6 @@ test.describe("Registration Dialog - Email Field - Optional vs Required", () => 
         const registerButton = page.getByRole("button", { name: "Register" });
         await registerButton.click();
 
-        await page.waitForTimeout(500);
         // Email should NOT show error when it's optional
         await expect(emailField).not.toHaveAttribute("aria-invalid", "true");
     });
@@ -238,7 +231,6 @@ test.describe("Registration Dialog - Email Field - Optional vs Required", () => 
         const registerButton = page.getByRole("button", { name: "Register" });
         await registerButton.click();
 
-        await page.waitForTimeout(500);
         // Email should show error when required
         await expect(emailField).toHaveAttribute("aria-invalid", "true");
     });
@@ -259,7 +251,6 @@ test.describe("Registration Dialog - Email Field - Optional vs Required", () => 
         const registerButton = page.getByRole("button", { name: "Register" });
         await registerButton.click();
 
-        await page.waitForTimeout(500);
         // Valid email should not show error even when required
         await expect(emailField).not.toHaveAttribute("aria-invalid", "true");
     });
@@ -290,7 +281,6 @@ test.describe("Registration Dialog - Email Field - Edge Cases", () => {
 
         await field.fill("   ");
         await registerButton.click();
-        await page.waitForTimeout(500);
 
         // Whitespace-only should be treated as empty (valid in optional mode)
         await expect(field).not.toHaveAttribute("aria-invalid", "true");
@@ -305,8 +295,51 @@ test.describe("Registration Dialog - Email Field - Edge Cases", () => {
 
         // Email with leading/trailing spaces should still be valid
         await field.fill("  user@example.com  ");
-        await page.waitForTimeout(500);
         // Should not show error as trimmed value is valid
         await expect(field).not.toHaveAttribute("aria-invalid", "true");
+    });
+});
+
+test.describe("Registration Dialog - Email Case Sensitivity", () => {
+    test("Preserves email capitalization on submit", async ({ page }) => {
+        const finisher = await setupRegistrationComponent(page, {
+            initialInfo: validInfo,
+        });
+
+        await page
+            .getByRole("textbox", { name: "Email Address" })
+            .fill("John.Doe@Example.COM");
+
+        const data = await finisher.submit();
+
+        // Email should be preserved as-is (not lowercased)
+        expect(data.email).toBe("John.Doe@Example.COM");
+    });
+
+    test("Validates email regardless of case", async ({ page }) => {
+        await setupRegistrationComponent(page, {
+            initialInfo: validInfo,
+        });
+
+        const emailField = page.getByRole("textbox", {
+            name: "Email Address",
+        });
+
+        // All case variations should be valid
+        const caseVariations = [
+            "USER@EXAMPLE.COM",
+            "user@example.com",
+            "User@Example.Com",
+            "uSeR@eXaMpLe.CoM",
+        ];
+
+        for (const email of caseVariations) {
+            await emailField.fill(email);
+            await page.keyboard.press("Tab");
+            await expect(emailField).not.toHaveAttribute(
+                "aria-invalid",
+                "true",
+            );
+        }
     });
 });
