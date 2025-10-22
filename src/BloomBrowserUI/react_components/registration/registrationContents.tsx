@@ -95,11 +95,13 @@ export const RegistrationContents: React.FunctionComponent<
     const [showOptOut, setShowOptOut] = React.useState(false);
     React.useEffect(() => {
         setShowOptOut(false);
+        const delaySeconds =
+            props.optOutDelaySeconds ?? kInactivitySecondsBeforeShowingOptOut;
         const timer = setTimeout(() => {
             setShowOptOut(true);
-        }, kInactivitySecondsBeforeShowingOptOut * 1000);
+        }, delaySeconds * 1000);
         return () => clearTimeout(timer);
-    }, [info]);
+    }, [info, props.optOutDelaySeconds]);
 
     React.useEffect(() => {
         if (mustRegisterTextRef.current && bottomButtonsRef.current) {

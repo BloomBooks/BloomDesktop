@@ -2,7 +2,6 @@ import { Page, expect, Locator } from "@playwright/test";
 import { setTestComponent } from "../../component-tester/setTestComponent";
 import {
     IRegistrationContentsProps,
-    kInactivitySecondsBeforeShowingOptOut,
     RegistrationInfo,
 } from "../registrationContents";
 import {
@@ -96,11 +95,17 @@ export async function setupRegistrationComponent(
         "**/bloom/api/registration/userInfo",
     );
 
+    // Use a 2-second delay for tests to speed them up, unless explicitly overridden
+    const propsWithTestDelay: IRegistrationContentsProps = {
+        optOutDelaySeconds: 2,
+        ...props,
+    };
+
     await setTestComponent<IRegistrationContentsProps>(
         page,
         "../registration/registrationContents",
         "RegistrationContents",
-        props,
+        propsWithTestDelay,
     );
 
     return receiver;
@@ -136,10 +141,10 @@ export async function fillRegistrationForm(
 }
 
 export async function waitForAndClickOptOutButton(page: Page) {
-    // Wait for opt-out button to appear (feature: shows after 10 seconds of inactivity)
+    // Wait for opt-out button to appear (tests use a 2-second delay)
     const optOutButton = getOptOutButton(page);
     await expect(optOutButton).toBeVisible({
-        timeout: (kInactivitySecondsBeforeShowingOptOut + 2) * 1000,
+        timeout: 4000, // 2 seconds + 2 seconds buffer
     });
     await optOutButton.click();
 }
