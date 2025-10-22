@@ -18,7 +18,7 @@ import { Page, Route } from "@playwright/test";
  * ```
  *
  * @param page - The Playwright page object
- * @param urlPattern - URL or pattern to intercept (e.g., "/api/save" or "**\/api/save")
+ * @param urlPattern - URL or pattern to intercept (e.g., "/bloom/api/registration/userInfo" or "**\/api/save")
  * @returns A function that waits for the request and returns the parsed POST data
  */
 export function preparePostReceiver<T>(
@@ -70,6 +70,46 @@ export function preparePostReceiver<T>(
     };
 }
 
-// Enhancements for future:
-// Add preparePostResponse<T> that allows a test to specify the response
-// Add prepareGetResponse<T> that allows a test to specify response
+/**
+ * Intercepts GET requests to a given URL pattern and returns a mock response.
+ * This allows tests to provide fake data for API endpoints.
+ *
+ * @param page - The Playwright page object
+ * @param urlPattern - URL or pattern to intercept (e.g., "/bloom/api/data" or "**\/api/data")
+ * @param responseData - The data to return in the response
+ */
+export function prepareGetResponse<T>(
+    page: Page,
+    urlPattern: string,
+    responseData: T,
+): void {
+    void page.route(urlPattern, async (route: Route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({ data: responseData }),
+        });
+    });
+}
+
+/**
+ * Intercepts GET requests to a given URL pattern and returns a boolean response.
+ * This is specifically for Bloom API endpoints that return boolean values directly.
+ *
+ * @param page - The Playwright page object
+ * @param urlPattern - URL or pattern to intercept (e.g., "/bloom/api/check" or "**\/api/check")
+ * @param responseValue - The boolean value to return
+ */
+export function prepareGetBooleanResponse(
+    page: Page,
+    urlPattern: string,
+    responseValue: boolean,
+): void {
+    void page.route(urlPattern, async (route: Route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({ data: responseValue }),
+        });
+    });
+}
