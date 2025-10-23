@@ -4685,7 +4685,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.PaperSize.A4" approved="yes">
         <source xml:lang="en">3. More settings &gt; Paper size: "A4"</source>
-        <target xml:lang="pt-PT" state="final">3. Mais configurações de tamanho &gt; papel: "A4"</target>
+        <target xml:lang="pt-PT" state="final">3. Mais configurações &gt; Tamanho do papel: "A4"</target>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.A4</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.PaperSize.Letter" approved="yes">
