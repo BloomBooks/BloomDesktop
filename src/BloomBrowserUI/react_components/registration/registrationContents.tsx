@@ -309,6 +309,7 @@ export const RegistrationContents: React.FunctionComponent<
                                 enabled={true}
                                 variant="text"
                                 onClick={handleOptOutClick}
+                                data-testid="optOutButton"
                                 css={css`
                                     font-size: 10px;
                                     animation: fadeIn 1s ease-in;
@@ -330,6 +331,7 @@ export const RegistrationContents: React.FunctionComponent<
                         l10nKey="RegisterDialog.RegisterButton"
                         enabled={true}
                         onClick={handleSubmit}
+                        data-testid="registerButton"
                     >
                         Register
                     </BloomButton>

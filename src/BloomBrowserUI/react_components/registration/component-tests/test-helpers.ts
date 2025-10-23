@@ -136,15 +136,15 @@ export async function setupRegistrationComponent(
 }
 
 export async function clickRegisterButton(page: Page) {
-    await page.getByRole("button", { name: "Register" }).click();
+    await page.getByTestId("registerButton").click();
 }
 
 export function getRegisterButton(page: Page) {
-    return page.getByRole("button", { name: "Register" });
+    return page.getByTestId("registerButton");
 }
 
 export function getOptOutButton(page: Page) {
-    return page.getByRole("button", { name: /stuck.*later/i });
+    return page.getByTestId("optOutButton");
 }
 
 export async function fillRegistrationForm(
