@@ -208,6 +208,7 @@ export const RegistrationContents: React.FunctionComponent<
                             }
                             submitAttempts={submitAttempts}
                             isValid={isFirstNameValid}
+                            data-testid="firstName"
                         />
                     </div>
                     <div
@@ -224,6 +225,7 @@ export const RegistrationContents: React.FunctionComponent<
                             onChange={(value) => updateInfo({ surname: value })}
                             submitAttempts={submitAttempts}
                             isValid={isSurnameValid}
+                            data-testid="surname"
                         />
                     </div>
                 </div>
@@ -260,6 +262,7 @@ export const RegistrationContents: React.FunctionComponent<
                                 )
                             }
                             submitAttempts={submitAttempts}
+                            data-testid="email"
                         />
                     </div>
                     <div
@@ -278,6 +281,7 @@ export const RegistrationContents: React.FunctionComponent<
                             }
                             submitAttempts={submitAttempts}
                             isValid={isOrganizationValid}
+                            data-testid="organization"
                         />
                     </div>
                 </div>
@@ -293,6 +297,7 @@ export const RegistrationContents: React.FunctionComponent<
                     isValid={isUsingForValid}
                     multiline={true}
                     rows="3"
+                    data-testid="usingFor"
                 />
             </DialogMiddle>
             <div id="bottomButtons" ref={bottomButtonsRef}>

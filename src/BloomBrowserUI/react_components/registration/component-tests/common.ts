@@ -11,7 +11,7 @@ import {
 
 // Field helper type for registration form
 type FieldHelper = {
-    name: string | RegExp;
+    name: string;
     getElement: () => Promise<Locator>;
     getValue: () => Promise<string>;
     fill: (value: string) => Promise<void>;
@@ -22,16 +22,21 @@ type FieldHelper = {
 // Field name constants for registration form
 let currentPage: Page | undefined;
 
-function createFieldHelper(name: string | RegExp): FieldHelper {
+function createFieldHelper(testId: string): FieldHelper {
     return {
-        name,
+        name: testId,
         getElement: async () => {
             if (!currentPage) {
                 throw new Error(
                     "Page not initialized. Call setupRegistrationComponent first.",
                 );
             }
-            return currentPage.getByRole("textbox", { name });
+            // Get the input/textarea element within the test-id container
+            // Use .first() to handle multiline fields that have a hidden resize textarea
+            return currentPage
+                .getByTestId(testId)
+                .locator("input,textarea")
+                .first();
         },
         getValue: async () => {
             if (!currentPage) {
@@ -39,7 +44,11 @@ function createFieldHelper(name: string | RegExp): FieldHelper {
                     "Page not initialized. Call setupRegistrationComponent first.",
                 );
             }
-            return currentPage.getByRole("textbox", { name }).inputValue();
+            return currentPage
+                .getByTestId(testId)
+                .locator("input,textarea")
+                .first()
+                .inputValue();
         },
         fill: async (value: string) => {
             if (!currentPage) {
@@ -47,7 +56,11 @@ function createFieldHelper(name: string | RegExp): FieldHelper {
                     "Page not initialized. Call setupRegistrationComponent first.",
                 );
             }
-            await currentPage.getByRole("textbox", { name }).fill(value);
+            await currentPage
+                .getByTestId(testId)
+                .locator("input,textarea")
+                .first()
+                .fill(value);
         },
         clear: async () => {
             if (!currentPage) {
@@ -55,7 +68,11 @@ function createFieldHelper(name: string | RegExp): FieldHelper {
                     "Page not initialized. Call setupRegistrationComponent first.",
                 );
             }
-            await currentPage.getByRole("textbox", { name }).clear();
+            await currentPage
+                .getByTestId(testId)
+                .locator("input,textarea")
+                .first()
+                .clear();
         },
         get markedInvalid(): Promise<boolean> {
             if (!currentPage) {
@@ -64,8 +81,13 @@ function createFieldHelper(name: string | RegExp): FieldHelper {
                 );
             }
             return (async () => {
-                const element = currentPage.getByRole("textbox", { name });
-                const ariaInvalid = await element.getAttribute("aria-invalid");
+                // Check aria-invalid on the actual input element
+                const inputElement = currentPage
+                    .getByTestId(testId)
+                    .locator("input,textarea")
+                    .first();
+                const ariaInvalid =
+                    await inputElement.getAttribute("aria-invalid");
                 return ariaInvalid === "true";
             })();
         },
@@ -73,13 +95,11 @@ function createFieldHelper(name: string | RegExp): FieldHelper {
 }
 
 export const field = {
-    firstName: createFieldHelper("First Name"),
-    surname: createFieldHelper("Surname"),
-    email: createFieldHelper("Email Address"),
-    organization: createFieldHelper("Organization"),
-    usingFor: createFieldHelper(
-        /How are you using|What will you|What are you/i,
-    ),
+    firstName: createFieldHelper("firstName"),
+    surname: createFieldHelper("surname"),
+    email: createFieldHelper("email"),
+    organization: createFieldHelper("organization"),
+    usingFor: createFieldHelper("usingFor"),
 };
 
 // returns a receiver object that you can use to check if the post was called
@@ -153,7 +173,7 @@ export async function getMarkedInvalid(
     page: Page,
     fieldHelper: FieldHelper,
 ): Promise<boolean> {
-    const field = page.getByRole("textbox", { name: fieldHelper.name });
+    const field = page.getByTestId(fieldHelper.name);
     const ariaInvalid = await field.getAttribute("aria-invalid");
     return ariaInvalid === "true";
 }
