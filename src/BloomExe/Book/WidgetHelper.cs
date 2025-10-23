@@ -12,6 +12,8 @@ namespace Bloom.Book
     // "Widgets" are HTML Activities that the user creates outside of Bloom, as distinct from our built-in activities.
     public class WidgetHelper
     {
+        public const int MaximumNameLength = 50;
+
         public static UrlPathString AddWidgetFilesToBookFolder(
             string bookFolderPath,
             string fullWidgetPath
@@ -20,8 +22,8 @@ namespace Bloom.Book
             var widgetPath = fullWidgetPath.Replace("\\", "/");
             var widgetName = Path.GetFileNameWithoutExtension(widgetPath);
             var originalWidgetName = widgetName;
-            if (widgetName.Length > 50)
-                widgetName = widgetName.Substring(0, 50).Trim(); // keep the name from being too long (BL-15307)
+            if (widgetName.Length > MaximumNameLength)
+                widgetName = widgetName.Substring(0, MaximumNameLength).Trim(); // keep the name from being too long (BL-15307)
             var shortWidgetName = widgetName;
             var widgetDestinationFolder = bookFolderPath + "/" + "activities" + "/" + widgetName;
             var suffix = 1;
@@ -92,6 +94,8 @@ namespace Bloom.Book
             // First attempt: get the widget name from the name of the directory
             // containing the .html file.
             var widgetName = Path.GetFileName(fullFolderName);
+            if (widgetName.Length > MaximumNameLength)
+                widgetName = widgetName.Substring(0, MaximumNameLength).Trim();
             var fromActivePresenter = false;
             var activePresenterFiles = new string[]
             {
