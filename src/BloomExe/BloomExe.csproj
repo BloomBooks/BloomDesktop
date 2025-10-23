@@ -141,19 +141,25 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 	<ItemGroup>
 		<None Remove="**/*.orig" />
 	</ItemGroup>
-	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
+	<ItemGroup Condition="'$(RuntimeIdentifier)'==''"><!-- Default build assumes win-x64 -->
 		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
 	</ItemGroup>
-	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='ARM64'">
+	<ItemGroup Condition="'$(RuntimeIdentifier)'=='win-x64'">
+		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)'=='win-arm64'">
 		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-arm64\*.dll" />
 	</ItemGroup>
 
 	<!-- Platform-specific ffmpeg binaries -->
-	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
-		<FfmpegFiles Include="$(SolutionDir)lib\win-x64\ffmpeg.exe" />
+	<ItemGroup Condition="'$(RuntimeIdentifier)'==''"><!-- Default build assumes win-x64 -->
+		<FfmpegFiles Include="$(SolutionDir)\lib\ffmpeg\x64\ffmpeg.exe" />
 	</ItemGroup>
-	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='ARM64'">
-		<FfmpegFiles Include="$(SolutionDir)lib\win-arm64\ffmpeg.exe" />
+	<ItemGroup Condition="'$(RuntimeIdentifier)'=='win-x64'">
+		<FfmpegFiles Include="$(SolutionDir)\lib\ffmpeg\x64\ffmpeg.exe" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)'=='win-arm64'">
+		<FfmpegFiles Include="$(SolutionDir)\lib\ffmpeg\arm64\ffmpeg.exe" />
 	</ItemGroup>
 
 	<PropertyGroup>

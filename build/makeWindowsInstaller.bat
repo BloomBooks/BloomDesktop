@@ -10,6 +10,8 @@ REM of them. The major and minor numbers here are ignored.
 REM Ensure we run from the directory of this script, so msbuild finds Bloom.proj
 pushd "%~dp0"
 
+REM you may need to run msbuild /t:RestoreBuildTasks
+if not exist ..\packages dotnet msbuild /t:RestoreBuildTasks
 REM Build the installer (Installer depends on Build and EnsureVelopackCli)
 REM Note: BUILD_NUMBER must be 4 parts (a.b.c.d). Only the 3rd part (BuildCounter) matters for Version; the others can be 0.
 REM Clean the output folder to avoid vpk complaining about equal/greater existing releases
