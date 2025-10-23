@@ -1,90 +1,144 @@
 /**
- * Registration Dialog Launcher - Imperative API Bridge
+ * Registration Dialog Launcher
  *
- * This file exists to bridge between two different ways of opening the registration dialog:
- *
- * 1. React-style: Render <RegistrationDialogLauncher /> with props directly
- *    - Used by storybook and some React components
- *    - Props flow through React's normal component tree
- *
- * 2. Imperative-style: Call showRegistrationDialog({ ... }) or showRegistrationDialogForEditTab()
- *    - Used by C# code (via WireUpForWinforms) and some React components
- *    - These functions can't pass props directly into an already-mounted React component
- *    - Instead, they store props in module-level variables (show, setOverrides)
- *    - The launcher component picks them up when it renders
- *
- * The complexity here comes from supporting both patterns while preventing bugs:
- * - We capture overrides in component state when the dialog opens
- * - We clear them immediately to prevent leaking into the next dialog open
- * - This ensures showRegistrationDialog({ emailRequired: true }) doesn't affect
- *   a later showRegistrationDialogForEditTab() call that expects the default behavior
+ * Follows the same pattern as ConfirmDialog and BloomMessageBox.
+ * The dialog can be shown from TypeScript using showRegistrationDialog(props),
+ * or from C# via WireUpForWinforms.
  */
-import { useState } from "react";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import {
     IBloomDialogEnvironmentParams,
-    useEventLaunchedBloomDialog,
+    Mode,
     useSetupBloomDialog,
+    useEventLaunchedBloomDialog,
 } from "../BloomDialog/BloomDialogPlumbing";
 import { RegistrationDialog } from "./registrationDialog";
-import { ShowEditViewDialog } from "../../bookEdit/editViewFrame";
+import { getEditTabBundleExports } from "../../bookEdit/js/bloomFrames";
+import { postBoolean } from "../../utils/bloomApi";
 
 export interface IRegistrationDialogProps {
     emailRequiredForTeamCollection?: boolean;
     onSave?: (isValidEmail: boolean) => void;
+    dialogEnvironment?: IBloomDialogEnvironmentParams;
 }
 
+// Module-level function that can be called from anywhere to show the dialog
+export let showRegistrationDialogFn: () => void = () => {
+    console.error("showRegistrationDialog is not set up yet.");
+};
+
 export const RegistrationDialogLauncher: React.FunctionComponent<
-    IRegistrationDialogProps & {
-        dialogEnvironment?: IBloomDialogEnvironmentParams;
-    }
+    IRegistrationDialogProps
 > = (props) => {
-    // eslint needed useSetup and useEvent to be in the same order on every render
-    const useSetup = useSetupBloomDialog(props.dialogEnvironment);
-    const useEventLaunched = useEventLaunchedBloomDialog("RegistrationDialog");
     const { showDialog, closeDialog, propsForBloomDialog } =
-        // use the environment in useSetup if env.dialogFrameExternal (WinForms) exists, else tell useEvent the dialog's name for showDialog()
-        props.dialogEnvironment?.dialogFrameProvidedExternally
-            ? // for WinForms Wrapped things (eg Join Team Collection) env = dialogFrame:true, Open:true (initially Open inside of frame)
-              useSetup
-            : // for React (all other times) env = undef -> propsForBlDialog = dialogFrame:false, Open:false (will open when show() is called)
-              useEventLaunched;
+        useSetupBloomDialog(props.dialogEnvironment);
 
-    // Store pending overrides from imperative showRegistrationDialog() calls
-    const [pendingOverrides, setPendingOverrides] = useState<
-        IRegistrationDialogProps | undefined
-    >(undefined);
+    showRegistrationDialogFn = showDialog;
 
-    show = showDialog;
-    setOverrides = setPendingOverrides;
+    React.useEffect(() => {
+        if (props.dialogEnvironment?.mode === Mode.Edit) {
+            // Tell edit tab to disable everything when the dialog is up
+            postBoolean("editView/setModalState", propsForBloomDialog.open);
+        }
+    }, [props.dialogEnvironment?.mode, propsForBloomDialog.open]);
 
-    return propsForBloomDialog.open ? (
+    return (
         <RegistrationDialog
             closeDialog={closeDialog}
             showDialog={showDialog}
             propsForBloomDialog={propsForBloomDialog}
             emailRequiredForTeamCollection={
-                props.emailRequiredForTeamCollection ??
-                pendingOverrides?.emailRequiredForTeamCollection
+                props.emailRequiredForTeamCollection
             }
-            onSave={props.onSave ?? pendingOverrides?.onSave}
+            onSave={props.onSave}
+        />
+    );
+};
+
+// This sits in the react tree doing nothing until it gets
+// a websocket event from C# LaunchDialog calls.
+export const RegistrationDialogEventLauncher: React.FunctionComponent = () => {
+    const { openingEvent, closeDialog, propsForBloomDialog } =
+        useEventLaunchedBloomDialog("RegistrationDialog");
+
+    // Extract props from the event if available
+    const eventProps: IRegistrationDialogProps = {
+        emailRequiredForTeamCollection:
+            openingEvent?.emailRequiredForTeamCollection,
+        onSave: openingEvent?.onSave,
+    };
+
+    return propsForBloomDialog.open ? (
+        <RegistrationDialog
+            closeDialog={closeDialog}
+            showDialog={() => {}} // Not used in event-based pattern
+            propsForBloomDialog={propsForBloomDialog}
+            emailRequiredForTeamCollection={
+                eventProps.emailRequiredForTeamCollection
+            }
+            onSave={eventProps.onSave}
         />
     ) : null;
 };
 
-let show: () => void = () => {};
-let setOverrides: (
-    props: IRegistrationDialogProps | undefined,
-) => void = () => {};
-
-export function showRegistrationDialogForEditTab() {
-    ShowEditViewDialog(<RegistrationDialogLauncher />);
-    setOverrides(undefined); // Clear any previous overrides
-    show();
-}
-
+// Render the dialog with props and show it (used from TypeScript/React contexts)
 export function showRegistrationDialog(
     registrationDialogProps: IRegistrationDialogProps,
+    container?: Element | null,
 ) {
-    setOverrides(registrationDialogProps);
-    show();
+    doRender(registrationDialogProps, container);
+    showRegistrationDialogFn();
 }
+
+// Special function for Edit Tab that uses the edit tab's modal container
+export function showRegistrationDialogForEditTab(
+    registrationDialogProps: IRegistrationDialogProps = {},
+) {
+    const modalContainer = getEditTabBundleExports().getModalDialogContainer();
+    if (!registrationDialogProps.dialogEnvironment) {
+        registrationDialogProps.dialogEnvironment = {
+            dialogFrameProvidedExternally: false,
+            initiallyOpen: false,
+        };
+    }
+    registrationDialogProps.dialogEnvironment.mode = Mode.Edit;
+
+    doRender(registrationDialogProps, modalContainer);
+    showRegistrationDialogFn();
+}
+
+const doRender = (
+    props: IRegistrationDialogProps,
+    container?: Element | null,
+) => {
+    let modalContainer = container;
+
+    // If no container specified, try to get one from the current context
+    if (!modalContainer) {
+        // Try to find a modal container in the current document
+        modalContainer = document.getElementById("modal-dialog-container");
+
+        // If still no container, we'll let React create the dialog at the body level
+        if (!modalContainer) {
+            modalContainer = document.createElement("div");
+            document.body.appendChild(modalContainer);
+        }
+
+        if (!props.dialogEnvironment) {
+            props.dialogEnvironment = {
+                dialogFrameProvidedExternally: false,
+                initiallyOpen: false,
+            };
+        }
+    }
+
+    try {
+        ReactDOM.render(
+            <RegistrationDialogLauncher {...props} />,
+            modalContainer,
+        );
+    } catch (error) {
+        console.error(error);
+    }
+};

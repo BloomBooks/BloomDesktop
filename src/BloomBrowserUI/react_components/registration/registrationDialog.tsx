@@ -16,6 +16,7 @@ import {
 import {
     IRegistrationDialogProps,
     RegistrationDialogLauncher,
+    RegistrationDialogEventLauncher,
     showRegistrationDialog,
     showRegistrationDialogForEditTab,
 } from "./registrationDialogLauncher";
@@ -24,6 +25,7 @@ import {
 export type { IRegistrationDialogProps };
 export {
     RegistrationDialogLauncher,
+    RegistrationDialogEventLauncher,
     showRegistrationDialog,
     showRegistrationDialogForEditTab,
 };

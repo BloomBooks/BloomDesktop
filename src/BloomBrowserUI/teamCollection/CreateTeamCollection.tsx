@@ -28,10 +28,7 @@ import {
     useSetupBloomDialog,
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { ErrorBox } from "../react_components/boxes";
-import {
-    RegistrationDialogLauncher,
-    showRegistrationDialog,
-} from "../react_components/registration/registrationDialog";
+import { showRegistrationDialog } from "../react_components/registration/registrationDialog";
 
 // Contents of a dialog launched from TeamCollectionSettingsPanel Create Team Collection button.
 
@@ -208,7 +205,6 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                     onClick_DEPRECATED={() => post("common/closeReactDialog")}
                 />
             </DialogBottomButtons>
-            <RegistrationDialogLauncher />
         </BloomDialog>
     );
 };

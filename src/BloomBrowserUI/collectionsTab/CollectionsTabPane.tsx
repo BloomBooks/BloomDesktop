@@ -21,6 +21,7 @@ import {
 } from "../react_components/localizableMenuItem";
 import { TeamCollectionDialogLauncher } from "../teamCollection/TeamCollectionDialog";
 import { SpreadsheetExportDialogLauncher } from "./spreadsheet/SpreadsheetExportDialog";
+import { RegistrationDialogEventLauncher } from "../react_components/registration/registrationDialogLauncher";
 import { H1 } from "../react_components/l10nComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
@@ -572,7 +573,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             <TeamCollectionDialogLauncher />
             <SpreadsheetExportDialogLauncher />
             <ForumInvitationDialogLauncher />
-            <RegistrationDialogLauncher />
+            <RegistrationDialogEventLauncher />
             <AboutDialogLauncher />
             <CollectionSettingsDialog />
             <EmbeddedProgressDialog id="collectionTab" />
