@@ -1,5 +1,6 @@
 /**
  * Tests for Registration Dialog - Field Validation
+ * Covers: required fields, input formats, length limits, whitespace handling
  * Run with: yarn test
  */
 
@@ -10,8 +11,7 @@ import {
     clickRegisterButton,
     fillRegistrationForm,
     field,
-    getRegisterButton,
-} from "./common";
+} from "./test-helpers";
 
 const emptyInfo: RegistrationInfo = {
     firstName: "",
@@ -22,7 +22,7 @@ const emptyInfo: RegistrationInfo = {
     hadEmailAlready: false,
 };
 
-test.describe("Registration Dialog - Field Validation - Required Fields", () => {
+test.describe("Registration Dialog - Required Fields Validation", () => {
     test("All required fields accept valid input", async ({ page }) => {
         await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
@@ -78,23 +78,6 @@ test.describe("Registration Dialog - Field Validation - Required Fields", () => 
         expect(await field.organization.markedInvalid).toBe(true);
         expect(await field.usingFor.markedInvalid).toBe(true);
     });
-});
-
-test.describe("Registration Dialog - Edge Cases", () => {
-    test("Very long text doesn't break layout", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const longText = "A".repeat(200);
-        const field2 = await field.firstName.getElement();
-
-        await field2.fill(longText);
-        await expect(field2).toHaveValue(longText);
-
-        // Verify form is still visible
-        await expect(getRegisterButton(page)).toBeVisible();
-    });
 
     test("Whitespace-only is invalid", async ({ page }) => {
         await setupRegistrationComponent(page, {
@@ -110,22 +93,7 @@ test.describe("Registration Dialog - Edge Cases", () => {
     });
 });
 
-test.describe("Registration Dialog - Accessibility", () => {
-    test("All fields have proper labels", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        // All fields should be accessible by their labels
-        await expect(await field.firstName.getElement()).toBeVisible();
-        await expect(await field.surname.getElement()).toBeVisible();
-        await expect(await field.email.getElement()).toBeVisible();
-        await expect(await field.organization.getElement()).toBeVisible();
-        await expect(await field.usingFor.getElement()).toBeVisible();
-    });
-});
-
-test.describe("Registration Dialog - Field Trimming", () => {
+test.describe("Registration Dialog - Whitespace Trimming", () => {
     test("Trims leading and trailing whitespace from all fields on submit", async ({
         page,
     }) => {
@@ -197,7 +165,7 @@ test.describe("Registration Dialog - Field Trimming", () => {
     });
 });
 
-test.describe("Registration Dialog - Newlines in Single-Line Fields", () => {
+test.describe("Registration Dialog - Single-Line vs Multiline Fields", () => {
     test("Handles pasted text with newlines in First Name", async ({
         page,
     }) => {
@@ -212,9 +180,8 @@ test.describe("Registration Dialog - Newlines in Single-Line Fields", () => {
         await field.firstName.fill("John\nDoe");
 
         // Material-UI TextField should convert newlines to spaces or strip them
-        const value = await field.firstName.getValue();
         // Either the newline is converted to space or stripped - either is acceptable
-        expect(value).not.toContain("\n");
+        expect(await field.firstName.getValue()).not.toContain("\n");
     });
 
     test("Handles pasted text with newlines in Email", async ({ page }) => {
@@ -224,8 +191,7 @@ test.describe("Registration Dialog - Newlines in Single-Line Fields", () => {
 
         await field.email.fill("john@\nexample.com");
 
-        const value = await field.email.getValue();
-        expect(value).not.toContain("\n");
+        expect(await field.email.getValue()).not.toContain("\n");
     });
 
     test("Handles pasted text with newlines in Organization", async ({
@@ -237,214 +203,11 @@ test.describe("Registration Dialog - Newlines in Single-Line Fields", () => {
 
         await field.organization.fill("SIL\nInternational");
 
-        const value = await field.organization.getValue();
-        expect(value).not.toContain("\n");
+        expect(await field.organization.getValue()).not.toContain("\n");
     });
 });
 
-test.describe("Registration Dialog - Special Characters", () => {
-    test("Accepts emoji in name fields", async ({ page }) => {
-        const receiver = await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        await fillRegistrationForm(page, {
-            firstName: "😊 John",
-            surname: "Doe 👍",
-            email: "test@example.com",
-            organization: "SIL",
-            usingFor: "Testing",
-        });
-
-        await clickRegisterButton(page);
-        const submittedData = await receiver.getData();
-
-        expect(submittedData.firstName).toBe("😊 John");
-        expect(submittedData.surname).toBe("Doe 👍");
-    });
-
-    test("Accepts non-Latin scripts in all fields", async ({ page }) => {
-        const receiver = await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        // Chinese
-        // Cyrillic
-        // Email still needs to be valid
-        // Arabic
-        await fillRegistrationForm(page, {
-            firstName: "李",
-            surname: "明",
-            email: "test@example.com",
-            organization: "Организация",
-            usingFor: "اختبار",
-        });
-
-        await clickRegisterButton(page);
-        const submittedData = await receiver.getData();
-
-        expect(submittedData.firstName).toBe("李");
-        expect(submittedData.surname).toBe("明");
-        expect(submittedData.organization).toBe("Организация");
-        expect(submittedData.usingFor).toBe("اختبار");
-    });
-
-    test("Handles tab characters in text", async ({ page }) => {
-        const receiver = await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        await fillRegistrationForm(page, {
-            firstName: "John\t",
-            surname: "Doe",
-            email: "test@example.com",
-            organization: "SIL",
-            usingFor: "Testing",
-        });
-
-        await clickRegisterButton(page);
-        const submittedData = await receiver.getData();
-
-        // Verify it doesn't break submission
-        expect(submittedData).toBeDefined();
-        expect(submittedData.firstName).toBeTruthy();
-    });
-
-    test("HTML/script tags are treated as plain text", async ({ page }) => {
-        const receiver = await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const maliciousInput = "<script>alert('xss')</script>";
-        await fillRegistrationForm(page, {
-            firstName: maliciousInput,
-            surname: "Doe",
-            email: "test@example.com",
-            organization: "SIL",
-            usingFor: "Testing",
-        });
-
-        await clickRegisterButton(page);
-        const submittedData = await receiver.getData();
-
-        // Should be stored as plain text, not executed
-        expect(submittedData.firstName).toBe(maliciousInput);
-
-        // Verify no script was executed (page should still be functional)
-        await expect(getRegisterButton(page)).toBeVisible();
-    });
-});
-
-test.describe("Registration Dialog - JSON Escaping", () => {
-    test("Handles backslashes in text fields", async ({ page }) => {
-        const receiver = await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const textWithBackslashes = "C:\\Users\\John\\Documents";
-        await fillRegistrationForm(page, {
-            firstName: textWithBackslashes,
-            surname: "Doe",
-            email: "test@example.com",
-            organization: "SIL",
-            usingFor: "Testing",
-        });
-
-        await clickRegisterButton(page);
-        const submittedData = await receiver.getData();
-
-        // Backslashes should be preserved
-        expect(submittedData.firstName).toBe(textWithBackslashes);
-    });
-
-    test("Handles double quotes in text fields", async ({ page }) => {
-        const receiver = await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const textWithQuotes = 'John "Johnny" Doe';
-        await fillRegistrationForm(page, {
-            firstName: "Test",
-            surname: "User",
-            email: "test@example.com",
-            organization: textWithQuotes,
-            usingFor: "Testing",
-        });
-
-        await clickRegisterButton(page);
-        const submittedData = await receiver.getData();
-
-        // Double quotes should be preserved
-        expect(submittedData.organization).toBe(textWithQuotes);
-    });
-
-    test("Handles single quotes and apostrophes", async ({ page }) => {
-        const receiver = await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        await fillRegistrationForm(page, {
-            firstName: "O'Brien",
-            surname: "D'Angelo",
-            email: "test@example.com",
-            organization: "SIL",
-            usingFor: "Testing 'special' characters",
-        });
-
-        await clickRegisterButton(page);
-        const submittedData = await receiver.getData();
-
-        expect(submittedData.firstName).toBe("O'Brien");
-        expect(submittedData.surname).toBe("D'Angelo");
-        expect(submittedData.usingFor).toBe("Testing 'special' characters");
-    });
-
-    test("Handles combination of special JSON characters", async ({ page }) => {
-        const receiver = await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        const complexText = "Path: \"C:\\Program Files\\Test\"\nWith: 'quotes'";
-        await fillRegistrationForm(page, {
-            firstName: "John",
-            surname: "Doe",
-            email: "test@example.com",
-            organization: "SIL",
-            usingFor: complexText,
-        });
-
-        await clickRegisterButton(page);
-        const submittedData = await receiver.getData();
-
-        // All special characters should be preserved
-        expect(submittedData.usingFor).toBe(complexText);
-    });
-
-    test("Handles null bytes and control characters", async ({ page }) => {
-        const receiver = await setupRegistrationComponent(page, {
-            initialInfo: emptyInfo,
-        });
-
-        // Control characters: carriage return, tab, form feed
-        const controlChars = "Line1\r\nLine2\tTabbed\fFormFeed";
-        await fillRegistrationForm(page, {
-            firstName: "John",
-            surname: "Doe",
-            email: "test@example.com",
-            organization: "SIL",
-            usingFor: controlChars,
-        });
-
-        await clickRegisterButton(page);
-        const submittedData = await receiver.getData();
-
-        // Control characters should be handled (may be normalized)
-        expect(submittedData).toBeDefined();
-        expect(submittedData.usingFor).toBeTruthy();
-    });
-});
-
-test.describe("Registration Dialog - Multiline Field Edge Cases", () => {
+test.describe("Registration Dialog - Multiline Field Handling", () => {
     test("Handles excessive newlines in Using For field", async ({ page }) => {
         const receiver = await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,

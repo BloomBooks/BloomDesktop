@@ -9,7 +9,9 @@ import {
     setupRegistrationComponent,
     waitForAndClickOptOutButton,
     getOptOutButton,
-} from "./common";
+    kTestOptOutDelaySeconds,
+    kTestOptOutTimeoutMs,
+} from "./test-helpers";
 
 const defaultProps: IRegistrationContentsProps = {
     initialInfo: {
@@ -25,7 +27,9 @@ const defaultProps: IRegistrationContentsProps = {
 };
 
 test.describe("Registration Dialog - Initial Rendering & Layout", () => {
-    test('"I\'m stuck" button appears after 2 seconds', async ({ page }) => {
+    test(`"I'm stuck" button appears after ${kTestOptOutDelaySeconds} seconds`, async ({
+        page,
+    }) => {
         await setupRegistrationComponent(page, {
             initialInfo: defaultProps.initialInfo,
         });
@@ -34,9 +38,9 @@ test.describe("Registration Dialog - Initial Rendering & Layout", () => {
         const optOutButton = getOptOutButton(page);
         await expect(optOutButton).not.toBeVisible();
 
-        // Wait for the button to appear (tests use a 2-second delay)
+        // Wait for the button to appear
         await expect(optOutButton).toBeVisible({
-            timeout: 4000, // 2 seconds + 2 seconds buffer
+            timeout: kTestOptOutTimeoutMs,
         });
     });
 

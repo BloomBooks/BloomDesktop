@@ -1,5 +1,6 @@
 /**
- * Tests for Registration Dialog - Form Submission, Focus, and Pre-population
+ * Tests for Registration Dialog - User Interaction and Navigation
+ * Covers: form submission, focus management, keyboard navigation, accessibility
  * Run with: yarn test
  */
 
@@ -9,7 +10,8 @@ import {
     setupRegistrationComponent,
     clickRegisterButton,
     field,
-} from "./common";
+    getRegisterButton,
+} from "./test-helpers";
 
 const emptyInfo: RegistrationInfo = {
     firstName: "",
@@ -20,7 +22,7 @@ const emptyInfo: RegistrationInfo = {
     hadEmailAlready: false,
 };
 
-test.describe("Registration Dialog - register button behavior", () => {
+test.describe("Registration Dialog - Form Submission", () => {
     test("If all fields are empty, the register button does not submit", async ({
         page,
     }) => {
@@ -33,6 +35,7 @@ test.describe("Registration Dialog - register button behavior", () => {
         // clicking the register button with any invalid fields should not send the POST
         expect(receiver.wasCalled()).toBe(false);
     });
+
     test("If all fields are empty, required fields are marked as needing attention", async ({
         page,
     }) => {
@@ -52,7 +55,7 @@ test.describe("Registration Dialog - register button behavior", () => {
     });
 });
 
-test.describe("Registration Dialog - Field Focus & Tab Order", () => {
+test.describe("Registration Dialog - Focus Management", () => {
     test("First Name has initial focus", async ({ page }) => {
         await setupRegistrationComponent(page, {
             initialInfo: {
@@ -69,7 +72,9 @@ test.describe("Registration Dialog - Field Focus & Tab Order", () => {
         const firstNameField = await field.firstName.getElement();
         await expect(firstNameField).toBeFocused();
     });
+});
 
+test.describe("Registration Dialog - Keyboard Navigation", () => {
     test("Tab moves through fields in correct order", async ({ page }) => {
         await setupRegistrationComponent(page, {
             initialInfo: emptyInfo,
@@ -119,8 +124,7 @@ test.describe("Registration Dialog - Data Pre-population", () => {
         const firstNameField = await field.firstName.getElement();
         await expect(firstNameField).toHaveValue("John");
 
-        const surnameField = await field.surname.getElement();
-        await expect(surnameField).toHaveValue("Doe");
+        expect(await field.surname.getValue()).toBe("Doe");
 
         const emailField = await field.email.getElement();
         await expect(emailField).toHaveValue("john@example.com");
@@ -137,5 +141,35 @@ test.describe("Registration Dialog - Data Pre-population", () => {
         expect(await field.email.markedInvalid).toBe(false);
         expect(await field.organization.markedInvalid).toBe(false);
         expect(await field.usingFor.markedInvalid).toBe(false);
+    });
+});
+
+test.describe("Registration Dialog - Accessibility", () => {
+    test("All fields have proper labels", async ({ page }) => {
+        await setupRegistrationComponent(page, {
+            initialInfo: emptyInfo,
+        });
+
+        // All fields should be accessible by their labels
+        await expect(await field.firstName.getElement()).toBeVisible();
+        await expect(await field.surname.getElement()).toBeVisible();
+        await expect(await field.email.getElement()).toBeVisible();
+        await expect(await field.organization.getElement()).toBeVisible();
+        await expect(await field.usingFor.getElement()).toBeVisible();
+    });
+
+    test("Very long text doesn't break layout", async ({ page }) => {
+        await setupRegistrationComponent(page, {
+            initialInfo: emptyInfo,
+        });
+
+        const longText = "A".repeat(200);
+        const field2 = await field.firstName.getElement();
+
+        await field2.fill(longText);
+        await expect(field2).toHaveValue(longText);
+
+        // Verify form is still visible
+        await expect(getRegisterButton(page)).toBeVisible();
     });
 });

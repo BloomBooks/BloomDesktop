@@ -1,0 +1,9 @@
+{
+    "name": "registration-component-tests",
+    "private": true,
+    "version": "0.0.0",
+    "scripts": {
+        "test": "cd ../../component-tester && yarn test registration/component-tests",
+        "test:ui": "cd ../../component-tester && yarn test:ui registration/component-tests"
+    }
+}

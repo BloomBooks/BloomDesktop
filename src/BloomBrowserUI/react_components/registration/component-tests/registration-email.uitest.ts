@@ -9,7 +9,7 @@ import {
     setupRegistrationComponent,
     clickRegisterButton,
     field,
-} from "./common";
+} from "./test-helpers";
 
 const emptyInfo: RegistrationInfo = {
     firstName: "",

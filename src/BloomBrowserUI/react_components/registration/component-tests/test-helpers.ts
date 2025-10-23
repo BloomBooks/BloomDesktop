@@ -9,6 +9,10 @@ import {
     PostReceiver,
 } from "../../component-tester/apiInterceptors";
 
+// Test timing constants
+export const kTestOptOutDelaySeconds = 2;
+export const kTestOptOutTimeoutMs = kTestOptOutDelaySeconds * 1000 + 2000; // delay + buffer
+
 // Field helper type for registration form
 type FieldHelper = {
     name: string;
@@ -115,9 +119,9 @@ export async function setupRegistrationComponent(
         "**/bloom/api/registration/userInfo",
     );
 
-    // Use a 2-second delay for tests to speed them up, unless explicitly overridden
+    // Use a faster delay for tests to speed them up, unless explicitly overridden
     const propsWithTestDelay: IRegistrationContentsProps = {
-        optOutDelaySeconds: 2,
+        optOutDelaySeconds: kTestOptOutDelaySeconds,
         ...props,
     };
 
@@ -161,10 +165,9 @@ export async function fillRegistrationForm(
 }
 
 export async function waitForAndClickOptOutButton(page: Page) {
-    // Wait for opt-out button to appear (tests use a 2-second delay)
     const optOutButton = getOptOutButton(page);
     await expect(optOutButton).toBeVisible({
-        timeout: 4000, // 2 seconds + 2 seconds buffer
+        timeout: kTestOptOutTimeoutMs,
     });
     await optOutButton.click();
 }
