@@ -4,7 +4,7 @@
  * Run with: yarn test
  */
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../component-tester/playwrightTest";
 import type { RegistrationInfo } from "../registrationTypes";
 import {
     setupRegistrationComponent,

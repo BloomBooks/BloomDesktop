@@ -1,4 +1,4 @@
-import { Page, expect, Locator } from "@playwright/test";
+import { Page, expect, Locator } from "../../component-tester/playwrightTest";
 import { setTestComponent } from "../../component-tester/setTestComponent";
 import {
     IRegistrationContentsProps,
