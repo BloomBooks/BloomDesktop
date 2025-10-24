@@ -2,3 +2,16 @@
 // Also, we import the css from the new style quiz so that any legacy quiz pages will look right,
 // since they will be expecting to find their css here.
 @import "../Activity/simpleComprehensionQuiz.less";
+
+// Temporarily using an FAL background color until we decide on the desired background color
+@gridPageBackgroundColor: #214357;
+
+.grid-page {
+    // need !important to override basePage.less
+    --page-background-color: @gridPageBackgroundColor !important;
+
+    .bloom-link-grid {
+        min-height: 100%;
+        background-color: @gridPageBackgroundColor;
+    }
+}
