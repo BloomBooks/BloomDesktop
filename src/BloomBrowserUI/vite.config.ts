@@ -168,6 +168,10 @@ export default defineConfig(async () => {
                         src: "themes/**/*",
                         dest: "themes",
                     },
+                    {
+                        src: "spreadsheet/*.html",
+                        dest: "spreadsheet",
+                    },
                     // Copy root-level non-compiled files
                     {
                         src: [
@@ -200,13 +204,6 @@ export default defineConfig(async () => {
             manifest: true, // Generate manifest.json for post-processing
             rollupOptions: {
                 input: entryPoints,
-                external: [
-                    // External Node.js modules that shouldn't be bundled for browser
-                    "os",
-                    "path",
-                    "fs",
-                    "crypto",
-                ],
                 output: {
                     entryFileNames: "[name]-main.js", // Change to X-main.js format
                     chunkFileNames: "[name].js",
@@ -223,8 +220,21 @@ export default defineConfig(async () => {
         },
         resolve: {
             preserveSymlinks: false, // Ensure consistent file name resolution
+            dedupe: [
+                "react",
+                "react-dom",
+                "@emotion/react",
+                "@emotion/styled",
+                "@mui/base",
+                "@mui/material",
+                "@mui/system",
+                "@mui/utils",
+                "@mui/private-theming",
+            ],
             alias: {
                 "@": path.resolve(__dirname, "."),
+                // Browser shims for Node built-ins used by some deps
+                os: path.resolve(__dirname, "shims/os.ts"),
                 // Module resolution paths to match webpack configuration
                 errorHandler: path.resolve(__dirname, "lib/errorHandler.ts"),
                 "jquery.hasAttr.js": path.resolve(

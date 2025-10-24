@@ -10,10 +10,10 @@ it working for other clients of ReactControl.
 It will take a bit more to get it working for the other entrypoint/bundle clients, especially edit view.
 I have not looked at this side of things.
 
-The other mode is vite's dev mode, which we are trying to get to build bundles similar to the old ones
+The other mode is vite's build mode, which we are trying to get to build bundles similar to the old ones
 for use in production. That's what I've been working on.
 
-Currently I'm building stand-alone bundles for the four the three bundles that make up edit mode
+Currently I'm building stand-alone bundles for the three bundles that make up edit mode
 plus the spreadsheet bundle. This came about because I thought (perhaps wrongly) that creating
 multiple entry points was responsible for some of our problems. It's plausible that we might make
 a single bundle out of all the ReactControl (and ReactDialog) entrypoints, and just give ReactControl
@@ -36,7 +36,7 @@ is already loaded by the time our bundle code starts. This also means any legacy
 text/javascript will do any immediate execution before any immediate execution in our main code.
 
 Our package.json previously claimed (with side-effects: false) that none of our code had side effects.
-I've made a considerable list of exceptions where this is not true already, but there are probably
+I've made a considerable list of exceptions where this is not true already, but there may be
 more. Anything with immediately-executed code (e.g., adding event listeners) is suspect, and anything
 that adds a function to jQuery will definitely be a problem.
 
@@ -45,10 +45,9 @@ import them. Code that is loaded directly from HTML needs to be imported after j
 
 Status:
 Collection tab seems to be working pretty well. No known problems, but not extensively tested.
-Edit tab is working reasonably well.
-Collection settings is mostly working well, except the book making tab, which fails to load the
-bundle code.
-I haven't tried publish tab yet.
+Edit tab is working reasonably well, not very extensively tested. The toolbox More button is off
+the bottom of the screen; this might just need a rebase, since I think it was recently fixed in master.
+Collection settings is working well.
 There are lots of warnings.
 Nothing clears the output directory before any of the builds. It's easy to have something go on
 working because a previous build left something around.

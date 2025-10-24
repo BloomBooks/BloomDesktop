@@ -74,6 +74,7 @@ import {
     getFeatureStatusAsync,
 } from "../../../react_components/featureStatus";
 import { animateStyleName } from "../../../utils/shared";
+import jQuery from "jquery";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)

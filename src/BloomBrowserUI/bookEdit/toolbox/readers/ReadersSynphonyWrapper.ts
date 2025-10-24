@@ -8,6 +8,7 @@ import {
 } from "./libSynphony/synphony_lib";
 import { ReaderStage, ReaderLevel, ReaderSettings } from "./ReaderSettings";
 import * as _ from "underscore";
+import jQuery from "jquery";
 
 export default class ReadersSynphonyWrapper {
     public stages: ReaderStage[] = [];
