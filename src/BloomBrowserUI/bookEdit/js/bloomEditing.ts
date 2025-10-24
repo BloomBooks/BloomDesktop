@@ -1700,7 +1700,47 @@ export function attachToCkEditor(element) {
 
     BloomField.WireToCKEditor(element, ckedit);
 }
+
+function AddGridPromptIfEmpty(linkGrid: HTMLElement) {
+    theOneLocalizationManager
+        .asyncGetText(
+            "EditTab.ClickToEditBookGrid",
+            "Click to edit book grid",
+            "",
+        )
+        .done((clickBookGridPrompt) => {
+            if (!$(linkGrid).find(".bloom-bookButton").length) {
+                $(linkGrid).append(
+                    `<p class='bloom-ui' id='edit-book-grid-prompt'>${clickBookGridPrompt}</p>`,
+                );
+            } else {
+                $(linkGrid).find("#edit-book-grid-prompt").remove();
+            }
+        });
+}
+
 function SetupBookLinkGrids(container: HTMLElement) {
+    theOneLocalizationManager
+        .asyncGetText(
+            "EditTab.ClickToEditBookGrid",
+            "Click to edit book grid",
+            "",
+        )
+        .done((clickBookGridPrompt) => {
+            $(container)
+                .find(".bloom-link-grid")
+                .each(function () {
+                    $(this).attr("title", clickBookGridPrompt);
+                });
+
+            // If no book buttons, give it a child paragraph with text saying "Click to edit book grid"
+            $(container)
+                .find(".bloom-link-grid")
+                .each(function () {
+                    AddGridPromptIfEmpty(this);
+                });
+        });
+
     $(container)
         .find(".bloom-link-grid")
         .click(function () {
@@ -1731,6 +1771,7 @@ function SetupBookLinkGrids(container: HTMLElement) {
                 // callback if they press OK
                 (links: Link[]) => {
                     $(this).empty();
+                    AddGridPromptIfEmpty(this);
 
                     links.forEach((link) => {
                         const button = document.createElement("div");
