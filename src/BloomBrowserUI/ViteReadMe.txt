@@ -61,3 +61,14 @@ subdirectory, or vv).
 I've pulled in my incomplete work on the vitest switchover, mainly because some of the same code
 changes were needed to get things working. We may decide to back that out and just keep the changes
 that help with the vite build, or it may be possible to carry on and get them all working.
+
+Major todos:
+- get vite dev mode working for all react controls
+- get it working for edit tab (maye for spreadsheet bundle? I don't think it's worth it.)
+- can we make the post-build.js some sort of plugin so it's part of the build?
+- it would feel cleaner, and maybe save space and time, if xBundle.js replaced xBundle-main.js rather than importing it.
+- clean up everything that thinks commonbundle.js should exist, and get rid of it.
+- pug
+- anything else we do with gulp that vite doesn't do yet
+- clean the output directory
+- vitest
