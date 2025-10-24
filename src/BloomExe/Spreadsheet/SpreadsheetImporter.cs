@@ -217,7 +217,8 @@ namespace Bloom.Spreadsheet
                     "spreadsheet",
                     "spreadsheetFunctions.html"
                 );
-                _browser.Navigate(rootPage, false);
+
+                _browser.Navigate(rootPage.ToLocalhost(), false);
                 await signal.WaitAsync(); // Following code happens after browser has navigated
                 // This extra check that spreadsheetBundle actually exists might not be necessary.
                 while (await _browser.GetStringFromJavascriptAsync($"spreadsheetBundle") == null)
