@@ -1701,6 +1701,35 @@ export function attachToCkEditor(element) {
     BloomField.WireToCKEditor(element, ckedit);
 }
 function SetupBookLinkGrids(container: HTMLElement) {
+    theOneLocalizationManager
+        .asyncGetText(
+            "EditTab.ClickToEditBookGrid",
+            "Click to edit book grid",
+            "",
+        )
+        .done((clickBookGridPrompt) => {
+            $(container)
+                .find(".bloom-link-grid")
+                .each(function () {
+                    if (!this.children.length) {
+                        $(this).attr("title", clickBookGridPrompt);
+                    }
+                });
+
+            // If no book buttons, give it a child paragraph with text saying "Click to edit book grid"
+            $(container)
+                .find(".bloom-link-grid")
+                .each(function () {
+                    if (!$(this).find(".bloom-bookButton").length) {
+                        $(this).append(
+                            `<p style='color: white; position: absolute; left: 10px; top: 10px;' id='edit-book-grid-prompt'>${clickBookGridPrompt}</p>`,
+                        );
+                    } else {
+                        $(this).find("#edit-book-grid-prompt").remove();
+                    }
+                });
+        });
+
     $(container)
         .find(".bloom-link-grid")
         .click(function () {
