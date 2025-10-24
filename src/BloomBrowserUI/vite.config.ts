@@ -71,6 +71,13 @@ ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 export default defineConfig(async () => {
     // Define entry points to match webpack configuration
     const entryPoints = {
+        // Special bundles that were previously built separately
+        editablePageBundle: "./bookEdit/editablePage.ts",
+        editTabBundle: "./bookEdit/editViewFrame.ts",
+        spreadsheetBundle: "./spreadsheet/spreadsheetBundleRoot.ts",
+        toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
+
+        // Regular bundles
         readerSetupBundle:
             "./bookEdit/toolbox/readers/readerSetup/readerSetup.ts",
         bookPreviewBundle:
