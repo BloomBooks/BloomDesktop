@@ -1,4 +1,5 @@
 import * as ReactDOM from "react-dom";
+import $ from "jquery";
 import { ITool, IReactTool } from "./toolbox";
 import { ReactElement } from "react";
 import { isPageBloomGame } from "./games/GameInfo";

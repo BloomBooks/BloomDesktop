@@ -72,8 +72,6 @@ export default [
                 // I think this replaces the env section of the old .eslintrc.js
                 ...globals.browser,
                 ...globals.es2021,
-                ...globals.jasmine,
-                ...globals.jquery,
             },
         },
         settings: {

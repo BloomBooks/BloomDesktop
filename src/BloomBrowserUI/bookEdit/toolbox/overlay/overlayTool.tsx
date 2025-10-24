@@ -47,6 +47,7 @@ import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
 import { ToolBox } from "../toolbox";
 import { hideColorPickerDialog } from "../../editViewFrame";
 import { kToolboxContentPadding } from "../../../bloomMaterialUITheme";
+import $ from "jquery";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
