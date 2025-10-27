@@ -6,6 +6,7 @@ output/
 .svn/
 bin/
 obj/
+vite/
 userProject
 templates/A4LandscapeBooklet/starter.pdf
 src/_ReSharper.Bloom/
@@ -191,6 +192,8 @@ src/content/.yarn/*
 !src/content/.yarn/sdks
 !src/content/.yarn/versions
 
-.vite/vitest/results.json
-
 .github/copilot-instructions.md
+
+src/BloomBrowserUI/react_components/component-tester/test-results/
+
+src/BloomBrowserUI/test-results/

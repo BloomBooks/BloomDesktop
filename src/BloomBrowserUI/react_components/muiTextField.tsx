@@ -21,7 +21,7 @@ export const MuiTextField: React.FunctionComponent<
         props.l10nParam1,
     );
 
-    const { label, ...propsToPass } = props;
+    const { label: _label, ...propsToPass } = props;
 
     return (
         <TextField

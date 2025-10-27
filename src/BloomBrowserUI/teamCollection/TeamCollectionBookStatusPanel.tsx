@@ -23,7 +23,7 @@ import WarningIcon from "@mui/icons-material/Warning";
 import { IBookTeamCollectionStatus } from "./teamCollectionApi";
 import { ForceUnlockDialog } from "./ForceUnlockDialog";
 import { kBloomRed } from "../utils/colorUtils";
-import { showRegistrationDialog } from "../react_components/registrationDialog";
+import { showRegistrationDialog } from "../react_components/registration/registrationDialog";
 
 interface CheckInProgressEvent extends IBloomWebSocketEvent {
     fraction: number;
@@ -416,7 +416,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                             );
                         else {
                             showRegistrationDialog({
-                                registrationIsOptional: false,
                                 onSave: (isValidEmail) => {
                                     if (isValidEmail)
                                         post(

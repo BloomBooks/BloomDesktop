@@ -721,4 +721,6 @@ function adjustFalsyData(data: unknown): unknown {
     return data === 0 || data === false ? JSON.stringify(data) : data;
 }
 
-window.addEventListener("beforeunload", () => NotifyPageClosing());
+if (typeof window !== "undefined") {
+    window.addEventListener("beforeunload", () => NotifyPageClosing());
+}

@@ -1108,7 +1108,7 @@ namespace Bloom
         private static void CheckRegistration()
         {
             if (RegistrationManager.ShouldWeShowRegistrationDialog() && !_supressRegistrationDialog)
-                RegistrationManager.ShowRegistrationDialog(false, _projectContext.ProjectWindow);
+                RegistrationManager.ShowRegistrationDialog(_projectContext.ProjectWindow);
         }
 
 #if PerProjectMutex

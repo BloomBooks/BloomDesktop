@@ -1,9 +1,6 @@
 import { Meta, StoryObj } from "@storybook/react";
-import {
-    RegistrationDialogLauncher,
-    showRegistrationDialog,
-} from "../registrationDialog";
-import { StorybookDialogWrapper } from "../BloomDialog/BloomDialogPlumbing";
+import { showRegistrationDialog } from "../registration/registrationDialog";
+import { normalDialogEnvironmentForStorybook } from "../BloomDialog/BloomDialogPlumbing";
 
 const meta: Meta = {
     title: "Misc/Dialogs/RegistrationDialog",
@@ -17,14 +14,10 @@ export const NormalStory: Story = {
     name: "Normal Dialog",
     render: () => {
         showRegistrationDialog({
-            registrationIsOptional: true,
             emailRequiredForTeamCollection: false,
+            dialogEnvironment: normalDialogEnvironmentForStorybook,
         });
-        return (
-            <StorybookDialogWrapper id="RegistrationDialog" params={{}}>
-                <RegistrationDialogLauncher />
-            </StorybookDialogWrapper>
-        );
+        return <div>Dialog should be open</div>;
     },
 };
 
@@ -32,13 +25,9 @@ export const EmailRequiredStory: Story = {
     name: "Email required",
     render: () => {
         showRegistrationDialog({
-            registrationIsOptional: false,
             emailRequiredForTeamCollection: true,
+            dialogEnvironment: normalDialogEnvironmentForStorybook,
         });
-        return (
-            <StorybookDialogWrapper id="RegistrationDialog" params={{}}>
-                <RegistrationDialogLauncher />
-            </StorybookDialogWrapper>
-        );
+        return <div>Dialog should be open</div>;
     },
 };

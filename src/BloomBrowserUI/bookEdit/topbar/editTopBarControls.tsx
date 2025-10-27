@@ -392,7 +392,7 @@ $(window).ready(() => {
     // back to c#-land.
     // We can remove this whenever we replace the winforms context menu with a react menu.
     $(window).click(() => {
-        (window as any).chrome.webview.postMessage("browser-clicked");
+        (window as any).chrome?.webview?.postMessage("browser-clicked");
     });
 });
 

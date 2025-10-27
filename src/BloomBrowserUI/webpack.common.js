@@ -52,17 +52,22 @@ module.exports = merge(core, {
 
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
         appBundle: "./app/App.tsx",
-        testBundle: globule.find([
-            "./bookEdit/**/*Spec.ts",
-            "./bookEdit/**/*Spec.js",
-            "./lib/**/*Spec.ts",
-            "./lib/**/*Spec.js",
-            "./publish/**/*Spec.ts",
-            "./publish/**/*Spec.js",
-            "./react_components/**/*Spec.ts",
-            "./react_components/**/*.spec.ts",
-            "./utils/**/*Spec.ts",
-        ]),
+        testBundle: globule.find(
+            [
+                "./bookEdit/**/*Spec.ts",
+                "./bookEdit/**/*Spec.js",
+                "./lib/**/*Spec.ts",
+                "./lib/**/*Spec.js",
+                "./publish/**/*Spec.ts",
+                "./publish/**/*Spec.js",
+                "./react_components/**/*Spec.ts",
+                "./react_components/**/*.spec.ts",
+                "./utils/**/*Spec.ts",
+            ],
+            {
+                ignore: ["**/component-tests/**", "**/component-tester/**"],
+            },
+        ),
 
         // These work with c# ReactControl:
         problemReportBundle: "./problemDialog/ProblemDialog.tsx",
@@ -87,7 +92,8 @@ module.exports = merge(core, {
         languageChooserBundle: "./collection/LanguageChooserDialog.tsx",
         newCollectionLanguageChooserBundle:
             "./collection/NewCollectionLanguageChooser.tsx",
-        registrationDialogBundle: "./react_components/registrationDialog.tsx",
+        registrationDialogBundle:
+            "./react_components/registration/registrationDialog.tsx",
         editTopBarControlsBundle: "./bookEdit/topbar/editTopBarControls.tsx",
 
         // This slowed down webpack a ton, because the way it works is that it 1st finds it all,
@@ -162,6 +168,8 @@ module.exports = merge(core, {
                     /-min/,
                     /qtip/,
                     /xregexp-all-min.js/,
+                    /[\\/]component-tester[\\/]/,
+                    /[\\/]component-tests[\\/]/,
                 ],
                 use: [
                     {

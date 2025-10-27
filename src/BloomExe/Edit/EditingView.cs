@@ -1876,10 +1876,9 @@ namespace Bloom.Edit
             RunJavascriptAsync("editTabBundle.showPageChooserDialog(true);");
         }
 
-        internal void ShowRegistrationDialog(bool registrationIsOptional)
+        internal void ShowRegistrationDialog()
         {
-            var command =
-                $"editTabBundle.showRegistrationDialogInEditTab({(registrationIsOptional ? "true" : "false")});";
+            var command = $"editTabBundle.showRegistrationDialogInEditTab();";
             RunJavascriptAsync(command);
         }
 

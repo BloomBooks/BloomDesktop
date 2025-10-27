@@ -1409,17 +1409,16 @@ namespace Bloom.Workspace
 
         private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
         {
-            ShowRegistrationDialog(true);
+            ShowRegistrationDialog();
         }
 
-        public void ShowRegistrationDialog(bool registrationIsOptional)
+        public void ShowRegistrationDialog()
         {
             if (_tabStrip.SelectedTab == _editTab)
-                _editingView.ShowRegistrationDialog(registrationIsOptional);
+                _editingView.ShowRegistrationDialog();
             else
             {
                 dynamic messageBundle = new DynamicJson();
-                messageBundle.registrationIsOptional = registrationIsOptional;
                 _webSocketServer.LaunchDialog("RegistrationDialog", messageBundle);
             }
         }

@@ -37,9 +37,27 @@ declare function GetInlineDictionary(): any; //c# injects this
 export class LocalizationManager {
     public dictionary: any;
     private inlineDictionaryLoaded: boolean = false;
+    private bypassEnabled: boolean = false;
 
     constructor() {
         this.dictionary = {};
+    }
+
+    /**
+     * Bypass localization for testing purposes. When enabled, all localization
+     * methods will return English text directly without making server calls.
+     * @param {boolean} bypass - Set to true to enable bypass mode, false to disable
+     */
+    public bypassLocalization(bypass: boolean = true): void {
+        this.bypassEnabled = bypass;
+    }
+
+    /**
+     * Check if localization bypass is currently enabled.
+     * @returns {boolean} True if bypass is enabled, false otherwise
+     */
+    public isBypassEnabled(): boolean {
+        return this.bypassEnabled;
     }
 
     /**
@@ -57,21 +75,21 @@ export class LocalizationManager {
 
         const ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{
             type: "POST",
-            url: "/bloom/api/i18n/loadStrings"
+            url: "/bloom/api/i18n/loadStrings",
         };
         if (keyValuePairs) ajaxSettings["data"] = keyValuePairs;
 
-        $.ajax(ajaxSettings).done(data => {
+        $.ajax(ajaxSettings).done((data) => {
             theOneLocalizationManager.dictionary = $.extend(
                 theOneLocalizationManager.dictionary,
-                data
+                data,
             );
 
             // if callback is passes without a list of elements to localize...
             if (typeof elementsToLocalize === "function") {
                 elementsToLocalize();
             } else if (elementsToLocalize) {
-                $(elementsToLocalize).each(function() {
+                $(elementsToLocalize).each(function () {
                     theOneLocalizationManager.setElementText(this);
                 });
                 if (typeof callbackDone === "function") callbackDone();
@@ -81,7 +99,7 @@ export class LocalizationManager {
 
     public loadStringsPromise(
         keyValuePairs,
-        elementsToLocalize
+        elementsToLocalize,
     ): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.loadStrings(keyValuePairs, elementsToLocalize, resolve);
@@ -114,10 +132,20 @@ export class LocalizationManager {
      * @returns {String}
      */
     public getText(stringId: string, englishText?: string, ...args): string {
+        // If bypass is enabled, return English directly
+        if (this.bypassEnabled) {
+            let text = englishText || stringId;
+            text = HtmlDecode(text);
+            if (args.length > 0) {
+                text = this.simpleFormat(text, args);
+            }
+            return text;
+        }
+
         if (typeof stringId === "undefined") {
             try {
                 throw new Error(
-                    "localizationManager.getText() stringid was undefined"
+                    "localizationManager.getText() stringid was undefined",
                 );
             } catch (e) {
                 throw e.message + e.stack;
@@ -131,7 +159,7 @@ export class LocalizationManager {
                 this.inlineDictionaryLoaded = true;
                 $.extend(
                     theOneLocalizationManager.dictionary,
-                    GetInlineDictionary()
+                    GetInlineDictionary(),
                 );
             }
         }
@@ -149,16 +177,16 @@ export class LocalizationManager {
         if (!text) {
             const ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{
                 type: "POST",
-                url: "/bloom/api/i18n/loadStrings"
+                url: "/bloom/api/i18n/loadStrings",
             };
             const pair = {};
             pair[stringId] = englishText;
             ajaxSettings["data"] = pair;
 
-            $.ajax(ajaxSettings).done(data => {
+            $.ajax(ajaxSettings).done((data) => {
                 theOneLocalizationManager.dictionary = $.extend(
                     theOneLocalizationManager.dictionary,
-                    data
+                    data,
                 );
             });
 
@@ -206,7 +234,7 @@ export class LocalizationManager {
             false,
             false,
             false,
-            args
+            args,
         );
     }
     /* Returns a promise to get the translation in the current UI language.  If the translation isn't present in the
@@ -238,7 +266,7 @@ export class LocalizationManager {
             true,
             false,
             false,
-            args
+            args,
         );
     }
     public asyncGetTextAndSuccessInfo(
@@ -256,7 +284,7 @@ export class LocalizationManager {
             true,
             true,
             temporarilyDisableI18nWarning,
-            args
+            args,
         );
     }
 
@@ -268,17 +296,23 @@ export class LocalizationManager {
     // The result includes both the text and the identifier of the language that was found.
     public async asyncGetTextInLangWithLangFound(
         id: string,
-        langId
+        langId,
     ): Promise<{ text: string; langFound: string }> {
+        // If bypass is enabled, return the ID as English text with "en" as the language
+        if (this.bypassEnabled) {
+            return Promise.resolve({ text: id, langFound: "en" });
+        }
+
         return axios
             .get(`${getBloomApiPrefix()}i18n/getStringInLang`, {
                 params: {
                     key: id,
-                    langId: langId
-                }
+                    langId: langId,
+                },
             })
             .then(
-                response => response.data as { text: string; langFound: string }
+                (response) =>
+                    response.data as { text: string; langFound: string },
             );
     }
 
@@ -290,8 +324,26 @@ export class LocalizationManager {
         englishDefault: boolean,
         includeSuccessInfo: boolean,
         temporarilyDisableI18nWarning: boolean,
-        args
+        args,
     ): JQueryPromise<any> {
+        // If bypass is enabled, return English directly as a resolved promise
+        if (this.bypassEnabled) {
+            const deferred = $.Deferred();
+            let text = HtmlDecode(englishText);
+            if (args.length > 0) {
+                text = this.simpleFormat(text, args);
+            }
+            if (!includeSuccessInfo) {
+                deferred.resolve(text);
+            } else {
+                deferred.resolve({
+                    text: text,
+                    success: true,
+                });
+            }
+            return deferred.promise();
+        }
+
         // We already get a promise from the async call, and could just return that.
         // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
@@ -308,10 +360,10 @@ export class LocalizationManager {
                     englishText: englishText,
                     langId: langId,
                     comment: comment || "",
-                    dontWarnIfMissing: temporarilyDisableI18nWarning
-                }
+                    dontWarnIfMissing: temporarilyDisableI18nWarning,
+                },
             })
-            .then(response => {
+            .then((response) => {
                 let text = HtmlDecode(response.data.text);
                 // is this a C#-style string.format style request?
                 if (args.length > 0) {
@@ -321,13 +373,13 @@ export class LocalizationManager {
                 else {
                     deferred.resolve({
                         text: text,
-                        success: response.data.success
+                        success: response.data.success,
                     });
                 }
             })
 
             //TODO: I (JH) could not get this to fire, in a unit test environment, when there was no response.
-            .catch(text => {
+            .catch((text) => {
                 if (englishDefault) {
                     text = HtmlDecode(englishText);
                     if (args.length > 0) {
@@ -344,13 +396,13 @@ export class LocalizationManager {
     public localizeThenSetElementText(
         element: HTMLElement,
         stringId: string,
-        englishText: string
+        englishText: string,
     ): void {
         this.asyncGetText(
             stringId,
             englishText,
-            $(element).attr("l10nComment")
-        ).then(translation => {
+            $(element).attr("l10nComment"),
+        ).then((translation) => {
             element.innerText = translation;
         });
     }
@@ -394,15 +446,14 @@ export class LocalizationManager {
     // Hints sometimes have a {lang} tag in the text that needs to be substituted.
     public insertLangIntoHint(
         whatToSay: string,
-        targetElement: HTMLElement
+        targetElement: HTMLElement,
     ): string {
         let translated = whatToSay;
         if (translated.indexOf("{lang}") !== -1) {
             //This is the preferred approach, but it's not working yet.
             //var languageName = localizationManager.dictionary[$(targetElement).attr('lang')];
-            const languageName = GetInlineDictionary()[
-                targetElement.getAttribute("lang") || ""
-            ];
+            const languageName =
+                GetInlineDictionary()[targetElement.getAttribute("lang") || ""];
             if (!languageName) {
                 //This can happen, for example, if the user enters {lang} in a hint bubble on a group
                 return translated;
@@ -441,13 +492,13 @@ export class LocalizationManager {
             /{(\d+)}/g,
             (match: string, index: number) => {
                 return args[index] ?? match;
-            }
+            },
         );
         return dotNetOutput.replace(
             /%(\d+)/g,
             (match: string, index: number) => {
                 return args[index] ?? match;
-            }
+            },
         );
     }
 
@@ -482,16 +533,23 @@ export class LocalizationManager {
     public getTextInUiLanguageAsync(
         id: string,
         text: string,
-        comment?: string
+        comment?: string,
     ): Promise<AxiosResponse<any>> {
+        // If bypass is enabled, return English directly as a resolved promise
+        if (this.bypassEnabled) {
+            return Promise.resolve({
+                data: { text: text, success: true },
+            } as AxiosResponse<any>);
+        }
+
         return axios.get("/bloom/api/i18n/translate", {
             params: {
                 key: id,
                 englishText: text,
                 langId: "UI",
                 comment: comment,
-                dontWarnIfMissing: true
-            }
+                dontWarnIfMissing: true,
+            },
         });
     }
 }
@@ -544,5 +602,16 @@ function extractStartTag(text: string): string {
     return text.substring(0, text.indexOf(">") + 1);
 }
 
-const theOneLocalizationManager: LocalizationManager = new LocalizationManager();
+const theOneLocalizationManager: LocalizationManager =
+    new LocalizationManager();
 export default theOneLocalizationManager;
+
+/**
+ * Convenience function to bypass localization for testing purposes.
+ * When enabled, all localization methods will return English text directly
+ * without making server calls.
+ * @param {boolean} bypass - Set to true to enable bypass mode, false to disable
+ */
+export function bypassLocalization(bypass: boolean = true): void {
+    theOneLocalizationManager.bypassLocalization(bypass);
+}

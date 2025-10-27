@@ -19,7 +19,6 @@ import {
 
 import { Meta, StoryObj } from "@storybook/react";
 import { MakeReaderTemplateBloomPackDialog } from "../makeReaderTemplateBloomPackDialog";
-import { RegistrationDialogLauncher } from "../registrationDialog";
 
 const meta: Meta = {
     title: "Misc/Dialogs",

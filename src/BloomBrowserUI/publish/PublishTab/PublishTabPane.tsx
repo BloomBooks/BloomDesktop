@@ -25,7 +25,7 @@ import { kBloomUnselectedTabBackground } from "../../utils/colorUtils";
 import { PublishingBookRequiresHigherTierNotice } from "./PublishingBookRequiresHigherTierNotice";
 import { FeatureStatus } from "../../react_components/featureStatus";
 import { AboutDialogLauncher } from "../../react_components/aboutDialog";
-import { RegistrationDialogLauncher } from "../../react_components/registrationDialog";
+import { RegistrationDialogEventLauncher } from "../../react_components/registration/registrationDialogLauncher";
 
 export const CheckoutNeededScreen: React.FunctionComponent<{
     titleForDisplay: string;
@@ -335,7 +335,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                         </BloomTabs>
                     )}
                 </div>
-                <RegistrationDialogLauncher />
+                <RegistrationDialogEventLauncher />
                 <AboutDialogLauncher />
             </ThemeProvider>
         </StyledEngineProvider>
