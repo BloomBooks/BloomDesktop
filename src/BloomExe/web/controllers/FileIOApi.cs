@@ -229,7 +229,10 @@ namespace Bloom.web.controllers
 
             try
             {
-                ProcessExtra.SafeStartInFront(jsonData.path);
+                // The client-side code URL-encodes file paths before sending them in JSON.
+                // We need to decode them to get actual file system paths.
+                var path = System.Web.HttpUtility.UrlDecode((string)jsonData.path);
+                ProcessExtra.SafeStartInFront(path);
             }
             catch (Exception e)
             {
@@ -258,7 +261,12 @@ namespace Bloom.web.controllers
 
             try
             {
-                var source = jsonData.from;
+                // The client-side code URL-encodes file paths before sending them in JSON.
+                // We need to decode them to get actual file system paths.
+                // See https://issues.bloomlibrary.org/youtrack/issue/BL-15384
+                var source = System.Web.HttpUtility.UrlDecode((string)jsonData.from);
+                var dest = System.Web.HttpUtility.UrlDecode((string)jsonData.to);
+
                 if (
                     !Path.IsPathRooted(source)
                     && (
@@ -277,7 +285,7 @@ namespace Bloom.web.controllers
                         source
                     );
                 }
-                RobustFile.Copy(source, jsonData.to, true);
+                RobustFile.Copy(source, dest, true);
             }
             catch (Exception e)
             {
