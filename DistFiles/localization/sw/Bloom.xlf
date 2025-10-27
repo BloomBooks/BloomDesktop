@@ -5952,6 +5952,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Barua pepe</target>
         <note>ID: RegisterDialog.Email</note>
       </trans-unit>
+      <trans-unit id="RegisterDialog.CheckInToChangeEmail">
+        <source xml:lang="en">Check in to change email</source>
+        <target xml:lang="sw" state="needs-translation">Check in to change email</target>
+        <note>ID: RegisterDialog.CheckInToChangeEmail</note>
+      </trans-unit>
       <trans-unit id="RegisterDialog.FirstName" approved="yes">
         <source xml:lang="en">First Name</source>
         <target xml:lang="sw" state="final">Jina la Kwanza</target>
