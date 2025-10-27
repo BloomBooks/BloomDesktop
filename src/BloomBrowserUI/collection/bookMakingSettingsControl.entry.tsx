@@ -1,4 +1,4 @@
 import { bootstrapReactComponent } from "../utils/entryPointBootstrap";
-import { CollectionsTabPane as Component } from "./CollectionsTabPane";
+import Component from "./bookMakingSettingsControl";
 
 bootstrapReactComponent(Component);

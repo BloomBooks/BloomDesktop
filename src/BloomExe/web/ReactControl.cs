@@ -180,6 +180,40 @@ namespace Bloom.web
             var bundleToViteModulePathMap = new Dictionary<string, string>
             {
                 { "collectionsTabPaneBundle", "/collectionsTab/CollectionsTabPane.entry.tsx" },
+                { "bookMakingSettingsBundle", "/collection/bookMakingSettingsControl.entry.tsx" },
+                {
+                    "autoUpdateSoftwareDlgBundle",
+                    "/react_components/AutoUpdateSoftwareDialog.entry.tsx"
+                },
+                {
+                    "copyrightAndLicenseBundle",
+                    "/bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog.entry.tsx"
+                },
+                {
+                    "createTeamCollectionDialogBundle",
+                    "/teamCollection/CreateTeamCollection.entry.tsx"
+                },
+                { "editTopBarControlsBundle", "/bookEdit/topbar/editTopBarControls.entry.tsx" },
+                { "duplicateManyDlgBundle", "/bookEdit/duplicateManyDialog.entry.tsx" },
+                {
+                    "joinTeamCollectionDialogBundle",
+                    "/teamCollection/JoinTeamCollectionDialog.entry.tsx"
+                },
+                { "languageChooserBundle", "/collection/LanguageChooserDialog.entry.tsx" },
+                { "messageBoxBundle", "/utils/BloomMessageBox.entry.tsx" },
+                {
+                    "newCollectionLanguageChooserBundle",
+                    "/collection/NewCollectionLanguageChooser.entry.tsx"
+                },
+                { "problemReportBundle", "/problemDialog/ProblemDialog.entry.tsx" },
+                { "progressDialogBundle", "/react_components/Progress/ProgressDialog.entry.tsx" },
+                { "publishTabPaneBundle", "/publish/PublishTab/PublishTabPane.entry.tsx" },
+                { "registrationDialogBundle", "/react_components/registrationDialog.entry.tsx" },
+                { "subscriptionSettingsBundle", "/collection/subscriptionSettingsTab.entry.tsx" },
+                {
+                    "teamCollectionSettingsBundle",
+                    "/teamCollection/TeamCollectionSettingsPanel.entry.tsx"
+                },
             };
             var viteModulePath = bundleToViteModulePathMap.ContainsKey(_javascriptBundleName)
                 ? bundleToViteModulePathMap[_javascriptBundleName]

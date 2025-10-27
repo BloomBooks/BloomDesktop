@@ -122,6 +122,12 @@ export default defineConfig(async () => {
         plugins: [
             react({
                 reactRefreshHost: `http://localhost:${process.env.PORT || 5173}`,
+                babel: {
+                    parserOpts: {
+                        // This enables decorators like @mobxReact.observer.
+                        plugins: ["decorators-legacy"],
+                    },
+                },
             }),
             transformLessImportsPlugin(), // Transform LESS imports to inline CSS injection (build only)
             //pugPlugin()
@@ -156,6 +162,9 @@ export default defineConfig(async () => {
                         dest: "help",
                     },
                     {
+                        // Be careful here. Changing it to lib/ double asterisk caused a weird bug
+                        // where running in yarn dev mode failed to load the root file,
+                        // complaining that there was an unexpected colon.
                         src: "bookEdit/**/*.{js,css,html,svg,png,jpg,gif,woff,woff2,ttf,eot}",
                         dest: "bookEdit",
                     },
@@ -164,7 +173,7 @@ export default defineConfig(async () => {
                         dest: "bookLayout",
                     },
                     {
-                        src: "lib/**",
+                        src: "lib/**/*.{js,css,html,svg,png,jpg,gif,woff,woff2,ttf,eot}",
                         dest: "lib",
                     },
                     {
@@ -209,6 +218,7 @@ export default defineConfig(async () => {
             minify: false, // Disable minification for better debugging (optional)
             cssCodeSplit: false, // Inline CSS into JS bundles like webpack
             manifest: true, // Generate manifest.json for post-processing
+            target: "esnext", // Ensure modern output for decorator support
             rollupOptions: {
                 input: entryPoints,
                 output: {
@@ -222,6 +232,13 @@ export default defineConfig(async () => {
                             "lib/localizationManager/localizationManager",
                         ],
                     },
+                },
+            },
+        },
+        esbuild: {
+            tsconfigRaw: {
+                compilerOptions: {
+                    experimentalDecorators: true,
                 },
             },
         },
