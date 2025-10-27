@@ -121,7 +121,6 @@ export const RegistrationContents: React.FunctionComponent<
         // Call the API to save registration info
         postJson("registration/userInfo", trimmedInfo);
 
-        // Also call the callback if provided (for backward compatibility during migration)
         props.onClose?.();
     };
 
@@ -137,7 +136,6 @@ export const RegistrationContents: React.FunctionComponent<
         // Call the API to save registration info
         postJson("registration/userInfo", sanitizedInfo);
 
-        // Also call the callback if provided (for backward compatibility during migration)
         props.onClose?.();
     };
 

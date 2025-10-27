@@ -10,7 +10,7 @@ To set up a component for ui testing:
 1. The component must have its own folder under react_components, "react_components/<component-name>"
 2. Add a "react_components/<component-name>/component-tests" folder
 3. Create a "react_components/<component-name>/component-tests/component-tester.config.ts" file. See "src/BloomBrowserUI/react_components/registration/component-tests/component-tester.config.ts" for an example.
-4. Create a common.ts file where you can store common methods used by tests of this component. The most important thing is to provide a function that wraps `setTestComponent()`. See C:/dev/b63.worktrees/registration/src/BloomBrowserUI/react_components/registration/component-tests/common.ts for an example.
+4. Create a common.ts file where you can store common methods used by tests of this component. The most important thing is to provide a function that wraps `setTestComponent()`. See "/src/BloomBrowserUI/react_components/registration/component-tests/common.ts " for an example.
 5. Create playwright tests named "*.uitest.ts";
 
 ## Complications

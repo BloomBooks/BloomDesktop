@@ -224,6 +224,17 @@ test.describe("Registration Dialog - Email Field - Optional vs Required", () => 
         expect(await field.email.markedInvalid).toBe(true);
     });
 
+    test("Email Required mode displays correctly", async ({ page }) => {
+        await setupRegistrationComponent(page, {
+            initialInfo: validInfo,
+            emailRequiredForTeamCollection: true,
+        });
+
+        // Verify team collection warning message is displayed
+        await expect(
+            page.getByText(/team collection|requires.*email/i),
+        ).toBeVisible();
+    });
     test("Valid email accepted when required for team collection", async ({
         page,
     }) => {
@@ -320,17 +331,5 @@ test.describe("Registration Dialog - Email Case Sensitivity", () => {
             await page.keyboard.press("Tab");
             expect(await field.email.markedInvalid).toBe(false);
         }
-    });
-
-    test("Email Required mode displays correctly", async ({ page }) => {
-        await setupRegistrationComponent(page, {
-            initialInfo: validInfo,
-            emailRequiredForTeamCollection: true,
-        });
-
-        // Verify team collection warning message is displayed
-        await expect(
-            page.getByText(/team collection|requires.*email/i),
-        ).toBeVisible();
     });
 });

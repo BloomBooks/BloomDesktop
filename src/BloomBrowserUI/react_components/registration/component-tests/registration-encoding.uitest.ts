@@ -55,7 +55,7 @@ test.describe("Registration Dialog - Emoji and Unicode", () => {
         await fillRegistrationForm(page, {
             firstName: "李",
             surname: "明",
-            email: "test@example.com",
+            email: "test明@example明.com",
             organization: "Организация",
             usingFor: "اختبار",
         });
@@ -67,6 +67,7 @@ test.describe("Registration Dialog - Emoji and Unicode", () => {
         expect(submittedData.surname).toBe("明");
         expect(submittedData.organization).toBe("Организация");
         expect(submittedData.usingFor).toBe("اختبار");
+        expect(submittedData.email).toBe("test明@example明.com");
     });
 });
 
