@@ -223,14 +223,14 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 		<PackageReference Include="Sentry" Version="3.9.4" />
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />
 		<PackageReference Include="SIL.BuildTasks" Version="3.1.1" GeneratePathProperty="true" />
-		<PackageReference Include="SIL.Core.Desktop" Version="17.0.0-beta0072" />
+		<PackageReference Include="SIL.Core.Desktop" Version="17.0.0-beta0077" />
 		<PackageReference Include="SIL.DesktopAnalytics" Version="4.0.4" />
 		<PackageReference Include="SIL.libpalaso.l10ns" Version="17.0.0-beta0070" GeneratePathProperty="true" />
-		<PackageReference Include="SIL.Media" Version="17.0.0-beta0072" />
-		<PackageReference Include="SIL.Windows.Forms" Version="17.0.0-beta0072" />
-		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="17.0.0-beta0072" />
-		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="17.0.0-beta0072" />
-		<PackageReference Include="SIL.WritingSystems" Version="17.0.0-beta0072" />
+		<PackageReference Include="SIL.Media" Version="17.0.0-beta0077" />
+		<PackageReference Include="SIL.Windows.Forms" Version="17.0.0-beta0077" />
+		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="17.0.0-beta0077" />
+		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="17.0.0-beta0077" />
+		<PackageReference Include="SIL.WritingSystems" Version="17.0.0-beta0077" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.2" />
 		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.2" />
