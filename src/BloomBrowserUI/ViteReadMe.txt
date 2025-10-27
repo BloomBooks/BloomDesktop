@@ -4,23 +4,17 @@ We now have two build modes.
 yarn dev runs the dev mode of vite, which serves up our source with minimal bundling.
 This needs some special-case handling where the HTML loads stuff.
 This branch has an updated version of ReactControl.cs, which builds a different html file
-to load the appropriate thing in dev mode. So far, it's only been tested, and I think only
-works, on the CollectionTab control. It should take only minimal work, we think, to get
-it working for other clients of ReactControl.
+to load the appropriate thing in dev mode. As far as I've tested, this now works on all
+ReactControls, including ReadDialogs and the whole PublishTab.
 It will take a bit more to get it working for the other entrypoint/bundle clients, especially edit view.
-I have not looked at this side of things.
+I took a quick look at edit mode but could not get it working with vite dev. For editablePageBundle,
+I think the problem is that we load tabpane, jquery, and ckeditor separately from the main code bundle;
+we don't have adequate doc of why we do that rather than importing them, but I get mysterious errors if
+I change to importing, even taking care to make sure jquery is available as a global.
 
 The other mode is vite's build mode, which we are trying to get to build bundles similar to the old ones
-for use in production. That's what I've been working on.
-
-Currently I'm building stand-alone bundles for the three bundles that make up edit mode
-plus the spreadsheet bundle. This came about because I thought (perhaps wrongly) that creating
-multiple entry points was responsible for some of our problems. It's plausible that we might make
-a single bundle out of all the ReactControl (and ReactDialog) entrypoints, and just give ReactControl
-a way to activate the root control it wants. For example, WireUpWinForms might add an entry to a map
-and a prop would tell which control to make at the root. I'm not sure whether this would slow down
-bringing up controls (more code to load) or speed it up (same file, already cached, for each root).
-We could easily try going back to making the four single bundles be just entry points again.
+for use in production. I think all of that is working now. (We're not building a test bundle, since we
+hope to get vitest working.)
 
 I made vite produce EsNext code. This means the output files are modules and can themselves import
 things. Vite makes extensive use of this when doing multiple entry points. So any one bundle has a
@@ -54,7 +48,7 @@ working because a previous build left something around.
 Don't yet have vite building pug files (use yarn gulp pug until we do). It's likely there are other
 file types for which we need to add handling.
 I've made some attempts at copying assets that don't need compilation, but it's likely that
-we are copying some things we don't need (I used ** on lib, for example), not copying some
+we are copying some things we don't need, not copying some
 that we do, and copying some to the wrong places (e.g. root of output\browser rather than a
 subdirectory, or vv).
 
@@ -63,8 +57,7 @@ changes were needed to get things working. We may decide to back that out and ju
 that help with the vite build, or it may be possible to carry on and get them all working.
 
 Major todos:
-- get vite dev mode working for all react controls
-- get it working for edit tab (maye for spreadsheet bundle? I don't think it's worth it.)
+- get vite dev mode working for edit tab. Current plan is to make a separate card for this.
 - can we make the post-build.js some sort of plugin so it's part of the build?
 - it would feel cleaner, and maybe save space and time, if xBundle.js replaced xBundle-main.js rather than importing it.
 - clean up everything that thinks commonbundle.js should exist, and get rid of it.
