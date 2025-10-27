@@ -47,7 +47,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="SIL.Core" Version="17.0.0-beta0072" />
+		<PackageReference Include="SIL.Core" Version="17.0.0-beta0077" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="System.Windows.Forms" />
