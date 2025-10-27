@@ -5,7 +5,7 @@
 		<UpgradeBackupLocation />
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
 		<OutputPath>..\..\output\Tests\$(Configuration)\</OutputPath>
-		<Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+		<Platform Condition=" '$(Platform)' == '' ">x64</Platform>
 		<AssemblyTitle>BloomTests</AssemblyTitle>
 		<Company>SIL</Company>
 		<Product>BloomTests</Product>
@@ -13,11 +13,13 @@
 		<Version>6.3.0.0</Version>
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
 		<TargetFramework>net8.0-windows</TargetFramework>
+		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
 		<LangVersion>11.0</LangVersion>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<IsTestProject>true</IsTestProject>
+		<Platforms>x64;ARM64</Platforms>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
@@ -32,15 +34,23 @@
 			<_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
 		</AssemblyAttribute>
 	</ItemGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
 		<DebugType>full</DebugType>
-		<PlatformTarget>x86</PlatformTarget>
+		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+		<DebugType>full</DebugType>
+		<PlatformTarget>ARM64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
 		<DebugType>pdbonly</DebugType>
-		<PlatformTarget>x86</PlatformTarget>
+		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+		<DebugType>pdbonly</DebugType>
+		<PlatformTarget>ARM64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
 		<DebugType>full</DebugType>
 		<CodeAnalysisLogFile>..\..\output\Debug\BloomTests.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
@@ -52,7 +62,7 @@
 		<CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
 		<CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
 		<DebugType>pdbonly</DebugType>
 		<CodeAnalysisLogFile>bin\Release\BloomTests.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
@@ -74,7 +84,6 @@
     I believe this is unnecessary on Linux, they usually already have 4 GB virtual address space available.
     -->
 		<LargeAddressAware>true</LargeAddressAware>
-		<PlatformTarget>x86</PlatformTarget>
 	</PropertyGroup>
 	<PropertyGroup>
 		<!-- We should delete this when we get rid of WebThumbNailList.Designer.cs. I believe we are only using binary formatter serialization in working with the ImageStream there. -->

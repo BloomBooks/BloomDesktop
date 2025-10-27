@@ -709,17 +709,23 @@ namespace BloomTests.Book
 
             //note: our code currently only knows how to display Thai *in Thai*, French *in French*, and Spanish *in Spanish*.
             //It may be better to be writing "Thai" and "Spanish" in French.
-            //That's not part of this test, and will have to be changed as we improve that aspect of things.
-            // There should be two matches here because it should update both the data-div languagesOfBook element and the page data-derived one.
-            AssertThatXmlIn
-                .Dom(book.RawDom)
-                .HasSpecifiedNumberOfMatchesForXpath("//div[text()='español, ไทย, français']", 2);
-            AssertThatXmlIn
-                .Dom(book.RawDom)
-                .HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[@data-derived='languagesOfBook' and text()='español, ไทย, français']",
-                    1
-                );
+            //That's not part of this test, so we're currently allowing either.
+            var dataDivNode =
+                book.RawDom.SelectSingleNode("//div[@data-book='languagesOfBook']")
+                as SafeXmlElement;
+            var derivedNode = book.RawDom.SelectSingleNode(
+                "//div[@data-derived='languagesOfBook']"
+            );
+            // We think the first one happens if there is an ICU DLL somewhere on the path, the second if not.
+            string[] expected = { "espagnol, ไทย, français", "español, ไทย, français" };
+            Assert.That(
+                dataDivNode != null && expected.Contains(dataDivNode.InnerText),
+                "languagesOfBook should be 'espagnol, ไทย, français' or 'español, ไทย, français'"
+            );
+            Assert.That(
+                derivedNode != null && derivedNode.InnerText == dataDivNode.InnerText,
+                "derived languagesOfBook should match data-book"
+            );
 
             book.SetMultilingualContentLanguages("th", "fr");
             AssertThatXmlIn

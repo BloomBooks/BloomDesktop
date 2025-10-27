@@ -69,6 +69,7 @@ lib/dotnet/Palaso*.*
 lib/dotnet/Chorus*.*
 lib/lame/*
 lib/gm/*
+lib/ffmpeg/*
 lib/FirefoxDependencies/*
 lib/RedistributableDlls/*
 DistFiles/exiftool.exe

@@ -44,10 +44,6 @@
     <ApplicationName>Bloom$(channel)</ApplicationName>
     <Configuration>Release</Configuration>
     <BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.2.3.4</BUILD_NUMBER>
-    <useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
-    <useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
-    <TestProcessType Condition="'$(useNUnit-x86)'=='true'">Separate</TestProcessType>
-    <TestProcessType Condition="'$(useNUnit-x86)'!='true'">Single</TestProcessType>
     <MSBuildCommunityTasksPath>$(RootDir)/build</MSBuildCommunityTasksPath>
     <teamcity_agent_home_dir Condition="'$(teamcity_agent_home_dir)'=='' And '$(OS)'!='Windows_NT'">/var/lib/TeamCity/agent</teamcity_agent_home_dir>
     <BuildTasksDll>$(RootDir)/packages/SIL.BuildTasks/tools/SIL.BuildTasks.dll</BuildTasksDll>
@@ -102,13 +98,33 @@
     <CreateProperty Value="$(Version).$(BuildHash)">
       <Output PropertyName="FullVersion" TaskParameter="Value"/>
     </CreateProperty>
-    <CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).exe">
+    <CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).x64.exe">
+      <Output PropertyName="InstallerFileNameX64" TaskParameter="Value"/>
+    </CreateProperty>
+    <CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).arm64.exe">
+      <Output PropertyName="InstallerFileNameArm64" TaskParameter="Value"/>
+    </CreateProperty>
+    <!-- Keep the original property for backward compatibility, defaulting to x64 -->
+    <CreateProperty Value="$(InstallerFileNameX64)">
       <Output PropertyName="InstallerFileName" TaskParameter="Value"/>
     </CreateProperty>
-    <CreateProperty Value="Bloom$(channel)-$(Version)-full.nupkg">
+    <CreateProperty Value="Bloom$(channel)-x64-$(Version)-full.nupkg">
+      <Output PropertyName="VelopackFullPkgX64" TaskParameter="Value"/>
+    </CreateProperty>
+    <CreateProperty Value="Bloom$(channel)-x64-$(Version)-delta.nupkg">
+      <Output PropertyName="VelopackDeltaPkgX64" TaskParameter="Value"/>
+    </CreateProperty>
+    <CreateProperty Value="Bloom$(channel)-arm64-$(Version)-full.nupkg">
+      <Output PropertyName="VelopackFullPkgArm64" TaskParameter="Value"/>
+    </CreateProperty>
+    <CreateProperty Value="Bloom$(channel)-arm64-$(Version)-delta.nupkg">
+      <Output PropertyName="VelopackDeltaPkgArm64" TaskParameter="Value"/>
+    </CreateProperty>
+    <!-- Keep the original properties for backward compatibility, defaulting to x64 -->
+    <CreateProperty Value="$(VelopackFullPkgX64)">
       <Output PropertyName="VelopackFullPkg" TaskParameter="Value"/>
     </CreateProperty>
-    <CreateProperty Value="Bloom$(channel)-$(Version)-delta.nupkg">
+    <CreateProperty Value="$(VelopackDeltaPkgX64)">
       <Output PropertyName="VelopackDeltaPkg" TaskParameter="Value"/>
     </CreateProperty>
     <!-- Z drive is set up for data shared by all build agents on TeamCity. If running on a dev machine,
@@ -147,10 +163,27 @@
   </Target>
   <Target Name="BuildInternal" DependsOnTargets="SetAssemblyVersion">
     <Error Text="Set Channel to empty string for Release build" Condition="'$(channel)'=='Release'"/>
-    <Exec Command="dotnet build $(RootDir)/$(Solution) --configuration $(Configuration)" />
+    
+    <!-- Build x64 version for each project with proper OutDir and SolutionDir overrides. (We can't just build the solution,
+    because solution builds don't support the runtime parameter.) I don't think we need the output arg for x64,
+    but it feels safer to be explicit about both architectures. However, beware of breaking tests if the x64
+    build here does NOT go to the same directory as the VS build. -->
+    <Exec Command='dotnet build "$(RootDir)\src\BloomExe\BloomExe.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
+    <Exec Command='dotnet build "$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
+  <!--If the number of directories between output and OutDir changes, we need a corresponding
+    change in BloomFileLocatorTests.kRelativePathToBrowserFolder and XMatterHelperTests.OneTimeSetup-->
+    <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\Tests\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
+    
+    <!-- Build ARM64 version for each project with proper OutDir and SolutionDir overrides -->
+    <Exec Command='dotnet build "$(RootDir)\src\BloomExe\BloomExe.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
+    <Exec Command='dotnet build "$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
+    <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\Tests\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
   </Target>
   <ItemGroup>
-    <TestAssemblies Include="$(RootDir)/output/Tests/$(Configuration)/BloomTests.dll"/>
+    <TestAssembliesX64 Include="$(RootDir)/output/Tests/$(Configuration)/x64/BloomTests.dll"/>
+    <TestAssembliesArm64 Include="$(RootDir)/output/Tests/$(Configuration)/arm64/BloomTests.dll"/>
+    <!-- For backward compatibility, include x64 as the default -->
+    <TestAssemblies Include="@(TestAssembliesX64)"/>
   </ItemGroup>
   <Target Name="Test" DependsOnTargets="Build">
     <CallTarget Targets="TestOnly"/>
@@ -158,16 +191,14 @@
   <Target Name="TestOnly" DependsOnTargets="RunNUnit"/>
   <Target Name="RunNUnit">
     <PropertyGroup>
-      <TestResultsXmlFile Condition="$(isOnTeamCity) == false">$(RootDir)/output/Tests/$(Configuration)/TestResults.xml</TestResultsXmlFile>
+      <TestResultsXmlFile Condition="$(isOnTeamCity) == false">$(RootDir)/output/Tests/$(Configuration)/x64/TestResults.xml</TestResultsXmlFile>
       <ExtraExcludeCategories Condition="'$(teamcity_version)' != ''">SkipOnTeamCity,$(ExtraExcludeCategories)</ExtraExcludeCategories>
     </PropertyGroup>
     <NUnit3
 			Assemblies="@(TestAssemblies)"
 			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.20.1/tools"
 			ExcludeCategory="$(ExtraExcludeCategories)$(excludedCategories)"
-			WorkingDirectory="$(RootDir)/output/Tests/$(Configuration)"
-			Force32Bit="$(useNUnit-x86)"
-			Process="$(TestProcessType)"
+			WorkingDirectory="$(RootDir)/output/Tests/$(Configuration)/x64"
 			Trace="Debug"
 			Verbose="true"
 			OutputXmlFile="$(TestResultsXmlFile)"
@@ -275,20 +306,27 @@
     <CallTarget Targets="SignExesIfPossible"/>
     <!-- the name of the exe must also match the application product name. Use move rather than rename in case the destination
 		already exists from a previous build. Review: we could do this in installer\content after the following copies.-->
-    <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe $(RootDir)\output\$(Configuration)\Bloom$(channel).exe"/>
+    <Exec Command="move /y $(RootDir)\output\$(Configuration)\x64\Bloom.exe $(RootDir)\output\$(Configuration)\x64\Bloom$(channel).exe"/>
+    <Exec Command="move /y $(RootDir)\output\$(Configuration)\arm64\Bloom.exe $(RootDir)\output\$(Configuration)\arm64\Bloom$(channel).exe"/>
 
     <!-- Copy everything we want installed on the user's computer into ../installer/content. (First we remove the directory,
     so as not to include anything obsolete from an earlier build).-->
     <ItemGroup>
-      <ReleaseFiles
-        Include="..\output\release\**\*.*"
+      <X64ReleaseFiles
+        Include="..\output\release\x64\**\*.*"
+        Exclude="**\*.xml;Bloom.vshost.exe;**\*.pdb;**\runtimes\**"  />
+      <Arm64ReleaseFiles
+        Include="..\output\release\arm64\**\*.*"
         Exclude="**\*.xml;Bloom.vshost.exe;**\*.pdb;**\runtimes\**"  />
       <X64Files
-        Include="..\output\release\runtimes\win-x64\**"/>
+        Include="..\output\release\x64\runtimes\win-x64\**"/>
       <Arm64Files
-        Include="..\output\release\runtimes\win-arm64\**"/>
-      <PdbFiles
-        Include="..\output\release\Bloom*.pdb"
+        Include="..\output\release\arm64\runtimes\win-arm64\**"/>
+      <X64PdbFiles
+        Include="..\output\release\x64\Bloom*.pdb"
+        Exclude="**\*Tests.*" />
+      <Arm64PdbFiles
+        Include="..\output\release\arm64\Bloom*.pdb"
         Exclude="**\*Tests.*" />
       <BrowserFiles
         Include="..\output\browser\**\*"
@@ -298,12 +336,19 @@
     </ItemGroup>
 
     <RemoveDir Directories="..\output\installer\content" />
-    <Copy SourceFiles="@(ReleaseFiles)" DestinationFolder="..\output\installer\content\%(RecursiveDir)" />
-    <Copy SourceFiles="@(X64Files)" DestinationFolder="..\output\installer\content\runtimes\win-x64\%(RecursiveDir)" />
-    <Copy SourceFiles="@(Arm64Files)" DestinationFolder="..\output\installer\content\runtimes\win-arm64\%(RecursiveDir)" />
-    <Copy SourceFiles="@(PdbFiles)" DestinationFolder="..\output\installer\content\%(RecursiveDir)" />
-    <Copy SourceFiles="@(DistFiles)" DestinationFolder="..\output\installer\content\%(RecursiveDir)" />
-    <Copy SourceFiles="@(BrowserFiles)" DestinationFolder="..\output\installer\content\browser\%(RecursiveDir)" />
+    <!-- Copy x64 files to x64 subdirectory -->
+    <Copy SourceFiles="@(X64ReleaseFiles)" DestinationFolder="..\output\installer\content\x64\%(RecursiveDir)" />
+    <Copy SourceFiles="@(X64Files)" DestinationFolder="..\output\installer\content\x64\runtimes\win-x64\%(RecursiveDir)" />
+    <Copy SourceFiles="@(X64PdbFiles)" DestinationFolder="..\output\installer\content\x64\%(RecursiveDir)" />
+    <!-- Copy ARM64 files to arm64 subdirectory -->
+    <Copy SourceFiles="@(Arm64ReleaseFiles)" DestinationFolder="..\output\installer\content\arm64\%(RecursiveDir)" />
+    <Copy SourceFiles="@(Arm64Files)" DestinationFolder="..\output\installer\content\arm64\runtimes\win-arm64\%(RecursiveDir)" />
+    <Copy SourceFiles="@(Arm64PdbFiles)" DestinationFolder="..\output\installer\content\arm64\%(RecursiveDir)" />
+    <!-- Copy shared files to both locations -->
+    <Copy SourceFiles="@(DistFiles)" DestinationFolder="..\output\installer\content\x64\%(RecursiveDir)" />
+    <Copy SourceFiles="@(DistFiles)" DestinationFolder="..\output\installer\content\arm64\%(RecursiveDir)" />
+    <Copy SourceFiles="@(BrowserFiles)" DestinationFolder="..\output\installer\content\x64\browser\%(RecursiveDir)" />
+    <Copy SourceFiles="@(BrowserFiles)" DestinationFolder="..\output\installer\content\arm64\browser\%(RecursiveDir)" />
     <Message Text="Running Vpk: $(Version)" Importance="high"  />
     <Message Text="Using localization from: $(LocalizationFilesDir)" Importance="high" />
     <!-- This is the command that actually runs Velopack. It generates a complete installer as well as full and delta nupkg packages,
@@ -315,28 +360,43 @@
       There's a long list of possible dependencies that the installer can be told to check for using the framework argument
       at https://docs.velopack.io/packaging/bootstrapping#:~:text=By%20default%2C%20Velopack%20will%20accept,dotnet.
       It will help the user try to fix things if they are not.-->
+    <!-- Create x64 installer with dedicated output directory -->
     <Exec
-      Command="vpk pack --packId Bloom$(channel) --packVersion $(Version) --packDir ..\output\installer\content --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --progressColor &quot;#d65649&quot; --localization &quot;$(LocalizationFilesDir)&quot; --packAuthors &quot;SIL Global&quot; " />
-    <Copy SourceFiles="$(InstallerOutputFolder)\Bloom$(channel)-win-Setup.exe"
-          DestinationFiles="$(InstallerOutputFolder)\$(InstallerFileName)"
+      Command="vpk pack --packId Bloom$(channel)-x64 --packVersion $(Version) --packDir ..\output\installer\content\x64 --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder)\x64 --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --packAuthors &quot;SIL Global&quot; " />
+    <!-- Create ARM64 installer with dedicated output directory -->
+    <Exec
+      Command="vpk pack --packId Bloom$(channel)-arm64 --packVersion $(Version) --packDir ..\output\installer\content\arm64 --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder)\arm64 --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-arm64-desktop,webview2 --packAuthors &quot;SIL Global&quot; " />
+    <!-- Copy installers with appropriate names to main output folder -->
+    <Copy SourceFiles="$(InstallerOutputFolder)\x64\Bloom$(channel)-x64-win-Setup.exe"
+          DestinationFiles="$(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).x64.exe"
     />
-    <Message Text="Copied installer to $(InstallerOutputFolder)\$(InstallerFileName)" Importance="high"/>
+    <Copy SourceFiles="$(InstallerOutputFolder)\arm64\Bloom$(channel)-arm64-win-Setup.exe"
+          DestinationFiles="$(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).arm64.exe"
+    />
+    <Message Text="Copied x64 installer to $(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).x64.exe" Importance="high"/>
+    <Message Text="Copied ARM64 installer to $(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).arm64.exe" Importance="high"/>
   </Target>
   <Target Name="SignExesIfPossible">
     <PropertyGroup>
       <ContinueOnExeSignError Condition="$(isOnTeamCity) == true AND $(OkIfSigningFails) == false">false</ContinueOnExeSignError>
       <ContinueOnExeSignError Condition="$(isOnTeamCity) == false OR $(OkIfSigningFails) == true">true</ContinueOnExeSignError>
     </PropertyGroup>
-    <Exec Command='sign "$(RootDir)\output\$(Configuration)\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    <!-- These are generated in other TC projects but I think it's OK to sign them here since we control those projects too.-->
-    <Exec Command='sign "$(RootDir)\output\$(Configuration)\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    <Exec Command='sign "$(RootDir)\output\$(Configuration)\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <!-- Sign x64 executables -->
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <!-- Sign ARM64 executables -->
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
   </Target>
   <!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: Velopack itself
 	can sign things if passed the right command line arguments. Is that a better thing to do? -->
   <Target Name="SignInstaller" DependsOnTargets="VersionNumbers; Installer">
-    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileName)"'></Exec>
-    <Message Text="Signed Velopack installer at $(InstallerOutputFolder)\$(InstallerFileName)" Importance="high"/>
+    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameX64)"'></Exec>
+    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameArm64)"'></Exec>
+    <Message Text="Signed x64 Velopack installer at $(InstallerOutputFolder)\$(InstallerFileNameX64)" Importance="high"/>
+    <Message Text="Signed ARM64 Velopack installer at $(InstallerOutputFolder)\$(InstallerFileNameArm64)" Importance="high"/>
   </Target>
   <Target Name="Upload" DependsOnTargets="VersionNumbers; SignInstaller" >
     <CallTarget Targets="UploadCore"/>
@@ -347,15 +407,24 @@
     <CallTarget Targets="UploadCore"/>
   </Target>
   <Target Name="UploadCore">
-    <Message Text="Attempting rsync of $(InstallerFileName)" Importance="high"/>
+    <Message Text="Attempting rsync of x64 and ARM64 installers" Importance="high"/>
     <!-- The way the web site generates the list of old installers requires that they be the only files in the
 		destination folder. For now I'm keeping them out of the actual installers folder that the web site uses.-->
     <!--Note: S3BuildPublisher needs AWSSDK.dll it its own folder, so TeamCity should do that. Do it youself if you want to build locally-->
+    <!-- Upload x64 installer. It would be more consistent for the destinationFolder to add -x64, but we need to keep using
+    the same location as before we had multiple architectures, so that older x64 (and even x86) builds can find the delta info.-->
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(InstallerOutputFolder)/$(InstallerFileName)"
+		SourceFiles="$(InstallerOutputFolder)/$(InstallerFileNameX64)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="installers$(channel)"
+		IsPublicRead="true" />
+    <!-- Upload ARM64 installer -->
+    <S3BuildPublisher
+		CredentialStoreProfileName ="$(ProfileName)"
+		SourceFiles="$(InstallerOutputFolder)/$(InstallerFileNameArm64)"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="installers$(channel)-arm64"
 		IsPublicRead="true" />
     <!-- The delta, full, releases.win.json, and RELEASES files must all be in the same directory,
     the one InstallerSupport.LookupUrlOfVelopackUpdate finds.
@@ -365,29 +434,52 @@
     We could omit it for any new channels.
     The releases.win.json file is used by the new Velopack-based update managers to find out what the latest version is and how to upgrade to it.
     -->
+    <!-- Upload x64 packages (again, to the pre-multi-installer location) -->
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(InstallerOutputFolder)/$(VelopackDeltaPkg)"
+		SourceFiles="$(InstallerOutputFolder)/x64/$(VelopackDeltaPkgX64)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(InstallerOutputFolder)/$(VelopackFullPkg)"
+		SourceFiles="$(InstallerOutputFolder)/x64/$(VelopackFullPkgX64)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
+    <!-- Upload ARM64 packages -->
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(InstallerOutputFolder)/RELEASES"
+		SourceFiles="$(InstallerOutputFolder)/arm64/$(VelopackDeltaPkgArm64)"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="deltas$(channel)-arm64"
+		IsPublicRead="true" />
+    <S3BuildPublisher
+		CredentialStoreProfileName ="$(ProfileName)"
+		SourceFiles="$(InstallerOutputFolder)/arm64/$(VelopackFullPkgArm64)"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="deltas$(channel)-arm64"
+		IsPublicRead="true" />
+    <!-- Upload x64 RELEASES and releases.win.json to current location (unchanged) -->
+    <S3BuildPublisher
+		CredentialStoreProfileName ="$(ProfileName)"
+		SourceFiles="$(InstallerOutputFolder)/x64/RELEASES"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
     <S3BuildPublisher
       CredentialStoreProfileName ="$(ProfileName)"
-      SourceFiles="$(InstallerOutputFolder)/releases.win.json"
+      SourceFiles="$(InstallerOutputFolder)/x64/releases.win.json"
       DestinationBucket="$(Bucket)"
       DestinationFolder="deltas$(channel)"
+      IsPublicRead="true" />
+    <!-- Upload ARM64-specific releases.win.json files to ARM64 folder. We don't need RELEASES since
+    there was never an ARM64 Squirrel installer.-->
+    <S3BuildPublisher
+      CredentialStoreProfileName ="$(ProfileName)"
+      SourceFiles="$(InstallerOutputFolder)/arm64/releases.win.json"
+      DestinationBucket="$(Bucket)"
+      DestinationFolder="deltas$(channel)-arm64"
       IsPublicRead="true" />
     <CallTarget Targets ='MakeDownloadPointers'/>
     <CallTarget Targets="CleanUpObsoleteInstallerFiles"/>
@@ -397,12 +489,13 @@
   <!-- We keep the full nuget package for this run so the next one can create a delta. -->
   <Target Name="CleanUpObsoleteInstallerFiles" DependsOnTargets="VersionNumbers">
     <ItemGroup>
-      <FilesToDelete Include="$(InstallerOutputFolder)\BloomInstaller.*.exe;$(InstallerOutputFolder)\*-full.nupkg" Exclude="$(InstallerOutputFolder)/$(VelopackFullPkg)" />
+      <FilesToDelete Include="$(InstallerOutputFolder)\BloomInstaller.*.exe;$(InstallerOutputFolder)\x64\*-full.nupkg;$(InstallerOutputFolder)\arm64\*-full.nupkg" Exclude="$(InstallerOutputFolder)/x64/$(VelopackFullPkgX64);$(InstallerOutputFolder)/arm64/$(VelopackFullPkgArm64)" />
     </ItemGroup>
     <Delete Files="@(FilesToDelete)" />
   </Target>
   <Target Name="SignIfPossible" DependsOnTargets="VersionNumbers; Installer">
-    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileName)"' ContinueOnError="true"></Exec>
+    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameX64)"' ContinueOnError="true"></Exec>
+    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameArm64)"' ContinueOnError="true"></Exec>
   </Target>
   <Target Name="DownloadDistFiles">
     <Message Text="Downloading Bloom.chm help file" Importance="high"  />

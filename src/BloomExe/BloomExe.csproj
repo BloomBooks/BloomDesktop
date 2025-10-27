@@ -6,7 +6,7 @@
 		<UseWPF>false</UseWPF>
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
 		<OutputPath>..\..\output\$(Configuration)\</OutputPath>
-		<Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+		<Platform Condition=" '$(Platform)' == '' ">x64</Platform>
 		<AssemblyTitle>Bloom</AssemblyTitle>
 		<Company>SIL</Company>
 		<Product>Bloom</Product>
@@ -17,13 +17,14 @@
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<LangVersion>11.0</LangVersion>
 		<PostBuildEvent>
-copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\meddle.exe" $(OutDir)
-xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
+xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		</PostBuildEvent>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<Platforms>x64;ARM64</Platforms>
+		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
@@ -66,7 +67,7 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 		<Optimize>false</Optimize>
 		<DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
 		<DebugType>full</DebugType>
 		<CodeAnalysisLogFile>..\..\output\Debug\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
@@ -78,7 +79,7 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 		<CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
 		<CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
 		<DebugType>pdbonly</DebugType>
 		<CodeAnalysisLogFile>..\..\output\Release\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
@@ -117,19 +118,17 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 	<PropertyGroup>
 		<StartupObject />
 	</PropertyGroup>
-	<PropertyGroup>
-		<PostBuildEvent>
-copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
-copy /Y "$(SolutionDir)\lib\dotnet\meddle.exe" $(OutDir)
-xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
-    </PostBuildEvent>
-		<PlatformTarget>AnyCPU</PlatformTarget>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<Prefer32Bit>True</Prefer32Bit>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<Prefer32Bit>True</Prefer32Bit>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+		<PlatformTarget>ARM64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+		<PlatformTarget>ARM64</PlatformTarget>
 	</PropertyGroup>
 	<ItemGroup>
 		<SourceFiles Include="..\..\lib\dotnet\*.config" />
@@ -142,11 +141,25 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 	<ItemGroup>
 		<None Remove="**/*.orig" />
 	</ItemGroup>
-	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x86'">
-		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x86\*.dll" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
+	<ItemGroup Condition="'$(RuntimeIdentifier)'==''"><!-- Default build assumes win-x64 -->
 		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)'=='win-x64'">
+		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)'=='win-arm64'">
+		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-arm64\*.dll" />
+	</ItemGroup>
+
+	<!-- Platform-specific ffmpeg binaries -->
+	<ItemGroup Condition="'$(RuntimeIdentifier)'==''"><!-- Default build assumes win-x64 -->
+		<FfmpegFiles Include="$(SolutionDir)\lib\ffmpeg\x64\ffmpeg.exe" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)'=='win-x64'">
+		<FfmpegFiles Include="$(SolutionDir)\lib\ffmpeg\x64\ffmpeg.exe" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)'=='win-arm64'">
+		<FfmpegFiles Include="$(SolutionDir)\lib\ffmpeg\arm64\ffmpeg.exe" />
 	</ItemGroup>
 
 	<PropertyGroup>
@@ -169,9 +182,17 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 		<Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" />
 		<Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
 		<Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
-		<Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
+		<Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)' == 'Debug'" />
 		<Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
 		<Message Text="CopySomeFiles target completed." Importance="high" />
+	</Target>
+
+	<Target Name="CopyPlatformSpecificFiles" AfterTargets="CopySomeFiles">
+		<Copy SourceFiles="@(FfmpegFiles)" DestinationFolder="$(OutDir)" />
+		<Message Text="Copying platform-specific ffmpeg for $(Platform)" Importance="high" />
+
+		<Error Text="Platform-specific ffmpeg not found for $(Platform) - expected at @(FfmpegFiles)"
+		       Condition="'$(Platform)'=='ARM64' AND !Exists('@(FfmpegFiles)')" />
 	</Target>
 	<Target Name="ReallyAfterBuild" AfterTargets="CopySomeFiles">
 		<Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
@@ -193,10 +214,21 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 		<FileUpdate File="$(LocalizationDir)\pt\Palaso.xlf" Regex="pt-BR" ReplacementText="pt-PT" />
 		<Message Text="Finished fixing Portuguese language tags in Palaso.xlf" Importance="high" />
 	</Target>
-	<Target Name="CopyX86SqliteForArm" AfterTargets="ReallyAfterBuild">
-		<MakeDir Directories="$(OutDir)runtimes\win-arm64\native" />
-		<Copy SourceFiles="$(OutDir)runtimes\win-x86\native\e_sqlite3.dll" DestinationFiles="$(OutDir)e_sqlite3.dll" />
-		<Message Text="BL-13934 sqlite looks in the ARM64 directory, but then fails because actually we're running as an x86 process still, as of Bloom 6.2. So for now we're cheating and just putting the x86 version in." Importance="high" />
+
+	<!-- ARM64 SQLite support - fail fast if dependency not properly restored -->
+	<Target Name="CopyArm64Sqlite" AfterTargets="ReallyAfterBuild" Condition="'$(Platform)'=='ARM64'">
+		<PropertyGroup>
+			<Arm64SqliteSource>$(OutDir)runtimes\win-arm64\native\e_sqlite3.dll</Arm64SqliteSource>
+			<Arm64SqliteTarget>$(OutDir)e_sqlite3.dll</Arm64SqliteTarget>
+		</PropertyGroup>
+		
+		<!-- Fail immediately if ARM64 SQLite library is not where NuGet should have placed it -->
+		<Error Text="ARM64 SQLite library not found at expected location: $(Arm64SqliteSource). Check that RuntimeIdentifiers includes 'win-arm64' and NuGet restore completed successfully."
+		       Condition="!Exists('$(Arm64SqliteSource)')" />
+		
+		<!-- Copy ARM64 SQLite library to main output directory -->
+		<Copy SourceFiles="$(Arm64SqliteSource)" DestinationFiles="$(Arm64SqliteTarget)" />
+		<Message Text="Copied ARM64 SQLite library: $(Arm64SqliteSource) -> $(Arm64SqliteTarget)" Importance="high" />
 	</Target>
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.0.0" />
@@ -269,9 +301,6 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 		</Reference>
 		<Reference Include="Splat">
 			<HintPath>..\..\lib\dotnet\Splat.dll</HintPath>
-		</Reference>
-		<Reference Include="TidyManaged">
-			<HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 	<ItemGroup>

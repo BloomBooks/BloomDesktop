@@ -83,7 +83,7 @@ cd -
 #     URL: https://build.palaso.org/buildConfiguration/bt396?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame", "gm.zip!**"=>"lib", "meddle.exe"=>"lib/dotnet"}
+#     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame", "gm.zip!**"=>"lib", "meddle.exe"=>"lib/dotnet", "ffmpeg.zip!**"=>"lib"}
 # [1] build: PortableDevices (from PodcastUtilities) (Bloom_PortableDevicesFromPodcastUtitlies)
 #     project: Bloom
 #     URL: https://build.palaso.org/buildConfiguration/Bloom_PortableDevicesFromPodcastUtitlies?mode=builds
@@ -97,20 +97,20 @@ cd -
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
-# [3] build: PdfDroplet-Win-master-Continuous (bt54)
-#     project: PdfDroplet
-#     URL: https://build.palaso.org/buildConfiguration/bt54?mode=builds
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"PdfDroplet.dll"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
-#     VCS: https://github.com/sillsdev/pdfDroplet [master]
-# [4] build: Windows master continuous (XliffForHtml_WindowsMasterContinuous)
+# [3] build: Windows master continuous (XliffForHtml_WindowsMasterContinuous)
 #     project: XliffForHtml
 #     URL: https://build.palaso.org/buildConfiguration/XliffForHtml_WindowsMasterContinuous?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"HtmlXliff.*"=>"lib/dotnet", "HtmlAgilityPack.*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/XliffForHtml [refs/heads/master]
+# [4] build: PdfDroplet-Win-master-Continuous (bt54)
+#     project: PdfDroplet
+#     URL: https://build.palaso.org/buildConfiguration/bt54?mode=builds
+#     clean: false
+#     revision: latest.lastSuccessful
+#     paths: {"PdfDroplet.dll"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
+#     VCS: https://github.com/sillsdev/pdfDroplet [master]
 
 # make sure output directories exist
 mkdir -p ../DistFiles
@@ -129,18 +129,20 @@ copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.la
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Lame.zip ../Downloads/Lame.zip
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/gm.zip ../Downloads/gm.zip
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/meddle.exe ../lib/dotnet/meddle.exe
+copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/ffmpeg.zip ../Downloads/ffmpeg.zip
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/PodcastUtilities.PortableDevices.dll ../lib/dotnet/PodcastUtilities.PortableDevices.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/PodcastUtilities.PortableDevices.pdb ../lib/dotnet/PodcastUtilities.PortableDevices.pdb
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/Interop.PortableDeviceApiLib.dll ../lib/dotnet/Interop.PortableDeviceApiLib.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/Interop.PortableDeviceTypesLib.dll ../lib/dotnet/Interop.PortableDeviceTypesLib.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp63/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
-copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfDroplet.dll ../lib/dotnet/PdfDroplet.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.exe ../lib/dotnet/HtmlXliff.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.pdb ../lib/dotnet/HtmlXliff.pdb
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlAgilityPack.dll ../lib/dotnet/HtmlAgilityPack.dll
+copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfDroplet.dll ../lib/dotnet/PdfDroplet.dll
+copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/ghostscript-win32.zip -d "../DistFiles/ghostscript"
 unzip -uqo ../Downloads/Lame.zip -d "../lib/lame"
 unzip -uqo ../Downloads/gm.zip -d "../lib"
+unzip -uqo ../Downloads/ffmpeg.zip -d "../lib"
 # End of script
