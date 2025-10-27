@@ -5953,6 +5953,11 @@
         <target xml:lang="am" state="needs-translation">Email Address</target>
         <note>ID: RegisterDialog.Email</note>
       </trans-unit>
+      <trans-unit id="RegisterDialog.CheckInToChangeEmail">
+        <source xml:lang="en">Check in to change email</source>
+        <target xml:lang="am" state="needs-translation">Check in to change email</target>
+        <note>ID: RegisterDialog.CheckInToChangeEmail</note>
+      </trans-unit>
       <trans-unit id="RegisterDialog.FirstName">
         <source xml:lang="en">First Name</source>
         <target xml:lang="am" state="needs-translation">First Name</target>
