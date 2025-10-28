@@ -254,7 +254,7 @@ namespace Bloom
         /// </summary>
         public static string GetCodeBaseFolder()
         {
-            var file = Assembly.GetExecutingAssembly().CodeBase.Replace("file://", string.Empty);
+            var file = Assembly.GetExecutingAssembly().Location.Replace("\\", "/");
             if (SIL.PlatformUtilities.Platform.IsWindows)
                 file = file.TrimStart('/');
             if (Program.RunningUnitTests)
