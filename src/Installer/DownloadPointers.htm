@@ -6,33 +6,57 @@
     <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
     <meta http-equiv="pragma" content="no-cache, no-store" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-        rel="stylesheet"
-        type="text/css"
-        href="https://bloomlibrary.org/assets/BloomLibrary-0.1.0.css"
-    />
-    <body class="buildInfo">
-        <table class="buildInfo">
-            <tr>
-                <td class="label">CHANNEL_LABEL Version</td>
-                <td class="link">
-                    <a
-                        href="https://bloomlibrary.org/INSTALLERS_FOLDER/BloomInstaller.VERSION_DOT_CHANNEL.x64.exe"
-                    >
-                        <div class="linkLabel">
-                            Bloom VERSION_NUMBER CHANNEL_LABEL
-                        </div>
-                    </a>
-                    <a
-                        href="https://bloomlibrary.org/INSTALLERS_FOLDER/BloomInstaller.VERSION_DOT_CHANNEL.arm64.exe"
-                    >
-                        <div class="linkLabel">
-                            Bloom VERSION_NUMBER CHANNEL_LABEL ARM64
-                        </div>
-                    </a>
-                </td>
-                <td class="date">RELEASE_DATE</td>
-            </tr>
-        </table>
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, auto);
+            gap: 0;
+            border: 1px solid black;
+            width: fit-content;
+        }
+
+        .grid > div {
+            padding: 0.5em 2em;
+        }
+
+        .grid > div:nth-child(-n + 4) {
+            font-weight: bold;
+            color: rgb(10, 51, 57);
+            background-color: rgb(232, 242, 243);
+        }
+
+        a {
+            color: rgb(26, 129, 143);
+        }
+    </style>
+    <body>
+        <div class="grid">
+            <div>Channel</div>
+            <div>Link</div>
+            <div>Platform</div>
+            <div>Release Date</div>
+
+            <div>CHANNEL_LABEL</div>
+            <div>
+                <a
+                    href="https://bloomlibrary.org/INSTALLERS_FOLDER/BloomInstaller.VERSION_DOT_CHANNEL.x64.exe"
+                >
+                    <div>Bloom VERSION_NUMBER</div>
+                </a>
+            </div>
+            <div>x64</div>
+            <div class="date">RELEASE_DATE</div>
+
+            <div>CHANNEL_LABEL</div>
+            <div>
+                <a
+                    href="https://bloomlibrary.org/INSTALLERS_ARM64_FOLDER/BloomInstaller.VERSION_DOT_CHANNEL.arm64.exe"
+                >
+                    <div>Bloom VERSION_NUMBER</div>
+                </a>
+            </div>
+            <div>arm64</div>
+            <div class="date">RELEASE_DATE</div>
+        </div>
     </body>
 </html>

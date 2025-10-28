@@ -163,7 +163,7 @@
   </Target>
   <Target Name="BuildInternal" DependsOnTargets="SetAssemblyVersion">
     <Error Text="Set Channel to empty string for Release build" Condition="'$(channel)'=='Release'"/>
-    
+
     <!-- Build x64 version for each project with proper OutDir and SolutionDir overrides. (We can't just build the solution,
     because solution builds don't support the runtime parameter.) I don't think we need the output arg for x64,
     but it feels safer to be explicit about both architectures. However, beware of breaking tests if the x64
@@ -173,7 +173,7 @@
   <!--If the number of directories between output and OutDir changes, we need a corresponding
     change in BloomFileLocatorTests.kRelativePathToBrowserFolder and XMatterHelperTests.OneTimeSetup-->
     <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\Tests\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
-    
+
     <!-- Build ARM64 version for each project with proper OutDir and SolutionDir overrides -->
     <Exec Command='dotnet build "$(RootDir)\src\BloomExe\BloomExe.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
     <Exec Command='dotnet build "$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
@@ -215,15 +215,15 @@
 				 DestinationFolder ="$(RootDir)\output\installer"/>
     <!-- replace some parts of the file with the version number & date & channel info -->
     <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-					 DatePlaceholder='RELEASE_DATE'
 					Regex='INSTALLERS_FOLDER'
 					 ReplacementText ="installers$(channel)" />
     <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-					 DatePlaceholder='RELEASE_DATE'
+					Regex='INSTALLERS_ARM64_FOLDER'
+					 ReplacementText ="installers$(channel)-arm64" />
+    <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 					Regex='VERSION_DOT_CHANNEL'
 					 ReplacementText ="$(Version)$(dotChannel)" />
     <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-					 DatePlaceholder='RELEASE_DATE'
 					Regex='CHANNEL_LABEL'
 					 ReplacementText ="$(channelRelease)" />
     <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
