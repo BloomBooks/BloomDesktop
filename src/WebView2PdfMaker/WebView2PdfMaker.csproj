@@ -6,7 +6,7 @@
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<LangVersion>11.0</LangVersion>
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-		<OutputPath>..\..\output\$(Configuration)\</OutputPath>
+		<OutputPath>..\..\output\$(Configuration)\$(Platform)\</OutputPath>
 		<AssemblyTitle>BloomPdfMaker</AssemblyTitle>
 		<Company>SIL</Company>
 		<Product>BloomPdfMaker</Product>

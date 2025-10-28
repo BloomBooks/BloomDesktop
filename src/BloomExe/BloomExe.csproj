@@ -5,7 +5,7 @@
 		<UseWindowsForms>true</UseWindowsForms>
 		<UseWPF>false</UseWPF>
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-		<OutputPath>..\..\output\$(Configuration)\</OutputPath>
+		<OutputPath>..\..\output\$(Configuration)\$(Platform)\</OutputPath>
 		<Platform Condition=" '$(Platform)' == '' ">x64</Platform>
 		<AssemblyTitle>Bloom</AssemblyTitle>
 		<Company>SIL</Company>
