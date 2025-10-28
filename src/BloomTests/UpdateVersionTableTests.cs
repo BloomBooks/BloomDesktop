@@ -97,7 +97,7 @@ namespace BloomTests
         [Test]
         public void ServerAddressIsBogus_ErrorIsCorrect()
         {
-            var t = new UpdateVersionTable { URLOfTable = "http://notthere7blah/foo.txt" };
+            var t = new UpdateVersionTable { URLOfTableFormat = "http://notthere7blah/foo.txt" };
             //the jenkins server gets a ProtocolError, while my desktop gets a NameResolutionFailure
             var e = t.LookupURLOfUpdate().Error.Status;
             //This test can fail if the ISP "helpfully" returns a custom advertising filled access failure page.
@@ -179,7 +179,7 @@ namespace BloomTests
         public void LookupURLOfUpdate_CanReadTableForAlphaFromServer()
         {
             var t = new UpdateVersionTable();
-            t.URLOfTable = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
+            t.URLOfTableFormat = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
             t.RunningVersion = Version.Parse("3.7.2000"); // Pre-3.7 versions no longer supported
             //the full result will be something like
             //"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
@@ -198,7 +198,7 @@ namespace BloomTests
         public void LookupURLOfUpdateInternal_NotBehindCaptivePortal_Works()
         {
             var t = new UpdateVersionTable();
-            t.URLOfTable = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
+            t.URLOfTableFormat = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
             t.RunningVersion = Version.Parse("2.0.2000");
             //the full result would normally be something like
             //"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
@@ -212,7 +212,7 @@ namespace BloomTests
         public void LookupURLOfUpdateInternal_BehindCaptivePortal_DoesNotCrash()
         {
             var t = new UpdateVersionTable();
-            t.URLOfTable = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
+            t.URLOfTableFormat = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
             t.RunningVersion = Version.Parse("2.0.2000");
             //the full result would normally be something like
             //"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
