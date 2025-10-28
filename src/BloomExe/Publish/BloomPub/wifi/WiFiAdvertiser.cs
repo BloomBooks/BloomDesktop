@@ -36,6 +36,7 @@ namespace Bloom.Publish.BloomPub.wifi
         private UdpClient _client;
         private Thread _thread;
         private IPEndPoint _endPoint;
+        private CancellationTokenSource _cancellationTokenSource;
 
         // The port on which we advertise.
         // ChorusHub uses 5911 to advertise. Bloom looks for a port for its server at 8089 and 10 following ports.
@@ -53,19 +54,20 @@ namespace Bloom.Publish.BloomPub.wifi
 
         public void Start()
         {
+            _cancellationTokenSource = new CancellationTokenSource();
             // The doc seems to indicate that EnableBroadcast is required for doing broadcasts.
             // In practice it seems to be required on Mono but not on Windows.
             // This may be fixed in a later version of one platform or the other, but please
             // test both if tempted to remove it.
             _client = new UdpClient { EnableBroadcast = true };
             _endPoint = new IPEndPoint(IPAddress.Parse("255.255.255.255"), Port);
-            _thread = new Thread(Work);
+            _thread = new Thread(() => Work(_cancellationTokenSource.Token));
             _thread.Start();
         }
 
         public bool Paused { get; set; }
 
-        private void Work()
+        private void Work(CancellationToken cancellationToken)
         {
             _progress.Message(
                 idSuffix: "beginAdvertising",
@@ -73,7 +75,7 @@ namespace Bloom.Publish.BloomPub.wifi
             );
             try
             {
-                while (true)
+                while (!cancellationToken.IsCancellationRequested)
                 {
                     if (!Paused)
                     {
@@ -88,9 +90,6 @@ namespace Bloom.Publish.BloomPub.wifi
                     }
                     Thread.Sleep(1000);
                 }
-            }
-            catch (ThreadAbortException)
-            {
                 _progress.Message(idSuffix: "Stopped", message: "Stopped Advertising.");
                 _client.Close();
             }
@@ -101,6 +100,7 @@ namespace Bloom.Publish.BloomPub.wifi
                     $"Error in Advertiser: {error.Message}",
                     ProgressKind.Error
                 );
+                _client.Close();
             }
         }
 
@@ -163,14 +163,25 @@ namespace Bloom.Publish.BloomPub.wifi
                 return;
 
             //EventLog.WriteEntry("Application", "Advertiser Stopping...", EventLogEntryType.Information);
-            _thread.Abort();
+            _cancellationTokenSource?.Cancel();
             _thread.Join(2 * 1000);
             _thread = null;
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
         }
 
         public void Dispose()
         {
-            Stop();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Stop();
+            }
         }
     }
 }
