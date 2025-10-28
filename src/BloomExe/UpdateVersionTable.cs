@@ -17,8 +17,9 @@ namespace Bloom
     public class UpdateVersionTable
     {
         // {0} is the channel name, like "Alpha" or "Release"
+        // {1} is the architecture suffix, like "-x86" or "-arm64" (or "" for x64)
         // unit tests can change this template; in normal operation, it's a const.
-        public string URLOfTableFormat = "http://bloomlibrary.org/channels/UpgradeTable{0}.txt";
+        public string URLOfTableFormat = "http://bloomlibrary.org/channels/UpgradeTable{0}{1}.txt";
 
         //unit tests can pre-set this
         public string TextContentsOfTable { get; set; }
@@ -242,8 +243,11 @@ namespace Bloom
 
         private string GetUrlOfTable()
         {
-            // Note, ChannelName includes platform if not x64, e.g., "Alpha-arm64"
-            return string.Format(URLOfTableFormat, ApplicationUpdateSupport.ChannelName);
+            return String.Format(
+                URLOfTableFormat,
+                ApplicationUpdateSupport.ChannelName,
+                UpdateVersionTable.ArchitectureSuffix
+            );
         }
 
         private bool IsConnectionError(WebException ex)
