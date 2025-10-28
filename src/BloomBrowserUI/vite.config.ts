@@ -197,7 +197,7 @@ function compileMarkdownFile(
 
 // Custom plugin to compile Markdown files to HTML
 // Handles 4 different types of markdown files with different styling/output
-// Claude sonnet 4.5 came up with this.
+// Claude sonnet 4.5 came up with this, based on our previous gulpfile handling of markdown.
 function compileMarkdownPlugin(): Plugin {
     return {
         name: "compile-markdown",
@@ -279,6 +279,144 @@ function compileMarkdownPlugin(): Plugin {
             }
 
             console.log(`Markdown compilation complete!\n`);
+        },
+    };
+}
+
+// Plugin to process the Vite manifest and create final bundle files
+// The problem this solve is that Vite expects us to have a root HTML file for each entry point.
+// Then, as it generates a bunch of optimized chunks of code and CSS to share between entry points,
+// it modifies the HTML file for each entry point accordingly.
+// But we are not giving vite that sort of control over the HTML files. In many cases, like the
+// generated HTML page files that load the editablePageBundle, we can't do so.
+// So instead, we tweak the ouput configuration to generate, for each bundle X, xBundle-main.js
+// instead of the usual X-bundle.js. Then, in this post-build step, we create a new file X-bundle.js
+// which imports all dependencies for XBundle, including the -main.js file. That's then what our
+// HTML files load.
+// Note: it seems like it should be possible to merge the manifest information into xBundle-main.js
+// and make an xBundle.js that would REPLACE xBundle-main.js, reducing the number of files and
+// the indirection,but somehow it works out that some of the bundles actually load the root
+// -main.js files of OTHER bundles, so modifying or deleting them is not a good option.
+function postBuildPlugin(): Plugin {
+    interface ManifestEntry {
+        file: string;
+        isEntry?: boolean;
+        css?: string[];
+        dynamicImports?: string[];
+        imports?: string[];
+    }
+
+    return {
+        name: "post-build",
+        apply: "build", // Only run during build, not dev
+        async closeBundle() {
+            const outputDir = path.resolve(__dirname, "../../output/browser");
+            const manifestPath = path.join(outputDir, ".vite/manifest.json");
+
+            try {
+                // Read the manifest file
+                const manifestContent = await fs.promises.readFile(
+                    manifestPath,
+                    "utf-8",
+                );
+                const manifest = JSON.parse(manifestContent);
+
+                console.log("\nProcessing manifest for entry points...");
+
+                // Process each entry point
+                for (const [entryKey, entryData] of Object.entries(
+                    manifest,
+                ) as [string, ManifestEntry][]) {
+                    // Skip non-entry files (chunks, assets, etc.)
+                    if (!entryData.isEntry) {
+                        continue;
+                    }
+
+                    const entryName = path.basename(
+                        entryKey,
+                        path.extname(entryKey),
+                    );
+                    const mainFileName = entryData.file; // This will be X-main.js
+                    const finalFileName = mainFileName.replace(
+                        "-main.js",
+                        ".js",
+                    );
+
+                    console.log(
+                        `Creating ${finalFileName} from ${mainFileName}...`,
+                    );
+
+                    // Collect all dependencies for this entry point
+                    const dependencies = new Set<string>();
+
+                    // Add the main file itself
+                    dependencies.add("./" + entryData.file);
+
+                    // Add CSS files if any
+                    if (entryData.css && entryData.css.length > 0) {
+                        entryData.css.forEach((cssFile: string) => {
+                            dependencies.add("./" + cssFile);
+                        });
+                    }
+
+                    // Add dynamic imports/chunks if any
+                    if (
+                        entryData.dynamicImports &&
+                        entryData.dynamicImports.length > 0
+                    ) {
+                        entryData.dynamicImports.forEach(
+                            (dynamicImport: string) => {
+                                dependencies.add("./" + dynamicImport);
+                            },
+                        );
+                    }
+
+                    // Add imports if any
+                    if (entryData.imports && entryData.imports.length > 0) {
+                        entryData.imports.forEach((importFile: string) => {
+                            dependencies.add("./" + importFile);
+                        });
+                    }
+
+                    // Create the final JS file content that imports all dependencies
+                    let finalContent = "// Auto-generated entry point file\n";
+                    finalContent += `// This file imports all dependencies for the ${entryName} bundle\n\n`;
+
+                    // Import all dependencies
+                    const sortedDependencies = Array.from(dependencies).sort();
+                    sortedDependencies.forEach((dep) => {
+                        if (dep.endsWith(".css")) {
+                            // For CSS files, import them
+                            finalContent += `import '${dep}';\n`;
+                        } else if (dep.endsWith(".js")) {
+                            // For JS files, just import them
+                            // Remove underscore prefix from dependency path if present
+                            const cleanDep = dep.startsWith("./_")
+                                ? "./" + dep.substring(3)
+                                : dep;
+                            finalContent += `import '${cleanDep}';\n`;
+                        }
+                    });
+
+                    finalContent += "\n// Entry point loaded successfully\n";
+                    finalContent += `console.log('${entryName} bundle loaded');\n`;
+
+                    // Write the final JS file
+                    const finalFilePath = path.join(outputDir, finalFileName);
+                    await fs.promises.writeFile(
+                        finalFilePath,
+                        finalContent,
+                        "utf-8",
+                    );
+
+                    console.log(`  ✓ Created ${finalFileName}`);
+                }
+
+                console.log("Post-build processing completed successfully!\n");
+            } catch (error) {
+                console.error("Error during post-build processing:", error);
+                throw error;
+            }
         },
     };
 }
@@ -411,6 +549,7 @@ export default defineConfig(async () => {
             compilePugPlugin(), // Compile Pug files to HTML during build
             compileLessPlugin(), // Compile standalone LESS files to CSS during build
             compileMarkdownPlugin(), // Compile Markdown files to HTML during build
+            postBuildPlugin(), // Process manifest and create final bundles (build only)
             // Copy files that need flattening (structured: false)
             viteStaticCopy({
                 structured: false,
