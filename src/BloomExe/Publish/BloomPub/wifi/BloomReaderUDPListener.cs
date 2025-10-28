@@ -1,8 +1,7 @@
 using System;
-using System.Diagnostics;
-using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using Bloom.Publish.BloomPUB.wifi;
 
 namespace Bloom.Publish.BloomPub.wifi
@@ -11,58 +10,60 @@ namespace Bloom.Publish.BloomPub.wifi
     /// Helper class to listen for a single packet from the Android. Construct an instance to start
     /// listening (on another thread); hook NewMessageReceived to receive a packet each time a client sends it.
     /// </summary>
-    class BloomReaderUDPListener
+    class BloomReaderUDPListener : IDisposable
     {
         // must match BloomReader.NewBookListenerService.desktopPort
         // and be different from WiFiAdvertiser.Port and port in BloomReaderPublisher.SendBookToWiFi
         private int _portToListen = 5915;
-        Thread _listeningThread;
         public event EventHandler<AndroidMessageArgs> NewMessageReceived;
-        UdpClient _listener = null;
-        private bool _listening;
+        private CancellationTokenSource _cts;
 
         //constructor: starts listening.
         public BloomReaderUDPListener()
         {
-            _listeningThread = new Thread(ListenForUDPPackages);
-            _listeningThread.IsBackground = true;
-            _listeningThread.Start();
-            _listening = true;
+            _cts = new CancellationTokenSource();
+            Task.Run(() => ListenAsync(_cts.Token));
         }
 
         /// <summary>
-        /// Run on a background thread; returns only when done listening.
+        /// Listens as an async task for UDP packets from the Android Bloom Reader.
         /// </summary>
-        public void ListenForUDPPackages()
+        /// <remarks>
+        /// This was suggested by github copilot as a way to do async UDP listening with cancellation support.
+        /// </remarks>
+        private async Task ListenAsync(CancellationToken ct)
         {
-            try
+            using (var client = new UdpClient(_portToListen))
             {
-                _listener = new UdpClient(_portToListen);
-            }
-            catch (SocketException e)
-            {
-                //log then do nothing
-                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
-            }
-
-            if (_listener != null)
-            {
-                IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, 0);
-
-                while (_listening)
+                while (!ct.IsCancellationRequested)
                 {
                     try
                     {
-                        byte[] bytes = _listener.Receive(ref groupEP); // waits for packet from Android.
-
-                        //raise event
-                        NewMessageReceived?.Invoke(this, new AndroidMessageArgs(bytes));
+                        // UdpClient.ReceiveAsync does not accept a CancellationToken directly.
+                        // Workaround: Use Task.WhenAny to support cancellation.
+                        var receiveTask = client.ReceiveAsync();
+                        var completedTask = await Task.WhenAny(
+                            receiveTask,
+                            Task.Delay(Timeout.Infinite, ct)
+                        );
+                        if (completedTask == receiveTask)
+                        {
+                            var result = receiveTask.Result;
+                            NewMessageReceived?.Invoke(this, new AndroidMessageArgs(result.Buffer));
+                        }
+                        else
+                        {
+                            // Cancellation requested
+                            break;
+                        }
                     }
-                    catch (SocketException se)
+                    catch (OperationCanceledException)
                     {
-                        if (!_listening || se.SocketErrorCode == SocketError.Interrupted)
-                            return; // no problem, we're just closing up shop
-                        throw se;
+                        break;
+                    }
+                    catch (SocketException se) when (!ct.IsCancellationRequested)
+                    {
+                        throw;
                     }
                 }
             }
@@ -70,20 +71,14 @@ namespace Bloom.Publish.BloomPub.wifi
 
         public void StopListener()
         {
-            if (_listening)
-            {
-                _listening = false;
-                _listener?.Close(); // forcibly end communication
-                _listener = null;
-            }
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
+        }
 
-            if (_listeningThread == null)
-                return;
-
-            // Since we told the listener to close already this shouldn't have to do much (nor be dangerous)
-            _listeningThread.Abort();
-            _listeningThread.Join(2 * 1000);
-            _listeningThread = null;
+        public void Dispose()
+        {
+            StopListener();
         }
     }
 }
