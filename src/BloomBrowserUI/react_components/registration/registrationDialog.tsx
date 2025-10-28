@@ -3,6 +3,7 @@ import {
     DialogTitle,
     IBloomDialogProps,
 } from "../BloomDialog/BloomDialog";
+import $ from "jquery";
 import { useL10n } from "../l10nHooks";
 import { useEffect, useState } from "react";
 import { get, getBoolean } from "../../utils/bloomApi";
