@@ -58,6 +58,4 @@ that help with the vite build, or it may be possible to carry on and get them al
 
 Major todos:
 - get vite dev mode working for edit tab. Current plan is to make a separate card for this.
-- can we make the post-build.js some sort of plugin so it's part of the build?
-- it would feel cleaner, and maybe save space and time, if xBundle.js replaced xBundle-main.js rather than importing it.
 - vitest
