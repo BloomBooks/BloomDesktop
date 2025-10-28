@@ -561,7 +561,6 @@ namespace Bloom.Book
             // first tried this as import 'jquery.hotkeys' in bloomEditing, but that didn't work
             //dom.AddJavascriptFile("jquery.hotkeys.js".ToLocalhost());
 
-            dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
             dom.AddJavascriptFile("editablePageBundle.js".ToLocalhost());
             // At one point we made a point of adding this last so that other code
             // could get in and set disableAutoInline to prevent ckeditor from attaching itself
@@ -3381,7 +3380,6 @@ namespace Bloom.Book
         /// <param name="dom"></param>
         internal void AddPreviewJavascript(HtmlDom dom)
         {
-            dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
             dom.AddJavascriptFile("bookPreviewBundle.js".ToLocalhost());
         }
 

@@ -15,7 +15,6 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [
             "bookEdit/test/GetSettingsMock.js",
-            "commonBundle.js",
             "testBundle.js", // If you want a test run, make sure it is in this bundle that webpack produces
             // If you want a jasmine fixture to be served, make sure the name ends in Fixture.html
             { pattern: "**/*Fixture.html", included: false, served: true },

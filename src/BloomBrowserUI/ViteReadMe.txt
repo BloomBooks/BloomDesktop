@@ -20,7 +20,7 @@ I made vite produce EsNext code. This means the output files are modules and can
 things. Vite makes extensive use of this when doing multiple entry points. So any one bundle has a
 lot of files the html is supposed to import. But we don't have a root html file that vite can modify
 to do this. I figured out a way to generate a master file for each bundle which imports all the
-necessary pieces. CommonBundle is obsolete, though I haven't removed all vestiges of it yet. HTML only
+necessary pieces. CommonBundle is obsolete and has been removed. HTML only
 needs to import one file for each entrypoint (wich a few exceptions for legacy dependencies, mainly
 jquery and friends).
 
@@ -60,7 +60,4 @@ Major todos:
 - get vite dev mode working for edit tab. Current plan is to make a separate card for this.
 - can we make the post-build.js some sort of plugin so it's part of the build?
 - it would feel cleaner, and maybe save space and time, if xBundle.js replaced xBundle-main.js rather than importing it.
-- clean up everything that thinks commonbundle.js should exist, and get rid of it.
-- anything else we do with gulp that vite doesn't do yet
-- clean the output directory? I don't think the old build did this, and it's problematic because some of what's there comes from content
 - vitest

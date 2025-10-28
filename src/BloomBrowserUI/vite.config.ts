@@ -6,6 +6,10 @@ import react from "@vitejs/plugin-react";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import * as fs from "fs";
 import pug from "pug";
+import less from "less";
+import MarkdownIt from "markdown-it";
+import markdownItContainer from "markdown-it-container";
+import markdownItAttrs from "markdown-it-attrs";
 
 // Custom plugin to compile Pug files to HTML
 // There are a couple of npm packages for pug, but as of October2025, they are experimental
@@ -80,6 +84,201 @@ function compilePugPlugin(): Plugin {
             }
 
             console.log(`Pug compilation complete!\n`);
+        },
+    };
+}
+
+// Custom plugin to compile LESS files to CSS
+// Similar to pug plugin - compiles standalone LESS files to CSS with sourcemaps
+// Claude sonnet 4.5 came up with this.
+function compileLessPlugin(): Plugin {
+    return {
+        name: "compile-less",
+        apply: "build",
+        async closeBundle() {
+            // Find LESS files in BloomBrowserUI
+            const lessFiles = glob.sync("./**/*.less", {
+                ignore: ["**/node_modules/**"],
+            });
+
+            console.log(`\nCompiling ${lessFiles.length} LESS files...`);
+
+            const outputBase = path.resolve(__dirname, "../../output/browser");
+
+            for (const file of lessFiles) {
+                // Normalize path separators
+                const normalizedFile = file.replace(/\\/g, "/");
+
+                // Convert to output path: "./bookEdit/css/editMode.less" -> "bookEdit/css/editMode.css"
+                const relativePath = normalizedFile
+                    .replace("./", "")
+                    .replace(".less", ".css");
+
+                const outputFile = path.join(outputBase, relativePath);
+                const outputDir = path.dirname(outputFile);
+
+                // Ensure output directory exists
+                if (!fs.existsSync(outputDir)) {
+                    fs.mkdirSync(outputDir, { recursive: true });
+                }
+
+                try {
+                    // Read LESS file
+                    const lessContent = fs.readFileSync(file, "utf8");
+
+                    // Compile LESS to CSS with sourcemap
+                    const result = await less.render(lessContent, {
+                        filename: file,
+                        sourceMap: {
+                            sourceMapFileInline: false,
+                            outputSourceFiles: true,
+                            sourceMapURL: path.basename(outputFile) + ".map",
+                        },
+                    });
+
+                    // Write CSS file with sourcemap reference
+                    let cssOutput = result.css;
+                    if (result.map) {
+                        cssOutput += `\n/*# sourceMappingURL=${path.basename(outputFile)}.map */`;
+                    }
+                    fs.writeFileSync(outputFile, cssOutput);
+
+                    // Write sourcemap if generated
+                    if (result.map) {
+                        const mapFile = outputFile + ".map";
+                        fs.writeFileSync(mapFile, result.map);
+                    }
+
+                    console.log(`  ✓ ${file} → ${relativePath}`);
+                } catch (error) {
+                    console.error(`  ✗ Error compiling ${file}:`, error);
+                    throw error; // Exit build on LESS compilation error
+                }
+            }
+
+            console.log(`LESS compilation complete!\n`);
+        },
+    };
+}
+
+// Helper function to wrap markdown HTML with optional stylesheet
+function wrapMarkdownHtml(html: string, stylesheetHref?: string): string {
+    const stylesheetLink = stylesheetHref
+        ? `<link rel='stylesheet' href='${stylesheetHref}' type='text/css'/>`
+        : "";
+    return `<html><head><meta charset='utf-8'>${stylesheetLink}</head><body>\n${html}\n</body></html>`;
+}
+
+// Helper function to compile and write a markdown file
+function compileMarkdownFile(
+    file: string,
+    outputFile: string,
+    md: MarkdownIt,
+    stylesheetHref?: string,
+    contentTransform?: (html: string) => string,
+): void {
+    const content = fs.readFileSync(file, "utf8");
+    let html = md.render(content);
+
+    // Apply content transformation if provided (e.g., strip "removethis")
+    if (contentTransform) {
+        html = contentTransform(html);
+    }
+
+    const fullHtml = wrapMarkdownHtml(html, stylesheetHref);
+
+    const outputDir = path.dirname(outputFile);
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    fs.writeFileSync(outputFile, fullHtml);
+}
+
+// Custom plugin to compile Markdown files to HTML
+// Handles 4 different types of markdown files with different styling/output
+// Claude sonnet 4.5 came up with this.
+function compileMarkdownPlugin(): Plugin {
+    return {
+        name: "compile-markdown",
+        apply: "build",
+        async closeBundle() {
+            // Set up markdown-it with extensions matching gulpfile.js
+            const md = new MarkdownIt({
+                html: true, // enable HTML tags in source
+                linkify: true, // autoconvert URL-like text to links
+            });
+            md.use(markdownItContainer, "warning");
+            md.use(markdownItContainer, "info");
+            md.use(markdownItContainer, "note");
+            md.use(markdownItAttrs);
+
+            const outputBase = path.resolve(__dirname, "../../output/browser");
+
+            // 1. Help files: ./help/**/*.md -> output/browser/help/*.htm (flattened)
+            const helpFiles = glob.sync("./help/**/*.md");
+
+            // 2. Template README files: ../content/templates/**/ReadMe*.md -> output/browser/templates/**/ReadMe*.htm
+            const templateReadmeFiles = glob.sync(
+                "../content/templates/**/ReadMe*.md",
+            );
+
+            // 3. Info pages: ./infoPages/*.md -> output/browser/infoPages/*.htm (flattened)
+            const infoPageFiles = glob.sync("./infoPages/*.md");
+
+            // 4. Dist info: ../../DistFiles/*.md -> output/browser/*.htm (flattened)
+            const distInfoFiles = glob.sync("../../DistFiles/*.md");
+
+            const totalFiles =
+                helpFiles.length +
+                templateReadmeFiles.length +
+                infoPageFiles.length +
+                distInfoFiles.length;
+
+            console.log(`\nCompiling ${totalFiles} Markdown files...`);
+
+            // Process help files
+            for (const file of helpFiles) {
+                const filename = path.basename(file).replace(".md", ".htm");
+                const outputFile = path.join(outputBase, "help", filename);
+                compileMarkdownFile(file, outputFile, md, "help.css");
+                console.log(`  ✓ ${file} → help/${filename}`);
+            }
+
+            // Process template README files
+            for (const file of templateReadmeFiles) {
+                const normalizedFile = file.replace(/\\/g, "/");
+                const relativePath = normalizedFile
+                    .replace("../content/", "")
+                    .replace(".md", ".htm");
+                const outputFile = path.join(outputBase, relativePath);
+                compileMarkdownFile(
+                    file,
+                    outputFile,
+                    md,
+                    "../../../bookPreview/BookReadme.css",
+                    (html) => html.replace(/removethis/g, ""), // Strip email obfuscation
+                );
+                console.log(`  ✓ ${file} → ${relativePath}`);
+            }
+
+            // Process info pages
+            for (const file of infoPageFiles) {
+                const filename = path.basename(file).replace(".md", ".htm");
+                const outputFile = path.join(outputBase, "infoPages", filename);
+                compileMarkdownFile(file, outputFile, md);
+                console.log(`  ✓ ${file} → infoPages/${filename}`);
+            }
+
+            // Process dist info files
+            for (const file of distInfoFiles) {
+                const filename = path.basename(file).replace(".md", ".htm");
+                const outputFile = path.join(outputBase, filename);
+                compileMarkdownFile(file, outputFile, md);
+                console.log(`  ✓ ${file} → ${filename}`);
+            }
+
+            console.log(`Markdown compilation complete!\n`);
         },
     };
 }
@@ -210,7 +409,11 @@ export default defineConfig(async () => {
             }),
             transformLessImportsPlugin(), // Transform LESS imports to inline CSS injection (build only)
             compilePugPlugin(), // Compile Pug files to HTML during build
+            compileLessPlugin(), // Compile standalone LESS files to CSS during build
+            compileMarkdownPlugin(), // Compile Markdown files to HTML during build
+            // Copy files that need flattening (structured: false)
             viteStaticCopy({
+                structured: false,
                 targets: [
                     // Copy jQuery (equivalent to gulpfile's jquery.min.js copy with prefix: 3)
                     {
@@ -222,66 +425,25 @@ export default defineConfig(async () => {
                         src: "node_modules/bloom-player/dist/*",
                         dest: "./bloom-player/dist/",
                     },
-                    // Copy other necessary files preserving directory structure
-                    // Using individual patterns to maintain structure
-                    {
-                        src: "images/**/*",
-                        dest: "images",
-                    },
-                    {
-                        src: "fonts/**/*",
-                        dest: "fonts",
-                    },
-                    {
-                        src: "sounds/**/*",
-                        dest: "sounds",
-                    },
-                    {
-                        src: "help/**/*",
-                        dest: "help",
-                    },
-                    {
-                        // Be careful here. Changing it to lib/ double asterisk caused a weird bug
-                        // where running in yarn dev mode failed to load the root file,
-                        // complaining that there was an unexpected colon.
-                        src: "bookEdit/**/*.{js,css,html,svg,png,jpg,gif,woff,woff2,ttf,eot}",
-                        dest: "bookEdit",
-                    },
-                    {
-                        src: "bookLayout/**/*",
-                        dest: "bookLayout",
-                    },
-                    {
-                        src: "lib/**/*.{js,css,html,svg,png,jpg,gif,woff,woff2,ttf,eot}",
-                        dest: "lib",
-                    },
-                    {
-                        src: "modified_libraries/**/*",
-                        dest: "modified_libraries",
-                    },
-                    {
-                        src: "themes/**/*",
-                        dest: "themes",
-                    },
-                    {
-                        src: "spreadsheet/*.html",
-                        dest: "spreadsheet",
-                    },
-                    // Copy root-level non-compiled files
+                ],
+            }),
+            // Copy files preserving directory structure (structured: true)
+            viteStaticCopy({
+                structured: true,
+                targets: [
+                    // Copy all files except certain extensions (equivalent to gulpfile's filesThatMightBeNeededInOutput)
                     {
                         src: [
-                            "*.{js,css,html,svg,png,jpg,gif,ico,json}",
-                            "!*.ts",
-                            "!*.tsx",
-                            "!*.pug",
-                            "!*.md",
-                            "!*.less",
+                            "**/*.*",
+                            "!**/*.ts",
+                            "!**/*.tsx",
+                            "!**/*.pug",
+                            "!**/*.md",
+                            "!**/*.less",
+                            "!**/*.bat",
+                            "!**/node_modules/**/*.*",
+                            "!**/tsconfig.json",
                         ],
-                        dest: ".",
-                    },
-                    // Copy legacy commonBundle.js for backward compatibility
-                    {
-                        src: "legacy/commonBundle.js",
                         dest: ".",
                     },
                 ],
