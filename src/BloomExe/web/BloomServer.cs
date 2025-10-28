@@ -2058,7 +2058,6 @@ namespace Bloom.Api
 				<html>
 				<head>
 					<meta charset = 'UTF-8' />
-					<script src = '/commonBundle.js' type='module'></script>
 					<script src = '/appBundle.js' type='module'></script>
 					<script>
 						window.onload = () => {{
