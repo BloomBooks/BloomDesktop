@@ -530,7 +530,8 @@ export default defineConfig(async () => {
         languageChooserBundle: "./collection/LanguageChooserDialog.tsx",
         newCollectionLanguageChooserBundle:
             "./collection/NewCollectionLanguageChooser.tsx",
-        registrationDialogBundle: "./react_components/registrationDialog.tsx",
+        registrationDialogBundle:
+            "./react_components/registration/registrationDialog.tsx",
         editTopBarControlsBundle: "./bookEdit/topbar/editTopBarControls.tsx",
     };
 
