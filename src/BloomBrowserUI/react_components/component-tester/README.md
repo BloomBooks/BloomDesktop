@@ -18,6 +18,27 @@ To set up a component for ui testing:
 ### Imports
 `vite dev` has to be able to handle your component. Eventually that will not be a big deal, but for now, it may mean that you have to extract out the core of it with few imports. For the RegistrationDialog, we had to extract out the core behavior and test that.
 
+### Callback Props
+Component props must be JSON-serializable because the Playwright test runs in a different process than the browser. Functions cannot be serialized.
+
+**Solution**: Change the prop to accept either a function or a string URL:
+```typescript
+onSomethingChanged: ((data: MyData) => void) | string
+```
+
+In the component, check the type and POST to the URL if it's a string:
+```typescript
+const notifyChange = (data: MyData) => {
+    if (typeof props.onSomethingChanged === "string") {
+        void postJson(props.onSomethingChanged, data);
+    } else {
+        props.onSomethingChanged(data);
+    }
+};
+```
+
+In tests, use `preparePostReceiver` to intercept and verify the data. See `bookLinkSetup/component-tests` for a complete example.
+
 ### API calls
 These are fine, see `apiInterceptors.ts`
 
