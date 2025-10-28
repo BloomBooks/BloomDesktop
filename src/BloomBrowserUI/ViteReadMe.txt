@@ -61,7 +61,6 @@ Major todos:
 - can we make the post-build.js some sort of plugin so it's part of the build?
 - it would feel cleaner, and maybe save space and time, if xBundle.js replaced xBundle-main.js rather than importing it.
 - clean up everything that thinks commonbundle.js should exist, and get rid of it.
-- pug
 - anything else we do with gulp that vite doesn't do yet
-- clean the output directory
+- clean the output directory? I don't think the old build did this, and it's problematic because some of what's there comes from content
 - vitest

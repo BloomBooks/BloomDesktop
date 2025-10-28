@@ -4,6 +4,85 @@ import * as path from "path";
 import { glob } from "glob";
 import react from "@vitejs/plugin-react";
 import { viteStaticCopy } from "vite-plugin-static-copy";
+import * as fs from "fs";
+import pug from "pug";
+
+// Custom plugin to compile Pug files to HTML
+// There are a couple of npm packages for pug, but as of October2025, they are experimental
+// and/or aimed at dynamically serving pug, like vite dev does with js. For now, we're good
+// with a simple static compilation during build. Claude sonnet 4.5 came up with this.
+// Note that it also builds pug files from ../content. This is because we haven't yet
+// changed content to use vite.
+function compilePugPlugin(): Plugin {
+    return {
+        name: "compile-pug",
+        apply: "build",
+        async closeBundle() {
+            // Find pug files in BloomBrowserUI
+            const browserUIPugFiles = glob.sync("./**/*.pug", {
+                ignore: ["**/node_modules/**", "**/*mixins.pug"],
+            });
+
+            // Find pug files in content directory
+            const contentPugFiles = glob.sync("../content/**/*.pug", {
+                ignore: ["**/node_modules/**", "**/*mixins.pug"],
+            });
+
+            const allPugFiles = [...browserUIPugFiles, ...contentPugFiles];
+
+            console.log(
+                `\nCompiling ${allPugFiles.length} Pug files (${browserUIPugFiles.length} from BloomBrowserUI, ${contentPugFiles.length} from content)...`,
+            );
+
+            const outputBase = path.resolve(__dirname, "../../output/browser");
+
+            for (const file of allPugFiles) {
+                // Convert relative path to output path
+                // For BloomBrowserUI: "./bookEdit/toolbox/toolbox.pug" -> "../../output/browser/bookEdit/toolbox/toolbox.html"
+                // For content: "../content/templates/foo.pug" -> "../../output/browser/templates/foo.html"
+
+                // Normalize path separators for comparison
+                const normalizedFile = file.replace(/\\/g, "/");
+
+                let relativePath;
+                if (normalizedFile.startsWith("../content/")) {
+                    // Strip "../content/" prefix for content files
+                    relativePath = normalizedFile
+                        .replace("../content/", "")
+                        .replace(".pug", ".html");
+                } else {
+                    // Strip "./" prefix for BloomBrowserUI files
+                    relativePath = normalizedFile
+                        .replace("./", "")
+                        .replace(".pug", ".html");
+                }
+
+                const outputFile = path.join(outputBase, relativePath);
+                const outputDir = path.dirname(outputFile);
+
+                // Ensure output directory exists
+                if (!fs.existsSync(outputDir)) {
+                    fs.mkdirSync(outputDir, { recursive: true });
+                }
+
+                // Compile pug to HTML
+                // Use the appropriate basedir based on the file location
+                const basedir = normalizedFile.startsWith("../content/")
+                    ? "../content"
+                    : ".";
+                const html = pug.renderFile(file, {
+                    basedir: basedir,
+                    pretty: true,
+                });
+
+                fs.writeFileSync(outputFile, html);
+                console.log(`  ✓ ${file} → ${relativePath}`);
+            }
+
+            console.log(`Pug compilation complete!\n`);
+        },
+    };
+}
 
 // Helper function to inject CSS into DOM
 function createCssInjector() {
@@ -70,7 +149,7 @@ ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 // native dynamic import instead of require().
 export default defineConfig(async () => {
     // Define entry points to match webpack configuration
-    const entryPoints = {
+    const entryPoints: Record<string, string> = {
         // Special bundles that were previously built separately
         editablePageBundle: "./bookEdit/editablePage.ts",
         editTabBundle: "./bookEdit/editViewFrame.ts",
@@ -130,7 +209,7 @@ export default defineConfig(async () => {
                 },
             }),
             transformLessImportsPlugin(), // Transform LESS imports to inline CSS injection (build only)
-            //pugPlugin()
+            compilePugPlugin(), // Compile Pug files to HTML during build
             viteStaticCopy({
                 targets: [
                     // Copy jQuery (equivalent to gulpfile's jquery.min.js copy with prefix: 3)
