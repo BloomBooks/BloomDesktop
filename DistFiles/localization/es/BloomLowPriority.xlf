@@ -37,6 +37,11 @@
         <target xml:lang="es-ES" state="final">Resultado de la conversión ortográfica:</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
       </trans-unit>
+      <trans-unit id="EditTab.ClickToEditBookGrid" sil:dynamic="true">
+        <source xml:lang="en">Click to edit book grid</source>
+        <target xml:lang="es-ES" state="needs-translation">Click to edit book grid</target>
+        <note>ID: EditTab.ClickToEditBookGrid</note>
+      </trans-unit>
       <trans-unit id="Errors.CannotConnectToBloomServer.2">
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Web browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
         <target xml:lang="es-ES" state="translated">Bloom no pudo iniciar su propio listener HTTP que utiliza para hablar con su navegador web integrado. Si esto ocurre aunque acabe de reiniciar su ordenador, pida a alguien que investigue si tiene instalado un producto cortafuegos agresivo, que quizá deba desinstalar antes de poder utilizar Bloom.</target>
