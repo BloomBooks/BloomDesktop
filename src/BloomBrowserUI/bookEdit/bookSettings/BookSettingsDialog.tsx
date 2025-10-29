@@ -166,6 +166,10 @@ export const BookSettingsDialog: React.FunctionComponent<{
         "BookSettings.ShowLanguageName"
     );
     const showTopicLabel = useL10n("Show Topic", "BookSettings.ShowTopic");
+    const showCreditsLabel = useL10n(
+        "Show Credits",
+        "BookSettings.ShowCredits"
+    );
     const frontAndBackMatterLabel = useL10n(
         "Front & Back Matter",
         "BookSettings.FrontAndBackMatter"
@@ -473,6 +477,13 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     disabled={appearanceDisabled}
                                     {...getAdditionalProps<boolean>(
                                         `cover-topic-show`
+                                    )}
+                                />
+                                <ConfigrBoolean
+                                    label={showCreditsLabel}
+                                    disabled={appearanceDisabled}
+                                    {...getAdditionalProps<boolean>(
+                                        `cover-creditsRow-show`
                                     )}
                                 />
                             </ConfigrSubgroup>
