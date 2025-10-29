@@ -108,10 +108,10 @@
     <CreateProperty Value="$(InstallerFileNameX64)">
       <Output PropertyName="InstallerFileName" TaskParameter="Value"/>
     </CreateProperty>
-    <CreateProperty Value="Bloom$(channel)-x64-$(Version)-full.nupkg">
+    <CreateProperty Value="Bloom$(channel)-$(Version)-full.nupkg">
       <Output PropertyName="VelopackFullPkgX64" TaskParameter="Value"/>
     </CreateProperty>
-    <CreateProperty Value="Bloom$(channel)-x64-$(Version)-delta.nupkg">
+    <CreateProperty Value="Bloom$(channel)-$(Version)-delta.nupkg">
       <Output PropertyName="VelopackDeltaPkgX64" TaskParameter="Value"/>
     </CreateProperty>
     <CreateProperty Value="Bloom$(channel)-arm64-$(Version)-full.nupkg">
