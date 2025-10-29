@@ -839,9 +839,9 @@
         <target xml:lang="fr" state="needs-translation">Show Topic</target>
         <note>BookSettings.ShowTopic</note>
       </trans-unit>
-      <trans-unit id="BookSettings.ShowCredits" sil:dynamic="true">
+      <trans-unit id="BookSettings.ShowCredits" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show Credits</source>
-        <target xml:lang="fr" state="needs-translation">Show Credits</target>
+        <target xml:lang="fr" state="final">Afficher les Crédits</target>
         <note>BookSettings.ShowCredits</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers" sil:dynamic="true">
