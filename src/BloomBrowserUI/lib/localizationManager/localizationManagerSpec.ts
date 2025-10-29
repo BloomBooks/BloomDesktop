@@ -1,7 +1,11 @@
 "use strict";
 /// <reference path="localizationManager.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+
+// Unmock localizationManager when testing it
+vi.unmock("./localizationManager");
+
 import theOneLocalizationManager from "./localizationManager";
 
 describe("localizationManager", () => {

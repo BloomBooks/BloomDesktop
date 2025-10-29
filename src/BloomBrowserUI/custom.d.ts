@@ -6,3 +6,9 @@ declare module "*.svg" {
     const content: React.FunctionComponent<React.SVGAttributes<SVGElement>>;
     export default content;
 }
+
+// Allow importing HTML files as raw strings (for test fixtures)
+declare module "*.html?raw" {
+    const content: string;
+    export default content;
+}

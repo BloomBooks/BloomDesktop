@@ -3194,6 +3194,10 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     public static getChecksum(message: string): string {
+        if (message === null || message === undefined) {
+            // should not normally happen, but seems to in tests
+            return "undefind";
+        }
         // Vertical line character ("|") acts as a phrase delimiter in Talking Books.
         // To perform phrase-level recording, the user can insert a temporary "|" character where he wants a phrase split to happen.
         // This is now recognized in the list of sentence delimiters, so it will be broken up as an audio-sentence.
