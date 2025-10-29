@@ -5846,6 +5846,10 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
         <note>ID: TemplateBooks.PageDescription.Translation Instructions</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Page with Simple Book Grid" sil:dynamic="true">
+        <source xml:lang="en">A simple Table of Contents page for use in Bloom Apps.</source>
+        <note>ID: TemplateBooks.PageDescription.Page with Simple Book Grid</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comic" sil:dynamic="true">
         <source xml:lang="en">A full page image with no margin.</source>
         <note>ID: TemplateBooks.PageDescription.Comic</note>
@@ -6209,6 +6213,10 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Translation Instructions</source>
         <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
         <note>This page type only shows in Edit Mode to give instructions to translators. It does not print.</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Page with Simple Book Grid" sil:dynamic="true">
+        <source xml:lang="en">Page with Simple Book Grid</source>
+        <note>ID: TemplateBooks.PageLabel.Page with Simple Book Grid</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true">
         <source xml:lang="en">Video Over Text</source>
