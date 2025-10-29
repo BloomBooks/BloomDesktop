@@ -6660,9 +6660,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">Une page d'instructions aux traducteurs qui apparaît uniquement dans l'onglet Edition.</target>
         <note>ID: TemplateBooks.PageDescription.Translation Instructions</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Page with Simple Book Grid" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Page with Simple Book Grid" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A simple Table of Contents page for use in Bloom Apps.</source>
-        <target xml:lang="fr" state="needs-translation">A simple Table of Contents page for use in Bloom Apps.</target>
+        <target xml:lang="fr" state="final">Une simple page ayant une Table des Matières à utiliser dans les Applis Bloom.</target>
         <note>ID: TemplateBooks.PageDescription.Page with Simple Book Grid</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comic" sil:dynamic="true" approved="yes">
@@ -7105,9 +7105,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">Instructions pour la traduction</target>
         <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Page with Simple Book Grid" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Page with Simple Book Grid" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page with Simple Book Grid</source>
-        <target xml:lang="fr" state="needs-translation">Page with Simple Book Grid</target>
+        <target xml:lang="fr" state="final">Page avec Grille de Livre Simple</target>
         <note>ID: TemplateBooks.PageLabel.Page with Simple Book Grid</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true" approved="yes">
