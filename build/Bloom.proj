@@ -365,10 +365,10 @@
     <!-- Note that packId determines the installation directory under %localappdata%. -->
     <!-- For x64, keep it the same as pre-x64-vs-arm64 for continuity. -->
     <Exec
-      Command="vpk pack --packId Bloom$(channel) --runtime win11-x64 --packVersion $(Version) --packDir ..\output\installer\content\x64 --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --packAuthors &quot;SIL Global&quot; " />
+      Command="vpk pack --packId Bloom$(channel) --runtime win11-x64 --packVersion $(Version) --packDir ..\output\installer\content\x64 --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --progressColor &quot;#d65649&quot; --localization &quot;$(LocalizationFilesDir)&quot; --packAuthors &quot;SIL Global&quot; " />
     <!-- Create ARM64 installer with dedicated output directory -->
     <Exec
-      Command="vpk pack --packId Bloom$(channel)-arm64 --runtime win11-arm64 --packVersion $(Version) --packDir ..\output\installer\content\arm64 --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder)\arm64 --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-arm64-desktop,webview2 --packAuthors &quot;SIL Global&quot; " />
+      Command="vpk pack --packId Bloom$(channel)-arm64 --runtime win11-arm64 --packVersion $(Version) --packDir ..\output\installer\content\arm64 --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder)\arm64 --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-arm64-desktop,webview2 --progressColor &quot;#d65649&quot; --localization &quot;$(LocalizationFilesDir)&quot; --packAuthors &quot;SIL Global&quot; " />
     <!-- Copy installers with appropriate names to main output folder -->
     <Copy SourceFiles="$(InstallerOutputFolder)\Bloom$(channel)-win-Setup.exe"
           DestinationFiles="$(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).x64.exe"
