@@ -360,14 +360,17 @@
       There's a long list of possible dependencies that the installer can be told to check for using the framework argument
       at https://docs.velopack.io/packaging/bootstrapping#:~:text=By%20default%2C%20Velopack%20will%20accept,dotnet.
       It will help the user try to fix things if they are not.-->
-    <!-- Create x64 installer with dedicated output directory -->
+    <!-- Create x64 installer -->
+    <!-- Output to $(InstallerOutputFolder) directly to keep continuity with previous builds (before x64 vs arm64). -->
+    <!-- Note that packId determines the installation directory under %localappdata%. -->
+    <!-- For x64, keep it the same as pre-x64-vs-arm64 for continuity. -->
     <Exec
-      Command="vpk pack --packId Bloom$(channel)-x64 --packVersion $(Version) --packDir ..\output\installer\content\x64 --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder)\x64 --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --packAuthors &quot;SIL Global&quot; " />
+      Command="vpk pack --packId Bloom$(channel) --runtime win11-x64 --packVersion $(Version) --packDir ..\output\installer\content\x64 --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --packAuthors &quot;SIL Global&quot; " />
     <!-- Create ARM64 installer with dedicated output directory -->
     <Exec
-      Command="vpk pack --packId Bloom$(channel)-arm64 --packVersion $(Version) --packDir ..\output\installer\content\arm64 --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder)\arm64 --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-arm64-desktop,webview2 --packAuthors &quot;SIL Global&quot; " />
+      Command="vpk pack --packId Bloom$(channel)-arm64 --runtime win11-arm64 --packVersion $(Version) --packDir ..\output\installer\content\arm64 --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder)\arm64 --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-arm64-desktop,webview2 --packAuthors &quot;SIL Global&quot; " />
     <!-- Copy installers with appropriate names to main output folder -->
-    <Copy SourceFiles="$(InstallerOutputFolder)\x64\Bloom$(channel)-x64-win-Setup.exe"
+    <Copy SourceFiles="$(InstallerOutputFolder)\Bloom$(channel)-win-Setup.exe"
           DestinationFiles="$(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).x64.exe"
     />
     <Copy SourceFiles="$(InstallerOutputFolder)\arm64\Bloom$(channel)-arm64-win-Setup.exe"
@@ -437,13 +440,13 @@
     <!-- Upload x64 packages (again, to the pre-multi-installer location) -->
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(InstallerOutputFolder)/x64/$(VelopackDeltaPkgX64)"
+		SourceFiles="$(InstallerOutputFolder)/$(VelopackDeltaPkgX64)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(InstallerOutputFolder)/x64/$(VelopackFullPkgX64)"
+		SourceFiles="$(InstallerOutputFolder)/$(VelopackFullPkgX64)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
@@ -463,13 +466,13 @@
     <!-- Upload x64 RELEASES and releases.win.json to current location (unchanged) -->
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(InstallerOutputFolder)/x64/RELEASES"
+		SourceFiles="$(InstallerOutputFolder)/RELEASES"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
     <S3BuildPublisher
       CredentialStoreProfileName ="$(ProfileName)"
-      SourceFiles="$(InstallerOutputFolder)/x64/releases.win.json"
+      SourceFiles="$(InstallerOutputFolder)/releases.win.json"
       DestinationBucket="$(Bucket)"
       DestinationFolder="deltas$(channel)"
       IsPublicRead="true" />
@@ -489,7 +492,7 @@
   <!-- We keep the full nuget package for this run so the next one can create a delta. -->
   <Target Name="CleanUpObsoleteInstallerFiles" DependsOnTargets="VersionNumbers">
     <ItemGroup>
-      <FilesToDelete Include="$(InstallerOutputFolder)\BloomInstaller.*.exe;$(InstallerOutputFolder)\x64\*-full.nupkg;$(InstallerOutputFolder)\arm64\*-full.nupkg" Exclude="$(InstallerOutputFolder)/x64/$(VelopackFullPkgX64);$(InstallerOutputFolder)/arm64/$(VelopackFullPkgArm64)" />
+      <FilesToDelete Include="$(InstallerOutputFolder)\BloomInstaller.*.exe;$(InstallerOutputFolder)\*-full.nupkg;$(InstallerOutputFolder)\arm64\*-full.nupkg" Exclude="$(InstallerOutputFolder)/$(VelopackFullPkgX64);$(InstallerOutputFolder)/arm64/$(VelopackFullPkgArm64)" />
     </ItemGroup>
     <Delete Files="@(FilesToDelete)" />
   </Target>

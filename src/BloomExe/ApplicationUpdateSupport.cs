@@ -502,7 +502,7 @@ namespace Bloom
                 {
                     var channelName = match.Groups[1].Value;
                     if (!string.IsNullOrEmpty(channelName))
-                        return channelName;
+                        return channelName.Replace("-arm64", "");
                 }
                 return "Release";
             }
