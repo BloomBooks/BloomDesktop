@@ -122,6 +122,7 @@ public class AppearanceSettings
 
         new CssStringVariableDef("cover-background-color", "colors"),
         // User can turn the visibility of these fields on and off in the dialog.
+        new CssDisplayVariableDef("cover-creditsRow-show", "coverFields", true),
         new CssDisplayVariableDef("cover-title-L1-show", "coverFields", true),
         new CssDisplayVariableDef("cover-title-L2-show", "coverFields", true),
         new CssDisplayVariableDef("cover-title-L3-show", "coverFields", false),
@@ -134,7 +135,6 @@ public class AppearanceSettings
         new CssStringVariableDef("topLevel-text-padding", "padding"),
         // these ones are not in the dialog yet, but are used in our css, so if they are somehow in appearance.json,
         // we want to output them to css. The override groups are a guess and not yet used.
-        new CssStringVariableDef("cover-creditsRow-show", "coverFields"),
         new CssStringVariableDef("cover-margin-bottom", "margins"),
         new CssStringVariableDef("cover-margin-top", "margins"),
         new CssStringVariableDef("image-border-radius", "images"),
