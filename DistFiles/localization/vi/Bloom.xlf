@@ -6661,6 +6661,11 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="vi" state="needs-translation">A page of instructions to translators which appears only in the Edit tab.</target>
         <note>ID: TemplateBooks.PageDescription.Translation Instructions</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Page with Simple Book Grid" sil:dynamic="true">
+        <source xml:lang="en">A simple Table of Contents page for use in Bloom Apps.</source>
+        <target xml:lang="vi" state="needs-translation">A simple Table of Contents page for use in Bloom Apps.</target>
+        <note>ID: TemplateBooks.PageDescription.Page with Simple Book Grid</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comic" sil:dynamic="true">
         <source xml:lang="en">A full page image with no margin.</source>
         <target xml:lang="vi" state="needs-translation">A full page image with no margin.</target>
@@ -7100,6 +7105,11 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Translation Instructions</source>
         <target xml:lang="vi" state="needs-translation">Translation Instructions</target>
         <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Page with Simple Book Grid" sil:dynamic="true">
+        <source xml:lang="en">Page with Simple Book Grid</source>
+        <target xml:lang="vi" state="needs-translation">Page with Simple Book Grid</target>
+        <note>ID: TemplateBooks.PageLabel.Page with Simple Book Grid</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true">
         <source xml:lang="en">Video Over Text</source>
