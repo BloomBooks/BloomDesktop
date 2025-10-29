@@ -2,6 +2,45 @@
     "version": "0.2.0",
     "configurations": [
         {
+            // Debug Vitest tests in VS Code
+            // 1. Set a breakpoint in your test file
+            // 2. Run this configuration (F5)
+            // 3. The test will pause at your breakpoint
+            "name": "Debug Vitest Tests",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "yarn",
+            "runtimeArgs": [
+                "vitest",
+                "--run",
+                "--no-coverage",
+                "--poolOptions.threads.singleThread=true",
+                "--testTimeout=300000"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
+        },
+        {
+            // Debug a specific Vitest test file
+            // Update the file path in args to match the test you want to debug
+            "name": "Debug Current Vitest Test File",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "yarn",
+            "runtimeArgs": [
+                "vitest",
+                "--run",
+                "--no-coverage",
+                "--poolOptions.threads.singleThread=true",
+                "--testTimeout=300000",
+                "${relativeFile}"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
+        },
+        {
             // 1. Launch the test runner: `yarn karma start --browsers Chrome`.
             // 2. Start this "Debug Unit Tests".
             // 3. You may have to do a browser REFRESH before breakpoints are caught. (Possibly in BOTH of the browsers

@@ -1,0 +1,115 @@
+<!doctype html>
+<!-- Generated from corresponding pug by hand. Tests of overflow feature in Bloom that puts a red background in a field if there's too much content--><head
+></head>
+<body>
+    <!-- Test#0-->
+    <div class="bloom-page">
+        <div class="marginBox" style="width: 25em; height: 45px">
+            <div class="bloom-translationGroup">
+                <div
+                    class="myTest bloom-editable bloom-content1 expectToOverflow"
+                    lang="z"
+                    contenteditable="true"
+                    name="Test that expanding vertically past margins overflows"
+                    style="font-family: Arial; font-size: 20pt"
+                >
+                    Too much test text to put on one line at 20pt font.
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Test#1-->
+    <div class="bloom-page">
+        <div class="marginBox" style="width: 25em; height: 45px">
+            <div class="bloom-translationGroup">
+                <div
+                    class="myTest bloom-editable bloom-content1"
+                    lang="z"
+                    contenteditable="true"
+                    name="Test that not expanding vertically past margins does not overflow"
+                    style="font-family: Arial; font-size: 20pt"
+                >
+                    Just enough text.
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Test#2-->
+    <div class="bloom-page">
+        <div class="marginBox" style="width: 25em; height: 90px">
+            <div class="bloom-translationGroup">
+                <div
+                    class="bloom-editable bloom-content1"
+                    lang="z"
+                    contenteditable="true"
+                    style="font-family: Arial; font-size: 20pt"
+                >
+                    Just enough text.
+                </div>
+            </div>
+            <div class="bloom-translationGroup">
+                <div
+                    class="myTest bloom-editable bloom-content1"
+                    lang="z"
+                    contenteditable="true"
+                    name="Test that multiple translation groups don't necessarily overflow"
+                    style="font-family: Arial; font-size: 20pt"
+                >
+                    Just enough text.
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Test#3-->
+    <div class="bloom-page">
+        <div class="marginBox" style="width: 25em; height: 90px">
+            <div class="bloom-translationGroup">
+                <div
+                    class="bloom-editable bloom-content1"
+                    lang="z"
+                    contenteditable="true"
+                    style="font-family: Arial; font-size: 20pt"
+                >
+                    Just enough text.
+                </div>
+            </div>
+            <div class="bloom-translationGroup">
+                <div
+                    class="myTest bloom-editable bloom-content1 expectToOverflow"
+                    lang="z"
+                    contenteditable="true"
+                    name="Test that multiple translation groups expanding vertically past margins overflows"
+                    style="font-family: Arial; font-size: 20pt"
+                >
+                    Too much test text to put on one line at 20pt font.
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Test#4-->
+    <div class="bloom-page">
+        <div class="marginBox" style="width: 25em; height: 90px">
+            <div class="bloom-translationGroup">
+                <div
+                    class="bloom-editable bloom-content1"
+                    lang="z"
+                    contenteditable="true"
+                    style="font-family: Arial; font-size: 20pt"
+                >
+                    Too much test text to put on one line at 20pt font.
+                </div>
+            </div>
+            <div class="bloom-translationGroup">
+                <div
+                    class="myTest bloom-editable bloom-content1 expectToOverflow"
+                    lang="z"
+                    contenteditable="true"
+                    name="Test that earlier translation group makes this one expand vertically past margins"
+                    style="font-family: Arial; font-size: 20pt"
+                >
+                    Just enough text.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>

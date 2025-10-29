@@ -5,6 +5,7 @@ import AudioRecording, {
     AudioMode,
     getAllAudioModes,
     kAnyRecordingApiUrl,
+    theOneAudioRecorder,
 } from "./audioRecording";
 import { RecordingMode } from "./recordingMode";
 import axios from "axios";
@@ -1325,6 +1326,7 @@ describe("audio recording tests", () => {
         });
 
         async function runClearRecordingDeleteTest(scenario: AudioMode) {
+            vi.restoreAllMocks();
             vi.spyOn(axios, "post").mockImplementation((url: string) => {
                 if (url.includes("/bloom/api/audio/deleteSegment?id")) {
                     // Helps it test a more realistic scenario, instead of always testing the 404s
@@ -2112,7 +2114,7 @@ async function SetupIFrameAsync(id = "page"): Promise<HTMLIFrameElement> {
     parent.window.document.body.appendChild(iframe);
     iframe.id = id;
     iframe.name = id;
-    // This will be overwritten later, but Chrome won't raise onload unless there is SOME src value.
+    // Use about:blank but we'll override src later for tests that need specific URLs
     iframe.src = "about:blank";
 
     // It needs to be asynchronous because an iframe may not be valid to use until its onload is called.
@@ -2130,17 +2132,65 @@ async function SetupIFrameAsync(id = "page"): Promise<HTMLIFrameElement> {
 export function SetupIFrameFromHtml(bodyContentHtml: string, id = "page") {
     const iframe = <HTMLIFrameElement>parent.window.document.getElementById(id);
 
-    if (iframe.contentDocument!.readyState !== "complete") {
+    // In jsdom, readyState might not always be "complete" but the document is still usable
+    // Only check that contentDocument exists
+    if (!iframe.contentDocument) {
         throw new Error(
-            "Possible setup error: IFrame's readyState is not complete. The content document might change under you asynchronously!!!",
+            "Possible setup error: IFrame's contentDocument is null!",
         );
     }
-    iframe.contentDocument!.body.innerHTML = bodyContentHtml;
+
+    // Ensure the iframe has a body element
+    if (!iframe.contentDocument.body) {
+        iframe.contentDocument.write("<html><body></body></html>");
+        iframe.contentDocument.close();
+    }
+
+    iframe.contentDocument.body.innerHTML = bodyContentHtml;
+
+    // Apply polyfills to the iframe's content document (jsdom creates new prototypes for each document)
+    applyPolyfillsToIframe(iframe);
+}
+
+// Apply necessary polyfills to iframe content documents
+function applyPolyfillsToIframe(iframe: HTMLIFrameElement) {
+    const iframeWindow = iframe.contentWindow;
+    if (!iframeWindow) return;
+
+    // Polyfill innerText for jsdom in iframe context
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const win = iframeWindow as any;
+    [
+        win.HTMLElement.prototype,
+        win.Element.prototype,
+        win.Node.prototype,
+    ].forEach((proto) => {
+        if (!Object.getOwnPropertyDescriptor(proto, "innerText")) {
+            Object.defineProperty(proto, "innerText", {
+                get() {
+                    const text = this.textContent;
+                    return text !== null && text !== undefined ? text : "";
+                },
+                set(value) {
+                    this.textContent = value;
+                },
+                configurable: true,
+            });
+        }
+    });
+
+    // Mock scrollIntoView in iframe context
+    if (!win.HTMLElement.prototype.scrollIntoView) {
+        win.HTMLElement.prototype.scrollIntoView = vi.fn();
+    }
 }
 
 export async function setupForAudioRecordingTests() {
     SetupTalkingBookUIElements();
-    await SetupIFrameAsync();
+    const iframe = await SetupIFrameAsync();
+
+    // Keep iframe src as about:blank to avoid jsdom trying to load a file
+    iframe.src = "about:blank";
 
     // initializeTalkingBookToolAsync will call this endpoint; if we don't set up a
     // mock reply, it will throw an error and the whole test suite will fail.
@@ -2153,6 +2203,15 @@ export async function setupForAudioRecordingTests() {
     };
 
     await initializeTalkingBookToolAsync();
+
+    // Mock urlPrefix to return the correct base URL for tests
+    // The real implementation constructs from iframe.src, but in tests iframe.src is "about:blank"
+    // Real format: "/bloom/api/audio/wavFile?id=" + bookFolderUrl + "audio/"
+    // In tests, we simulate the full path as if bookFolderUrl was "http://localhost:63315/bloom/C%23Injection/"
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.spyOn(theOneAudioRecorder as any, "urlPrefix").mockReturnValue(
+        "http://localhost:63315/bloom/api/audio/wavFile?id=audio/",
+    );
 }
 
 // Just sets up some dummy elements so that they're non-null.

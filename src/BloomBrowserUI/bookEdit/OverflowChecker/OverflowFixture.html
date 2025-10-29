@@ -1,0 +1,64 @@
+<!doctype html>
+<!-- Generated from corresponding pug by hand. Tests of overflow feature in Bloom that puts a red background in a field if there's too much content--><head
+></head>
+<body>
+    <!-- Test#0-->
+    <div
+        class="myTest bloom-editable bloom-content1"
+        lang="z"
+        contenteditable="true"
+        name="Default font bloom-editable with no styles doesn't overflow"
+    >
+        Test texty
+    </div>
+    <!-- Test#1-->
+    <div
+        class="myTest bloom-editable bloom-content1 expectToOverflow"
+        lang="z"
+        contenteditable="true"
+        name="Arial bloom-editable with x-large text and small height should overflow"
+        style="font-family: Arial; font-size: x-large; height: 18px"
+    >
+        Test texty
+    </div>
+    <!-- Test#2-->
+    <div
+        class="myTest bloom-editable bloom-content1 expectToOverflow"
+        lang="z"
+        contenteditable="true"
+        name="Default font bloom-editable with large text and small height should overflow"
+        style="font-size: 20pt; height: 21px; overflow: visible"
+    >
+        Test texty
+    </div>
+    <!-- Test#3-->
+    <div
+        class="myTest bloom-editable bloom-content1"
+        lang="z"
+        contenteditable="true"
+        name="Arial bloom-editable with no other styles should not overflow"
+        style="font-family: Arial"
+    >
+        Test texty
+    </div>
+    <!-- Test#4-->
+    <div
+        class="myTest bloom-editable bloom-content1"
+        lang="z"
+        contenteditable="true"
+        name="Arial bloom-editable with fixed height should not overflow"
+        style="font-family:Arial; height=50px;"
+    >
+        Test texty
+    </div>
+    <!-- Test#5-->
+    <div
+        class="myTest bloom-editable bloom-content1"
+        lang="z"
+        contenteditable="true"
+        name="Arial bloom-editable with only some padding should not overflow"
+        style="font-family: Arial; padding: 2px"
+    >
+        Test texty
+    </div>
+</body>

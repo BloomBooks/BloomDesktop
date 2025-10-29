@@ -1,0 +1,139 @@
+<!doctype html>
+<!-- Generated from corresponding pug by hand. Tests of overflow feature in Bloom that puts a red background in a field if there's too much content--><head
+></head>
+<body>
+    <div class="bloom-page">
+        <!-- Test#0-->
+        <div style="width: 25em; height: 45px">
+            <div class="bloom-translationGroup">
+                <div
+                    class="myTest bloom-editable bloom-content1 expectToOverflow"
+                    lang="z"
+                    contenteditable="true"
+                    name="Test that expanding vertically past fixed ancestor overflows"
+                    style="font-family: Andika; font-size: 20pt"
+                >
+                    Too much test text to put on one line at 20pt font.
+                </div>
+            </div>
+        </div>
+        <!-- Test#1-->
+        <div>
+            <div style="width: 25em; height: 45px">
+                <div class="bloom-translationGroup">
+                    <div
+                        class="myTest bloom-editable bloom-content1"
+                        lang="z"
+                        contenteditable="true"
+                        name="Test that not expanding vertically past fixed ancestor does not overflow"
+                        style="font-family: Andika; font-size: 20pt"
+                    >
+                        Just enough text.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Test#2-->
+        <div style="width: 25em; height: 90px">
+            <div class="bloom-translationGroup">
+                <div
+                    class="bloom-editable bloom-content1"
+                    lang="z"
+                    contenteditable="true"
+                    style="font-family: Andika; font-size: 20pt"
+                >
+                    Just enough text.
+                </div>
+            </div>
+            <div class="bloom-translationGroup">
+                <div
+                    class="myTest bloom-editable bloom-content1"
+                    lang="z"
+                    contenteditable="true"
+                    name="Test that multiple translation groups don't necessarily overflow"
+                    style="font-family: Andika; font-size: 20pt"
+                >
+                    Just enough text.
+                </div>
+            </div>
+        </div>
+        <!-- Test#3-->
+        <div style="width: 25em; height: 90px">
+            <div class="bloom-translationGroup">
+                <div
+                    class="bloom-editable bloom-content1"
+                    lang="z"
+                    contenteditable="true"
+                    style="font-family: Andika; font-size: 20pt"
+                >
+                    Just enough text.
+                </div>
+            </div>
+            <div class="bloom-translationGroup">
+                <div
+                    class="myTest bloom-editable bloom-content1 expectToOverflow"
+                    lang="z"
+                    contenteditable="true"
+                    name="Test that multiple translation groups expanding vertically past fixed ancestor overflows"
+                    style="font-family: Andika; font-size: 20pt"
+                >
+                    Too much test text to put on one line at 20pt font.
+                </div>
+            </div>
+        </div>
+        <!-- Test#4-->
+        <div style="width: 25em; height: 90px">
+            <div class="bloom-translationGroup">
+                <div
+                    class="bloom-editable bloom-content1"
+                    lang="z"
+                    contenteditable="true"
+                    style="font-family: Andika; font-size: 20pt"
+                >
+                    Too much test text to put on one line at 20pt font.
+                </div>
+            </div>
+            <div class="bloom-translationGroup">
+                <div
+                    class="myTest bloom-editable bloom-content1 expectToOverflow"
+                    lang="z"
+                    contenteditable="true"
+                    name="Test that earlier translation group makes this one expand vertically past fixed ancestor"
+                    style="font-family: Andika; font-size: 20pt"
+                >
+                    Just enough text.
+                </div>
+            </div>
+        </div>
+        <!-- Test#5-->
+        <div style="width: 25em; height: 45px">
+            <div>
+                <div class="bloom-translationGroup">
+                    <div
+                        class="myTest bloom-editable bloom-content1 expectToOverflow"
+                        lang="z"
+                        contenteditable="true"
+                        name="Test that expanding vertically past fixed ancestor overflows"
+                        style="font-family: Andika; font-size: 20pt"
+                    >
+                        Too much test text to put on one line at 20pt font.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Test#6-->
+        <div style="width: 25em; height: 45px">
+            <div class="bloom-translationGroup">
+                <div
+                    class="myTest bloom-editable bloom-content1"
+                    lang="z"
+                    contenteditable="true"
+                    name="Test that not expanding vertically past fixed ancestor does not overflow"
+                    style="font-family: Andika; font-size: 20pt"
+                >
+                    Just enough text.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>

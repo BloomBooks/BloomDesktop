@@ -284,9 +284,13 @@ describe("StyleEditor", () => {
         );
     });
 
-    it("When the element has an @lang, and already has a rule, MakeBigger replaces the existing rule", () => {
+    // Skipped because currently we're running in jsdom. Making use of the existing rule depends on
+    // getComputedStyle, which jsdom does not support. ChatGpt thinks it also depends on actual
+    // dom element sizes, which jsdom also does not support. Attempts to polyfill proved difficult.
+    // We may at some point try again to run this test using a real browser.
+    it.skip("When the element has an @lang, and already has a rule, MakeBigger replaces the existing rule", () => {
         $("head").append(
-            "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt ! important; }</style>",
+            "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt !important; }</style>",
         );
         $("body").append(
             "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>",
@@ -316,7 +320,11 @@ describe("StyleEditor", () => {
         if (rule != null) expect(ParseRuleForFontSize(rule.cssText)).toBe(20);
     });
 
-    it("When the element has an @lang, and already has a rule, ChangeSizeAbsolute replaces the existing rule", () => {
+    // Skipped because currently we're running in jsdom. Making use of the existing rule depends on
+    // getComputedStyle, which jsdom does not support. ChatGpt thinks it also depends on actual
+    // dom element sizes, which jsdom also does not support. Attempts to polyfill proved difficult.
+    // We may at some point try again to run this test using a real browser.
+    it.skip("When the element has an @lang, and already has a rule, ChangeSizeAbsolute replaces the existing rule", () => {
         $("head").append(
             "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt ! important; }</style>",
         );

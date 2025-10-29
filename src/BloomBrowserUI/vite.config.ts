@@ -10,6 +10,7 @@ import less from "less";
 import MarkdownIt from "markdown-it";
 import markdownItContainer from "markdown-it-container";
 import markdownItAttrs from "markdown-it-attrs";
+import { playwright } from "@vitest/browser-playwright";
 
 // Custom plugin to compile Pug files to HTML
 // There are a couple of npm packages for pug, but as of October2025, they are experimental
@@ -668,31 +669,34 @@ export default defineConfig(async () => {
         test: {
             setupFiles: ["./vitest.setup.ts"],
             include: ["./**/*{test,spec,Spec}.{js,ts,jsx,tsx}"],
-            // various things copilot suggested to match vite config to webpack.
-            // For now, they didn't help and some broke things.
+            // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"], // Temporarily only run this file
+            // include: ["./bookEdit/sourceBubbles/SourceBubblesSpec.ts"], // Temporarily only run this file
+            // include: ["./bookEdit/toolbox/readers/readerSetup/readerSetupSpec.ts"], // Temporarily only run this file
+            exclude: [
+                "**/node_modules/**",
+                "**/dist/**",
+                "**/cypress/**",
+                "**/.{idea,git,cache,output,temp}/**",
+                "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+                "**/react_components/component-tester/**", // Exclude playwright component tests
+                "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
+            ],
             environment: "jsdom",
             globals: false,
-            // Uncomment and adjust as needed to match your test file patterns:
-            // include: ["./src/**/talkingBookSpec.ts"],
-            // deps: {
-            //     inline: [
-            //         // Add packages here that should not be externalized
-            //         "xregexp"
-            //     ]
-            // }
+            testTimeout: 30000, // Increase timeout for async iframe setup
+            sourcemap: true, // Enable source maps for debugging
             deps: {
-                inline: [
-                    "vitest-canvas-mock",
-                    //"bookEdit/toolbox/readers/libSynphony/synphony_lib.js"
-                ],
+                inline: ["vitest-canvas-mock"],
             },
             browser: {
-                enabled: true,
-                name: "chromium",
-                //provider: "playwright"
+                enabled: false, // Disabled due to xregexp module resolution issues
+                provider: playwright(),
+                instances: [
+                    {
+                        browser: "chromium",
+                    },
+                ],
             },
-            // For this config, check https://github.com/vitest-dev/vitest/issues/740
-            //threads: false,
             environmentOptions: {
                 jsdom: {
                     resources: "usable",

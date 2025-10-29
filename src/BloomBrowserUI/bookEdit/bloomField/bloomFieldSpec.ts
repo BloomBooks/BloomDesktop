@@ -49,8 +49,8 @@ describe("BloomField", () => {
         const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
 
         expect(result).not.toBe(input);
-        expect(result).toHaveTextContent("This page was copied and pasted");
-        expect(result).toHaveTextContent(
+        expect(result).toContain("This page was copied and pasted");
+        expect(result).toContain(
             "This paragraph has two sentences, so it should have two audio spans.",
         );
         expect(result.includes('class="audio-sentence"')).toBe(true);
