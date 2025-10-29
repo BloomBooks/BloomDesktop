@@ -756,6 +756,7 @@
       <trans-unit id="BookSettings.ShowCredits" sil:dynamic="true">
         <source xml:lang="en">Show Credits</source>
         <note>BookSettings.ShowCredits</note>
+        <note>Show Credits on the cover page</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers" sil:dynamic="true">
         <source xml:lang="en">Page Numbers</source>
