@@ -839,6 +839,11 @@
         <target xml:lang="th" state="needs-translation">Show Topic</target>
         <note>BookSettings.ShowTopic</note>
       </trans-unit>
+      <trans-unit id="BookSettings.ShowCredits" sil:dynamic="true">
+        <source xml:lang="en">Show Credits</source>
+        <target xml:lang="th" state="needs-translation">Show Credits</target>
+        <note>BookSettings.ShowCredits</note>
+      </trans-unit>
       <trans-unit id="BookSettings.PageNumbers" sil:dynamic="true">
         <source xml:lang="en">Page Numbers</source>
         <target xml:lang="th" state="needs-translation">Page Numbers</target>
