@@ -37,9 +37,9 @@
         <target xml:lang="fr" state="final">Suite de la conversion orthographique:</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
       </trans-unit>
-      <trans-unit id="EditTab.ClickToEditBookGrid" sil:dynamic="true">
+      <trans-unit id="EditTab.ClickToEditBookGrid" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to edit book grid</source>
-        <target xml:lang="fr" state="needs-translation">Click to edit book grid</target>
+        <target xml:lang="fr" state="final">Cliquez pour modifier la grille du livre</target>
         <note>ID: EditTab.ClickToEditBookGrid</note>
       </trans-unit>
       <trans-unit id="Errors.CannotConnectToBloomServer.2" approved="yes">
