@@ -154,6 +154,7 @@ export const darkTheme = createTheme(lightTheme, {
 
 const toolboxTextColor = "#d2d2d2";
 const kToolboxDisabledOpacity = 0.5;
+const kToolboxFontSize = 11; // in px
 
 export const toolboxTheme = createTheme({
     palette: {
@@ -167,7 +168,7 @@ export const toolboxTheme = createTheme({
         },
     },
     typography: {
-        fontSize: 11, // text is smaller in the toolbox
+        fontSize: kToolboxFontSize, // text is smaller in the toolbox
         fontFamily: kUiFontStack,
     },
     components: {
@@ -230,9 +231,28 @@ export const toolboxTheme = createTheme({
                         opacity: kToolboxDisabledOpacity,
                         color: kBloomToolboxWhite,
                     },
+                    ".impairmentVisualizerBody &, .musicBody &, .ui-motionBody &":
+                        {
+                            // I'm not sure why we have the 10px above, but
+                            // I don't want to risk breaking other layouts when I'm
+                            // just trying to get these tools
+                            // to have consistent font sizes...
+                            fontSize: kToolboxFontSize,
+                            // This is a hack to fix the label alignment of radio buttons
+                            // in toolbox. I spent too much time trying to fix these and
+                            // the checkbox labels in a more principled way before giving up.
+                            paddingTop: "1px",
+                        },
                 },
                 root: {
                     alignItems: "flex-start",
+                    ".bloom-checkbox-label": {
+                        // This is a hack to fix the label alignment of checkboxes
+                        // in toolbox. I spent too much time trying to fix these and
+                        // the radio labels in a more principled way (and without breaking
+                        // other usages) before giving up.
+                        paddingTop: "2px",
+                    },
                 },
             },
         },
@@ -253,10 +273,18 @@ export const toolboxTheme = createTheme({
             },
         },
 
+        MuiCheckbox: {
+            styleOverrides: {
+                root: {
+                    color: kBloomToolboxWhite,
+                },
+            },
+        },
+
         MuiTypography: {
             styleOverrides: {
                 h2: {
-                    fontSize: "11px",
+                    fontSize: kToolboxFontSize,
 
                     marginBottom: "5px",
                 },

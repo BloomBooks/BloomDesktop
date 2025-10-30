@@ -28,18 +28,23 @@ export const RadioGroup: React.FunctionComponent<{
     // the current value, must match one of the keys found in `choices`.
     value: string;
     onChange: (method: string) => void;
+    className?: string;
+    radioSize?: "small" | "medium";
 }> = (props) => {
     return (
         <FormControl>
             <MuiRadioGroup
                 value={props.value}
                 onChange={(event, newValue) => props.onChange(newValue)}
+                className={props.className}
             >
                 {Object.keys(props.choices).map((key) => (
                     <FormControlLabel
                         key={key}
                         value={key}
-                        control={<Radio color="primary" />}
+                        control={
+                            <Radio color="primary" size={props.radioSize} />
+                        }
                         label={(props.choices as any)[key]}
                         onChange={(e, n) => props.onChange(key)}
                     />

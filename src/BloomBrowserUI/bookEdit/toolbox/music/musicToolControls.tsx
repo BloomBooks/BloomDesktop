@@ -1,7 +1,9 @@
 import * as React from "react";
+import { css, ThemeProvider } from "@emotion/react";
+import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import { Div, Label } from "../../../react_components/l10nComponents";
-import { RadioGroup, Radio } from "../../../react_components/radio";
+import { Div, Label, Span } from "../../../react_components/l10nComponents";
+import { RadioGroup } from "../../../react_components/RadioGroup";
 import { get } from "../../../utils/bloomApi";
 import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
@@ -114,105 +116,133 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
     }
 
     public render() {
+        const radioLabelElement = (
+            label: string,
+            l10nKey: string,
+            elementToAppend?: JSX.Element,
+        ): JSX.Element => (
+            <>
+                <Span l10nKey={l10nKey}>{label}</Span>
+                {elementToAppend}
+            </>
+        );
+
         return (
             <RequiresSubscriptionOverlayWrapper
                 featureName={kMusicToolId as string}
             >
-                <div className="musicBody">
-                    <Div
-                        className="musicInstructions"
-                        l10nKey="EditTab.Toolbox.Music.Overview"
-                    >
-                        You can set up background music to play with this page
-                        when the book is viewed in the Bloom Reader app.
-                    </Div>
-                    <RadioGroup
-                        onChange={(val) => this.setRadio(val)}
-                        value={this.state.activeRadioValue}
-                    >
-                        <Radio
-                            l10nKey="EditTab.Toolbox.Music.NoMusic"
-                            value="noMusic"
+                <ThemeProvider theme={toolboxTheme}>
+                    <div className="musicBody">
+                        <Div
+                            className="musicInstructions"
+                            l10nKey="EditTab.Toolbox.Music.Overview"
                         >
-                            No Music
-                        </Radio>
-                        <Radio
-                            l10nKey="EditTab.Toolbox.Music.ContinueMusic"
-                            value="continueMusic"
-                        >
-                            Continue music from previous page
-                        </Radio>
-                        <div className="musicChooseWrapper">
-                            <Radio
-                                l10nKey="EditTab.Toolbox.Music.NewMusic"
-                                value="newMusic"
-                            >
-                                Start new music
-                            </Radio>
-                            <Label
-                                className="musicChooseFile"
-                                l10nKey="EditTab.Toolbox.Music.Choose"
-                                onClick={() => this.chooseMusicFile()}
-                            >
-                                Choose...
-                            </Label>
-                        </div>
-                    </RadioGroup>
-                    <div
-                        className={
-                            "button-label-wrapper" +
-                            (this.state.audioEnabled ? "" : " disabled")
-                        }
-                        id="musicOuterWrapper"
-                    >
-                        <div id="musicPlayAndLabelWrapper">
-                            <div className="musicButtonWrapper">
-                                <button
-                                    id="musicPreview"
-                                    className={
-                                        "music-button ui-button enabled" +
-                                        (this.state.playing ? " playing" : "")
-                                    }
-                                    onClick={() => this.previewMusic()}
-                                />
-                            </div>
-                            <div id="musicFilename">{this.state.musicName}</div>
-                        </div>
-                        <div
-                            id="musicVolumePercent"
-                            style={{
-                                visibility: this.state.audioEnabled
-                                    ? "visible"
-                                    : "hidden",
+                            You can set up background music to play with this
+                            page when the book is viewed in the Bloom Reader
+                            app.
+                        </Div>
+                        <RadioGroup
+                            onChange={(val) => this.setRadio(val)}
+                            value={this.state.activeRadioValue}
+                            choices={{
+                                noMusic: radioLabelElement(
+                                    "No Music",
+                                    "EditTab.Toolbox.Music.NoMusic",
+                                ),
+                                continueMusic: radioLabelElement(
+                                    "Continue music from previous page",
+                                    "EditTab.Toolbox.Music.ContinueMusic",
+                                ),
+                                newMusic: radioLabelElement(
+                                    "Start new music",
+                                    "EditTab.Toolbox.Music.NewMusic",
+                                    <Label
+                                        className="musicChooseFile"
+                                        l10nKey="EditTab.Toolbox.Music.Choose"
+                                        onClick={() => this.chooseMusicFile()}
+                                        css={css`
+                                            text-decoration: underline;
+                                            padding-left: 10px;
+                                        `}
+                                    >
+                                        Choose...
+                                    </Label>,
+                                ),
                             }}
+                            radioSize="small"
+                            css={css`
+                                padding-top: 20px;
+                                padding-left: 5px; // better alignment with other controls
+                                &[role="radiogroup"] {
+                                    gap: 10px; // Default of 5px is too small
+                                }
+                                & .MuiFormControlLabel-root {
+                                    // The whole tool has a margin, so this is not needed;
+                                    // and the default causes extraneous wrapping.
+                                    margin-right: 0;
+                                }
+                            `}
+                        />
+                        <div
+                            className={
+                                "button-label-wrapper" +
+                                (this.state.audioEnabled ? "" : " disabled")
+                            }
+                            id="musicOuterWrapper"
                         >
-                            {Math.round(this.state.volume * 100)}%
-                        </div>
-                        <div id="musicSetVolume">
-                            <img
-                                className="speaker-volume"
-                                src="/bloom/bookEdit/toolbox/music/speaker-volume.svg"
-                            />
-                            <div className="bgSliderWrapper">
-                                <Slider
-                                    className="musicVolumeSlider"
-                                    value={this.state.volumeSliderPosition}
-                                    disabled={!this.state.audioEnabled}
-                                    onChange={(value) =>
-                                        this.sliderMoved(value)
-                                    }
+                            <div id="musicPlayAndLabelWrapper">
+                                <div className="musicButtonWrapper">
+                                    <button
+                                        id="musicPreview"
+                                        className={
+                                            "music-button ui-button enabled" +
+                                            (this.state.playing
+                                                ? " playing"
+                                                : "")
+                                        }
+                                        onClick={() => this.previewMusic()}
+                                    />
+                                </div>
+                                <div id="musicFilename">
+                                    {this.state.musicName}
+                                </div>
+                            </div>
+                            <div
+                                id="musicVolumePercent"
+                                style={{
+                                    visibility: this.state.audioEnabled
+                                        ? "visible"
+                                        : "hidden",
+                                }}
+                            >
+                                {Math.round(this.state.volume * 100)}%
+                            </div>
+                            <div id="musicSetVolume">
+                                <img
+                                    className="speaker-volume"
+                                    src="/bloom/bookEdit/toolbox/music/speaker-volume.svg"
                                 />
+                                <div className="bgSliderWrapper">
+                                    <Slider
+                                        className="musicVolumeSlider"
+                                        value={this.state.volumeSliderPosition}
+                                        disabled={!this.state.audioEnabled}
+                                        onChange={(value) =>
+                                            this.sliderMoved(value)
+                                        }
+                                    />
+                                </div>
                             </div>
                         </div>
+                        {
+                            // preload=none prevents the audio element from asking for the audio as soon as it gets a new src value,
+                            // which in BL-3153 was faster than the c# thread writing the file could finish with it.
+                            // As an alternative, a settimeout() in the javascript also worked, but
+                            // this seems more durable. By the time the user can click Play, we'll be done.}
+                        }
+                        <audio id="musicPlayer" preload="none" />
                     </div>
-                    {
-                        // preload=none prevents the audio element from asking for the audio as soon as it gets a new src value,
-                        // which in BL-3153 was faster than the c# thread writing the file could finish with it.
-                        // As an alternative, a settimeout() in the javascript also worked, but
-                        // this seems more durable. By the time the user can click Play, we'll be done.}
-                    }
-                    <audio id="musicPlayer" preload="none" />
-                </div>
+                </ThemeProvider>
             </RequiresSubscriptionOverlayWrapper>
         );
     }
