@@ -121,7 +121,7 @@ export const RegistrationContents: React.FunctionComponent<
         // Call the API to save registration info
         postJson("registration/userInfo", trimmedInfo);
 
-        props.onClose?.();
+        props.onClose?.(true);
     };
 
     const handleOptOutClick = () => {
@@ -136,7 +136,7 @@ export const RegistrationContents: React.FunctionComponent<
         // Call the API to save registration info
         postJson("registration/userInfo", sanitizedInfo);
 
-        props.onClose?.();
+        props.onClose?.(false);
     };
 
     return (

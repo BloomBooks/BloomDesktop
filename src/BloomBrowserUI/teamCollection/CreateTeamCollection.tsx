@@ -96,8 +96,8 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         else
             showRegistrationDialog({
                 emailRequiredForTeamCollection: true,
-                onSave: (isValidEmail) => {
-                    if (isValidEmail) create();
+                onSave: (hasRegistered: boolean) => {
+                    if (hasRegistered) create();
                 },
             });
     }

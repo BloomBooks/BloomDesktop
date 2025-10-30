@@ -91,7 +91,10 @@ export const RegistrationDialog: React.FunctionComponent<
                 initialInfo={info}
                 mayChangeEmail={mayChangeEmail}
                 emailRequiredForTeamCollection={emailRequiredForTeamCollection}
-                onClose={props.closeDialog}
+                onClose={(submitted?: boolean) => {
+                    props.onSave?.(submitted);
+                    props.closeDialog();
+                }}
             />
         </BloomDialog>
     );
