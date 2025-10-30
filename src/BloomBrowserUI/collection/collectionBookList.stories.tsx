@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import { CollectionBookList } from "./collectionBookList";
 
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 import { IBookInfo } from "../collectionsTab/BooksOfCollection";
 import { useState } from "react";
 

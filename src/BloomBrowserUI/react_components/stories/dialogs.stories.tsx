@@ -17,7 +17,7 @@ import {
     normalDialogEnvironmentForStorybook,
 } from "../BloomDialog/BloomDialogPlumbing";
 
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 import { MakeReaderTemplateBloomPackDialog } from "../makeReaderTemplateBloomPackDialog";
 
 const meta: Meta = {

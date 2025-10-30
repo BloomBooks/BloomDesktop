@@ -1,10 +1,11 @@
-//import { withA11y } from "@storybook/addon-a11y";
+import React from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { StorybookContext } from "./StoryBookContext";
-import * as React from "react";
 import { lightTheme } from "../bloomMaterialUITheme";
 
-export default {
+// Inline StorybookContext to avoid TypeScript import issues
+const StorybookContext = React.createContext(false);
+
+const preview = {
     decorators: [
         (storyFn) => (
             <StyledEngineProvider injectFirst>
@@ -15,7 +16,7 @@ export default {
                 </ThemeProvider>
             </StyledEngineProvider>
         ),
-        // was needed by publish/stories.tsx, apparently no longer exists in storybook 8, waiting to see what breaks...
-        //        withA11y
     ],
 };
+
+export default preview;

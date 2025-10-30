@@ -1,6 +1,6 @@
 import { Link } from "../link";
 
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta = {
     title: "Localizable Widgets/Link",
