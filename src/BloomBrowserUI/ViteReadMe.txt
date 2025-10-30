@@ -5,16 +5,20 @@ yarn dev runs the dev mode of vite, which serves up our source with minimal bund
 This needs some special-case handling where the HTML loads stuff.
 This branch has an updated version of ReactControl.cs, which builds a different html file
 to load the appropriate thing in dev mode. As far as I've tested, this now works on all
-ReactControls, including ReadDialogs and the whole PublishTab.
-It will take a bit more to get it working for the other entrypoint/bundle clients, especially edit view.
+ReactControls, including ReadDialogs and the whole PublishTab. The browser automatically
+hot-reloads any changes served by vite. If it somehow happens that code explicitly asks
+the bloom server for something (explicit bloom: links, other than api calls), that will not
+produce hot reloading. Unless another process is watching, new versions won't even get copied
+to output\debug; vite dev serves directly from the source.
+It will take a bit more to get vite dev working for the other entrypoint/bundle clients, especially edit view.
 I took a quick look at edit mode but could not get it working with vite dev. For editablePageBundle,
 I think the problem is that we load tabpane, jquery, and ckeditor separately from the main code bundle;
 we don't have adequate doc of why we do that rather than importing them, but I get mysterious errors if
 I change to importing, even taking care to make sure jquery is available as a global.
 
-The other mode is vite's build mode, which we are trying to get to build bundles similar to the old ones
+The other mode is vite's build mode, which builds bundles similar to the old ones
 for use in production. I think all of that is working now. (We're not building a test bundle, since we
-hope to get vitest working.)
+have switched to vitest.)
 
 I made vite produce EsNext code. This means the output files are modules and can themselves import
 things. Vite makes extensive use of this when doing multiple entry points. So any one bundle has a
@@ -39,23 +43,35 @@ import them. Code that is loaded directly from HTML needs to be imported after j
 
 Status:
 Collection tab seems to be working pretty well. No known problems, but not extensively tested.
-Edit tab is working reasonably well, not very extensively tested. The toolbox More button is off
-the bottom of the screen; this might just need a rebase, since I think it was recently fixed in master.
+Edit tab is working reasonably well, not very extensively tested.
+Publish tab is basically working.
 Collection settings is working well.
 There are lots of warnings.
-Nothing clears the output directory before any of the builds. It's easy to have something go on
-working because a previous build left something around.
-Don't yet have vite building pug files (use yarn gulp pug until we do). It's likely there are other
-file types for which we need to add handling.
-I've made some attempts at copying assets that don't need compilation, but it's likely that
-we are copying some things we don't need, not copying some
-that we do, and copying some to the wrong places (e.g. root of output\browser rather than a
-subdirectory, or vv).
-
-I've pulled in my incomplete work on the vitest switchover, mainly because some of the same code
-changes were needed to get things working. We may decide to back that out and just keep the changes
-that help with the vite build, or it may be possible to carry on and get them all working.
+There is a new build:clean which clears the output directory.
+There is a new build-prod which clears the output directory, builds both BloomBrowserUi and content,
+and builds the xliff stuff.
+There is a new build:watch which should cause some automatic reprocessing and maybe hot loads when
+working on a part of the UI that is still using bundles, or when not using vite dev. I haven't tried
+to see how well it works.
+Only clean and build-prod clear the output directory. As before, it's possible to have something go on
+working in other modes because a previous build left something around.
+Vite is building pug files (both its own and in content), but only when yarn build is run.
+They won't cause hot-reloading in yarn dev, and probably not even in watch. This is unfortunate
+and may deserve a card, but we're trying to get this merged so I can move on.
+I think we're now copying all the same static assets (that don't need compilation) as before when we
+run build. As noted before, I don't think yarn dev will copy them to output/browser.
+Vitest is working, running and passing all of our tests except five that are disabled because
+we're testing in jsdom, and it can't give real measurements or a canvas that can really be drawn on.
+It should be possible to get these tests working by running them in a real browser, but I was not
+able to in the time we wanted to spend on this task currently. This involved quite a bit of mocking
+for things that jsdom didn't do quite right but which were only marginally related to the purpose of
+the test.
+Storybook is not converted to vite and not working at all.
+Running and debugging tests directly from VS Code (install the vitest extension) is working fairly
+well, though it takes a few seconds to start up. (You can right-click and run a single test, with
+breakpoints set in VS Code, and without a fight every time to get debug config right, I hope.)
 
 Major todos:
 - get vite dev mode working for edit tab. Current plan is to make a separate card for this.
-- vitest
+- Storybook
+

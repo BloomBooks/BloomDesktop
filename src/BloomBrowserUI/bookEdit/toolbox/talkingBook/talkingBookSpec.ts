@@ -32,6 +32,12 @@ describe("talking book tests", () => {
         await setupForAudioRecordingTests();
     });
 
+    afterEach(() => {
+        // Clean up any pending timers to prevent "parent is not defined" errors
+        // when tests finish before timers fire
+        theOneAudioRecorder?.handleToolHiding();
+    });
+
     describe("- de/enshroudPhraseDelimiters", () => {
         it("enshroud/deshroud phrase delimiters", () => {
             // Setup Initial HTML
