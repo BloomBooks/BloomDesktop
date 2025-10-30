@@ -1,8 +1,6 @@
 @import "../../../bloomUI.less";
-@textColor: @bloom-buff; // #D2D2D2;
 
 .impairmentVisualizerBody {
-    color: @textColor;
     padding: @toolboxContentPadding;
     // All the layers down to .impairmentVisualizerBody have to be 100%
     // to allow it to stretch and put Help at the bottom
@@ -10,20 +8,6 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-
-    .radioLabel {
-        display: inline-block;
-        max-width: 120px;
-    }
-
-    .radioButton {
-        margin-left: 20px;
-    }
-
-    .radioInput {
-        vertical-align: top;
-        margin-top: 3px; // spread the buttons apart a bit: can overlap on Linux (BL-6520)
-    }
 }
 
 // from https://commons.wikimedia.org/wiki/File:Q10874_noun_3918_ccJordanDelcros_blind.svg?
