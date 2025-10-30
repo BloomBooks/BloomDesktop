@@ -66,7 +66,8 @@ It should be possible to get these tests working by running them in a real brows
 able to in the time we wanted to spend on this task currently. This involved quite a bit of mocking
 for things that jsdom didn't do quite right but which were only marginally related to the purpose of
 the test.
-Storybook is not converted to vite and not working at all.
+Claude attemped to migrate Storybook to vite (which required an upgrade to storybook 10)
+but it is not working at all (vite is not processing the tsx files) and Claude can't figure out why.
 Running and debugging tests directly from VS Code (install the vitest extension) is working fairly
 well, though it takes a few seconds to start up. (You can right-click and run a single test, with
 breakpoints set in VS Code, and without a fight every time to get debug config right, I hope.)
