@@ -5,8 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Workspace;
+using DotImpose.LayoutMethods;
 using L10NSharp;
-using PdfDroplet.LayoutMethods;
 using PdfSharp;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
@@ -299,26 +299,26 @@ namespace Bloom.Publish.PDF
                 case "QuarterLetter":
                     pageSize = PageSize.Statement; // ?? Wikipedia says HalfLetter is aka Statement
                     break;
-                case "Legal":
-                    pageSize = PageSize.Legal; //TODO... what's reasonable?
+                case "Legal": // need at least 17" x 14"
+                    pageSize = PageSize.Crown; // provides 20" x 15"
                     break;
                 case "HalfLegal":
                     pageSize = PageSize.Legal;
                     break;
-                case "Cm13":
-                    pageSize = PageSize.A3;
+                case "Cm13": // need at least 260mm x 130mm
+                    pageSize = PageSize.A4; // provides 297mm x 210mm
                     break;
-                case "USComic":
-                    pageSize = PageSize.A3; // Ledger would work as well.
+                case "USComic": // need at least 13.25" x 10.25" (13.75" x 10.75" full bleed?)
+                    pageSize = PageSize.A3; // provides 16.54" x 11.69" (Ledger is 17" x 11", would also work)
                     break;
-                case "Size6x9":
-                    // 9"x12" can hold two 6"x9" pages.
-                    pageSize = PageSize.Undefined;
-                    customPageSize = new System.Drawing.Printing.PaperSize(
-                        "9\"x12\"",
-                        9 * 100,
-                        12 * 100
-                    );
+                case "Size6x9": // need at least 12" x 9"
+                    pageSize = PageSize.B4; // provides 13.90" x 9.84"
+                    //pageSize = PageSize.Undefined;
+                    //customPageSize = new System.Drawing.Printing.PaperSize(
+                    //    "9\"x12\"",
+                    //    9 * 100,
+                    //    12 * 100
+                    //);
                     break;
                 default:
                     throw new ApplicationException(
@@ -382,12 +382,15 @@ namespace Bloom.Publish.PDF
                 }
                 else
                 {
-                    if (customPageSize == null)
-                        throw new NullReferenceException(
-                            "customPageSize must be set if pageSize is Undefined, but customPageSize was null."
-                        );
-
-                    paperTarget = new PaperTarget(paperTargetName, customPageSize);
+                    //if (customPageSize == null)
+                    //    throw new NullReferenceException(
+                    //        "customPageSize must be set if pageSize is Undefined, but customPageSize was null."
+                    //    );
+                    //
+                    //paperTarget = new PaperTarget(paperTargetName, customPageSize);
+                    throw new Exception(
+                        "PdfMaker.MakeBooklet() does not currently support custom page sizes."
+                    );
                 }
 
                 var pdf = XPdfForm.FromFile(incoming.Path); //REVIEW: this whole giving them the pdf and the file too... I checked once and it wasn't wasting effort...the path was only used with a NullLayout option
