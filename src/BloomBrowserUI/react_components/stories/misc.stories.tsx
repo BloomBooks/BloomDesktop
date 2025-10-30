@@ -8,7 +8,7 @@ import WinFormsStyleSelect from "../winFormsStyleSelect";
 import BookMakingSettingsControl from "../../collection/bookMakingSettingsControl";
 import BloomButton from "../bloomButton";
 
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta = {
     title: "Misc",

@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 import { showRegistrationDialog } from "../registration/registrationDialog";
 import { normalDialogEnvironmentForStorybook } from "../BloomDialog/BloomDialogPlumbing";
 
