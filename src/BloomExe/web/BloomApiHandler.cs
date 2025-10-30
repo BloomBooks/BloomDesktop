@@ -125,10 +125,14 @@ namespace Bloom.Api
                 RequiresSync = requiresSync,
                 MeasurementLabel = pattern, // can be overridden... this is just a default
             };
-            _exactEndpointRegistrations.Add(
-                pattern.ToLowerInvariant().Trim(new char[] { '/' }),
-                registration
-            );
+            var key = pattern.ToLowerInvariant().Trim(new char[] { '/' });
+            if (_exactEndpointRegistrations.TryGetValue(key, out var existing))
+            {
+                // Preserve the originally registered handler to avoid duplicate endpoint failures
+                return (EndpointRegistration)existing;
+            }
+
+            _exactEndpointRegistrations[key] = registration;
             return registration; // return it so the caller can say  RegisterEndpointHandler().Measurable();
         }
 
@@ -146,10 +150,13 @@ namespace Bloom.Api
                 RequiresSync = requiresSync,
                 MeasurementLabel = pattern, // can be overridden... this is just a default
             };
-            _exactEndpointRegistrations.Add(
-                pattern.ToLowerInvariant().Trim(new char[] { '/' }),
-                registration
-            );
+            var key = pattern.ToLowerInvariant().Trim(new char[] { '/' });
+            if (_exactEndpointRegistrations.TryGetValue(key, out var existing))
+            {
+                return existing;
+            }
+
+            _exactEndpointRegistrations[key] = registration;
             return registration; // return it so the caller can say  RegisterEndpointHandler().Measurable();
         }
 

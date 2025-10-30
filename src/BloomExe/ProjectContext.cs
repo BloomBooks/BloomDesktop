@@ -378,6 +378,17 @@ namespace Bloom
             }
 
             var server = parentContainer.Resolve<BloomServer>();
+            if (parentContainer.IsRegistered<IBloomServer>())
+            {
+                if (parentContainer.Resolve<IBloomServer>() is KestrelBloomServer kestrelServer)
+                {
+                    var locator = _scope.Resolve<IChangeableFileLocator>() as BloomFileLocator;
+                    if (locator != null)
+                    {
+                        kestrelServer.SetFileLocator(locator);
+                    }
+                }
+            }
             server.SetCollectionSettingsDuringInitialization(_scope.Resolve<CollectionSettings>());
             server.EnsureListening();
 

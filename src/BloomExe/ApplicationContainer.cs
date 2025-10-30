@@ -1,10 +1,13 @@
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Autofac;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.CollectionChoosing;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
@@ -95,6 +98,36 @@ namespace Bloom
             // that a lot more could already be moved, but so far we just did enough for the handful of dialogs
             // that need to work independent of a project.
             var server = _container.Resolve<IBloomServer>();
+            if (
+                server is KestrelBloomServer kestrelServer
+                && kestrelServer.FileLocatorForTests == null
+            )
+            {
+                var fallbackCollectionName = $"KestrelFallback_{Process.GetCurrentProcess().Id}";
+                var fallbackFolder = Path.Combine(
+                    Path.GetTempPath(),
+                    "Bloom",
+                    "ServerFallback",
+                    fallbackCollectionName
+                );
+                var fallbackSettingsPath = CollectionSettings.GetSettingsFilePath(fallbackFolder);
+                var fallbackSettings = new CollectionSettings(fallbackSettingsPath);
+                var fallbackLocator = new BloomFileLocator(
+                    fallbackSettings,
+                    new XMatterPackFinder(
+                        new[]
+                        {
+                            BloomFileLocator.GetFactoryXMatterDirectory(),
+                            ProjectContext.XMatterAppDataFolder,
+                            ProjectContext.XMatterCommonDataFolder,
+                        }
+                    ),
+                    ProjectContext.GetFactoryFileLocations(),
+                    ProjectContext.GetFoundFileLocations(),
+                    ProjectContext.GetAfterXMatterFileLocations()
+                );
+                kestrelServer.SetFileLocator(fallbackLocator);
+            }
             _container.Resolve<CommonApi>().RegisterWithApiHandler(apiHandler);
             _container.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(apiHandler);
             apiHandler.RecordApplicationLevelHandlers();

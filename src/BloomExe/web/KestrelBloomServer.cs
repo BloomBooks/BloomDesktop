@@ -53,7 +53,7 @@ namespace Bloom.web
         private CancellationTokenSource _shutdownTokenSource;
         private readonly RuntimeImageProcessor _cache;
         private readonly BookSelection _bookSelection;
-        private readonly BloomFileLocator _fileLocator;
+        private BloomFileLocator _fileLocator;
         private readonly BloomApiHandler _apiHandler;
         public BloomApiHandler ApiHandler
         {
@@ -107,6 +107,13 @@ namespace Bloom.web
             ApiHandler.SetCollectionSettingsDuringInitialization(collectionSettings);
         }
 
+        internal void SetFileLocator(BloomFileLocator fileLocator)
+        {
+            _fileLocator = fileLocator;
+        }
+
+        internal BloomFileLocator FileLocatorForTests => _fileLocator;
+
         #endregion
 
         #region Lifecycle Management
@@ -119,6 +126,13 @@ namespace Bloom.web
         {
             if (ServerIsListening)
                 return;
+
+            if (_fileLocator == null)
+            {
+                throw new InvalidOperationException(
+                    "BloomFileLocator has not been configured. Call SetFileLocator before starting the Kestrel server."
+                );
+            }
 
             var success = false;
             const int kStartingPort = 8089;

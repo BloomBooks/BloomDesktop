@@ -203,6 +203,43 @@ namespace BloomTests.web
             );
         }
 
+        [Test]
+        public void EnsureListening_ThrowsIfFileLocatorNotConfigured()
+        {
+            using (var server = new KestrelBloomServer(_imageProcessor, _bookSelection, null))
+            {
+                var ex = Assert.Throws<InvalidOperationException>(() => server.EnsureListening());
+                StringAssert.Contains("BloomFileLocator", ex.Message);
+            }
+        }
+
+        [Test]
+        public void EnsureListening_WorksWhenLocatorSuppliedAfterConstruction()
+        {
+            using (var server = new KestrelBloomServer(_imageProcessor, _bookSelection, null))
+            {
+                server.SetFileLocator(_fileLocator);
+                Assert.DoesNotThrow(() => server.EnsureListening());
+            }
+        }
+
+        [Test]
+        [Apartment(ApartmentState.STA)]
+        public void ApplicationContainer_BloomServerStartsBeforeProjectSelection()
+        {
+            using (var container = new ApplicationContainer())
+            {
+                var server = container.BloomServer as KestrelBloomServer;
+                Assert.IsNotNull(
+                    server,
+                    "Expected ApplicationContainer to provide KestrelBloomServer"
+                );
+                Assert.DoesNotThrow(() => server.EnsureListening());
+                server.Stop();
+                server.Dispose();
+            }
+        }
+
         #endregion
 
         #region Server Lifecycle Tests
