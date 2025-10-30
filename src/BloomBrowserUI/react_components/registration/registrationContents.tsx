@@ -121,22 +121,23 @@ export const RegistrationContents: React.FunctionComponent<
         // Call the API to save registration info
         postJson("registration/userInfo", trimmedInfo);
 
-        props.onClose?.();
+        props.onClose?.(true);
     };
 
     const handleOptOutClick = () => {
         const trimmedInfo = trimRegistrationInfo(info);
-        const sanitizedInfo = isEmailFieldValid(
+        const hasValidEmail = isEmailFieldValid(
             trimmedInfo.email,
             emailRequiredForTeamCollection,
-        )
+        );
+        const sanitizedInfo = hasValidEmail
             ? trimmedInfo
             : { ...trimmedInfo, email: "" };
 
         // Call the API to save registration info
         postJson("registration/userInfo", sanitizedInfo);
 
-        props.onClose?.();
+        props.onClose?.(hasValidEmail);
     };
 
     return (

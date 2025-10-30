@@ -19,7 +19,7 @@ import { postBoolean } from "../../utils/bloomApi";
 
 export interface IRegistrationDialogProps {
     emailRequiredForTeamCollection?: boolean;
-    onSave?: (isValidEmail: boolean) => void;
+    onSave?: (hasValidEmail: boolean) => void;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }
 

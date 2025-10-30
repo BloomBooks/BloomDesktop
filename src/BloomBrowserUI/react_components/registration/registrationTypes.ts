@@ -18,7 +18,7 @@ export interface IRegistrationContentsProps {
     initialInfo: RegistrationInfo;
     mayChangeEmail?: boolean;
     emailRequiredForTeamCollection?: boolean;
-    onClose?: () => void;
+    onClose?: (hasValidEmail: boolean) => void;
     /** Override the delay (in seconds) before showing the opt-out button. Defaults to kInactivitySecondsBeforeShowingOptOut. */
     optOutDelaySeconds?: number;
 }
