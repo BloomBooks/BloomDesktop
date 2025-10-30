@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="EditTab.ClickToEditBookGrid" sil:dynamic="true">
         <source xml:lang="en">Click to edit book grid</source>
-        <target xml:lang="pt-PT" state="needs-translation">Click to edit book grid</target>
+        <target xml:lang="pt-PT" state="translated">Clique para editar a grade de livros</target>
         <note>ID: EditTab.ClickToEditBookGrid</note>
       </trans-unit>
       <trans-unit id="Errors.CannotConnectToBloomServer.2" approved="yes">
