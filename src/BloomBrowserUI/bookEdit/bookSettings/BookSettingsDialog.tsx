@@ -169,7 +169,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
     const showTopicLabel = useL10n("Show Topic", "BookSettings.ShowTopic");
     const showCreditsLabel = useL10n(
         "Show Credits",
-        "BookSettings.ShowCredits"
+        "BookSettings.ShowCredits",
     );
     const frontAndBackMatterLabel = useL10n(
         "Front & Back Matter",
@@ -476,15 +476,15 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `cover-topic-show`,
                                     )}
                                 />
- 						 <ConfigrBoolean
+                                <ConfigrBoolean
                                     label={showCreditsLabel}
                                     disabled={appearanceDisabled}
                                     {...getAdditionalProps<boolean>(
-                                        `cover-creditsRow-show`
+                                        `cover-creditsRow-show`,
                                     )}
                                 />
-                            </ConfigrGroup>
-                            <ConfigrGroup
+                            </ConfigrSubgroup>
+                            <ConfigrSubgroup
                                 label={"All Cover Pages"}
                                 path={`appearance`}
                             >
@@ -496,7 +496,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `cover-background-color`,
                                     )}
                                 />
-                            </ConfigrGroup>
+                            </ConfigrSubgroup>
                             {/*
 
                             <ConfigrSubgroup
