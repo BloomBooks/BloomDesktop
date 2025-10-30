@@ -90,7 +90,7 @@ namespace Bloom
             ) =>
             {
                 if (Disposing || _inDisposeMethod)
-                    return; // disposed before initialization completed.  See BL-13593.
+                    return; // disposed before initialization completed.  See BL-13593 and BL-11384.
                 if (args.IsSuccess == false)
                 {
                     // One way to get this to fail is to have a zombie Bloom running that has different "accept-lang" arguments.
