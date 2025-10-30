@@ -263,6 +263,7 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="17.0.0-beta0079" />
 		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="17.0.0-beta0079" />
 		<PackageReference Include="SIL.WritingSystems" Version="17.0.0-beta0079" />
+		<PackageReference Include="sillsdev.dotImpose" Version="2.6.2" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.2" />
 		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.2" />
@@ -292,10 +293,6 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		<Reference Include="System.Web.Extensions" />
 		<Reference Include="System.Windows.Forms" />
 		<Reference Include="WindowsBase" />
-		<Reference Include="PdfDroplet">
-			<SpecificVersion>False</SpecificVersion>
-			<HintPath>..\..\lib\dotnet\PdfDroplet.dll</HintPath>
-		</Reference>
 		<Reference Include="PodcastUtilities.PortableDevices">
 			<HintPath>..\..\lib\dotnet\PodcastUtilities.PortableDevices.dll</HintPath>
 		</Reference>
