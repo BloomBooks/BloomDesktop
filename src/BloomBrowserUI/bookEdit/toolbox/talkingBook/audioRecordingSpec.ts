@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, afterEach, vi } from "vitest";
 import AudioRecording, {
     AudioTextFragment,
     initializeTalkingBookToolAsync,
@@ -31,6 +31,12 @@ import { mockReplies } from "../../../utils/bloomApi";
 describe("audio recording tests", () => {
     beforeAll(async () => {
         await setupForAudioRecordingTests();
+    });
+
+    afterEach(() => {
+        // Clean up any pending timers to prevent "parent is not defined" errors
+        // when tests finish before timers fire
+        theOneAudioRecorder?.clearTimeouts();
     });
 
     // In an earlier version of our API, checkForAnyRecording was designed to fail (404) if there was no recording.
