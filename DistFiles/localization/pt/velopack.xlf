@@ -62,13 +62,13 @@
         <source xml:lang="en">Install &amp; Update</source>
         <target xml:lang="pt-PT" state="translated">Instalar &amp; atualização</target>
       </trans-unit>
-      <trans-unit id="buttons.install">
+      <trans-unit id="buttons.install" approved="yes">
         <source xml:lang="en">Install</source>
-        <target xml:lang="pt-PT" state="translated">Instalar</target>
+        <target xml:lang="pt-PT" state="final">Instalar</target>
       </trans-unit>
-      <trans-unit id="buttons.hide">
+      <trans-unit id="buttons.hide" approved="yes">
         <source xml:lang="en">Hide</source>
-        <target xml:lang="pt-PT" state="translated">Ocultar</target>
+        <target xml:lang="pt-PT" state="final">Ocultar</target>
       </trans-unit>
       <trans-unit id="buttons.retry_close_programs">
         <source xml:lang="en">Retry\nTry again if you've closed the program(s)</source>
