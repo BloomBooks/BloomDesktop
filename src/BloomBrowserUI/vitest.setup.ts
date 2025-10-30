@@ -1,6 +1,16 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
+// =============================================================================
+// VITEST SETUP FILE
+// This file runs before each test file to configure the test environment.
+// It provides mocks, polyfills, and global utilities needed by the test suite.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// THIRD-PARTY MODULE MOCKS
+// -----------------------------------------------------------------------------
+
 // Mock comicaljs to avoid webpack bundle loading issues
 vi.mock("comicaljs", () => ({
     Bubble: vi.fn(),
@@ -10,8 +20,13 @@ vi.mock("comicaljs", () => ({
     TailSpec: {},
 }));
 
+// -----------------------------------------------------------------------------
+// LOCALIZATION MANAGER MOCK
+// -----------------------------------------------------------------------------
+
 // Mock localizationManager to provide language names for tests
 vi.mock("./lib/localizationManager/localizationManager", () => {
+    // Language name lookup table
     const languageNames: { [key: string]: string } = {
         en: "English",
         es: "español",
@@ -19,10 +34,11 @@ vi.mock("./lib/localizationManager/localizationManager", () => {
         tpi: "Tok Pisin",
     };
 
+    // Dictionary for localized strings
     const dictionary: { [key: string]: string } = {};
 
+    // Helper: Simple string formatting (replaces {0}, {1}, %0, %1 with args)
     const simpleFormat = (format: string, args: (string | undefined)[]) => {
-        // Simple implementation of string formatting
         let result = format;
         args.forEach((arg, index) => {
             result = result.replace(
@@ -95,6 +111,38 @@ vi.mock("./lib/localizationManager/localizationManager", () => {
     };
 });
 
+// -----------------------------------------------------------------------------
+// JSDOM POLYFILLS AND FIXES
+// -----------------------------------------------------------------------------
+
+// Helper: Apply innerText polyfill to a prototype (jsdom doesn't implement it properly)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function applyInnerTextPolyfill(proto: any) {
+    if (!Object.getOwnPropertyDescriptor(proto, "innerText")) {
+        Object.defineProperty(proto, "innerText", {
+            get() {
+                // Always return a string, never undefined
+                const text = this.textContent;
+                return text !== null && text !== undefined ? text : "";
+            },
+            set(value) {
+                this.textContent = value;
+            },
+            configurable: true,
+        });
+    }
+}
+
+// Helper: Apply scrollIntoView mock (jsdom doesn't implement it)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function applyScrollIntoViewMock(proto: any) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!(proto as any).scrollIntoView) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (proto as any).scrollIntoView = vi.fn();
+    }
+}
+
 // Manually mock HTMLCanvasElement.getContext for jsdom
 // This is needed for libraries like comicaljs/paper that use canvas at module load time
 HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
@@ -126,33 +174,21 @@ HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 })) as any;
 
+// Apply polyfills to main window DOM prototypes
 // Polyfill innerText for jsdom - it doesn't properly implement this property
 // Use textContent as a fallback which jsdom does support
-// Apply to multiple prototypes to cover all cases
 [HTMLElement.prototype, Element.prototype, Node.prototype].forEach((proto) => {
-    if (!Object.getOwnPropertyDescriptor(proto, "innerText")) {
-        Object.defineProperty(proto, "innerText", {
-            get() {
-                // Ensure we always return a string, never undefined
-                const text = this.textContent;
-                return text !== null && text !== undefined ? text : "";
-            },
-            set(value) {
-                this.textContent = value;
-            },
-            configurable: true,
-        });
-    }
+    applyInnerTextPolyfill(proto);
 
     // Mock scrollIntoView which jsdom doesn't implement (only on Element types)
     if (proto === HTMLElement.prototype || proto === Element.prototype) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!(proto as any).scrollIntoView) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (proto as any).scrollIntoView = vi.fn();
-        }
+        applyScrollIntoViewMock(proto);
     }
 });
+
+// -----------------------------------------------------------------------------
+// CSSSTYLESHEET FIXES FOR JSDOM
+// -----------------------------------------------------------------------------
 
 // Fix for CSSStyleSheet ownerNode in jsdom
 // jsdom doesn't properly link styleSheets to their <style> element owners
@@ -272,17 +308,12 @@ HTMLHeadElement.prototype.appendChild = function <T extends Node>(node: T): T {
     return result;
 };
 
-// Polyfill HTMLElement.prototype.innerText for jsdom
-if (!("innerText" in HTMLElement.prototype)) {
-    Object.defineProperty(HTMLElement.prototype, "innerText", {
-        get() {
-            return this.textContent;
-        },
-        set(value: string) {
-            this.textContent = value;
-        },
-    });
-}
+// Remove duplicate innerText polyfill definition (already applied above)
+// The code below was redundant and has been removed
+
+// -----------------------------------------------------------------------------
+// IFRAME POLYFILLS AND EVENT FIXES
+// -----------------------------------------------------------------------------
 
 // Fix iframe onload events in jsdom - they don't fire automatically in certain scenarios
 // Override appendChild to trigger onload for iframes
@@ -307,32 +338,16 @@ HTMLElement.prototype.appendChild = function <T extends Node>(node: T): T {
                     win.Node.prototype,
                 ];
 
+                // Apply the same polyfills to iframe window
                 iframePrototypes.forEach((proto) => {
-                    if (!Object.getOwnPropertyDescriptor(proto, "innerText")) {
-                        Object.defineProperty(proto, "innerText", {
-                            get() {
-                                const text = this.textContent;
-                                return text !== null && text !== undefined
-                                    ? text
-                                    : "";
-                            },
-                            set(value) {
-                                this.textContent = value;
-                            },
-                            configurable: true,
-                        });
-                    }
+                    applyInnerTextPolyfill(proto);
 
-                    // scrollIntoView for Elements
+                    // scrollIntoView for Elements only
                     if (
                         proto === win.HTMLElement.prototype ||
                         proto === win.Element.prototype
                     ) {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        if (!(proto as any).scrollIntoView) {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (proto as any).scrollIntoView = vi.fn();
-                        }
+                        applyScrollIntoViewMock(proto);
                     }
                 });
             }
@@ -341,6 +356,10 @@ HTMLElement.prototype.appendChild = function <T extends Node>(node: T): T {
     return result;
 };
 
+// -----------------------------------------------------------------------------
+// GLOBAL JQUERY SETUP
+// -----------------------------------------------------------------------------
+
 // Setup parent.window for tests that use iframes
 if (!window.parent) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -348,8 +367,13 @@ if (!window.parent) {
 }
 
 import jQuery from "jquery";
+// Make jQuery available globally for legacy code
 globalThis.$ = jQuery;
 globalThis.jQuery = jQuery;
+
+// -----------------------------------------------------------------------------
+// JQUERY PLUGIN MOCKS
+// -----------------------------------------------------------------------------
 
 // Mock jQuery localize plugin - used by many modules at load time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -371,6 +395,10 @@ globalThis.jQuery = jQuery;
 (jQuery.fn as any).dialog = vi.fn(function () {
     return this;
 });
+
+// -----------------------------------------------------------------------------
+// C# INTEROP MOCKS
+// -----------------------------------------------------------------------------
 
 // Mock GetSettings function - injected by C# in production, needed by tests
 // Based on GetSettingsMock.js from bookEdit/test
