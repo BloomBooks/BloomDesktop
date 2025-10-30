@@ -37,6 +37,7 @@ namespace Bloom
         private CopyCommand _copyCommand;
         private UndoCommand _undoCommand;
         private CutCommand _cutCommand;
+        private bool _inDisposeMethod;
 
         public WebView2Browser()
         {
@@ -50,8 +51,8 @@ namespace Bloom
                 CoreWebView2InitializationCompletedEventArgs args
             ) =>
             {
-                if (Disposing)
-                    return; // disposed before initialization completed.  See BL-13593.
+                if (Disposing || _inDisposeMethod)
+                    return; // disposed before initialization completed.  See BL-13593 and BL-11384.
                 if (args.IsSuccess == false)
                 {
                     // One way to get this to fail is to have a zombie Bloom running that has different "accept-lang" arguments.
@@ -769,6 +770,12 @@ namespace Bloom
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
+            // Have seen bizarre cases involving Dispose in the tail end of an async method where
+            // something goes wrong as the async method is resumed which somehow has the result that
+            // while we are disposing the _webview, the CoreWebView2InitializationCompleted event handler
+            // fires with success false, but Disposing returns false!! Hopefully this variable will be
+            // more reliable.
+            _inDisposeMethod = true;
             if (disposing)
             {
                 int procId = 0;
@@ -834,13 +841,16 @@ namespace Bloom
         /// All of the browsers will have been disposed by the the application shutting down before the following
         /// method is called.
         /// </remarks>
-        private static readonly Dictionary<int, string> WebView2ProcessToUserFolder = new Dictionary<int, string>();
+        private static readonly Dictionary<int, string> WebView2ProcessToUserFolder =
+            new Dictionary<int, string>();
+
         /// <summary>
         /// Unit tests in particular can create WebView2 processes that reuse the same process IDs.  This set of
         /// files are those that we had already recorded in the dictionary with the same process ID but which have
         /// different names.  We want to delete these as well, since they are no longer needed.
         /// </summary>
         private static HashSet<string> ObsoleteWebView2UserFolders = new HashSet<string>();
+
         public static void CleanupWebView2UserFolders()
         {
             try
@@ -864,9 +874,7 @@ namespace Bloom
                                 {
                                     RobustIO.DeleteDirectory(userFolder, true);
                                 }
-                                catch (Exception)
-                                {
-                                }
+                                catch (Exception) { }
                             }
                             WebView2ProcessToUserFolder.Remove(key);
                         }
@@ -890,9 +898,7 @@ namespace Bloom
                         {
                             RobustIO.DeleteDirectory(userFolder, true);
                         }
-                        catch (Exception)
-                        {
-                        }
+                        catch (Exception) { }
                     }
                 }
             }
