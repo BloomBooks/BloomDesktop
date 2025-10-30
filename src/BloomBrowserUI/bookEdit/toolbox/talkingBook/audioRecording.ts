@@ -2733,13 +2733,16 @@ export default class AudioRecording implements IAudioRecorder {
             );
         }
     }
+    public clearTimeouts() {
+        clearTimeout(this.ensureHighlightToken);
+    }
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
     public handleToolHiding() {
         this.isShowing = false;
         this.stopListeningForLevels();
         // In case this initialize loop is still going, stop it. Passing an invalid value won't hurt.
-        clearTimeout(this.ensureHighlightToken);
+        this.clearTimeouts();
 
         // Need to clear out any state. The next time this tool gets reopened, there is no guarantee that it will be reopened in the same context.
         this.recordingMode = RecordingMode.Unknown;

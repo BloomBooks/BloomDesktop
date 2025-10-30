@@ -493,7 +493,7 @@ ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 // Use dynamic imports so that if Vite/esbuild emits a CommonJS wrapper for this
 // config, Node can still load ESM-only plugins (like @vitejs/plugin-react) via
 // native dynamic import instead of require().
-export default defineConfig(async () => {
+export default defineConfig(async ({ command }) => {
     // ENTRY POINTS CONFIGURATION
     // Define all JavaScript/TypeScript entry points - these are the "root" files that
     // Vite will build into separate bundles. Each entry becomes a standalone .js file
@@ -569,47 +569,55 @@ export default defineConfig(async () => {
             compileMarkdownPlugin(), // Compile Markdown files to HTML during build
             postBuildPlugin(), // Process manifest and create final bundles (build only)
 
-            // STATIC FILE COPYING
+            // STATIC FILE COPYING (BUILD ONLY)
             // vite-plugin-static-copy copies files from source to output directory
-            // structured: false = flatten directory structure (all files go to dest root)
-            // Copy files that need flattening (structured: false)
-            viteStaticCopy({
-                structured: false,
-                targets: [
-                    // Copy jQuery (equivalent to gulpfile's jquery.min.js copy with prefix: 3)
-                    {
-                        src: "node_modules/jquery/dist/jquery.min.js",
-                        dest: ".",
-                    },
-                    // Copy bloom-player dist files (equivalent to gulpfile's nodeFilesNeededInOutput with prefix: 1)
-                    {
-                        src: "node_modules/bloom-player/dist/*",
-                        dest: "./bloom-player/dist/",
-                    },
-                ],
-            }),
-            // structured: true = preserve directory structure when copying
-            // Copy files preserving directory structure (structured: true)
-            viteStaticCopy({
-                structured: true,
-                targets: [
-                    // Copy all files except certain extensions (equivalent to gulpfile's filesThatMightBeNeededInOutput)
-                    {
-                        src: [
-                            "**/*.*",
-                            "!**/*.ts",
-                            "!**/*.tsx",
-                            "!**/*.pug",
-                            "!**/*.md",
-                            "!**/*.less",
-                            "!**/*.bat",
-                            "!**/node_modules/**/*.*",
-                            "!**/tsconfig.json",
-                        ],
-                        dest: ".",
-                    },
-                ],
-            }),
+            // CRITICAL: These plugins must only run during build, not dev mode
+            // In dev mode, scanning 525+ files causes 30+ second delays
+            // Conditionally include these plugins only when command === 'build'
+            ...(command === "build"
+                ? [
+                      // structured: false = flatten directory structure (all files go to dest root)
+                      // Copy files that need flattening (structured: false)
+
+                      viteStaticCopy({
+                          structured: false,
+                          targets: [
+                              // Copy jQuery (equivalent to gulpfile's jquery.min.js copy with prefix: 3)
+                              {
+                                  src: "node_modules/jquery/dist/jquery.min.js",
+                                  dest: ".",
+                              },
+                              // Copy bloom-player dist files (equivalent to gulpfile's nodeFilesNeededInOutput with prefix: 1)
+                              {
+                                  src: "node_modules/bloom-player/dist/*",
+                                  dest: "./bloom-player/dist/",
+                              },
+                          ],
+                      }),
+                      // structured: true = preserve directory structure when copying
+                      // Copy files preserving directory structure (structured: true)
+                      viteStaticCopy({
+                          structured: true,
+                          targets: [
+                              // Copy all files except certain extensions (equivalent to gulpfile's filesThatMightBeNeededInOutput)
+                              {
+                                  src: [
+                                      "**/*.*",
+                                      "!**/*.ts",
+                                      "!**/*.tsx",
+                                      "!**/*.pug",
+                                      "!**/*.md",
+                                      "!**/*.less",
+                                      "!**/*.bat",
+                                      "!**/node_modules/**/*.*",
+                                      "!**/tsconfig.json",
+                                  ],
+                                  dest: ".",
+                              },
+                          ],
+                      }),
+                  ]
+                : []),
         ],
 
         // DEV SERVER CONFIGURATION
@@ -628,6 +636,21 @@ export default defineConfig(async () => {
             cssCodeSplit: false, // Put all CSS in JS bundles instead of separate files (matches webpack behavior)
             manifest: true, // Generate manifest.json listing all build outputs
             target: "esnext", // Use latest JavaScript features (decorators, etc.)
+            // Tell Vite's CommonJS plugin which exports comicaljs provides
+            commonjsOptions: {
+                include: [/node_modules/],
+                transformMixedEsModules: true,
+                // Explicitly declare named exports from CommonJS modules
+                namedExports: {
+                    comicaljs: [
+                        "Bubble",
+                        "Comical",
+                        "BubbleSpec",
+                        "BubbleSpecPattern",
+                        "TailSpec",
+                    ],
+                },
+            },
 
             // ROLLUP OPTIONS
             // Vite uses Rollup for production builds - these options configure Rollup
@@ -760,8 +783,15 @@ export default defineConfig(async () => {
         // DEPENDENCY OPTIMIZATION
         // Controls how Vite pre-bundles dependencies for faster dev server startup
         optimizeDeps: {
-            include: ["jquery"], // Always pre-bundle jQuery
+            include: [
+                "jquery", // Always pre-bundle jQuery
+                "comicaljs", // Pre-bundle comicaljs (webpack UMD bundle needs processing)
+            ],
             exclude: ["lib/localizationManager/localizationManager"], // Don't pre-bundle this
+            // Force Vite to treat comicaljs as having named exports even though it's CommonJS/UMD
+            esbuildOptions: {
+                plugins: [],
+            },
         },
 
         // GLOBAL DEFINITIONS
