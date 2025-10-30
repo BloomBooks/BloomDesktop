@@ -2317,12 +2317,12 @@ export default class AudioRecording implements IAudioRecorder {
         // This only set the RECORDING mode. Don't touch the audio-sentence markup, which represents the PLAYBACK mode.
     }
 
-    // Gets the "page" iframe. May return null is the iframe doesn't exist.
+    // Gets the "page" iframe. May return null if the iframe doesn't exist (e.g., in testing, or while loading).
     public getPageFrame(): HTMLIFrameElement | null {
         // Enhance: Maybe should just use the version in bloomFrames.ts instead?
         //   (we could add an async version there that would return a promise which is fulfilled when the frame becomes available AND loaded.)
         return <HTMLIFrameElement | null>(
-            parent.window.document.getElementById("page")
+            parent?.window?.document?.getElementById("page")
         );
     }
 
