@@ -104,13 +104,6 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"HtmlXliff.*"=>"lib/dotnet", "HtmlAgilityPack.*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/XliffForHtml [refs/heads/master]
-# [4] build: PdfDroplet-Win-master-Continuous (bt54)
-#     project: PdfDroplet
-#     URL: https://build.palaso.org/buildConfiguration/bt54?mode=builds
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"PdfDroplet.dll"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
-#     VCS: https://github.com/sillsdev/pdfDroplet [master]
 
 # make sure output directories exist
 mkdir -p ../DistFiles
@@ -138,8 +131,6 @@ copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_Bloo
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.exe ../lib/dotnet/HtmlXliff.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.pdb ../lib/dotnet/HtmlXliff.pdb
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlAgilityPack.dll ../lib/dotnet/HtmlAgilityPack.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfDroplet.dll ../lib/dotnet/PdfDroplet.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/ghostscript-win32.zip -d "../DistFiles/ghostscript"
 unzip -uqo ../Downloads/Lame.zip -d "../lib/lame"
