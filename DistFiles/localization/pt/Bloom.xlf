@@ -6663,7 +6663,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Page with Simple Book Grid" sil:dynamic="true">
         <source xml:lang="en">A simple Table of Contents page for use in Bloom Apps.</source>
-        <target xml:lang="pt-PT" state="needs-translation">A simple Table of Contents page for use in Bloom Apps.</target>
+        <target xml:lang="pt-PT" state="translated">Uma página de Índice simples para uso nos Apps Bloom.</target>
         <note>ID: TemplateBooks.PageDescription.Page with Simple Book Grid</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comic" sil:dynamic="true" approved="yes">
@@ -7108,7 +7108,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Page with Simple Book Grid" sil:dynamic="true">
         <source xml:lang="en">Page with Simple Book Grid</source>
-        <target xml:lang="pt-PT" state="needs-translation">Page with Simple Book Grid</target>
+        <target xml:lang="pt-PT" state="translated">Página com Grade de Livro Simples</target>
         <note>ID: TemplateBooks.PageLabel.Page with Simple Book Grid</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true" approved="yes">
