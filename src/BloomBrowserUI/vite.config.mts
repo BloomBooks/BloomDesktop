@@ -1,3 +1,11 @@
+// Vite Configuration for Bloom Browser UI
+// Vite is a modern build tool that replaces webpack for development and production builds.
+// Key concepts:
+// - Plugins: Extend Vite's capabilities (similar to webpack loaders/plugins)
+// - Dev Server: Hot module reload during development
+// - Build: Optimized production bundles using Rollup
+// - Entry Points: Starting files for each bundle (like webpack's entry config)
+
 import { defineConfig } from "vite";
 import type { Plugin } from "vite";
 import * as path from "path";
@@ -486,7 +494,11 @@ ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 // config, Node can still load ESM-only plugins (like @vitejs/plugin-react) via
 // native dynamic import instead of require().
 export default defineConfig(async () => {
-    // Define entry points to match webpack configuration
+    // ENTRY POINTS CONFIGURATION
+    // Define all JavaScript/TypeScript entry points - these are the "root" files that
+    // Vite will build into separate bundles. Each entry becomes a standalone .js file
+    // that can be loaded independently by HTML pages.
+    // This replaces webpack's entry configuration.
     const entryPoints: Record<string, string> = {
         // Special bundles that were previously built separately
         editablePageBundle: "./bookEdit/editablePage.ts",
@@ -536,8 +548,12 @@ export default defineConfig(async () => {
         editTopBarControlsBundle: "./bookEdit/topbar/editTopBarControls.tsx",
     };
 
+    // MAIN VITE CONFIGURATION
+    // https://vitejs.dev/config/
     return {
+        // PLUGINS: Extend Vite's functionality (runs during build and/or dev)
         plugins: [
+            // React plugin: Enables JSX, Fast Refresh, and React-specific optimizations
             react({
                 reactRefreshHost: `http://localhost:${process.env.PORT || 5173}`,
                 babel: {
@@ -548,10 +564,14 @@ export default defineConfig(async () => {
                 },
             }),
             transformLessImportsPlugin(), // Transform LESS imports to inline CSS injection (build only)
-            compilePugPlugin(), // Compile Pug files to HTML during build
+            compilePugPlugin(), // Compile Pug templates to HTML during build
             compileLessPlugin(), // Compile standalone LESS files to CSS during build
             compileMarkdownPlugin(), // Compile Markdown files to HTML during build
             postBuildPlugin(), // Process manifest and create final bundles (build only)
+
+            // STATIC FILE COPYING
+            // vite-plugin-static-copy copies files from source to output directory
+            // structured: false = flatten directory structure (all files go to dest root)
             // Copy files that need flattening (structured: false)
             viteStaticCopy({
                 structured: false,
@@ -568,6 +588,7 @@ export default defineConfig(async () => {
                     },
                 ],
             }),
+            // structured: true = preserve directory structure when copying
             // Copy files preserving directory structure (structured: true)
             viteStaticCopy({
                 structured: true,
@@ -590,23 +611,38 @@ export default defineConfig(async () => {
                 ],
             }),
         ],
+
+        // DEV SERVER CONFIGURATION
+        // Controls the local development server behavior
         server: {
-            port: 5173,
-            strictPort: true,
+            port: 5173, // Default Vite port
+            strictPort: true, // Fail if port is already in use (don't try other ports)
         },
+
+        // BUILD CONFIGURATION
+        // Controls how Vite creates production bundles
         build: {
-            outDir: "../../output/browser",
-            sourcemap: true, // Generate source maps for debugging
-            minify: false, // Disable minification for better debugging (optional)
-            cssCodeSplit: false, // Inline CSS into JS bundles like webpack
-            manifest: true, // Generate manifest.json for post-processing
-            target: "esnext", // Ensure modern output for decorator support
+            outDir: "../../output/browser", // Where to output built files
+            sourcemap: true, // Generate .map files for debugging production code
+            minify: false, // Keep code readable (set to 'esbuild' or 'terser' to minify)
+            cssCodeSplit: false, // Put all CSS in JS bundles instead of separate files (matches webpack behavior)
+            manifest: true, // Generate manifest.json listing all build outputs
+            target: "esnext", // Use latest JavaScript features (decorators, etc.)
+
+            // ROLLUP OPTIONS
+            // Vite uses Rollup for production builds - these options configure Rollup
             rollupOptions: {
-                input: entryPoints,
+                input: entryPoints, // Which files to build (our entry points defined above)
                 output: {
-                    entryFileNames: "[name]-main.js", // Change to X-main.js format
-                    chunkFileNames: "[name].js",
-                    assetFileNames: "[name].[ext]",
+                    // File naming patterns for build outputs:
+                    // [name] = the entry point key name (e.g., "editablePageBundle")
+                    entryFileNames: "[name]-main.js", // Main entry files become X-main.js
+                    chunkFileNames: "[name].js", // Shared code chunks
+                    assetFileNames: "[name].[ext]", // CSS, images, etc.
+
+                    // MANUAL CHUNKS
+                    // Force certain modules into separate files instead of bundling with entries
+                    // This prevents jQuery from being duplicated across bundles
                     // Prevent jQuery from being incorrectly re-exported from other modules
                     manualChunks: {
                         jquery: ["jquery"],
@@ -617,15 +653,24 @@ export default defineConfig(async () => {
                 },
             },
         },
+
+        // ESBUILD CONFIGURATION
+        // Vite uses esbuild for fast TypeScript transpilation
         esbuild: {
             tsconfigRaw: {
                 compilerOptions: {
-                    experimentalDecorators: true,
+                    experimentalDecorators: true, // Enable @decorator syntax for MobX
                 },
             },
         },
+
+        // MODULE RESOLUTION CONFIGURATION
+        // Controls how Vite finds and loads modules
         resolve: {
-            preserveSymlinks: false, // Ensure consistent file name resolution
+            preserveSymlinks: false, // Follow symlinks to actual files
+
+            // DEDUPE: Prevent duplicate copies of these packages in bundles
+            // If multiple dependencies use React, only include one copy
             dedupe: [
                 "react",
                 "react-dom",
@@ -637,9 +682,14 @@ export default defineConfig(async () => {
                 "@mui/utils",
                 "@mui/private-theming",
             ],
+
+            // ALIAS: Path shortcuts for imports
+            // Instead of: import x from "../../../lib/errorHandler"
+            // You can use: import x from "errorHandler"
+            // This matches our webpack configuration
             alias: {
-                "@": path.resolve(__dirname, "."),
-                // Browser shims for Node built-ins used by some deps
+                "@": path.resolve(__dirname, "."), // @ = project root
+                // Browser shims for Node built-ins used by some dependencies
                 os: path.resolve(__dirname, "shims/os.ts"),
                 // Module resolution paths to match webpack configuration
                 errorHandler: path.resolve(__dirname, "lib/errorHandler.ts"),
@@ -666,12 +716,15 @@ export default defineConfig(async () => {
                 "App.less": path.resolve(__dirname, "app/App.less"),
             },
         },
+
+        // VITEST CONFIGURATION
+        // Vitest is Vite's test runner (replaces Karma + Jasmine)
+        // See vitest.dev for full documentation
         test: {
-            setupFiles: ["./vitest.setup.ts"],
-            include: ["./**/*{test,spec,Spec}.{js,ts,jsx,tsx}"],
-            // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"], // Temporarily only run this file
-            // include: ["./bookEdit/sourceBubbles/SourceBubblesSpec.ts"], // Temporarily only run this file
-            // include: ["./bookEdit/toolbox/readers/readerSetup/readerSetupSpec.ts"], // Temporarily only run this file
+            setupFiles: ["./vitest.setup.ts"], // Run this file before each test file
+            include: ["./**/*{test,spec,Spec}.{js,ts,jsx,tsx}"], // Which files are tests
+            // Uncomment to run only specific test files during development:
+            // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
             exclude: [
                 "**/node_modules/**",
                 "**/dist/**",
@@ -681,16 +734,16 @@ export default defineConfig(async () => {
                 "**/react_components/component-tester/**", // Exclude playwright component tests
                 "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
             ],
-            environment: "jsdom",
-            globals: false,
-            testTimeout: 30000, // Increase timeout for async iframe setup
-            sourcemap: true, // Enable source maps for debugging
+            environment: "jsdom", // Use jsdom to simulate browser DOM in Node
+            globals: false, // Don't inject global test functions (use imports instead)
+            testTimeout: 30000, // 30 second timeout for async operations
+            sourcemap: true, // Enable source maps for debugging test code
             deps: {
-                inline: ["vitest-canvas-mock"],
+                inline: ["vitest-canvas-mock"], // Force this dep to be bundled (not externalized)
             },
             browser: {
-                enabled: false, // Disabled due to xregexp module resolution issues
-                provider: playwright(),
+                enabled: false, // Browser mode disabled (we use jsdom instead)
+                provider: playwright(), // Would use Playwright for real browser testing
                 instances: [
                     {
                         browser: "chromium",
@@ -699,19 +752,23 @@ export default defineConfig(async () => {
             },
             environmentOptions: {
                 jsdom: {
-                    resources: "usable",
+                    resources: "usable", // Allow jsdom to load external resources
                 },
             },
         },
+
+        // DEPENDENCY OPTIMIZATION
+        // Controls how Vite pre-bundles dependencies for faster dev server startup
         optimizeDeps: {
-            include: ["jquery"],
-            exclude: ["lib/localizationManager/localizationManager"],
+            include: ["jquery"], // Always pre-bundle jQuery
+            exclude: ["lib/localizationManager/localizationManager"], // Don't pre-bundle this
         },
+
+        // GLOBAL DEFINITIONS
+        // Define global constants that get replaced at build time
         define: {
-            // Add global constants here if your webpack config defines any
-            // Example: __DEV__: JSON.stringify(true)
-            global: "globalThis", // Fix "global is not defined" error
+            global: "globalThis", // Polyfill for Node's "global" variable in browser
         },
     };
-    // ...other options as needed to match your webpack config...
+    // For more Vite configuration options, see: https://vitejs.dev/config/
 });
