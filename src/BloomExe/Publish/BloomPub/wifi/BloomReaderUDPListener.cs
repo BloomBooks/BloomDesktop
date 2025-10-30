@@ -19,7 +19,11 @@ namespace Bloom.Publish.BloomPub.wifi
         private int _portToListen = 5915;
         Thread _listeningThread;
         public event EventHandler<AndroidMessageArgs> NewMessageReceived;
-        UdpClient _listener = null;
+
+        // Client by which we receive replies to broadcast book advert. It listens on all network
+        // interfaces on the expected listening port.
+        UdpClient _clientForBookRequestReceive = null;
+
         private bool _listening;
 
         //constructor: starts listening.
@@ -36,8 +40,7 @@ namespace Bloom.Publish.BloomPub.wifi
         /// </summary>
         public void ListenForUDPPackages()
         {
-            // UdpClient needs a constructor that specifies not just the port but also the
-            // IP address.
+            // UdpClient needs a constructor that specifies more than just the port.
             //
             // If we specify the port only, this article describes how the system proceeds:
             // https://learn.microsoft.com/en-us/dotnet/api/system.net.sockets.udpclient.-ctor?view=net-9.0
@@ -48,8 +51,11 @@ namespace Bloom.Publish.BloomPub.wifi
             // And, similar to what has been observed in Advertiser, the "underlying service
             // provider" sometimes assigns the IP address from the wrong network interface.
             //
-            // So, create the endpoint first setting its port *and* IP address. Then pass that
-            // endpoint into the UdpClient constructor.
+            // So, create the endpoint first, setting its port *and* special IP addr 'IPAddress.Any'.
+            // This address causes the endpoint to listen for client activity on all network interfaces,
+            // bypassing the possibility of the network stack choosing a wrong address:
+            // https://learn.microsoft.com/en-us/dotnet/api/system.net.ipaddress.any?view=net-9.0
+            // Then base the UdpClient on this endpoint.
 
             IPEndPoint groupEP = null;
 
@@ -59,15 +65,15 @@ namespace Bloom.Publish.BloomPub.wifi
 
                 if (groupEP == null)
                 {
-                    Debug.WriteLine("UDPListener, ERROR creating IPEndPoint, bail");
+                    EventLog.WriteEntry("Application", "UDPListener, ERROR creating IPEndPoint");
                     return;
                 }
 
-                _listener = new UdpClient(groupEP);
+                _clientForBookRequestReceive = new UdpClient(groupEP);
 
-                if (_listener == null)
+                if (_clientForBookRequestReceive == null)
                 {
-                    Debug.WriteLine("UDPListener, ERROR creating UdpClient, bail");
+                    EventLog.WriteEntry("Application", "UDPListener, ERROR creating UdpClient");
                     return;
                 }
             }
@@ -77,21 +83,20 @@ namespace Bloom.Publish.BloomPub.wifi
                 Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
             }
 
-            // Local endpoint has been created on the port that BloomReader will respond to.
-            // And the endpoint's address 'IPAddress.Any' means that *all* network interfaces
-            // on this machine will be monitored for UDP packets sent to the designated port.
+            // Listener has been created on the port that BloomReader will respond to, and
+            // will monitor *all* network interfaces for UDP packets sent to that port.
 
             while (_listening)
             {
                 try
                 {
                     // Log our local address and port.
-                    if (_listener?.Client?.LocalEndPoint is IPEndPoint localEP)
+                    if (_clientForBookRequestReceive?.Client?.LocalEndPoint is IPEndPoint localEP)
                     {
-                        Debug.WriteLine("UDP listening will wait for packet on {0}, port {1}", localEP.Address, localEP.Port);
+                        EventLog.WriteEntry("Application", $"UDP listening will wait for packet on {localEP.Address}, port {localEP.Port}");
                     }
 
-                    byte[] bytes = _listener.Receive(ref groupEP); // waits for packet from Android.
+                    byte[] bytes = _clientForBookRequestReceive.Receive(ref groupEP); // waits for packet from Android.
 
                     // DEBUG ONLY
                     //Debug.WriteLine("UDPListener, got {0} bytes (raising \'NewMessageReceived\'):", bytes.Length);
@@ -118,8 +123,8 @@ namespace Bloom.Publish.BloomPub.wifi
             if (_listening)
             {
                 _listening = false;
-                _listener?.Close(); // forcibly end communication
-                _listener = null;
+                _clientForBookRequestReceive?.Close(); // forcibly end communication
+                _clientForBookRequestReceive = null;
             }
 
             if (_listeningThread == null)
