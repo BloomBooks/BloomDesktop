@@ -2,16 +2,17 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import { Div } from "../../../react_components/l10nComponents";
+import { Div, Span } from "../../../react_components/l10nComponents";
 import { get, postDataWithConfig } from "../../../utils/bloomApi";
-import { ApiBackedCheckbox } from "../../../react_components/apiBackedCheckbox";
 import "./impairmentVisualizer.less";
-import { RadioGroup, Radio } from "../../../react_components/radio";
+import { RadioGroup } from "../../../react_components/RadioGroup";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
-import { kHasCanvasElementClass } from "../overlay/canvasElementUtils";
 import { kImageContainerClass } from "../../js/bloomImages";
 import { CanvasElementManager } from "../../js/CanvasElementManager";
+import { ThemeProvider } from "@mui/material";
+import { ApiCheckbox } from "../../../react_components/ApiCheckbox";
+import { toolboxTheme } from "../../../bloomMaterialUITheme";
 
 interface IState {
     kindOfColorBlindness: string;
@@ -38,65 +39,69 @@ export class ImpairmentVisualizerControls extends React.Component<
     private simulatingCataracts: boolean;
     private simulatingColorBlindness: boolean;
 
+    private radioLabelElement = (
+        label: string,
+        l10nKey: string,
+    ): JSX.Element => <Span l10nKey={l10nKey}>{label}</Span>;
+
     public render() {
         return (
-            <div className="impairmentVisualizerBody">
-                <div className="impairmentVisualizerInnerWrapper">
-                    <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
-                        You can use these check boxes to have Bloom simulate how
-                        your images would look with various visual impairments.
-                    </Div>
-                    <ApiBackedCheckbox
-                        apiEndpoint="accessibilityCheck/cataracts"
-                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
-                        onCheckChanged={(simulate) =>
-                            this.updateCataracts(simulate)
-                        }
-                        css={css`
-                            margin-bottom: 6px;
-                        `}
-                    >
-                        Cataracts
-                    </ApiBackedCheckbox>
-                    <ApiBackedCheckbox
-                        apiEndpoint="accessibilityCheck/colorBlindness"
-                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
-                        onCheckChanged={(simulate) =>
-                            this.updateColorBlindnessCheck(simulate)
-                        }
-                        css={css`
-                            margin-bottom: 2px;
-                        `}
-                    >
-                        Color Blindness
-                    </ApiBackedCheckbox>
-                    <RadioGroup
-                        onChange={(val) => this.updateColorBlindnessRadio(val)}
-                        value={this.state.kindOfColorBlindness}
-                    >
-                        <Radio
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.RedGreen"
-                            value="RedGreen"
-                        >
-                            Red-Green
-                        </Radio>
-                        <Radio
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.BlueYellow"
-                            value="BlueYellow"
-                        >
-                            Blue-Yellow
-                        </Radio>
-                        <Radio
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Complete"
-                            value="Complete"
-                        >
-                            Complete
-                        </Radio>
-                    </RadioGroup>
-                </div>
+            <ThemeProvider theme={toolboxTheme}>
+                <div className="impairmentVisualizerBody">
+                    <div className="impairmentVisualizerInnerWrapper">
+                        <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
+                            You can use these check boxes to have Bloom simulate
+                            how your images would look with various visual
+                            impairments.
+                        </Div>
+                        <ApiCheckbox
+                            label="Cataracts"
+                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
+                            apiEndpoint="accessibilityCheck/cataracts"
+                            onChange={(simulate) =>
+                                this.updateCataracts(simulate)
+                            }
+                            size="small"
+                        />
+                        <ApiCheckbox
+                            label="Color Blindness"
+                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
+                            apiEndpoint="accessibilityCheck/colorBlindness"
+                            onChange={(simulate) =>
+                                this.updateColorBlindnessCheck(simulate)
+                            }
+                            size="small"
+                        />
+                        <RadioGroup
+                            onChange={(val) =>
+                                this.updateColorBlindnessRadio(val)
+                            }
+                            value={this.state.kindOfColorBlindness}
+                            choices={{
+                                RedGreen: this.radioLabelElement(
+                                    "Red-Green",
+                                    "EditTab.Toolbox.ImpairmentVisualizer.RedGreen",
+                                ),
+                                BlueYellow: this.radioLabelElement(
+                                    "Blue-Yellow",
+                                    "EditTab.Toolbox.ImpairmentVisualizer.BlueYellow",
+                                ),
+                                Complete: this.radioLabelElement(
+                                    "Complete",
+                                    "EditTab.Toolbox.ImpairmentVisualizer.Complete",
+                                ),
+                            }}
+                            radioSize="small"
+                            css={css`
+                                margin-left: 25px;
+                                padding-top: 8px;
+                            `}
+                        ></RadioGroup>
+                    </div>
 
-                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm" />
-            </div>
+                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm" />
+                </div>
+            </ThemeProvider>
         );
     }
 

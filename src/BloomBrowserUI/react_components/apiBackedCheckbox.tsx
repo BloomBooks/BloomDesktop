@@ -8,7 +8,7 @@ import { Checkbox } from "./checkbox";
 interface IProps extends ILocalizationProps {
     apiEndpoint: string;
     // The parent can give us this function which we use to subscribe to refresh events
-    // See notes in accessibiltiyChecklist for a thorough discussion.
+    // See notes in accessibilityChecklist for a thorough discussion.
     subscribeToRefresh?: (queryData: () => void) => void;
     // Extra function to call before posting apiEndpoint.
     priorClickAction?: () => void;

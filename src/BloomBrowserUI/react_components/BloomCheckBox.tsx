@@ -21,6 +21,7 @@ export const BloomCheckbox: React.FunctionComponent<{
     alreadyLocalized?: boolean;
     icon?: React.ReactNode;
     iconScale?: number;
+    size?: "small" | "medium" | "large";
     temporarilyDisableI18nWarning?: boolean;
     onCheckChanged: (v: boolean | undefined) => void;
     l10nParam0?: string;
@@ -106,6 +107,7 @@ export const BloomCheckbox: React.FunctionComponent<{
                         }
                     }}
                     color="primary"
+                    size={props.size}
                 />
             )}
             {props.hideBox && (
@@ -144,9 +146,6 @@ export const BloomCheckbox: React.FunctionComponent<{
                     className="bloom-checkbox-label" // this classname is to help overlay toolbox hack a fix
                     css={css`
                         ${disabled && `opacity: ${kBloomDisabledOpacity}`};
-                        // this rule is about helping this to keep working even when font is small, as in the Overlay Tool
-                        min-height: 15px;
-                        //border: solid red 0.1px;
                     `}
                 >
                     {labelComponent}
@@ -165,6 +164,7 @@ export const BloomCheckbox: React.FunctionComponent<{
 
     return (
         <FormControlLabel
+            className="bloom-checkbox-form-control-label"
             css={css`
                 padding-top: 10px; // maintain the default behavior for spacing
                 margin-left: 0; // I don't understand why this is needed, but the default has 11px

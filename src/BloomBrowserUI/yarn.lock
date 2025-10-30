@@ -11123,11 +11123,6 @@ vite@^7.1.5:
   optionalDependencies:
     fsevents "~2.3.3"
 
-vitest-teamcity-reporter@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/vitest-teamcity-reporter/-/vitest-teamcity-reporter-0.3.1.tgz#4f2a50d0fcacadc66f279068a4d5f76418fb833c"
-  integrity sha512-R/A5Dr2UPhQIZTfbHy7a+YOZc01gusPNzrmSNTukbJkjQrlTts2swg3yBhXdA4nHlSJGEcHE8x1NYdUiT2wBOQ==
-
 vitest@^4.0.0:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/vitest/-/vitest-4.0.4.tgz#92f8ed44110292c80efadc03bb6fa735ebefa414"
