@@ -74,5 +74,7 @@ breakpoints set in VS Code, and without a fight every time to get debug config r
 
 Major todos:
 - get vite dev mode working for edit tab. Current plan is to make a separate card for this.
+- get all remaining entry points working in dev mode
 - Storybook
-
+- pug files should hot-reload when changed
+- fix the five skipped tests (support tests that need a real browser)
