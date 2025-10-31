@@ -12,6 +12,7 @@ interface BookCardProps {
     onRemove?: () => void;
     className?: string;
     style?: React.CSSProperties;
+    displayRealTitle?: boolean;
 }
 
 export const LinkCard: React.FC<BookCardProps> = ({
@@ -19,8 +20,11 @@ export const LinkCard: React.FC<BookCardProps> = ({
     selected,
     onClick,
     onRemove,
-    style
+    style,
+    displayRealTitle
 }) => {
+    const title = displayRealTitle ? link.book.title : link.book.folderName;
+    const tooltip = displayRealTitle ? link.book.folderName : link.book.title;
     return (
         <Card
             onClick={onClick}
@@ -76,7 +80,10 @@ export const LinkCard: React.FC<BookCardProps> = ({
                     <DeleteIcon fontSize="small" />
                 </IconButton>
             )}
-            <BloomTooltip tip={link.book.realTitle || link.book.title}>
+            <BloomTooltip
+                // If we are displaying the title, add a tooltip with the foldername
+                tip={tooltip}
+            >
                 <CardContent
                     css={css`
                         padding: 0;
@@ -91,7 +98,7 @@ export const LinkCard: React.FC<BookCardProps> = ({
                 >
                     <img
                         src={link.page?.thumbnail || link.book.thumbnail}
-                        alt={`${link.book.title}${
+                        alt={`${title}${
                             link.page ? ` - Page ${link.page.pageId}` : ""
                         }`}
                         css={css`
@@ -116,7 +123,7 @@ export const LinkCard: React.FC<BookCardProps> = ({
                             text-align: center;
                         `}
                     >
-                        {link.book.title}
+                        {title}
                         {link.page && ` (Page ${link.page.pageId})`}
                     </Typography>
                 </CardContent>

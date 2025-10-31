@@ -27,7 +27,7 @@ namespace BloomTests.Book
             _activityFolder = Path.Combine(_bookFolder.FolderPath, "activities");
             _secondActivityFolder = Path.Combine(
                 _activityFolder,
-                Path.GetFileNameWithoutExtension(_widgetFile.Path) + "2"
+                Path.GetFileNameWithoutExtension(_widgetFile.Path) + "1"
             );
 
             SetupZip(zip => { });
@@ -39,7 +39,7 @@ namespace BloomTests.Book
             _secondWidgetSrcPath = UrlPathString.CreateFromUnencodedString(
                 "activities/"
                     + Path.GetFileNameWithoutExtension(_widgetFile.Path)
-                    + "2/"
+                    + "1/"
                     + "index.htm"
             );
         }
@@ -273,7 +273,7 @@ namespace BloomTests.Book
                     UrlPathString.CreateFromUnencodedString(
                         "activities/"
                             + Path.GetFileNameWithoutExtension(_widgetFile.Path)
-                            + "2/"
+                            + "1/"
                             + "index.html"
                     )
                 )

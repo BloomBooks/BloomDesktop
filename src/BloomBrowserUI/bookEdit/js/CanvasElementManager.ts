@@ -6573,7 +6573,17 @@ export class CanvasElementManager {
                 const canvas = bloomCanvas.getElementsByTagName(
                     "canvas"
                 )[0] as HTMLElement;
-                bloomCanvas.insertBefore(bgCanvasElement, canvas.nextSibling);
+                if (canvas) {
+                    bloomCanvas.insertBefore(
+                        bgCanvasElement,
+                        canvas.nextSibling
+                    );
+                } else {
+                    // Some old books can be in this state.  See BL-15298.
+                    // Put it at the start of the bloom-canvas. This is safer than appending because
+                    // we want the implicit z-order of the background image to be at the back.
+                    bloomCanvas.prepend(bgCanvasElement);
+                }
             }
         }
         const bgImage = getBackgroundImageFromBloomCanvas(

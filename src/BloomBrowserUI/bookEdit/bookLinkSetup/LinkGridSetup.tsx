@@ -29,6 +29,10 @@ const LinkGridSetup: React.FC<{
     const [targets, setTargets] = useState<Link[]>(props.links); // initialize with links prop
     const [isPageDialogOpen, setIsPageDialogOpen] = useState(false);
 
+    React.useEffect(() => {
+        setTargets(props.links);
+    }, [props.links]);
+
     const handleItemSelect = (item: BookInfoForLinks) => {
         setSelectedSource(item);
     };
