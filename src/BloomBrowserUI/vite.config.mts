@@ -383,7 +383,33 @@ function postBuildPlugin(): Plugin {
                     // Add imports if any
                     if (entryData.imports && entryData.imports.length > 0) {
                         entryData.imports.forEach((importFile: string) => {
-                            dependencies.add("./" + importFile);
+                            // Check if this import is an entry point in the manifest
+                            const importEntry = manifest[importFile];
+                            if (importEntry && importEntry.isEntry) {
+                                // This is an entry point - import the corresponding bundle file
+                                // Convert the -main.js to .js (e.g., copyrightAndLicenseBundle-main.js -> copyrightAndLicenseBundle.js)
+                                const importBundleFile =
+                                    importEntry.file.replace("-main.js", ".js");
+                                console.log(
+                                    `  Resolving entry point dependency: ${importFile} -> ${importBundleFile}`,
+                                );
+                                dependencies.add("./" + importBundleFile);
+
+                                // Also add the CSS from that entry point if it has any
+                                if (
+                                    importEntry.css &&
+                                    importEntry.css.length > 0
+                                ) {
+                                    importEntry.css.forEach(
+                                        (cssFile: string) => {
+                                            dependencies.add("./" + cssFile);
+                                        },
+                                    );
+                                }
+                            } else {
+                                // Not an entry point - use as-is
+                                dependencies.add("./" + importFile);
+                            }
                         });
                     }
 
