@@ -498,7 +498,7 @@ namespace Bloom.Edit
             // Check memory for the benefit of developers.
             Bloom.Utils.MemoryManagement.CheckMemory(
                 false,
-                "EditingView - StartNavigationToEditPage() about to call UpdateDisplay()",
+                "EditingView - StartNavigationToEditPage() about to call UpdateDropdownButtons()",
                 false
             );
 #endif
@@ -1706,25 +1706,21 @@ namespace Bloom.Edit
                 // than one in a single call to this method.
                 _sendingContentLanguagesSelectionChanged = false;
 
-                var items = _contentLanguagesDropdown.Items.Cast<ToolStripMenuItem>().ToList();
                 if (contentLanguages[0].Selected != L1)
                 {
                     contentLanguages[0].Selected = L1;
-                    items[0].Checked = L1;
                     changed = true;
                 }
 
                 if (contentLanguages.Count > 1 && contentLanguages[1].Selected != L2)
                 {
                     contentLanguages[1].Selected = L2;
-                    items[1].Checked = L2;
                     changed = true;
                 }
 
                 if (contentLanguages.Count > 2 && contentLanguages[2].Selected != L3)
                 {
                     contentLanguages[2].Selected = L3;
-                    items[2].Checked = L3;
                     changed = true;
                 }
             }
