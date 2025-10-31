@@ -1,4 +1,5 @@
 {
+    "task.allowAutomaticTasks": "on",
     "editor.formatOnSave": true,
     "prettier.endOfLine": "auto",
     "files.eol": "auto",
