@@ -44,7 +44,7 @@ namespace Bloom.Publish.BloomPub.wifi
         private IPEndPoint _bcastSourceEP;
 
         // Our "local IP address" of the network interface used for Bloom network traffic:
-        //   - it is the target address of incoming book requests from Androids
+        //   - it is the target address for incoming book requests from Androids
         //   - it is also used to derive the destination address for outgoing book advert broadcasts
         private string _ipForReceivingReplies = "";
 
@@ -135,9 +135,13 @@ namespace Bloom.Publish.BloomPub.wifi
                     if (!Paused)
                     {
                         // Determine remote (broadcast) and local IP addresses. This includes
-                        // instantiating the UdpClient, which is why it must be released after
-                        // it does the broadcast.
-                        // This all takes about 250 millisec on a 1.9 GHz Core i7 laptop.
+                        // instantiating the UdpClient, which must be released after it does
+                        // the broadcast.
+                        // This all takes about 250 millisec on a 1.9 GHz Core i7 Win11 laptop.
+                        // It does slow the advertising loop by a quarter second, but the user
+                        // experience won't suffer. Even slower machines taking 1000 millisec
+                        // or more to do this will still have adverts going out every 2-3 secs.
+                        // I don't think that would be a big problem.
                         GetCurrentIpAddresses();
 
                         UpdateAdvertisementBasedOnCurrentIpAddress();
@@ -230,7 +234,6 @@ namespace Bloom.Publish.BloomPub.wifi
                 Debug.WriteLine("WM, GetCurrentIpAddresses, try-begin"); // TEMPORARY
                 // Instantiate source endpoint using the local IP address we just got,
                 // then use that to create the UdpClient for broadcasting adverts.
-                //IPEndPoint epBroadcast = new IPEndPoint(IPAddress.Parse(_ipForReceivingReplies), _portForBroadcast);
                 _bcastSourceEP = new IPEndPoint(IPAddress.Parse(_ipForReceivingReplies), _portForBroadcast);
                 if (_bcastSourceEP == null)
                 {
@@ -255,9 +258,11 @@ namespace Bloom.Publish.BloomPub.wifi
                 _bcastDestinationEP = new IPEndPoint(IPAddress.Parse(_ipForSendingBroadcast), _portForBroadcast);
 
                 // Log key data for tech support.
-                EventLog.WriteEntry("Application", $"UDP advertising will use: _localIp = {_ipForReceivingReplies}:{_bcastSourceEP.Port} ({ifaceDesc})");
-                EventLog.WriteEntry("Application", $"                          _subnetMask = {_subnetMask}");
-                EventLog.WriteEntry("Application", $"                          _remoteIp = {_bcastDestinationEP.Address}:{_bcastDestinationEP.Port}");
+                EventLog.WriteEntry("Application", $"UDP advertising will use: localIp = {_ipForReceivingReplies}:{_bcastSourceEP.Port} ({ifaceDesc})");
+                EventLog.WriteEntry("Application", $"                          subnetMask = {_subnetMask}");
+                EventLog.WriteEntry("Application", $"                          remoteIp = {_bcastDestinationEP.Address}:{_bcastDestinationEP.Port}");
+                Debug.WriteLine($"      _ipForReceivingReplies = {_ipForReceivingReplies}"); // TEMPORARY
+                Debug.WriteLine($"      _ipForSendingBroadcast = {_ipForSendingBroadcast}"); // TEMPORARY
                 Debug.WriteLine("WM, GetCurrentIpAddresses, try-end"); // TEMPORARY
             }
             catch (Exception e)
