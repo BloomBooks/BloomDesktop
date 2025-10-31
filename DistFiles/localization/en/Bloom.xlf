@@ -2292,6 +2292,11 @@
         <source xml:lang="en">Text Block</source>
         <note>ID: EditTab.Toolbox.ComicTool.TextBlock</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText" sil:dynamic="true">
+        <source xml:lang="en">Go Somewhere</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText</note>
+        <note>Default text for a navigation button</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer</note>

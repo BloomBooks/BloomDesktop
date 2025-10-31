@@ -39,6 +39,8 @@ import {
     CanvasElementItem,
     CanvasElementItemRegion,
     CanvasElementItemRow,
+    CanvasElementLinkGridItem,
+    CanvasElementNavigationButtonItem,
     CanvasElementTextItem,
 } from "./CanvasElementItem";
 import { getCanvasElementManager } from "./canvasElementUtils";
@@ -794,7 +796,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 </CanvasElementItemRow>
 
                                 <TriangleCollapse
-                                    initiallyOpen={false}
+                                    initiallyOpen={
+                                        true
+                                    } /* todo should be false in production */
                                     labelL10nKey="EditTab.Toolbox.OverlayTool.Navigation"
                                     buttonColor="#1D94A4"
                                     css={css`
@@ -803,18 +807,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                     `}
                                 >
                                     <CanvasElementItemRow>
-                                        <CanvasElementItem
-                                            src="/bloom/bookEdit/toolbox/overlay/imageButtonPaletteItem.svg"
-                                            canvasElementType="image"
-                                        />
-                                        <CanvasElementItem
-                                            src="/bloom/bookEdit/toolbox/overlay/buttonPaletteItem.svg"
-                                            canvasElementType="rectangle"
-                                        />
-                                        <CanvasElementItem
-                                            src="/bloom/bookEdit/toolbox/overlay/bookGridPaletteItem.svg"
-                                            canvasElementType="rectangle"
-                                        />
+                                        <CanvasElementNavigationButtonItem />
+
+                                        <CanvasElementLinkGridItem />
                                     </CanvasElementItemRow>
                                 </TriangleCollapse>
                             </CanvasElementItemRegion>
