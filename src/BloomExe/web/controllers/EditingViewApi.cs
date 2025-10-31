@@ -111,6 +111,11 @@ namespace Bloom.web.controllers
                 HandleAddImageFromUrl,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "editView/currentBookId",
+                HandleGetCurrentBookId,
+                false
+            );
         }
 
         private void HandleJumpToPage(ApiRequest request)
@@ -552,6 +557,18 @@ namespace Bloom.web.controllers
             {
                 request.Failed("Error adding image: " + ex.Message);
             }
+        }
+
+        private void HandleGetCurrentBookId(ApiRequest request)
+        {
+            if (request.CurrentBook == null)
+            {
+                // it's not obvious what to here. but HandleGetColorsUsedInBookCanvasElements()
+                // has this kind of logic.
+                request.ReplyWithText("");
+                return;
+            }
+            request.ReplyWithText(request.CurrentBook.ID);
         }
     }
 }

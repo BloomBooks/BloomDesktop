@@ -1,9 +1,10 @@
 import * as React from "react";
 import { Card, CardContent, Typography, IconButton } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+import CloseIcon from "@mui/icons-material/Close";
 import { Link } from "./BookLinkTypes";
 import { css } from "@emotion/react";
-import { BloomTooltip } from "../../react_components/BloomToolTip";
+import { BloomTooltip } from "../BloomToolTip";
+import { kBloomBlue } from "../../bloomMaterialUITheme";
 
 interface BookCardProps {
     link: Link;
@@ -12,42 +13,52 @@ interface BookCardProps {
     onRemove?: () => void;
     className?: string;
     style?: React.CSSProperties;
-    displayRealTitle?: boolean;
+    preferFolderName?: boolean;
+    isDragging?: boolean;
+    disabled?: boolean;
 }
 
-export const LinkCard: React.FC<BookCardProps> = ({
+export const BookLinkCard: React.FC<BookCardProps> = ({
     link,
     selected,
     onClick,
     onRemove,
     style,
-    displayRealTitle,
+    preferFolderName,
+    isDragging,
+    disabled = false,
 }) => {
-    const title = displayRealTitle ? link.book.title : link.book.folderName;
-    const tooltip = displayRealTitle ? link.book.folderName : link.book.title;
+    // Allow caller to decide between showing folder name or title as the primary text.
+    // The source list shows folder names (technical identifier), while the target list
+    // shows titles (user-friendly display). The tooltip shows the alternate value.
+    const title = preferFolderName ? link.book.folderName : link.book.title;
+    const tooltip = preferFolderName ? link.book.title : link.book.folderName;
+    // Don't show tooltip while dragging (to avoid visual clutter) or if it's identical to the title
+    const shouldShowTooltip = !isDragging && tooltip !== title;
     return (
         <Card
             onClick={onClick}
             style={style}
             css={css`
                 width: 140px;
-                cursor: ${onClick ? "pointer" : "move"};
-                background-color: ${selected
-                    ? "rgb(25, 118, 210)"
-                    : "#505050"} !important;
-                outline: ${selected ? "3px solid rgb(25, 118, 210)" : "none"};
+                background-color: #505050 !important;
+                outline: ${selected ? `3px solid ${kBloomBlue}` : "none"};
                 color: white;
                 position: relative;
                 padding: 0 0 8px 0;
+                opacity: ${disabled ? 0.5 : 1};
+                cursor: ${disabled ? "default" : onClick ? "pointer" : "move"};
                 &:hover .removeLinkButton {
                     display: block;
                 }
             `}
         >
-            {onRemove && (
+            {onRemove && !isDragging && (
                 <IconButton
                     className="removeLinkButton"
                     size="small"
+                    aria-label="Remove"
+                    data-testid="remove-book-button"
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -77,17 +88,16 @@ export const LinkCard: React.FC<BookCardProps> = ({
                         }
                     `}
                 >
-                    <DeleteIcon fontSize="small" />
+                    <CloseIcon fontSize="small" />
                 </IconButton>
             )}
             <BloomTooltip
-                // If we are displaying the title, add a tooltip with the foldername
-                tip={tooltip}
+                // Only show tooltip if it differs from the displayed title
+                tip={shouldShowTooltip ? tooltip : ""}
             >
                 <CardContent
                     css={css`
                         padding: 0;
-                        padding-bottom: 0;
                         display: flex;
                         flex-direction: column;
                         height: 100%;
@@ -98,9 +108,6 @@ export const LinkCard: React.FC<BookCardProps> = ({
                 >
                     <img
                         src={link.page?.thumbnail || link.book.thumbnail}
-                        alt={`${title}${
-                            link.page ? ` - Page ${link.page.pageId}` : ""
-                        }`}
                         css={css`
                             width: 100%;
                             aspect-ratio: 16/9;
@@ -121,10 +128,11 @@ export const LinkCard: React.FC<BookCardProps> = ({
                             line-height: 1.5em;
                             font-size: 12px;
                             text-align: center;
+                            /* enhance: use the actual language font */
+                            font-family: "Andika", sans-serif;
                         `}
                     >
                         {title}
-                        {link.page && ` (Page ${link.page.pageId})`}
                     </Typography>
                 </CardContent>
             </BloomTooltip>

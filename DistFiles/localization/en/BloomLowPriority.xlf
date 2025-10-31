@@ -271,6 +271,31 @@
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
         <note>{0} will be replaced with the name of the collection that the user currently has open for editing.</note>
       </trans-unit>
+      <trans-unit id="BookGridSetupDialog.Title">
+        <source xml:lang="en">Book Grid Setup</source>
+        <note>ID: BookGridSetupDialog.Title</note>
+        <note>Title of the dialog for setting up a grid of book links</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.BooksInCollection">
+        <source xml:lang="en">Books in this Collection</source>
+        <note>ID: BookGridSetup.BooksInCollection</note>
+        <note>Header for the list of books available in the current collection</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.AddBook">
+        <source xml:lang="en">Add Book →</source>
+        <note>ID: BookGridSetup.AddBook</note>
+        <note>Button to add the selected book to the grid of links</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.AddAllBooks">
+        <source xml:lang="en">Add All Books →</source>
+        <note>ID: BookGridSetup.AddAllBooks</note>
+        <note>Button to add all available books to the grid of links</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.LinksInGrid">
+        <source xml:lang="en">Links in Grid (%0)</source>
+        <note>ID: BookGridSetup.LinksInGrid</note>
+        <note>Header for the list of books that have been added to the grid, %0 is the count</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

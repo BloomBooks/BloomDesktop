@@ -5,20 +5,21 @@ import {
     DialogMiddle,
     DialogBottomButtons,
     DialogTitle,
-} from "../../react_components/BloomDialog/BloomDialog";
-import { useSetupBloomDialog } from "../../react_components/BloomDialog/BloomDialogPlumbing";
+} from "../BloomDialog/BloomDialog";
+import { useSetupBloomDialog } from "../BloomDialog/BloomDialogPlumbing";
 import {
     DialogCancelButton,
     DialogOkButton,
-} from "../../react_components/BloomDialog/commonDialogComponents";
-import { useWatchApiData } from "../../utils/bloomApi";
-import { ShowEditViewDialog } from "../editViewFrame";
-import LinkGridSetup from "./LinkGridSetup";
+} from "../BloomDialog/commonDialogComponents";
+import { useWatchApiData, useApiString } from "../../utils/bloomApi";
+import { ShowEditViewDialog } from "../../bookEdit/editViewFrame";
+import { BookGridSetup } from "./BookGridSetup";
 import { css } from "@emotion/react";
 import { BookInfoForLinks, Link } from "./BookLinkTypes";
 import { IBookInfo } from "../../collectionsTab/BooksOfCollection";
+import { useL10n } from "../l10nHooks";
 
-export const LinkGridSetupDialog: React.FunctionComponent<{
+export const BookGridSetupDialog: React.FunctionComponent<{
     initialLinks: Link[];
     setLinksCallback: (links: Link[]) => void;
 }> = (props) => {
@@ -27,7 +28,7 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
         dialogFrameProvidedExternally: false,
     });
 
-    const dialogTitle = "Link Grid Setup"; // useL10n("Link Grid Setup", "LinkGridSetupDialog.Title");
+    const dialogTitle = useL10n("Book Grid Setup", "BookGridSetupDialog.Title");
 
     function saveLinksAndCloseDialog() {
         props.setLinksCallback(selectedLinks);
@@ -45,15 +46,30 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
         "unused", // we don't care about updates, so maybe we don't care about this?
     );
 
-    const bookLinks: BookInfoForLinks[] = unfilteredBooks.map((book) => ({
+    // Get the current book ID so we can exclude it from the source list.
+    // A book shouldn't be able to link to itself.
+    const currentBookId = useApiString("editView/currentBookId", "");
+
+    // Filter out the current book from the source list
+    const filteredBooks = unfilteredBooks.filter(
+        (book) => book.id !== currentBookId,
+    );
+
+    const bookLinks: BookInfoForLinks[] = filteredBooks.map((book) => ({
         id: book.id,
         folderName: book.folderName,
         title: book.title,
         thumbnail: `/bloom/api/collections/book/thumbnail?book-id=${book.id}`,
     }));
 
+    // Create lookup tables to efficiently map book IDs to their folder names and titles.
+    // This allows us to enrich the link data with current book information when it changes.
     const bookIdsToFolderNames = Object.fromEntries(
         unfilteredBooks.map((b) => [b.id, b.folderName]),
+    );
+
+    const bookIdsToTitles = Object.fromEntries(
+        unfilteredBooks.map((b) => [b.id, b.title]),
     );
 
     return (
@@ -70,23 +86,31 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
             <DialogTitle title={dialogTitle} />
             <DialogMiddle
                 css={css`
-                    padding: 0;
+                    > :first-child {
+                        // for some reason this dialog looks dumb with padding of the contents
+                        padding: 0 !important;
+                    }
                     height: 80vh;
                 `}
             >
-                <LinkGridSetup
+                <BookGridSetup
                     sourceBooks={bookLinks}
                     /*  not using these the trimmed down version
                     collectionNames={collections.map(c => c.name)}
                     currentCollection={currentCollection}
                     onCollectionSelectionChange={setCurrentCollection}
                     */
+                    // Enrich links with current book data from the collection.
+                    // This ensures that if a book's title or folder name has changed,
+                    // we display the most up-to-date information.
                     links={selectedLinks.map((link) => ({
                         ...link,
                         book: {
                             ...link.book,
                             folderName: bookIdsToFolderNames[link.book.id],
-                            title: link.book.title,
+                            title:
+                                bookIdsToTitles[link.book.id] ||
+                                link.book.title,
                         },
                     }))}
                     onLinksChanged={setSelectedLinks}
@@ -103,12 +127,12 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
     );
 };
 
-export function showLinkGridSetupsDialog(
+export function showLinkGridSetupDialog(
     currentLinks: Link[],
     setLinksCallback: (links: Link[]) => void,
 ) {
     ShowEditViewDialog(
-        <LinkGridSetupDialog
+        <BookGridSetupDialog
             initialLinks={currentLinks}
             setLinksCallback={setLinksCallback}
         />,
