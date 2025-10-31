@@ -8,6 +8,7 @@ import {
 } from "../../bloomMaterialUITheme";
 import { BloomTabs } from "../../react_components/BloomTabs";
 import { Tab, TabList, TabPanel } from "react-tabs";
+import "react-tabs/style/react-tabs.css";
 import { Div, H2, Span } from "../../react_components/l10nComponents";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";

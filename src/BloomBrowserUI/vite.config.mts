@@ -391,21 +391,47 @@ function postBuildPlugin(): Plugin {
                     let finalContent = "// Auto-generated entry point file\n";
                     finalContent += `// This file imports all dependencies for the ${entryName} bundle\n\n`;
 
-                    // Import all dependencies
+                    // Separate CSS and JS dependencies
+                    const cssDependencies: string[] = [];
+                    const jsDependencies: string[] = [];
+
                     const sortedDependencies = Array.from(dependencies).sort();
                     sortedDependencies.forEach((dep) => {
                         if (dep.endsWith(".css")) {
-                            // For CSS files, import them
-                            finalContent += `import '${dep}';\n`;
+                            cssDependencies.push(dep);
                         } else if (dep.endsWith(".js")) {
-                            // For JS files, just import them
+                            jsDependencies.push(dep);
+                        }
+                    });
+
+                    // Add CSS loading function if there are CSS dependencies
+                    if (cssDependencies.length > 0) {
+                        finalContent += `// Function to load CSS files dynamically\n`;
+                        finalContent += `function loadCSS(href) {\n`;
+                        finalContent += `    const link = document.createElement('link');\n`;
+                        finalContent += `    link.rel = 'stylesheet';\n`;
+                        finalContent += `    link.href = href;\n`;
+                        finalContent += `    document.head.appendChild(link);\n`;
+                        finalContent += `}\n\n`;
+
+                        finalContent += `// Load CSS dependencies\n`;
+                        cssDependencies.forEach((cssFile) => {
+                            finalContent += `loadCSS('${cssFile}');\n`;
+                        });
+                        finalContent += `\n`;
+                    }
+
+                    // Import JS dependencies
+                    if (jsDependencies.length > 0) {
+                        finalContent += `// Import JS dependencies\n`;
+                        jsDependencies.forEach((dep) => {
                             // Remove underscore prefix from dependency path if present
                             const cleanDep = dep.startsWith("./_")
                                 ? "./" + dep.substring(3)
                                 : dep;
                             finalContent += `import '${cleanDep}';\n`;
-                        }
-                    });
+                        });
+                    }
 
                     finalContent += "\n// Entry point loaded successfully\n";
                     finalContent += `console.log('${entryName} bundle loaded');\n`;
@@ -633,7 +659,7 @@ export default defineConfig(async ({ command }) => {
             outDir: "../../output/browser", // Where to output built files
             sourcemap: true, // Generate .map files for debugging production code
             minify: false, // Keep code readable (set to 'esbuild' or 'terser' to minify)
-            cssCodeSplit: false, // Put all CSS in JS bundles instead of separate files (matches webpack behavior)
+            cssCodeSplit: true, // Generate separate CSS files (loaded dynamically by postBuildPlugin)
             manifest: true, // Generate manifest.json listing all build outputs
             target: "esnext", // Use latest JavaScript features (decorators, etc.)
             // Tell Vite's CommonJS plugin which exports comicaljs provides

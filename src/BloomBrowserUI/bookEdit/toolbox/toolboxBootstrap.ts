@@ -66,6 +66,13 @@ export { TalkingBookTool }; // one function is called by CSharp.
 
 export { getTheOneToolbox };
 
+// Import the functions we're re-exporting so we can use them in the bundle
+import {
+    showSetupDialog,
+    initializeReaderSetupDialog,
+    closeSetupDialog,
+} from "./readers/readerSetup/readerSetupDialog";
+
 export function canUndo(): boolean {
     const readerToolsModel = getTheOneReaderToolsModel();
 
@@ -123,6 +130,9 @@ interface ToolboxBundleApi {
     applyToolboxStateToPage: typeof applyToolboxStateToPage;
     removeToolboxMarkup: typeof removeToolboxMarkup;
     showOrHideTool_click: typeof showOrHideTool_click;
+    showSetupDialog: typeof import("./readers/readerSetup/readerSetupDialog").showSetupDialog;
+    initializeReaderSetupDialog: typeof import("./readers/readerSetup/readerSetupDialog").initializeReaderSetupDialog;
+    closeSetupDialog: typeof import("./readers/readerSetup/readerSetupDialog").closeSetupDialog;
     addWordListChangedListener: typeof addWordListChangedListener;
     beginSaveChangedSettings: typeof beginSaveChangedSettings;
     makeLetterWordList: typeof makeLetterWordList;
@@ -147,6 +157,9 @@ window.toolboxBundle = {
     applyToolboxStateToPage,
     removeToolboxMarkup,
     showOrHideTool_click,
+    showSetupDialog,
+    initializeReaderSetupDialog,
+    closeSetupDialog,
     addWordListChangedListener,
     beginSaveChangedSettings,
     makeLetterWordList,
