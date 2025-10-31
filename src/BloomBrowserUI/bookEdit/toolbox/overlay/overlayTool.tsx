@@ -40,7 +40,7 @@ import {
     CanvasElementItemRegion,
     CanvasElementItemRow,
     CanvasElementLinkGridItem,
-    CanvasElementNavigationButtonItem,
+    NavigationButtonPaletteItem,
     CanvasElementTextItem,
 } from "./CanvasElementItem";
 import { getCanvasElementManager } from "./canvasElementUtils";
@@ -807,7 +807,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                     `}
                                 >
                                     <CanvasElementItemRow>
-                                        <CanvasElementNavigationButtonItem />
+                                        <NavigationButtonPaletteItem />
 
                                         <CanvasElementLinkGridItem />
                                     </CanvasElementItemRow>

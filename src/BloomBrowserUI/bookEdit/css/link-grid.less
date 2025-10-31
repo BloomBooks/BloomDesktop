@@ -1,0 +1,71 @@
+// .numberedPage.numberedPage.numberedPage.fal-bloom-template-app {
+//     --page-background-color: #214357;
+//     --marginBox-background-color: transparent;
+//     --page-margin: 20px;
+//     /* make the background be a gradient with #214357 at the top left and #636562 at the bottom right*/
+//     background: linear-gradient(135deg, #214357, #214357, #636562) !important;
+// }
+// .fal-bloom-template-app .bloom-button.bloom-button.bloom-button {
+//     background-color: #e7ebee !important;
+//     border-radius: 2px;
+//     color: white;
+//     padding: 15px;
+//     cursor: pointer;
+//     height: 128px; /* hack */
+// }
+.bloom-button.orange {
+    background-color: #ee8601;
+}
+.bloom-button.template-language-button {
+    margin-top: 10px !important   ;
+    margin-bottom: 10px !important;
+}
+
+.bloom-link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+    grid-auto-rows: auto;
+    gap: 0;
+    width: calc(100% - 10px); /* Subtract padding to prevent overflow */
+    height: auto; /* Make height adapt to content */
+    max-height: 100%; /* Ensure it doesn't exceed container */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding-right: 10px; /* Increase padding for scrollbar */
+    margin-right: -5px; /* Compensate for the grid going slightly off-screen */
+}
+.bloom-link-grid:hover {
+    box-shadow: inset 0 0 0 2px white;
+    cursor: pointer;
+}
+
+.bloom-bookButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    color: black;
+    background-color: transparent;
+    border-radius: 5px;
+    padding: 5px;
+    cursor: pointer;
+    transition: transform 0.1s ease; /* Smooth transition */
+}
+.bloom-bookButton img {
+    border-radius: 5px;
+}
+.bloom-bookButton:active {
+    /* move down and to the right */
+    transform: translate(1px, 2px);
+}
+
+.bloom-bookButton img {
+    height: 100px;
+    width: 100%;
+    object-fit: cover;
+}
+
+.bloom-bookButton p {
+    margin: 5px 0px;
+    font-size: 14px;
+}

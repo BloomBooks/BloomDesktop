@@ -611,19 +611,7 @@ export const CanvasElementLinkGridItem: React.FunctionComponent = (props) => {
     );
 };
 
-const buttonItemProps = css`
-    margin-left: 5px;
-    text-align: center;
-    padding: 2px 0.5em;
-    vertical-align: middle;
-    color: ${kBloomBlue};
-    background-color: "white";
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.2);
-`;
-
-export const CanvasElementNavigationButtonItem: React.FunctionComponent = (
-    props,
-) => {
+export const NavigationButtonPaletteItem: React.FunctionComponent = (props) => {
     return (
         <CanvasElementSvgItem
             canvasElementType={"navigation-button"}
@@ -637,7 +625,7 @@ export const CanvasElementNavigationButtonItem: React.FunctionComponent = (
                     height: 50px;
                     cursor: grab;
                 `}
-                src="/bloom/bookEdit/toolbox/overlay/buttonPaletteItem.svg"
+                src="/bloom/bookEdit/toolbox/overlay/imageButtonPaletteItem.svg"
             />
         </CanvasElementSvgItem>
     );

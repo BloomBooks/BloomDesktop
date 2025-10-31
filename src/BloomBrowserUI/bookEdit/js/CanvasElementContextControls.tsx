@@ -64,6 +64,7 @@ import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { GameType, getGameType } from "../toolbox/games/GameInfo";
 import { setGeneratedDraggableId } from "../toolbox/overlay/CanvasElementItem";
+import { editLinkGrid } from "./linkGrid";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -90,6 +91,10 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const hasImage = !!imgContainer;
     const hasText =
         props.canvasElement.getElementsByClassName("bloom-editable").length > 0;
+    const linkGrid = props.canvasElement.getElementsByClassName(
+        "bloom-link-grid",
+    )[0] as HTMLElement | undefined;
+    const isLinkGrid = !!linkGrid;
     const rectangles =
         props.canvasElement.getElementsByClassName("bloom-rectangle");
     // This is only used by the menu option that toggles it. If the menu stayed up, we would need a state
@@ -435,6 +440,17 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         }
                     `}
                 >
+                    {isLinkGrid && linkGrid && (
+                        <ButtonWithTooltip
+                            tipL10nKey="EditTab.ClickToEditBookGrid"
+                            icon={CogIcon}
+                            relativeSize={0.8}
+                            onClick={() => {
+                                if (!linkGrid) return;
+                                editLinkGrid(linkGrid);
+                            }}
+                        />
+                    )}
                     {hasImage && (
                         <Fragment>
                             {

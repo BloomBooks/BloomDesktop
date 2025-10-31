@@ -1,6 +1,7 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 @import "../../bloomUI.less";
 @import "../sourceBubbles/sourceBubbles.less";
+@import "link-grid.less"; // temporary... should be moved to bloom-player (I think? BL-15447)
 
 @bleed: 3mm; // Duplicated from basePage.less to remove circular dependency between BloomBrowserUI and content
 
@@ -1712,12 +1713,14 @@ svg.bloom-videoControl {
 .bloom-link-grid {
     // Make sure the size doesn't go to nothing if it is empty; it needs to be clickable
     min-height: 100px;
+    border: solid 2px @bloom-blue;
+    height: 100%;
 }
 
 #edit-book-grid-prompt {
     // Temporarily making this white to be visible on the current dark background;
     // we may need to change this when we finalize background color
-    color: white;
+    color: @bloom-blue;
     position: absolute;
     top: 50%;
     left: 50%;
