@@ -40,7 +40,8 @@ namespace Bloom.Publish.BloomPub.wifi
         private UdpClient _clientForBookAdvertSend;
 
         private Thread _thread;
-        private IPEndPoint _remoteEP;
+        private IPEndPoint _bcastDestinationEP;
+        private IPEndPoint _bcastSourceEP;
 
         // Our "local IP address" of the network interface used for Bloom network traffic:
         //   - it is the target address of incoming book requests from Androids
@@ -52,7 +53,7 @@ namespace Bloom.Publish.BloomPub.wifi
 
         private string _subnetMask = "";
         private string _currentIpAddress = "";
-        private string _cachedIpAddress = "";
+        private string _previousIpAddress = "";
 
         // Layout of a row in the IPv4 routing table.
         [StructLayout(LayoutKind.Sequential)]
@@ -126,98 +127,34 @@ namespace Bloom.Publish.BloomPub.wifi
                 message: "Advertising book to Bloom Readers on local network..."
             );
 
-            // We must ensure that the local IP address we advertise by the UDP broadcast is the
-            // same address from which the network stack makes the broadcast. Gleaning the local
-            // IP address from a UdpClient usually does yield the one that is being used, but
-            // unfortunately it can be different on some machines. When that happens the remote
-            // Android gets the wrong address from the advert, and Desktop won't get the Android
-            // book request.
-            //
-            // To mitigate, change how the UdpClient is instantiated. Assign it the IP address of
-            // the network interface the network stack will use: the interface having the lowest
-            // "interface metric."
-            //
-            // The PC on which this runs likely has both WiFi and Ethernet. Either can work,
-            // but preference is given to WiFi. The reason: although this PC can likely go either
-            // way, the Android device only has WiFi. For the book transfer to work both Desktop
-            // and Reader must be on the same subnet. If Desktop is using Ethernet it may not be
-            // on the same subnet as Reader, especially on larger networks. The chances that both
-            // PC and Android are on the same subnet are greatest if both are using WiFi.
-
-            // Examine the network interfaces and determine which will be used for network traffic.
-            Debug.WriteLine("WM, Work, getting src and dest IPs"); // TEMPORARY
-            InterfaceInfo ifcResult = GetInterfaceStackWillUse();
-
-            if (ifcResult == null)
-            {
-                EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR getting local IP");
-                return;
-            }
-
-            _ipForReceivingReplies = ifcResult.IpAddr;
-            _subnetMask = ifcResult.NetMask;
-            string ifaceDesc = ifcResult.Description;
-
-            // Now that we know the IP address and subnet mask in effect, calculate
-            // the "directed" broadcast address to use.
-            _ipForSendingBroadcast = GetDirectedBroadcastAddress(_ipForReceivingReplies, _subnetMask);
-            if (_ipForSendingBroadcast.Length == 0)
-            {
-                EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR getting broadcast address");
-                return;
-            }
-            Debug.WriteLine("WM, Work, got src and dest IPs"); // TEMPORARY
-
             try
             {
-                Debug.WriteLine("WM, Work, try-begin"); // TEMPORARY
-                // Instantiate source endpoint using the local IP address we just got,
-                // then use that to create the UdpClient for broadcasting adverts.
-                IPEndPoint epBroadcast = new IPEndPoint(IPAddress.Parse(_ipForReceivingReplies), _portForBroadcast);
-                if (epBroadcast == null)
-                {
-                    EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR creating IPEndPoint");
-                    return;
-                }
-
-                _clientForBookAdvertSend = new UdpClient(epBroadcast);
-                if (_clientForBookAdvertSend == null)
-                {
-                    EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR creating UdpClient");
-                    return;
-                }
-
-                // The doc seems to indicate that EnableBroadcast is required for doing broadcasts.
-                // In practice it seems to be required on Mono but not on Windows.
-                // This may be fixed in a later version of one platform or the other, but please
-                // test both if tempted to remove it.
-                _clientForBookAdvertSend.EnableBroadcast = true;
-
-                // Set up destination endpoint.
-                _remoteEP = new IPEndPoint(IPAddress.Parse(_ipForSendingBroadcast), _portForBroadcast);
-
-                // Log key data for tech support.
-                EventLog.WriteEntry("Application", $"UDP advertising will use: _localIp  = {_ipForReceivingReplies}:{epBroadcast.Port} ({ifaceDesc})");
-                EventLog.WriteEntry("Application", $"                          _subnetMask = {_subnetMask}");
-                EventLog.WriteEntry("Application", $"                          _remoteIp = {_remoteEP.Address}:{_remoteEP.Port}");
-                Debug.WriteLine("WM, Work, try-end"); // TEMPORARY
-
-                // Advertise once per second, indefinitely.
+                // Advertise indefinitely.
                 while (true)
                 {
                     if (!Paused)
                     {
+                        // Determine remote (broadcast) and local IP addresses. This includes
+                        // instantiating the UdpClient, which is why it must be released after
+                        // it does the broadcast.
+                        // This all takes about 250 millisec on a 1.9 GHz Core i7 laptop.
+                        GetCurrentIpAddresses();
+
                         UpdateAdvertisementBasedOnCurrentIpAddress();
 
                         Debug.WriteLine("WM, Work, BeginSend-start"); // TEMPORARY
                         _clientForBookAdvertSend.BeginSend(
                             _sendBytes,
                             _sendBytes.Length,
-                            _remoteEP,
+                            _bcastDestinationEP,
                             SendCallback,
                             _clientForBookAdvertSend
                         );
                         Debug.WriteLine("WM, Work, BeginSend-end"); // TEMPORARY
+
+                        // Release network resources used by the broadcast.
+                        _clientForBookAdvertSend.Close();
+                        Debug.WriteLine("WM, Work, UdpClient released"); // TEMPORARY
                     }
                     Thread.Sleep(1000);
                 }
@@ -245,17 +182,103 @@ namespace Bloom.Publish.BloomPub.wifi
 
         public static void SendCallback(IAsyncResult args) { }
 
+        private void GetCurrentIpAddresses()
+        {
+            // We must ensure that the local IP address we advertise by the UDP broadcast is the
+            // same address from which the network stack makes the broadcast. Gleaning the local
+            // IP address from a UdpClient usually does yield the one that is being used, but
+            // unfortunately it can be different on some machines. When that happens the remote
+            // Android gets the wrong address from the advert, and Desktop won't get the Android
+            // book request.
+            //
+            // To mitigate, instantiate the UdpClient with the IP address of the network interface
+            // the network stack will use: the interface having the lowest "interface metric."
+            //
+            // The PC on which this runs likely has both WiFi and Ethernet. Either can work,
+            // but preference is given to WiFi. The reason: although this PC can likely go either
+            // way, the Android device only has WiFi. For the book transfer to work both Desktop
+            // and Reader must be on the same subnet. If Desktop is using Ethernet it may not be
+            // on the same subnet as Reader, especially on larger networks. The chances that both
+            // PC and Android are on the same subnet are greatest if both are using WiFi.
+
+            // Examine the network interfaces and determine which will be used for network traffic.
+            Debug.WriteLine("WM, GetCurrentIpAddresses, getting src and dest IPs"); // TEMPORARY
+            InterfaceInfo ifcResult = GetInterfaceStackWillUse();
+
+            if (ifcResult == null)
+            {
+                EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR getting local IP");
+                return;
+            }
+
+            _ipForReceivingReplies = ifcResult.IpAddr;
+            _subnetMask = ifcResult.NetMask;
+            string ifaceDesc = ifcResult.Description;
+
+            // Now that we know the IP address and subnet mask in effect, calculate
+            // the "directed" broadcast address to use.
+            _ipForSendingBroadcast = GetDirectedBroadcastAddress(_ipForReceivingReplies, _subnetMask);
+            if (_ipForSendingBroadcast.Length == 0)
+            {
+                EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR getting broadcast address");
+                return;
+            }
+            Debug.WriteLine("WM, GetCurrentIpAddresses, got src and dest IPs"); // TEMPORARY
+
+            try
+            {
+                Debug.WriteLine("WM, GetCurrentIpAddresses, try-begin"); // TEMPORARY
+                // Instantiate source endpoint using the local IP address we just got,
+                // then use that to create the UdpClient for broadcasting adverts.
+                //IPEndPoint epBroadcast = new IPEndPoint(IPAddress.Parse(_ipForReceivingReplies), _portForBroadcast);
+                _bcastSourceEP = new IPEndPoint(IPAddress.Parse(_ipForReceivingReplies), _portForBroadcast);
+                if (_bcastSourceEP == null)
+                {
+                    EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR creating local IPEndPoint");
+                    return;
+                }
+
+                _clientForBookAdvertSend = new UdpClient(_bcastSourceEP);
+                if (_clientForBookAdvertSend == null)
+                {
+                    EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR creating UdpClient");
+                    return;
+                }
+
+                // The doc seems to indicate that EnableBroadcast is required for doing broadcasts.
+                // In practice it seems to be required on Mono but not on Windows.
+                // This may be fixed in a later version of one platform or the other, but please
+                // test both if tempted to remove it.
+                _clientForBookAdvertSend.EnableBroadcast = true;
+
+                // Set up destination endpoint.
+                _bcastDestinationEP = new IPEndPoint(IPAddress.Parse(_ipForSendingBroadcast), _portForBroadcast);
+
+                // Log key data for tech support.
+                EventLog.WriteEntry("Application", $"UDP advertising will use: _localIp = {_ipForReceivingReplies}:{_bcastSourceEP.Port} ({ifaceDesc})");
+                EventLog.WriteEntry("Application", $"                          _subnetMask = {_subnetMask}");
+                EventLog.WriteEntry("Application", $"                          _remoteIp = {_bcastDestinationEP.Address}:{_bcastDestinationEP.Port}");
+                Debug.WriteLine("WM, GetCurrentIpAddresses, try-end"); // TEMPORARY
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("WM, GetCurrentIpAddresses, Exception: " + e); // TEMPORARY
+                EventLog.WriteEntry("Application", "WiFiAdvertiser::GetCurrentIpAddresses, Exception: " + e);
+            }
+        }
+
         /// <summary>
         /// Since this is typically not a real "server", its ipaddress could be assigned dynamically,
         /// and could change each time someone wakes it up.
         /// </summary>
         private void UpdateAdvertisementBasedOnCurrentIpAddress()
         {
+            Debug.WriteLine("WM, UABOCIA, begin"); // TEMPORARY
             _currentIpAddress = _ipForReceivingReplies;
 
-            if (_cachedIpAddress != _currentIpAddress)
+            if (_previousIpAddress != _currentIpAddress)
             {
-                _cachedIpAddress = _currentIpAddress;
+                _previousIpAddress = _currentIpAddress;
                 dynamic advertisement = new DynamicJson();
                 advertisement.title = BookTitle;
                 advertisement.version = BookVersion;
@@ -270,6 +293,7 @@ namespace Bloom.Publish.BloomPub.wifi
                 _sendBytes = Encoding.UTF8.GetBytes(advertisement.ToString());
                 //EventLog.WriteEntry("Application", "Serving at http://" + _currentIpAddress + ":" + ChorusHubOptions.MercurialPort, EventLogEntryType.Information);
             }
+            Debug.WriteLine("WM, UABOCIA, done"); // TEMPORARY
         }
 
         // Survey the network interfaces and determine which one, if any, the network
