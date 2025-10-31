@@ -47,6 +47,7 @@ import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
 import { ToolBox } from "../toolbox";
 import { hideColorPickerDialog } from "../../editViewFrame";
 import { kToolboxContentPadding } from "../../../bloomMaterialUITheme";
+import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -791,8 +792,32 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                         l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
                                     />
                                 </CanvasElementItemRow>
-                            </CanvasElementItemRegion>
 
+                                <TriangleCollapse
+                                    initiallyOpen={false}
+                                    labelL10nKey="EditTab.Toolbox.OverlayTool.Navigation"
+                                    buttonColor="#1D94A4"
+                                    css={css`
+                                        margin-top: 10px;
+                                        padding: 0 10px;
+                                    `}
+                                >
+                                    <CanvasElementItemRow>
+                                        <CanvasElementItem
+                                            src="/bloom/bookEdit/toolbox/overlay/imageButtonPaletteItem.svg"
+                                            canvasElementType="image"
+                                        />
+                                        <CanvasElementItem
+                                            src="/bloom/bookEdit/toolbox/overlay/buttonPaletteItem.svg"
+                                            canvasElementType="rectangle"
+                                        />
+                                        <CanvasElementItem
+                                            src="/bloom/bookEdit/toolbox/overlay/bookGridPaletteItem.svg"
+                                            canvasElementType="rectangle"
+                                        />
+                                    </CanvasElementItemRow>
+                                </TriangleCollapse>
+                            </CanvasElementItemRegion>
                             <div
                                 id={"overlayToolControlOptionsRegion"}
                                 className={
