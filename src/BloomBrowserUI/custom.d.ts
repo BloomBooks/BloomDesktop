@@ -12,3 +12,11 @@ declare module "*.html?raw" {
     const content: string;
     export default content;
 }
+
+declare module "select2/dist/js/select2.js" {
+    const select2Factory: (
+        root: unknown,
+        jQuery: typeof import("jquery"),
+    ) => typeof import("jquery");
+    export default select2Factory;
+}
