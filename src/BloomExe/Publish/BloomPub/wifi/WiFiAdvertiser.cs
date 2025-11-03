@@ -146,7 +146,6 @@ namespace Bloom.Publish.BloomPub.wifi
 
                         UpdateAdvertisementBasedOnCurrentIpAddress();
 
-                        Debug.WriteLine("WM, Work, BeginSend-start"); // TEMPORARY
                         _clientForBookAdvertSend.BeginSend(
                             _sendBytes,
                             _sendBytes.Length,
@@ -154,11 +153,9 @@ namespace Bloom.Publish.BloomPub.wifi
                             SendCallback,
                             _clientForBookAdvertSend
                         );
-                        Debug.WriteLine("WM, Work, BeginSend-end"); // TEMPORARY
 
                         // Release network resources used by the broadcast.
                         _clientForBookAdvertSend.Close();
-                        Debug.WriteLine("WM, Work, UdpClient released"); // TEMPORARY
                     }
                     Thread.Sleep(1000);
                 }
@@ -189,11 +186,11 @@ namespace Bloom.Publish.BloomPub.wifi
         private void GetCurrentIpAddresses()
         {
             // We must ensure that the local IP address we advertise by the UDP broadcast is the
-            // same address from which the network stack makes the broadcast. Gleaning the local
+            // actual address from which the network stack makes the broadcast. Gleaning the local
             // IP address from a UdpClient usually does yield the one that is being used, but
             // unfortunately it can be different on some machines. When that happens the remote
-            // Android gets the wrong address from the advert, and Desktop won't get the Android
-            // book request.
+            // Android gets the wrong address from the advert, becoming misinformed about where
+            // to respond. It sends its book request somewhere else, and Desktop never hears it.
             //
             // To mitigate, instantiate the UdpClient with the IP address of the network interface
             // the network stack will use: the interface having the lowest "interface metric."
@@ -204,9 +201,11 @@ namespace Bloom.Publish.BloomPub.wifi
             // and Reader must be on the same subnet. If Desktop is using Ethernet it may not be
             // on the same subnet as Reader, especially on larger networks. The chances that both
             // PC and Android are on the same subnet are greatest if both are using WiFi.
+            //
+            // This method generates (a) the local IP address *from* which the book advert is
+            // sent, and (b) the "directed broadcast address" *to* which the book advert is sent.
 
             // Examine the network interfaces and determine which will be used for network traffic.
-            Debug.WriteLine("WM, GetCurrentIpAddresses, getting src and dest IPs"); // TEMPORARY
             InterfaceInfo ifcResult = GetInterfaceStackWillUse();
 
             if (ifcResult == null)
@@ -217,7 +216,6 @@ namespace Bloom.Publish.BloomPub.wifi
 
             _ipForReceivingReplies = ifcResult.IpAddr;
             _subnetMask = ifcResult.NetMask;
-            string ifaceDesc = ifcResult.Description;
 
             // Now that we know the IP address and subnet mask in effect, calculate
             // the "directed" broadcast address to use.
@@ -227,11 +225,9 @@ namespace Bloom.Publish.BloomPub.wifi
                 EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR getting broadcast address");
                 return;
             }
-            Debug.WriteLine("WM, GetCurrentIpAddresses, got src and dest IPs"); // TEMPORARY
 
             try
             {
-                Debug.WriteLine("WM, GetCurrentIpAddresses, try-begin"); // TEMPORARY
                 // Instantiate source endpoint using the local IP address we just got,
                 // then use that to create the UdpClient for broadcasting adverts.
                 _bcastSourceEP = new IPEndPoint(IPAddress.Parse(_ipForReceivingReplies), _portForBroadcast);
@@ -258,16 +254,12 @@ namespace Bloom.Publish.BloomPub.wifi
                 _bcastDestinationEP = new IPEndPoint(IPAddress.Parse(_ipForSendingBroadcast), _portForBroadcast);
 
                 // Log key data for tech support.
-                EventLog.WriteEntry("Application", $"UDP advertising will use: localIp = {_ipForReceivingReplies}:{_bcastSourceEP.Port} ({ifaceDesc})");
+                EventLog.WriteEntry("Application", $"UDP advertising will use: localIp = {_ipForReceivingReplies}:{_bcastSourceEP.Port} ({ifcResult.Description})");
                 EventLog.WriteEntry("Application", $"                          subnetMask = {_subnetMask}");
                 EventLog.WriteEntry("Application", $"                          remoteIp = {_bcastDestinationEP.Address}:{_bcastDestinationEP.Port}");
-                Debug.WriteLine($"      _ipForReceivingReplies = {_ipForReceivingReplies}"); // TEMPORARY
-                Debug.WriteLine($"      _ipForSendingBroadcast = {_ipForSendingBroadcast}"); // TEMPORARY
-                Debug.WriteLine("WM, GetCurrentIpAddresses, try-end"); // TEMPORARY
             }
             catch (Exception e)
             {
-                Debug.WriteLine("WM, GetCurrentIpAddresses, Exception: " + e); // TEMPORARY
                 EventLog.WriteEntry("Application", "WiFiAdvertiser::GetCurrentIpAddresses, Exception: " + e);
             }
         }
@@ -278,7 +270,6 @@ namespace Bloom.Publish.BloomPub.wifi
         /// </summary>
         private void UpdateAdvertisementBasedOnCurrentIpAddress()
         {
-            Debug.WriteLine("WM, UABOCIA, begin"); // TEMPORARY
             _currentIpAddress = _ipForReceivingReplies;
 
             if (_previousIpAddress != _currentIpAddress)
@@ -298,7 +289,6 @@ namespace Bloom.Publish.BloomPub.wifi
                 _sendBytes = Encoding.UTF8.GetBytes(advertisement.ToString());
                 //EventLog.WriteEntry("Application", "Serving at http://" + _currentIpAddress + ":" + ChorusHubOptions.MercurialPort, EventLogEntryType.Information);
             }
-            Debug.WriteLine("WM, UABOCIA, done"); // TEMPORARY
         }
 
         // Survey the network interfaces and determine which one, if any, the network
