@@ -110,6 +110,7 @@ namespace Bloom.Book
         void MigrateToLevel6LegacyActivities();
         void MigrateToLevel7BloomCanvas();
         void MigrateToLevel8RemoveEnterpriseOnly();
+        void MigrateToLevel9TruncateWidgetPaths();
         void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
@@ -173,6 +174,7 @@ namespace Bloom.Book
         ///     (Previously was bloom-imageContainer, which conflicted with the use inside canvas
         ///     elements, and was inaccurate because it could contain many other things.)
         ///   Bloom 6.2  8 = Removed enterprise-only class on all pages that have it
+        ///   Bloom 6.2  9 = Truncate long widget paths to 50 characters
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
@@ -3951,6 +3953,20 @@ namespace Bloom.Book
             // {
             //     MigrateBackFromLevel5CanvasElement();
             // }
+
+            // null-merge this; not wanted in 6.3 and later.
+            var quizzes = Dom.SafeSelectNodes("//div[@data-activity='simple-checkbox-quiz']")
+                .Cast<SafeXmlElement>()
+                .ToArray();
+            foreach (var quiz in quizzes)
+            {
+                var script = quiz.SelectSingleNode(".//script[@src='simpleComprehensionQuiz.js']");
+                if (script != null)
+                    continue;
+                script = quiz.OwnerDocument.CreateElement("script");
+                script.SetAttribute("src", "simpleComprehensionQuiz.js");
+                quiz.AppendChild(script);
+            }
         }
 
         private void MigrateClassName(string oldClassName, string newClassName)
@@ -4067,6 +4083,56 @@ namespace Bloom.Book
                 page.RemoveClass("enterprise-only");
             }
             Dom.UpdateMetaElement("maintenanceLevel", "8");
+        }
+
+        /// <summary>
+        /// At least one user was using extremely long names for widget folders, resulting in
+        /// path lengths that were too long for Windows to handle. This migration truncates
+        /// any such folder names to 50 characters, and updates the src attribute of the iframe.
+        /// </summary>
+        public void MigrateToLevel9TruncateWidgetPaths()
+        {
+            if (GetMaintenanceLevel() >= 9)
+                return;
+            var widgetIframes = Dom.SafeSelectNodes(
+                "//div[contains(@class, 'bloom-widgetContainer')]/iframe[starts-with(@src,'activities/')]"
+            );
+            foreach (SafeXmlElement iframe in widgetIframes)
+            {
+                var rawSrc = iframe.GetAttribute("src");
+                var fullEncodedSrc = UrlPathString.CreateFromUrlEncodedString(rawSrc);
+                var fullDecodedSrc = fullEncodedSrc.NotEncoded;
+                var originalFolderName = Path.GetFileName(Path.GetDirectoryName(fullDecodedSrc));
+                var originalFileName = Path.GetFileName(fullDecodedSrc);
+                if (originalFolderName.Length <= 50)
+                    continue;
+                var truncatedFolderName = originalFolderName.Substring(0, 50).Trim();
+                var originalFolderPath = Path.Combine(FolderPath, "activities", originalFolderName);
+                var truncatedFolderPath = Path.Combine(
+                    FolderPath,
+                    "activities",
+                    truncatedFolderName
+                );
+                var suffix = 1;
+                while (Directory.Exists(truncatedFolderPath))
+                {
+                    // This is very unlikely, but if it happens, we want to avoid overwriting
+                    // the existing folder. So we just add a character and try again.
+                    truncatedFolderPath = Path.Combine(
+                        FolderPath,
+                        "activities",
+                        truncatedFolderName + suffix.ToString()
+                    );
+                    suffix++;
+                }
+                RobustIO.MoveDirectory(originalFolderPath, truncatedFolderPath);
+                var newEncodedSrc = UrlPathString.CreateFromUnencodedString(
+                    $"activities/{Path.GetFileName(truncatedFolderPath)}/{originalFileName}"
+                );
+                var newRawSrc = newEncodedSrc.UrlEncodedForHttpPath;
+                iframe.SetAttribute("src", newRawSrc);
+            }
+            Dom.UpdateMetaElement("maintenanceLevel", "9");
         }
 
         /// <summary>

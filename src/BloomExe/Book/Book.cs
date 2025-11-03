@@ -1786,6 +1786,7 @@ namespace Bloom.Book
             Storage.MigrateToLevel6LegacyActivities();
             Storage.MigrateToLevel7BloomCanvas();
             Storage.MigrateToLevel8RemoveEnterpriseOnly();
+            Storage.MigrateToLevel9TruncateWidgetPaths();
 
             Storage.DoBackMigrations();
 

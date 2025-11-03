@@ -17,8 +17,11 @@ namespace Bloom.Utils
             AdditionalInfo = additionaInfo;
         }
 
+        private string AdditionalInfoMessage =>
+            string.IsNullOrWhiteSpace(AdditionalInfo) ? "" : $" Additional Info: {AdditionalInfo}";
+
         public override string Message =>
-            $"{base.Message} Path was '{Path}. Additional Info:{AdditionalInfo}";
+            $"{base.Message} Path was '{Path}.{AdditionalInfoMessage}";
     }
 
     internal static class LongPathAware

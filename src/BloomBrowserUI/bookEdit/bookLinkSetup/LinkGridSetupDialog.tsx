@@ -47,10 +47,14 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
 
     const bookLinks: BookInfoForLinks[] = unfilteredBooks.map(book => ({
         id: book.id,
-        title: book.folderName,
-        realTitle: book.title,
+        folderName: book.folderName,
+        title: book.title,
         thumbnail: `/bloom/api/collections/book/thumbnail?book-id=${book.id}`
     }));
+
+    const bookIdsToFolderNames = Object.fromEntries(
+        unfilteredBooks.map(b => [b.id, b.folderName])
+    );
 
     return (
         <BloomDialog
@@ -77,7 +81,14 @@ export const LinkGridSetupDialog: React.FunctionComponent<{
                     currentCollection={currentCollection}
                     onCollectionSelectionChange={setCurrentCollection}
                     */
-                    links={selectedLinks}
+                    links={selectedLinks.map(link => ({
+                        ...link,
+                        book: {
+                            ...link.book,
+                            folderName: bookIdsToFolderNames[link.book.id],
+                            title: link.book.title
+                        }
+                    }))}
                     onLinksChanged={setSelectedLinks}
                 />
             </DialogMiddle>
