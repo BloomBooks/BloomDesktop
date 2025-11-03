@@ -416,8 +416,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                             );
                         else {
                             showRegistrationDialog({
-                                onSave: (isValidEmail) => {
-                                    if (isValidEmail)
+                                onSave: (hasValidEmail: boolean) => {
+                                    if (hasValidEmail)
                                         post(
                                             "teamCollection/attemptLockOfCurrentBook",
                                         );
