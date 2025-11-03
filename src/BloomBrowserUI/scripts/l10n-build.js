@@ -17,11 +17,12 @@ const isLinux = fs.existsSync("/opt/mono5-sil");
 const htmlFiles = glob.sync("../../output/browser/**/*-en.htm*");
 
 // Get all translated Xliff files (excluding English)
-const xliffFiles = glob.sync([
-    "../../DistFiles/localization/**/*.xlf",
-    "!../../DistFiles/localization/en/*.xlf",
-    "!../../DistFiles/localization/**/*-en.xlf",
-]);
+const xliffFiles = glob.sync("../../DistFiles/localization/**/*.xlf", {
+    ignore: [
+        "../../DistFiles/localization/en/*.xlf",
+        "../../DistFiles/localization/**/*-en.xlf",
+    ],
+});
 
 console.log(`Found ${htmlFiles.length} HTML files to process`);
 console.log(`Found ${xliffFiles.length} translation files`);
@@ -32,20 +33,17 @@ console.log(`Found ${xliffFiles.length} translation files`);
 function getXliffFiles(htmFile) {
     const pathPieces = htmFile.split(/[/\\]/);
     let basename = pathPieces[pathPieces.length - 1];
-
+    let searchStr = "";
     if (basename === "ReadMe-en.htm") {
-        basename = "/" + pathPieces[pathPieces.length - 2] + "/ReadMe-";
+        searchStr = "/" + pathPieces[pathPieces.length - 2] + "/ReadMe-";
     } else {
         const pos = basename.search("-en.htm");
-        if (pos > 0) basename = "/" + basename.substring(0, pos);
+        if (pos > 0) searchStr = "/" + basename.substring(0, pos);
     }
-
-    const retval = [];
-    for (let i = 0; i < xliffFiles.length; i++) {
-        const pos = xliffFiles[i].search(basename);
-        if (pos > 0) retval.push(xliffFiles[i]);
-    }
-    return retval;
+    // Normalize XLIFF file paths to use forward slashes before searching
+    return xliffFiles.filter(
+        (xlf) => xlf.replace(/\\/g, "/").search(searchStr) > 0,
+    );
 }
 
 /**
@@ -53,6 +51,8 @@ function getXliffFiles(htmFile) {
  * (replacing the English language code) for an output file pathname.
  */
 function getOutputFilename(htmFile, xlfFile) {
+    // Normalize XLIFF file path to use forward slashes
+    xlfFile = xlfFile.replace(/\\/g, "/");
     let langCode = "";
     if (xlfFile.search("/ReadMe-") > 0) {
         // as in "blah/foo/ReadMe-en.htm"
