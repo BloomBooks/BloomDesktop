@@ -563,7 +563,7 @@ namespace Bloom.web.controllers
         {
             if (request.CurrentBook == null)
             {
-                // it's not obvious what to here. but HandleGetColorsUsedInBookCanvasElements()
+                // it's not obvious what to do here. but HandleGetColorsUsedInBookCanvasElements()
                 // has this kind of logic.
                 request.ReplyWithText("");
                 return;
