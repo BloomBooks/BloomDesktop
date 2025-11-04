@@ -110,7 +110,6 @@ describe.skip("Overflow Tests", () => {
 
     it("Check test page for Self overflows (assumes Arial is installed)", () => {
         document.body.innerHTML = OverflowFixture;
-        expect($("#jasmine-fixtures")).toBeTruthy();
         if (window.console) {
             consoleDef = true;
             console.log("Commencing Overflow tests...");
@@ -120,7 +119,6 @@ describe.skip("Overflow Tests", () => {
 
     it("Check test page for Margin overflows (assumes Arial is installed)", () => {
         document.body.innerHTML = OverflowMarginFixture;
-        expect($("#jasmine-fixtures")).toBeTruthy();
         if (window.console) {
             consoleDef = true;
             console.log("Commencing Margin Overflow tests...");
@@ -132,7 +130,6 @@ describe.skip("Overflow Tests", () => {
 
     it("Check test page for Fixed Ancestor overflows (assumes Arial is installed)", () => {
         document.body.innerHTML = OverflowAncestorFixture;
-        expect($("#jasmine-fixtures")).toBeTruthy();
         if (window.console) {
             consoleDef = true;
             console.log("Commencing Fixed Ancestor Overflow tests...");

@@ -1551,6 +1551,5 @@ StoryCheckResults.prototype.getNumbers = function () {
     return nums;
 };
 
-//TODO: change to something like "theOneLibSynhpony"
-export var theOneLibSynphony = new LibSynphony();
+export const theOneLibSynphony = new LibSynphony();
 const rubbish = 43;

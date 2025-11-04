@@ -2,6 +2,7 @@
 // See https://webpack.js.org/guides/typescript/#importing-other-assets,
 // https://stackoverflow.com/a/45887328,
 // https://stackoverflow.com/a/59901802
+// Not sure whether we still need it with Vite.
 declare module "*.svg" {
     const content: React.FunctionComponent<React.SVGAttributes<SVGElement>>;
     export default content;

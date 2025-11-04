@@ -3,13 +3,13 @@ Status of the attempt to move BloomBrowserUI to Vite and its testing to Vitest
 We now have two build modes.
 yarn dev runs the dev mode of vite, which serves up our source with minimal bundling.
 This needs some special-case handling where the HTML loads stuff.
-This branch has an updated version of ReactControl.cs, which builds a different html file
+We now have an updated version of ReactControl.cs, which builds a different html file
 to load the appropriate thing in dev mode. As far as I've tested, this now works on all
 ReactControls, including ReadDialogs and the whole PublishTab. The browser automatically
 hot-reloads any changes served by vite. If it somehow happens that code explicitly asks
 the bloom server for something (explicit bloom: links, other than api calls), that will not
 produce hot reloading. Unless another process is watching, new versions won't even get copied
-to output\debug; vite dev serves directly from the source.
+to output\browser; vite dev serves directly from the source.
 It will take a bit more to get vite dev working for the other entrypoint/bundle clients, especially edit view.
 I took a quick look at edit mode but could not get it working with vite dev. For editablePageBundle,
 I think the problem is that we load tabpane, jquery, and ckeditor separately from the main code bundle;
@@ -57,7 +57,7 @@ Only clean and build-prod clear the output directory. As before, it's possible t
 working in other modes because a previous build left something around.
 Vite is building pug files (both its own and in content), but only when yarn build is run.
 They won't cause hot-reloading in yarn dev, and probably not even in watch. This is unfortunate
-and may deserve a card, but we're trying to get this merged so I can move on.
+and has a card, but we're trying to get this merged so I can move on.
 I think we're now copying all the same static assets (that don't need compilation) as before when we
 run build. As noted before, I don't think yarn dev will copy them to output/browser.
 Vitest is working, running and passing all of our tests except five that are disabled because
@@ -72,8 +72,8 @@ Running and debugging tests directly from VS Code (install the vitest extension)
 well, though it takes a few seconds to start up. (You can right-click and run a single test, with
 breakpoints set in VS Code, and without a fight every time to get debug config right, I hope.)
 
-Major todos:
-- get vite dev mode working for edit tab. Current plan is to make a separate card for this.
+Major todos (all have cards):
+- get vite dev mode working for edit tab.
 - get all remaining entry points working in dev mode
 - Storybook
 - pug files should hot-reload when changed

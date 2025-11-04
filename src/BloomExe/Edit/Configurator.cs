@@ -82,22 +82,6 @@ namespace Bloom.Edit
             }
         }
 
-        public static void AddScriptFile(SafeXmlDocument doc, string src)
-        {
-            var head = doc.SelectSingleNode("//head") as SafeXmlElement;
-            if (
-                head.SelectSingleNode($"./script[@type='text/javascript' and @src='{src}']") != null
-            )
-                return; // already have it
-            var script = doc.CreateElement("script");
-            script.SetAttribute("src", src);
-            script.SetAttribute(
-                "type",
-                src.ToLowerInvariant().EndsWith(".bundle.js") ? "module" : "text/javascript"
-            );
-            head.AppendChild(script);
-        }
-
         public static void AddScriptText(SafeXmlDocument doc, string id, string text)
         {
             var head = doc.SelectSingleNode("//head") as SafeXmlElement;
@@ -127,10 +111,10 @@ namespace Bloom.Edit
         public static string SetupConfigurationHtml(string html, string settings)
         {
             var doc = XmlHtmlConverter.GetXmlDomFromHtml(html);
-            AddScriptFile(doc, "jquery-1.10.1.js");
-            AddScriptFile(doc, "form2object.js");
-            AddScriptFile(doc, "js2form.js");
-            AddScriptFile(doc, "underscore.js");
+            HtmlDom.AddScriptFile(doc, "jquery-1.10.1.js");
+            HtmlDom.AddScriptFile(doc, "form2object.js");
+            HtmlDom.AddScriptFile(doc, "js2form.js");
+            HtmlDom.AddScriptFile(doc, "underscore.js");
             AddScriptText(
                 doc,
                 "configuredScript",

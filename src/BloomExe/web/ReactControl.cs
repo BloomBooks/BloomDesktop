@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Utils;
@@ -215,12 +216,27 @@ namespace Bloom.web
                     "/teamCollection/TeamCollectionSettingsPanel.entry.tsx"
                 },
             };
-            var viteModulePath = bundleToViteModulePathMap.ContainsKey(_javascriptBundleName)
+            // Should we load relevant assets from the Vite Dev server?
+            // To save time, only consider it if this is a dev build.
+            // This also guards against trying to load assets from the vite server
+            // if a developer runs some other version. Though, it could still be a
+            // problem if a dev is trying to run dev builds of two versions at once.
+            var useViteDev =
+                !ApplicationUpdateSupport.IsDev
+                && bundleToViteModulePathMap.ContainsKey(_javascriptBundleName);
+            var viteModulePath = useViteDev
                 ? bundleToViteModulePathMap[_javascriptBundleName]
                 : null;
-            // see if localhost:5173 is running
-            var viteDevServerRunning = IsLocalPortOpen(5173, 400);
-            if (viteModulePath != null && viteDevServerRunning)
+            // If still an option, see if localhost:5173 is running. This is quite slow when it is not.
+            // The original version used 400ms, which meant a 1200ms delay; but if it's going to succeed,
+            // it typically does so in 2ms. I compromised on 40.
+            useViteDev &= IsLocalPortOpen(5173, 40);
+            var body =
+                $@"
+                <body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColor};{overflowY}'>
+                    <div id='reactRoot' style='height:100%'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
+                </body>";
+            if (viteModulePath != null && useViteDev)
             {
                 RobustFile.WriteAllText(
                     tempFile.Path,
@@ -234,11 +250,7 @@ namespace Bloom.web
                         window.__vite_plugin_react_preamble_installed__ = true;
                         window.$RefreshSig$ = window.$RefreshSig$ || (function () {{ return function (type) {{ return type; }}; }});
                         window.$RefreshReg$ = window.$RefreshReg$ || function () {{}};
-                    </script>
-                    <script>
                         window.__reactControlProps__ = {props};
-                    </script>
-                    <script>
                         // Shim Node-style globals for browser-only environment
                         if (typeof window.global === 'undefined') window.global = window;
                         if (typeof window.globalThis === 'undefined') window.globalThis = window;
@@ -290,9 +302,7 @@ namespace Bloom.web
                         main();
                     </script>
                 </head>
-                <body style='margin:0; height:100%; display:flex; flex:1; flex-direction:column; background-color:{backColor};{overflowY}'>
-                    <div id='reactRoot' style='height:100%'>Loading Vite module {viteModulePath}...</div>
-                </body>
+                {body}
                 </html>"
                 );
             }
@@ -315,9 +325,7 @@ namespace Bloom.web
 						}};
 					</script>
 				</head>
-				<body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColor};{overflowY}'>
-					<div id='reactRoot' style='height:100%'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
-				</body>
+				{body}
 				</html>"
                 );
             }

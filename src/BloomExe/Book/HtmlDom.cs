@@ -342,21 +342,30 @@ namespace Bloom.Book
 
         private SafeXmlElement MakeJavascriptElement(string pathToJavascript, bool module = false)
         {
-            var element = Head.AppendChild(_dom.CreateElement("script")) as SafeXmlElement;
+            return AddScriptFile(RawDom, pathToJavascript.ToLocalhost(), module);
+        }
 
-            element.IsEmpty = false; // IF it is empty, write with open and close tags.
-            element.SetAttribute("type", "text/javascript");
-            element.SetAttribute("src", pathToJavascript.ToLocalhost());
-            // Trying generating ESNext, which produces files that require this.
-            // I wish for a better way to know which files need it.
-            // Without this, the browser complains if the js has import or export statements.
-            // Conceivably we could load the js and look for those as strings, but it would
-            // be slow and unreliable (the words might occur in comments).
-            if (module || pathToJavascript.EndsWith("Bundle.js"))
-            {
-                element.SetAttribute("type", "module");
-            }
-            return element;
+        public static SafeXmlElement AddScriptFile(
+            SafeXmlDocument doc,
+            string src,
+            bool module = false
+        )
+        {
+            var head = doc.Head;
+            var typeAttr = src.ToLowerInvariant().EndsWith(".bundle.js")
+                ? "module"
+                : "text/javascript";
+            var existingScript = head.SelectSingleNode(
+                $"./script[@type='{typeAttr}' and @src='{src}']"
+            );
+            if (existingScript != null)
+                return existingScript as SafeXmlElement; // already have it
+            var script = doc.CreateElement("script");
+            script.IsEmpty = false; // IF it is empty, write with open and close tags.
+            script.SetAttribute("src", src);
+            script.SetAttribute("type", typeAttr);
+            head.AppendChild(script);
+            return script;
         }
 
         public void AddOrReplaceMetaElement(string name, string content)

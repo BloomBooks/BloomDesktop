@@ -113,7 +113,6 @@ describe("Unicode Standards", function () {
         var result5 = " This is sentence 3.";
         var result6 = "\r\n";
 
-        console.log("the one libSynphony", theOneLibSynphony);
         var fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments.length).toBe(6);
         expect(fragments[0].text).toBe(result1);

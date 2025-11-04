@@ -9,13 +9,13 @@
 // Jasmine will await your async it's completion before moving on to the next thing.
 // Using just async/await is more recommended, cleaner, and less error-prone than using done callbacks.
 // For more info: https://jasmine.github.io/tutorials/async
+// Not sure whether we need this with vitest.
 export async function runAsyncTest(
     done: () => void, // The done callback provided by Jasmine framework
     setupAsync: () => void | Promise<void>,
     runAsync: () => void | Promise<void>,
     verify: () => void,
 ) {
-    // vitest properly reports failures in async test without any help.
     await setupAsync();
     await runAsync();
     verify();

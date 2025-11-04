@@ -1,8 +1,3 @@
-// Note: This file was authored with Emotion's classic JSX pragma.
-// Vite uses React's automatic JSX transform by default, which warns
-// when a pragma is present. The pragma is harmless under Vite because
-// Emotion's css prop is not used here; we keep the import for css() only.
-// If needed, we can convert to the automatic runtime later.
 import { css } from "@emotion/react";
 
 import * as React from "react";
@@ -204,3 +199,5 @@ export const ProgressBox = React.forwardRef<
         </div>
     );
 });
+
+ProgressBox.displayName = "ProgressBox";
