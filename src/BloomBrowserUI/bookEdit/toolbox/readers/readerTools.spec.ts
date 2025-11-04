@@ -335,7 +335,7 @@ describe("Bloom Edit Controls tests", () => {
         (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         await getTheOneReaderToolsModel().setStageNumber(1);
         expect(getTheOneReaderToolsModel().updateElementContent)
-            //.withContext("1. Set stage to 1")
+            // 1. Set stage to 1
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>',
@@ -344,7 +344,7 @@ describe("Bloom Edit Controls tests", () => {
         (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         getTheOneReaderToolsModel().sortByLength();
         expect(getTheOneReaderToolsModel().updateElementContent)
-            //.withContext("2. Sort by length")
+            // 2. Sort by length
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>',
@@ -356,7 +356,7 @@ describe("Bloom Edit Controls tests", () => {
         (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         getTheOneReaderToolsModel().sortByFrequency();
         expect(getTheOneReaderToolsModel().updateElementContent)
-            //.withContext("3. Sort by frequency")
+            // 3. Sort by frequency
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>',
@@ -365,7 +365,7 @@ describe("Bloom Edit Controls tests", () => {
         (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         getTheOneReaderToolsModel().sortAlphabetically();
         expect(getTheOneReaderToolsModel().updateElementContent)
-            //.withContext("4. Sort alphabetically")
+            // 4. Sort alphabetically
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>',
@@ -374,7 +374,7 @@ describe("Bloom Edit Controls tests", () => {
         (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         await getTheOneReaderToolsModel().setStageNumber(2);
         expect(getTheOneReaderToolsModel().updateElementContent)
-            //.withContext("5. Set stage back to 2")
+            // 5. Set stage back to 2
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> bob</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div><div class="word lang1InATool  sight-word"> two</div>',
@@ -383,7 +383,7 @@ describe("Bloom Edit Controls tests", () => {
         (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         getTheOneReaderToolsModel().sortByLength(); // same-length ones should be alphabetic
         expect(getTheOneReaderToolsModel().updateElementContent)
-            //.withContext("6. Stage 2, Sort by length")
+            // 6. Stage 2, Sort by length
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> bob</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool "> sat</div><div class="word lang1InATool  sight-word"> two</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>',
@@ -393,7 +393,7 @@ describe("Bloom Edit Controls tests", () => {
         (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
         getTheOneReaderToolsModel().sortByFrequency();
         expect(getTheOneReaderToolsModel().updateElementContent)
-            //.withContext("7. Stage 2, Sort by frequency")
+            // 7. Stage 2, Sort by frequency
             .toHaveBeenCalledWith(
                 "wordList",
                 '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> bob</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool  sight-word"> two</div>',

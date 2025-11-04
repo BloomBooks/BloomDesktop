@@ -3198,7 +3198,10 @@ export default class AudioRecording implements IAudioRecorder {
 
     public static getChecksum(message: string): string {
         if (message === null || message === undefined) {
-            // should not normally happen, but seems to in tests
+            // should not normally happen, but seems to in tests.
+            // The function is supposed to return a string, and I don't want to change
+            // all the callers, so making it return a string that's a bit unique so if
+            // we ever see it in production we can search for it.
             return "undefind";
         }
         // Vertical line character ("|") acts as a phrase delimiter in Talking Books.
@@ -4151,7 +4154,7 @@ export default class AudioRecording implements IAudioRecorder {
             )
             .remove();
         // unwrap any span elements that have no attributes and so change nothing
-        // I don't think this prevents a bug, but it reduces clutter.
+        // This will get rid of at least some empty spans, and it reduces clutter
         const copyElt = element.get(0);
         for (const span of Array.from(copyElt.getElementsByTagName("span"))) {
             if (span.attributes.length === 0) {
@@ -4587,7 +4590,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     // Returns all elements that match CSS selector {expr} as an array.
-    // Querying can optionally be restricted to {container}?s descendants
+    // Querying can optionally be restricted to {container}'s descendants
     // If includeSelf is true, it includes both itself as well as its descendants.
     // Otherwise, it only includes descendants.
     // Also filters out imageDescriptions if we aren't supposed to be reading them.

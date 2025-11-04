@@ -3,8 +3,8 @@
  * For licensing, see LICENSE.md or http://ckeditor.com/license
  */
 
-// Warning: this file is NOT processed by yarn watchCode or webpack -w. Takes a full build or manual copy
-// (or possibly something like yarn gulp copyFiles) to get changes to take effect during debugging.
+// Warning: this file may not be processed by yarn watch. A full build or manual copy may be needed
+// to get changes to take effect during debugging.
 
 // Note: I determined (by searching for 'revision' in ckeditor.js, as some doc suggests) that we are using
 // a version built from CkEditor 4.5.1 (c. 2015). The plugins (other than autolink, which I'm not sure

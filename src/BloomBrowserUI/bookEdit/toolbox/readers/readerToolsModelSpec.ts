@@ -215,13 +215,13 @@ describe("updateStageNofM tests", () => {
 
         theOneLocalizationManager.dictionary[
             "EditTab.Toolbox.DecodableReaderTool.StageNofM"
-        ] = "Stage {0} of {1} en español";
+        ] = "Stage {0} of {1} en espaÃ±ol";
 
         // System under test
         obj.updateStageNOfMInternal(stageNofM);
 
         // Expect the text to be
-        expect(stageNofM.innerText).toBe("Stage 2 of 6 en español");
+        expect(stageNofM.innerText).toBe("Stage 2 of 6 en espaÃ±ol");
 
         // Cleanup
         delete theOneLocalizationManager.dictionary[

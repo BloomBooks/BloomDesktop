@@ -19,14 +19,14 @@ import { mockReplies } from "../../../utils/bloomApi";
 //     If you don't catch it, the error message will only say a Timeout error occurred, not the actual error.
 //     If you do catch it and then call fail(error), that's better but the stack trace won't be quite right.
 //     It'll show the line where fail() was called.
-//     Easier to just let Jasmine handle it (you get that by not having done() callback).
+//     Easier to just let vitest handle it (you get that by not having done() callback).
 //   There's also a promise based syntax available,
 //     but I think async/await with try/catch/finally is more readable than promises. (Less nesting and more consistent levels of nesting).
 //   Summary: Use Async/Await with NO done callback
 //   * Just add async() in front of the anonymous function passed to it().
 //   * The anonymous function should have no input parameters
 //   * Await whatever async stuff needs to be awaited.
-//   * Let Jasmine handle the rest
+//   * Let vitest handle the rest
 
 describe("audio recording tests", () => {
     beforeAll(async () => {
@@ -46,6 +46,7 @@ describe("audio recording tests", () => {
     // Unfortunately, we're not allowed to call it directly from describe(); it has to be called from an it() or beforeEach/All()
     // It would be nice to call it more in beforeAll(), but some of the tests need to set up other things
     // to return while spying on axios.get, and Jasmine doesn't allow more than one spy on the same function.
+    // (maybe vitest would allow that?)
     function setupDefaultApiResponses() {
         vi.spyOn(axios, "get").mockImplementation((url: string) => {
             if (url.includes(kAnyRecordingApiUrl)) {

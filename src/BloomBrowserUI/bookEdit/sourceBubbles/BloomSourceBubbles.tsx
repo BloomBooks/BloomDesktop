@@ -18,9 +18,7 @@ import BloomHintBubbles from "../js/BloomHintBubbles";
 import { postJson, postString } from "../../utils/bloomApi";
 import CopyContentButton from "../../react_components/CopyContentButton";
 
-//Todo: tests need a version currently created in GetSettingsMock.js, but currently only included in the
-// old Karma approach.
-declare function GetSettings(): any; // C# injects this
+declare function GetSettings(): any; // C# (or test code) injects this
 
 export default class BloomSourceBubbles {
     //:empty is not quite enough... we don't want to show bubbles if all there is is an empty paragraph

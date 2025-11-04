@@ -550,7 +550,7 @@ export function post(
     successCallback?: (r: AxiosResponse) => void,
     failureCallback?: (r: AxiosResponse) => void,
 ) {
-    // Check if we're running in a test environment (Vitest or Karma)
+    // Check if we're running in a test environment (Vitest)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const isTest =
         typeof process !== "undefined" && process.env.NODE_ENV === "test";

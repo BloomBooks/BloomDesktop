@@ -2,7 +2,7 @@ const kTestRoot = "testRoot";
 
 // Gets the element (or creates it if necessary) that represents the root div for unit tests to insert any HTML needed for their test.
 //
-// Note: The HTML and even the body already has lots of stuff attached to it from Karma etc.
+// Note: The HTML and even the body already has lots of stuff attached to it from Vitest etc.
 // So you don't want to completely reinitialize either of those.
 // Just have a wrapper div inside the body instead.
 export function getTestRoot() {
@@ -52,25 +52,6 @@ export function ensureIdsDontExist(ids: string[]) {
         }
     });
 }
-
-export const customJasmineMatchers = {
-    // This upgrades toBe with an arrow that points to the first character that differs.
-    toBeString: (_) => {
-        return {
-            compare: (actual, expected) => {
-                const pass = actual === expected;
-                const message = pass
-                    ? undefined
-                    : getStringDifference(actual, expected);
-
-                return {
-                    pass,
-                    message,
-                };
-            },
-        };
-    },
-};
 
 export function getStringDifference(actual: string, expected: string) {
     const index = findFirstDiffPos(actual, expected);

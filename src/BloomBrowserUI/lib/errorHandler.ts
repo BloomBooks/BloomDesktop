@@ -14,7 +14,9 @@ export function reportError(message: string, stack: string | undefined) {
         if (stackStr) console.error(stackStr);
         return;
     }
-    if ((window as any).__karma__) {
+    const isTest =
+        typeof process !== "undefined" && process.env.NODE_ENV === "test"
+    if (isTest) {
         console.log(
             "skipping post to common/error because in unit tests: \r\n" +
                 message +
@@ -54,7 +56,9 @@ export function reportPreliminaryError(
         if (stack) console.error(stack);
         return;
     }
-    if ((window as any).__karma__) {
+        const isTest =
+        typeof process !== "undefined" && process.env.NODE_ENV === "test"
+    if (isTest) {
         console.log(
             "skipping post to common/error because in unit tests: \r\n" +
                 message +

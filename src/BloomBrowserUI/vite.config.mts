@@ -776,10 +776,6 @@ export default defineConfig(async ({ command }) => {
                     __dirname,
                     "lib/jquery.i18n.custom.ts",
                 ),
-                "jasmine-jquery": path.resolve(
-                    __dirname,
-                    "typings/jasmine-jquery",
-                ),
                 "long-press/jquery.mousewheel.js": path.resolve(
                     __dirname,
                     "lib/long-press/jquery.mousewheel.js",
@@ -817,8 +813,10 @@ export default defineConfig(async ({ command }) => {
                 inline: ["vitest-canvas-mock"], // Force this dep to be bundled (not externalized)
             },
             browser: {
+                // This whole block is unused since enabled is false. The settings are our current
+                // best guess for our next attempt to get browser mode working.
                 enabled: false, // Browser mode disabled (we use jsdom instead)
-                provider: playwright(), // Would use Playwright for real browser testing
+                provider: playwright(),
                 instances: [
                     {
                         browser: "chromium",

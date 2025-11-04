@@ -163,7 +163,7 @@ function countFooStyleRules(): number {
 }
 
 describe("StyleEditor", () => {
-    // most perplexingly, jasmine doesn't reset the dom between tests
+    // most perplexingly, jasmine doesn't reset the dom between tests. (Not sure about vitest)
     beforeEach(() => {
         $('style[title="userModifiedStyles"]').remove();
         $("body").html("");
