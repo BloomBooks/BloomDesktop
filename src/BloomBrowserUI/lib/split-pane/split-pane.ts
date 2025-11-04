@@ -8,7 +8,11 @@ Copyright (c) 2014 Simon Hagström
 
 Released under the MIT license
 https://raw.github.com/shagstrom/split-pane/master/LICENSE
+
+2024?
 Modified to add snap points with names localized by our localization manager, mainly by John Thomson.
+
+Nov 2025
 Very much modified, mainly by Claude Sonnet 4, first to simply export a splitPane function instead
 of trying to add it to jQuery's prototype, then to be typescript.
 The typedefs could definitely be better done; what we have is just what Claude could infer.
@@ -19,9 +23,7 @@ import { get } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../localizationManager/localizationManager";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import jQuery from "jquery";
-
-// Inline constant to avoid circular dependency with bloomImages.ts
-const kBloomCanvasClass = "bloom-canvas";
+import { kBloomCanvasClass } from "../../bookEdit/toolbox/overlay/canvasElementUtils";
 
 var SPLITPANERESIZE_HANDLER = "_splitpaneparentresizeHandler";
 
@@ -121,8 +123,8 @@ export function splitPane($splitPanes: JQuery): void {
     }
 
     // mousedownHandler variables that need to be accessible to mousemoveHandler or mouseUpHandler
-    let moveFunction: EventListener | null = null;
-    let moveEvent: string;
+    let moveListener: EventListener | null = null;
+    let moveType: "touchmove" | "mousemove";
     let $divider: JQuery;
     let $resizeShim: JQuery;
 
@@ -134,7 +136,7 @@ export function splitPane($splitPanes: JQuery): void {
             $splitPane = $divider.parent();
 
         $resizeShim = $divider.siblings(".split-pane-resize-shim");
-        moveEvent = isTouchEvent ? "touchmove" : "mousemove";
+        moveType = isTouchEvent ? "touchmove" : "mousemove";
         $resizeShim.show();
         $divider.addClass("dragged");
         if (isTouchEvent) {
@@ -152,8 +154,8 @@ export function splitPane($splitPanes: JQuery): void {
             pageYof(event),
         );
         if (mouseMoveFunc) {
-            moveFunction = mouseMoveFunc as EventListener;
-            document.addEventListener(moveEvent, moveFunction, { capture: true });
+            moveListener = mouseMoveFunc as EventListener;
+            document.addEventListener(moveType, moveListener, { capture: true });
         }
         // MUST be on the document, both for the usual reason that the mouse can move out of the element
         // where the mouse down happened, and also because there is another capturing document-level mouseup
@@ -166,8 +168,8 @@ export function splitPane($splitPanes: JQuery): void {
     }
 
     function mouseUpHandler(_event: Event) {
-        if (moveFunction) {
-            document.removeEventListener(moveEvent, moveFunction, {
+        if (moveListener) {
+            document.removeEventListener(moveType, moveListener, {
                 capture: true,
             });
         }

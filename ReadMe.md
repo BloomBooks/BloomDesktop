@@ -71,7 +71,7 @@ It may be helpful before submitting a PR to turn off yarn dev and run yarn build
 
 ### Typescript unit tests
 
-These are now being run using Vitest. You can run 'yarn test' in a ternimal, and it will automatically re-run affected tests on every Save. There is also a vitest extension you can install in VsCode, which supports a new panel showing all the tests and allowing them to be run and debugged; it also puts icons in the test files that support running and debugging tests. Breakpoints can be set in VSCode itself. It takes a few seconds for a debug session to start.
+These are now being run using Vitest in the BloomBrowserUI folder (where all our Typescript currently lives). You can run 'yarn test' in a terminal there, and it will automatically re-run affected tests on every Save. There is also a vitest extension you can install in VsCode, which supports a new panel showing all the tests and allowing them to be run and debugged; it also puts icons in the test files that support running and debugging tests. Breakpoints can be set in VSCode itself. It takes a few seconds for a debug session to start.
 
 For now, all tests are being run using Node and JsDom. This approach has limitations; JsDom's emulation of the browser DOM is imperfect. In particular, you can't do much with a Canvas, and you can't get layout measurements. The file vitest.setup.ts contains various mocks to make jsdom work a little better. Eventually, we hope to be able to run a subset of tests using a real browser.
 
