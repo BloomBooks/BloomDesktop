@@ -352,9 +352,17 @@ namespace Bloom.Book
         )
         {
             var head = doc.Head;
-            var typeAttr = src.ToLowerInvariant().EndsWith(".bundle.js")
-                ? "module"
-                : "text/javascript";
+            // Our Vite build system is configured to build bundles using ESNext,
+            // which produces files that require type module.
+            // I wish for a better way to know which files need it.
+            // If modules are imported as text/javascript, the browser complains
+            // if the js has import or export statements.
+            // Conceivably we could load the js and look for those as strings, but it would
+            // be slow and unreliable (the words might occur in comments).
+            var typeAttr =
+                module || src.ToLowerInvariant().EndsWith("bundle.js")
+                    ? "module"
+                    : "text/javascript";
             var existingScript = head.SelectSingleNode(
                 $"./script[@type='{typeAttr}' and @src='{src}']"
             );

@@ -3,7 +3,7 @@
     "scripts": {
         "build": "npm-run-all build:pug build:less build:branding:files build:templates:files build:appearance build:appearanceMigrations",
         "watch": "npm-run-all watch:pug watch:less watch:branding:files",
-        "//1": "TODO: currently we haven't figured this out without gulp, so we're just building *all* pugs in this directory along with BloomBrowserUI/",
+        "//1": "TODO: currently we haven't figured this out with the simple build tools we're using here, so we're just building *all* pugs in this directory along with BloomBrowserUI/",
         "//2": "See https://github.com/Qard/onchange/issues/118",
         "//3": "The key to navigating these issues it to realize that the problem doesn't exist outside windows. Elsewhere, the terminal expands globs.",
         "//4": "I'm not making this actually do the BloomBrowserUI pug build, because it's currently part of the whole vite build, which turns around and builds this, so could be recursive.",

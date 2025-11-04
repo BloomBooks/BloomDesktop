@@ -358,11 +358,11 @@ namespace Bloom.web
             {
                 using (var client = new System.Net.Sockets.TcpClient())
                 {
-                    var ar = client.BeginConnect(host, port, null, null);
-                    var ok = ar.AsyncWaitHandle.WaitOne(timeoutMs);
+                    var asyncResult = client.BeginConnect(host, port, null, null);
+                    var ok = asyncResult.AsyncWaitHandle.WaitOne(timeoutMs);
                     if (!ok)
                         return false;
-                    client.EndConnect(ar);
+                    client.EndConnect(asyncResult);
                     return true;
                 }
             }
