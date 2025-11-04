@@ -575,12 +575,17 @@ namespace Bloom.Publish.Video
             // configure ffmpeg to merge everything.
 
             // There are multiple limits which mean we need to cap how many files we process at a time.
-            // One is the command line length limit, which caps us out at around 2900.
-            // Apart from that, ffmpeg will have "too many open files" error if there are too many files.
-            // This occurs somewhere inbetween 2036 and 2047 in my environment.
-            // To be conservative (since I'm not sure if this is consistent from environment to environment),
-            // let's just do 1,000 at a time.
-            const int batchSize = 1000;
+            // The complex filter must be included in the command line for the current version of
+            // ffmpeg.  (Not only is -complex_filter_script deprecated, but it is not working reliably
+            // according to BL-15463 even for a small number of input audio files.)
+            //// One is the command line length limit, which caps us out at around 2900.
+            //// Apart from that, ffmpeg will have "too many open files" error if there are too many files.
+            //// This occurs somewhere inbetween 2036 and 2047 in my environment.
+            //// To be conservative (since I'm not sure if this is consistent from environment to environment),
+            //// let's just do 1,000 at a time.
+            // Being even more conservative: estimating filter entries at 50 characters/file, we should still
+            // be able to handle 500 input files at a time without exceeding the command line length limit.
+            const int batchSize = 500;
             bool isSuccess = MergeAudioFilesInBatches(
                 progress,
                 soundLog,
@@ -821,7 +826,7 @@ namespace Bloom.Publish.Video
 
             // arguments to configure 'filters' ahead of audio mixer which will combine the sounds into a single stream.
             var audioFilters = string.Join(
-                " ",
+                "",
                 soundLog.Select(
                     (item, index) =>
                     {
@@ -906,6 +911,8 @@ namespace Bloom.Publish.Video
                     throw new NotImplementedException();
             }
 
+            // Be careful not to have any internal double quotes in the filter text.  (That
+            // shouldn't ever happen or be necessary.)
             var complexFilter =
                 audioFilters // specifies the inputs to the mixer
                 // mix those inputs to a single stream called out. Note that, because most of our audio
@@ -919,69 +926,68 @@ namespace Bloom.Publish.Video
                 + mixInputs
                 + (videoHasAudio ? $"[{videoIndex}:a]" : "")
                 + $"amix=inputs={soundLogCount + (videoHasAudio ? 1 : 0)}:normalize=0[out]";
-            using (var filterFile = new TempFile(complexFilter))
+            Debug.Assert(
+                !complexFilter.Contains("\""),
+                $"The complex filter should never have a double quote! {complexFilter}"
+            );
+            using (_ffmpegProgressFile = TempFile.CreateAndGetPathButDontMakeTheFile())
             {
-                using (_ffmpegProgressFile = TempFile.CreateAndGetPathButDontMakeTheFile())
-                {
-                    var args =
-                        ""
-                        + inputs // the audio files are inputs, which may be referred to as [1:a], [2:a], etc.
-                        + (haveVideo ? $"-i \"{inputVideoPath}\" " : "") // last input (videoIndex) is the original video (if any)
-                        + "-filter_complex_script \"" // the next bit specifies a filter with multiple inputs
-                        + filterFile.Path
-                        + "\" "
-                        // copy the video channel (of input videoIndex) unchanged (if we have video).
-                        // (here 'copy' is a pseudo codec...instead of encoding it in some particular way,
-                        // we just copy the original.
-                        + (haveVideo ? $"-map {videoIndex}:v -vcodec copy " : "")
-                        + audioArgs
-                        + "-map [out] " // send the output of the audio mix to the output
-                        + $"\"{outputPath}\"" //and this is where we send it (until the user saves it elsewhere).
-                        + $" -progress \"{_ffmpegProgressFile.Path}\"";
-                    // Debug.WriteLine("ffmpeg merge args: " + args);
+                var args =
+                    ""
+                    + inputs // the audio files are inputs, which may be referred to as [1:a], [2:a], etc.
+                    + (haveVideo ? $"-i \"{inputVideoPath}\" " : "") // last input (videoIndex) is the original video (if any)
+                    + "-filter_complex \"{complexFilter}\" " // this filter has multiple inputs
+                    // copy the video channel (of input videoIndex) unchanged (if we have video).
+                    // (here 'copy' is a pseudo codec...instead of encoding it in some particular way,
+                    // we just copy the original.
+                    + (haveVideo ? $"-map {videoIndex}:v -vcodec copy " : "")
+                    + audioArgs
+                    + "-map [out] " // send the output of the audio mix to the output
+                    + $"\"{outputPath}\"" //and this is where we send it (until the user saves it elsewhere).
+                    + $" -progress \"{_ffmpegProgressFile.Path}\"";
+                // Debug.WriteLine("ffmpeg merge args: " + args);
 
-                    // This magic number is documented at https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.processstartinfo.arguments?view=net-6.0
-                    if (args.Length >= 32699)
+                // This magic number is documented at https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.processstartinfo.arguments?view=net-6.0
+                if (args.Length >= 32699)
+                {
+                    // This API requires a localization ID, but as we hope no one will ever see it, I'm not actually
+                    // adding it to the XLF.
+                    progress.Message(
+                        "PublishTab.RecordVideo.TooManyAudioFiles",
+                        "This recording has more audio files than Bloom can handle. Try recording the book in smaller sections. You can then join the sections using some other video software.",
+                        ProgressKind.Error
+                    );
+                }
+                else
+                {
+                    RunFfmpeg(args, workingDirectory);
+
+                    _ffmpegProcess.WaitForExit();
+
+                    ++_numIterationsDone;
+
+                    // Check if the file was created successfully
+                    if (
+                        _ffmpegProcess.ExitCode != 0
+                        || !RobustFile.Exists(outputPath)
+                        || new FileInfo(outputPath).Length < 100
+                    )
                     {
-                        // This API requires a localization ID, but as we hope no one will ever see it, I'm not actually
-                        // adding it to the XLF.
-                        progress.Message(
-                            "PublishTab.RecordVideo.TooManyAudioFiles",
-                            "This recording has more audio files than Bloom can handle. Try recording the book in smaller sections. You can then join the sections using some other video software.",
+                        // Failure - Log and abort.
+                        var mergeErrors = _errorData.ToString();
+                        Logger.WriteError(new ApplicationException(mergeErrors));
+                        Logger.WriteEvent(PrettyPrintProcessStartInfo(_ffmpegProcess));
+                        Logger.WriteEvent("filter_complex contents: " + complexFilter);
+                        Logger.WriteEvent($"FFMPEG exit code: {_ffmpegProcess.ExitCode}");
+
+                        // If you get this error, please check the logs above! You'll find the FFMPEG command, exit code, and output in the logs.
+                        progress.MessageWithoutLocalizing(
+                            "Merging audio and video failed",
                             ProgressKind.Error
                         );
-                    }
-                    else
-                    {
-                        RunFfmpeg(args, workingDirectory);
+                        _recording = false;
 
-                        _ffmpegProcess.WaitForExit();
-
-                        ++_numIterationsDone;
-
-                        // Check if the file was created successfully
-                        if (
-                            _ffmpegProcess.ExitCode != 0
-                            || !RobustFile.Exists(outputPath)
-                            || new FileInfo(outputPath).Length < 100
-                        )
-                        {
-                            // Failure - Log and abort.
-                            var mergeErrors = _errorData.ToString();
-                            Logger.WriteError(new ApplicationException(mergeErrors));
-                            Logger.WriteEvent(PrettyPrintProcessStartInfo(_ffmpegProcess));
-                            Logger.WriteEvent("filter_complex_script contents: " + complexFilter); // Write the temp file contents before it gets disposed
-                            Logger.WriteEvent($"FFMPEG exit code: {_ffmpegProcess.ExitCode}");
-
-                            // If you get this error, please check the logs above! You'll find the FFMPEG command, exit code, and output in the logs.
-                            progress.MessageWithoutLocalizing(
-                                "Merging audio and video failed",
-                                ProgressKind.Error
-                            );
-                            _recording = false;
-
-                            return false;
-                        }
+                        return false;
                     }
                 }
             }
