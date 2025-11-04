@@ -100,19 +100,23 @@ export function preparePostReceiver<T>(
  * This allows tests to provide fake data for API endpoints.
  *
  * @param page - The Playwright page object
- * @param urlPattern - URL or pattern to intercept (e.g., "/bloom/api/data" or "**\/api/data")
+ * @param urlPattern - URL or pattern to intercept (string glob or RegExp)
  * @param responseData - The data to return in the response
+ * @param options.wrapBody - Set true to wrap the payload in a { data: ... } envelope
  */
 export function prepareGetResponse<T>(
     page: Page,
-    urlPattern: string,
+    urlPattern: string | RegExp,
     responseData: T,
+    options: { wrapBody?: boolean } = {},
 ): void {
+    const shouldWrap = options.wrapBody === true;
     void page.route(urlPattern, async (route: Route) => {
+        const bodyPayload = shouldWrap ? { data: responseData } : responseData;
         await route.fulfill({
             status: 200,
             contentType: "application/json",
-            body: JSON.stringify({ data: responseData }),
+            body: JSON.stringify(bodyPayload),
         });
     });
 }
@@ -130,11 +134,5 @@ export function prepareGetBooleanResponse(
     urlPattern: string,
     responseValue: boolean,
 ): void {
-    void page.route(urlPattern, async (route: Route) => {
-        await route.fulfill({
-            status: 200,
-            contentType: "application/json",
-            body: JSON.stringify({ data: responseValue }),
-        });
-    });
+    prepareGetResponse(page, urlPattern, responseValue);
 }

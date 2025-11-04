@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.SafeXml;
 using Bloom.Utils;
@@ -20,6 +21,7 @@ namespace Bloom.web
     public class PageListApi
     {
         private readonly BookSelection _bookSelection;
+        private readonly CollectionModel _collectionModel;
 
         internal WebThumbNailList PageList { get; set; }
 
@@ -27,9 +29,10 @@ namespace Bloom.web
         internal IPage SelectedPage { get; set; }
 
         // Called by autofac, which creates the one instance and registers it with the server.
-        public PageListApi(BookSelection _bookSelection)
+        public PageListApi(BookSelection _bookSelection, CollectionModel collectionModel)
         {
             this._bookSelection = _bookSelection;
+            _collectionModel = collectionModel;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -184,12 +187,30 @@ namespace Bloom.web
         {
             //var watch = new Stopwatch();
             //watch.Start();
-            var book = _bookSelection.CurrentSelection;
+
+            Book.Book book;
+            string requestedBookId = request.GetParamOrNull("book-id");
+            if (!string.IsNullOrEmpty(requestedBookId))
+            {
+                if (!TryGetBookForId(requestedBookId, out book, out var _))
+                {
+                    request.Failed($"Book with id '{requestedBookId}' was not found.");
+                    return;
+                }
+            }
+            else
+            {
+                book = _bookSelection.CurrentSelection;
+            }
+
             IPage[] pages = book == null ? new IPage[0] : book.GetPages().ToArray();
             int pageNumber = 0;
             dynamic answer = new ExpandoObject();
             answer.pages = pages.Select(p => GetPageObject(p, ref pageNumber)).ToArray();
-            answer.selectedPageId = SelectedPage == null ? "" : SelectedPage.Id;
+            answer.selectedPageId =
+                string.IsNullOrEmpty(requestedBookId) && SelectedPage != null
+                    ? SelectedPage.Id
+                    : "";
             request.ReplyWithJson(answer);
             //watch.Stop();
             //Debug.WriteLine($"Generating JSON for thumbnails took {watch.ElapsedMilliseconds}ms");
@@ -201,36 +222,76 @@ namespace Bloom.web
             var watch = new Stopwatch();
             watch.Start();
             var id = request.RequiredParam("id");
-            var page = PageFromId(id);
-            dynamic answer = new ExpandoObject();
-            if (page == null)
+            var bookId = request.GetParamOrNull("book-id");
+            IPage page;
+            if (!string.IsNullOrEmpty(bookId))
             {
-                answer.content = "";
+                if (!TryGetBookForId(bookId, out var book, out var _))
+                {
+                    request.Failed($"Book with id '{bookId}' was not found.");
+                    return;
+                }
+
+                page = book.GetPages().FirstOrDefault(p => p.Id == id);
             }
             else
             {
-                var pageElement = page.GetDivNodeForThisPage().CloneNode(true) as SafeXmlElement;
-                var videos = pageElement
-                    .SafeSelectNodes(".//video")
-                    .Cast<SafeXmlElement>()
-                    .ToArray();
-                foreach (var video in videos)
-                    video.ParentNode.RemoveChild(video); // minimize memory use, thumb just shows placeholder
-                MarkImageNodesForThumbnail(pageElement);
-                // For WebView2, this prevents any interaction with elements in the page thumbnail.
-                // We put an overlay over it to try to prevent such interaction, but this is more
-                // reliable. Nothing in the page will ever get focus, be tabbed to, be read by
-                // screen readers, etc. In particular, we finally concluded that BL-11528 was caused
-                // by the browser temporarily focusing, and then scrolling into view, something
-                // on the first page; this prevents that.
-                pageElement.SetAttribute("inert", "true");
-                answer.content = XmlHtmlConverter.ConvertElementToHtml5(pageElement);
+                page = PageFromId(id);
             }
-
+            dynamic answer = new ExpandoObject();
+            answer.content = GetPageContentForThumbnail(page);
             request.ReplyWithJson(answer);
             watch.Stop();
             Debug.WriteLine($"Generating JSON for one page took {watch.ElapsedMilliseconds}ms");
         }
+
+        private static string GetPageContentForThumbnail(IPage page)
+        {
+            if (page == null)
+            {
+                return string.Empty;
+            }
+
+            var pageElement = page.GetDivNodeForThisPage().CloneNode(true) as SafeXmlElement;
+            var videos = pageElement.SafeSelectNodes(".//video").Cast<SafeXmlElement>().ToArray();
+            foreach (var video in videos)
+            {
+                video.ParentNode.RemoveChild(video);
+            }
+
+            MarkImageNodesForThumbnail(pageElement);
+            // For WebView2, this prevents any interaction with elements in the page thumbnail.
+            // We put an overlay over it to try to prevent such interaction, but this is more
+            // reliable. Nothing in the page will ever get focus, be tabbed to, be read by
+            // screen readers, etc. In particular, we finally concluded that BL-11528 was caused
+            // by the browser temporarily focusing, and then scrolling into view, something
+            // on the first page; this prevents that.
+            pageElement.SetAttribute("inert", "true");
+            return XmlHtmlConverter.ConvertElementToHtml5(pageElement);
+        }
+
+        private bool TryGetBookForId(string bookId, out Book.Book book, out BookInfo bookInfo)
+        {
+            book = null;
+            bookInfo = null;
+
+            var editableCollection = _collectionModel.TheOneEditableCollection;
+            if (editableCollection == null)
+            {
+                return false;
+            }
+
+            bookInfo = editableCollection.GetBookInfos().FirstOrDefault(info => info.Id == bookId);
+            if (bookInfo == null)
+            {
+                return false;
+            }
+
+            book = _collectionModel.GetBookFromBookInfo(bookInfo);
+            return book != null;
+        }
+
+        // Note: Int parsing helper removed as unused.
 
         // As a further form of optimization, mark img elements as being thumbnails. The server
         // produces miniatures that take up less memory.

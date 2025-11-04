@@ -7,8 +7,9 @@ export interface BookInfoForLinks {
 }
 
 export interface PageInfoForLinks {
-    pageId: number;
-    thumbnail: string;
+    pageId: string; // Bloom page ids are strings
+    thumbnail: string; // For current book this may contain HTML content for the page thumbnail
+    caption?: string; // optional label/caption for display
 }
 
 export interface Link {

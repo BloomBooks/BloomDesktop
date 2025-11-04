@@ -1,6 +1,8 @@
 import * as path from "path";
 import type { PlaywrightTestConfig } from "@playwright/test";
 
+process.env.BLOOM_COMPONENT_TESTER_SUPPRESS_OPEN = "1";
+
 // Force Node to resolve Playwright from this package's node_modules so sibling spec files
 // don't pull in the repo-level copy and trigger the "Requiring @playwright/test second time" error.
 
@@ -27,9 +29,9 @@ Object.keys(require.cache).forEach((key) => {
 const config: PlaywrightTestConfig = {
     testDir: "..",
     testMatch: "**/*.uitest.*",
-    timeout: 30000,
+    timeout: 5000,
     expect: {
-        timeout: 5000,
+        timeout: 1000,
     },
     use: {
         baseURL: "http://127.0.0.1:5173",
