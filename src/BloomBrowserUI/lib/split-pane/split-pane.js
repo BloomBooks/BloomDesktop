@@ -265,9 +265,12 @@ import { theOneCanvasElementManager } from "../../bookEdit/js/CanvasElementManag
                     // that we make after a double-click gets missed because it happens after the mouseup.
                     // So we provide an event that CanvasElementManager (or anything else) can listen for
                     // to know when a double-click on the splitter occurs.
-                    $splitPane[0].dispatchEvent(new Event(
-                        "splitterDoubleClick", { bubbles: true, cancelable: false }
-                    ));
+                    $splitPane[0].dispatchEvent(
+                        new Event("splitterDoubleClick", {
+                            bubbles: true,
+                            cancelable: false,
+                        }),
+                    );
                 }
             });
         }
