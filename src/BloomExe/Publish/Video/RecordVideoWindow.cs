@@ -936,7 +936,7 @@ namespace Bloom.Publish.Video
                     ""
                     + inputs // the audio files are inputs, which may be referred to as [1:a], [2:a], etc.
                     + (haveVideo ? $"-i \"{inputVideoPath}\" " : "") // last input (videoIndex) is the original video (if any)
-                    + "-filter_complex \"{complexFilter}\" " // this filter has multiple inputs
+                    + $"-filter_complex \"{complexFilter}\" " // this filter has multiple inputs
                     // copy the video channel (of input videoIndex) unchanged (if we have video).
                     // (here 'copy' is a pseudo codec...instead of encoding it in some particular way,
                     // we just copy the original.
