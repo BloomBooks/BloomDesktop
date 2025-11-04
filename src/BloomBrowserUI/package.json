@@ -70,7 +70,7 @@
         "// 'build:ui': 'builds all the stuff handled directly by vite'": " ",
         "build:ui": "vite build",
         "// 'build': 'builds all the core stuff devs need in both this folder and content. Does not clean.'": " ",
-        "build": "npm-run-all --parallel build build:content",
+        "build": "npm-run-all --parallel build:ui build:content",
         "build:clean": "node scripts/clean.js",
         "// 'build-prod': 'production build: clean, then build+content in parallel, then l10n'": " ",
         "build-prod": "npm run build:clean && npm-run-all --parallel build:ui build:content && npm-run-all --parallel build:l10n:translate build:l10n:create",
