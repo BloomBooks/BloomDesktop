@@ -66,8 +66,8 @@ import { EditableDivUtils } from "./editableDivUtils";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
-import { showLinkGridSetupsDialog } from "../bookLinkSetup/LinkGridSetupDialog";
-import { Link } from "../bookLinkSetup/BookLinkTypes";
+import { showLinkGridSetupDialog } from "../../react_components/bookLinkSetup/BookGridSetupDialog";
+import { Link } from "../../react_components/bookLinkSetup/BookLinkTypes";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { handleUndo } from "../editViewFrame";
@@ -1766,7 +1766,7 @@ function SetupBookLinkGrids(container: HTMLElement) {
                     };
                 });
 
-            showLinkGridSetupsDialog(
+            showLinkGridSetupDialog(
                 currentLinks,
                 // callback if they press OK
                 (links: Link[]) => {

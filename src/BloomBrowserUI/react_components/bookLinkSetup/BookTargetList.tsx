@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "./BookLinkTypes";
-import { LinkCard } from "./LinkCard";
+import { BookLinkCard } from "./BookLinkCard";
 import {
     DndContext,
     closestCenter,
@@ -9,6 +9,8 @@ import {
     useSensor,
     useSensors,
     DragEndEvent,
+    DragOverlay,
+    DragStartEvent,
 } from "@dnd-kit/core";
 import {
     arrayMove,
@@ -17,8 +19,9 @@ import {
     useSortable,
     rectSortingStrategy,
 } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useRef } from "react";
-import { css } from "@emotion/react";
+import { bookGridContainerStyles } from "./sharedStyles";
 
 interface BookTargetListProps {
     links: Link[];
@@ -28,38 +31,38 @@ interface BookTargetListProps {
 
 const SortableBookItem: React.FC<{
     link: Link;
-    onRemove: (link: Link) => void;
+    onRemove: () => void;
 }> = ({ link, onRemove }) => {
-    const { attributes, listeners, setNodeRef, transform, transition } =
-        useSortable({
-            id: link.book.id,
-        });
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({
+        id: link.book.id,
+    });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
 
     return (
         <div
             ref={setNodeRef}
-            css={css`
-                transform: ${transform
-                    ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-                    : "none"};
-                transition: ${transition};
-                position: relative;
-                width: 140px;
-                padding: 10px;
-            `}
+            style={style}
+            data-testid={`target-book-${link.book.id}`}
             {...attributes}
             {...listeners}
         >
-            <LinkCard
+            <BookLinkCard
                 link={link}
-                onRemove={() => {
-                    console.log(
-                        "SortableBookItem onRemove called for:",
-                        link.book.folderName || link.book.title,
-                    );
-                    onRemove(link);
-                }}
-                displayRealTitle={true}
+                onRemove={onRemove}
+                preferFolderName={false}
+                isDragging={isDragging}
             />
         </div>
     );
@@ -72,7 +75,10 @@ export const BookTargetList: React.FC<BookTargetListProps> = ({
 }) => {
     const linkRefs = useRef<Map<string, HTMLDivElement>>(new Map());
     const prevLinksLengthRef = useRef(links.length);
+    const [activeId, setActiveId] = React.useState<string | null>(null);
 
+    // Auto-scroll to newly added books so users can see confirmation of their action.
+    // We track the previous length to distinguish additions from removals or reordering.
     useEffect(() => {
         // Only scroll if a new link was added (length increased)
         if (links.length > prevLinksLengthRef.current) {
@@ -88,10 +94,12 @@ export const BookTargetList: React.FC<BookTargetListProps> = ({
         prevLinksLengthRef.current = links.length;
     }, [links]);
 
+    // Configure drag sensors for both mouse and keyboard interaction.
+    // The distance threshold prevents accidental drags when clicking the remove button.
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8, // Use distance instead of delay+tolerance
+                distance: 8, // Require 8px of movement before drag starts
             },
         }),
         useSensor(KeyboardSensor, {
@@ -99,8 +107,14 @@ export const BookTargetList: React.FC<BookTargetListProps> = ({
         }),
     );
 
+    const handleDragStart = (event: DragStartEvent) => {
+        setActiveId(event.active.id as string);
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
+        // Reorder the links array based on where the item was dropped.
+        // The dnd-kit library provides the active (dragged) and over (drop target) elements.
         if (over && active.id !== over.id) {
             const oldIndex = links.findIndex(
                 (link) => link.book.id === active.id,
@@ -108,33 +122,32 @@ export const BookTargetList: React.FC<BookTargetListProps> = ({
             const newIndex = links.findIndex(
                 (link) => link.book.id === over.id,
             );
-            const newLinks = arrayMove(links, oldIndex, newIndex);
-            onReorderBooks?.(newLinks);
+            if (oldIndex >= 0 && newIndex >= 0) {
+                const newLinks = arrayMove(links, oldIndex, newIndex);
+                onReorderBooks?.(newLinks);
+            }
         }
+        setActiveId(null);
     };
+
+    // Track which link is being dragged so we can render it in the DragOverlay.
+    // This provides visual feedback during the drag operation.
+    const activeLink = activeId
+        ? links.find((link) => link.book.id === activeId)
+        : null;
 
     return (
         <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
             <SortableContext
                 items={links.map((link) => link.book.id)}
-                strategy={rectSortingStrategy}
+                strategy={rectSortingStrategy} // Use rect strategy for grid layouts
             >
-                <div
-                    css={css`
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 8px;
-                        height: 100%;
-                        align-content: flex-start;
-                        width: 100%; // Changed from min-width: 500px
-                        overflow-x: hidden; // Add this to prevent horizontal scroll
-                        background-color: lightgray;
-                    `}
-                >
+                <div css={bookGridContainerStyles}>
                     {links.map((link) => (
                         <div
                             key={link.book.id}
@@ -147,16 +160,22 @@ export const BookTargetList: React.FC<BookTargetListProps> = ({
                             }}
                         >
                             <SortableBookItem
-                                key={link.book.id}
                                 link={link}
-                                onRemove={(link) => {
-                                    onRemoveBook(link);
-                                }}
+                                onRemove={() => onRemoveBook(link)}
                             />
                         </div>
                     ))}
                 </div>
             </SortableContext>
+            <DragOverlay>
+                {activeLink ? (
+                    <BookLinkCard
+                        link={activeLink}
+                        preferFolderName={false}
+                        isDragging={true}
+                    />
+                ) : null}
+            </DragOverlay>
         </DndContext>
     );
 };
