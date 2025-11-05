@@ -309,17 +309,17 @@
       </trans-unit>
       <trans-unit id="BookGridSetup.BooksInCollection">
         <source xml:lang="en">Books in this Collection</source>
-        <target xml:lang="es-ES" state="needs-translation">Books in this Collection</target>
+        <target xml:lang="es-ES" state="translated">Libros en esta colección</target>
         <note>ID: BookGridSetup.BooksInCollection</note>
       </trans-unit>
       <trans-unit id="BookGridSetup.AddBook">
         <source xml:lang="en">Add Book →</source>
-        <target xml:lang="es-ES" state="needs-translation">Add Book →</target>
+        <target xml:lang="es-ES" state="translated">Agregar libro →</target>
         <note>ID: BookGridSetup.AddBook</note>
       </trans-unit>
       <trans-unit id="BookGridSetup.AddAllBooks">
         <source xml:lang="en">Add All Books →</source>
-        <target xml:lang="es-ES" state="needs-translation">Add All Books →</target>
+        <target xml:lang="es-ES" state="translated">Agregar todos los libros →</target>
         <note>ID: BookGridSetup.AddAllBooks</note>
       </trans-unit>
       <trans-unit id="BookGridSetup.LinksInGrid">
