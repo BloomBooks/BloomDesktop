@@ -12,7 +12,9 @@
     "scripts": {
         "dev": "vite",
         "// COMMENTS: make the action a space rather than empty string so `yarn run` can list the scripts": " ",
-        "test": "vitest",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:ci": "vitest run",
         "check-that-node-modules-exists-in-content-dir": "cd ../content && node checkForNodeModules.js && cd ../BloomBrowserUI",
         "// 'build:ui': 'builds all the stuff handled directly by vite'": " ",
         "build:ui": "vite build",
@@ -196,6 +198,7 @@
         "@types/jquery": "^1.0",
         "@types/less": "^3.0.8",
         "@types/markdown-it": "^14.1.2",
+        "@types/node": "22.9.0",
         "@types/rc-slider": "8.6.6",
         "@types/react": "^17",
         "@types/react-color": "^3.0.2",

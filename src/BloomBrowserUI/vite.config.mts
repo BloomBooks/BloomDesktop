@@ -21,7 +21,7 @@ import markdownItAttrs from "markdown-it-attrs";
 import { playwright } from "@vitest/browser-playwright";
 
 // Custom plugin to compile Pug files to HTML
-// There are a couple of npm packages for pug, but as of October2025, they are experimental
+// There are a couple of npm packages for pug, but as of October 2025, they are experimental
 // and/or aimed at dynamically serving pug, like vite dev does with js. For now, we're good
 // with a simple static compilation during build. Claude sonnet 4.5 came up with this.
 // Note that it also builds pug files from ../content. This is because we haven't yet
@@ -811,6 +811,11 @@ export default defineConfig(async ({ command }) => {
         test: {
             setupFiles: ["./vitest.setup.ts"], // Run this file before each test file
             include: ["./**/*{test,spec,Spec}.{js,ts,jsx,tsx}"], // Which files are tests
+            reporters: globalThis.process?.env?.TEAMCITY_VERSION
+                ? ["default", "junit"]
+                : ["default"],
+            outputFile: "./bloombrowserui-test-results.xml",
+            includeConsoleOutput: true,
             // Uncomment to run only specific test files during development:
             // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
             exclude: [
