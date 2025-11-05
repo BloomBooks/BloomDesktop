@@ -39,7 +39,7 @@ export const CanvasElementKeyHints: React.FC = () => {
     //             css={css`
     //                 ${imgRule}
     //             `}
-    //             src="/bloom/bookEdit/toolbox/overlay/AltKey.svg"
+    //             src="/bloom/bookEdit/toolbox/canvas/AltKey.svg"
     //         />
     //         <Typography>{`+ ${dragHint} = ${resizeHint}`}</Typography>
     //     </div>
@@ -52,7 +52,7 @@ export const CanvasElementKeyHints: React.FC = () => {
     //             css={css`
     //                 ${imgRule}
     //             `}
-    //             src="/bloom/bookEdit/toolbox/overlay/CtrlKey.svg"
+    //             src="/bloom/bookEdit/toolbox/canvas/CtrlKey.svg"
     //         />
     //         <Typography>{`+ ${dragHint} = ${moveHint}`}</Typography>
     //     </div>

@@ -659,11 +659,11 @@ namespace Bloom.Book
 
         public static bool HasBackgroundImage(SafeXmlElement imageContainer)
         {
-            var overlay =
+            var canvasElement =
                 imageContainer.ChildNodes.FirstOrDefault(child =>
                     child is SafeXmlElement e && e.HasClass(kCanvasElementClass)
                 ) as SafeXmlElement;
-            return overlay != null && (overlay.HasClass("bloom-backgroundImage"));
+            return canvasElement != null && (canvasElement.HasClass("bloom-backgroundImage"));
         }
 
         /// <summary>

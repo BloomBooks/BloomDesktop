@@ -731,7 +731,7 @@ namespace Bloom.Edit
                 // Note: if something goes wrong in this call, the user gets notified, so we don't have
                 // to catch errors here.
                 _model.CopyImageMetadataToWholeBook(metadata);
-                // There might be more than one image on this page. Update overlays.
+                // There might be more than one image on this page. Update canvas image elements.
                 _model.RefreshDisplayOfCurrentPage();
 
                 Cursor = Cursors.Default;
@@ -1959,7 +1959,7 @@ namespace Bloom.Edit
             // Note: July 29 2025 we removed code that handled zoom by reloading the page,
             // with some complicated mess involving timers to make sure one reload for zoom
             // didn't interfere with another. I eventually tracked this down to when we made
-            // overlays draggable (6/28/2017). I think the old JQuery draggable code was
+            // canvas elements draggable (6/28/2017). I think the old JQuery draggable code was
             // messed up by scaling and had to be adjusted somehow. Now we're not using that,
             // so updating in place is much cleaner (and faster!).
         }

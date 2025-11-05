@@ -17,7 +17,7 @@ import TalkingBookTool from "./talkingBook/talkingBook";
 import { SignLanguageTool } from "./signLanguage/signLanguageTool";
 import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 import "errorHandler";
-import { OverlayTool } from "./overlay/overlayTool";
+import { CanvasTool } from "./canvas/canvasTool";
 import { GameTool, setActiveDragActivityTab } from "./games/GameTool";
 // Explicit imports needed so that these symbols are in local scope for the window.toolboxBundle object
 import {
@@ -121,7 +121,7 @@ ToolBox.registerTool(new MotionTool());
 ToolBox.registerTool(new TalkingBookTool());
 ToolBox.registerTool(new SignLanguageTool());
 ToolBox.registerTool(new ImageDescriptionAdapter());
-ToolBox.registerTool(new OverlayTool());
+ToolBox.registerTool(new CanvasTool());
 ToolBox.registerTool(new GameTool());
 
 // Legacy global exposure: mimic old webpack window["toolboxBundle"] contract

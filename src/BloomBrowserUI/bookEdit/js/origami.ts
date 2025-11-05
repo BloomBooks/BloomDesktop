@@ -1,7 +1,7 @@
 // not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
 ///<reference path="../../lib/split-pane/split-pane.d.ts" />
 import { SetupImage } from "./bloomImages";
-import { kBloomCanvasClass } from "../toolbox/overlay/canvasElementUtils";
+import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementUtils";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { post, postThatMightNavigate } from "../../utils/bloomApi";

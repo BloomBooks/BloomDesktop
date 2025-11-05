@@ -28,7 +28,7 @@ import {
     getCanvasElementManager,
     kCanvasElementClass,
     kCanvasElementSelector,
-} from "../toolbox/overlay/canvasElementUtils";
+} from "../toolbox/canvas/canvasElementUtils";
 import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
@@ -421,7 +421,7 @@ export function notifyToolOfChangedImage(img?: HTMLImageElement) {
 export function changeImage(imageInfo: IImageInfo) {
     if (imageInfo.imageId === kMakeNewCanvasElement) {
         theOneCanvasElementManager.finishPasteImageFromClipboard(imageInfo);
-        // like to do this here, but the overlay isn't always really created yet.
+        // like to do this here, but the image overlay isn't always really created yet.
         //notifyToolOfChangedImage();
         return;
     }
@@ -1465,7 +1465,7 @@ async function pasteImpl(imageAvailable: boolean) {
         return;
     }
     // Enhance: might there be a case where text should be pasted as a new canvas element?
-    // Enhance: we'd like to be able to copy and paste entire overlays (including target if any).
+    // Enhance: we'd like to be able to copy and paste entire canvas overlays (including target if any).
     const activeElement = canvasElementManager?.getActiveElement();
     const activeCanvasElementEditable = activeElement?.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on",

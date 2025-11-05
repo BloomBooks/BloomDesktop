@@ -12,7 +12,7 @@ namespace BloomTests.FeatureStatusTests
             L10NSharp.LocalizationManager.SetUILanguage("en"); // review
         }
 
-        [TestCase(SubscriptionTier.Basic, SubscriptionTier.Pro, FeatureName.Overlay, false)] // Basic subscription cannot access Pro tier feature
+        [TestCase(SubscriptionTier.Basic, SubscriptionTier.Pro, FeatureName.Canvas, false)] // Basic subscription cannot access Pro tier feature
         [TestCase(
             SubscriptionTier.Basic,
             SubscriptionTier.LocalCommunity,
@@ -25,14 +25,14 @@ namespace BloomTests.FeatureStatusTests
             FeatureName.PrintShopReady,
             false
         )] // Basic subscription cannot access Enterprise tier feature
-        [TestCase(SubscriptionTier.Pro, SubscriptionTier.Pro, FeatureName.Overlay, true)] // Pro subscription can access Pro tier feature
+        [TestCase(SubscriptionTier.Pro, SubscriptionTier.Pro, FeatureName.Canvas, true)] // Pro subscription can access Pro tier feature
         [TestCase(
             SubscriptionTier.Enterprise,
             SubscriptionTier.LocalCommunity,
             FeatureName.TeamCollection,
             true
         )] // Enterprise can access LocalCommunity tier feature
-        [TestCase(SubscriptionTier.Enterprise, SubscriptionTier.Pro, FeatureName.Overlay, true)] // Enterprise subscription can access Pro tier feature
+        [TestCase(SubscriptionTier.Enterprise, SubscriptionTier.Pro, FeatureName.Canvas, true)] // Enterprise subscription can access Pro tier feature
         public void GetFeatureStatus_Using_Enum(
             SubscriptionTier currentTier,
             SubscriptionTier minimalFeatureTier,
@@ -43,20 +43,20 @@ namespace BloomTests.FeatureStatusTests
             // Arrange
             var subscription = Subscription.CreateTempSubscriptionForTier(currentTier);
 
-            // Act - Overlay feature with Basic subscription
+            // Act - Canvas feature with Basic subscription
             var status = FeatureStatus.GetFeatureStatus(subscription, featureEnum);
 
             // Assert
             Assert.That(status, Is.Not.Null);
             Assert.That(status.FeatureName, Is.EqualTo(featureEnum));
             Assert.That(status.SubscriptionTier, Is.EqualTo(minimalFeatureTier));
-            Assert.That(status.Enabled, Is.EqualTo(expectedEnabled)); // Basic subscription cannot access Overlay tier
+            Assert.That(status.Enabled, Is.EqualTo(expectedEnabled)); // Basic subscription cannot access Canvas tier
             Assert.That(status.Visible, Is.True);
         }
 
-        [TestCase(SubscriptionTier.Basic, SubscriptionTier.Pro, "OveRLay", false)] // Basic subscription cannot access Pro tier feature
-        [TestCase(SubscriptionTier.Enterprise, SubscriptionTier.Pro, "OVerlay", true)]
-        [TestCase(SubscriptionTier.Pro, SubscriptionTier.Pro, "overlAY", true)]
+        [TestCase(SubscriptionTier.Basic, SubscriptionTier.Pro, "CanVas", false)] // Basic subscription cannot access Pro tier feature
+        [TestCase(SubscriptionTier.Enterprise, SubscriptionTier.Pro, "CANvas", true)]
+        [TestCase(SubscriptionTier.Pro, SubscriptionTier.Pro, "canvAS", true)]
         public void GetFeatureStatus_Using_String(
             SubscriptionTier currentTier,
             SubscriptionTier minimalFeatureTier,
@@ -67,14 +67,14 @@ namespace BloomTests.FeatureStatusTests
             // Arrange
             var subscription = Subscription.CreateTempSubscriptionForTier(currentTier);
 
-            // Act - Overlay feature with Basic subscription
+            // Act - Canvas feature with Basic subscription
             var status = FeatureStatus.GetFeatureStatus(subscription, featureName);
 
             // Assert
             Assert.That(status, Is.Not.Null);
-            Assert.That(status.FeatureName, Is.EqualTo(FeatureName.Overlay));
+            Assert.That(status.FeatureName, Is.EqualTo(FeatureName.Canvas));
             Assert.That(status.SubscriptionTier, Is.EqualTo(minimalFeatureTier));
-            Assert.That(status.Enabled, Is.EqualTo(expectedEnabled)); // Basic subscription cannot access Overlay tier
+            Assert.That(status.Enabled, Is.EqualTo(expectedEnabled)); // Basic subscription cannot access Canvas tier
             Assert.That(status.Visible, Is.True);
         }
 
@@ -117,7 +117,7 @@ namespace BloomTests.FeatureStatusTests
         }
 
         [TestCase(SubscriptionTier.Enterprise, null, null)] // nothing is invalid at the enterprise level
-        [TestCase(SubscriptionTier.Basic, FeatureName.Overlay, "2")] // overlay is invalid at the basic level
+        [TestCase(SubscriptionTier.Basic, FeatureName.Canvas, "2")] // canvas is invalid at the basic level
         public void GetFirstFeatureThatIsInvalidForNewBooks(
             SubscriptionTier tier,
             FeatureName? featureName, // Make the enum parameter nullable

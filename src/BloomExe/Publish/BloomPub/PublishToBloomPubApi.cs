@@ -434,7 +434,7 @@ namespace Bloom.Publish.BloomPub
             // a large difference in page size.
             if (
                 layout.SizeAndOrientation.PageSizeName != desiredLayoutSize
-                && !book.HasComicalOverlays
+                && !book.HasComicalElements
             )
             {
                 // The progress object has been initialized to use an id prefix.  So we'll access L10NSharp explicitly here.  We also want to make the string blue,

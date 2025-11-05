@@ -64,7 +64,7 @@ export function RenderCanvasElementRoot(
     padding: string,
     changeProps: (padding: string) => void,
 ) {
-    const root = document.getElementById("overlayFormatPage");
+    const root = document.getElementById("canvasFormatPage");
     // This tab is deleted when we are not in a canvas element, so we need to check for its existence.
     if (root) {
         ReactDOM.render(

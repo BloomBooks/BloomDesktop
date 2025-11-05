@@ -141,10 +141,10 @@ export const BloomCheckbox: React.FunctionComponent<{
                     />
                 )}
                 <div
-                    className="bloom-checkbox-label" // this classname is to help overlay toolbox hack a fix
+                    className="bloom-checkbox-label" // this classname is to help canvas toolbox hack a fix
                     css={css`
                         ${disabled && `opacity: ${kBloomDisabledOpacity}`};
-                        // this rule is about helping this to keep working even when font is small, as in the Overlay Tool
+                        // this rule is about helping this to keep working even when font is small, as in the Canvas Tool
                         min-height: 15px;
                         //border: solid red 0.1px;
                     `}

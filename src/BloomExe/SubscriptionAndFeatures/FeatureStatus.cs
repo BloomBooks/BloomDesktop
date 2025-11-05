@@ -31,13 +31,13 @@ namespace Bloom.SubscriptionAndFeatures
     {
         // We will publish the feature if it is there, even though we don't allow creating it
         // (e.g., some tiers don't allow recording audio at the text block level, but if we have
-        // such recordings in a book we will just publish them. Also, books with overlays
+        // such recordings in a book we will just publish them. Also, books with canvas elements
         // may be published in any tier in derivatives.)
         None,
 
         // The book may not be published at all if it has this feature
-        // (e.g., overlays in non-derivative books).
-        // Note: Remove trumps Block; for example, if the only overlays in a book
+        // (e.g., canvas elements in non-derivative books).
+        // Note: Remove trumps Block; for example, if the only canvas elements in a book
         // are on Game pages, that does not block publishing.
         Block,
 

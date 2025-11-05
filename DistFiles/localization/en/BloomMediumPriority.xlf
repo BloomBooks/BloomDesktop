@@ -445,21 +445,21 @@
         <note>Image descriptions are typed out, then recorded, so that the book can be used by the blind. This is a switch that shows the typed out image descriptions next to each image on the page.</note>
         <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
       </trans-unit>
-      <!-- Overlay -->
+      <!-- Canvas (was Overlay) -->
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true">
         <source xml:lang="en">drag</source>
         <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Drag</note>
-        <note>Used in the Key hints at the bottom of the Overlay Tool for Alt+drag and Ctrl+drag.</note>
+        <note>Used in the Key hints at the bottom of the Canvas Tool for Alt+drag and Ctrl+drag.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Resize" sil:dynamic="true">
         <source xml:lang="en">resize</source>
         <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Resize</note>
-        <note>Used in the Key hint at the bottom of the Overlay Tool for "Alt + drag = resize".</note>
+        <note>Used in the Key hint at the bottom of the Canvas Tool for "Alt + drag = resize".</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Move" sil:dynamic="true">
         <source xml:lang="en">move</source>
         <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Move</note>
-        <note>Used in the Key hint at the bottom of the Overlay Tool for "Ctrl + drag = move".</note>
+        <note>Used in the Key hint at the bottom of the Canvas Tool for "Ctrl + drag = move".</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
@@ -516,7 +516,7 @@
         <note>Obsolete as of 6.2</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None">
-        <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
+        <source xml:lang="en">This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.</source>
         <note>ID: PublishTab.Feature.Comic.None</note>
         <note>This is a tooltip.</note>
       </trans-unit>

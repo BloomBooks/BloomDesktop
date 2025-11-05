@@ -17,7 +17,7 @@ import tinycolor from "tinycolor2";
 import { ColorResult } from "react-color";
 import { FormControl, InputLabel, Typography } from "@mui/material";
 import { HexColorInput } from "./hexColorInput";
-import { ColorBar } from "../../bookEdit/toolbox/overlay/colorBar";
+import { ColorBar } from "../../bookEdit/toolbox/canvas/colorBar";
 
 const mainBlockStyles: React.CSSProperties = {
     width: 300,

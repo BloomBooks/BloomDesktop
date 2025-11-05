@@ -137,7 +137,7 @@ export default class OverflowChecker {
         // before we display and allow editing. We set up a timeout for each one, which allows
         // other events to get in between, and also, if multiple sources request an overflow check
         // on the same element during startup, only one of them really happens. The delay is also
-        // helpful in letting the page stabilize before we start resizing overlays.
+        // helpful in letting the page stabilize before we start resizing canvas text overlays.
         for (const editable of $editablePageElements.get()) {
             OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
         }

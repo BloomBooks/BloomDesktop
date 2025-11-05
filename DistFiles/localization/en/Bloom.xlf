@@ -1635,10 +1635,10 @@
         <source xml:lang="en">New style</source>
         <note>ID: EditTab.FormatDialog.NewStyle</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Overlay" sil:dynamic="true">
-        <source xml:lang="en">Overlay</source>
-        <note>ID: EditTab.FormatDialog.Overlay</note>
-        <note>Heading of a tab in the format dialog which has special formatting controls for overlays</note>
+      <trans-unit id="EditTab.FormatDialog.Canvas" sil:dynamic="true">
+        <source xml:lang="en">Canvas Text</source>
+        <note>ID: EditTab.FormatDialog.Canvas</note>
+        <note>Heading of a tab in the format dialog which has special formatting controls for canvas text elements</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Padding" sil:dynamic="true">
         <source xml:lang="en">Padding: space between the text and its border</source>
@@ -1880,7 +1880,7 @@
       <trans-unit id="EditTab.Image.EditMetadataOverlay" sil:dynamic="true">
         <source xml:lang="en">Set image information...</source>
         <note>ID: EditTab.Image.EditMetadataOverlay</note>
-        <note xml:lang="en">Invokes the same command as EditMetadata; used in overlay toolbox submenu</note>
+        <note xml:lang="en">Invokes the same command as EditMetadata; used in canvas toolbox submenu</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadataOverlayMore" sil:dynamic="true">
         <source xml:lang="en">Image credits, copyright, &amp; license</source>
@@ -2114,14 +2114,14 @@
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.OverlayTool" sil:dynamic="true">
-        <source xml:lang="en">Overlay Tool</source>
-        <note>ID: EditTab.Toolbox.OverlayTool</note>
-        <note>If "Overlay Tool" is hard to translate, "Floating Object Tool" is an alternate.</note>
+      <trans-unit id="EditTab.Toolbox.CanvasTool" sil:dynamic="true">
+        <source xml:lang="en">Canvas Tool</source>
+        <note>ID: EditTab.Toolbox.CanvasTool</note>
+        <note>If "Canvas Tool" is hard to translate, "Floating Object Tool" is an alternate.</note>
         <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
-        <source xml:lang="en">Drag any of these overlays onto the image:</source>
+        <source xml:lang="en">Drag any of these elements onto the image:</source>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true">
@@ -2143,7 +2143,7 @@
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Shift" sil:dynamic="true">
         <source xml:lang="en">Move image</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Shift</note>
-        <note>Or you could translate "position picture". The control is used when a picture has been made bigger than its framing overlay by cropping and causes the picture to move without changing the shape of the overlay so that a different part of it can be seen.</note>
+        <note>Or you could translate "position picture". The control is used when a picture has been made bigger than its framing element by cropping and causes the picture to move without changing the shape of the framing element so that a different part of it can be seen.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true">
         <source xml:lang="en">Add child bubble</source>
@@ -2189,7 +2189,7 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">
-        <source xml:lang="en">There are no options for this kind of overlay</source>
+        <source xml:lang="en">There are no options for this kind of canvas element</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ImageSelected</note>
         <note>This notification shows if a picture over picture is selected.</note>
       </trans-unit>
@@ -3989,9 +3989,9 @@
         <note>ID: PublishTab.Epub.OmittedPages</note>
         <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.NoOverlaySupport">
-        <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any overlays. The first overlay is on page {0}.</source>
-        <note>ID: PublishTab.Epub.NoOverlaySupport</note>
+      <trans-unit id="PublishTab.Epub.NoCanvasSupport">
+        <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any canvas pages. The first canvas is on page {0}.</source>
+        <note>ID: PublishTab.Epub.NoCanvasSupport</note>
         <note>The {0} will be replaced with the page number (or name of page). For example, it might be replaced by "1" or "Front Cover"</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content">
@@ -4028,11 +4028,11 @@
         <note>ID: PublishTab.Epub.Flowable</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Flowable.Description">
-        <source xml:lang="en">Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has overlay pages (comics).</source>
+        <source xml:lang="en">Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has canvas pages (comics).</source>
         <note>ID: PublishTab.Epub.Flowable.Description</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Flowable.DisabledTooltip">
-        <source xml:lang="en">This is disabled because an ePUB viewer in flowable mode would not be able to display the overlay pages (comics) in this book.</source>
+        <source xml:lang="en">This is disabled because an ePUB viewer in flowable mode would not be able to display the canvas pages (comics) in this book.</source>
         <note>ID: PublishTab.Epub.Flowable.DisabledTooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Mode">

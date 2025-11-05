@@ -38,7 +38,7 @@ const epubModes: IEpubMode[] = [
         label: "Flowable",
         l10nKey: "PublishTab.Epub.Flowable",
         description:
-            "Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has overlay pages (comics).",
+            "Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has canvas pages (comics).",
         descriptionL10nKey: "PublishTab.Epub.Flowable.Description",
     },
 ];
@@ -145,7 +145,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                                 l10nKey:
                                                     "PublishTab.Epub.Flowable.DisabledTooltip",
                                                 english:
-                                                    "This is disabled because an ePUB viewer in flowable mode would not be able to display the overlay pages (comics) in this book.",
+                                                    "This is disabled because an ePUB viewer in flowable mode would not be able to display the canvas pages (comics) in this book.",
                                             }}
                                         >
                                             {menuItem}
