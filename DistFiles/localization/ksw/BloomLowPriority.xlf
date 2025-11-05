@@ -302,6 +302,31 @@
         <target xml:lang="ksw" state="needs-translation">Move into {0}</target>
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
       </trans-unit>
+      <trans-unit id="BookGridSetupDialog.Title">
+        <source xml:lang="en">Book Grid Setup</source>
+        <target xml:lang="ksw" state="needs-translation">Book Grid Setup</target>
+        <note>ID: BookGridSetupDialog.Title</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.BooksInCollection">
+        <source xml:lang="en">Books in this Collection</source>
+        <target xml:lang="ksw" state="needs-translation">Books in this Collection</target>
+        <note>ID: BookGridSetup.BooksInCollection</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.AddBook">
+        <source xml:lang="en">Add Book →</source>
+        <target xml:lang="ksw" state="needs-translation">Add Book →</target>
+        <note>ID: BookGridSetup.AddBook</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.AddAllBooks">
+        <source xml:lang="en">Add All Books →</source>
+        <target xml:lang="ksw" state="needs-translation">Add All Books →</target>
+        <note>ID: BookGridSetup.AddAllBooks</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.LinksInGrid">
+        <source xml:lang="en">Links in Grid (%0)</source>
+        <target xml:lang="ksw" state="needs-translation">Links in Grid (%0)</target>
+        <note>ID: BookGridSetup.LinksInGrid</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
