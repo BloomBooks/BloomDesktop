@@ -39,6 +39,8 @@ import {
     CanvasElementItem,
     CanvasElementItemRegion,
     CanvasElementItemRow,
+    CanvasElementLinkGridItem,
+    NavigationButtonPaletteItem,
     CanvasElementTextItem,
 } from "./CanvasElementItem";
 import { getCanvasElementManager } from "./canvasElementUtils";
@@ -48,6 +50,7 @@ import { ToolBox } from "../toolbox";
 import { hideColorPickerDialog } from "../../editViewFrame";
 import { kToolboxContentPadding } from "../../../bloomMaterialUITheme";
 import $ from "jquery";
+import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -792,8 +795,25 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                         l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
                                     />
                                 </CanvasElementItemRow>
-                            </CanvasElementItemRegion>
 
+                                <TriangleCollapse
+                                    initiallyOpen={
+                                        true
+                                    } /* todo should be false in production */
+                                    labelL10nKey="EditTab.Toolbox.OverlayTool.Navigation"
+                                    buttonColor="#1D94A4"
+                                    css={css`
+                                        margin-top: 10px;
+                                        padding: 0 10px;
+                                    `}
+                                >
+                                    <CanvasElementItemRow>
+                                        <NavigationButtonPaletteItem />
+
+                                        <CanvasElementLinkGridItem />
+                                    </CanvasElementItemRow>
+                                </TriangleCollapse>
+                            </CanvasElementItemRegion>
                             <div
                                 id={"overlayToolControlOptionsRegion"}
                                 className={

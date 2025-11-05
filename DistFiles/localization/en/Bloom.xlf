@@ -2120,6 +2120,11 @@
         <note>If "Overlay Tool" is hard to translate, "Floating Object Tool" is an alternate.</note>
         <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.OverlayTool.Navigation" sil:dynamic="true">
+        <source xml:lang="en">Navigation</source>
+        <note>ID: EditTab.Toolbox.OverlayTool.Navigation</note>
+        <note>Label for an expandable section in the Canvas Tool that contains navigation-related objects (e.g. buttons and book grids) that can be dragged onto a page.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
         <source xml:lang="en">Drag any of these overlays onto the image:</source>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
@@ -2286,6 +2291,11 @@
       <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true">
         <source xml:lang="en">Text Block</source>
         <note>ID: EditTab.Toolbox.ComicTool.TextBlock</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText" sil:dynamic="true">
+        <source xml:lang="en">Go Somewhere</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText</note>
+        <note>Default text for a navigation button</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
