@@ -6,7 +6,7 @@ import { Box, Typography } from "@mui/material";
 import {
     PageInfoForLinks,
     BookInfoForLinks,
-} from "../../bookEdit/bookLinkSetup/BookLinkTypes";
+} from "../BookGridSetup/BookLinkTypes";
 import { get } from "../../utils/bloomApi";
 
 export const PageList: React.FunctionComponent<{
