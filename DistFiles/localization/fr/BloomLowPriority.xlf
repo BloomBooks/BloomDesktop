@@ -302,29 +302,29 @@
         <target xml:lang="fr" state="needs-translation">Move into {0}</target>
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
       </trans-unit>
-      <trans-unit id="BookGridSetupDialog.Title">
+      <trans-unit id="BookGridSetupDialog.Title" approved="yes">
         <source xml:lang="en">Book Grid Setup</source>
-        <target xml:lang="fr" state="needs-translation">Book Grid Setup</target>
+        <target xml:lang="fr" state="final">Configuration de la Grille de Livres</target>
         <note>ID: BookGridSetupDialog.Title</note>
       </trans-unit>
-      <trans-unit id="BookGridSetup.BooksInCollection">
+      <trans-unit id="BookGridSetup.BooksInCollection" approved="yes">
         <source xml:lang="en">Books in this Collection</source>
-        <target xml:lang="fr" state="needs-translation">Books in this Collection</target>
+        <target xml:lang="fr" state="final">Livres de cette Collection</target>
         <note>ID: BookGridSetup.BooksInCollection</note>
       </trans-unit>
-      <trans-unit id="BookGridSetup.AddBook">
+      <trans-unit id="BookGridSetup.AddBook" approved="yes">
         <source xml:lang="en">Add Book →</source>
-        <target xml:lang="fr" state="needs-translation">Add Book →</target>
+        <target xml:lang="fr" state="final">Ajouter un Livre →</target>
         <note>ID: BookGridSetup.AddBook</note>
       </trans-unit>
-      <trans-unit id="BookGridSetup.AddAllBooks">
+      <trans-unit id="BookGridSetup.AddAllBooks" approved="yes">
         <source xml:lang="en">Add All Books →</source>
-        <target xml:lang="fr" state="needs-translation">Add All Books →</target>
+        <target xml:lang="fr" state="final">Ajouter Tous les Livres →</target>
         <note>ID: BookGridSetup.AddAllBooks</note>
       </trans-unit>
-      <trans-unit id="BookGridSetup.LinksInGrid">
+      <trans-unit id="BookGridSetup.LinksInGrid" approved="yes">
         <source xml:lang="en">Links in Grid (%0)</source>
-        <target xml:lang="fr" state="needs-translation">Links in Grid (%0)</target>
+        <target xml:lang="fr" state="final">Liens dans la Grille (%0)</target>
         <note>ID: BookGridSetup.LinksInGrid</note>
       </trans-unit>
     </body>
