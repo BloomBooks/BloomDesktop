@@ -1,17 +1,10 @@
-This project has a web front-end at src/BloomBrowserUI.
-The front-end uses yarn 1.22.22. Never ever use npm.
+This project has a web front-end at src/BloomBrowserUI. That has its own AGENTS.md file.
 
 # Code Style
-
-- Always use arrow functions and function components in React
-- do not destructure props
-- do not define a props data type unless it is huge
-- example: export const SomeComponent: React.FunctionComponent<{initiallySelectedGroupIndex: number;> = (props) => {...}
 
 - Avoid removing existing comments.
 - Avoid adding a comment like "// add this line".
 
-- Style elements using the css macro from @emotion/react directly on the element being styled, using the css prop. E.g. `<div css={css`color:red`}>`
 
 # Testing
 
