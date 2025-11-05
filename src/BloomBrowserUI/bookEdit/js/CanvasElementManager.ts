@@ -27,6 +27,7 @@ import {
     kMakeNewCanvasElement,
     notifyToolOfChangedImage,
 } from "./bloomEditing";
+import { addSkeletonIfEmpty } from "./linkGrid";
 import {
     EnableAllImageEditing,
     getImageFromCanvasElement,
@@ -4834,6 +4835,20 @@ export class CanvasElementManager {
                 rightTopOffset,
             );
         }
+        if (canvasElementType === "book-link-grid") {
+            return this.addBookLinkGridCanvasElement(
+                positionInBloomCanvas,
+                bloomCanvas,
+                rightTopOffset,
+            );
+        }
+        if (canvasElementType === "navigation-button") {
+            return this.addNavigationButtonElement(
+                positionInBloomCanvas,
+                bloomCanvas,
+                rightTopOffset,
+            );
+        }
         return this.addCanvasElementCore(
             positionInBloomCanvas,
             bloomCanvas,
@@ -5118,6 +5133,42 @@ export class CanvasElementManager {
             doAfterElementCreated,
         );
     }
+    private addNavigationButtonElement(
+        location: Point,
+        bloomCanvasJQuery: JQuery,
+        rightTopOffset?: string,
+        imageInfo?: {
+            imageId: string;
+            src: string; // must already appropriately URL-encoded.
+            copyright: string;
+            creator: string;
+            license: string;
+        },
+        size?: { width: number; height: number },
+        doAfterElementCreated?: (newElement: HTMLElement) => void,
+    ): HTMLElement {
+        const standardImageClasses =
+            kImageContainerClass + " bloom-leadingElement";
+        const imagePlaceHolderHtml = "<img src='placeHolder.png' alt=''></img>";
+        const imageContainerHtml =
+            // The tabindex here is necessary to get focus to work on an image.
+            "<div tabindex='0' class='bloom-button " +
+            standardImageClasses +
+            "'>" +
+            imagePlaceHolderHtml +
+            "</div>";
+        return this.finishAddingCanvasElement(
+            bloomCanvasJQuery,
+            imageContainerHtml,
+            location,
+            "none",
+            true,
+            rightTopOffset,
+            imageInfo,
+            size,
+            doAfterElementCreated,
+        );
+    }
 
     private addSoundCanvasElement(
         location: Point,
@@ -5159,6 +5210,32 @@ export class CanvasElementManager {
             true,
             rightTopOffset,
         );
+    }
+
+    private addBookLinkGridCanvasElement(
+        location: Point,
+        bloomCanvasJQuery: JQuery,
+        rightTopOffset?: string,
+    ): HTMLElement {
+        const html =
+            // The tabindex here is necessary to allow it to be focused.
+            "<div tabindex='0' class='bloom-link-grid'></div>";
+        const canvasElement = this.finishAddingCanvasElement(
+            bloomCanvasJQuery,
+            html,
+            location,
+            "none",
+            true,
+            rightTopOffset,
+        );
+        // Add skeleton to the newly created empty grid
+        const linkGrid = canvasElement.querySelector(
+            ".bloom-link-grid",
+        ) as HTMLElement;
+        if (linkGrid) {
+            addSkeletonIfEmpty(linkGrid);
+        }
+        return canvasElement;
     }
 
     private addRectangleCanvasElement(
