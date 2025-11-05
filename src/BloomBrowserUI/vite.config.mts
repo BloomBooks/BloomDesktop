@@ -482,6 +482,22 @@ function postBuildPlugin(): Plugin {
     };
 }
 
+// Minimal build error reporter to surface early failures before manifest generation
+function reportBuildErrorPlugin(): Plugin {
+    return {
+        name: "report-build-error",
+        apply: "build",
+        buildEnd(error) {
+            if (error) {
+                console.error(
+                    "Vite build halted before manifest generation:",
+                    error,
+                );
+            }
+        },
+    };
+}
+
 // Helper function to inject CSS into DOM
 function createCssInjector() {
     return `
@@ -619,6 +635,7 @@ export default defineConfig(async ({ command }) => {
             compilePugPlugin(), // Compile Pug templates to HTML during build
             compileLessPlugin(), // Compile standalone LESS files to CSS during build
             compileMarkdownPlugin(), // Compile Markdown files to HTML during build
+            reportBuildErrorPlugin(),
             postBuildPlugin(), // Process manifest and create final bundles (build only)
 
             // STATIC FILE COPYING (BUILD ONLY)
