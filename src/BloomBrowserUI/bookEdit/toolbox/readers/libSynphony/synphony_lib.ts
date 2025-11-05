@@ -1244,8 +1244,9 @@ export class LibSynphony {
      * Reads the file passed in the fileInputElement and calls the callback function when finished
      * @param {Element} fileInputElement
      * @param {Function} callback Function with one parameter, which will be TRUE if successful.
+     * (We think this function is currently unused)
      */
-    publicloadLanguageData(fileInputElement, callback) {
+    public loadLanguageData(fileInputElement, callback) {
         var file = fileInputElement.files[0];
 
         if (!file) return;

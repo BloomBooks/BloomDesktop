@@ -33,7 +33,7 @@ export class DataGPC {
     public Frequency = 1;
     public TokenFreq = 1;
     public IPA = "";
-    //public Alt = [];
+    public Alt = [];
     constructor(optionalGrapheme?: string) {
         var s = typeof optionalGrapheme === "undefined" ? "" : optionalGrapheme;
 
