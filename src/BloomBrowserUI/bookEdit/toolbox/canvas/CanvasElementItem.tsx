@@ -33,6 +33,8 @@ export type CanvasElementType =
     | "rectangle"
     | "speech"
     | "caption"
+    | "book-link-grid"
+    | "navigation-button"
     | "none";
 
 const ondragstart = (
@@ -329,7 +331,7 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
     opacity: 0.15;}`;
     const size = props.showOuterRectangle ? "40px" : "50px";
     return (
-        <div // infuriatingly, svgs don't support draggable, so we have to wrap.
+        <div // svgs don't support draggable, so we have to wrap.
             css={css`
                 width: ${size};
                 height: ${size};
@@ -600,33 +602,32 @@ export const CanvasElementCaptionItem: React.FunctionComponent<{
     return <CanvasElementBaseTextItem {...props} canvasElementType="caption" />;
 };
 
-const buttonItemProps = css`
-    margin-left: 5px;
-    text-align: center;
-    padding: 2px 0.5em;
-    vertical-align: middle;
-    color: ${kBloomBlue};
-    background-color: "white";
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.2);
-`;
-
-export const CanvasElementButtonItem: React.FunctionComponent<{
-    l10nKey: string;
-    addClasses: string;
-    contentL10nKey?: string;
-    hintL10nKey?: string;
-    userDefinedStyleName?: string;
-}> = (props) => {
+export const CanvasElementLinkGridItem: React.FunctionComponent = (props) => {
     return (
-        <CanvasElementTextItem
-            css={buttonItemProps}
-            l10nKey={props.l10nKey}
-            addClasses={props.addClasses}
-            makeTarget={false}
-            contentL10nKey={props.contentL10nKey}
-            hintL10nKey={props.hintL10nKey}
-            userDefinedStyleName={props.userDefinedStyleName}
-        ></CanvasElementTextItem>
+        <CanvasElementItem
+            src={"/bloom/bookEdit/toolbox/overlay/bookGridPaletteItem.svg"}
+            canvasElementType="book-link-grid"
+        />
+    );
+};
+
+export const NavigationButtonPaletteItem: React.FunctionComponent = (props) => {
+    return (
+        <CanvasElementSvgItem
+            canvasElementType={"navigation-button"}
+            addClasses={""}
+            //makeTarget={props.makeTarget}
+            showOuterRectangle={false}
+        >
+            <img
+                css={css`
+                    width: 50px;
+                    height: 50px;
+                    cursor: grab;
+                `}
+                src="/bloom/bookEdit/toolbox/overlay/imageButtonPaletteItem.svg"
+            />
+        </CanvasElementSvgItem>
     );
 };
 
