@@ -13,6 +13,7 @@ import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 import { getEditTabBundleExports } from "../../../js/bloomFrames";
 import { get, postBoolean } from "../../../../utils/bloomApi";
+import $ from "jquery";
 
 function getDialogHtml(title) {
     const dialogContents = $(

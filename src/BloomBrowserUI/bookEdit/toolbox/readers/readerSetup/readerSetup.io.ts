@@ -10,8 +10,9 @@ import {
     setLevelValue,
 } from "./readerSetup.ui";
 import { ReaderStage, ReaderLevel, ReaderSettings } from "../ReaderSettings";
-import "../../../../lib/jquery.onSafe.js";
+import "../../../../lib/jquery.onSafe";
 import * as _ from "underscore";
+import $ from "jquery";
 
 interface ILevelSetting {
     // in the right hand panel, the span for editing the value has this ID prefixed with "max-",

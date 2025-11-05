@@ -2,6 +2,8 @@
 /// <reference path="directoryWatcher.ts" />
 /// <reference path="../../../typings/jquery.qtip.d.ts" />
 /// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
+import $ from "jquery";
+import jQuery from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
 import { getTheOneReaderToolsModel } from "./readerToolsModel";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -10,7 +12,7 @@ import {
     theOneLibSynphony,
     ResetLanguageDataInstance,
 } from "./libSynphony/synphony_lib";
-import "./libSynphony/synphony_lib.js";
+import "./libSynphony/synphony_lib";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 import { ReaderSettings } from "./ReaderSettings";
 import { clearWordCache } from "./libSynphony/bloomSynphonyExtensions";

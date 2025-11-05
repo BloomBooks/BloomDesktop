@@ -1,7 +1,9 @@
 ///<reference path="BloomField.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
+import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
 import BloomField from "./BloomField";
+import $ from "jquery";
 
 function WireUp() {
     $(".bloom-editable").each(function () {
@@ -47,24 +49,24 @@ describe("BloomField", () => {
         const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
 
         expect(result).not.toBe(input);
-        expect(result).toContainText("This page was copied and pasted");
-        expect(result).toContainText(
+        expect(result).toContain("This page was copied and pasted");
+        expect(result).toContain(
             "This paragraph has two sentences, so it should have two audio spans.",
         );
-        expect(result).toContainHtml('class="audio-sentence"');
+        expect(result.includes('class="audio-sentence"')).toBe(true);
         // verify workings of this test code by checking both input and result for original id values
-        expect(input).toContainHtml(
-            'id="i2b4f74ac-3d71-4692-9793-bb18ff56b6e2"',
-        );
-        expect(input).toContainHtml(
-            'id="i39184f35-39bf-4574-9e55-3eedafb6bde9"',
-        );
-        expect(result).not.toContainHtml(
-            'id="i2b4f74ac-3d71-4692-9793-bb18ff56b6e2"',
-        );
-        expect(result).not.toContainHtml(
-            'id="i39184f35-39bf-4574-9e55-3eedafb6bde9"',
-        );
+        expect(
+            input.includes('id="i2b4f74ac-3d71-4692-9793-bb18ff56b6e2"'),
+        ).toBe(true);
+        expect(
+            input.includes('id="i39184f35-39bf-4574-9e55-3eedafb6bde9"'),
+        ).toBe(true);
+        expect(
+            result.includes('id="i2b4f74ac-3d71-4692-9793-bb18ff56b6e2"'),
+        ).toBe(false);
+        expect(
+            result.includes('id="i39184f35-39bf-4574-9e55-3eedafb6bde9"'),
+        ).toBe(false);
 
         expect(result.startsWith('<p><span id="')).toBe(true);
         expect(
@@ -84,18 +86,18 @@ describe("BloomField", () => {
             '<p><span data-duration="2.481632" id="i1ea22c02-9344-4afe-9bbb-5946576d7907" class="audio-sentence">island in the middle of a <em>large</em> lake</span></p>';
         const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
         expect(result).not.toBe(input);
-        expect(result).toContainHtml('class="audio-sentence"');
-        expect(result).toContainHtml(
-            "island in the middle of a <em>large</em> lake",
-        );
+        expect(result.includes('class="audio-sentence"')).toBe(true);
+        expect(
+            result.includes("island in the middle of a <em>large</em> lake"),
+        ).toBe(true);
 
         // verify workings of this test code by checking both input and result for original id value
-        expect(input).toContainHtml(
-            'id="i1ea22c02-9344-4afe-9bbb-5946576d7907"',
-        );
-        expect(result).not.toContainHtml(
-            'id="i1ea22c02-9344-4afe-9bbb-5946576d7907"',
-        );
+        expect(
+            input.includes('id="i1ea22c02-9344-4afe-9bbb-5946576d7907"'),
+        ).toBe(true);
+        expect(
+            result.includes('id="i1ea22c02-9344-4afe-9bbb-5946576d7907"'),
+        ).toBe(false);
 
         expect(
             result.startsWith('<p><span data-duration="2.481632" id="'),
@@ -112,18 +114,20 @@ describe("BloomField", () => {
             '<p><span data-duration="5.2244" id="i1b625773-f5af-4289-afe6-b45a01d51e0e" class="audio-sentence" recordingmd5="undefined">Part 1: <span class="bloom-linebreak"></span>God, Creation &amp; Fall, Law</span></p>';
         const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
         expect(result).not.toBe(input);
-        expect(result).toContainHtml('class="audio-sentence"');
-        expect(result).toContainHtml(
-            'Part 1: <span class="bloom-linebreak"></span>God, Creation &amp; Fall, Law</span>',
-        );
+        expect(result.includes('class="audio-sentence"')).toBe(true);
+        expect(
+            result.includes(
+                'Part 1: <span class="bloom-linebreak"></span>God, Creation &amp; Fall, Law</span>',
+            ),
+        ).toBe(true);
 
         // verify workings of this test code by checking both input and result for original id value
-        expect(input).toContainHtml(
-            'id="i1b625773-f5af-4289-afe6-b45a01d51e0e"',
-        );
-        expect(result).not.toContainHtml(
-            'id="i1b625773-f5af-4289-afe6-b45a01d51e0e"',
-        );
+        expect(
+            input.includes('id="i1b625773-f5af-4289-afe6-b45a01d51e0e"'),
+        ).toBe(true);
+        expect(
+            result.includes('id="i1b625773-f5af-4289-afe6-b45a01d51e0e"'),
+        ).toBe(false);
 
         expect(result.startsWith('<p><span data-duration="5.2244" id="')).toBe(
             true,
@@ -140,20 +144,24 @@ describe("BloomField", () => {
             '<p><span data-duration="5.2244" class="bloom-uiCurrent audio-sentence bloom-SomethingElse" recordingmd5="undefined" id="i1b625773-f5af-4289-afe6-b45a01d51e0e"><strong>Part 1:</strong> God, Creation &amp; Fall, Law</span></p>';
         const result = BloomField.copyAudioFilesWithNewIdsDuringPasting(input);
         expect(result).not.toBe(input);
-        expect(result).toContainHtml(
-            'class="bloom-uiCurrent audio-sentence bloom-SomethingElse"',
-        );
-        expect(result).toContainHtml(
-            "<strong>Part 1:</strong> God, Creation &amp; Fall, Law</span>",
-        );
+        expect(
+            result.includes(
+                'class="bloom-uiCurrent audio-sentence bloom-SomethingElse"',
+            ),
+        ).toBe(true);
+        expect(
+            result.includes(
+                "<strong>Part 1:</strong> God, Creation &amp; Fall, Law</span>",
+            ),
+        ).toBe(true);
 
         // verify workings of this test code by checking both input and result for original id value
-        expect(input).toContainHtml(
-            'id="i1b625773-f5af-4289-afe6-b45a01d51e0e"',
-        );
-        expect(result).not.toContainHtml(
-            'id="i1b625773-f5af-4289-afe6-b45a01d51e0e"',
-        );
+        expect(
+            input.includes('id="i1b625773-f5af-4289-afe6-b45a01d51e0e"'),
+        ).toBe(true);
+        expect(
+            result.includes('id="i1b625773-f5af-4289-afe6-b45a01d51e0e"'),
+        ).toBe(false);
 
         expect(
             result.startsWith(
@@ -352,11 +360,11 @@ describe("BloomField", () => {
                 if (selection && spanElement) {
                     const textNode = spanElement.firstChild;
                     if (textNode) {
-                        expect(textNode.nodeName).toBe(
-                            "#text",
+                        expect(
+                            textNode.nodeName,
                             "Test setup error - wrong nodeName: " +
                                 textNode.nodeName,
-                        );
+                        ).toBe("#text");
 
                         selection.collapse(textNode, 0);
                     } else {
@@ -411,9 +419,8 @@ describe("BloomField", () => {
                 const testFailureMessage = isCancellationExpected
                     ? "preventDefault() should be called, but was not"
                     : "preventDefault() should not be called, but it was";
-                expect(wasCanceled).toBe(
+                expect(wasCanceled, testFailureMessage).toBe(
                     isCancellationExpected,
-                    testFailureMessage,
                 );
             } else {
                 expect(false).toBeTruthy(); // fail on principle; should never happen
@@ -455,7 +462,7 @@ describe("BloomField", () => {
 
             // Verification
             //console.log(editable.outerHTML);
-            expect(editable).toContainElement("span.bloom-linebreak");
+            expect(editable.querySelector("span.bloom-linebreak")).toBeTruthy();
         } else {
             expect(false).toBeTruthy(); // fail on principle; should never happen
         }

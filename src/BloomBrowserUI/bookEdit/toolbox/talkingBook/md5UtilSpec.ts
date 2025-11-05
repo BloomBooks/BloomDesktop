@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { getMd5 } from "./md5Util";
 
 describe("getMd5 tests", () => {

@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from "vitest";
 import { ReaderToolsModel } from "./readerToolsModel";
 import { theOneLanguageDataInstance } from "./libSynphony/synphony_lib";
 import { TextFragment } from "./libSynphony/bloomSynphonyExtensions";
@@ -190,12 +191,12 @@ describe("updateStageNofM tests", () => {
     function setupSpiesForUpdateStageNOfMInternal(params: {
         readerToolsModel: ReaderToolsModel;
         stageLabel: string;
-        numberOfStages: string;
+        numberOfStages: number;
     }) {
-        spyOn(params.readerToolsModel, "getStageLabel").and.returnValue(
+        vi.spyOn(params.readerToolsModel, "getStageLabel").mockReturnValue(
             params.stageLabel,
         );
-        spyOn(params.readerToolsModel, "getNumberOfStages").and.returnValue(
+        vi.spyOn(params.readerToolsModel, "getNumberOfStages").mockReturnValue(
             params.numberOfStages,
         );
     }
@@ -209,7 +210,7 @@ describe("updateStageNofM tests", () => {
         setupSpiesForUpdateStageNOfMInternal({
             readerToolsModel: obj,
             stageLabel: "2",
-            numberOfStages: "6",
+            numberOfStages: 6,
         });
 
         theOneLocalizationManager.dictionary[
@@ -237,7 +238,7 @@ describe("updateStageNofM tests", () => {
         setupSpiesForUpdateStageNOfMInternal({
             readerToolsModel: obj,
             stageLabel: "3",
-            numberOfStages: "10",
+            numberOfStages: 10,
         });
 
         theOneLocalizationManager.dictionary[

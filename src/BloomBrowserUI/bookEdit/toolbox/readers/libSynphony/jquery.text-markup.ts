@@ -7,9 +7,11 @@
  *
  */
 
+import jQuery from "jquery";
+import $ from "jquery";
 import * as _ from "underscore";
 import { theOneLibSynphony, LibSynphony } from "./synphony_lib";
-import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
+import "./bloomSynphonyExtensions"; //add several functions to LanguageData
 import { ReaderToolsModel } from "../readerToolsModel";
 
 /**

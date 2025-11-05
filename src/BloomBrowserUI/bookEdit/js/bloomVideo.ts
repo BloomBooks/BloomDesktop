@@ -1,4 +1,3 @@
-import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { post, postThatMightNavigate } from "../../utils/bloomApi";
 
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).
@@ -16,6 +15,7 @@ import { getPlayIcon } from "../img/playIcon";
 import { getPauseIcon } from "../img/pauseIcon";
 import { getReplayIcon } from "../img/replayIcon";
 import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
+import $ from "jquery";
 
 export function SetupVideoEditing(container) {
     $(container)

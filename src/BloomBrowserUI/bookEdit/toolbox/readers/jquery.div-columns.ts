@@ -1,4 +1,4 @@
-/// <reference path="../../../typings/jquery/jquery.d.ts" />
+import jQuery from "jquery";
 
 /**
  * jquery.div-columns.js

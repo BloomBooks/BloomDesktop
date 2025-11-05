@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 import { EPUBPublishScreen } from "../ePUBPublish/ePUBPublishScreen";
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import "../storiesApiMocks";

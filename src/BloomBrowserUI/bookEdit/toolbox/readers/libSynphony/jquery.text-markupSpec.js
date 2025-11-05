@@ -8,6 +8,8 @@
  */
 import { theOneLibSynphony } from "./synphony_lib";
 import { removeAllHtmlMarkupFromString } from "./jquery.text-markup.ts";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import $ from "jquery";
 
 describe("jquery.text-markup", function () {
     function addDiv(id) {

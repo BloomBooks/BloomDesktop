@@ -1,4 +1,5 @@
 import { css, SerializedStyles } from "@emotion/react";
+import $ from "jquery";
 import * as React from "react";
 import { Button, Dialog } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
@@ -43,8 +44,10 @@ import {
     DialogOkButton,
 } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { splitIntoGraphemes } from "../../../utils/textUtils";
-import { kCanvasElementClass } from "../overlay/canvasElementUtils";
-import { kBloomCanvasSelector } from "../../js/bloomImages";
+import {
+    kBloomCanvasSelector,
+    kCanvasElementClass,
+} from "../overlay/canvasElementUtils";
 
 export const GamePromptDialog: React.FunctionComponent<
     IGamePromptDialogProps

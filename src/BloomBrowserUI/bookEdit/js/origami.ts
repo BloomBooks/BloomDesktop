@@ -1,15 +1,18 @@
 // not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
 ///<reference path="../../lib/split-pane/split-pane.d.ts" />
-import { kBloomCanvasClass, SetupImage } from "./bloomImages";
+import { SetupImage } from "./bloomImages";
+import { kBloomCanvasClass } from "../toolbox/overlay/canvasElementUtils";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { post, postThatMightNavigate } from "../../utils/bloomApi";
 import { ElementQueries } from "css-element-queries";
 import { theOneCanvasElementManager } from "./CanvasElementManager";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
+import $ from "jquery";
+import { splitPane } from "../../lib/split-pane/split-pane";
 
 $(() => {
-    $("div.split-pane").splitPane();
+    splitPane($("div.split-pane"));
 });
 
 export function setupOrigami() {
@@ -195,7 +198,7 @@ function performSplit(
             getSplitPaneComponentWithNewContent(newContentPosition),
         );
     }
-    newSplitPane.splitPane();
+    splitPane(newSplitPane);
     adjustModifiedChild(innerElement.get(0) as HTMLElement);
     theOneCanvasElementManager.setupSplitterEventHandling();
 }

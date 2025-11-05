@@ -4,7 +4,7 @@ import { BloomSplitButton } from "../bloomSplitButton";
 import { ImportIcon } from "../../bookEdit/toolbox/talkingBook/TalkingBookToolboxIcons";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta = {
     title: "Localizable Widgets",

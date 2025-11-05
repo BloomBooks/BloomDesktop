@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 import { css } from "@emotion/react";
 import {
     ContentLanguagesDropdown,

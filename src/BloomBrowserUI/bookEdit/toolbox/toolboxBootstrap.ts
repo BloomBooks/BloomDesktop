@@ -1,5 +1,5 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-import * as $ from "jquery";
+import $ from "jquery";
 import {
     getTheOneToolbox,
     applyToolboxStateToUpdatedPage,
@@ -19,6 +19,13 @@ import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 import "errorHandler";
 import { OverlayTool } from "./overlay/overlayTool";
 import { GameTool, setActiveDragActivityTab } from "./games/GameTool";
+// Explicit imports needed so that these symbols are in local scope for the window.toolboxBundle object
+import {
+    addWordListChangedListener,
+    beginSaveChangedSettings,
+    makeLetterWordList,
+} from "./readers/readerTools";
+import { activateLongPressFor } from "../js/bloomEditing";
 import { IAudioRecorder } from "./talkingBook/IAudioRecorder";
 import { theOneAudioRecorder } from "./talkingBook/audioRecording";
 
@@ -58,6 +65,13 @@ export { activateLongPressFor } from "../js/bloomEditing";
 export { TalkingBookTool }; // one function is called by CSharp.
 
 export { getTheOneToolbox };
+
+// Import the functions we're re-exporting so we can use them in the bundle
+import {
+    showSetupDialog,
+    initializeReaderSetupDialog,
+    closeSetupDialog,
+} from "./readers/readerSetup/readerSetupDialog";
 
 export function canUndo(): boolean {
     const readerToolsModel = getTheOneReaderToolsModel();
@@ -109,3 +123,52 @@ ToolBox.registerTool(new SignLanguageTool());
 ToolBox.registerTool(new ImageDescriptionAdapter());
 ToolBox.registerTool(new OverlayTool());
 ToolBox.registerTool(new GameTool());
+
+// Legacy global exposure: mimic old webpack window["toolboxBundle"] contract
+interface ToolboxBundleApi {
+    getTheOneToolbox: typeof getTheOneToolbox;
+    applyToolboxStateToPage: typeof applyToolboxStateToPage;
+    removeToolboxMarkup: typeof removeToolboxMarkup;
+    showOrHideTool_click: typeof showOrHideTool_click;
+    showSetupDialog: typeof import("./readers/readerSetup/readerSetupDialog").showSetupDialog;
+    initializeReaderSetupDialog: typeof import("./readers/readerSetup/readerSetupDialog").initializeReaderSetupDialog;
+    closeSetupDialog: typeof import("./readers/readerSetup/readerSetupDialog").closeSetupDialog;
+    addWordListChangedListener: typeof addWordListChangedListener;
+    beginSaveChangedSettings: typeof beginSaveChangedSettings;
+    makeLetterWordList: typeof makeLetterWordList;
+    activateLongPressFor: typeof activateLongPressFor;
+    TalkingBookTool: typeof TalkingBookTool;
+    canUndo: typeof canUndo;
+    undo: typeof undo;
+    applyToolboxStateToPageLegacy: typeof applyToolboxStateToPage; // alias if older code referenced different name
+    setActiveDragActivityTab: typeof setActiveDragActivityTab;
+    getTheOneAudioRecorderForExportOnly: typeof getTheOneAudioRecorderForExportOnly;
+    copyLeveledReaderStatsToClipboard: typeof copyLeveledReaderStatsToClipboard;
+}
+
+declare global {
+    interface Window {
+        toolboxBundle: ToolboxBundleApi;
+    }
+}
+
+window.toolboxBundle = {
+    getTheOneToolbox,
+    applyToolboxStateToPage,
+    removeToolboxMarkup,
+    showOrHideTool_click,
+    showSetupDialog,
+    initializeReaderSetupDialog,
+    closeSetupDialog,
+    addWordListChangedListener,
+    beginSaveChangedSettings,
+    makeLetterWordList,
+    activateLongPressFor,
+    TalkingBookTool,
+    canUndo,
+    undo,
+    applyToolboxStateToPageLegacy: applyToolboxStateToPage,
+    setActiveDragActivityTab,
+    getTheOneAudioRecorderForExportOnly,
+    copyLeveledReaderStatsToClipboard,
+};

@@ -1,4 +1,3 @@
-/** @jsx jsx **/
 import { css } from "@emotion/react";
 
 import * as React from "react";
@@ -200,3 +199,5 @@ export const ProgressBox = React.forwardRef<
         </div>
     );
 });
+
+ProgressBox.displayName = "ProgressBox";

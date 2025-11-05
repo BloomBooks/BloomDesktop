@@ -9,6 +9,7 @@
 // The actual function is injected by C#.
 /// <reference path="../js/collectionSettings.d.ts"/>
 import * as ReactDOM from "react-dom";
+import $ from "jquery";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from "../js/bloomQtipUtils";
@@ -16,6 +17,8 @@ import "../../lib/jquery.easytabs.js"; //load into global space
 import BloomHintBubbles from "../js/BloomHintBubbles";
 import { postJson, postString } from "../../utils/bloomApi";
 import CopyContentButton from "../../react_components/CopyContentButton";
+
+declare function GetSettings(): any; // C# (or test code) injects this
 
 export default class BloomSourceBubbles {
     //:empty is not quite enough... we don't want to show bubbles if all there is is an empty paragraph

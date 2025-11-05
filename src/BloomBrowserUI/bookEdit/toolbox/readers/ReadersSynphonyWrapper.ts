@@ -1,4 +1,3 @@
-/// <reference path="libSynphony/synphony_lib.d.ts" />
 /// <reference path="../../../typings/jquery/jquery.d.ts" />
 /// <reference path="ReaderSettings.ts" />
 
@@ -9,6 +8,7 @@ import {
 } from "./libSynphony/synphony_lib";
 import { ReaderStage, ReaderLevel, ReaderSettings } from "./ReaderSettings";
 import * as _ from "underscore";
+import jQuery from "jquery";
 
 export default class ReadersSynphonyWrapper {
     public stages: ReaderStage[] = [];

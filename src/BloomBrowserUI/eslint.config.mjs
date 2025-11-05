@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook";
+
 import eslint from "@eslint/js";
 import reactPlugin from "eslint-plugin-react";
 import globals from "globals";
@@ -8,16 +11,15 @@ import tseslint from "typescript-eslint";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 
 export default [
-    eslint.configs.recommended, // Recommended config applied to all files
-    reactPlugin.configs.flat.recommended, // Recommended for react
-    reactPlugin.configs.flat["jsx-runtime"], // Recommended for react 17+ (new?)
-    // the doc for typescript-eslint does not have the ..., but without it we get a weird error
+    // Recommended config applied to all files
+    eslint.configs.recommended, // Recommended for react
+    reactPlugin.configs.flat.recommended, // Recommended for react 17+ (new?)
+    reactPlugin.configs.flat["jsx-runtime"], // the doc for typescript-eslint does not have the ..., but without it we get a weird error
     // saying TypeError: Unexpected array
-    ...tseslint.configs.recommended, // recommended for typescript
-    // this might be alpha or beta? doc recommends for well-typed code, but comes up undefined.
+    // recommended for typescript
+    ...tseslint.configs.recommended, // this might be alpha or beta? doc recommends for well-typed code, but comes up undefined.
     //tseslint.configs.recommendedTypeChecked,
-    eslintPluginPrettierRecommended,
-    // this object exists, but it seems to be in eslintrc mode, and eslint 9 chokes.
+    eslintPluginPrettierRecommended, // this object exists, but it seems to be in eslintrc mode, and eslint 9 chokes.
     // Instead, I list it as a plugin and import the rules directly into the rules section.
     //hooksPlugin.configs.recommended,
     {
@@ -71,8 +73,6 @@ export default [
                 // I think this replaces the env section of the old .eslintrc.js
                 ...globals.browser,
                 ...globals.es2021,
-                ...globals.jasmine,
-                ...globals.jquery,
             },
         },
         settings: {
@@ -126,8 +126,7 @@ export default [
             // eqeqeq: "off",
             // "react-hooks/exhaustive-deps": "off"
         },
-    },
-    // Add a specific override for Storybook files
+    }, // Add a specific override for Storybook files
     {
         files: ["**/*.stories.tsx", "**/stories.tsx"],
         rules: {
@@ -136,4 +135,5 @@ export default [
             "react-hooks/exhaustive-deps": "off",
         },
     },
+    ...storybook.configs["flat/recommended"],
 ];

@@ -1,6 +1,6 @@
 ///<reference path="./jquery.hasAttr.d.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
-import * as $ from "jquery";
+import $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
@@ -35,8 +35,6 @@ import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
 import "../../lib/jquery.qtip.js";
 import "../../lib/jquery.qtipSecondary.js";
 import "../../lib/long-press/jquery.longpress.js";
-import "jquery.hotkeys"; //makes the on(keydown work with keynames)
-import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import {
     getEditTabBundleExports,
     getToolboxBundleExports,
@@ -191,10 +189,12 @@ function AddEditKeyHandlers(container) {
     //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "F6", (e) => {
+        .on("keydown", (e) => {
+            const isF6 = e.key === "F6";
+            if (!isF6) return;
             const selection = document.getSelection();
             if (selection) {
-                //NB: by using exeCommand, we get undo-ability
+                // NB: by using execCommand, we get undo-ability
                 document.execCommand(
                     "insertHTML",
                     false,
@@ -206,7 +206,10 @@ function AddEditKeyHandlers(container) {
     //ctrl alt 0 is from google drive for "normal text"
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "ALT+CTRL+0", (e) => {
+        .on("keydown", (e) => {
+            const isCtrlAlt0 =
+                e.ctrlKey && e.altKey && !e.shiftKey && e.key === "0";
+            if (!isCtrlAlt0) return;
             e.preventDefault();
             document.execCommand("formatBlock", false, "P");
         });
@@ -214,14 +217,19 @@ function AddEditKeyHandlers(container) {
     // Make F7 apply top-level header style (H1)
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "F7", (e) => {
+        .on("keydown", (e) => {
+            const isF7 = e.key === "F7";
+            if (!isF7) return;
             e.preventDefault();
             document.execCommand("formatBlock", false, "H1");
         });
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "ALT+CTRL+1", (e) => {
-            //ctrl alt 1 is from google drive
+        .on("keydown", (e) => {
+            const isCtrlAlt1 =
+                e.ctrlKey && e.altKey && !e.shiftKey && e.key === "1";
+            if (!isCtrlAlt1) return;
+            // ctrl alt 1 is from google drive
             e.preventDefault();
             document.execCommand("formatBlock", false, "H1");
         });
@@ -229,14 +237,19 @@ function AddEditKeyHandlers(container) {
     // Make F8 apply header style (H2)
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "F8", (e) => {
+        .on("keydown", (e) => {
+            const isF8 = e.key === "F8";
+            if (!isF8) return;
             e.preventDefault();
             document.execCommand("formatBlock", false, "H2");
         });
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "ALT+CTRL+2", (e) => {
-            //ctrl alt 2 is from google drive
+        .on("keydown", (e) => {
+            const isCtrlAlt2 =
+                e.ctrlKey && e.altKey && !e.shiftKey && e.key === "2";
+            if (!isCtrlAlt2) return;
+            // ctrl alt 2 is from google drive
             e.preventDefault();
             document.execCommand("formatBlock", false, "H2");
         });
@@ -244,38 +257,49 @@ function AddEditKeyHandlers(container) {
     // for testing only: show invisibles
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "CTRL+SHIFT+SPACE", (e) => {
+        .on("keydown", (e) => {
+            const isCtrlShiftSpace =
+                e.ctrlKey && e.shiftKey && !e.altKey && e.key === " ";
+            if (!isCtrlShiftSpace) return;
             showInvisibles(e);
         })
         // when user releases any key or clicks away from the editable
         // (if we only listen for keyup of the CTL+SHIFT+SPACE, it doesn't trigger if user lifts keys in wrong order)
-        .on("keyup blur", null, (e) => {
+        .on("keyup blur", (e) => {
             hideInvisibles(e);
         });
 
-    $(document).keydown((e) => {
-        if (e.keyCode === 32 && e.ctrlKey && !e.shiftKey && !e.altKey) {
-            document.execCommand("removeFormat"); //will remove bold, italics, etc. but not things that use elements, like h1
+    $(document).on("keydown", (e) => {
+        if (e.key === " " && e.ctrlKey && !e.shiftKey && !e.altKey) {
+            document.execCommand("removeFormat"); // will remove bold, italics, etc. but not things that use elements, like h1
         }
     });
 
-    //note: these have the effect of introducing a <div> inside of the div.bloom-editable we're in.
-    //note: they aren't currently working. Debugging indicates the events never fire.
-    //I (JohnT) have not been able to find any doc indicating that this syntax...passing a
-    // keycode to match...is even supposed to work. If we want to reinstate them,
-    // adding to the handler for ctrl-space above might work.
-    $(document).bind("keydown", "ctrl+r", (e) => {
-        e.preventDefault();
-        document.execCommand("justifyright", false);
-    });
-    $(document).bind("keydown", "ctrl+l", (e) => {
-        e.preventDefault();
-        document.execCommand("justifyleft", false);
-    });
-    $(document).bind("keydown", "ctrl+shift+e", (e) => {
-        //ctrl+shiift+e is what google drive uses
-        e.preventDefault();
-        document.execCommand("justifycenter", false);
+    $(document).on("keydown", (e) => {
+        // Ctrl+R: right justify
+        if (e.ctrlKey && !e.altKey && !e.shiftKey && e.key === "r") {
+            e.preventDefault();
+            document.execCommand("justifyright", false);
+            return;
+        }
+        // Ctrl+L: left justify
+        if (e.ctrlKey && !e.altKey && !e.shiftKey && e.key === "l") {
+            e.preventDefault();
+            document.execCommand("justifyleft", false);
+            return;
+        }
+        // Ctrl+Shift+E: center (matches Google Docs behavior)
+        if (
+            e.ctrlKey &&
+            e.shiftKey &&
+            !e.altKey &&
+            e.key &&
+            e.key.toLowerCase() === "e"
+        ) {
+            e.preventDefault();
+            document.execCommand("justifycenter", false);
+            return;
+        }
     });
 
     // Note, CTRL+N is also caught, but up on the Shell where it is turned into an event,
@@ -1101,7 +1125,6 @@ export function bootstrap() {
 
     // configure ckeditor
     if (typeof CKEDITOR === "undefined") return; // this happens during unit testing
-    CKEDITOR.disableAutoInline = true;
 
     if ($(this).find(".bloom-canvas").length) {
         // We would *like* to wire up ckeditor, but would need to get it to stop interfering

@@ -8,6 +8,7 @@ import {
     hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
+import $ from "jquery";
 
 export interface IEditViewFrameExports {
     showDialog(dialogContents: string | JQuery, options: any): JQuery;
@@ -70,6 +71,8 @@ import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDial
 import { getPageIframeBody } from "../utils/shared";
 import { showRequiresSubscriptionDialogInEditView } from "../react_components/requiresSubscription";
 export { showAdjustTimingsDialog as showAdjustTimingsDialogFromEditViewFrame };
+// Local alias so we have an in-scope identifier for legacy global exposure typing.
+const showAdjustTimingsDialogFromEditViewFrame = showAdjustTimingsDialog;
 
 //Called by c# using editTabBundle.handleUndo()
 export function handleUndo(): void {
@@ -288,3 +291,82 @@ export function setZoom(zoom: number): void {
         console.warn("setZoom called before page loaded");
     }
 }
+
+// --- Global exposure (legacy compatibility) --------------------------------------
+// The old webpack build exposed these APIs via window["editTabBundle"].
+// Maintain that contract so existing C# and cross-frame code keeps working.
+// Keep this at the end so all exported bindings are defined.
+// Note: We purposely build the object explicitly (rather than spreading 'exports')
+// to avoid accidentally leaking unrelated internal symbols.
+// If you add a new function that C# or other frames need, add it here too.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - allow indexing window
+// Minimal augmentation: declare a type for the bundle to help future maintenance.
+interface EditTabBundleApi {
+    SayHello: typeof SayHello;
+    handleUndo: typeof handleUndo;
+    switchContentPage: typeof switchContentPage;
+    showDialog: typeof showDialog;
+    closeDialog: typeof closeDialog;
+    toolboxIsShowing: typeof toolboxIsShowing;
+    doWhenToolboxLoaded: typeof doWhenToolboxLoaded;
+    canUndo: typeof canUndo;
+    getModalDialogContainer: typeof getModalDialogContainer;
+    ShowEditViewDialog: typeof ShowEditViewDialog;
+    showConfirmDialog: typeof showConfirmDialog;
+    showColorPickerDialog: typeof showColorPickerDialog;
+    hideColorPickerDialog: typeof hideColorPickerDialog;
+    showCopyrightAndLicenseDialog: typeof showCopyrightAndLicenseDialog;
+    showEditViewTopicChooserDialog: typeof showEditViewTopicChooserDialog;
+    showEditViewBookSettingsDialog: typeof showEditViewBookSettingsDialog;
+    showAboutDialogInEditTab: typeof showAboutDialogInEditTab;
+    showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
+    showRegistrationDialogInEditTab: typeof showRegistrationDialogInEditTab;
+    showAdjustTimingsDialogFromEditViewFrame: typeof showAdjustTimingsDialogFromEditViewFrame;
+    setZoom: typeof setZoom;
+    getToolboxBundleExports: typeof getToolboxBundleExports;
+    getEditablePageBundleExports: typeof getEditablePageBundleExports;
+    showPageChooserDialog: typeof showPageChooserDialog;
+    showBookSettingsDialog: typeof showBookSettingsDialog;
+    showRegistrationDialog: typeof showRegistrationDialogForEditTab;
+    showAboutDialog: typeof showAboutDialog;
+}
+
+declare global {
+    interface Window {
+        editTabBundle: EditTabBundleApi;
+    }
+}
+
+window.editTabBundle = {
+    // simple exports
+    SayHello,
+    handleUndo,
+    switchContentPage,
+    showDialog,
+    closeDialog,
+    toolboxIsShowing,
+    doWhenToolboxLoaded,
+    canUndo,
+    getModalDialogContainer,
+    ShowEditViewDialog,
+    showConfirmDialog,
+    showColorPickerDialog,
+    hideColorPickerDialog,
+    showCopyrightAndLicenseDialog,
+    showEditViewTopicChooserDialog,
+    showEditViewBookSettingsDialog,
+    showAboutDialogInEditTab,
+    showRequiresSubscriptionDialog,
+    showRegistrationDialogInEditTab,
+    showAdjustTimingsDialogFromEditViewFrame:
+        showAdjustTimingsDialogFromEditViewFrame,
+    setZoom,
+    // re-exported cross-frame helpers
+    getToolboxBundleExports,
+    getEditablePageBundleExports,
+    showPageChooserDialog,
+    showBookSettingsDialog,
+    showRegistrationDialog: showRegistrationDialogForEditTab,
+    showAboutDialog,
+};

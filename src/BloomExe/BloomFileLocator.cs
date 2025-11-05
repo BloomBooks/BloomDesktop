@@ -276,8 +276,12 @@ namespace Bloom
         {
             var folder = GetCodeBaseFolder();
             var slash = Path.DirectorySeparatorChar;
-            if (folder.EndsWith($"{slash}output{slash}Debug"))
-                folder = folder.Replace($"{slash}Debug", string.Empty); // files now copied to output/browser for access
+            // In the case of a debug build, the executable files are not at the root of the whole install,
+            // but typically in output\Debug\x64. The "browser" folder, however, is not there but
+            // directly in output. So we need to back up two levels to find the folder to test in Debug builds.
+            var pathLessOne = Path.GetDirectoryName(folder);
+            if (pathLessOne.EndsWith($"{slash}output{slash}Debug"))
+                folder = Path.GetDirectoryName(pathLessOne);
 
             return filepath.Contains(folder);
         }

@@ -25,7 +25,7 @@
 ///<reference path="../../../typings/jquery/jquery.d.ts"/>
 ///<reference path="../../../typings/toastr/toastr.d.ts"/>
 
-import * as $ from "jquery";
+import $ from "jquery";
 import { theOneLibSynphony } from "../readers/libSynphony/synphony_lib";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { TextFragment } from "../readers/libSynphony/bloomSynphonyExtensions";
@@ -74,6 +74,7 @@ import {
     getFeatureStatusAsync,
 } from "../../../react_components/featureStatus";
 import { animateStyleName } from "../../../utils/shared";
+import jQuery from "jquery";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -2316,12 +2317,12 @@ export default class AudioRecording implements IAudioRecorder {
         // This only set the RECORDING mode. Don't touch the audio-sentence markup, which represents the PLAYBACK mode.
     }
 
-    // Gets the "page" iframe. May return null is the iframe doesn't exist.
+    // Gets the "page" iframe. May return null if the iframe doesn't exist (e.g., in testing, or while loading).
     public getPageFrame(): HTMLIFrameElement | null {
         // Enhance: Maybe should just use the version in bloomFrames.ts instead?
         //   (we could add an async version there that would return a promise which is fulfilled when the frame becomes available AND loaded.)
         return <HTMLIFrameElement | null>(
-            parent.window.document.getElementById("page")
+            parent?.window?.document?.getElementById("page")
         );
     }
 
@@ -2732,13 +2733,16 @@ export default class AudioRecording implements IAudioRecorder {
             );
         }
     }
+    public clearTimeouts() {
+        clearTimeout(this.ensureHighlightToken);
+    }
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
     public handleToolHiding() {
         this.isShowing = false;
         this.stopListeningForLevels();
         // In case this initialize loop is still going, stop it. Passing an invalid value won't hurt.
-        clearTimeout(this.ensureHighlightToken);
+        this.clearTimeouts();
 
         // Need to clear out any state. The next time this tool gets reopened, there is no guarantee that it will be reopened in the same context.
         this.recordingMode = RecordingMode.Unknown;
@@ -3193,6 +3197,13 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     public static getChecksum(message: string): string {
+        if (message === null || message === undefined) {
+            // should not normally happen, but seems to in tests.
+            // The function is supposed to return a string, and I don't want to change
+            // all the callers, so making it return a string that's a bit unique so if
+            // we ever see it in production we can search for it.
+            return "undefind";
+        }
         // Vertical line character ("|") acts as a phrase delimiter in Talking Books.
         // To perform phrase-level recording, the user can insert a temporary "|" character where he wants a phrase split to happen.
         // This is now recognized in the list of sentence delimiters, so it will be broken up as an audio-sentence.
@@ -4143,7 +4154,7 @@ export default class AudioRecording implements IAudioRecorder {
             )
             .remove();
         // unwrap any span elements that have no attributes and so change nothing
-        // This will get rid of at least some empty spans, and it reduces clutter.
+        // This will get rid of at least some empty spans, and it reduces clutter
         const copyElt = element.get(0);
         for (const span of Array.from(copyElt.getElementsByTagName("span"))) {
             if (span.attributes.length === 0) {
@@ -4579,7 +4590,7 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     // Returns all elements that match CSS selector {expr} as an array.
-    // Querying can optionally be restricted to {container}�s descendants
+    // Querying can optionally be restricted to {container}'s descendants
     // If includeSelf is true, it includes both itself as well as its descendants.
     // Otherwise, it only includes descendants.
     // Also filters out imageDescriptions if we aren't supposed to be reading them.

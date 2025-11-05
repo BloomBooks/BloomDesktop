@@ -3015,5 +3015,32 @@ p {
             // div is not modified
             Assert.That(div.InnerXml, Is.EqualTo(innerXml));
         }
+
+        [Test]
+        public void AddScriptFile_SrcEndsInBundle_MakesTypeModule()
+        {
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml("<html><head></head><body></body></html>");
+            var script = HtmlDom.AddScriptFile(doc, "testBundle.js");
+            Assert.That(script.GetAttribute("type"), Is.EqualTo("module"));
+        }
+
+        [Test]
+        public void AddScriptFile_SrcDoesNotEndInBundle_MakesTypeTextJavascript()
+        {
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml("<html><head></head><body></body></html>");
+            var script = HtmlDom.AddScriptFile(doc, "someRandomCode.js");
+            Assert.That(script.GetAttribute("type"), Is.EqualTo("text/javascript"));
+        }
+
+        [Test]
+        public void AddScriptFile_SrcDoesNotEndInBundle_ModuleTrue_MakesTypeModule()
+        {
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml("<html><head></head><body></body></html>");
+            var script = HtmlDom.AddScriptFile(doc, "someRandomCode.js", true);
+            Assert.That(script.GetAttribute("type"), Is.EqualTo("module"));
+        }
     }
 }

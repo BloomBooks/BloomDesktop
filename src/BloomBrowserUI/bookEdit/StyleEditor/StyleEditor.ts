@@ -11,7 +11,13 @@
 /// <reference path="../js/collectionSettings.d.ts"/>
 /// <reference path="../OverflowChecker/OverflowChecker.ts"/>
 
-import "../../node_modules/select2/dist/js/select2.js";
+import $ from "jquery";
+import select2Factory from "select2/dist/js/select2.js";
+
+// Select2's UMD build exports a factory; invoking it attaches $.fn.select2
+if (typeof window !== "undefined") {
+    select2Factory(window, $);
+}
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
