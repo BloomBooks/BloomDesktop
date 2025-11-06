@@ -1595,7 +1595,7 @@ export default class AudioRecording implements IAudioRecorder {
         // But instead of setting time to 0, set the minimum highlight time threshold to 0.1 (this threshold is arbitrary).
         const durationInSecs = Math.max(endTimeInSecs - currentTimeInSecs, 0.1);
 
-        setTimeout(() => {
+        this.scheduleSubElementHighlightTimeout(() => {
             this.onSubElementHighlightTimeEnded(originalSessionNum);
         }, durationInSecs * 1000);
     }
@@ -1638,7 +1638,7 @@ export default class AudioRecording implements IAudioRecorder {
             // Still need to wait. Exit this function early and re-check later.
             const minRemainingDurationInSecs =
                 nextStartTimeInSecs - playedDurationInSecs;
-            setTimeout(() => {
+            this.scheduleSubElementHighlightTimeout(() => {
                 this.onSubElementHighlightTimeEnded(originalSessionNum);
             }, minRemainingDurationInSecs * 1000);
 
@@ -1648,6 +1648,24 @@ export default class AudioRecording implements IAudioRecorder {
         this.subElementsWithTimings.pop();
 
         this.highlightNextSubElement(originalSessionNum, nextStartTimeInSecs);
+    }
+
+    private scheduleSubElementHighlightTimeout(
+        callback: () => void,
+        delayMs: number,
+    ) {
+        this.clearSubElementHighlightTimeout();
+        this.subElementHighlightTimeoutToken = setTimeout(() => {
+            this.subElementHighlightTimeoutToken = undefined;
+            callback();
+        }, delayMs);
+    }
+
+    private clearSubElementHighlightTimeout() {
+        if (this.subElementHighlightTimeoutToken) {
+            clearTimeout(this.subElementHighlightTimeoutToken);
+            this.subElementHighlightTimeoutToken = undefined;
+        }
     }
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
@@ -1692,10 +1710,12 @@ export default class AudioRecording implements IAudioRecorder {
     // such as setting the current state of controls.
     public stopListen(): void {
         this.listening = false;
+        this.clearSubElementHighlightTimeout();
         this.getMediaPlayer().pause();
     }
 
     private async playEndedAsync(): Promise<void> {
+        this.clearSubElementHighlightTimeout();
         if (
             this.elementsToPlayConsecutivelyStack &&
             this.elementsToPlayConsecutivelyStack.length > 0
@@ -2698,7 +2718,10 @@ export default class AudioRecording implements IAudioRecorder {
         return result;
     }
 
-    private ensureHighlightToken;
+    private ensureHighlightToken: ReturnType<typeof setTimeout> | undefined;
+    private subElementHighlightTimeoutToken:
+        | ReturnType<typeof setTimeout>
+        | undefined;
 
     // This is a monumentally ugly workaround for BL-10471, a problem where a page has an image description
     // recorded in sentence mode that comes before a main body recorded in text mode. Somehow, things happen
@@ -2734,7 +2757,11 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
     public clearTimeouts() {
-        clearTimeout(this.ensureHighlightToken);
+        this.clearSubElementHighlightTimeout();
+        if (this.ensureHighlightToken) {
+            clearTimeout(this.ensureHighlightToken);
+            this.ensureHighlightToken = undefined;
+        }
     }
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
