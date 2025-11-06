@@ -69,6 +69,13 @@ For fast hot-reloading, first do one yarn build, to get all the (so-far) static 
 
 It may be helpful before submitting a PR to turn off yarn dev and run yarn build, then do a quick smoke test of your work. Yarn build creates the transpiled files that will be used by Bloom in production.
 
+### Windows Defender exclusions
+
+Due to a current (Nov 2025) bug in vitest 4, it is necessary to add an exclusion for `node.exe` in the Windows Defender settings.
+
+For performance reasons, you probably want to exclude it anyway; and one for the Bloom source code folder (e.g. `C:/dev/BloomDesktop`).
+
+
 ### Typescript unit tests
 
 These are now being run using Vitest in the BloomBrowserUI folder (where all our Typescript currently lives). You can run 'yarn test' in a terminal there, and it will automatically re-run affected tests on every Save. There is also a vitest extension you can install in VsCode, which supports a new panel showing all the tests and allowing them to be run and debugged; it also puts icons in the test files that support running and debugging tests. Breakpoints can be set in VSCode itself. It takes a few seconds for a debug session to start.
