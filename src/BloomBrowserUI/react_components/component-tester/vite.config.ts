@@ -86,6 +86,16 @@ export default defineConfig({
                     next();
                 });
             },
+            transformIndexHtml() {
+                // Inject backend availability flag into the page
+                return [
+                    {
+                        tag: "script",
+                        injectTo: "head-prepend",
+                        children: `window.__BLOOM_HAS_BACKEND__ = ${!useMocks};`,
+                    },
+                ];
+            },
         },
         {
             name: "component-tester-mock-api",
@@ -117,104 +127,6 @@ export default defineConfig({
                         ) {
                             // Return empty localization data
                             respondWithJson(res, {});
-                            return;
-                        }
-                        // Mock books for link choosing - provides 4 books with 5 pages each
-                        if (
-                            req.url.startsWith(
-                                "/bloom/api/collections/books?realTitle=true",
-                            ) ||
-                            req.url.startsWith(
-                                "/bloom/api//collections/books?realTitle=true",
-                            ) ||
-                            req.url.startsWith(
-                                "/bloom/api/collections/books?realTitle=false",
-                            ) ||
-                            req.url.startsWith(
-                                "/bloom/api//collections/books?realTitle=false",
-                            )
-                        ) {
-                            respondWithJson(res, [
-                                {
-                                    id: "book1",
-                                    title: "First Book",
-                                    folderName: "First Book",
-                                    thumbnail:
-                                        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='120'%3E%3Crect width='100' height='120' fill='%234CAF50'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='14'%3EBook 1%3C/text%3E%3C/svg%3E",
-                                    pageLength: 5,
-                                },
-                                {
-                                    id: "book2",
-                                    title: "Second Book",
-                                    folderName: "Second Book",
-                                    thumbnail:
-                                        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='120'%3E%3Crect width='100' height='120' fill='%232196F3'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='14'%3EBook 2%3C/text%3E%3C/svg%3E",
-                                    pageLength: 5,
-                                },
-                                {
-                                    id: "book3",
-                                    title: "Third Book",
-                                    folderName: "Third Book",
-                                    thumbnail:
-                                        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='120'%3E%3Crect width='100' height='120' fill='%23FF9800'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='14'%3EBook 3%3C/text%3E%3C/svg%3E",
-                                    pageLength: 5,
-                                },
-                                {
-                                    id: "book4",
-                                    title: "Fourth Book",
-                                    folderName: "Fourth Book",
-                                    thumbnail:
-                                        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='120'%3E%3Crect width='100' height='120' fill='%23E91E63'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='14'%3EBook 4%3C/text%3E%3C/svg%3E",
-                                    pageLength: 5,
-                                },
-                            ]);
-                            return;
-                        }
-                        if (
-                            req.url.startsWith("/bloom/api/pageList/pages") ||
-                            req.url.startsWith("/bloom/api//pageList/pages")
-                        ) {
-                            respondWithJson(res, {
-                                pages: [
-                                    { key: "cover", caption: "Cover" },
-                                    { key: "1", caption: "Page 1" },
-                                    { key: "2", caption: "Page 2" },
-                                ],
-                                selectedPageId: "cover",
-                            });
-                            return;
-                        }
-                        if (
-                            req.url.startsWith(
-                                "/bloom/api/pageList/pageContent",
-                            ) ||
-                            req.url.startsWith(
-                                "/bloom/api//pageList/pageContent",
-                            )
-                        ) {
-                            let pageId = "cover";
-                            try {
-                                const parsed = new URL(
-                                    req.url,
-                                    "http://localhost",
-                                );
-                                pageId =
-                                    parsed.searchParams.get("id") ?? "cover";
-                            } catch {
-                                // Use default pageId
-                            }
-
-                            const palette: Record<
-                                string,
-                                { color: string; caption: string }
-                            > = {
-                                cover: { color: "4CAF50", caption: "Cover" },
-                                "1": { color: "2196F3", caption: "Page 1" },
-                                "2": { color: "FF9800", caption: "Page 2" },
-                            };
-                            const selected = palette[pageId] ?? palette.cover;
-                            const html = `<div class='bloom-page' inert><div style='width:160px;height:100px;background:#${selected.color};color:#fff;display:flex;align-items:center;justify-content:center;'>${selected.caption}</div></div>`;
-                            respondWithJson(res, { data: { content: html } });
                             return;
                         }
                     }

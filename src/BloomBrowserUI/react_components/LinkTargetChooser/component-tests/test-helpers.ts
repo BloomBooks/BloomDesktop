@@ -3,40 +3,45 @@ import { prepareGetResponse } from "../../component-tester/apiInterceptors";
 import { setTestComponent } from "../../component-tester/setTestComponent";
 import { LinkTargetInfo } from "../LinkTargetChooser";
 
-const mockBooks = [
-    {
-        id: "book1",
-        title: "First Book",
-        folderName: "First Book",
-        thumbnail:
-            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='120'%3E%3Crect width='100' height='120' fill='%234CAF50'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='14'%3EBook 1%3C/text%3E%3C/svg%3E",
+const createMockBook = (index: number) => {
+    const colors = [
+        "4CAF50",
+        "2196F3",
+        "FF9800",
+        "E91E63",
+        "9C27B0",
+        "00BCD4",
+        "CDDC39",
+        "FF5722",
+        "607D8B",
+        "795548",
+    ];
+    const color = colors[index % colors.length];
+    const bookNumber = index + 1;
+    const guid = `${bookNumber}aaaa-bbbb-cccc-dddd-eeeeeeee${bookNumber.toString().padStart(4, "0")}`;
+
+    return {
+        id: guid,
+        title: `Book ${bookNumber}`,
+        folderName: `${bookNumber} Book ${bookNumber}`,
+        thumbnail: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='120'%3E%3Crect width='100' height='120' fill='%23${color}'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='14'%3EBook ${bookNumber}%3C/text%3E%3C/svg%3E`,
         pageLength: 5,
-    },
-    {
-        id: "book2",
-        title: "Second Book",
-        folderName: "Second Book",
-        thumbnail:
-            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='120'%3E%3Crect width='100' height='120' fill='%232196F3'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='14'%3EBook 2%3C/text%3E%3C/svg%3E",
-        pageLength: 5,
-    },
-    {
-        id: "book3",
-        title: "Third Book",
-        folderName: "Third Book",
-        thumbnail:
-            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='120'%3E%3Crect width='100' height='120' fill='%23FF9800'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='14'%3EBook 3%3C/text%3E%3C/svg%3E",
-        pageLength: 5,
-    },
-    {
-        id: "book4",
-        title: "Fourth Book",
-        folderName: "Fourth Book",
-        thumbnail:
-            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='120'%3E%3Crect width='100' height='120' fill='%23E91E63'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='14'%3EBook 4%3C/text%3E%3C/svg%3E",
-        pageLength: 5,
-    },
-];
+    };
+};
+
+const mockBooks = Array.from({ length: 10 }, (_, i) => createMockBook(i));
+
+interface LinkTargetChooserSetupOptions {
+    currentURL?: string;
+    onClose?: () => void;
+    onSelect?: (info: LinkTargetInfo) => void;
+    currentBookId?: string;
+    books?: typeof mockBooks;
+    pages?: Array<{ key: string; caption: string }>;
+    pageLayout?: string;
+    cssFiles?: string[];
+    bookAttributes?: Record<string, string>;
+}
 
 const booksApiPattern =
     /\/bloom\/api\/+collections\/books\?realTitle=(true|false)/;
@@ -45,18 +50,21 @@ let currentPage: Page | undefined;
 
 export async function setupLinkTargetChooser(
     page: Page,
-    props: {
-        currentURL?: string;
-        onClose?: () => void;
-        onSelect?: (info: LinkTargetInfo) => void;
-    } = {},
+    props: LinkTargetChooserSetupOptions = {},
 ) {
     currentPage = page;
 
-    prepareGetResponse(page, booksApiPattern, mockBooks);
+    const books = props.books ?? mockBooks;
+    prepareGetResponse(page, booksApiPattern, books);
+
+    prepareGetResponse(
+        page,
+        "**/bloom/api/editView/currentBookId",
+        props.currentBookId ?? "",
+    );
 
     // Intercept page list APIs used by the PageList component
-    const pages = [
+    const pages = props.pages ?? [
         { key: "cover", caption: "Cover" },
         { key: "1", caption: "Page 1" },
         { key: "2", caption: "Page 2" },
@@ -64,6 +72,22 @@ export async function setupLinkTargetChooser(
     prepareGetResponse(page, "**/bloom/api/pageList/pages", {
         pages,
         selectedPageId: "cover",
+        pageLayout: props.pageLayout ?? "A5Portrait",
+        cssFiles: props.cssFiles ?? [],
+    });
+
+    prepareGetResponse(
+        page,
+        "**/bloom/api/pageList/bookAttributesThatMayAffectDisplay",
+        props.bookAttributes ?? {},
+    );
+
+    await page.route("**/bloom/api/pageList/bookFile/**", async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "text/css",
+            body: "/* test css */",
+        });
     });
     // Dynamic route for page content
     await page.route("**/bloom/api/pageList/pageContent**", async (route) => {
@@ -185,6 +209,19 @@ export const bookList = {
         const card = await bookList.getBookCard(bookId);
         await card.waitFor({ state: "visible", timeout: 5000 });
         await card.click();
+    },
+    isBookSelected: async (bookId: string) => {
+        const card = await bookList.getBookCard(bookId);
+        await card.waitFor({ state: "visible", timeout: 5000 });
+        return card.evaluate((element) => {
+            const target =
+                (element as HTMLElement).querySelector(".MuiCard-root") ??
+                element;
+            const style = window.getComputedStyle(target as HTMLElement);
+            return (
+                style.outlineStyle !== "none" && style.outlineWidth !== "0px"
+            );
+        });
     },
     waitForBooksToLoad: async () => {
         if (!currentPage) {

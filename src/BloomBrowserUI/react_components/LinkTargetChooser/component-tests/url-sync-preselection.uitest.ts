@@ -102,9 +102,37 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
             .poll(async () => await pageList.isPageSelected("cover"))
             .toBeTruthy();
     });
+
+    test("Auto-selects current book when API reports one", async ({ page }) => {
+        await setupLinkTargetChooser(page, { currentBookId: "book2" });
+
+        await bookList.waitForBooksToLoad();
+
+        await expect
+            .poll(async () => await bookList.isBookSelected("book2"))
+            .toBeTruthy();
+
+        const input = await urlEditor.getInput();
+        await expect(input).toHaveValue("/book/book2");
+
+        const okButton = await dialog.getOKButton();
+        await expect(okButton).toBeEnabled();
+    });
 });
 
 test.describe("LinkTargetChooser - URL Preselection", () => {
+    test("Keeps anchor-only URL when no book is selected", async ({ page }) => {
+        await setupLinkTargetChooser(page, {
+            currentURL: "#cover",
+        });
+
+        const input = await urlEditor.getInput();
+        await expect(input).toHaveValue("#cover");
+
+        const okButton = await dialog.getOKButton();
+        await expect(okButton).toBeDisabled();
+    });
+
     test("Preselects book when URL is /book/BOOKID", async ({ page }) => {
         await setupLinkTargetChooser(page, {
             currentURL: "/book/book2",

@@ -16,8 +16,8 @@ const fixResourceUrls = (
     bookId?: string,
     bookFolderPath?: string,
 ): string => {
-    if (!bookId && !bookFolderPath) {
-        return html;
+    if (!html || (!bookId && !bookFolderPath)) {
+        return html || "";
     }
 
     const makeBookFileUrl = (rawPath: string): string => {

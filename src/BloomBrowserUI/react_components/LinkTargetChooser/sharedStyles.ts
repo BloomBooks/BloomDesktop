@@ -29,3 +29,10 @@ export const clickableItemStyles = css`
 
 // Common padding to separate chooser content from dialog buttons
 export const chooserButtonPadding = "10px";
+
+// Common heading style for section headings
+export const headingStyle = css`
+    font-weight: 600;
+    font-size: 14px;
+    margin-block-end: 0 !important; // we don't want a big gap below the heading and the box below it
+`;

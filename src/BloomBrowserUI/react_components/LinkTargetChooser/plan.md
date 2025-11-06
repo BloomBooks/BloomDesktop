@@ -1,6 +1,0 @@
-- [x] When the url starts with "/book", disable the "Open in Browser" button.  Cover this is in ui tests.
-- [x] remove the outer border around the url control (leave the border around the text field)
-- [x] to sharedStyles.ts, add a common 5px padding between the chooser and the buttons.
-- [x] when the user clicks a book, we need to auto-select the first page. This is non-trivial because the pages haven't been loaded at that point. So we need to ensure that, when ever teh list of pages changes, if we have a book selection and don't have a page selection yet, then we must autoselect the first page (the cover page). Cover this is in ui tests.
-- [x] When the front cover is selected, the resulting url should not include the page portion (e.g. /book/bbf2fef8-62df-4ad5-a3f2-8d626b4f8c86 instead of /book/bbf2fef8-62df-4ad5-a3f2-8d626b4f8c86#52ad5abd-f858-4c7e-9157-89279cbb9b3f). We just want to point to the book alone. Make sure tests handle this, both setting it correctly but also parsing incoming urls to set things up properly. E.g. if we see "/book/123" then we want to select book 123 but also its cover page. Cover this is in ui tests.
-- [ ] When the URL starts with "\bloom", don't let the user edit that. They can select it and copy it, they can delete the url, they can paste a new url, but they can't edit it.

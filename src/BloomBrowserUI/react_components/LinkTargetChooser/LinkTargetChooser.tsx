@@ -11,6 +11,7 @@ import { BookChooser } from "./BookChooser";
 import { PageChooser } from "./PageChooser";
 import { useWatchApiData, useApiString } from "../../utils/bloomApi";
 import { IBookInfo } from "../../collectionsTab/BooksOfCollection";
+import { headingStyle } from "./sharedStyles";
 
 export interface LinkTargetInfo {
     url: string;
@@ -289,15 +290,6 @@ export const LinkTargetChooser: React.FunctionComponent<{
         handleBookSelected,
     ]);
 
-    const headingStyle = css`
-        font-weight: 600;
-        font-size: 14px;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    `;
-
     return (
         <Box
             css={css`
@@ -323,14 +315,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
                         flex-direction: column;
                     `}
                 >
-                    <Typography
-                        css={css`
-                            ${headingStyle};
-                            p {
-                                margin: 0;
-                            }
-                        `}
-                    >
+                    <Typography css={headingStyle}>
                         Books in this Collection
                     </Typography>
                     <Box
@@ -357,14 +342,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
                         flex-direction: column;
                     `}
                 >
-                    <Typography
-                        css={css`
-                            ${headingStyle};
-                            p {
-                                margin: 0;
-                            }
-                        `}
-                    >
+                    <Typography css={headingStyle}>
                         Pages in the selected book
                     </Typography>
                     <Box

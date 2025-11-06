@@ -34,10 +34,10 @@ export const BookChooser: React.FunctionComponent<{
                 display: flex;
                 flex-wrap: wrap;
                 gap: ${itemGap};
-                height: 100%;
                 align-content: flex-start;
                 padding-left: 2px;
                 padding: ${chooserButtonPadding};
+                height: -webkit-fill-available;
             `}
         >
             {booksToShow.map((book) => {
@@ -47,9 +47,7 @@ export const BookChooser: React.FunctionComponent<{
                         key={book.id}
                         data-book-id={book.id}
                         css={css`
-                            ${isDisabled
-                                ? `opacity: 0.5; pointer-events: none;`
-                                : ""}
+                            ${isDisabled ? `opacity: 0.5;` : ""}
                         `}
                     >
                         <BookLinkCard
