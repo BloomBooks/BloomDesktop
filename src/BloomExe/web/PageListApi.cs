@@ -67,9 +67,19 @@ namespace Bloom.web
                     var requestedBookId = request.GetParamOrNull("book-id");
                     if (!string.IsNullOrEmpty(requestedBookId))
                     {
-                        if (!TryGetBookForId(requestedBookId, out var book, out var _))
+                        if (
+                            !BookRequestResolver.TryResolveBook(
+                                _bookSelection,
+                                _collectionModel,
+                                requestedBookId,
+                                requireBook: true,
+                                out var book,
+                                out var _,
+                                out var failureMessage
+                            )
+                        )
                         {
-                            request.Failed($"Book with id '{requestedBookId}' was not found.");
+                            request.Failed(failureMessage);
                             return;
                         }
 
@@ -217,9 +227,19 @@ namespace Bloom.web
             string requestedBookId = request.GetParamOrNull("book-id");
             if (!string.IsNullOrEmpty(requestedBookId))
             {
-                if (!TryGetBookForId(requestedBookId, out book, out var _))
+                if (
+                    !BookRequestResolver.TryResolveBook(
+                        _bookSelection,
+                        _collectionModel,
+                        requestedBookId,
+                        requireBook: true,
+                        out book,
+                        out var _,
+                        out var failureMessage
+                    )
+                )
                 {
-                    request.Failed($"Book with id '{requestedBookId}' was not found.");
+                    request.Failed(failureMessage);
                     return;
                 }
             }
@@ -257,9 +277,19 @@ namespace Bloom.web
             IPage page;
             if (!string.IsNullOrEmpty(bookId))
             {
-                if (!TryGetBookForId(bookId, out var book, out var _))
+                if (
+                    !BookRequestResolver.TryResolveBook(
+                        _bookSelection,
+                        _collectionModel,
+                        bookId,
+                        requireBook: true,
+                        out var book,
+                        out var _,
+                        out var failureMessage
+                    )
+                )
                 {
-                    request.Failed($"Book with id '{bookId}' was not found.");
+                    request.Failed(failureMessage);
                     return;
                 }
 
@@ -299,27 +329,6 @@ namespace Bloom.web
             // on the first page; this prevents that.
             pageElement.SetAttribute("inert", "true");
             return XmlHtmlConverter.ConvertElementToHtml5(pageElement);
-        }
-
-        private bool TryGetBookForId(string bookId, out Book.Book book, out BookInfo bookInfo)
-        {
-            book = null;
-            bookInfo = null;
-
-            var editableCollection = _collectionModel.TheOneEditableCollection;
-            if (editableCollection == null)
-            {
-                return false;
-            }
-
-            bookInfo = editableCollection.GetBookInfos().FirstOrDefault(info => info.Id == bookId);
-            if (bookInfo == null)
-            {
-                return false;
-            }
-
-            book = _collectionModel.GetBookFromBookInfo(bookInfo);
-            return book != null;
         }
 
         // Note: Int parsing helper removed as unused.
@@ -388,15 +397,24 @@ namespace Bloom.web
             // Strip the query string to get the actual filename
             var fileName = fileNameWithQuery.Split('?')[0];
 
-            if (!TryGetBookForId(bookId, out var book, out var _))
+            if (
+                !BookRequestResolver.TryResolveBook(
+                    _bookSelection,
+                    _collectionModel,
+                    bookId,
+                    requireBook: true,
+                    out var book,
+                    out var _,
+                    out var failureMessage
+                )
+            )
             {
-                request.Failed($"Book with id '{bookId}' was not found.");
+                request.Failed(failureMessage);
                 return;
             }
 
             var filePath = Path.Combine(book.FolderPath, fileName);
 
-            // Security check: ensure the resolved path is actually within the book folder
             var normalizedFilePath = Path.GetFullPath(filePath);
             var normalizedBookPath = Path.GetFullPath(book.FolderPath);
 

@@ -3,6 +3,7 @@ using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.CollectionTab;
+using Bloom.web;
 using L10NSharp;
 
 namespace Bloom.web.controllers
@@ -35,45 +36,24 @@ namespace Bloom.web.controllers
         // if the request is asking about a book by id, try to get that one; otherwise use the current selection
         private bool TryResolveBook(ApiRequest request, out Book.Book book, out BookInfo bookInfo)
         {
-            book = null;
-            bookInfo = null;
-
             var requestedBookId = request.GetParamOrNull("book-id");
-            if (string.IsNullOrWhiteSpace(requestedBookId))
+            if (
+                BookRequestResolver.TryResolveBook(
+                    _bookSelection,
+                    _collectionModel,
+                    requestedBookId,
+                    requireBook: true,
+                    out book,
+                    out bookInfo,
+                    out var failureMessage
+                )
+            )
             {
-                book = _bookSelection.CurrentSelection;
-                bookInfo = book?.BookInfo;
-                if (book == null || bookInfo == null)
-                {
-                    request.Failed("No book is currently selected.");
-                    return false;
-                }
-
                 return true;
             }
 
-            var editableCollection = _collectionModel.TheOneEditableCollection;
-            if (editableCollection == null)
-            {
-                request.Failed("No editable collection is available.");
-                return false;
-            }
-
-            bookInfo = editableCollection.GetBookInfoById(requestedBookId);
-            if (bookInfo == null)
-            {
-                request.Failed($"Book with id '{requestedBookId}' was not found.");
-                return false;
-            }
-
-            book = _collectionModel.GetBookFromBookInfo(bookInfo);
-            if (book == null)
-            {
-                request.Failed($"Book '{requestedBookId}' could not be loaded.");
-                return false;
-            }
-
-            return true;
+            request.Failed(failureMessage);
+            return false;
         }
 
         private void HandleBookMetadata(ApiRequest request)

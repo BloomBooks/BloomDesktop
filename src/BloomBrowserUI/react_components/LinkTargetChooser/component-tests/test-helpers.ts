@@ -19,13 +19,14 @@ const createMockBook = (index: number) => {
     const color = colors[index % colors.length];
     const bookNumber = index + 1;
     const guid = `${bookNumber}aaaa-bbbb-cccc-dddd-eeeeeeee${bookNumber.toString().padStart(4, "0")}`;
+    const pageCount = bookNumber * 10;
 
     return {
         id: guid,
         title: `Book ${bookNumber}`,
         folderName: `${bookNumber} Book ${bookNumber}`,
         thumbnail: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='120'%3E%3Crect width='100' height='120' fill='%23${color}'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='14'%3EBook ${bookNumber}%3C/text%3E%3C/svg%3E`,
-        pageLength: 5,
+        pageLength: pageCount + 1,
     };
 };
 
@@ -64,21 +65,52 @@ export async function setupLinkTargetChooser(
     );
 
     // Intercept page list APIs used by the PageList component
-    const pages = props.pages ?? [
-        { key: "cover", caption: "Cover" },
-        { key: "1", caption: "Page 1" },
-        { key: "2", caption: "Page 2" },
-    ];
-    prepareGetResponse(page, "**/bloom/api/pageList/pages", {
-        pages,
-        selectedPageId: "cover",
-        pageLayout: props.pageLayout ?? "A5Portrait",
-        cssFiles: props.cssFiles ?? [],
-    });
+    // Generate dynamic pages based on book ID if not provided
+    if (!props.pages) {
+        await page.route("**/bloom/api/pageList/pages**", async (route) => {
+            const url = new URL(route.request().url());
+            const bookId = url.searchParams.get("book-id");
+
+            // Find the book to get its page count
+            const book = books.find((b) => b.id === bookId);
+            const pageCount = book ? book.pageLength - 1 : 2; // pageLength includes cover
+
+            const pages = [
+                { key: "cover", caption: "Cover" },
+                ...Array.from({ length: pageCount }, (_, i) => ({
+                    key: `${i + 1}`,
+                    caption: `Page ${i + 1}`,
+                })),
+            ];
+            console.log(
+                "*******Using dynamic page list generation based on book ID",
+                bookId,
+                pages,
+            );
+
+            await route.fulfill({
+                status: 200,
+                contentType: "application/json",
+                body: JSON.stringify({
+                    pages,
+                    selectedPageId: "cover",
+                    pageLayout: props.pageLayout ?? "A5Portrait",
+                    cssFiles: props.cssFiles ?? [],
+                }),
+            });
+        });
+    } else {
+        prepareGetResponse(page, "**/bloom/api/pageList/pages**", {
+            pages: props.pages,
+            selectedPageId: "cover",
+            pageLayout: props.pageLayout ?? "A5Portrait",
+            cssFiles: props.cssFiles ?? [],
+        });
+    }
 
     prepareGetResponse(
         page,
-        "**/bloom/api/pageList/bookAttributesThatMayAffectDisplay",
+        "**/bloom/api/pageList/bookAttributesThatMayAffectDisplay**",
         props.bookAttributes ?? {},
     );
 

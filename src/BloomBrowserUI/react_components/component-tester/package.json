@@ -9,7 +9,8 @@
         "dev": "yarn vite --config vite.config.ts",
         "test": "playwright test",
         "test:ui": "playwright test --ui --headed",
-        "manual": "tsx scripts/manual.ts -- "
+        "manual": "tsx scripts/manual.ts -- ",
+        "manual:interactive": "playwright test --headed --timeout=0"
     },
     "dependencies": {
         "react": "17.0.2",
