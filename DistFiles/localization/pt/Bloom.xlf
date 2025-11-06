@@ -7133,17 +7133,17 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Images to Words" sil:dynamic="true">
         <source xml:lang="en">Drag Images to Words</source>
-        <target xml:lang="pt-PT" state="translated">Arrasta as Imagens para as palavras</target>
+        <target xml:lang="pt-PT" state="translated">Arraste as Imagens até as Palavras</target>
         <note>ID: TemplateBooks.PageLabel.Drag Images to Words</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Sound to Word Target" sil:dynamic="true">
         <source xml:lang="en">Drag Sound to Word Target</source>
-        <target xml:lang="pt-PT" state="translated">Arrasta o áudio até a palavra certa</target>
+        <target xml:lang="pt-PT" state="translated">Arraste o Áudio até a Palavra Certa</target>
         <note>ID: TemplateBooks.PageLabel.Drag Sound to Word Target</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Drag Sounds to Word Targets" sil:dynamic="true">
         <source xml:lang="en">Drag Sounds to Word Targets</source>
-        <target xml:lang="pt-PT" state="translated">Arrasta os Áudios até as Palavras</target>
+        <target xml:lang="pt-PT" state="translated">Arraste os Áudios até as Palavras</target>
         <note>ID: TemplateBooks.PageLabel.Drag Sounds to Word Targets</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Match Word with Image" sil:dynamic="true">
