@@ -30,6 +30,8 @@
         "build:l10n:translate": "node scripts/l10n-build.js translate",
         "build:l10n:create": "node scripts/l10n-build.js create",
         "build:content": "npm run check-that-node-modules-exists-in-content-dir && cd ../content && npm run build",
+        "// We shouldn't need'watchBookEditLess' anymore once we finish getting vite dev working": " ",
+        "watchBookEditLess": "less-watch-compiler bookEdit ../../output/browser/bookEdit",
         "// 'watch': rebuilds bundles when source files change (for entrypoints not yet working with vite dev)": " ",
         "watch": "vite build --watch",
         "// You can use yarn link to symlink bloom-player. But also, bloom needs a copy in output/!": " ",
