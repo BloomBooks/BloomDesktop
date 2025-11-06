@@ -20,9 +20,14 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
         // Wait for books to load, then select a book
         await bookList.selectBook("book1");
 
-        // URL should update to show book link
-        const urlValue = await urlEditor.getValue();
-        expect(urlValue).toBe("/book/book1");
+        // URL should update to show book link once the pages load
+        const input = await urlEditor.getInput();
+        await expect(input).toHaveValue("/book/book1");
+
+        // Cover page should become selected automatically
+        await expect
+            .poll(async () => await pageList.isPageSelected("cover"))
+            .toBeTruthy();
     });
 
     test("URL box shows book+page URL when page is selected", async ({
@@ -37,8 +42,8 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
         await pageList.selectPage(2);
 
         // URL should update to show book+page link
-        const urlValue = await urlEditor.getValue();
-        expect(urlValue).toBe("/book/book2#2");
+        const input = await urlEditor.getInput();
+        await expect(input).toHaveValue("/book/book2#2");
     });
 
     test("URL box shows cover page link correctly", async ({ page }) => {
@@ -46,10 +51,17 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
 
         // Select book (waits for books to load)
         await bookList.selectBook("book1");
+        await pageList.selectPage(2); // Different page to ensure we switch back
+
+        const input = await urlEditor.getInput();
+        await expect(input).toHaveValue("/book/book1#2");
+
         await pageList.selectPage(0); // Cover page
 
-        const urlValue = await urlEditor.getValue();
-        expect(urlValue).toBe("/book/book1#cover");
+        await expect(input).toHaveValue("/book/book1");
+        await expect
+            .poll(async () => await pageList.isPageSelected("cover"))
+            .toBeTruthy();
     });
 
     test("Typing in URL box clears book/page selection", async ({ page }) => {
@@ -84,8 +96,11 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
         await bookList.selectBook("book3");
 
         // URL should be updated to book URL
-        const urlValue = await urlEditor.getValue();
-        expect(urlValue).toBe("/book/book3");
+        const input = await urlEditor.getInput();
+        await expect(input).toHaveValue("/book/book3");
+        await expect
+            .poll(async () => await pageList.isPageSelected("cover"))
+            .toBeTruthy();
     });
 });
 
@@ -99,8 +114,12 @@ test.describe("LinkTargetChooser - URL Preselection", () => {
         await bookList.waitForBooksToLoad();
 
         // URL box should show the URL
-        const urlValue = await urlEditor.getValue();
-        expect(urlValue).toBe("/book/book2");
+        const input = await urlEditor.getInput();
+        await expect(input).toHaveValue("/book/book2");
+
+        await expect
+            .poll(async () => await pageList.isPageSelected("cover"))
+            .toBeTruthy();
 
         // OK button should be enabled
         const okButton = await dialog.getOKButton();
@@ -118,8 +137,8 @@ test.describe("LinkTargetChooser - URL Preselection", () => {
         await bookList.waitForBooksToLoad();
 
         // URL box should show the URL
-        const urlValue = await urlEditor.getValue();
-        expect(urlValue).toBe("/book/book1#3");
+        const input = await urlEditor.getInput();
+        await expect(input).toHaveValue("/book/book1#3");
 
         // OK button should be enabled
         const okButton = await dialog.getOKButton();
@@ -134,8 +153,12 @@ test.describe("LinkTargetChooser - URL Preselection", () => {
         // Wait for books to load and component to initialize
         await bookList.waitForBooksToLoad();
 
-        const urlValue = await urlEditor.getValue();
-        expect(urlValue).toBe("/book/book4#cover");
+        const input = await urlEditor.getInput();
+        await expect(input).toHaveValue("/book/book4");
+
+        await expect
+            .poll(async () => await pageList.isPageSelected("cover"))
+            .toBeTruthy();
 
         const okButton = await dialog.getOKButton();
         await expect(okButton).toBeEnabled();

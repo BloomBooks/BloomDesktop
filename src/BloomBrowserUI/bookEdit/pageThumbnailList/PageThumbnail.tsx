@@ -1,7 +1,7 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
-import "errorHandler";
+import "../../lib/errorHandler";
 import { get } from "../../utils/bloomApi";
 import { IPage } from "./pageThumbnailList";
 
@@ -10,23 +10,155 @@ let lastPageRequestTime = 0;
 let activePageRequestCount = 0;
 let pendingPageRequestCount = 0;
 
+// Fix relative resource URLs to point to the correct book folder
+const fixResourceUrls = (
+    html: string,
+    bookId?: string,
+    bookFolderPath?: string,
+): string => {
+    if (!bookId && !bookFolderPath) {
+        return html;
+    }
+
+    const makeBookFileUrl = (rawPath: string): string => {
+        if (!bookId) {
+            return rawPath;
+        }
+        let decodedPath = rawPath;
+        try {
+            decodedPath = decodeURIComponent(rawPath);
+        } catch {
+            decodedPath = rawPath;
+        }
+
+        let remainingPath = decodedPath;
+        let hash = "";
+        const hashIndex = remainingPath.indexOf("#");
+        if (hashIndex >= 0) {
+            hash = remainingPath.substring(hashIndex);
+            remainingPath = remainingPath.substring(0, hashIndex);
+        }
+
+        let query = "";
+        const queryIndex = remainingPath.indexOf("?");
+        if (queryIndex >= 0) {
+            query = remainingPath.substring(queryIndex);
+            remainingPath = remainingPath.substring(0, queryIndex);
+        }
+
+        const encodedSegments = remainingPath.split("/").map((segment) => {
+            if (segment === "" || segment === "." || segment === "..") {
+                return segment;
+            }
+            return encodeURIComponent(segment);
+        });
+
+        const normalizedPath = encodedSegments.join("/");
+        const basePath = `/bloom/api/pageList/bookFile/${encodeURIComponent(bookId)}`;
+        const needsSlash =
+            normalizedPath === "" || normalizedPath.startsWith("/") ? "" : "/";
+
+        return `${basePath}${needsSlash}${normalizedPath}${query}${hash}`;
+    };
+
+    const makeFolderUrl = (rawPath: string): string => {
+        if (!bookFolderPath) {
+            return rawPath;
+        }
+
+        const normalizedFolder = bookFolderPath.replace(/\\/g, "/");
+        const encodedFolderSegments = normalizedFolder
+            .split("/")
+            .map((segment) => encodeURIComponent(segment));
+        const basePath = `/bloom/${encodedFolderSegments.join("/")}`;
+
+        if (typeof window !== "undefined") {
+            try {
+                const baseWithSlash = basePath.endsWith("/")
+                    ? basePath
+                    : `${basePath}/`;
+                const baseUrl = new URL(baseWithSlash, window.location.origin);
+                const resolved = new URL(rawPath, baseUrl);
+                if (resolved.origin !== window.location.origin) {
+                    return resolved.href;
+                }
+                return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+            } catch {
+                // fall through to simple concatenation
+            }
+        }
+
+        return `${basePath}/${rawPath}`;
+    };
+
+    const isRelative = (url: string): boolean => {
+        const lowered = url.toLowerCase();
+        return !(
+            lowered.startsWith("http://") ||
+            lowered.startsWith("https://") ||
+            lowered.startsWith("data:") ||
+            lowered.startsWith("/") ||
+            lowered.startsWith("javascript:") ||
+            lowered.startsWith("mailto:") ||
+            lowered.startsWith("#")
+        );
+    };
+
+    const convertRelativeUrl = (rawPath: string): string => {
+        if (bookFolderPath) {
+            return makeFolderUrl(rawPath);
+        }
+        return makeBookFileUrl(rawPath);
+    };
+
+    // Fix src and href attributes that reference relative paths
+    let updatedHtml = html.replace(
+        /(src|href)=("|')([^"']*?)\2/gi,
+        (match, attrName, quote, url) => {
+            if (!url || !isRelative(url)) {
+                return match;
+            }
+            return `${attrName}=${quote}${convertRelativeUrl(url)}${quote}`;
+        },
+    );
+
+    // Fix inline style url(...) references (e.g., background-image)
+    updatedHtml = updatedHtml.replace(
+        /url\(("|')?([^"')]+)\1\)/gi,
+        (match, quote, url) => {
+            const trimmedUrl = url.trim();
+            if (!trimmedUrl || !isRelative(trimmedUrl)) {
+                return match;
+            }
+            const normalizedQuote = quote || "";
+            return `url(${normalizedQuote}${convertRelativeUrl(trimmedUrl)}${normalizedQuote})`;
+        },
+    );
+
+    return updatedHtml;
+};
+
 // Component to display the thumbnail of one page, with its caption and possibly
 // an overflow indicator.
 export const PageThumbnail: React.FunctionComponent<{
     page: IPage;
     left: boolean;
-    pageSize: string;
+    pageLayout: string;
     // PageThumbnail will call this function to provide the client with
     // a callback that the client can call to get the page thumbnail to
     // refresh itself by re-doing the axios call that gets the page content.
     configureReloadCallback: (id: string, callback: () => void) => void;
-    onClick: React.MouseEventHandler<HTMLDivElement>;
+    onClick?: React.MouseEventHandler<HTMLDivElement>;
     onContextMenu?: React.MouseEventHandler<HTMLDivElement>;
+    // Optional bookId for cross-book usage (e.g., in LinkTargetChooser)
+    bookId?: string;
+    // Folder path for the book when we need to resolve resources directly from disk
+    bookFolderPath?: string;
 }> = (props) => {
     // The initial content here is a blank page. It will be replaced with
     // the real content when we retrieve it from the server.
     const [content, setContent] = useState(
-        `<div class="${props.pageSize} bloom-page side-${
+        `<div class="${props.pageLayout} bloom-page side-${
             props.left ? "left" : "right"
         }"><div class="marginBox">content</div></div>`,
     );
@@ -41,7 +173,7 @@ export const PageThumbnail: React.FunctionComponent<{
     // Get the actual page content. This is appreciably slow...80ms or so on
     // a fast desktop for a complex page...mainly because of XhtmlToHtml conversion.
     // So we do it lazily after setting up the initial framework of pages.
-    const requestPage = () => {
+    const requestPage = useCallback(() => {
         // We don't want a lot of page requests running at the same time.
         // There are various limits on simultaneous requests, including
         // the number of threads in the BloomServer and the number of active
@@ -61,15 +193,30 @@ export const PageThumbnail: React.FunctionComponent<{
         }
         pendingPageRequestCount--;
         activePageRequestCount++;
-        get(`pageList/pageContent?id=${props.page.key}`, (response) => {
+        const url = props.bookId
+            ? `pageList/pageContent?id=${props.page.key}&book-id=${encodeURIComponent(props.bookId)}`
+            : `pageList/pageContent?id=${props.page.key}`;
+        get(url, (response) => {
             activePageRequestCount--;
-            setContent(response.data.content); // automatically unJsonified?
+            let htmlContent = response.data.content; // automatically unJsonified?
+
+            // When loading from a different book, we need to fix image URLs to point to that book's folder
+            if (props.bookId || props.bookFolderPath) {
+                htmlContent = fixResourceUrls(
+                    htmlContent,
+                    props.bookId,
+                    props.bookFolderPath,
+                );
+            }
+
+            setContent(htmlContent);
         });
-    };
+    }, [props.bookId, props.bookFolderPath, props.page.key]);
+
     const reForOverflow = /^[^>]*class="[^"]*pageOverflows/;
     const overflowing = reForOverflow.test(content); // enhance: memo?
 
-    const scrollingWillBeAvailable = props.pageSize.indexOf("Device") > -1;
+    const scrollingWillBeAvailable = props.pageLayout.indexOf("Device") > -1;
 
     useEffect(() => {
         if (Math.abs(Date.now() - lastPageRequestTime) > 5000) {
@@ -79,12 +226,12 @@ export const PageThumbnail: React.FunctionComponent<{
         lastPageRequestTime = Date.now();
         pendingPageRequestCount++;
         requestPage();
-    }, [reloadValue]);
+    }, [reloadValue, requestPage]);
     return (
         <div>
             {props.page.key === "placeholder" || (
                 <>
-                    <div className={"pageContainer " + props.pageSize}>
+                    <div className={"pageContainer " + props.pageLayout}>
                         <div
                             dangerouslySetInnerHTML={{
                                 __html: content,

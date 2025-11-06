@@ -18,7 +18,7 @@ const positionalArgs = rawArgs.filter((arg) => {
 });
 
 let componentName: string | undefined = positionalArgs[0];
-const defaultBaseUrl = "http://127.0.0.1:5173";
+const defaultBaseUrl = "http://127.0.0.1:5183";
 
 /**
  * Detects the component to load based on the current working directory.

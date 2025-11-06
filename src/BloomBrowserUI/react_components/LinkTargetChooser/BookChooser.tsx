@@ -1,10 +1,12 @@
 import * as React from "react";
 import { useRef, useEffect } from "react";
 import { css } from "@emotion/react";
-import { BookInfoForLinks } from "../../bookEdit/bookLinkSetup/BookLinkTypes";
-import { LinkCard } from "../../bookEdit/bookLinkSetup/LinkCard";
+import { BookInfoForLinks } from "../BookGridSetup/BookLinkTypes";
+import { BookLinkCard } from "../BookGridSetup/BookLinkCard";
+import { chooserContainerStyles, itemGap } from "./sharedStyles";
+import { chooserButtonPadding } from "./sharedStyles";
 
-export const BookList: React.FunctionComponent<{
+export const BookChooser: React.FunctionComponent<{
     books: BookInfoForLinks[];
     selectedBook: BookInfoForLinks | null;
     onSelectBook: (book: BookInfoForLinks) => void;
@@ -28,15 +30,14 @@ export const BookList: React.FunctionComponent<{
         <div
             ref={containerRef}
             css={css`
+                ${chooserContainerStyles}
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px;
+                gap: ${itemGap};
                 height: 100%;
                 align-content: flex-start;
                 padding-left: 2px;
-                overflow-y: scroll;
-                background-color: lightgray;
-                padding: 10px;
+                padding: ${chooserButtonPadding};
             `}
         >
             {booksToShow.map((book) => {
@@ -51,7 +52,7 @@ export const BookList: React.FunctionComponent<{
                                 : ""}
                         `}
                     >
-                        <LinkCard
+                        <BookLinkCard
                             link={{ book: book }}
                             selected={props.selectedBook?.id === book.id}
                             onClick={() => {

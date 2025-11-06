@@ -211,7 +211,27 @@ export const pageList = {
     },
     selectPage: async (pageId: string | number) => {
         const page = await pageList.getPage(pageId);
+        await page.waitFor({ state: "visible", timeout: 5000 });
         await page.click();
+    },
+    isPageSelected: async (pageId: string | number) => {
+        if (!currentPage) {
+            throw new Error(
+                "Page not initialized. Call setupLinkTargetChooser first.",
+            );
+        }
+
+        const locator = await pageList.getPage(pageId);
+        try {
+            await locator.waitFor({ state: "visible", timeout: 5000 });
+        } catch {
+            return false;
+        }
+
+        return locator.evaluate((element) => {
+            const outlineStyle = getComputedStyle(element).outlineStyle;
+            return outlineStyle !== "none";
+        });
     },
 };
 

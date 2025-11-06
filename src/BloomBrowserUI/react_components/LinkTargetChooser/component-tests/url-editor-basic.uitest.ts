@@ -48,6 +48,21 @@ test.describe("LinkTargetChooser - URLEditor Basic Functionality", () => {
         await expect(openButton).toBeEnabled();
     });
 
+    test("Open button stays disabled for internal book URLs", async ({
+        page,
+    }) => {
+        const bookUrl = "/book/book1";
+        await setupLinkTargetChooser(page, {
+            currentURL: bookUrl,
+        });
+
+        const openButton = await urlEditor.getOpenButton();
+        await expect(openButton).toBeDisabled();
+
+        await urlEditor.setValue(bookUrl);
+        await expect(openButton).toBeDisabled();
+    });
+
     test("Open button becomes enabled after typing URL", async ({ page }) => {
         await setupLinkTargetChooser(page);
 

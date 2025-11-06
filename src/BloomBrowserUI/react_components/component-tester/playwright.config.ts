@@ -34,14 +34,14 @@ const config: PlaywrightTestConfig = {
         timeout: 1000,
     },
     use: {
-        baseURL: "http://127.0.0.1:5173",
+        baseURL: "http://127.0.0.1:5183",
         trace: "on-first-retry",
     },
     // Spin up the Vite dev server so the harness is available during tests.
     webServer: {
         command: "yarn dev",
         cwd: __dirname,
-        url: "http://127.0.0.1:5173",
+        url: "http://127.0.0.1:5183",
         reuseExistingServer: true,
         stdout: "pipe",
         stderr: "pipe",

@@ -50,7 +50,8 @@ div.bloom-page.coverColor {
 // When in preview, people often think they are looking at something editable. Give them this visual feedback.
 // (Setting the cursor doesn't seem to work in inert elements, so this rule is applied one level above
 // the body, which is what we set to inert.)
-html {
+// Only apply to the preview iframe, not to dialogs or other UI elements
+#previewFrame html {
     cursor: not-allowed;
 }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
@@ -11,6 +12,7 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.SafeXml;
 using Bloom.Utils;
+using SIL.IO;
 using SIL.Xml;
 
 namespace Bloom.web
@@ -61,8 +63,29 @@ namespace Bloom.web
                 "pageList/bookAttributesThatMayAffectDisplay",
                 (request) =>
                 {
-                    var attrs =
-                        _bookSelection.CurrentSelection.OurHtmlDom.GetBodyAttributesThatMayAffectDisplay();
+                    HtmlDom dom = null;
+                    var requestedBookId = request.GetParamOrNull("book-id");
+                    if (!string.IsNullOrEmpty(requestedBookId))
+                    {
+                        if (!TryGetBookForId(requestedBookId, out var book, out var _))
+                        {
+                            request.Failed($"Book with id '{requestedBookId}' was not found.");
+                            return;
+                        }
+
+                        dom = book?.OurHtmlDom;
+                    }
+                    else
+                    {
+                        dom = _bookSelection.CurrentSelection?.OurHtmlDom;
+                    }
+
+                    var attrs = dom?.GetBodyAttributesThatMayAffectDisplay();
+                    if (attrs == null)
+                    {
+                        request.ReplyWithJson("{}");
+                        return;
+                    }
                     // Surely there's a way to do this more safely with JSON.net but I haven't found it yet
                     var props = string.Join(
                         ",",
@@ -74,6 +97,7 @@ namespace Bloom.web
                 },
                 true
             );
+            apiHandler.RegisterEndpointHandler("pageList/bookFile", HandleBookFileRequest, false);
         }
 
         private void HandlePageClickedRequest(ApiRequest request)
@@ -182,7 +206,8 @@ namespace Bloom.web
         /// without actual page content are returned for performance reasons, and later,
         /// the React code requests individual page contents.
         /// </summary>
-        /// <param name="request"></param>
+        ///  request parameters:
+        ///   book-id - optional book id. If not given, uses the collections "current" book.
         public void HandlePagesRequest(ApiRequest request)
         {
             //var watch = new Stopwatch();
@@ -211,12 +236,18 @@ namespace Bloom.web
                 string.IsNullOrEmpty(requestedBookId) && SelectedPage != null
                     ? SelectedPage.Id
                     : "";
+            answer.pageLayout = book?.GetLayout()?.SizeAndOrientation?.ClassName ?? "A5Portrait";
+            answer.cssFiles =
+                book != null ? book.Storage.GetCssFilesToLinkForPreview() : new string[0];
             request.ReplyWithJson(answer);
             //watch.Stop();
             //Debug.WriteLine($"Generating JSON for thumbnails took {watch.ElapsedMilliseconds}ms");
         }
 
         // Requests the content that should be displayed in a single page thumbnail.
+        // Parameters:
+        //    id - the page ID
+        //    book-id - the book ID (optional)
         public void HandlePageContentRequest(ApiRequest request)
         {
             var watch = new Stopwatch();
@@ -330,6 +361,63 @@ namespace Bloom.web
                     }
                 }
             }
+        }
+
+        // Serves a file from a specific book's folder. Used when displaying thumbnails from books
+        // other than the current one (e.g., in LinkTargetChooser).
+        // URL pattern: /bloom/api/pageList/bookFile/{bookId}/{filename}?thumbnail=1
+        private void HandleBookFileRequest(ApiRequest request)
+        {
+            var localPath = request.LocalPath();
+            // Expected format: pageList/bookFile/{bookId}/{filename}
+            var parts = localPath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (parts.Length < 4)
+            {
+                request.Failed("Invalid book file request format");
+                return;
+            }
+
+            var bookId = System.Web.HttpUtility.UrlDecode(parts[2]);
+            // The filename may include a query string (e.g., "image.jpg?thumbnail=1")
+            // Join the remaining parts and decode
+            var fileNameWithQuery = System.Web.HttpUtility.UrlDecode(
+                string.Join("/", parts.Skip(3))
+            );
+
+            // Strip the query string to get the actual filename
+            var fileName = fileNameWithQuery.Split('?')[0];
+
+            if (!TryGetBookForId(bookId, out var book, out var _))
+            {
+                request.Failed($"Book with id '{bookId}' was not found.");
+                return;
+            }
+
+            var filePath = Path.Combine(book.FolderPath, fileName);
+
+            // Security check: ensure the resolved path is actually within the book folder
+            var normalizedFilePath = Path.GetFullPath(filePath);
+            var normalizedBookPath = Path.GetFullPath(book.FolderPath);
+
+            if (
+                !normalizedFilePath.StartsWith(
+                    normalizedBookPath,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            {
+                request.Failed("Access denied: file path outside book folder");
+                return;
+            }
+
+            if (!RobustFile.Exists(filePath))
+            {
+                request.Failed($"File not found: {fileName}");
+                return;
+            }
+
+            request.ReplyWithImage(filePath);
         }
     }
 }

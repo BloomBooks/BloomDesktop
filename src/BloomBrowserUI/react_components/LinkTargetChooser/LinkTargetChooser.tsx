@@ -1,15 +1,15 @@
 import * as React from "react";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { css } from "@emotion/react";
 import { Box, Typography } from "@mui/material";
 import {
     BookInfoForLinks,
     PageInfoForLinks,
-} from "../../bookEdit/bookLinkSetup/BookLinkTypes";
+} from "../BookGridSetup/BookLinkTypes";
 import { URLEditor } from "./URLEditor";
-import { BookList } from "./BookList";
-import { PageList } from "./PageList";
-import { useWatchApiData } from "../../utils/bloomApi";
+import { BookChooser } from "./BookChooser";
+import { PageChooser } from "./PageChooser";
+import { useWatchApiData, useApiString } from "../../utils/bloomApi";
 import { IBookInfo } from "../../collectionsTab/BooksOfCollection";
 
 export interface LinkTargetInfo {
@@ -38,6 +38,9 @@ export const LinkTargetChooser: React.FunctionComponent<{
     );
     const [errorMessage, setErrorMessage] = useState<string>("");
 
+    // Get the current book ID so we can select it by default
+    const currentBookId = useApiString("editView/currentBookId", "");
+
     // Fetch books from the API
     const allBooks = useWatchApiData<Array<IBookInfo>>(
         `collections/books?realTitle=false`, // happy with the folder name (i.e. if they renamed in the collection tab, that's what we show)
@@ -58,6 +61,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
                 id: book.id,
                 title: book.title,
                 folderName: book.folderName,
+                folderPath: book.folderPath,
                 thumbnail:
                     extendedBook.thumbnail ??
                     `/bloom/api/collections/book/thumbnail?book-id=${book.id}`,
@@ -67,51 +71,64 @@ export const LinkTargetChooser: React.FunctionComponent<{
     }, [allBooks]);
 
     useEffect(() => {
-        // Parse the incoming URL to set initial state
-        const url = props.currentURL;
-        setCurrentURL(url);
+        const rawUrl = props.currentURL || "";
+        setErrorMessage("");
 
-        if (!url) {
+        if (!rawUrl) {
+            setCurrentURL("");
+            setSelectedBook(null);
+            setSelectedBookId(null);
+            setSelectedPageId(null);
             return;
         }
 
-        // Check if it's a bloom link (# or /book/)
-        if (url.startsWith("#")) {
-            // Page link within current book: #PAGEID or #cover
-            const pageIdStr = url.substring(1);
-            if (pageIdStr === "cover") {
-                setSelectedPageId("cover");
-            } else {
-                // accept any string id; keep numeric ids as strings too
-                setSelectedPageId(pageIdStr);
-            }
-        } else if (url.startsWith("/book/")) {
-            // Book link: /book/BOOKID or /book/BOOKID#PAGEID
-            const hashIndex = url.indexOf("#");
-            if (hashIndex === -1) {
-                // Just book link
-                const bookId = url.substring(6); // length of "/book/"
-                setSelectedBookId(bookId);
-            } else {
-                // Book and page
-                const bookId = url.substring(6, hashIndex);
-                const pageIdStr = url.substring(hashIndex + 1);
-                setSelectedBookId(bookId);
-                if (pageIdStr === "cover") {
-                    setSelectedPageId("cover");
-                } else {
-                    setSelectedPageId(pageIdStr);
-                }
-            }
-        } else {
-            // External URL - notify parent immediately
-            onURLChangedRef.current?.({
-                url,
-                bookThumbnail: null,
-                bookTitle: null,
-                hasError: false,
-            });
+        if (rawUrl.startsWith("#")) {
+            const pageIdStr = rawUrl.substring(1) || "cover";
+            const normalizedPageId =
+                pageIdStr === "cover" ? "cover" : pageIdStr;
+            setSelectedBook(null);
+            setSelectedBookId(null);
+            setSelectedPageId(normalizedPageId);
+            setCurrentURL(
+                normalizedPageId === "cover"
+                    ? "#cover"
+                    : `#${normalizedPageId}`,
+            );
+            return;
         }
+
+        if (rawUrl.startsWith("/book/")) {
+            const hashIndex = rawUrl.indexOf("#");
+            const bookId =
+                hashIndex === -1
+                    ? rawUrl.substring(6)
+                    : rawUrl.substring(6, hashIndex);
+            const rawPagePart =
+                hashIndex === -1 ? "cover" : rawUrl.substring(hashIndex + 1);
+            const normalizedPageId =
+                !rawPagePart || rawPagePart === "cover" ? "cover" : rawPagePart;
+
+            setSelectedBook(null);
+            setSelectedBookId(bookId);
+            setSelectedPageId(normalizedPageId);
+            setCurrentURL(
+                normalizedPageId === "cover"
+                    ? `/book/${bookId}`
+                    : `/book/${bookId}#${normalizedPageId}`,
+            );
+            return;
+        }
+
+        setSelectedBook(null);
+        setSelectedBookId(null);
+        setSelectedPageId(null);
+        setCurrentURL(rawUrl);
+        onURLChangedRef.current?.({
+            url: rawUrl,
+            bookThumbnail: null,
+            bookTitle: null,
+            hasError: false,
+        });
     }, [props.currentURL]);
 
     // Validate and preselect book/page when books load or bookId changes
@@ -171,42 +188,63 @@ export const LinkTargetChooser: React.FunctionComponent<{
         }
     }, [selectedBookId, bookInfoForLinks, selectedPageId, currentURL]);
 
-    const notifyParent = (
-        url: string,
-        thumbnail: string | null,
-        title: string | null,
-        hasError: boolean,
-    ) => {
-        props.onURLChanged?.({
-            url,
-            bookThumbnail: thumbnail,
-            bookTitle: title,
-            hasError,
-        });
-    };
+    const notifyParent = useCallback(
+        (
+            url: string,
+            thumbnail: string | null,
+            title: string | null,
+            hasError: boolean,
+        ) => {
+            props.onURLChanged?.({
+                url,
+                bookThumbnail: thumbnail,
+                bookTitle: title,
+                hasError,
+            });
+        },
+        [props],
+    );
 
-    const handleBookSelected = (book: BookInfoForLinks) => {
-        setSelectedBook(book);
-        setSelectedBookId(book.id);
-        setSelectedPageId(null); // Clear page selection when book changes
-        setErrorMessage("");
+    const handleBookSelected = useCallback(
+        (book: BookInfoForLinks) => {
+            setSelectedBook(book);
+            setSelectedBookId(book.id);
+            setSelectedPageId(null);
+            setErrorMessage("");
 
-        // Build URL and update URL box
-        const url = `/book/${book.id}`;
-        setCurrentURL(url);
-        notifyParent(url, book.thumbnail || null, book.title || null, false);
-    };
+            const url = `/book/${book.id}`;
+            setCurrentURL(url);
+            notifyParent(
+                url,
+                book.thumbnail || null,
+                book.title || null,
+                false,
+            );
+        },
+        [notifyParent],
+    );
 
     const handlePageSelected = (pageInfo: PageInfoForLinks) => {
-        setSelectedPageId(pageInfo.pageId);
+        const normalizedPageId =
+            !pageInfo.pageId || pageInfo.pageId === "cover"
+                ? "cover"
+                : pageInfo.pageId;
+
+        setSelectedPageId(normalizedPageId);
         setErrorMessage("");
 
         // Build URL and update URL box
         let url: string;
         if (selectedBookId) {
-            url = `/book/${selectedBookId}#${pageInfo.pageId === "cover" ? "cover" : pageInfo.pageId}`;
+            url =
+                normalizedPageId === "cover"
+                    ? `/book/${selectedBookId}`
+                    : `/book/${selectedBookId}#${normalizedPageId}`;
         } else {
-            url = `#${pageInfo.pageId === "cover" ? "cover" : pageInfo.pageId}`;
+            url =
+                normalizedPageId === "cover"
+                    ? "#cover"
+                    : `#${normalizedPageId}`;
         }
 
         setCurrentURL(url);
@@ -227,6 +265,38 @@ export const LinkTargetChooser: React.FunctionComponent<{
 
         notifyParent(url, null, null, false);
     };
+
+    // Auto-select the current book when component opens if no URL is provided
+    useEffect(() => {
+        if (
+            !props.currentURL &&
+            currentBookId &&
+            bookInfoForLinks.length > 0 &&
+            !selectedBookId
+        ) {
+            const currentBook = bookInfoForLinks.find(
+                (b) => b.id === currentBookId,
+            );
+            if (currentBook) {
+                handleBookSelected(currentBook);
+            }
+        }
+    }, [
+        props.currentURL,
+        currentBookId,
+        bookInfoForLinks,
+        selectedBookId,
+        handleBookSelected,
+    ]);
+
+    const headingStyle = css`
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    `;
 
     return (
         <Box
@@ -249,41 +319,73 @@ export const LinkTargetChooser: React.FunctionComponent<{
                 <Box
                     css={css`
                         flex: 1;
-                        border: 1px solid #ccc;
-                        overflow: hidden;
+                        display: flex;
+                        flex-direction: column;
                     `}
                 >
-                    <BookList
-                        books={bookInfoForLinks}
-                        selectedBook={selectedBook}
-                        onSelectBook={handleBookSelected}
-                        includeCurrentBook={true}
-                    />
+                    <Typography
+                        css={css`
+                            ${headingStyle};
+                            p {
+                                margin: 0;
+                            }
+                        `}
+                    >
+                        Books in this Collection
+                    </Typography>
+                    <Box
+                        css={css`
+                            flex: 1;
+                            border: 1px solid #ccc;
+                            overflow: hidden;
+                        `}
+                    >
+                        <BookChooser
+                            books={bookInfoForLinks}
+                            selectedBook={selectedBook}
+                            onSelectBook={handleBookSelected}
+                            includeCurrentBook={true}
+                        />
+                    </Box>
                 </Box>
 
                 {/* Right: PageList */}
                 <Box
                     css={css`
                         flex: 1;
-                        border: 1px solid #ccc;
-                        overflow: hidden;
+                        display: flex;
+                        flex-direction: column;
                     `}
                 >
-                    <PageList
-                        selectedBook={selectedBook}
-                        selectedPageId={selectedPageId}
-                        onSelectPage={handlePageSelected}
-                    />
+                    <Typography
+                        css={css`
+                            ${headingStyle};
+                            p {
+                                margin: 0;
+                            }
+                        `}
+                    >
+                        Pages in the selected book
+                    </Typography>
+                    <Box
+                        css={css`
+                            flex: 1;
+                            border: 1px solid #ccc;
+                            overflow: hidden;
+                        `}
+                    >
+                        <PageChooser
+                            bookId={selectedBookId ?? undefined}
+                            bookFolderPath={selectedBook?.folderPath}
+                            selectedPageId={selectedPageId ?? undefined}
+                            onSelectPage={handlePageSelected}
+                        />
+                    </Box>
                 </Box>
             </Box>
 
             {/* Bottom: URLEditor */}
-            <Box
-                css={css`
-                    border: 1px solid #ccc;
-                    padding: 10px;
-                `}
-            >
+            <Box css={css``}>
                 <URLEditor
                     currentURL={currentURL}
                     onChange={handleURLEditorChanged}
