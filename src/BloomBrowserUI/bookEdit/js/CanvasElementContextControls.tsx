@@ -16,6 +16,7 @@ import { default as CircleIcon } from "@mui/icons-material/Circle";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
+import { LinkIcon } from "./LinkIcon";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import {
     doImageCommand,
@@ -95,6 +96,12 @@ const CanvasElementContextControls: React.FunctionComponent<{
         "bloom-link-grid",
     )[0] as HTMLElement | undefined;
     const isLinkGrid = !!linkGrid;
+    // These names are not quite consistent, but the behaviors we want to control are currently
+    // specific to navigation buttons, while the class name is meant to cover buttons in general.
+    // Eventually we may need a way to distinguish buttons used for navigation from other buttons.
+    const isNavButton = props.canvasElement.classList.contains(
+        "bloom-canvas-button",
+    );
     const rectangles =
         props.canvasElement.getElementsByClassName("bloom-rectangle");
     // This is only used by the menu option that toggles it. If the menu stayed up, we would need a state
@@ -383,6 +390,14 @@ const CanvasElementContextControls: React.FunctionComponent<{
             icon: <DeleteIcon css={getMenuIconCss()} />,
         });
     }
+    if (isNavButton) {
+        menuOptions.splice(0, 0, {
+            l10nId: "EditTab.Toolbox.OverlayTool.SetDest",
+            english: "Set Destination",
+            onClick: () => setLinkDestination(),
+            icon: <LinkIcon css={getMenuIconCss()} />,
+        });
+    }
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
         // This prevents focus leaving the text box.
         e.preventDefault();
@@ -465,7 +480,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         }
                     `}
                 >
-                    {isLinkGrid && linkGrid && (
+                    {isLinkGrid && (
                         <>
                             <ButtonWithTooltip
                                 tipL10nKey="EditTab.ClickToEditBookGrid"
@@ -492,11 +507,19 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             </span>
                         </>
                     )}
+                    {isNavButton && (
+                        <ButtonWithTooltip
+                            tipL10nKey="EditTab.Toolbox.OverlayTool.ClickToSetLinkDest"
+                            icon={LinkIcon}
+                            relativeSize={0.8}
+                            onClick={setLinkDestination}
+                        />
+                    )}
                     {hasImage && (
                         <Fragment>
                             {
                                 // Want an attention-grabbing version of set metadata if there is none.)
-                                missingMetadata && (
+                                missingMetadata && !isNavButton && (
                                     <ButtonWithTooltip
                                         tipL10nKey="EditTab.Image.EditMetadataOverlay"
                                         icon={MissingMetadataIcon}
@@ -552,7 +575,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             )}
                         </Fragment>
                     )}
-                    {editable && (
+                    {editable && !isNavButton && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.Format"
                             icon={CogIcon}
@@ -837,7 +860,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 english: "",
                 subLabelL10nId: "EditTab.Toolbox.DragActivity.ChooseSound.Help",
                 subLabel:
-                    "You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to “elevenlabs.io”.",
+                    "You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to â€œelevenlabs.ioâ€.",
                 onClick: () => {},
             },
         ];
@@ -965,7 +988,8 @@ function addTextMenuItems(
         // an updated value for autoHeight. But the menu is going to be hidden, and showing it again
         // will involve a re-render, and we don't care until then.
     };
-    menuOptions.unshift(
+
+    const textMenuItem: ILocalizableMenuItemProps[] = [
         {
             l10nId: "EditTab.Toolbox.ComicTool.Options.Format",
             english: "Format",
@@ -987,15 +1011,21 @@ function addTextMenuItems(
             },
             icon: <PasteIcon css={getMenuIconCss()} />,
         },
-        divider,
-        {
+    ];
+    // Normally text boxes have the auto-height option, but we keep buttons manual.
+    // One reason is that we haven't figured out a good automatic approach to adjusting the button
+    // height vs adjusting the image size, when both are present. Also, our current auto-height
+    // code doesn't handle padding where our canvas-buttons have it.
+    if (!canvasElement.classList.contains("bloom-canvas-button")) {
+        textMenuItem.push(divider, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AutoHeight",
             english: "Auto Height",
             // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
             onClick: () => toggleAutoHeight(),
             icon: autoHeight && <CheckIcon css={getMenuIconCss()} />,
-        },
-    );
+        });
+    }
+    menuOptions.push(...textMenuItem);
 }
 
 function addVideoMenuItems(
@@ -1318,4 +1348,7 @@ function cleanUpDividers(menuItems: IMenuItemWithSubmenu[]) {
         return true;
     });
     return cleanMenuItems;
+}
+function setLinkDestination(): void {
+    alert("Set Link Destination - not yet implemented");
 }

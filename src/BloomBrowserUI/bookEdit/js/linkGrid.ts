@@ -1,11 +1,28 @@
-import * as $ from "jquery";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { postJson } from "../../utils/bloomApi";
 import { showLinkGridSetupDialog } from "../../react_components/bookLinkSetup/BookGridSetupDialog";
 import { Link } from "../../react_components/bookLinkSetup/BookLinkTypes";
 
+export function SetupBookLinkGrids(container: HTMLElement) {
+    // Add skeleton to empty grids on initial setup
+    const linkGrids = Array.from(
+        container.getElementsByClassName("bloom-link-grid"),
+    ) as HTMLElement[];
+    for (const linkGrid of linkGrids) {
+        addSkeletonIfEmpty(linkGrid as HTMLElement);
+        // In case anyone wonders why this works here but will not on most canvas elements
+        // and their children...we put a rule in basepage.less that puts bloom-link-grid
+        // just barely above the comical.js canvas, so it can receive mouse events.
+        // In case you are tempted to do the same for other canvas elements, bear in mind
+        // that the price paid is not being able to put things like comic tail handles over
+        // such elements.
+        linkGrid.ondblclick = function () {
+            editLinkGrid(linkGrid);
+        };
+    }
+}
+
 export function editLinkGrid(linkGrid: HTMLElement) {
-    console.log("editLinkGrid called with:", linkGrid);
     //If our listeners hear back, they should close, but if something goes wrong, we don't want them to pile up.
     WebSocketManager.closeSocketsWithPrefix("makeThumbnailFile-");
 
@@ -62,17 +79,12 @@ export function editLinkGrid(linkGrid: HTMLElement) {
                     // listen for a websocket message that the image has been saved
                     // and then update the src attribute
                     const setImgSrc = () => {
-                        console.log("got message " + messageContext);
                         img.setAttribute(
                             "src",
                             desiredFileNameWithoutExtension + ".png",
                         ); // note, img.src = "foo" does something different!
                     };
                     WebSocketManager.notifyReady(messageContext, () => {
-                        console.log(
-                            "sending post for " +
-                                desiredFileNameWithoutExtension,
-                        );
                         postJson("editView/addImageFromUrl", {
                             desiredFileNameWithoutExtension:
                                 desiredFileNameWithoutExtension,
@@ -81,7 +93,6 @@ export function editLinkGrid(linkGrid: HTMLElement) {
                     });
 
                     WebSocketManager.once(messageContext, setImgSrc);
-                    console.log("listening for ", messageContext);
 
                     const p = document.createElement("p");
                     p.textContent =
@@ -96,37 +107,29 @@ export function editLinkGrid(linkGrid: HTMLElement) {
 }
 
 export function addSkeletonIfEmpty(linkGrid: HTMLElement) {
-    console.log("addSkeletonIfEmpty called", linkGrid);
-    console.log("innerHTML before:", linkGrid.innerHTML);
-
     // Check if there are any actual book buttons (not skeleton ones)
-    const hasRealButtons = $(linkGrid).find(".bloom-bookButton").length > 0;
+    const hasRealButtons =
+        linkGrid.getElementsByClassName("bloom-bookButton").length > 0;
     const hasSkeletons =
-        $(linkGrid).find(".bloom-bookButton-skeleton").length > 0;
-
-    console.log(
-        "hasRealButtons:",
-        hasRealButtons,
-        "hasSkeletons:",
-        hasSkeletons,
-    );
+        linkGrid.getElementsByClassName("bloom-bookButton-skeleton").length > 0;
 
     if (!hasRealButtons && !hasSkeletons) {
-        console.log("Adding skeleton");
         // Create skeleton with 6 placeholder book buttons
         // Note: NOT using bloom-ui class because Cleanup() removes those
-        const skeletonHtml = Array(6)
-            .fill(null)
-            .map(
-                () =>
-                    '<div class="bloom-bookButton-skeleton"><div class="skeleton-thumbnail"></div><div class="skeleton-label"></div></div>',
-            )
-            .join("");
-
-        $(linkGrid).append(skeletonHtml);
-        console.log("innerHTML after:", linkGrid.innerHTML);
+        for (let i = 0; i < 6; i++) {
+            const skeletonDiv = document.createElement("div");
+            skeletonDiv.className = "bloom-bookButton-skeleton";
+            const thumbnailDiv = document.createElement("div");
+            thumbnailDiv.className = "skeleton-thumbnail";
+            const labelDiv = document.createElement("div");
+            labelDiv.className = "skeleton-label";
+            skeletonDiv.appendChild(thumbnailDiv);
+            skeletonDiv.appendChild(labelDiv);
+            linkGrid.appendChild(skeletonDiv);
+        }
     } else if (hasRealButtons && hasSkeletons) {
-        console.log("Removing skeleton because real buttons exist");
-        $(linkGrid).find(".bloom-bookButton-skeleton").remove();
+        Array.from(
+            linkGrid.getElementsByClassName("bloom-bookButton-skeleton"),
+        ).forEach((x) => x.remove());
     }
 }
