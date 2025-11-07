@@ -513,7 +513,7 @@
         <target xml:lang="fr" state="final">Afficher la description des images</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions</note>
       </trans-unit>
-      <!-- Overlay -->
+      <!-- Canvas (was Overlay) -->
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true" approved="yes">
         <source xml:lang="en">drag</source>
         <target xml:lang="fr" state="final">faire glisser</target>
@@ -579,9 +579,9 @@
         <target xml:lang="fr" state="final">Ce livre contient des activités de jeu.</target>
         <note>ID: PublishTab.Feature.Games.Present</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Comic.None" approved="yes">
-        <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
-        <target xml:lang="fr" state="final">Cette fonction est désactivée parce que ce livre ne comporte aucun élément de superposition tel que ceux dans une BD, par exemple, des bulles de texte.</target>
+      <trans-unit id="PublishTab.Feature.Comic.None">
+        <source xml:lang="en">This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.</source>
+        <target xml:lang="fr" state="translated">Cette fonction est désactivée parce que ce livre ne comporte aucun élément de superposition tel que ceux dans une BD, par exemple, des bulles de texte.</target>
         <note>ID: PublishTab.Feature.Comic.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.Possible" approved="yes">
