@@ -170,6 +170,7 @@ namespace Bloom.web
             // without slowing down other behavior.
             result.content = "";
             result.key = page.Id;
+            result.isXMatter = page.IsXMatter;
             return result;
         }
 

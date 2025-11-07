@@ -16,10 +16,13 @@ import {
 import "../../bookEdit/pageThumbnailList/pageThumbnailList.less";
 import { chooserButtonPadding } from "./sharedStyles";
 
+type PageWithXMatter = IPage & { isXMatter?: boolean };
+
 const PageItemComponent: React.FunctionComponent<{
-    page: IPage;
+    page: PageWithXMatter;
     pageIndex: number;
     isSelected: boolean;
+    isDisabled: boolean;
     pageLayout: string;
     bookId: string;
     bookFolderPath?: string;
@@ -35,11 +38,16 @@ const PageItemComponent: React.FunctionComponent<{
         bookFolderPath,
         onSelectPage,
         onConfigureReloadCallback,
+        isDisabled,
     } = props;
 
     const isFrontCover = pageIndex === 0;
 
-    const handleSelect = () =>
+    const handleSelect = () => {
+        if (isDisabled) {
+            return;
+        }
+
         onSelectPage({
             pageId: isFrontCover ? "cover" : page.key,
             actualPageId: page.key,
@@ -47,7 +55,9 @@ const PageItemComponent: React.FunctionComponent<{
             thumbnail: page.content,
             pageIndex,
             isFrontCover,
+            isXMatter: page.isXMatter,
         });
+    };
 
     return (
         <div
@@ -67,7 +77,8 @@ const PageItemComponent: React.FunctionComponent<{
                 border-radius: 2px;
                 padding: 5px;
                 background-color: ${itemBackgroundColor};
-                cursor: pointer;
+                cursor: ${isDisabled ? "not-allowed" : "pointer"};
+                opacity: ${isDisabled ? 0.5 : 1};
                 outline: ${getSelectionOutline(isSelected)};
                 & .pageContainer {
                     float: none;
@@ -79,6 +90,8 @@ const PageItemComponent: React.FunctionComponent<{
                 }
             `}
             onClick={handleSelect}
+            aria-disabled={isDisabled ? "true" : undefined}
+            data-disabled={isDisabled ? "true" : undefined}
         >
             <PageThumbnail
                 page={page}
@@ -88,6 +101,17 @@ const PageItemComponent: React.FunctionComponent<{
                 bookFolderPath={bookFolderPath}
                 configureReloadCallback={onConfigureReloadCallback}
             />
+            {isDisabled && (
+                <div
+                    css={css`
+                        position: absolute;
+                        inset: 0;
+                        background-color: rgba(255, 255, 255, 0.5);
+                        border-radius: 2px;
+                        pointer-events: none;
+                    `}
+                />
+            )}
         </div>
     );
 };
@@ -98,6 +122,7 @@ const PageItem = React.memo(PageItemComponent, (prevProps, nextProps) => {
         prevProps.page.key === nextProps.page.key &&
         prevProps.pageIndex === nextProps.pageIndex &&
         prevProps.isSelected === nextProps.isSelected &&
+        prevProps.isDisabled === nextProps.isDisabled &&
         prevProps.pageLayout === nextProps.pageLayout &&
         prevProps.bookId === nextProps.bookId
     );
@@ -117,7 +142,7 @@ const PageChooserComponent: React.FunctionComponent<{
         onSelectPage,
         onPagesLoaded,
     } = props;
-    const [pages, setPages] = useState<IPage[]>([]);
+    const [pages, setPages] = useState<PageWithXMatter[]>([]);
     const [pageLayout, setPageLayout] = useState<string>("A5Portrait");
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -162,13 +187,15 @@ const PageChooserComponent: React.FunctionComponent<{
                     key: string;
                     caption: string;
                     content: string;
+                    isXMatter?: boolean;
                 }>;
                 setPageLayout(response.data.pageLayout || "A5Portrait");
 
-                const pageList: IPage[] = pageData.map((p) => ({
+                const pageList: PageWithXMatter[] = pageData.map((p) => ({
                     key: p.key,
                     caption: p.caption,
                     content: p.content || "",
+                    isXMatter: p.isXMatter,
                 }));
 
                 setPages(pageList);
@@ -182,6 +209,7 @@ const PageChooserComponent: React.FunctionComponent<{
                         thumbnail: page.content,
                         pageIndex: index,
                         isFrontCover: index === 0,
+                        isXMatter: page.isXMatter,
                     })),
                 );
 
@@ -194,6 +222,7 @@ const PageChooserComponent: React.FunctionComponent<{
                         thumbnail: pageList[0].content,
                         pageIndex: 0,
                         isFrontCover: true,
+                        isXMatter: pageList[0].isXMatter,
                     });
                 }
             },
@@ -340,14 +369,20 @@ const PageChooserComponent: React.FunctionComponent<{
                         {pages.map((page, index) => {
                             const isCoverSelected =
                                 selectedPageId === "cover" && index === 0;
+                            const isFrontCover = index === 0;
+                            const isDisabled =
+                                Boolean(page.isXMatter) && !isFrontCover;
                             const isSelected =
-                                selectedPageId === page.key || isCoverSelected;
+                                !isDisabled &&
+                                (selectedPageId === page.key ||
+                                    isCoverSelected);
                             return (
                                 <PageItem
                                     key={page.key}
                                     page={page}
                                     pageIndex={index}
                                     isSelected={isSelected}
+                                    isDisabled={isDisabled}
                                     pageLayout={pageLayout}
                                     bookId={bookId}
                                     bookFolderPath={bookFolderPath}

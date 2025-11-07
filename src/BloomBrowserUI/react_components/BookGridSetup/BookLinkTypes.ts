@@ -14,6 +14,7 @@ export interface PageInfoForLinks {
     actualPageId?: string; // original id from backend when pageId is normalized (e.g., cover)
     pageIndex?: number; // zero-based index within the book
     isFrontCover?: boolean; // true when this page represents the front cover
+    isXMatter?: boolean; // true when this page is part of the book's XMatter (front/back matter)
 }
 
 export interface Link {

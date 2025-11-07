@@ -237,6 +237,9 @@ export const LinkTargetChooser: React.FunctionComponent<{
 
     const handlePageSelected = useCallback(
         (pageInfo: PageInfoForLinks) => {
+            if (pageInfo.isXMatter && !pageInfo.isFrontCover) {
+                return;
+            }
             const isFrontCover = Boolean(pageInfo.isFrontCover);
             const normalizedPageId = isFrontCover
                 ? "cover"

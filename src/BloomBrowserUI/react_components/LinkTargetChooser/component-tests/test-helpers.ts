@@ -38,7 +38,12 @@ interface LinkTargetChooserSetupOptions {
     onSelect?: (info: LinkTargetInfo) => void;
     currentBookId?: string;
     books?: typeof mockBooks;
-    pages?: Array<{ key: string; caption: string }>;
+    pages?: Array<{
+        key: string;
+        caption: string;
+        content?: string;
+        isXMatter?: boolean;
+    }>;
     pageLayout?: string;
     cssFiles?: string[];
     bookAttributes?: Record<string, string>;
@@ -83,10 +88,17 @@ export async function setupLinkTargetChooser(
             const pageCount = book ? book.pageLength - 1 : 2; // pageLength includes cover
 
             const pages = [
-                { key: coverKey, caption: coverCaption },
+                {
+                    key: coverKey,
+                    caption: coverCaption,
+                    content: "",
+                    isXMatter: true,
+                },
                 ...Array.from({ length: pageCount }, (_, i) => ({
                     key: `${i + 1}`,
                     caption: `Page ${i + 1}`,
+                    content: "",
+                    isXMatter: false,
                 })),
             ];
             console.log(
@@ -109,7 +121,12 @@ export async function setupLinkTargetChooser(
     } else {
         currentFrontCoverId = props.pages[0]?.key ?? "cover";
         prepareGetResponse(page, "**/bloom/api/pageList/pages**", {
-            pages: props.pages,
+            pages: props.pages.map((p, index) => ({
+                key: p.key,
+                caption: p.caption,
+                content: p.content ?? "",
+                isXMatter: p.isXMatter ?? index === 0,
+            })),
             selectedPageId: props.selectedPageId ?? "cover",
             pageLayout: props.pageLayout ?? "A5Portrait",
             cssFiles: props.cssFiles ?? [],
@@ -312,8 +329,40 @@ export const pageList = {
         }
 
         return locator.evaluate((element) => {
-            const outlineStyle = getComputedStyle(element).outlineStyle;
-            return outlineStyle !== "none";
+            const style = getComputedStyle(element);
+            const color = style.outlineColor;
+            return (
+                color !== "transparent" &&
+                color !== "rgba(0, 0, 0, 0)" &&
+                color !== "rgb(0, 0, 0)" // defensive fallback if theme changes
+            );
+        });
+    },
+    isPageDisabled: async (pageId: string | number) => {
+        if (!currentPage) {
+            throw new Error(
+                "Page not initialized. Call setupLinkTargetChooser first.",
+            );
+        }
+
+        const locator = await pageList.getPage(pageId);
+        try {
+            await locator.waitFor({ state: "visible", timeout: 5000 });
+        } catch {
+            return false;
+        }
+
+        return locator.evaluate((element) => {
+            const target = element as HTMLElement;
+            const ariaDisabled = target.getAttribute("aria-disabled");
+            if (ariaDisabled === "true") {
+                return true;
+            }
+            const dataDisabled = target.getAttribute("data-disabled");
+            if (dataDisabled === "true") {
+                return true;
+            }
+            return target.classList.contains("disabled");
         });
     },
 };
