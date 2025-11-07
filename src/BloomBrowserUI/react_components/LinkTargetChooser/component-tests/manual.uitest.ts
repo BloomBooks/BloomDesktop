@@ -10,7 +10,10 @@
 import { test } from "../../component-tester/playwrightTest";
 import { setupLinkTargetChooser } from "./test-helpers";
 
-test.describe("Manual Interactive Testing", () => {
+const includeManualTests = process.env.PLAYWRIGHT_INCLUDE_MANUAL === "1";
+const manualDescribe = includeManualTests ? test.describe : test.describe.skip;
+
+manualDescribe("Manual Interactive Testing", () => {
     // this is what you get if you just say "./mock.sh"
     test("default", async ({ page }) => {
         // Set a very long timeout (1 hour)
@@ -18,14 +21,10 @@ test.describe("Manual Interactive Testing", () => {
 
         // Set up the component with all the mocks
         await setupLinkTargetChooser(page, {
-            currentURL: "",
+            currentURL: "/book/book10#44",
         });
 
-        // Log a message to the console
-        console.log("\n===========================================");
-        console.log("Interactive mode started");
-        console.log("Close the browser or press Ctrl+C here, when done.");
-        console.log("===========================================\n");
+        // Interactive mode started; keep browser open until manually closed
 
         // Keep the browser open until manually closed
         // The test will end when you close the browser window

@@ -13,6 +13,37 @@ import {
     dialog,
 } from "./test-helpers";
 
+const scrollTestColors = [
+    "4CAF50",
+    "2196F3",
+    "FF9800",
+    "E91E63",
+    "9C27B0",
+    "00BCD4",
+    "CDDC39",
+    "FF5722",
+    "607D8B",
+    "795548",
+];
+
+const createScrollableBook = (index: number) => {
+    const color = scrollTestColors[index % scrollTestColors.length];
+    const bookNumber = index + 1;
+    const pageCount = bookNumber * 10;
+
+    return {
+        id: `book${bookNumber}`,
+        title: `Book ${bookNumber}`,
+        folderName: `${bookNumber} Book ${bookNumber}`,
+        thumbnail: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='120'%3E%3Crect width='100' height='120' fill='%23${color}'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='14'%3EBook ${bookNumber}%3C/text%3E%3C/svg%3E`,
+        pageLength: pageCount + 1,
+        pageCount,
+    };
+};
+
+const createScrollableBooks = (count: number) =>
+    Array.from({ length: count }, (_, index) => createScrollableBook(index));
+
 test.describe("LinkTargetChooser - URL Synchronization", () => {
     test("URL box shows book URL when book is selected", async ({ page }) => {
         await setupLinkTargetChooser(page);
@@ -139,24 +170,31 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
             await page.unroute("**/bloom/api/common/clipboardText");
         });
 
-        console.log("Page content before paste", await page.content());
         const pasteButton = await urlEditor.getPasteButton();
         await pasteButton.click();
 
         const selector =
             '[data-testid="url-input"] input, input[placeholder="Paste or enter a URL"]';
-        const count = await page.locator(selector).count();
+        const _count = await page.locator(selector).count();
         const containerCount = await page.getByTestId("url-input").count();
-        console.log("Input count after paste", count);
-        console.log("URL container count", containerCount);
+
         if (containerCount > 0) {
-            const containerHtml = await page
+            const _containerHtml = await page
                 .getByTestId("url-input")
                 .first()
                 .evaluate((el) => el.outerHTML);
-            console.log("URL container markup", containerHtml);
         }
-        console.log("Page content after paste", await page.content());
+
+        const _selectionDetails = await page
+            .locator('[data-book-id="book2"]')
+            .evaluate((element) => {
+                const target = element as HTMLElement;
+                return {
+                    dataSelected: target.getAttribute("data-selected"),
+                    dataDisabled: target.getAttribute("data-disabled"),
+                    classList: Array.from(target.classList),
+                };
+            });
 
         const input = await urlEditor.getInput();
         await expect(input).toHaveValue(clipboardValue, { timeout: 5000 });
@@ -304,6 +342,117 @@ test.describe("LinkTargetChooser - URL Preselection", () => {
         await expect(input).toHaveValue("/book/book1");
         await expect
             .poll(async () => await pageList.isPageSelected("cover"))
+            .toBeTruthy();
+    });
+
+    test("Scrolls preselected book into view", async ({ page }) => {
+        const books = createScrollableBooks(25);
+        const targetBook = books[20];
+
+        await setupLinkTargetChooser(page, {
+            currentURL: `/book/${targetBook.id}`,
+            books,
+        });
+
+        await bookList.waitForBooksToLoad();
+
+        await expect
+            .poll(async () => await bookList.isBookSelected(targetBook.id), {
+                timeout: 2000,
+            })
+            .toBeTruthy();
+
+        const targetCard = await bookList.getBookCard(targetBook.id);
+        await targetCard.waitFor({ state: "attached" });
+
+        await expect
+            .poll(
+                async () =>
+                    await targetCard.evaluate((element) => {
+                        const container = element.parentElement;
+                        if (!(container instanceof HTMLElement)) {
+                            return false;
+                        }
+                        const containerRect = container.getBoundingClientRect();
+                        const rect = element.getBoundingClientRect();
+                        return (
+                            rect.bottom > containerRect.top &&
+                            rect.top < containerRect.bottom
+                        );
+                    }),
+                { timeout: 2000 },
+            )
+            .toBeTruthy();
+    });
+
+    test("Scrolls preselected page into view", async ({ page }) => {
+        const books = createScrollableBooks(25);
+        const targetBook = books[22];
+        const targetPageId = "150";
+
+        await setupLinkTargetChooser(page, {
+            currentURL: `/book/${targetBook.id}#${targetPageId}`,
+            books,
+        });
+
+        await bookList.waitForBooksToLoad();
+
+        await expect
+            .poll(async () => await bookList.isBookSelected(targetBook.id), {
+                timeout: 2000,
+            })
+            .toBeTruthy();
+
+        const targetPage = await pageList.getPage(targetPageId);
+        await targetPage.waitFor({ state: "attached" });
+
+        await expect
+            .poll(
+                async () =>
+                    await targetPage.evaluate((element) => {
+                        const target = element as HTMLElement;
+                        return (
+                            target.getAttribute("data-selected") === "true" ||
+                            target.classList.contains(
+                                "link-target-page--selected",
+                            )
+                        );
+                    }),
+                { timeout: 2000 },
+            )
+            .toBeTruthy();
+
+        await expect
+            .poll(
+                async () =>
+                    await targetPage.evaluate((element) => {
+                        const container = element.closest("#pageGridWrapper");
+                        if (!(container instanceof HTMLElement)) {
+                            return false;
+                        }
+                        return container.scrollTop > 0;
+                    }),
+                { timeout: 2000 },
+            )
+            .toBeTruthy();
+
+        await expect
+            .poll(
+                async () =>
+                    await targetPage.evaluate((element) => {
+                        const container = element.closest("#pageGridWrapper");
+                        if (!(container instanceof HTMLElement)) {
+                            return false;
+                        }
+                        const containerRect = container.getBoundingClientRect();
+                        const rect = element.getBoundingClientRect();
+                        return (
+                            rect.bottom > containerRect.top &&
+                            rect.top < containerRect.bottom
+                        );
+                    }),
+                { timeout: 2000 },
+            )
             .toBeTruthy();
     });
 });

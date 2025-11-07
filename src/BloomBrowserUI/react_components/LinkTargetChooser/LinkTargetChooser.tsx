@@ -144,6 +144,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
     // Validate and preselect book/page when books load or bookId changes
     useEffect(() => {
         if (!selectedBookId || bookInfoForLinks.length === 0) {
+            setSelectedBook(null);
             return;
         }
 

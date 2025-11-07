@@ -30,16 +30,24 @@ const URLEditorComponent: React.FunctionComponent<{
 
     const handlePaste = async () => {
         try {
-            const result = await getAsync("common/clipboardText");
-            if (result.data) {
-                // If the current URL is a book/page URL, clear it before pasting
-                if (isBookPageURL(props.currentURL)) {
-                    setURL(result.data);
-                    props.onChange(result.data);
-                } else {
-                    handleURLChange(result.data);
-                }
+            const response = await getAsync("common/clipboardText");
+            const clipboardText =
+                typeof response.data === "string"
+                    ? response.data
+                    : (response.data?.data ?? "");
+
+            if (!clipboardText) {
+                return;
             }
+
+            // If the current URL still reflects a book/page link, replace it entirely
+            if (isBookPageURL(url)) {
+                setURL(clipboardText);
+                props.onChange(clipboardText);
+                return;
+            }
+
+            handleURLChange(clipboardText);
         } catch (error) {
             console.error("Failed to get clipboard text:", error);
         }

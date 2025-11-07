@@ -57,7 +57,7 @@ test.describe("LinkTargetChooser - Error Handling for Missing Books/Pages", () =
         // Get the error text
         const errorText = await errorMsgElement.textContent();
         expect(errorText).toContain("Page 999 not found");
-        expect(errorText).toContain("First Book");
+        expect(errorText).toContain('book "Book 1"');
 
         // OK button should be disabled
         const okButton = await dialog.getOKButton();

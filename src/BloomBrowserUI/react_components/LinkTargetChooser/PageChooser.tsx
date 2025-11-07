@@ -10,7 +10,7 @@ import { IPage } from "../../bookEdit/pageThumbnailList/pageThumbnailList";
 import {
     chooserBackgroundColor,
     itemBackgroundColor,
-    getSelectionOutline,
+    selectedStyle,
     itemGap,
 } from "./sharedStyles";
 import "../../bookEdit/pageThumbnailList/pageThumbnailList.less";
@@ -42,6 +42,19 @@ const PageItemComponent: React.FunctionComponent<{
     } = props;
 
     const isFrontCover = pageIndex === 0;
+    const itemRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (!isSelected || !itemRef.current) {
+            return;
+        }
+
+        itemRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "nearest",
+        });
+    }, [isSelected]);
 
     const handleSelect = () => {
         if (isDisabled) {
@@ -59,13 +72,22 @@ const PageItemComponent: React.FunctionComponent<{
         });
     };
 
+    const classNames = ["gridItem", "link-target-page"];
+    if (isSelected) {
+        classNames.push("link-target-page--selected");
+    }
+    if (isDisabled) {
+        classNames.push("link-target-page--disabled");
+    }
+
     return (
         <div
             key={page.key}
             id={page.key}
             data-caption={page.caption}
             data-testid={`page-${page.key}`}
-            className={"gridItem"}
+            ref={itemRef}
+            className={classNames.join(" ")}
             css={css`
                 position: relative;
                 width: 80px;
@@ -79,7 +101,7 @@ const PageItemComponent: React.FunctionComponent<{
                 background-color: ${itemBackgroundColor};
                 cursor: ${isDisabled ? "not-allowed" : "pointer"};
                 opacity: ${isDisabled ? 0.5 : 1};
-                outline: ${getSelectionOutline(isSelected)};
+                ${isSelected ? selectedStyle : ""}
                 & .pageContainer {
                     float: none;
                 }
@@ -91,6 +113,8 @@ const PageItemComponent: React.FunctionComponent<{
             `}
             onClick={handleSelect}
             aria-disabled={isDisabled ? "true" : undefined}
+            aria-selected={isSelected ? "true" : "false"}
+            data-selected={isSelected ? "true" : undefined}
             data-disabled={isDisabled ? "true" : undefined}
         >
             <PageThumbnail

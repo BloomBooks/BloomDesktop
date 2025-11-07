@@ -10,5 +10,6 @@ echo ""
 
 # Set environment variable to suppress any auto-opening
 export BLOOM_COMPONENT_TESTER_SUPPRESS_OPEN=1
+export PLAYWRIGHT_INCLUDE_MANUAL=1
 
 yarn playwright test ../LinkTargetChooser/component-tests/manual.uitest.ts --headed -g "default"

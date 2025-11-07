@@ -101,11 +101,6 @@ export async function setupLinkTargetChooser(
                     isXMatter: false,
                 })),
             ];
-            console.log(
-                "*******Using dynamic page list generation based on book ID",
-                bookId,
-                pages,
-            );
 
             await route.fulfill({
                 status: 200,
@@ -274,16 +269,20 @@ export const bookList = {
         const card = await bookList.getBookCard(bookId);
         await card.waitFor({ state: "visible", timeout: 5000 });
         return card.evaluate((element) => {
-            const target =
-                (element as HTMLElement).querySelector(".MuiCard-root") ??
-                element;
-            const style = window.getComputedStyle(target as HTMLElement);
-            return (
-                style.outlineStyle !== "none" &&
-                style.outlineWidth !== "0px" &&
-                style.outlineColor !== "transparent" &&
-                style.outlineColor !== "rgba(0, 0, 0, 0)"
+            const target = element as HTMLElement;
+            if (target.getAttribute("data-selected") === "true") {
+                return true;
+            }
+            if (target.classList.contains("link-target-book--selected")) {
+                return true;
+            }
+            const nestedSelected = target.querySelector(
+                "[data-selected='true']",
             );
+            if (nestedSelected) {
+                return true;
+            }
+            return false;
         });
     },
     waitForBooksToLoad: async () => {
@@ -329,13 +328,14 @@ export const pageList = {
         }
 
         return locator.evaluate((element) => {
-            const style = getComputedStyle(element);
-            const color = style.outlineColor;
-            return (
-                color !== "transparent" &&
-                color !== "rgba(0, 0, 0, 0)" &&
-                color !== "rgb(0, 0, 0)" // defensive fallback if theme changes
-            );
+            const target = element as HTMLElement;
+            if (target.getAttribute("data-selected") === "true") {
+                return true;
+            }
+            if (target.classList.contains("link-target-page--selected")) {
+                return true;
+            }
+            return false;
         });
     },
     isPageDisabled: async (pageId: string | number) => {

@@ -7,21 +7,21 @@
 # Next
 - [x] We cannot really link to an xmatter pages because their id is new every morning. So, we should disable xmatter pages except for the cover. The api we use to get pages might not currently give us that info? If so we need to add it. The cover can be handled in a special way because we already do not add its id when it is selected.
 
-- [ ] when opening with a book url, Book and page should both be scrolled into view (probably not implemented yet)
-- [ ] Actually look at what the uitests are covering, e.g. initial props:
-    * nothing
-    * https://example.com
-    * a valid book url /book/123-343
-    * url of a missing book
-    * a valid url with book and page (e.g. /book/123-abc#4f6)
-    * valid url but the page is now missing
+- [x] when opening with a book url, Book and page should both be scrolled into view (probably not implemented yet). This can be tested with mock.sh. It might require adding books so that some are scrolled off?
+- [x] Actually look at what the uitests are covering, e.g. initial props (verified in component tests):
+    * nothing — covered by `LinkTargetChooser - URL Preselection › Handles empty initial URL`
+    * https://example.com — covered by `LinkTargetChooser - URL Preselection › Shows external URL in URL box when provided`
+    * a valid book url /book/123-343 — covered by `LinkTargetChooser - URL Preselection › Preselects book when URL is /book/BOOKID`
+    * url of a missing book — covered by `LinkTargetChooser - Error Handling for Missing Books/Pages › Shows error when URL points to missing book`
+    * a valid url with book and page (e.g. /book/123-abc#4f6) — covered by `LinkTargetChooser - URL Preselection › Preselects book and page when URL is /book/BOOKID#PAGEID`
+    * valid url but the page is now missing — covered by `LinkTargetChooser - Error Handling for Missing Books/Pages › Shows error when URL points to missing page in valid book`
 
 # Later
 - [ ] Fix CSS in pages (see this with ./show.sh )
 
 # Low Priority
 - [ ] When the URL starts with "\bloom", don't let the user edit that. They can select it and copy it, they can delete the url, they can paste a new url, but they can't edit it.
-- [ ] the dialog (or at least the LinkTargetChooser) seems to be (slowly) rerendering on each click of a page. At least it does this in `./manual.sh --backend` mode. See if you can reproduce in a uitest, perhaps using console messages.
+
 
 ## Optimization for large books
 

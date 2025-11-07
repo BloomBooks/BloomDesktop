@@ -48,17 +48,30 @@ const BookChooserComponent: React.FunctionComponent<{
         >
             {booksToShow.map((book) => {
                 const isDisabled = props.disabledBooks?.includes(book.id);
+                const isSelected = props.selectedBook?.id === book.id;
+                const classNames = ["link-target-book"];
+                if (isSelected) {
+                    classNames.push("link-target-book--selected");
+                }
+                if (isDisabled) {
+                    classNames.push("link-target-book--disabled");
+                }
                 return (
                     <div
                         key={book.id}
                         data-book-id={book.id}
+                        className={classNames.join(" ")}
+                        data-selected={isSelected ? "true" : undefined}
+                        data-disabled={isDisabled ? "true" : undefined}
+                        aria-selected={isSelected ? "true" : "false"}
+                        aria-disabled={isDisabled ? "true" : undefined}
                         css={css`
                             ${isDisabled ? `opacity: 0.5;` : ""}
                         `}
                     >
                         <BookLinkCard
                             link={{ book: book }}
-                            selected={props.selectedBook?.id === book.id}
+                            selected={isSelected}
                             onClick={() => handleBookClick(book, !!isDisabled)}
                         />
                     </div>
