@@ -27,7 +27,7 @@ import {
     kMakeNewCanvasElement,
     notifyToolOfChangedImage,
 } from "./bloomEditing";
-import { addSkeletonIfEmpty } from "./linkGrid";
+import { addSkeletonIfEmpty, editLinkGrid } from "./linkGrid";
 import {
     EnableAllImageEditing,
     getImageFromCanvasElement,
@@ -657,7 +657,6 @@ export class CanvasElementManager {
                         }
                     }
                 });
-
                 this.setDragAndDropHandlers(bloomCanvas);
                 this.setMouseDragHandlers(bloomCanvas);
             },
@@ -1339,14 +1338,21 @@ export class CanvasElementManager {
             // of the bloom-page.
             document.body.appendChild(toolboxRoot);
         }
-        const hasImage =
-            eltToPutControlsOn?.getElementsByClassName("bloom-imageContainer")
-                ?.length > 0;
+        const imageContainer = eltToPutControlsOn?.getElementsByClassName(
+            "bloom-imageContainer",
+        )?.[0];
+        const hasImage = !!imageContainer;
         if (hasImage) {
             controlFrame.classList.add("has-image");
         } else {
             controlFrame.classList.remove("has-image");
         }
+        if (eltToPutControlsOn?.classList.contains("bloom-canvas-button")) {
+            controlFrame.classList.add("is-button");
+        } else {
+            controlFrame.classList.remove("is-button");
+        }
+
         const hasSvg =
             eltToPutControlsOn?.getElementsByClassName("bloom-svg")?.length > 0;
         if (hasSvg) {
@@ -1656,7 +1662,11 @@ export class CanvasElementManager {
             newTop = this.oldTop + this.oldHeight - newHeight;
         }
 
-        if (slope) {
+        // We don't apply the aspect ratio constraint to buttons.
+        if (
+            slope &&
+            !this.activeElement.classList.contains("bloom-canvas-button")
+        ) {
             // We want to keep the aspect ratio of the image. So the possible places to move
             // the moving corner must be on a line through the opposite corner
             // (which isn't moving) with a slope that would make it pass through the
@@ -3979,6 +3989,11 @@ export class CanvasElementManager {
      * without needing our custom onMouseDown/onMouseHover/etc event handlers to process it
      */
     private isMouseEventAlreadyHandled(ev: MouseEvent): boolean {
+        if (ev.detail === 2) {
+            // Let double-clicks be handled normally, e.g., to activate the chooser
+            // in a book list.
+            return true;
+        }
         const targetElement = ev.target instanceof Element ? ev.target : null;
         if (!targetElement) {
             // As far as I can research, the target of a mouse event is always
@@ -4842,8 +4857,22 @@ export class CanvasElementManager {
                 rightTopOffset,
             );
         }
-        if (canvasElementType === "navigation-button") {
-            return this.addNavigationButtonElement(
+        if (canvasElementType === "navigation-image-button") {
+            return this.addNavigationImageButtonElement(
+                positionInBloomCanvas,
+                bloomCanvas,
+                rightTopOffset,
+            );
+        }
+        if (canvasElementType === "navigation-label-button") {
+            return this.addNavigationLabelButtonElement(
+                positionInBloomCanvas,
+                bloomCanvas,
+                rightTopOffset,
+            );
+        }
+        if (canvasElementType === "navigation-image-with-label-button") {
+            return this.addNavigationImageWithLabelButtonElement(
                 positionInBloomCanvas,
                 bloomCanvas,
                 rightTopOffset,
@@ -4865,6 +4894,19 @@ export class CanvasElementManager {
         userDefinedStyleName?: string,
         rightTopOffset?: string,
     ): HTMLElement {
+        const transGroupHtml = this.makeTranslationGroup(userDefinedStyleName);
+
+        return this.finishAddingCanvasElement(
+            bloomCanvasJQuery,
+            transGroupHtml,
+            location,
+            style,
+            false,
+            rightTopOffset,
+        );
+    }
+
+    private makeTranslationGroup(userDefinedStyleName: string | undefined) {
         const defaultNewTextLanguage = GetSettings().languageForNewTextBoxes;
         const userDefinedStyle = userDefinedStyleName ?? "Bubble";
         // add a draggable text canvas element to the html dom of the current page
@@ -4883,15 +4925,7 @@ export class CanvasElementManager {
             "' data-default-languages='V'>" +
             editableDivHtml +
             "</div>";
-
-        return this.finishAddingCanvasElement(
-            bloomCanvasJQuery,
-            transGroupHtml,
-            location,
-            style,
-            false,
-            rightTopOffset,
-        );
+        return transGroupHtml;
     }
 
     private addVideoCanvasElement(
@@ -5133,7 +5167,7 @@ export class CanvasElementManager {
             doAfterElementCreated,
         );
     }
-    private addNavigationButtonElement(
+    private addNavigationImageButtonElement(
         location: Point,
         bloomCanvasJQuery: JQuery,
         rightTopOffset?: string,
@@ -5144,20 +5178,10 @@ export class CanvasElementManager {
             creator: string;
             license: string;
         },
-        size?: { width: number; height: number },
         doAfterElementCreated?: (newElement: HTMLElement) => void,
     ): HTMLElement {
-        const standardImageClasses =
-            kImageContainerClass + " bloom-leadingElement";
-        const imagePlaceHolderHtml = "<img src='placeHolder.png' alt=''></img>";
-        const imageContainerHtml =
-            // The tabindex here is necessary to get focus to work on an image.
-            "<div tabindex='0' class='bloom-button " +
-            standardImageClasses +
-            "'>" +
-            imagePlaceHolderHtml +
-            "</div>";
-        return this.finishAddingCanvasElement(
+        const imageContainerHtml = this.makeImageContainerHtml();
+        const result = this.finishAddingCanvasElement(
             bloomCanvasJQuery,
             imageContainerHtml,
             location,
@@ -5165,9 +5189,71 @@ export class CanvasElementManager {
             true,
             rightTopOffset,
             imageInfo,
-            size,
+            { width: 120, height: 120 },
             doAfterElementCreated,
         );
+        result.classList.add("bloom-canvas-button");
+        return result;
+    }
+
+    private makeImageContainerHtml() {
+        const standardImageClasses =
+            kImageContainerClass + " bloom-leadingElement";
+        const imagePlaceHolderHtml = "<img src='placeHolder.png' alt=''></img>";
+        const imageContainerHtml =
+            // The tabindex here is necessary to get focus to work on an image.
+            `<div tabindex='0' class = '${standardImageClasses}'> ${imagePlaceHolderHtml}</div>`;
+        return imageContainerHtml;
+    }
+
+    private addNavigationImageWithLabelButtonElement(
+        location: Point,
+        bloomCanvasJQuery: JQuery,
+        rightTopOffset?: string,
+        imageInfo?: {
+            imageId: string;
+            src: string; // must already appropriately URL-encoded.
+            copyright: string;
+            creator: string;
+            license: string;
+        },
+    ): HTMLElement {
+        const imageContainerHtml = this.makeImageContainerHtml();
+        const transGroupHtml = this.makeTranslationGroup("Label");
+        const result = this.finishAddingCanvasElement(
+            bloomCanvasJQuery,
+            imageContainerHtml + transGroupHtml,
+            location,
+            "none",
+            true,
+            rightTopOffset,
+            imageInfo,
+            { width: 120, height: 120 },
+        );
+        result.classList.add("bloom-canvas-button");
+        result.classList.add("bloom-noAutoHeight");
+        return result;
+    }
+
+    private addNavigationLabelButtonElement(
+        location: Point,
+        bloomCanvasJQuery: JQuery,
+        rightTopOffset?: string,
+    ): HTMLElement {
+        const result = this.addCanvasElementCore(
+            location,
+            bloomCanvasJQuery,
+            "none", // no comical bubble style
+            "navigation-label-button",
+            rightTopOffset,
+        );
+        result.classList.add("bloom-canvas-button");
+        result.classList.add("bloom-noAutoHeight");
+        // The methods used in the other two get to set a size; here we just do it.
+        // This might risk a lot of the button being off-screen.
+        result.style.height = "120px";
+        result.style.width = "120px";
+        return result;
     }
 
     private addSoundCanvasElement(
@@ -5227,6 +5313,8 @@ export class CanvasElementManager {
             "none",
             true,
             rightTopOffset,
+            undefined,
+            { width: 360, height: 360 },
         );
         // Add skeleton to the newly created empty grid
         const linkGrid = canvasElement.querySelector(
@@ -5640,6 +5728,8 @@ export class CanvasElementManager {
         // Preserve the bloom-gif class, which is used to indicate that this is a GIF. (BL-15037)
         if (sourceElement.classList.contains("bloom-gif"))
             patriarchDuplicateElement.classList.add("bloom-gif");
+        if (sourceElement.classList.contains("bloom-canvas-button"))
+            patriarchDuplicateElement.classList.add("bloom-canvas-button");
 
         // copy any data-sound
         const sourceDataSound = sourceElement.getAttribute("data-sound");
