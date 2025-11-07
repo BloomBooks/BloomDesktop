@@ -14,38 +14,44 @@ namespace Bloom.Book
     {
         public const int MaximumNameLength = 50;
 
+        public static string GetShortWidgetName(string widgetName)
+        {
+            if (widgetName.Length > MaximumNameLength)
+                return widgetName.Substring(0, MaximumNameLength).Trim(); // keep the name from being too long (BL-15307)
+
+            return widgetName;
+        }
+
         public static UrlPathString AddWidgetFilesToBookFolder(
             string bookFolderPath,
             string fullWidgetPath
         )
         {
-            var widgetPath = fullWidgetPath.Replace("\\", "/");
-            var widgetName = Path.GetFileNameWithoutExtension(widgetPath);
-            var originalWidgetName = widgetName;
-            if (widgetName.Length > MaximumNameLength)
-                widgetName = widgetName.Substring(0, MaximumNameLength).Trim(); // keep the name from being too long (BL-15307)
-            var shortWidgetName = widgetName;
-            var widgetDestinationFolder = bookFolderPath + "/" + "activities" + "/" + widgetName;
-            var suffix = 1;
+            // Note that we are guaranteed that the current widget paths are already truncated to
+            // MaximumNameLength characters because of BookStorage.MigrateToLevel9TruncateWidgetPaths().
+
+            var widgetName = GetShortWidgetName(Path.GetFileNameWithoutExtension(fullWidgetPath));
+            var newWidgetFolderName = widgetName;
+            var widgetDestinationPath = $"{bookFolderPath}/activities/{newWidgetFolderName}";
+            var uniqueSuffix = 1;
             // If widget destination folder already exists, come up with modified name
-            while (Directory.Exists(widgetDestinationFolder))
+            while (Directory.Exists(widgetDestinationPath))
             {
-                widgetName = shortWidgetName + suffix.ToString();
-                widgetDestinationFolder = bookFolderPath + "/" + "activities" + "/" + widgetName;
-                suffix++;
+                newWidgetFolderName = $"{newWidgetFolderName}{uniqueSuffix}";
+                widgetDestinationPath = $"{bookFolderPath}/activities/{newWidgetFolderName}";
+                uniqueSuffix++;
             }
 
-            ZipUtils.ExpandZip(fullWidgetPath, widgetDestinationFolder);
-            if (suffix > 1)
+            ZipUtils.ExpandZip(fullWidgetPath, widgetDestinationPath);
+            if (uniqueSuffix > 1)
             {
                 // might be duplicate widget
-                var originalWidgetFolderPath =
-                    bookFolderPath + "/" + "activities" + "/" + originalWidgetName;
-                if (DirectoryUtils.SameContent(widgetDestinationFolder, originalWidgetFolderPath))
+                var existingWidgetPath = $"{bookFolderPath}/activities/{widgetName}";
+                if (DirectoryUtils.SameContent(widgetDestinationPath, existingWidgetPath))
                 {
-                    widgetName = originalWidgetName;
-                    SIL.IO.RobustIO.DeleteDirectoryAndContents(widgetDestinationFolder);
-                    widgetDestinationFolder = originalWidgetFolderPath;
+                    newWidgetFolderName = widgetName;
+                    SIL.IO.RobustIO.DeleteDirectoryAndContents(widgetDestinationPath);
+                    widgetDestinationPath = existingWidgetPath;
                 }
             }
 
@@ -59,10 +65,10 @@ namespace Bloom.Book
             // <string>HelloWorld.html</string>
             // where the string element following the MainHTML key contains the name of the root
             // HTML file.
-            if (!RobustFile.Exists(Path.Combine(widgetDestinationFolder, rootFileName)))
+            if (!RobustFile.Exists(Path.Combine(widgetDestinationPath, rootFileName)))
             {
                 rootFileName = "index.htm";
-                if (!RobustFile.Exists(Path.Combine(widgetDestinationFolder, rootFileName)))
+                if (!RobustFile.Exists(Path.Combine(widgetDestinationPath, rootFileName)))
                     // Review: worth localizing?
                     MessageBox.Show(
                         "Zip file contains no index.htm{l} file. It will not work as a Bloom book widget.",
@@ -73,7 +79,7 @@ namespace Bloom.Book
             }
 
             return UrlPathString.CreateFromUnencodedString(
-                "activities" + "/" + widgetName + "/" + rootFileName
+                $"activities/{newWidgetFolderName}/{rootFileName}"
             );
         }
 
