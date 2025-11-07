@@ -1869,10 +1869,10 @@
         <target xml:lang="fr" state="final">Nouveau style</target>
         <note>ID: EditTab.FormatDialog.NewStyle</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Overlay" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Overlay</source>
-        <target xml:lang="fr" state="final">Superposition</target>
-        <note>ID: EditTab.FormatDialog.Overlay</note>
+      <trans-unit id="EditTab.FormatDialog.Canvas" sil:dynamic="true">
+        <source xml:lang="en">Canvas Text</source>
+        <target xml:lang="fr" state="needs-translation">Canvas Text</target>
+        <note>ID: EditTab.FormatDialog.Canvas</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Padding" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Padding: space between the text and its border</source>
@@ -2424,14 +2424,14 @@
         <target xml:lang="fr" state="final">Informations sur la propriété intellectuelle de l'image</target>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.OverlayTool" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Overlay Tool</source>
-        <target xml:lang="fr" state="final">Outil de Superposition</target>
-        <note>ID: EditTab.Toolbox.OverlayTool</note>
+      <trans-unit id="EditTab.Toolbox.CanvasTool" sil:dynamic="true">
+        <source xml:lang="en">Canvas Tool</source>
+        <target xml:lang="fr" state="needs-translation">Canvas Tool</target>
+        <note>ID: EditTab.Toolbox.CanvasTool</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Drag any of these overlays onto the image:</source>
-        <target xml:lang="fr" state="final">Faites glisser l'une de ces surcouches sur l'image :</target>
+      <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
+        <source xml:lang="en">Drag any of these elements onto the image:</source>
+        <target xml:lang="fr" state="translated">Faites glisser l'une de ces surcouches sur l'image :</target>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true" approved="yes">
@@ -2509,9 +2509,9 @@
         <target xml:lang="fr" state="final">Formater le texte...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">There are no options for this kind of overlay</source>
-        <target xml:lang="fr" state="final">Aucune option pour ce type de superposition</target>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">
+        <source xml:lang="en">There are no options for this kind of canvas element</source>
+        <target xml:lang="fr" state="translated">Aucune option pour ce type de superposition</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ImageSelected</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true" approved="yes">
@@ -4553,10 +4553,10 @@
         <target xml:lang="fr" state="final">Les pages suivantes ont été supprimées car elles ne sont pas supportées dans les ePUBs:</target>
         <note>ID: PublishTab.Epub.OmittedPages</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.NoOverlaySupport" approved="yes">
-        <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any overlays. The first overlay is on page {0}.</source>
-        <target xml:lang="fr" state="final">Désolé, Bloom ne peut pas produire des ePUB s'il y a des superpositions. La première superposition se trouve à la page {0}.</target>
-        <note>ID: PublishTab.Epub.NoOverlaySupport</note>
+      <trans-unit id="PublishTab.Epub.NoCanvasSupport">
+        <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any canvas pages. The first canvas is on page {0}.</source>
+        <target xml:lang="fr" state="needs-translation">Sorry, Bloom cannot produce ePUBs if there are any canvas pages. The first canvas is on page {0}.</target>
+        <note>ID: PublishTab.Epub.NoCanvasSupport</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content" approved="yes">
         <source xml:lang="en">Content</source>
@@ -4598,14 +4598,14 @@
         <target xml:lang="fr" state="final">Fluide</target>
         <note>ID: PublishTab.Epub.Flowable</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Flowable.Description" approved="yes">
-        <source xml:lang="en">Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has overlay pages (comics).</source>
-        <target xml:lang="fr" state="final">Permettre aux lecteurs ePUB de faire la mise en page des images et du texte qu'ils veulent. L'utilisateur risque d'être mieux placé pour augmenter la taille de la police. Une mise en page personnalisée ne sera pas agréable à l'œil. Ce mode n'est pas disponible si votre livre a des pages de superposition (bandes dessinées).</target>
+      <trans-unit id="PublishTab.Epub.Flowable.Description">
+        <source xml:lang="en">Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has canvas pages (comics).</source>
+        <target xml:lang="fr" state="translated">Permettre aux lecteurs ePUB de faire la mise en page des images et du texte qu'ils veulent. L'utilisateur risque d'être mieux placé pour augmenter la taille de la police. Une mise en page personnalisée ne sera pas agréable à l'œil. Ce mode n'est pas disponible si votre livre a des pages de superposition (bandes dessinées).</target>
         <note>ID: PublishTab.Epub.Flowable.Description</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Flowable.DisabledTooltip" approved="yes">
-        <source xml:lang="en">This is disabled because an ePUB viewer in flowable mode would not be able to display the overlay pages (comics) in this book.</source>
-        <target xml:lang="fr" state="final">Cette option est désactivée car une visionneuse ePUB en mode fluide ne serait pas en mesure d'afficher les pages de superposition (bandes dessinées) dans ce livre.</target>
+      <trans-unit id="PublishTab.Epub.Flowable.DisabledTooltip">
+        <source xml:lang="en">This is disabled because an ePUB viewer in flowable mode would not be able to display the canvas pages (comics) in this book.</source>
+        <target xml:lang="fr" state="translated">Cette option est désactivée car une visionneuse ePUB en mode fluide ne serait pas en mesure d'afficher les pages de superposition (bandes dessinées) dans ce livre.</target>
         <note>ID: PublishTab.Epub.Flowable.DisabledTooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Mode" approved="yes">
