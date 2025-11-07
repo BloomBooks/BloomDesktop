@@ -64,8 +64,8 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { showLinkGridSetupDialog } from "../../react_components/BookGridSetup/BookGridSetupDialog";
+import { SetupBookLinkGrids } from "./linkGrid";
 import { Link } from "../../react_components/BookGridSetup/BookLinkTypes";
-import { editLinkGrid, addSkeletonIfEmpty } from "./linkGrid";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { handleUndo } from "../editViewFrame";
@@ -1722,19 +1722,4 @@ export function attachToCkEditor(element) {
     }
 
     BloomField.WireToCKEditor(element, ckedit);
-}
-
-function SetupBookLinkGrids(container: HTMLElement) {
-    // Add skeleton to empty grids on initial setup
-    $(container)
-        .find(".bloom-link-grid")
-        .each(function () {
-            addSkeletonIfEmpty(this);
-        });
-
-    $(container)
-        .find(".bloom-link-grid")
-        .click(function () {
-            editLinkGrid(this);
-        });
 }
